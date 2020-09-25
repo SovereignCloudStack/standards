@@ -12,12 +12,12 @@ These terms were defined taking into account the GAIA-X definitions to ensure th
 
 term               | definition 
 -------------------|---------------
-Provider           | Legal entity providing SCS to customers. The Provider is typically in control of physical infrastructure (Datacenter, Hosts, Storage, Network etc.) but also employees people who deploys and operate SCS o.
+Provider           | Legal entity providing SCS to customers. The Provider is typically in control of physical infrastructure (Datacenter, Hosts, Storage, Network etc.) but also employs people who deploy and operate SCS.
 Consumer           | Legal entity which can access and/or consume services hosted on SCS. Typically a Consumer is a customer of a Provider.
 End User           | Person which accesses Services running on SCS. Typically a person knows about the Consumer entity and the services but not about SCS or the Provider. An End User might be an employee or customer of the Consumer.
-Identity           | An Idenity is a technical unique representation of an entity (a Person, a legal entity like a Consumer, or an technica entity like a Service). An Identity might need to be trustworthy, so the technical representation has to include a trust relationship.
-Indentity System   | A technical solution that does authenticaten for Identities (i.e. checking a username, password and 2nd factor) and provides additional attributes to the identity.
-Module             | Technical solution / Software which is part of an SCS deployment.
+Identity           | An Idenity is a technical unique representation of an entity (a Person, a legal entity like a Consumer, or an technical entity like a Service). An Identity might need to be trustworthy, so the technical representation has to include a trust relationship.
+Identity System   | A technical solution that does authentication for Identities (i.e. checking a username, password and 2nd factor) and provides additional attributes to the identity.
+Module             | Technical solution / Software which is part of a SCS deployment.
 Access Rights      | Represent different capabilities an Identity might have while interacting with a Module. For example read or write access to a file system or access to functionality of an API.
 Role               | A role is a group of Identities connected with a set of Access Rights for Modules of SCS. Authorization to access modules is done by checking whether the accessing Identity is member in a Role that has the needed Access Rights assigned.
 Host               | A Host is a physical machine which is part of a Node. A Node consists of several Hosts.
