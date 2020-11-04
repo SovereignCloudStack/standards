@@ -26,15 +26,16 @@ author: Mathias Fechner
  + DNS (Designate)
  + Loadbalancer (Octavia)
  + Object Storage (Swift and S3 protocol via RadosGW, see below)
- + Secrets Management (Barbican) and Cloud Container Engine (magnum) in preparation
+ + Secrets Management (Barbican) and Cloud Container Engine (Magnum)
  + A standard set of current Linux cloud images (Ubuntu, Debian, Fedora, CentOS, OpenSUSE,
    Cirros, Clear Linux) with the standard cloud-init included for processing of user_data
-   to customize them.
+   to customize them. The images are kept up-to-date, so a `package_upgrade: true` should
+   not lead to excessive boot time.
 
 ### Ceph N - Release (Nautilus)
 
 + Block-storage
-+ Object-store (S3 and Swift via radosgw)
++ Object-storage (S3 and Swift via radosgw)
 
 ### K8S Cluster Management
 
@@ -132,7 +133,7 @@ Create AWS like credentials with `openstack ec2 credentials create`.
 If you use libs3, store the access field in `S3_ACCESS_KEY_ID` and the secret field in
 `S3_SECRET_ACCESS_KEY` and set `S3_HOSTNAME=gx-scs.okeanos.dev:8080`.
 You will see the same buckets (containers) and objects whether you access your object store 
-via swift or via s3 protocol.
+via the swift or via the s3 protocol.
 
 ## Automation
 
