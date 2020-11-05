@@ -1,6 +1,6 @@
 ---
 title:  Getting Started Gaia-X Demonstrator @ PlusServer
-version: 2020-10-23-001
+version: 2020-11-05-001
 author: Mathias Fechner
 
 ---
@@ -61,6 +61,12 @@ Continuous automated rollout in docker containers
 ### OVN OpenVirtualNetwork SDN
 
 + OVN 20.09.0
+
+### OVN characteristics
+
+in OVS Networks VXLAN-based MTU was 1450, in OVN we are  using 
+Geneve where the MTU changed to 1442. in some Container deployments with
+SDN it is recommendable to use a MTU with maximum 1400 
 
 ## Client Software Requirements
 
