@@ -19,7 +19,7 @@ Identity           | An Idenity is a technical unique representation of an entit
 Identity System   | A technical solution that does authentication for Identities (i.e. checking a username, password and 2nd factor) and provides additional attributes to the identity.
 Module             | Technical solution / Software which is part of a SCS deployment.
 Access Rights      | Represent different capabilities an Identity might have while interacting with a Module. For example read or write access to a file system or access to functionality of an API.
-Role               | A role is a group of Identities connected with a set of Access Rights for Modules of SCS. Authorization to access modules is done by checking whether the accessing Identity is member in a Role that has the needed Access Rights assigned.
+Role               | A role is a set of Rights for Modules of SCS. Authorization to access modules is done by checking whether the accessing Identity owns a Role that has the needed Access Rights assigned. Roles can be assigned to groups of identities or directly to identities.
 Host               | A Host is a physical machine which is part of a Node. A Node consists of several Hosts.
 Node               | A Node is a deployment of SCS which offers Services for Customers and/or Endusers. A Node typically is a group of physical Hosts.
 Operator           | Person operating parts of SCS. Each Person is represented by an Identity. Access rights needed to operate are given by assigning an Identity to a Role.
