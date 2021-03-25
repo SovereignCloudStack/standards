@@ -42,7 +42,7 @@ OSS project health check
 * Active development (and maintenance)
 	- Attracting new users & contributors
 	- Able to retain contributors
-	- # of Forks, # of contributors
+	- Number of Forks, number of contributors
 * Adoption
 	- Others building on top
 	- Products using it
