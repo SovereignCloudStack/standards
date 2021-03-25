@@ -30,7 +30,12 @@ OSS project health check
 * Maintenance policies
 * Handling security issues
 * Tracking & addressing bugs
-* Development process maturity (code review, CI processes, coverage, policies)
+* Development process maturity (code review, policies)
+* CI processes, CI coverage, CI status monitoring
+* Implementation of relevant standards
+	- Ideally with compliance tests
+* Defines own standards that can be implemented independently
+	- With compliance tests
 
 ## Activity
 
