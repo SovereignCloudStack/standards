@@ -314,10 +314,6 @@ Should provide registry with provider vetted images
 
 Should offer artifact security scanning
 
-### Helm - required
-
-Must provide helm v3
-
 ### Mesh - optional
 
 Should provide mesh discovery
