@@ -56,6 +56,8 @@ OSS project health check
 ## Lock-in risk assessment
 
 * Risk of project failure
+	* Single Points of Failure (too few maintainers / core contributors / core reviewers?)
+	* Conflicting commercial interests of main contributors?
 * Effect of failure (damage): 
 	* How easily could it be forked and taken over?
 	* How easily could it be ripped out and replaced?
