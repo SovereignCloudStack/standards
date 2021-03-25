@@ -90,7 +90,7 @@ Compute availability zones. Must be fire protection zones, must have independent
 
 Block storage (`openststack availability zone list --volumes`) must be EITHER one AZ for the whole region OR the same set as compute AZs. In the latter case, compute instances must have access at least to the volumes in the same AZ.
 
-Network should not use availability zones. All networks in one region (for one project and connected by a router) should have connectivity. (TODO: Should we allow per-AZ networking? Or can we make this a must)
+Network should not use availability zones. All networks in one region (for one project and connected by a router) should have connectivity. (TODO: Should we allow per-AZ networking? Then mandate same zoning&naming as compute. Or can we make this a must)
 
 ##### Tagging
 
@@ -236,15 +236,15 @@ Support at least HOT version 2018-08-31 (Rocky)
 
 Trademark spec (OpenStack Powered Orchestration 2020.11 add-on)
 
-##### magnum (container infra) - recommended
-
-TODO: Predefined templates?
-
 ##### swift (object-storage) - recommended
 
 Should have same namespace as S3
 
 OpenStack Powered (Object) Storage 2020.11 Interop Tests (exceptions needed for ceph?)
+
+##### magnum (container infra) - optional
+
+TODO: Predefined templates?
 
 ##### karbor (backup automation) - optional
 
@@ -270,7 +270,7 @@ Horizon may be used
 
 Other OpenStack services may be offered
 
-Non-OpenStack services may be added to the catalog, but must have a provider prefix
+Non-OpenStack services may be added to the catalog, but then must have a provider prefix
 
 TODO: Should we require that providers offer a per-project setting where only SCS-base, SCS-extended or full will be listed in service catalogue? Making it easier for dev teams to ensure they don't introduce a dependency by mistake?
 
@@ -294,7 +294,7 @@ should support S3 access controls ... (TBW)
 
 Must provide K8s Cluster API version XX (beta1?)
 
-Must output kubctl config files
+Must output kubectl config files
 
 Should provide multi-SCS-cloud cluster management 
 
@@ -346,7 +346,7 @@ Must have event log
 
 Must have control plane tests (e.g. os-health-monitor)
 
-Must have data plan tests
+Must have data plane tests
 
 #### capacity monitoring
 
