@@ -246,7 +246,7 @@ OpenStack Powered (Object) Storage 2020.11 Interop Tests (exceptions needed for 
 
 TODO: Predefined templates?
 
-##### Karbor (backup automation) - optional
+##### Freezer (backup aaS) - optional
 
 ##### Mistral (workflow) - optional
 
