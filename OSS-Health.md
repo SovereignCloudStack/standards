@@ -19,7 +19,7 @@ OSS project health check
   
 * Design process is open
 	- Process for proposals/blueprints
-	- Decision propcess is clear, accessbile, traceable
+	- Decision process is clear, accessbile, traceable
 	- Requirements are gathered, recorded, prioritized
 	- Roadmaps / Goals
 
