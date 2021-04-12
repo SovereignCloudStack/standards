@@ -1,6 +1,4 @@
-xtmgf83LExsv6SE
-
-# <https://scs.sovereignit.de/nextcloud/apps/files/?dir=/Releaseplan&fileid=17054>SCS Releases
+# SCS Releases
 
 or: What does a release mean in the SCS world?
 
