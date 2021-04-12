@@ -1,4 +1,4 @@
-#SCS Releases
+# SCS Releases
 
 or: What does a release mean in the SCS world?
 
