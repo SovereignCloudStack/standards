@@ -1,24 +1,36 @@
 ---
 title: Flavor Naming SCS Proposal
-version: 2021-05-09-001
-author: Matthias Hamm
+version: 2021-05-17-001
+authors: Matthias Hamm, Kurt Garloff
 state: Draft
 ---
 
 Flavor Naming (DRAFT) SCS
 
-Please take note, that this is a DRAFT open for discussion (09.05.2021)
+Please take note, that this is a DRAFT open for discussion (17.05.2021)
 
 
 ## Motivation
 
- In OpenStack environments there is a need to define different flavors for instances. A running instance cannot be customized by a user, so a number of pre defined flavors are necessary.
- To give a provider or operator of a SCS the possibility to define flavors by himself, the pre defined SCS flavors should be recognisable by all customers.
- Also some key features of a flavor should be recognisable at first glance by the user.
- In the future some points are important: there will be GPU support, fast disks for databases, memory-heavy applications, and other useful aspects of an instance.
-It may also be important to make the CPU generation clearly recognisable, as this is always a topic in discussions with customers.
+ In OpenStack environments there is a need to define different flavors for instances.
+ The flavors are pre-defined by the operator, the customer can not change these.
+ OpenStack providers thus typically offer a large selection of flavors.
+ 
+ While flavors can be discovered (`openstack flavor list`), it is helpful for users (DevOps teams),
+ to have
+ 
+ * A naming scheme that is used across all SCS flavors, so flavor names have the same meaning everywhere.
+ * Have a guaranteed set of flavors available on all SCS clouds, so these do not need to be discovered.
 
-## First Proposal
+ While not all details will be encoded in the name, the key features should be obvious:
+ Number of vCPUs, RAM, Root Disk.
+ Extra features are important as well: There will be flavors with GPU support, fast disks for databases,
+ memory-heavy applications, and other useful aspects of an instance.
+
+ It may also be important to make the CPU generation clearly recognisable, as this is always a topic in
+ discussions with customers.
+
+## Proposal
 
 
 ### Type of information included
@@ -26,34 +38,185 @@ It may also be important to make the CPU generation clearly recognisable, as thi
 We believe the following characteristics are important in a flavour description:
 
 
-| Type                 | Description                                                 |
+| Type                 | Description                                                  |
 |:---------------------|:-------------------------------------------------------------|
-|Generation            | CPU Generation                                              |
-|Number of CPU         | Number of CPUs as the basis of a performance class. Normal split is 1:4 (CPU:RAM)|
-| Highmem              | Different CPU to RAM ratio for high RAM demand               |
-| Performance Class    | Labelling for Normal, HighCPU, GPU, NVMe, LokalDisk etc. If necessary, also mix |
-| CPU Type             | X86, ARM, RiSC, Generic  |
-| "metal"              | One VM on one Host |
+|Generation            | CPU Generation                                               |
+|Number of CPU         | Number of vCPUs - suffixed by v,t,c (see below)              |
+|Amount of RAM         | Amount of memory available for the VM                        |
+| Performance Class    | Ability to lable high-performance CPUs, disks, network       |
+| CPU Type             | X86-intel, X86-amd, ARM, RISC-V, Generic  |
+| "metal"              | One instance on one Host |
 
 
 ### Complete Proposal
 
-| Prefix | Type (Performance) | CPU | RAM | CPUType | Generation |
-|--------|--------------------|-----|-----|---------|------------|
-| SCS    | N - Normal (4xCPU) | 1-16| :x  | X -x86| v1 - Intel until Cascade Lake(2019)  |
-|         | H - HighCPU(>x GHZ)| 1-32 | :x | A -ARM    |v1 -  Scalable Intel® Xeon® processors of the 2nd generation |
-|    | M - Memory (8xCPU) | 1-16 | :x | G - Generic    |v1 -  AMD CPU until Epyc Rome (2019)  Zen2  |
-|        | G - GPU        | 1-16 | :x | R - RISC           |                                            |
-|        | L - LocalDisk  | 1-16 | :x |             |                                            |
+| Prefix | CPU |    Suffix   | RAM[GiB] | Disk[GB] |   Disktype | optional: extra features |
+|--------|-----|-------------|----------|----------|------------|--------------------------|
+| SCS-   | 1-n | V/T/C [il]  |   :x[u]  | :1-n     | [C/S/L/N]  | [-ARCHn/-h/-ib/-gxNM/..]  |
 
-### Examples:
+#### CPU Suffixes
 
-SCS-N4:16-X-v1  (4CPU, 16GB RAM, X86, v1)
+|Suffix |     Meaning            |
+|-------|------------------------|
+| V     | vCPU (oversubscribed)  |
+| T     | dedicated Thread (SMT) |
+| C     | dedicated Core         |
 
-SCS-M8:64-X-v1 (8CPU, 64GB RAM, X86, v1)
+Note that vCPU oversubscription should be no more than 5x per core (3x per thread in SMT scenarios).
 
-SCS-G4:16-G-v1 (4CPU, 16GB RAM, Generic, v1, GPU)
+Higher oversubscription must be indicated with an additional `l` suffix.
 
-SCS-MG4:32-A-v1 (4CPU, 32GB RAM, ARM, v1, GPU)
+Note that CPUs must use latest microcode to protect against CPU vulnerabilities (Spectre, Meltdown, L1TF, etc.).
+The provider must enable at least all mitigations that are enabled by default in the Linux kernel. CPUs that
+are susceptible to L1TF (intel x86 pre Cascade Lake) must switch off hyperthreading OR (in the future)
+use core scheduling implementations that are deemed to be secure by the SCS security team.
+Not using these mitigations must be indicated by an additional `i` suffix. 
 
-SCS-LH8:32-G-v1 (8CPU, 32GM RAM, Generic, v1, HighCPU>2,8GHZ, LokalDisk)
+| Suffix | Meaning                                               |
+|--------|-------------------------------------------------------|
+|   l    | low performance (oversubscr > 5x/core or > 3x/thread) |
+|   i    | insecure (weak protection against CPU vulns)          |
+
+If both optional suffices are used, `l` needs to preceed `i`.
+
+#### Memory 
+
+No memory oversubscription is done.
+
+If no ECC memory is used, the suffix `u` must indicate this.
+
+#### Disk types
+
+| Disktype |  Meaning                             |
+|----------|--------------------------------------|
+|   C      | Network shared storage (ceph/cinder) |
+|   L      | Local disk (SATA/SAS class)          |
+|   S      | Local SSD disk                       |
+|   N      | Local high-perf NVMe                 |
+
+Note that Disktype might be omitted -- the user then can not take any assumptions
+on what storage is provided for the root disk (that the image gets provisioned to).
+
+It does make sense for `C` to be requested explicitly to allow for smooth live migration.
+`L` typically provides latency advantages vs `C` (but not necessarily bandwidth and
+also is more likely to fail), `S` and `N` are for applications that need high IOPS
+and bandwidth disk I/O.
+
+#### CPU Architecture Details (optional)
+
+| ARCHn  | Meaning                  |
+|--------|--------------------------|
+| in     | Intel x86-64 CPU, gen n  |
+| zn     | AMD x86-64 CPU, gen n    |
+| an     | AArch64 CPU, gen n       |
+| rn     | RISC-V CPU, gen n        |
+
+The generation can be left out.
+Not specifying ARCH means that we have a generic CPU (x86-64).
+
+The generations are type specific
+
+| Intel gen | Meaning               |
+|-----------|-----------------------|
+|    0      | Pre Skylake           |
+|    1      | Skylake               |
+|    2      | Cascade Lake          |
+|    3      | Ice Lake              |
+
+|  AMD  gen | Meaning               |
+|-----------|-----------------------|
+|    0      | pre-Zen               |
+|    1      | Zen-1 (Naples)        |
+|    2      | Zen-2 (Rome)          |
+|    3      | Zen-3 (Milan)         |
+
+| AArch64 g | Meaning               |
+|-----------|-----------------------|
+|    0      | pre-Cortex A78        |
+|    1      | Cortex A78 class      |
+
+`-h` indicates a high-frequency class (e.g. >3GHz all-core); `-hh`, `-hhh` 
+can be used to indicate further increases.
+
+`-ib` indicates Inifinband networking.
+
+`-GXn:m` indicates a Pass-Through GPU from vendor X of gen n with m units assigned.
+`-gXn:m` indicates a vGPU from vendor X of gen n with m units assigned.
+
+| GPU vendor X | meaning    |
+|--------------|------------|
+|      N       | nVidia     |
+|      A       | AMD        |
+|      I       | Intel      |
+
+Generations could be nVidia (T=Tesla, P=Pascal, A=Ampere, ...), AMD (GCN-x=0.x, RDNA1=1, RDNA2=2), ...
+
+(This needs further work.)
+
+We'd also need to differentiate the size of the GPU (cores?), vPU vs. Pass-Through.
+
+### Examples
+
+|         Example    |                 Decoding                                    |
+|--------------------|-------------------------------------------------------------|
+| SCS-2C:4:10C       | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk     |
+| SCS-8Ti:32:50N-i1  | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe    |
+| SCS-1Vl:1u:10      | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 10GB disk (unspecific)  |
+| SCS-16T:64:200S-ib-GNA:2304 | 16 dedicated threads, 64GiB RAM, 200GB local NVMe, Inifiniband, 2304 Passthrough nVidia Ampere Cores |
+
+
+### Standard SCS flavors
+
+These are flavors expected to exist on standard SCS clouds.
+
+We expect disk sizes to be 5, 10, 20, 50, 100, 200, 500, 1000GB.
+We expect an average CPU:Mem[GiB] ratio of 1:4.
+
+|      Flavor                |        Comment                 |
+|----------------------------|--------------------------------|
+| SCS-1V:4:10                | Standard 1:4                   |
+| SCS-1V:4:20                | Standard 1:4                   |
+| SCS-2V:8:10                | Standard 1:4                   |
+| SCS-2V:8:20                | Standard 1:4                   |
+| SCS-2V:8:50                | Standard 1:4                   |
+| SCS-4V:16:20               | Standard 1:4                   |
+| SCS-4V:16:50               | Standard 1:4                   |
+| SCS-4V:16:100              | Standard 1:4                   |
+| SCS-8V:32:50               | Standard 1:4                   |
+| SCS-8V:32:100              | Standard 1:4                   |
+| SCS-8V:32:200              | Standard 1:4                   |
+| SCS-1V:2:10                | 1:2                            |
+| SCS-1V:2:20                | 1:2                            |
+| SCS-2V:4:10                | 1:2                            |
+| SCS-2V:4:20                | 1:2                            |
+| SCS-2V:4:50                | 1:2                            |
+| SCS-4V:8:20                | 1:2                            |
+| SCS-4V:8:50                | 1:2                            |
+| SCS-4V:8:100               | 1:2                            |
+| SCS-8V:16:20               | 1:2                            |
+| SCS-8V:16:50               | 1:2                            |
+| SCS-8V:16:100              | 1:2                            |
+| SCS-16V:32:50              | 1:2                            |
+| SCS-16V:32:100             | 1:2                            |
+| SCS-16V:32:200             | 1:2                            |
+| SCS-1V:8:10                | 1:8                            |
+| SCS-1V:8:20                | 1:8                            |
+| SCS-1V:8:50                | 1:8                            |
+| SCS-2V:16:20               | 1:8                            |
+| SCS-2V:16:50               | 1:8                            |
+| SCS-2V:16:100              | 1:8                            |
+| SCS-4V:32:50               | 1:8                            |
+| SCS-4V:32:100              | 1:8                            |
+| SCS-4V:32:200              | 1:8                            |
+| SCS-1Vl:1:5                | 1:1                            |
+| SCS-1V:1:10                | 1:1                            |
+
+Note that all vCPUs are oversubscribed -- the smallest flavor allows
+for heavy oversubscription (note the `l`, and thus can be offered very 
+cheap -- imagine jump hosts ...). There are two tiny 1:1 flavors.
+Disks types are not specified (and expected to be C or L typically).
+
+The design allows for small clouds (with CPUs with 16 Threads, 64GiB RAM
+compute hosts) to offer all flavors.
+
+
