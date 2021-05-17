@@ -1,6 +1,6 @@
 ---
-title: Flavor Naming SCS Proposal
-version: 2021-05-17-001
+title: SCS Flavor Naming Proposal
+version: 2021-05-17-002
 authors: Matthias Hamm, Kurt Garloff
 state: Draft
 ---
@@ -50,9 +50,9 @@ We believe the following characteristics are important in a flavour description:
 
 ### Complete Proposal
 
-| Prefix | CPU |    Suffix   | RAM[GiB] | Disk[GB] |   Disktype | optional: extra features |
-|--------|-----|-------------|----------|----------|------------|--------------------------|
-| SCS-   | 1-n | V/T/C [il]  |   :x[u]  | :1-n     | [C/S/L/N]  | [-ARCHn/-h/-ib/-gxNM/..]  |
+| Prefix | CPU |    Suffix   | RAM[GiB] | Disk[GB] |   Disktype | optional: extra features   |
+|--------|-----|-------------|----------|----------|------------|----------------------------|
+| SCS-   | 1-n | V/T/C [il]  |   :x[u]  | :1-n     | [C/S/L/N]  | [-ARCHn/-h/-IB/-GXn:m/..]  |
 
 #### CPU Suffixes
 
@@ -104,6 +104,8 @@ and bandwidth disk I/O.
 
 #### CPU Architecture Details (optional)
 
+Arch details provide more details on the specific CPU: Vendor and generation (n).
+
 | ARCHn  | Meaning                  |
 |--------|--------------------------|
 | in     | Intel x86-64 CPU, gen n  |
@@ -138,7 +140,18 @@ The generations are type specific
 `-h` indicates a high-frequency class (e.g. >3GHz all-core); `-hh`, `-hhh` 
 can be used to indicate further increases.
 
-`-ib` indicates Inifinband networking.
+Note that not specifying the -ARCHn suffix is perfectly fine, providing a generic
+(x86-64) CPU type.
+
+#### Extra features (optional)
+
+Note that these are optional -- it is recommended for providers to encode this information
+into the flavor name, so there is a systematic way of differentiating flavors.
+Providers could leave it out however, leaving it to `extra_specs` to make these flavor
+capabilities discoverable. Nothing prevents providers from registering the same flavor
+under a secondary (or tertiary) name.
+
+`-IB` indicates Inifinband networking.
 
 `-GXn:m` indicates a Pass-Through GPU from vendor X of gen n with m units assigned.
 `-gXn:m` indicates a vGPU from vendor X of gen n with m units assigned.
@@ -162,54 +175,31 @@ We'd also need to differentiate the size of the GPU (cores?), vPU vs. Pass-Throu
 | SCS-2C:4:10C       | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk     |
 | SCS-8Ti:32:50N-i1  | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe    |
 | SCS-1Vl:1u:10      | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 10GB disk (unspecific)  |
-| SCS-16T:64:200S-ib-GNA:2304 | 16 dedicated threads, 64GiB RAM, 200GB local NVMe, Inifiniband, 2304 Passthrough nVidia Ampere Cores |
+| SCS-16T:64:200S-IB-GNA:2304 | 16 dedicated threads, 64GiB RAM, 200GB local NVMe, Inifiniband, 2304 Passthrough nVidia Ampere Cores |
 
 
 ### Standard SCS flavors
 
 These are flavors expected to exist on standard SCS clouds.
 
-We expect disk sizes to be 5, 10, 20, 50, 100, 200, 500, 1000GB.
+We expect disk sizes to be 5, 10, 20, 50, 100, 200, 500, 1000GB, 2000GB.
 We expect an average CPU:Mem[GiB] ratio of 1:4.
 
-|      Flavor                |        Comment                 |
-|----------------------------|--------------------------------|
-| SCS-1V:4:10                | Standard 1:4                   |
-| SCS-1V:4:20                | Standard 1:4                   |
-| SCS-2V:8:10                | Standard 1:4                   |
-| SCS-2V:8:20                | Standard 1:4                   |
-| SCS-2V:8:50                | Standard 1:4                   |
-| SCS-4V:16:20               | Standard 1:4                   |
-| SCS-4V:16:50               | Standard 1:4                   |
-| SCS-4V:16:100              | Standard 1:4                   |
-| SCS-8V:32:50               | Standard 1:4                   |
-| SCS-8V:32:100              | Standard 1:4                   |
-| SCS-8V:32:200              | Standard 1:4                   |
-| SCS-1V:2:10                | 1:2                            |
-| SCS-1V:2:20                | 1:2                            |
-| SCS-2V:4:10                | 1:2                            |
-| SCS-2V:4:20                | 1:2                            |
-| SCS-2V:4:50                | 1:2                            |
-| SCS-4V:8:20                | 1:2                            |
-| SCS-4V:8:50                | 1:2                            |
-| SCS-4V:8:100               | 1:2                            |
-| SCS-8V:16:20               | 1:2                            |
-| SCS-8V:16:50               | 1:2                            |
-| SCS-8V:16:100              | 1:2                            |
-| SCS-16V:32:50              | 1:2                            |
-| SCS-16V:32:100             | 1:2                            |
-| SCS-16V:32:200             | 1:2                            |
-| SCS-1V:8:10                | 1:8                            |
-| SCS-1V:8:20                | 1:8                            |
-| SCS-1V:8:50                | 1:8                            |
-| SCS-2V:16:20               | 1:8                            |
-| SCS-2V:16:50               | 1:8                            |
-| SCS-2V:16:100              | 1:8                            |
-| SCS-4V:32:50               | 1:8                            |
-| SCS-4V:32:100              | 1:8                            |
-| SCS-4V:32:200              | 1:8                            |
-| SCS-1Vl:1:5                | 1:1                            |
-| SCS-1V:1:10                | 1:1                            |
+| vCPU:RAM ratio | Mandatory Flavors                             |
+|----------------|-----------------------------------------------|
+|  1:4           |  SCS-1V:4:10,   SCS-1V:4:20,   SCS-1V:4:20    |
+|  2:8           |  SCS-2V:8:20,   SCS-2V:8:50,   SCS-2V:8:100   |
+|  4:16          |  SCS-4V:16:50,  SCS-4V:16:100, SCS-4V:16:200  |
+|  8:32          |  SCS-8V:32:100, SCS-8V:32:200                 |
+|  1:2           |  SCS-1V:2:5,    SCS-1V:2:10,   SCS-1V:2:20    |
+|  2:4           |  SCS-2V:4:10,   SCS-2V:4:20,   SCS-2V:4:50    |
+|  4:8           |  SCS-4V:8:20,   SCS-4V:8:50,   SCS-4V:8:100   |
+|  8:16          |  SCS-8V:16:50,  SCS-8V:16:100, SCS-8V:16:200  |
+| 16:32          |  SCS-16V:32:100, SCS-16V:32:200               |
+|  1:8           |  SCS-1V:8:20,   SCS-1V:8:50,   SCS-1V:8:100   |
+|  2:16          |  SCS-2V:16:50,  SCS-2V:16:100, SCS-2V:16:200  |
+|  4:32          |  SCS-4V:32:100, SCS-4V:32:200                 |
+|  1:1           |  SCS-1Vl:1:5  , SCS-1V:1:10                   |
 
 Note that all vCPUs are oversubscribed -- the smallest flavor allows
 for heavy oversubscription (note the `l`, and thus can be offered very 
@@ -218,5 +208,4 @@ Disks types are not specified (and expected to be C or L typically).
 
 The design allows for small clouds (with CPUs with 16 Threads, 64GiB RAM
 compute hosts) to offer all flavors.
-
 
