@@ -50,9 +50,9 @@ We believe the following characteristics are important in a flavour description:
 
 ### Complete Proposal
 
-| Prefix | CPU |    Suffix   | RAM[GiB] | Disk[GB] |   Disktype | optional: extra features   |
-|--------|-----|-------------|----------|----------|------------|----------------------------|
-| SCS-   | 1-n | V/T/C [il]  |   :x[u]  | :1-n     | [C/S/L/N]  | [-ARCHn/-h/-IB/-GXn:m/..]  |
+| Prefix | CPU |    Suffix   | RAM[GiB] | Disk[GB] |   Disktype | optional: extra features      |
+|--------|-----|-------------|----------|----------|------------|-------------------------------|
+| SCS-   | 1-n | V/T/C [il]  |   :x[u]  | :1-n     | [C/S/L/N]  | [-[arch[n][h]/-IB/-GXn:m/..]  |
 
 #### CPU Suffixes
 
@@ -85,6 +85,9 @@ No memory oversubscription is done.
 
 If no ECC memory is used, the suffix `u` must indicate this.
 
+It is allowed to specify half GiBs (e.g. 3.5), though discouraged
+for larger memory sizes.
+
 #### Disk types
 
 | Disktype |  Meaning                             |
@@ -102,21 +105,30 @@ It does make sense for `C` to be requested explicitly to allow for smooth live m
 also is more likely to fail), `S` and `N` are for applications that need high IOPS
 and bandwidth disk I/O.
 
+The disk size can be prefixed with Mx, where M is an integer sepcifying that the disk
+is provisioned M times.
+
+If the disk size is left out, the cloud is expected to allocate a disk (network or local)
+that is large enough to fit the root file system (`min_disk` in image). This automatic
+allocation is indicated with `:` without a disk size.
+If the `:` is left out completely, the user must create a boot volume manually and
+tell the instance to boot from it.
+
 #### CPU Architecture Details (optional)
 
 Arch details provide more details on the specific CPU: Vendor and generation (n).
 
-| ARCHn  | Meaning                  |
-|--------|--------------------------|
-| in     | Intel x86-64 CPU, gen n  |
-| zn     | AMD x86-64 CPU, gen n    |
-| an     | AArch64 CPU, gen n       |
-| rn     | RISC-V CPU, gen n        |
+| arch[n] | Meaning                  |
+|---------|--------------------------|
+| i[n][h] | Intel x86-64 CPU, gen n  |
+| z[n][h] | AMD x86-64 CPU, gen n    |
+| a[n][h] | AArch64 CPU, gen n       |
+| r[n][h] | RISC-V CPU, gen n        |
 
 The generation can be left out.
-Not specifying ARCH means that we have a generic CPU (x86-64).
+Not specifying arch means that we have a generic CPU (x86-64).
 
-The generations are type specific
+The generations are vendor specific
 
 | Intel gen | Meaning               |
 |-----------|-----------------------|
@@ -132,16 +144,19 @@ The generations are type specific
 |    2      | Zen-2 (Rome)          |
 |    3      | Zen-3 (Milan)         |
 
-| AArch64 g | Meaning               |
-|-----------|-----------------------|
-|    0      | pre-Cortex A78        |
-|    1      | Cortex A78 class      |
+| AArch64 gen | Meaning               |
+|-------------|-----------------------|
+|    0        | pre-Cortex A78        |
+|    1        | Cortex A78 class      |
 
-`-h` indicates a high-frequency class (e.g. >3GHz all-core); `-hh`, `-hhh` 
-can be used to indicate further increases.
+`h` indicates a high-frequency class (e.g. >2.75GHz all-core); `hh`(>3.25G), `hhh` (>3.75G)
+can be used to indicate further increases. `-z3h` thus means a Zen3
+CPU (Milan), such as EPYC 75F3.
 
-Note that not specifying the -ARCHn suffix is perfectly fine, providing a generic
+Note that not specifying the -ARCH[n] suffix is perfectly fine, providing a generic
 (x86-64) CPU type.
+
+If it is specified, it needs to be first after disk.
 
 #### Extra features (optional)
 
@@ -153,29 +168,32 @@ under a secondary (or tertiary) name.
 
 `-IB` indicates Inifinband networking.
 
-`-GXn:m` indicates a Pass-Through GPU from vendor X of gen n with m units assigned.
-`-gXn:m` indicates a vGPU from vendor X of gen n with m units assigned.
+`-GXn[:m]` indicates a Pass-Through GPU from vendor X of gen n with m compute units / SMs exosed.
+`-gXn[:m]` indicates a vGPU from vendor X of gen n with m compute units / SMs assigned.
 
 | GPU vendor X | meaning    |
 |--------------|------------|
-|      N       | nVidia     |
-|      A       | AMD        |
-|      I       | Intel      |
+|      n       | nVidia     |
+|      a       | AMD        |
+|      i       | Intel      |
 
-Generations could be nVidia (T=Tesla, P=Pascal, A=Ampere, ...), AMD (GCN-x=0.x, RDNA1=1, RDNA2=2), ...
+Generations could be nVidia (t=Tesla, p=Pascal, a=Ampere, v=Volta, f=Fermi, ...),
+AMD (GCN-x=0.x, RDNA1=1, RDNA2=2), ...
 
 (This needs further work.)
 
-We'd also need to differentiate the size of the GPU (cores?), vPU vs. Pass-Through.
+Extensions need to be specified in the above mentioned order.
 
 ### Examples
 
-|         Example    |                 Decoding                                    |
-|--------------------|-------------------------------------------------------------|
-| SCS-2C:4:10C       | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk     |
-| SCS-8Ti:32:50N-i1  | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe    |
-| SCS-1Vl:1u:10      | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 10GB disk (unspecific)  |
-| SCS-16T:64:200S-IB-GNA:2304 | 16 dedicated threads, 64GiB RAM, 200GB local NVMe, Inifiniband, 2304 Passthrough nVidia Ampere Cores |
+|         Example     |                 Decoding                                    |
+|---------------------|-------------------------------------------------------------|
+| SCS-2C:4:10C        | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk     |
+| SCS-8Ti:32:50N-i1   | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe   |
+| SCS-1Vl:1u:5        | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)  |
+| SCS-16T:64:200S-IB-Gna:84 | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Inifiniband, 64 Passthrough nVidia Ampere SMs |
+| SCS-4C:16:2x200N-a1 | 4 dedicated Arm64 cores (A78 class), 16GiB RAM, 2x200GB local NVMe drives |
+| SCS-1V:0.5          | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)       |
 
 
 ### Standard SCS flavors
