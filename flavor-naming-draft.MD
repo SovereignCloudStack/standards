@@ -52,7 +52,7 @@ We believe the following characteristics are important in a flavour description:
 
 | Prefix | CPU |    Suffix   | RAM[GiB] | Disk[GB] |   Disktype | optional: extra features      |
 |--------|-----|-------------|----------|----------|------------|-------------------------------|
-| SCS-   | 1-n | V/T/C [il]  |   :x[u]  | :1-n     | [C/S/L/N]  | [-[arch[n][h]/-IB/-GXn:m/..]  |
+| SCS-   | 1-n | V/T/C [il]  | :x[u][o] | :1-n     | [C/S/L/N]  | [-[arch[n][h]/-IB/-GXn:m/..]  |
 
 #### CPU Suffixes
 
@@ -81,12 +81,14 @@ If both optional suffices are used, `l` needs to preceed `i`.
 
 #### Memory 
 
-No memory oversubscription is done.
+We expect cloud providers to use ECC memory.
+If no ECC is used, the suffix `u` must indicate this.
 
-If no ECC memory is used, the suffix `u` must indicate this.
+No memory oversubscription is recommended. If you really want to do it, you
+must expose this with the `o` sufffix.
 
-It is allowed to specify half GiBs (e.g. 3.5), though discouraged
-for larger memory sizes.
+It is allowed to specify half GiBs (e.g. 3.5), though this is discouraged
+for larger memory sizes (>= 10GiB).
 
 #### Disk types
 
@@ -178,7 +180,7 @@ under a secondary (or tertiary) name.
 |      i       | Intel      |
 
 Generations could be nVidia (t=Tesla, p=Pascal, a=Ampere, v=Volta, f=Fermi, ...),
-AMD (GCN-x=0.x, RDNA1=1, RDNA2=2), ...
+AMD (GCN-x=0.x, RDNA1=1, RDNA2=2), intel (GenX=0.x, Xe1=1, ...), ...
 
 (This needs further work.)
 
@@ -198,7 +200,7 @@ Extensions need to be specified in the above mentioned order.
 
 ### Standard SCS flavors
 
-These are flavors expected to exist on standard SCS clouds.
+These are flavors expected to exist on standard SCS clouds (x86-64).
 
 We expect disk sizes to be 5, 10, 20, 50, 100, 200, 500, 1000GB, 2000GB.
 We expect an average CPU:Mem[GiB] ratio of 1:4.
@@ -227,3 +229,36 @@ Disks types are not specified (and expected to be C or L typically).
 The design allows for small clouds (with CPUs with 16 Threads, 64GiB RAM
 compute hosts) to offer all flavors.
 
+## Naming policies
+
+To be certified as an SCS compliant x86-64 IaaS platform, you must offer all standard SCS flavors
+according to the previous section. (We may define a mechanism that allows exceptions to be
+granted in a way that makes this very transparent and visible to clients.)
+
+You are allowed to understate your performance; you may implement a SCS-1Vl:1:5 flavor with
+a flavor that actually implements SCS-1T:1:5C (i.e. you dedicate a secured hyperthread instead
+of high oversubscription) or even SCS-1D:1.5:8S (1 dedicated core, 50% more RAM and a 8GiB SSD).
+
+You must be very careful to expose high overcubscription `l`, insecure hyperthreading `i`,
+non-ECC-RAM `u`, memory oversubscription `o`. Note that omitting these qualifiers is
+overstating your security, reliability or performance settings and may be reason for
+clients to claim money back, damages. It may also cause SCS to withdraw certification
+along with public statements.
+
+You may offer additional SCS- flavors, following the naming scheme outlined here.
+
+You may offer additional flavors, not following above scheme.
+
+You must not offer flavors with the SCS- prefix which do not follow this naming scheme.
+You must not extend the SCS naming scheme with your own suffices; you are encouraged however
+to suggest extensions that we can discuss and add to the official scheme.
+
+## Beyond SCS: Gaia-X
+
+Some providers might offer VM services ("IaaS") without trying to adhere to SCS standards,
+yet still finding the flavor naming standards useful. The Gaia-X Technical Committee's
+Provider Working Group (WG) would seem like a logical place for such dicussions then.
+If so, we could
+replace the SCS- prefix with a GX- prefix and transfer the naming scheme governance from
+the SCS project to the Gaia-X Provier WG. SCS certification would then reference the
+Gaia-X flavor naming standard as a requirement.
