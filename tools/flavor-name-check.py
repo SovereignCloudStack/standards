@@ -191,6 +191,10 @@ class Prop:
         return ostr % tuple(lst)
 
     # TODO: Interactive input
+    def input(self):
+        for par in self.pnames:
+            print("%s: ", separator="")
+            input(val)
 
 
 class Main(Prop):
@@ -254,6 +258,53 @@ class IB(Prop):
     pnames = ("?IB",)
     outstr = "%?IB"
 
+def outname(cpuram, disk, cpubrand, gpu, ib):
+        out = "SCS-" + cpuram.out()
+        if disk.parsed:
+            out += ":" + disk.out()
+        if cpubrand.parsed:
+            out += "-" + cpubrand.out()
+        if gpu.parsed:
+            out += "-" + gpu.out()
+        if ib.parsed:
+            out += "-" + ib.out()
+        return out
+
+
+def parsename(nm):
+    if not is_scs(nm):
+        if verbose:
+            print("WARNING: %s: Not an SCS flavor" % nm)
+        return None
+    n = nm[4:]
+    cpuram = Main(n)
+    if cpuram.parsed == 0:
+        raise NameError("Error 10: Failed to parse main part of %s" % n)
+
+    n = n[cpuram.parsed:]
+    disk = Disk(n)
+    n = n[disk.parsed:]
+    cpubrand = CPUBrand(n)
+    n = n[cpubrand.parsed:]
+    gpu = GPU(n)
+    n = n[gpu.parsed:]
+    ib = IB(n)
+    n = n[ib.parsed:]
+    if verbose:
+        print("Flavor: %s" % nm)
+        print(cpuram)
+        print(disk)
+        print(cpubrand)
+        print(gpu)
+        print(ib)
+        print()
+
+    if n:
+        print("ERROR: Could not parse: %s" % n)
+        raise NameError("Error 60: Could not parse %s (extras?)" % n)
+
+    return (cpuram, disk, cpubrand, gpu, ib)
+
 
 def main(argv):
     global verbose, debug
@@ -266,56 +317,25 @@ def main(argv):
         verbose = True
         argv = argv[1:]
 
+    if (argv[0]) == "-i":
+        cpuram = Main()
+        cpuram.input()
+        sys.exit(0)
+
     error = 0
+
     for name in argv:
-        if not is_scs(name):
-            if not error:
-                error = 1
-            if verbose:
-                print("WARNING: %s: Not an SCS flavor" % name)
+        ret = parsename(name)
+        if not ret:
+            error = 1
             continue
-        n = name[4:]
-        cpuram = Main(n)
-        if cpuram.parsed == 0:
-            error = 10
-        n = n[cpuram.parsed:]
-        disk = Disk(n)
-        n = n[disk.parsed:]
-        cpubrand = CPUBrand(n)
-        n = n[cpubrand.parsed:]
-        gpu = GPU(n)
-        n = n[gpu.parsed:]
-        ib = IB(n)
-        n = n[ib.parsed:]
-        if verbose:
-            print("Flavor: %s" % name)
-            print(cpuram)
-            print(disk)
-            print(cpubrand)
-            print(gpu)
-            print(ib)
-            print()
-
-        if n:
-            print("ERROR: Could not parse: %s" % n)
-            error = 60
-
-        # Reconstruct name
-        out = "SCS-" + cpuram.out()
-        if disk.parsed:
-            out += ":" + disk.out()
-        if cpubrand.parsed:
-            out += "-" + cpubrand.out()
-        if gpu.parsed:
-            out += "-" + gpu.out()
-        if ib.parsed:
-            out += "-" + ib.out()
+        namecheck = outname(*ret)
 
         if debug:
-            print("In %s, Out %s" % (name, out))
+            print("In %s, Out %s" % (name, namecheck))
 
-        if out != name:
-            raise NameError("%s != %s" % (name, out))
+        if namecheck != name:
+            raise NameError("%s != %s" % (name, namecheck))
 
     return error
 
