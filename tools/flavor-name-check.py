@@ -28,9 +28,18 @@ scsPre = re.compile(r'^SCS\-')
 
 # help
 def usage():
-    print("Usage: flavor-name-check.py [-v] NAME [NAME [...]]")
+    print("Usage: flavor-name-check.py [-d] [-v] [-i | NAME [NAME [...]]]")
     print("Flavor name checker returns 0 if no error, 1 for non SCS flavors and 10+ for wrong flavor names")
+    print("-d enables debug mode, -v outputs a verbose description, -i enters interactive input mode")
     sys.exit(2)
+
+def to_bool(stg):
+    if stg == "" or stg == "0" or stg.upper()[0] == "N" or stg.upper()[0] == "F":
+        return False
+    if stg == "1" or stg.upper()[0] == "Y" or stg.upper()[0] == "T":
+        return True
+    raise ValueError
+
 
 def is_scs(nm):
     return scsPre.match(nm) != None
@@ -46,6 +55,8 @@ class Prop:
     # #  => integer
     # ## => float
     # ?  => boolean
+    # .  => optional string
+    # #. => optional integer
     pnames = ()
     # output conversion (see comment at out() function
     outstr = ""
@@ -117,13 +128,16 @@ class Prop:
                 # dependent table?
                 if nextname and not hasattr(self, "tbl_%s" % nextname) \
                             and hasattr(self, "tbl_%s_%s_%s" % (fname, attr, nextname)):
-                    self.__setattr__("tbl_%s" % nextname, 
+                    self.__setattr__("tbl_%s" % nextname,
                             self.__getattribute__("tbl_%s_%s_%s" % (fname, attr, nextname)))
                     if debug:
                         print("  Set dependent table tbl_%s to %s" % (nextname, self.__getattribute__("tbl_%s" % nextname)))
                 if debug:
                     print("  Table lookup for element %s in %s" % (attr, self.__getattribute__("tbl_%s" % fname)))
-                attr = self.__getattribute__("tbl_%s" % fname)[attr]
+                try: 
+                    attr = self.__getattribute__("tbl_%s" % fname)[attr]
+                except:
+                    pass
             st += " " + self.pnames[i] + ": " + str(attr) + ","
         return st[:-1]
 
@@ -133,6 +147,7 @@ class Prop:
            %? outputs a string if the parameter is True, otherwise nothing (string delimited by next non-alnum char)
            %.Nf gets converted to %.0f if the number is an integer
            %1x gets converted to %ix if the number is not == 1, otherwise it's left out
+           %0i gets converted to %i if the number is not == 0, otherwise it's left out
            %:i gets converted to :%i if number is non-null, otherwise left out
            """
         par = 0
@@ -173,6 +188,14 @@ class Prop:
                     i += 2
                     lst.append(att)
                 par += 1
+            elif self.outstr[i+1] == "0":
+                if att == 0:
+                    i += 3
+                else:
+                    ostr += "%i"
+                    i += 2
+                    lst.append(att)
+                par += 1
             elif self.outstr[i+1] == ":":
                 if att:
                     ostr += ":%"
@@ -192,9 +215,68 @@ class Prop:
 
     # TODO: Interactive input
     def input(self):
-        for par in self.pnames:
-            print("%s: ", separator="")
-            input(val)
+        self.parsed = 0
+        print(self.type)
+        for i in range (0, len(self.pnames)):
+            tbl = None
+            fname = self.pattrs[i]
+            fdesc = self.pnames[i]
+            if hasattr(self, "tbl_%s" % fname):
+                tbl = self.__getattribute__("tbl_%s" % fname)
+            if tbl:
+                print(" %s Options:" % fdesc)
+                for k in tbl.keys():
+                    print("  %s: %s" % (k, tbl[k]))
+            while True:
+                print(" %s: " % fdesc, end="")
+                val = input()
+                try:
+                    if fdesc[0] == "." and not val and i == 0:
+                        return
+                    if fdesc[0] == "?":
+                        val = to_bool(val)
+                        if not val:
+                            break
+                    elif fdesc[0:2] == "##":
+                        val = float(val)
+                    elif fdesc[0] == "#":
+                        if fdesc[1] == "." and not val:
+                            break
+                        oval = val
+                        val = int(val)
+                        if str(val) != oval:
+                            print(" INVALID!")
+                            continue
+                    elif tbl:
+                        if fdesc[0] == "." and not val:
+                            break
+                        if val in tbl:
+                            pass
+                        elif val.upper() in tbl:
+                            val = val.upper()
+                        elif val.lower() in tbl:
+                            val = val.lower()
+                        if val in tbl:
+                            self.parsed += 1
+                            if i < len(self.pattrs)-1:
+                                nextname = self.pattrs[i+1]
+                            else:
+                                nextname = None
+                            # dependent table?
+                            if nextname and not hasattr(self, "tbl_%s" % nextname) \
+                                    and hasattr(self, "tbl_%s_%s_%s" % (fname, val, nextname)):
+                                self.__setattr__("tbl_%s" % nextname,
+                                    self.__getattribute__("tbl_%s_%s_%s" % (fname, val, nextname)))
+                            break
+                        print(" INVALID!")
+                        continue
+                except BaseException as e:
+                        print(e)
+                        print(" INVALID!")
+                        continue
+                self.parsed += 1
+                break
+            self.__setattr__(fname, val)
 
 
 class Main(Prop):
@@ -210,8 +292,8 @@ class Disk(Prop):
     type = "Disk"
     parsestr = re.compile(r":([0-9]*x|)([0-9]*)([CSLN]|)")
     pattrs = ("nrdisks", "disksize", "disktype")
-    pnames = ("#NrDisks", "#GB Disk", "Disk type")
-    outstr = "%1x%i%s"
+    pnames = ("#NrDisks", "#GB Disk", ".Disk type")
+    outstr = "%1x%0i%s"
     tbl_disktype = {"C": "Shared networked", "L": "Local", "S": "SSD", "N": "Local NVMe"}
 
     def __init__(self, string):
@@ -226,7 +308,7 @@ class CPUBrand(Prop):
     type = "CPUBrand"
     parsestr = re.compile(r"\-([izar])([0-9]*)(h*)")
     pattrs = ("cpuvendor", "cpugen", "perf")
-    pnames = ("CPU Vendor", "#CPU Gen", "Performance")
+    pnames = (".CPU Vendor", "#.CPU Gen", "Performance")
     outstr = "%s%i%s"
     tbl_cpuvendor = {"i": "Intel", "z": "AMD", "a": "ARM", "r": "RISC-V"}
     tbl_perf = {"": "Std Perf", "h": "High Perf", "hh" : "Very High Perf", "hhh": "Very Very High Perf"}
@@ -240,7 +322,7 @@ class GPU(Prop):
     type = "GPU"
     parsestr = re.compile(r"\-([gG])([nai])([^:-]*)(:[0-9]*|)(h*)")
     pattrs = ("gputype", "brand", "gen", "cu", "perf")
-    pnames = ("Type", "Brand", "Gen", "#CU", "Performance")
+    pnames = (".Type", ".Brand", ".Gen", "#.CU", "Performance")
     outstr = "%s%s%s%:i%s"
     tbl_gputype = {"g": "vGPU", "G": "Pass-Through GPU"}
     tbl_brand = {"n": "nVidia", "a": "AMD", "i": "Intel"}
@@ -271,6 +353,12 @@ def outname(cpuram, disk, cpubrand, gpu, ib):
         return out
 
 
+def printflavor(nm, lst):
+    print("Flavor: %s" % nm)
+    for l in lst:
+        print(l)
+    print()
+
 def parsename(nm):
     if not is_scs(nm):
         if verbose:
@@ -291,18 +379,25 @@ def parsename(nm):
     ib = IB(n)
     n = n[ib.parsed:]
     if verbose:
-        print("Flavor: %s" % nm)
-        print(cpuram)
-        print(disk)
-        print(cpubrand)
-        print(gpu)
-        print(ib)
-        print()
+        printflavor(nm, (cpuram, disk, cpubrand, gpu, ib))
 
     if n:
         print("ERROR: Could not parse: %s" % n)
         raise NameError("Error 60: Could not parse %s (extras?)" % n)
 
+    return (cpuram, disk, cpubrand, gpu, ib)
+
+def inputflavor():
+    cpuram = Main("")
+    cpuram.input()
+    disk = Disk("")
+    disk.input()
+    cpubrand = CPUBrand("")
+    cpubrand.input()
+    gpu = GPU("")
+    gpu.input()
+    ib = IB("")
+    ib.input()
     return (cpuram, disk, cpubrand, gpu, ib)
 
 
@@ -318,9 +413,16 @@ def main(argv):
         argv = argv[1:]
 
     if (argv[0]) == "-i":
-        cpuram = Main()
-        cpuram.input()
-        sys.exit(0)
+        ret = inputflavor()
+        print()
+        nm = outname(*ret)
+        print(nm)
+        ret2 = parsename(nm)
+        nm2 = outname(*ret2)
+        if nm != nm2:
+            raise NameError("%s != %s" % (nm, nm2))
+        #print(outname(*ret))
+        argv = argv[1:]
 
     error = 0
 
