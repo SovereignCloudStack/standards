@@ -52,7 +52,7 @@ We believe the following characteristics are important in a flavour description:
 
 | Prefix | CPU |    Suffix   | RAM[GiB] | Disk[GB] |   Disktype | optional: extra features      |
 |--------|-----|-------------|----------|----------|------------|-------------------------------|
-| SCS-   | 1-n | V/T/C [il]  | :x[u][o] | :1-n     | [C/S/L/N]  | [-[arch[n][h]/-IB/-GXn:m/..]  |
+| SCS-   | 1-n | V/T/C [il]  | :x[u][o] | :1-n     | [C/S/L/N]  | [-[arch[n][h]/-GXn:m/-IB/..]  |
 
 #### CPU Suffixes
 
@@ -168,8 +168,6 @@ Providers could leave it out however, leaving it to `extra_specs` to make these 
 capabilities discoverable. Nothing prevents providers from registering the same flavor
 under a secondary (or tertiary) name.
 
-`-IB` indicates Inifinband networking.
-
 `-GXn[:m]` indicates a Pass-Through GPU from vendor X of gen n with m compute units / SMs exosed.
 `-gXn[:m]` indicates a vGPU from vendor X of gen n with m compute units / SMs assigned.
 
@@ -183,6 +181,10 @@ Generations could be nVidia (t=Tesla, p=Pascal, a=Ampere, v=Volta, f=Fermi, ...)
 AMD (GCN-x=0.x, RDNA1=1, RDNA2=2), intel (GenX=0.x, Xe1=1, ...), ...
 
 (This needs further work.)
+
+`-IB` indicates Inifinband networking.
+
+More extensions will be forthcoming.
 
 Extensions need to be specified in the above mentioned order.
 
