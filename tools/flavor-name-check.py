@@ -38,6 +38,7 @@ def is_scs(nm):
 class Prop:
     type = ""
     parsestr = (re.compile(r""),(),())
+    outstr = ""
 
     def end(self, string):
         ix = string.find('-')
@@ -90,14 +91,87 @@ class Prop:
         for i in range(0, len(self.parsestr[1])):
             if not self.parsestr[2][i]:
                 continue
+            fname = self.parsestr[1][i]
             try:
-                attr = str(self.__getattribute__(self.parsestr[1][i]))
+                attr = self.__getattribute__(fname)
             except AttributeError as e:
                 attr = None
-            if hasattr(self, "tbl_%s" % self.parsestr[1][i]):
-                attr = self.__getattribute__("tbl_%s" % self.parsestr[1][i])[attr]
+            if hasattr(self, "tbl_%s" % fname):
+                if i < len(self.parsestr[1])-1:
+                    nextname = self.parsestr[1][i+1]
+                else:
+                    nextname = None
+                # dependent table?
+                if nextname and not hasattr(self, "tbl_%s" % nextname) \
+                            and hasattr(self, "tbl_%s_%s_%s" % (fname, attr, nextname)):
+                    self.__setattr__("tbl_%s" % nextname, 
+                            self.__getattribute__("tbl_%s_%s_%s" % (fname, attr, nextname)))
+                    if debug:
+                        print("  Set dependent table tbl_%s to %s" % (nextname, self.__getattribute__("tbl_%s" % nextname)))
+                if debug:
+                    print("  Table lookup for element %s in %s" % (attr, self.__getattribute__("tbl_%s" % fname)))
+                attr = self.__getattribute__("tbl_%s" % fname)[attr]
             st += " " + self.parsestr[2][i] + ": " + str(attr) + ","
         return st[:-1]
+
+    def out(self):
+        par = 0
+        i = 0
+        ostr = ""
+        lst = []
+        while i < len(self.outstr):
+            if self.outstr[i] != '%':
+                ostr += self.outstr[i]
+                i += 1
+                continue
+            att = self.__getattribute__(self.parsestr[1][par])
+            if self.outstr[i+1] == ".":
+                ostr += self.outstr[i:i+2]
+                if int(att) == att:
+                    ostr += "0"
+                else:
+                    ostr += self.outstr[i+2]
+                i += 3
+                lst.append(att)
+                par += 1
+            elif self.outstr[i+1] == "?":
+                n = i + 2
+                if att:
+                    n = i+2
+                    while n < len(self.outstr) and self.outstr[n].isalnum():
+                        ostr += self.outstr[n]
+                        n += 1
+                else:
+                    n += 1
+                i = n
+                par += 1
+            elif self.outstr[i+1] == "1":
+                if att == 1:
+                    i += 3
+                else:
+                    ostr += "%i"
+                    i += 2
+                    lst.append(att)
+                par += 1
+            elif self.outstr[i+1] == ":":
+                if att:
+                    ostr += ":%"
+                    i += 2
+                    lst.append(att)
+                else:
+                    i += 3
+                par += 1
+            else:
+                ostr += self.outstr[i]
+                i += 1
+                lst.append(self.__getattribute__(self.parsestr[1][par]))
+                par += 1
+        if debug:
+            print("%s: %s" % (ostr, lst))
+        return ostr % tuple(lst)
+
+
+
 
 
 class Main(Prop):
@@ -105,7 +179,8 @@ class Main(Prop):
     parsestr = (re.compile(r"([0-9]*)([VTC])(i|)(l|):([0-9\.]*)(u|)(o|)"),
         ("cpus", "cputype", "cpuinsecure", "cpuoversubscribed",
          "ram", "raminsecure", "ramoversubscribed"),
-        ("#vCPUs", "CPU type", "?Insec SMT", "?CPU Over", "##GiB RAM", "?no ECC", "?RAM Over"))
+        ("#vCPUs", "CPU type", "?Insec SMT", "?CPU Over>3/T(5/C)", "##GiB RAM", "?no ECC", "?RAM Over"))
+    outstr = "%i%s%?i%?l:%.1f%?u%?o"
     tbl_cputype = {"V": "vGPU", "T": "SMT Thread", "C": "Dedicated Core"}
 
 class Disk(Prop):
@@ -113,6 +188,7 @@ class Disk(Prop):
     parsestr = (re.compile(r":([0-9]*x|)([0-9]*)([CSLN]|)"),
         ("nrdisks", "disksize", "disktype"),
         ("#NrDisks", "#GB Disk", "Disk type"))
+    outstr = "%1x%i%s"
     tbl_disktype = {"C": "Shared networked", "L": "Local", "S": "SSD", "N": "Local NVMe"}
     def __init__(self, string):
         super().__init__(string)
@@ -129,22 +205,34 @@ class CPUBrand(Prop):
             ("CPU Vendor", "#CPU Gen", "Performance"))
     tbl_cpuvendor = {"i": "Intel", "z": "AMD", "a": "ARM", "r": "RISC-V"}
     tbl_perf = {"": "Std Perf", "h": "High Perf", "hh" : "Very High Perf", "hhh": "Very Very High Perf"}
+    outstr = "%s%i%s"
     # TODO: Generation decoding
+    tbl_cpuvendor_i_cpugen = { 0: "Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake" }
+    tbl_cpuvendor_z_cpugen = { 0: "Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3" }
+    tbl_cpuvendor_a_cpugen = { 0: "Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "Anext/NeoN2" }
+    #tbl_cpuvendor_r_cpugen = { 0: "SF U54", 1: "SF U74", 2: "SF U84"}
 
 class GPU(Prop):
     type = "GPU"
-    parsestr = (re.compile(r"\-([gG])([nai])([^:-]*)(:[0-9]*|)"),
-            ("gputype", "brand", "gen", "cu"),
-            ("Type", "Brand", "Gen", "#CU"))
+    parsestr = (re.compile(r"\-([gG])([nai])([^:-]*)(:[0-9]*|)(h*)"),
+            ("gputype", "brand", "gen", "cu", "perf"),
+            ("Type", "Brand", "Gen", "#CU", "Performance"))
     tbl_gputype = {"g": "vGPU", "G": "Pass-Through GPU"}
     tbl_brand = {"n": "nVidia", "a": "AMD", "i": "Intel"}
+    tbl_perf = {"": "Std Perf", "h": "High Perf", "hh" : "Very High Perf", "hhh": "Very Very High Perf"}
+    outstr = "%s%s%s%:i%s"
     # TODO: Generation decoding
+    tbl_brand_n_gen = {"f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal", "v": "Volta", "t": "Turing", "a": "Ampere"}
+    tbl_brand_a_gen = {"0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "RDNA2/Navi2x"}
+    tbl_brand_i_gen = {"0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1"}
+
 
 class IB(Prop):
     type = "Infiniband"
     parsestr = (re.compile(r"\-(IB)"),
             ("ib",),
             ("?IB",))
+    outstr = "%?IB"
 
 
 
@@ -192,6 +280,23 @@ def main(argv):
         if n:
             print("ERROR: Remainder: %s" % n)
             error = 60
+
+        # Reconstruct name
+        out = "SCS-" + cpuram.out()
+        if disk.parsed:
+            out += ":" + disk.out()
+        if cpubrand.parsed:
+            out += "-" + cpubrand.out()
+        if gpu.parsed:
+            out += "-" + gpu.out()
+        if ib.parsed:
+            out += "-" + ib.out()
+
+        if debug:
+            print("In %s, Out %s" % (name, out))
+
+        if out != name:
+            raise NameError("%s != %s" % (name, out))
 
     return error
 

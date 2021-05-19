@@ -148,8 +148,10 @@ The generations are vendor specific
 
 | AArch64 gen | Meaning               |
 |-------------|-----------------------|
-|    0        | pre-Cortex A78        |
-|    1        | Cortex A78 class      |
+|    0        | pre-Cortex A76        |
+|    1        | A76/NeoN1 class       |
+|    2        | A78/x1/NeoV1 class    |
+|    3        | Anext/NeoN2 class     |
 
 `h` indicates a high-frequency class (e.g. >2.75GHz all-core); `hh`(>3.25G), `hhh` (>3.75G)
 can be used to indicate further increases. `-z3h` thus means a Zen3
@@ -168,8 +170,8 @@ Providers could leave it out however, leaving it to `extra_specs` to make these 
 capabilities discoverable. Nothing prevents providers from registering the same flavor
 under a secondary (or tertiary) name.
 
-`-GXn[:m]` indicates a Pass-Through GPU from vendor X of gen n with m compute units / SMs exosed.
-`-gXn[:m]` indicates a vGPU from vendor X of gen n with m compute units / SMs assigned.
+`-GXn[:m][h]` indicates a Pass-Through GPU from vendor X of gen n with m compute units / SMs exosed.
+`-gXn[:m][h]` indicates a vGPU from vendor X of gen n with m compute units / SMs assigned.
 
 | GPU vendor X | meaning    |
 |--------------|------------|
@@ -177,10 +179,11 @@ under a secondary (or tertiary) name.
 |      a       | AMD        |
 |      i       | Intel      |
 
-Generations could be nVidia (t=Tesla, p=Pascal, a=Ampere, v=Volta, f=Fermi, ...),
-AMD (GCN-x=0.x, RDNA1=1, RDNA2=2), intel (GenX=0.x, Xe1=1, ...), ...
-
+Generations could be nVidia (f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=turing, a=Ampere, ...),
+AMD (GCN-x=0.x, RDNA1=1, RDNA2=2), intel (Gen9=0.9, Xe(12.1)=1, ...), ...
 (This needs further work.)
+`h` indicated high-performance (e.g. high freq or special high bandwidth gfx memory such as HBM);
+`h` can be duplicated for even higher performance.
 
 `-IB` indicates Inifinband networking.
 
