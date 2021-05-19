@@ -36,11 +36,22 @@ def is_scs(nm):
     return scsPre.match(nm) != None
 
 class Prop:
+    # Name of the property
     type = ""
-    parsestr = (re.compile(r""),(),())
+    # regular expression to parse input
+    parsestr = re.compile(r"")
+    # attributes that are set
+    pattrs = ()
+    # Names of attributes; special meaning of first char of name:
+    # #  => integer
+    # ## => float
+    # ?  => boolean
+    pnames = ()
+    # output conversion (see comment at out() function
     outstr = ""
 
     def end(self, string):
+        "find delimiting '-' and cut off"
         ix = string.find('-')
         if ix >= 1:
             return string[:ix]
@@ -48,9 +59,10 @@ class Prop:
             return string
 
     def parse(self):
+        "Try to match parsestr; return number of chars successfully consumed"
         if debug:
             print(self.string)
-        m = self.parsestr[0].match(self.string)
+        m = self.parsestr.match(self.string)
         if debug:
             print(m)
         if not m:
@@ -59,10 +71,10 @@ class Prop:
             print(m.groups())
         for i in range(0, len(m.groups())):
             attr = m.group(i+1)
-            if not self.parsestr[2][i]:
+            if not self.pnames[i]:
                 continue
-            if self.parsestr[2][i][0] == "#":
-                if self.parsestr[2][i][1] == "#":
+            if self.pnames[i][0] == "#":
+                if self.pnames[i][1] == "#":
                     attr = float(attr)
                 else:
                     if attr:
@@ -74,9 +86,9 @@ class Prop:
                             attr = int(attr)
                     else:
                         attr = 0
-            elif self.parsestr[2][i][0] == "?":
+            elif self.pnames[i][0] == "?":
                 attr = bool(attr)
-            self.__setattr__(self.parsestr[1][i], attr)
+            self.__setattr__(self.pattrs[i], attr)
         #return len(self.string)
         return len(m.group(0))
 
@@ -85,20 +97,21 @@ class Prop:
         self.parsed = self.parse()
 
     def __repr__(self):
+        "verbose representation"
         if not self.parsed:
             return " No %s" % self.type
         st = " " + self.type + ":"
-        for i in range(0, len(self.parsestr[1])):
-            if not self.parsestr[2][i]:
+        for i in range(0, len(self.pattrs)):
+            if not self.pnames[i]:
                 continue
-            fname = self.parsestr[1][i]
+            fname = self.pattrs[i]
             try:
                 attr = self.__getattribute__(fname)
             except AttributeError as e:
                 attr = None
             if hasattr(self, "tbl_%s" % fname):
-                if i < len(self.parsestr[1])-1:
-                    nextname = self.parsestr[1][i+1]
+                if i < len(self.pattrs)-1:
+                    nextname = self.pattrs[i+1]
                 else:
                     nextname = None
                 # dependent table?
@@ -111,10 +124,17 @@ class Prop:
                 if debug:
                     print("  Table lookup for element %s in %s" % (attr, self.__getattribute__("tbl_%s" % fname)))
                 attr = self.__getattribute__("tbl_%s" % fname)[attr]
-            st += " " + self.parsestr[2][i] + ": " + str(attr) + ","
+            st += " " + self.pnames[i] + ": " + str(attr) + ","
         return st[:-1]
 
     def out(self):
+        """Output name again:
+           Using templating language with std C/Python % formatting and a few extras:
+           %? outputs a string if the parameter is True, otherwise nothing (string delimited by next non-alnum char)
+           %.Nf gets converted to %.0f if the number is an integer
+           %1x gets converted to %ix if the number is not == 1, otherwise it's left out
+           %:i gets converted to :%i if number is non-null, otherwise left out
+           """
         par = 0
         i = 0
         ostr = ""
@@ -124,7 +144,7 @@ class Prop:
                 ostr += self.outstr[i]
                 i += 1
                 continue
-            att = self.__getattribute__(self.parsestr[1][par])
+            att = self.__getattribute__(self.pattrs[par])
             if self.outstr[i+1] == ".":
                 ostr += self.outstr[i:i+2]
                 if int(att) == att:
@@ -164,32 +184,32 @@ class Prop:
             else:
                 ostr += self.outstr[i]
                 i += 1
-                lst.append(self.__getattribute__(self.parsestr[1][par]))
+                lst.append(self.__getattribute__(self.pattrs[par]))
                 par += 1
         if debug:
             print("%s: %s" % (ostr, lst))
         return ostr % tuple(lst)
 
-
-
+    # TODO: Interactive input
 
 
 class Main(Prop):
     type = "CPU:RAM"
-    parsestr = (re.compile(r"([0-9]*)([VTC])(i|)(l|):([0-9\.]*)(u|)(o|)"),
-        ("cpus", "cputype", "cpuinsecure", "cpuoversubscribed",
-         "ram", "raminsecure", "ramoversubscribed"),
-        ("#vCPUs", "CPU type", "?Insec SMT", "?CPU Over>3/T(5/C)", "##GiB RAM", "?no ECC", "?RAM Over"))
+    parsestr = re.compile(r"([0-9]*)([VTC])(i|)(l|):([0-9\.]*)(u|)(o|)")
+    pattrs = ("cpus", "cputype", "cpuinsecure", "cpuoversubscribed",
+              "ram", "raminsecure", "ramoversubscribed")
+    pnames = ("#vCPUs", "CPU type", "?Insec SMT", "?CPU Over>3/T(5/C)", "##GiB RAM", "?no ECC", "?RAM Over")
     outstr = "%i%s%?i%?l:%.1f%?u%?o"
     tbl_cputype = {"V": "vGPU", "T": "SMT Thread", "C": "Dedicated Core"}
 
 class Disk(Prop):
     type = "Disk"
-    parsestr = (re.compile(r":([0-9]*x|)([0-9]*)([CSLN]|)"),
-        ("nrdisks", "disksize", "disktype"),
-        ("#NrDisks", "#GB Disk", "Disk type"))
+    parsestr = re.compile(r":([0-9]*x|)([0-9]*)([CSLN]|)")
+    pattrs = ("nrdisks", "disksize", "disktype")
+    pnames = ("#NrDisks", "#GB Disk", "Disk type")
     outstr = "%1x%i%s"
     tbl_disktype = {"C": "Shared networked", "L": "Local", "S": "SSD", "N": "Local NVMe"}
+
     def __init__(self, string):
         super().__init__(string)
         try:
@@ -200,13 +220,13 @@ class Disk(Prop):
 
 class CPUBrand(Prop):
     type = "CPUBrand"
-    parsestr = (re.compile(r"\-([izar])([0-9]*)(h*)"),
-            ("cpuvendor", "cpugen", "perf"),
-            ("CPU Vendor", "#CPU Gen", "Performance"))
+    parsestr = re.compile(r"\-([izar])([0-9]*)(h*)")
+    pattrs = ("cpuvendor", "cpugen", "perf")
+    pnames = ("CPU Vendor", "#CPU Gen", "Performance")
+    outstr = "%s%i%s"
     tbl_cpuvendor = {"i": "Intel", "z": "AMD", "a": "ARM", "r": "RISC-V"}
     tbl_perf = {"": "Std Perf", "h": "High Perf", "hh" : "Very High Perf", "hhh": "Very Very High Perf"}
-    outstr = "%s%i%s"
-    # TODO: Generation decoding
+    # Generation decoding
     tbl_cpuvendor_i_cpugen = { 0: "Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake" }
     tbl_cpuvendor_z_cpugen = { 0: "Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3" }
     tbl_cpuvendor_a_cpugen = { 0: "Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "Anext/NeoN2" }
@@ -214,14 +234,14 @@ class CPUBrand(Prop):
 
 class GPU(Prop):
     type = "GPU"
-    parsestr = (re.compile(r"\-([gG])([nai])([^:-]*)(:[0-9]*|)(h*)"),
-            ("gputype", "brand", "gen", "cu", "perf"),
-            ("Type", "Brand", "Gen", "#CU", "Performance"))
+    parsestr = re.compile(r"\-([gG])([nai])([^:-]*)(:[0-9]*|)(h*)")
+    pattrs = ("gputype", "brand", "gen", "cu", "perf")
+    pnames = ("Type", "Brand", "Gen", "#CU", "Performance")
+    outstr = "%s%s%s%:i%s"
     tbl_gputype = {"g": "vGPU", "G": "Pass-Through GPU"}
     tbl_brand = {"n": "nVidia", "a": "AMD", "i": "Intel"}
     tbl_perf = {"": "Std Perf", "h": "High Perf", "hh" : "Very High Perf", "hhh": "Very Very High Perf"}
-    outstr = "%s%s%s%:i%s"
-    # TODO: Generation decoding
+    # Generation decoding
     tbl_brand_n_gen = {"f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal", "v": "Volta", "t": "Turing", "a": "Ampere"}
     tbl_brand_a_gen = {"0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "RDNA2/Navi2x"}
     tbl_brand_i_gen = {"0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1"}
@@ -229,11 +249,10 @@ class GPU(Prop):
 
 class IB(Prop):
     type = "Infiniband"
-    parsestr = (re.compile(r"\-(IB)"),
-            ("ib",),
-            ("?IB",))
+    parsestr = re.compile(r"\-(IB)")
+    pattrs = ("ib",)
+    pnames = ("?IB",)
     outstr = "%?IB"
-
 
 
 def main(argv):
@@ -278,7 +297,7 @@ def main(argv):
             print()
 
         if n:
-            print("ERROR: Remainder: %s" % n)
+            print("ERROR: Could not parse: %s" % n)
             error = 60
 
         # Reconstruct name
