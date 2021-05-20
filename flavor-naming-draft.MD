@@ -50,9 +50,9 @@ We believe the following characteristics are important in a flavour description:
 
 ### Complete Proposal
 
-| Prefix | CPU |    Suffix   | RAM[GiB] | Disk[GB] |   Disktype | optional: extra features      |
-|--------|-----|-------------|----------|----------|------------|-------------------------------|
-| SCS-   | 1-n | V/T/C [il]  | :x[u][o] | :1-n     | [C/S/L/N]  | [-[arch[n][h]/-GXn:m/-IB/..]  |
+| Prefix | CPU |    Suffix   | RAM[GiB] | Disk[GB] |   Disktype | optional: extra features               |
+|--------|-----|-------------|----------|----------|------------|----------------------------------------|
+| SCS-   | 1-n | V/T/C [il]  | :x[u][o] | :1-n     | [C/S/L/N]  | [-hyp][-[arch[n][h]/-GXn:m/-IB/..]     |
 
 #### CPU Suffixes
 
@@ -116,6 +116,19 @@ allocation is indicated with `:` without a disk size.
 If the `:` is left out completely, the user must create a boot volume manually and
 tell the instance to boot from it.
 
+#### Hypervisor (optional)
+
+Clouds that offer hypervisors (or Bare Metal Systems) other than KVM should indicate
+the Hypervisor here.
+
+| hyp    |   Meaning                |
++--------+--------------------------+
+| kvm    | KVM [can be left out]    |
+| xen    | Xen                      |
+| vmw    | VMware                   |
+| hyv    | Hyper-V                  |
+| bms    | Bare Metal System        |
+
 #### CPU Architecture Details (optional)
 
 Arch details provide more details on the specific CPU: Vendor and generation (n).
@@ -170,8 +183,8 @@ Providers could leave it out however, leaving it to `extra_specs` to make these 
 capabilities discoverable. Nothing prevents providers from registering the same flavor
 under a secondary (or tertiary) name.
 
-`-GXn[:m][h]` indicates a Pass-Through GPU from vendor X of gen n with m compute units / SMs exosed.
-`-gXn[:m][h]` indicates a vGPU from vendor X of gen n with m compute units / SMs assigned.
+`-GXn[:m][h]` indicates a Pass-Through GPU from vendor X of gen n with m compute units / SMs / EUs exposed.
+`-gXn[:m][h]` indicates a vGPU from vendor X of gen n with m compute units / SMs / EUs assigned.
 
 | GPU vendor X | meaning    |
 |--------------|------------|
@@ -257,6 +270,12 @@ You may offer additional flavors, not following above scheme.
 You must not offer flavors with the SCS- prefix which do not follow this naming scheme.
 You must not extend the SCS naming scheme with your own suffices; you are encouraged however
 to suggest extensions that we can discuss and add to the official scheme.
+
+## Validation
+
+There is a script in `tools/flavor_name_check.py` which can be used to decode, validate
+and construct flavor names.
+This script must stay in sync with the specification text.
 
 ## Beyond SCS: Gaia-X
 

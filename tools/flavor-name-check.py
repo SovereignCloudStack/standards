@@ -6,9 +6,9 @@
 # Return codes:
 # 0: Matching
 # 1: No SCS flavor
-# 10-19: Error in CPU spec
-# 20-29: Error in Ram spec
-# 30-39: Error in Disk spec
+# 10-19: Error in CPU:Ram spec
+# 20-29: Error in Disk spec
+# 30-39: Error in Hype spec
 # 40-49: Error in optional specific CPU description
 # 50-59: Error in optional GPU spec
 # 60-69: Unknown extension
@@ -121,17 +121,7 @@ class Prop:
             except AttributeError as e:
                 attr = None
             if hasattr(self, "tbl_%s" % fname):
-                if i < len(self.pattrs)-1:
-                    nextname = self.pattrs[i+1]
-                else:
-                    nextname = None
-                # dependent table?
-                if nextname and not hasattr(self, "tbl_%s" % nextname) \
-                            and hasattr(self, "tbl_%s_%s_%s" % (fname, attr, nextname)):
-                    self.__setattr__("tbl_%s" % nextname,
-                            self.__getattribute__("tbl_%s_%s_%s" % (fname, attr, nextname)))
-                    if debug:
-                        print("  Set dependent table tbl_%s to %s" % (nextname, self.__getattribute__("tbl_%s" % nextname)))
+                self.create_dep_tbl(i, attr)
                 if debug:
                     print("  Table lookup for element %s in %s" % (attr, self.__getattribute__("tbl_%s" % fname)))
                 try: 
@@ -193,7 +183,7 @@ class Prop:
                     i += 3
                 else:
                     ostr += "%i"
-                    i += 2
+                    i += 3
                     lst.append(att)
                 par += 1
             elif self.outstr[i+1] == ":":
@@ -213,8 +203,68 @@ class Prop:
             print("%s: %s" % (ostr, lst))
         return ostr % tuple(lst)
 
-    # TODO: Interactive input
+    def create_dep_tbl(self, idx, val):
+        "Based on choice of attr idx, can we select a table for idx+1?"
+        fname = self.pattrs[idx]
+        otbl = "tbl_%s" % fname
+        if not hasattr(self, otbl):
+            return False
+        ntbl = ""
+        dtbl = ""
+        if idx < len(self.pattrs) - 1:
+            ntbl = "tbl_%s" % self.pattrs[idx+1]
+            dtbl = "tbl_%s_%s_%s" % (fname, val, self.pattrs[idx+1])
+        else:
+            return False
+        if hasattr(self, ntbl):
+            return True
+        if hasattr(self, dtbl):
+            self.__setattr__(ntbl, dtbl)
+            return True
+        else:
+            return False
+
+
+    def std_validator(self):
+        """Check that all numbers are positive, all selections valid.
+           return code 0 => OK, 1 ... N => error in field x-1"""
+        for i in range(0, len(self.pnames)):
+            val = None
+            try:
+                val = self.__getattribute__(self.pattrs[i])
+            except:
+                pass
+            # Empty entry OK
+            if (self.pnames[i][0] == "." or self.pnames[i][0:2] == "#.") and not val:
+                # First entry that's empty will skip the complete section
+                if i == 0:
+                    return 0
+                continue
+            # Float numbers: postitive, half
+            if self.pnames[i][0:2] == "##":
+                if val <= 0 or int(2*val) != 2*val:
+                    return i+1
+                continue
+            # Integers: positive
+            if self.pnames[i][0] == "#":
+                if not val or val <= 0:
+                    return i+1
+                continue
+            # Tables
+            if hasattr(self, "tbl_%s" % self.pattrs[i]):
+                tbl = self.__getattribute__("tbl_%s" % self.pattrs[i])
+                if not val in tbl:
+                    return i+1
+                self.create_dep_tbl(i, val)
+                continue
+
+
+    def validate(self):
+        "Hook to add checks. By default only look if parser succeeded."
+        return self.std_validator()
+
     def input(self):
+        "Interactive input"
         self.parsed = 0
         print(self.type)
         for i in range (0, len(self.pnames)):
@@ -258,15 +308,7 @@ class Prop:
                             val = val.lower()
                         if val in tbl:
                             self.parsed += 1
-                            if i < len(self.pattrs)-1:
-                                nextname = self.pattrs[i+1]
-                            else:
-                                nextname = None
-                            # dependent table?
-                            if nextname and not hasattr(self, "tbl_%s" % nextname) \
-                                    and hasattr(self, "tbl_%s_%s_%s" % (fname, val, nextname)):
-                                self.__setattr__("tbl_%s" % nextname,
-                                    self.__getattribute__("tbl_%s_%s_%s" % (fname, val, nextname)))
+                            self.create_dep_tbl(i, val)
                             break
                         print(" INVALID!")
                         continue
@@ -292,7 +334,7 @@ class Disk(Prop):
     type = "Disk"
     parsestr = re.compile(r":([0-9]*x|)([0-9]*)([CSLN]|)")
     pattrs = ("nrdisks", "disksize", "disktype")
-    pnames = ("#NrDisks", "#GB Disk", ".Disk type")
+    pnames = ("#.NrDisks", "#.GB Disk", ".Disk type")
     outstr = "%1x%0i%s"
     tbl_disktype = {"C": "Shared networked", "L": "Local", "S": "SSD", "N": "Local NVMe"}
 
@@ -303,6 +345,14 @@ class Disk(Prop):
                 self.nrdisks = 1
         except:
             pass
+
+class Hype(Prop):
+    type = "Hypervisor"
+    parsestr = re.compile(r"\-(kvm|xen|vmw|hyv|bms)")
+    pattrs = ("hype",)
+    pnames = (".Hypervisor",)
+    outstr = "%s"
+    tbl_hype = {"kvm": "KVM", "xen": "Xen", "hyv": "Hyper-V", "vmw": "VMware", "bms": "Bare Metal System"}
 
 class CPUBrand(Prop):
     type = "CPUBrand"
@@ -322,7 +372,7 @@ class GPU(Prop):
     type = "GPU"
     parsestr = re.compile(r"\-([gG])([nai])([^:-]*)(:[0-9]*|)(h*)")
     pattrs = ("gputype", "brand", "gen", "cu", "perf")
-    pnames = (".Type", ".Brand", ".Gen", "#.CU", "Performance")
+    pnames = (".Type", ".Brand", ".Gen", "#.CU/EU/SM", "Performance")
     outstr = "%s%s%s%:i%s"
     tbl_gputype = {"g": "vGPU", "G": "Pass-Through GPU"}
     tbl_brand = {"n": "nVidia", "a": "AMD", "i": "Intel"}
@@ -340,10 +390,12 @@ class IB(Prop):
     pnames = ("?IB",)
     outstr = "%?IB"
 
-def outname(cpuram, disk, cpubrand, gpu, ib):
+def outname(cpuram, disk, hype, cpubrand, gpu, ib):
         out = "SCS-" + cpuram.out()
         if disk.parsed:
             out += ":" + disk.out()
+        if hype.parsed:
+            out += "-" + hype.out()
         if cpubrand.parsed:
             out += "-" + cpubrand.out()
         if gpu.parsed:
@@ -372,6 +424,8 @@ def parsename(nm):
     n = n[cpuram.parsed:]
     disk = Disk(n)
     n = n[disk.parsed:]
+    hype = Hype(n)
+    n = n[hype.parsed:]
     cpubrand = CPUBrand(n)
     n = n[cpubrand.parsed:]
     gpu = GPU(n)
@@ -379,26 +433,35 @@ def parsename(nm):
     ib = IB(n)
     n = n[ib.parsed:]
     if verbose:
-        printflavor(nm, (cpuram, disk, cpubrand, gpu, ib))
+        printflavor(nm, (cpuram, disk, hype, cpubrand, gpu, ib))
 
     if n:
         print("ERROR: Could not parse: %s" % n)
         raise NameError("Error 60: Could not parse %s (extras?)" % n)
 
-    return (cpuram, disk, cpubrand, gpu, ib)
+    errbase = 0
+    for el in (cpuram, disk, hype, cpubrand, gpu, ib):
+        errbase += 10
+        err = el.validate()
+        if err:
+            raise NameError("Validation error %i (in el %i in %s)" % (err+errbase, err-1, el.type))
+
+    return (cpuram, disk, hype, cpubrand, gpu, ib)
 
 def inputflavor():
     cpuram = Main("")
     cpuram.input()
     disk = Disk("")
     disk.input()
+    hype = Hype("")
+    hype.input()
     cpubrand = CPUBrand("")
     cpubrand.input()
     gpu = GPU("")
     gpu.input()
     ib = IB("")
     ib.input()
-    return (cpuram, disk, cpubrand, gpu, ib)
+    return (cpuram, disk, hype, cpubrand, gpu, ib)
 
 
 def main(argv):
