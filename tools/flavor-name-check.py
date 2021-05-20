@@ -219,7 +219,7 @@ class Prop:
         if hasattr(self, ntbl):
             return True
         if hasattr(self, dtbl):
-            self.__setattr__(ntbl, dtbl)
+            self.__setattr__(ntbl, self.__getattribute__(dtbl))
             return True
         else:
             return False
