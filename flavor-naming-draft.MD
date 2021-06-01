@@ -117,10 +117,10 @@ If the disk size is left out, the cloud is expected to allocate a disk (network 
 that is large enough to fit the root file system (`min_disk` in image). This automatic
 allocation is indicated with `:` without a disk size.
 If the `:` is left out completely, the user must create a boot volume manually and
-tell the instance to boot from it or use the block_mapping_v2 mechanism explicitly
+tell the instance to boot from it or use the block_device_mapping_v2 mechanism explicitly
 to create the boot volume from an image.
 
-FIXME: With block_mapping_v2, can we remove the disks from most flavors?
+FIXME: With block_device_mapping_v2, can we remove the disks from most flavors?
 
 #### Hypervisor (optional)
 
@@ -128,7 +128,7 @@ Clouds that offer hypervisors (or Bare Metal Systems) other than KVM should indi
 the Hypervisor here.
 
 | hyp    |   Meaning                |
-+--------+--------------------------+
+|--------|--------------------------|
 | kvm    | KVM [can be left out]    |
 | xen    | Xen                      |
 | vmw    | VMware                   |
@@ -252,7 +252,7 @@ Disks types are not specified (and expected to be C or L typically).
 The design allows for small clouds (with CPUs with 16 Threads, 64GiB RAM
 compute hosts) to offer all flavors.
 
-FIXME: With block_mapping_v2, can we remove the disks from most flavors?
+FIXME: With block_device_mapping_v2, can we remove the disks from most flavors?
 
 ## Naming policies
 
@@ -268,11 +268,11 @@ We expect all cloud providers to offer the short, less specific flavor names (su
 Larger providers that offer more details are expected to still also offer the short variants
 for usability and easier portability, even beyond the mandated flavors.
 
-You must be very careful to expose high overcubscription `l`, insecure hyperthreading `i`,
+You must be very careful to expose low vCPU guarantees `l`, insecure hyperthreading `i`,
 non-ECC-RAM `u`, memory oversubscription `o`. Note that omitting these qualifiers is
-overstating your security, reliability or performance settings and may be reason for
-clients to claim damages. It may also cause SCS to withdraw certification along with
-public statements.
+overstating your security, reliability or performance iproperties and may be reason for
+clients to feel betrayed or claim damages. It may also cause SCS to withdraw certification
+along with public statements.
 
 You may offer additional SCS- flavors, following the naming scheme outlined here.
 
