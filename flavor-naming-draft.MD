@@ -110,14 +110,17 @@ also is more likely to fail), `S` and `N` are for applications that need high IO
 and bandwidth disk I/O. `C` storage is expected to survive single-disk and
 single-node failure.
 
-The disk size can be prefixed with Mx, where M is an integer sepcifying that the disk
+The disk size can be prefixed with Mx, where M is an integer specifying that the disk
 is provisioned M times.
 
 If the disk size is left out, the cloud is expected to allocate a disk (network or local)
 that is large enough to fit the root file system (`min_disk` in image). This automatic
 allocation is indicated with `:` without a disk size.
 If the `:` is left out completely, the user must create a boot volume manually and
-tell the instance to boot from it.
+tell the instance to boot from it or use the block_mapping_v2 mechanism explicitly
+to create the boot volume from an image.
+
+FIXME: With block_mapping_v2, can we remove the disks from most flavors?
 
 #### Hypervisor (optional)
 
@@ -248,6 +251,8 @@ Disks types are not specified (and expected to be C or L typically).
 
 The design allows for small clouds (with CPUs with 16 Threads, 64GiB RAM
 compute hosts) to offer all flavors.
+
+FIXME: With block_mapping_v2, can we remove the disks from most flavors?
 
 ## Naming policies
 
