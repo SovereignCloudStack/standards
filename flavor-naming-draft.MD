@@ -1,6 +1,6 @@
 ---
 title: SCS Flavor Naming Proposal
-version: 2021-05-17-002
+version: 2021-05-31-003
 authors: Matthias Hamm, Kurt Garloff
 state: Draft
 ---
@@ -62,7 +62,9 @@ We believe the following characteristics are important in a flavour description:
 | T     | dedicated Thread (SMT) |
 | C     | dedicated Core         |
 
-Note that vCPU oversubscription should be no more than 5x per core (3x per thread in SMT scenarios).
+Note that vCPU oversubscription should be implemented such, that we can guarantee at least 20% of a
+core in >99% of the time; this can be achieved by limiting vCPU oversubscription to 5x per core
+(or 3x per thread when SMT/HT is enabled) or by more advanced workload management logic.
 
 Higher oversubscription must be indicated with an additional `l` suffix.
 
@@ -77,7 +79,7 @@ Not using these mitigations must be indicated by an additional `i` suffix.
 |   l    | low performance (oversubscr > 5x/core or > 3x/thread) |
 |   i    | insecure (weak protection against CPU vulns)          |
 
-If both optional suffices are used, `l` needs to preceed `i`.
+If both optional suffices are used, `l` needs to precede `i`.
 
 #### Memory 
 
@@ -105,7 +107,8 @@ on what storage is provided for the root disk (that the image gets provisioned t
 It does make sense for `C` to be requested explicitly to allow for smooth live migration.
 `L` typically provides latency advantages vs `C` (but not necessarily bandwidth and
 also is more likely to fail), `S` and `N` are for applications that need high IOPS
-and bandwidth disk I/O.
+and bandwidth disk I/O. `C` storage is expected to survive single-disk and
+single-node failure.
 
 The disk size can be prefixed with Mx, where M is an integer sepcifying that the disk
 is provisioned M times.
@@ -215,7 +218,6 @@ Extensions need to be specified in the above mentioned order.
 | SCS-4C:16:2x200N-a1 | 4 dedicated Arm64 cores (A78 class), 16GiB RAM, 2x200GB local NVMe drives |
 | SCS-1V:0.5          | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)       |
 
-
 ### Standard SCS flavors
 
 These are flavors expected to exist on standard SCS clouds (x86-64).
@@ -257,11 +259,15 @@ You are allowed to understate your performance; you may implement a SCS-1Vl:1:5 
 a flavor that actually implements SCS-1T:1:5C (i.e. you dedicate a secured hyperthread instead
 of high oversubscription) or even SCS-1D:1.5:8S (1 dedicated core, 50% more RAM and a 8GiB SSD).
 
+We expect all cloud providers to offer the short, less specific flavor names (such as SCS-8V:32:100).
+Larger providers that offer more details are expected to still also offer the short variants
+for usability and easier portability, even beyond the mandated flavors.
+
 You must be very careful to expose high overcubscription `l`, insecure hyperthreading `i`,
 non-ECC-RAM `u`, memory oversubscription `o`. Note that omitting these qualifiers is
 overstating your security, reliability or performance settings and may be reason for
-clients to claim money back, damages. It may also cause SCS to withdraw certification
-along with public statements.
+clients to claim damages. It may also cause SCS to withdraw certification along with
+public statements.
 
 You may offer additional SCS- flavors, following the naming scheme outlined here.
 
@@ -270,6 +276,26 @@ You may offer additional flavors, not following above scheme.
 You must not offer flavors with the SCS- prefix which do not follow this naming scheme.
 You must not extend the SCS naming scheme with your own suffices; you are encouraged however
 to suggest extensions that we can discuss and add to the official scheme.
+
+### Rationale
+
+Note that we expect most clouds to prefer short flavor names,
+not indicating CPU details or hypervisor types. See above list
+of standard flavors to get a feeling.
+
+However, more successful providers will often need to differentiate their
+offerings in response to customer demand and allow customers to request
+flavors with specific detailed properties. The goal of this proposal is to avoid
+providers to invent their own names and then refer customers to `extra_specs`
+or worse a non-machine-readable service description to find out the details.
+
+So a cloud provider might well evolve from offering `SCS-8C:16:50` to offering
+`SCS-8T:16:50C`, `SCS-8T:16:50C-i2` and `SCS-8T:16:50C-a2` to specify that he
+is using network disks and offer a choice b/w intel Cascade-Lake and AMD Rome.
+We would expect the cloud provider to still offer the generic flavor
+`SCS-8C:16:50` and allow the scheduler (placement service) to pick both more
+specific types (or just one if e.g. capacity management considerations suggest
+so).
 
 ## Validation
 
