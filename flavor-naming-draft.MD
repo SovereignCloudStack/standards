@@ -52,7 +52,7 @@ We believe the following characteristics are important in a flavour description:
 
 | Prefix | CPU |    Suffix   | RAM[GiB] | Disk[GB] |   Disktype | optional: extra features               |
 |--------|-----|-------------|----------|----------|------------|----------------------------------------|
-| SCS-   | 1-n | V/T/C [il]  | :x[u][o] | :1-n     | [C/S/L/N]  | [-hyp][-[arch[n][h]/-GXn:m/-IB/..]     |
+| SCS-   | 1-n | V/T/C [io]  | :x[u][o] | :1-n     | [C/S/L/N]  | [-hyp][-[arch[n][h]/-GXn:m/-IB/..]     |
 
 #### CPU Suffixes
 
@@ -66,7 +66,7 @@ Note that vCPU oversubscription should be implemented such, that we can guarante
 core in >99% of the time; this can be achieved by limiting vCPU oversubscription to 5x per core
 (or 3x per thread when SMT/HT is enabled) or by more advanced workload management logic.
 
-Higher oversubscription must be indicated with an additional `l` suffix.
+Higher oversubscription must be indicated with an additional `o` suffix.
 
 Note that CPUs must use latest microcode to protect against CPU vulnerabilities (Spectre, Meltdown, L1TF, etc.).
 The provider must enable at least all mitigations that are enabled by default in the Linux kernel. CPUs that
@@ -74,10 +74,10 @@ are susceptible to L1TF (intel x86 pre Cascade Lake) must switch off hyperthread
 use core scheduling implementations that are deemed to be secure by the SCS security team.
 Not using these mitigations must be indicated by an additional `i` suffix. 
 
-| Suffix | Meaning                                               |
-|--------|-------------------------------------------------------|
-|   l    | low performance (oversubscr > 5x/core or > 3x/thread) |
-|   i    | insecure (weak protection against CPU vulns)          |
+| Suffix | Meaning                                                 |
+|--------|---------------------------------------------------------|
+|   o    | oversubscribed (low performance 5x/core or > 3x/thread) |
+|   i    | insecure (weak protection against CPU vulns)            |
 
 If both optional suffices are used, `l` needs to precede `i`.
 
@@ -216,7 +216,7 @@ Extensions need to be specified in the above mentioned order.
 |---------------------|-------------------------------------------------------------|
 | SCS-2C:4:10C        | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk     |
 | SCS-8Ti:32:50N-i1   | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe   |
-| SCS-1Vl:1u:5        | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)  |
+| SCS-1Vo:1u:5        | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)  |
 | SCS-16T:64:200S-IB-Gna:84 | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Inifiniband, 64 Passthrough nVidia Ampere SMs |
 | SCS-4C:16:2x200N-a1 | 4 dedicated Arm64 cores (A78 class), 16GiB RAM, 2x200GB local NVMe drives |
 | SCS-1V:0.5          | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)       |
