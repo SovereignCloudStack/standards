@@ -96,18 +96,18 @@ for larger memory sizes (>= 10GiB).
 
 | Disktype |  Meaning                             |
 |----------|--------------------------------------|
-|   C      | Network shared storage (ceph/cinder) |
-|   L      | Local disk (SATA/SAS class)          |
+|   N      | Network shared storage (ceph/cinder) |
+|   H      | Local disk (SATA/SAS class)          |
 |   S      | Local SSD disk                       |
-|   N      | Local high-perf NVMe                 |
+|   P      | Local high-perf NVMe                 |
 
 Note that Disktype might be omitted -- the user then can not take any assumptions
 on what storage is provided for the root disk (that the image gets provisioned to).
 
-It does make sense for `C` to be requested explicitly to allow for smooth live migration.
-`L` typically provides latency advantages vs `C` (but not necessarily bandwidth and
-also is more likely to fail), `S` and `N` are for applications that need high IOPS
-and bandwidth disk I/O. `C` storage is expected to survive single-disk and
+It does make sense for `N` to be requested explicitly to allow for smooth live migration.
+`H` typically provides latency advantages vs `N` (but not necessarily bandwidth and
+also is more likely to fail), `S` and `P` are for applications that need high IOPS
+and bandwidth disk I/O. `N` storage is expected to survive single-disk and
 single-node failure.
 
 The disk size can be prefixed with Mx, where M is an integer specifying that the disk
@@ -214,11 +214,11 @@ Extensions need to be specified in the above mentioned order.
 
 |         Example     |                 Decoding                                    |
 |---------------------|-------------------------------------------------------------|
-| SCS-2C:4:10C        | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk     |
-| SCS-8Ti:32:50N-i1   | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe   |
+| SCS-2C:4:10N        | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk     |
+| SCS-8Ti:32:50P-i1   | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe   |
 | SCS-1Vo:1u:5        | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)  |
 | SCS-16T:64:200S-IB-Gna:84 | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Inifiniband, 64 Passthrough nVidia Ampere SMs |
-| SCS-4C:16:2x200N-a1 | 4 dedicated Arm64 cores (A78 class), 16GiB RAM, 2x200GB local NVMe drives |
+| SCS-4C:16:2x200P-a1 | 4 dedicated Arm64 cores (A78 class), 16GiB RAM, 2x200GB local NVMe drives |
 | SCS-1V:0.5          | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)       |
 
 ### Standard SCS flavors
@@ -295,7 +295,7 @@ providers to invent their own names and then refer customers to `extra_specs`
 or worse a non-machine-readable service description to find out the details.
 
 So a cloud provider might well evolve from offering `SCS-8C:16:50` to offering
-`SCS-8T:16:50C`, `SCS-8T:16:50C-i2` and `SCS-8T:16:50C-a2` to specify that he
+`SCS-8T:16:50N`, `SCS-8T:16:50N-i2` and `SCS-8T:16:50N-a2` to specify that he
 is using network disks and offer a choice b/w intel Cascade-Lake and AMD Rome.
 We would expect the cloud provider to still offer the generic flavor
 `SCS-8C:16:50` and allow the scheduler (placement service) to pick both more
