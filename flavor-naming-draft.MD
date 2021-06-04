@@ -77,7 +77,7 @@ Must be indicated with an additional `o suffix` for oversubscribed (low performa
 
 **Insufficient microcode**
 
-Not using these mitigations must be indicated by an additional `i suffix` for insecure (weak protection against CPU vulns). 
+Not using these mitigations must be indicated by an additional `i suffix` for insecure (weak protection against CPU vulns).
 
 **Examples**
 
@@ -343,7 +343,7 @@ providers to invent their own names and then refer customers to `extra_specs`
 or worse a non-machine-readable service description to find out the details.
 
 So a cloud provider might well evolve from offering `SCS-8C:16:50` to offering
-`SCS-8T:16:50C`, `SCS-8T:16:50C-i2` and `SCS-8T:16:50C-a2` to specify that he
+`SCS-8T:16:50N`, `SCS-8T:16:50N-i2` and `SCS-8T:16:50N-a2` to specify that he
 is using network disks and offer a choice b/w intel Cascade-Lake and AMD Rome.
 We would expect the cloud provider to still offer the generic flavor
 `SCS-8C:16:50` and allow the scheduler (placement service) to pick both more
