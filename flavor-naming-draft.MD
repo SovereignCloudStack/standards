@@ -1,6 +1,6 @@
 ---
 title: SCS Flavor Naming Proposal
-version: 2021-05-31-003
+version: 2021-06-02-001
 authors: Matthias Hamm, Kurt Garloff
 state: Draft
 ---
@@ -9,8 +9,7 @@ Flavor Naming (DRAFT) SCS
 
 Please take note, that this is a DRAFT open for discussion (17.05.2021)
 
-
-## Motivation
+# Motivation
 
  In OpenStack environments there is a need to define different flavors for instances.
  The flavors are pre-defined by the operator, the customer can not change these.
@@ -30,69 +29,92 @@ Please take note, that this is a DRAFT open for discussion (17.05.2021)
  It may also be important to make the CPU generation clearly recognisable, as this is always a topic in
  discussions with customers.
 
-## Proposal
+# Proposal
 
-
-### Type of information included
+## Type of information included
 
 We believe the following characteristics are important in a flavour description:
 
-
 | Type                 | Description                                                  |
 |:---------------------|:-------------------------------------------------------------|
-|Generation            | CPU Generation                                               |
-|Number of CPU         | Number of vCPUs - suffixed by v,t,c (see below)              |
-|Amount of RAM         | Amount of memory available for the VM                        |
+| Generation           | CPU Generation                                               |
+| Number of CPU        | Number of vCPUs - suffixed by v,t,c (see below)              |
+| Amount of RAM        | Amount of memory available for the VM                        |
 | Performance Class    | Ability to lable high-performance CPUs, disks, network       |
-| CPU Type             | X86-intel, X86-amd, ARM, RISC-V, Generic  |
-| "metal"              | One instance on one Host |
+| CPU Type             | X86-intel, X86-amd, ARM, RISC-V, Generic                     |
+| "metal"              | One instance on one Host                                     |
 
+## Complete Proposal
 
-### Complete Proposal
+| Prefix | CPU | Suffix      | RAM[GiB] | optional: Disk[GB] | optional: Disktype   | optional: extra features               |
+|--------|-----|-------------|----------|--------------------|----------------------|----------------------------------------|
+| SCS-   | 1-n | V/T/C [io]  | :x[u][o] | [:1-n]             | [N/S/L/P]            | [-hyp][-[arch[n][h]/-GXn:m/-IB/..]     |
 
-| Prefix | CPU |    Suffix   | RAM[GiB] | Disk[GB] |   Disktype | optional: extra features               |
-|--------|-----|-------------|----------|----------|------------|----------------------------------------|
-| SCS-   | 1-n | V/T/C [io]  | :x[u][o] | :1-n     | [C/S/L/N]  | [-hyp][-[arch[n][h]/-GXn:m/-IB/..]     |
+# Proposal Details
 
-#### CPU Suffixes
+## [REQUIRED] CPU Suffixes
 
-|Suffix |     Meaning            |
-|-------|------------------------|
-| V     | vCPU (oversubscribed)  |
-| T     | dedicated Thread (SMT) |
-| C     | dedicated Core         |
+| Suffix | Meaning                |
+|--------|------------------------|
+| V      | vCPU (oversubscribed)  |
+| T      | dedicated Thread (SMT) |
+| C      | dedicated Core         |
 
-Note that vCPU oversubscription should be implemented such, that we can guarantee at least 20% of a
-core in >99% of the time; this can be achieved by limiting vCPU oversubscription to 5x per core
+**Baseline**
+
+Note that vCPU oversubscription should be implemented such, that we can guarantee `at least 20% of a
+core in >99% of the time`; this can be achieved by limiting vCPU oversubscription to 5x per core
 (or 3x per thread when SMT/HT is enabled) or by more advanced workload management logic.
-
-Higher oversubscription must be indicated with an additional `o` suffix.
 
 Note that CPUs must use latest microcode to protect against CPU vulnerabilities (Spectre, Meltdown, L1TF, etc.).
 The provider must enable at least all mitigations that are enabled by default in the Linux kernel. CPUs that
 are susceptible to L1TF (intel x86 pre Cascade Lake) must switch off hyperthreading OR (in the future)
 use core scheduling implementations that are deemed to be secure by the SCS security team.
-Not using these mitigations must be indicated by an additional `i` suffix. 
 
-| Suffix | Meaning                                                 |
-|--------|---------------------------------------------------------|
-|   o    | oversubscribed (low performance 5x/core or > 3x/thread) |
-|   i    | insecure (weak protection against CPU vulns)            |
+**Higher oversubscription**
 
-If both optional suffices are used, `l` needs to precede `i`.
+Must be indicated with an additional `o suffix` for oversubscribed (low performance > 5x/core or > 3x/thread).
 
-#### Memory 
+**Insufficient microcode**
+
+Not using these mitigations must be indicated by an additional `i suffix` for insecure (weak protection against CPU vulns).
+
+**Examples**
+
+- SCS-**2C**:4:10N
+- SCS-**2T**:4:10N
+- SCS-**2V**:4:10N
+- SCS-**2Co**:4:10N
+- SCS-**2Ci**:4:10N
+- SCS-**2Coi**:4:10N
+- ~~SCS-**2Cio**:4:10N~~ <- This order is forbidden
+
+## [REQUIRED] Memory 
+
+**Baseline**
 
 We expect cloud providers to use ECC memory.
-If no ECC is used, the suffix `u` must indicate this.
+Memory oversubscription is not recommended.
+It is allowed to specify half GiBs (e.g. 3.5), though this is discouraged for larger memory sizes (>= 10GiB).
 
-No memory oversubscription is recommended. If you really want to do it, you
-must expose this with the `o` sufffix.
+**No ECC**
 
-It is allowed to specify half GiBs (e.g. 3.5), though this is discouraged
-for larger memory sizes (>= 10GiB).
+If no ECC is used, the `u suffix` must indicate this.
 
-#### Disk types
+**Enabled Oversubscription**
+
+You have to expose this with the `o sufffix`.
+
+**Examples**
+
+- SCS-2C:**4**:10N
+- SCS-2C:**3.5**:10N
+- SCS-2C:**4u**:10N
+- SCS-2C:**4o**:10N
+- SCS-2C:**4uo**:10N
+- ~~SCS-2C:**4ou**:10N~~ <- This order is forbidden
+
+## [OPTIONAL] Disk types
 
 | Disktype |  Meaning                             |
 |----------|--------------------------------------|
@@ -100,6 +122,8 @@ for larger memory sizes (>= 10GiB).
 |   H      | Local disk (SATA/SAS class)          |
 |   S      | Local SSD disk                       |
 |   P      | Local high-perf NVMe                 |
+
+**Baseline**
 
 Note that Disktype might be omitted -- the user then can not take any assumptions
 on what storage is provided for the root disk (that the image gets provisioned to).
@@ -110,9 +134,6 @@ also is more likely to fail), `S` and `P` are for applications that need high IO
 and bandwidth disk I/O. `N` storage is expected to survive single-disk and
 single-node failure.
 
-The disk size can be prefixed with Mx, where M is an integer specifying that the disk
-is provisioned M times.
-
 If the disk size is left out, the cloud is expected to allocate a disk (network or local)
 that is large enough to fit the root file system (`min_disk` in image). This automatic
 allocation is indicated with `:` without a disk size.
@@ -120,68 +141,95 @@ If the `:` is left out completely, the user must create a boot volume manually a
 tell the instance to boot from it or use the block_device_mapping_v2 mechanism explicitly
 to create the boot volume from an image.
 
-FIXME: With block_device_mapping_v2, can we remove the disks from most flavors?
+**Multi-provisioned Disk**
 
-#### Hypervisor (optional)
+The disk size can be prefixed with `Mx prefix`, where M is an integer specifying that the disk
+is provisioned M times.
 
-Clouds that offer hypervisors (or Bare Metal Systems) other than KVM should indicate
-the Hypervisor here.
+**FIXME**
 
-| hyp    |   Meaning                |
-|--------|--------------------------|
-| kvm    | KVM [can be left out]    |
-| xen    | Xen                      |
-| vmw    | VMware                   |
-| hyv    | Hyper-V                  |
-| bms    | Bare Metal System        |
+With block_device_mapping_v2, can we remove the disks from most flavors?
 
-#### CPU Architecture Details (optional)
+**Examples**
 
-Arch details provide more details on the specific CPU: Vendor and generation (n).
+- SCS-2C:4:**10N**
+- SCS-2C:4:**10S**
+- SCS-2C:4:**10S**-bms-z3
+- SCS-2C:4:**3x10S** <- Cloud creates three 10GB disks
+- SCS-2C:4:**3x10S**-bms-z3
+- SCS-2C:4:**10** <- Cloud decides disk type
+- SCS-2C:4:**10**-bms-z3
+- SCS-2C:4:**N** <- Cloud decides disk size
+- SCS-2C:4:**N**-bms-3
+- SCS-2C:4: <- Cloud decides disk type and size
+- SCS-2C:4:-bms-z3
+- SCS-2C:4 <- You need to specify a boot volume yourself
+- SCS-2C:4-bms-z3
+- SCS-2C:4:3x <- Cloud decides disk type and size and creates three of them
+- SCS-2C:4:3xS <- Cloud decides size and creates three local SSD volumes
+- SCS-2C:4:3x10 <- Cloud decides type and creates three 10GB volumes
+- ~~SCS-2C:4:**1.5N**~~ <- You may not specify disk sizes which are not in full GiBs
 
-| arch[n] | Meaning                  |
-|---------|--------------------------|
-| i[n][h] | Intel x86-64 CPU, gen n  |
-| z[n][h] | AMD x86-64 CPU, gen n    |
-| a[n][h] | AArch64 CPU, gen n       |
-| r[n][h] | RISC-V CPU, gen n        |
+## [OPTINAL] Hypervisor
 
-The generation can be left out.
-Not specifying arch means that we have a generic CPU (x86-64).
+The `default Hypervisor` is assumed to be `KVM`. Clouds, that offer different hypervisors
+or Bare Metal Systems should indicate the Hypervisor like the following:
 
-The generations are vendor specific
+| hyp    |   Meaning         |
+|--------|-------------------|
+| kvm    | KVM               |
+| xen    | Xen               |
+| vmw    | VMware            |
+| hyv    | Hyper-V           |
+| bms    | Bare Metal System |
 
-| Intel gen | Meaning               |
-|-----------|-----------------------|
-|    0      | Pre Skylake           |
-|    1      | Skylake               |
-|    2      | Cascade Lake          |
-|    3      | Ice Lake              |
+**Examples**
 
-|  AMD  gen | Meaning               |
-|-----------|-----------------------|
-|    0      | pre-Zen               |
-|    1      | Zen-1 (Naples)        |
-|    2      | Zen-2 (Rome)          |
-|    3      | Zen-3 (Milan)         |
+- SCS-2C:4:10N
+- SCS-2C:4:10N-**bms**
+- SCS-2C:4:10N-**bms**-z3h
 
-| AArch64 gen | Meaning               |
-|-------------|-----------------------|
-|    0        | pre-Cortex A76        |
-|    1        | A76/NeoN1 class       |
-|    2        | A78/x1/NeoV1 class    |
-|    3        | Anext/NeoN2 class     |
+## [OPTINAL] CPU Architecture Details
 
-`h` indicates a high-frequency class (e.g. >2.75GHz all-core); `hh`(>3.25G), `hhh` (>3.75G)
-can be used to indicate further increases. `-z3h` thus means a Zen3
-CPU (Milan), such as EPYC 75F3.
+Arch details provide more details on the specific CPU:
+ - Vendor
+ - Generation
+ - Frequency
 
-Note that not specifying the -ARCH[n] suffix is perfectly fine, providing a generic
-(x86-64) CPU type.
+**Generation and Vendor**
 
-If it is specified, it needs to be first after disk.
+The generations are vendor specific and can be left out.
+Not specifying arch means that we have a generic CPU (**x86-64**).
 
-#### Extra features (optional)
+| Generation | i (Intel x86-64) | z (AMD x86-64) | a (AArch64)        | r (RISC-V) |
+|------------|------------------|----------------|--------------------|------------|
+|  0         | pre Skylake      | pre Zen        | pre Cortex A76     | TBD        |
+|  1         | Skylake          | Zen-1 (Naples) | A76/NeoN1 class    | TBD        |
+|  2         | Cascade Lake     | Zen-2 (Rome)   | A78/x1/NeoV1 class | TBD        |
+|  3         | Ice Lake         | Zen-3 (Milan)  | Anext/NeoN2 class  | TBD        |
+
+**Frequency Suffixes**
+
+| Suffix | Meaning           |
+|--------|-------------------|
+| h      | >2.75GHz all-core |
+| hh     | >3.25GHz all-core |
+| hhh    | >3.75GHz all-core |
+
+**Examples**
+
+- SCS-2C:4:10N
+- SCS-2C:4:10N-**z**
+- SCS-2C:4:10N-**z3**
+- SCS-2C:4:10N-**z3h**
+- SCS-2C:4:10N-**z3hh**
+- SCS-2C:4:10N-bms-**z**
+- SCS-2C:4:10N-bms-**z3**
+- SCS-2C:4:10N-bms-**z3**
+- SCS-2C:4:10N-bms-**z3h**
+- SCS-2C:4:10N-bms-**z3hh**
+
+## [OPTINAL] Extra features
 
 Note that these are optional -- it is recommended for providers to encode this information
 into the flavor name, so there is a systematic way of differentiating flavors.
@@ -192,11 +240,11 @@ under a secondary (or tertiary) name.
 `-GXn[:m][h]` indicates a Pass-Through GPU from vendor X of gen n with m compute units / SMs / EUs exposed.
 `-gXn[:m][h]` indicates a vGPU from vendor X of gen n with m compute units / SMs / EUs assigned.
 
-| GPU vendor X | meaning    |
-|--------------|------------|
-|      n       | nVidia     |
-|      a       | AMD        |
-|      i       | Intel      |
+| GPU | Vendor     |
+|-----|------------|
+| n   | nVidia     |
+| a   | AMD        |
+| i   | Intel      |
 
 Generations could be nVidia (f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=turing, a=Ampere, ...),
 AMD (GCN-x=0.x, RDNA1=1, RDNA2=2), intel (Gen9=0.9, Xe(12.1)=1, ...), ...
@@ -210,18 +258,18 @@ More extensions will be forthcoming.
 
 Extensions need to be specified in the above mentioned order.
 
-### Examples
+# Proposal Examples
 
-|         Example     |                 Decoding                                    |
-|---------------------|-------------------------------------------------------------|
-| SCS-2C:4:10N        | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk     |
-| SCS-8Ti:32:50P-i1   | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe   |
-| SCS-1Vo:1u:5        | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)  |
+|         Example           |                 Decoding                                                                        |
+|---------------------------|-------------------------------------------------------------------------------------------------|
+| SCS-2C:4:10N              | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk                                         |
+| SCS-8Ti:32:50P-i1         | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe                        |
+| SCS-1Vo:1u:5              | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)                       |
 | SCS-16T:64:200S-IB-Gna:84 | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Inifiniband, 64 Passthrough nVidia Ampere SMs |
-| SCS-4C:16:2x200P-a1 | 4 dedicated Arm64 cores (A78 class), 16GiB RAM, 2x200GB local NVMe drives |
-| SCS-1V:0.5          | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)       |
+| SCS-4C:16:2x200P-a1       | 4 dedicated Arm64 cores (A78 class), 16GiB RAM, 2x200GB local NVMe drives                       |
+| SCS-1V:0.5                | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)                                           |
 
-### Standard SCS flavors
+# Standard SCS flavors
 
 These are flavors expected to exist on standard SCS clouds (x86-64).
 
@@ -254,7 +302,7 @@ compute hosts) to offer all flavors.
 
 FIXME: With block_device_mapping_v2, can we remove the disks from most flavors?
 
-## Naming policies
+# Naming policies
 
 To be certified as an SCS compliant x86-64 IaaS platform, you must offer all standard SCS flavors
 according to the previous section. (We may define a mechanism that allows exceptions to be
@@ -282,7 +330,7 @@ You must not offer flavors with the SCS- prefix which do not follow this naming 
 You must not extend the SCS naming scheme with your own suffices; you are encouraged however
 to suggest extensions that we can discuss and add to the official scheme.
 
-### Rationale
+## Rationale
 
 Note that we expect most clouds to prefer short flavor names,
 not indicating CPU details or hypervisor types. See above list
@@ -302,13 +350,13 @@ We would expect the cloud provider to still offer the generic flavor
 specific types (or just one if e.g. capacity management considerations suggest
 so).
 
-## Validation
+# Validation
 
 There is a script in `tools/flavor_name_check.py` which can be used to decode, validate
 and construct flavor names.
 This script must stay in sync with the specification text.
 
-## Beyond SCS: Gaia-X
+# Beyond SCS: Gaia-X
 
 Some providers might offer VM services ("IaaS") without trying to adhere to SCS standards,
 yet still finding the flavor naming standards useful. The Gaia-X Technical Committee's
