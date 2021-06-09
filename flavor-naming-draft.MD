@@ -299,9 +299,9 @@ We expect a typical CPU:Mem[GiB] ratio of 1:4.
 |  4:32          |  SCS-4V:32:100      |
 |  1:1           |  SCS-1L:1:5         |
 
-Note that all vCPUs are oversubscribed -- the smallest flavor allows
+Note that all vCPUs are oversubscribed -- the smallest `1L:1` flavor allows
 for heavy oversubscription (note the `L`), and thus can be offered very
-cheap -- imagine jump hosts ... There are two tiny 1:1 flavors.
+cheaply -- imagine jump hosts ...
 Disks types are not specified (and expected to be n or h typically).
 
 The design allows for small clouds (with CPUs with 16 Threads, 64GiB RAM
@@ -310,7 +310,8 @@ compute hosts) to offer all flavors.
 Note: Compared to previous drafts, we have heavily reduced the variations
 on disk sizes -- this reflects that for the standard networked cinder
 disks, you can pass block_device_mapping_v2 on server (VM) creation to
-allocate a boot disk of any size you desire.
+allocate a boot disk of any size you desire. We have scaled the few
+mandatory disk sizes with the amount of RAM.
 
 # Naming policies
 
