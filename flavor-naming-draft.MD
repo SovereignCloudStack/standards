@@ -46,9 +46,9 @@ We believe the following characteristics are important in a flavour description:
 
 ## Complete Proposal
 
-| Prefix | CPU | Suffix     | RAM[GiB] | optional: Disk[GB] | optional: Disktype  | optional: extra features                  |
-|--------|-----|------------|----------|--------------------|---------------------|-------------------------------------------|
-| SCS-   | 1-n | V/T/C [i]  | :x[u][o] | [:1-n]             | [N/S/L/P]           | [-hyp][-[arch[n][h]/-GX[n][:m[h]]/-IB/..] |
+| Prefix | CPU | Suffix     | RAM[GiB] | optional: Disk[GB] | optional: Disktype  | optional: extra features                    |
+|--------|-----|------------|----------|--------------------|---------------------|---------------------------------------------|
+| SCS-   | 1-n | V/T/C [i]  | :x[u][o] | [:1-n]             | [n/s/l/p]           | [-hyp][-[arch[n][h][-[G/g]X[n][:m[h]]][-ib] |
 
 # Proposal Details
 
@@ -89,11 +89,11 @@ on L1TF susceptible CPUs w/o effective core scheduling or disabled protections o
 
 **Examples**
 
-- SCS-**2C**:4:10N
-- SCS-**2T**:4:10N
-- SCS-**2V**:4:10N
-- SCS-**2L**:4:10N
-- SCS-**2Li**:4:10N
+- SCS-**2C**:4:10n
+- SCS-**2T**:4:10n
+- SCS-**2V**:4:10n
+- SCS-**2L**:4:10n
+- SCS-**2Li**:4:10n
 
 ## [REQUIRED] Memory 
 
@@ -113,31 +113,31 @@ You have to expose this with the `o sufffix`.
 
 **Examples**
 
-- SCS-2C:**4**:10N
-- SCS-2C:**3.5**:10N
-- SCS-2C:**4u**:10N
-- SCS-2C:**4o**:10N
-- SCS-2C:**4uo**:10N
-- ~~SCS-2C:**4ou**:10N~~ <- This order is forbidden
+- SCS-2C:**4**:10n
+- SCS-2C:**3.5**:10n
+- SCS-2C:**4u**:10n
+- SCS-2C:**4o**:10n
+- SCS-2C:**4uo**:10n
+- ~~SCS-2C:**4ou**:10n~~ <- This order is forbidden
 
 ## [OPTIONAL] Disk sizes and types
 
 | Disktype |  Meaning                             |
 |----------|--------------------------------------|
-|   N      | Network shared storage (ceph/cinder) |
-|   H      | Local disk (HDD: SATA/SAS class)     |
-|   S      | Local SSD disk                       |
-|   P      | Local high-perf NVMe                 |
+|   n      | Network shared storage (ceph/cinder) |
+|   h      | Local disk (HDD: SATA/SAS class)     |
+|   s      | Local SSD disk                       |
+|   p      | Local high-perf NVMe                 |
 
 **Baseline**
 
 Note that Disktype might be omitted -- the user then can not take any assumptions
 on what storage is provided for the root disk (that the image gets provisioned to).
 
-It does make sense for `N` to be requested explicitly to allow for smooth live migration.
-`H` typically provides latency advantages vs `N` (but not necessarily bandwidth and
-also is more likely to fail), `S` and `P` are for applications that need low
-latency (high IOPS) and bandwidth disk I/O. `N` storage is expected to survive
+It does make sense for `n` to be requested explicitly to allow for smooth live migration.
+`h` typically provides latency advantages vs `n` (but not necessarily bandwidth and
+also is more likely to fail), `s` and `p` are for applications that need low
+latency (high IOPS) and bandwidth disk I/O. `n` storage is expected to survive
 single-disk and single-node failure.
 
 If the disk size is left out, the cloud is expected to allocate a disk (network or local)
@@ -155,23 +155,23 @@ is provisioned M times.
 
 **Examples**
 
-- SCS-2C:4:**10N**
-- SCS-2C:4:**10S**
-- SCS-2C:4:**10S**-bms-z3
-- SCS-2C:4:**3x10S** <- Cloud creates three 10GB SSDs
-- SCS-2C:4:**3x10S**-bms-z3
+- SCS-2C:4:**10n**
+- SCS-2C:4:**10s**
+- SCS-2C:4:**10s**-bms-z3
+- SCS-2C:4:**3x10s** <- Cloud creates three 10GB SSDs
+- SCS-2C:4:**3x10s**-bms-z3
 - SCS-2C:4:**10** <- Cloud decides disk type
 - SCS-2C:4:**10**-bms-z3
-- SCS-2C:4:**N** <- Cloud decides disk size (min_disk from image or larger)
-- SCS-2C:4:**N**-bms-3
+- SCS-2C:4:**n** <- Cloud decides disk size (min_disk from image or larger)
+- SCS-2C:4:**n**-bms-3
 - SCS-2C:4: <- Cloud decides disk type and size
 - SCS-2C:4:-bms-z3
 - SCS-2C:4 <- You need to specify a boot volume yourself (boot from volume, or use block_device_mapping_v2)
 - SCS-2C:4-bms-z3
 - SCS-2C:4:3x <- Cloud decides disk type and size and creates three of them (FIXME: Is this useful?)
-- SCS-2C:4:3xS <- Cloud decides size and creates three local SSD volumes (FIXME: useful?)
+- SCS-2C:4:3xs <- Cloud decides size and creates three local SSD volumes (FIXME: useful?)
 - SCS-2C:4:3x10 <- Cloud decides type and creates three 10GB volumes
-- ~~SCS-2C:4:**1.5N**~~ <- You must not specify disk sizes which are not in full GiBs
+- ~~SCS-2C:4:**1.5n**~~ <- You must not specify disk sizes which are not in full GiBs
 
 ## [OPTIONAL] Hypervisor
 
@@ -188,9 +188,9 @@ or Bare Metal Systems should indicate the Hypervisor according to the following 
 
 **Examples**
 
-- SCS-2C:4:10N
-- SCS-2C:4:10N-**bms**
-- SCS-2C:4:10N-**bms**-z3h
+- SCS-2C:4:10
+- SCS-2C:4:10n-**bms**
+- SCS-2C:4:10n-**bms**-z3h
 
 ## [OPTIONAL] CPU Architecture Details
 
@@ -221,16 +221,16 @@ Not specifying arch means that we have a generic CPU (**x86-64**).
 
 **Examples**
 
-- SCS-2C:4:10N
-- SCS-2C:4:10N-**z**
-- SCS-2C:4:10N-**z3**
-- SCS-2C:4:10N-**z3h**
-- SCS-2C:4:10N-**z3hh**
-- SCS-2C:4:10N-bms-**z**
-- SCS-2C:4:10N-bms-**z3**
-- SCS-2C:4:10N-bms-**z3**
-- SCS-2C:4:10N-bms-**z3h**
-- SCS-2C:4:10N-bms-**z3hh**
+- SCS-2C:4:10n
+- SCS-2C:4:10n-**z**
+- SCS-2C:4:10n-**z3**
+- SCS-2C:4:10n-**z3h**
+- SCS-2C:4:10n-**z3hh**
+- SCS-2C:4:10n-bms-**z**
+- SCS-2C:4:10n-bms-**z3**
+- SCS-2C:4:10n-bms-**z3**
+- SCS-2C:4:10n-bms-**z3h**
+- SCS-2C:4:10n-bms-**z3hh**
 
 ## [OPTIONAL] Extra features
 
@@ -259,7 +259,7 @@ The optional `h` suffix to the comput unit count indicates high-performance (e.g
 high bandwidth gfx memory such as HBM);
 `h` can be duplicated for even higher performance.
 
-`-IB` indicates Inifinband networking.
+`-ib` indicates Inifinband networking.
 
 More extensions will be forthcoming.
 
@@ -269,11 +269,11 @@ Extensions need to be specified in the above mentioned order.
 
 |         Example           |                 Decoding                                                                        |
 |---------------------------|-------------------------------------------------------------------------------------------------|
-| SCS-2C:4:10N              | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk                                         |
-| SCS-8Ti:32:50P-i1         | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe                        |
+| SCS-2C:4:10n              | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk                                         |
+| SCS-8Ti:32:50p-i1         | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe                        |
 | SCS-1L:1u:5               | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)                       |
-| SCS-16T:64:200S-GNa:64-IB | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Inifiniband, 64 Passthrough nVidia Ampere SMs |
-| SCS-4C:16:2x200P-a1       | 4 dedicated Arm64 cores (A78 class), 16GiB RAM, 2x200GB local NVMe drives                       |
+| SCS-16T:64:200s-GNa:64-ib | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Inifiniband, 64 Passthrough nVidia Ampere SMs |
+| SCS-4C:16:2x200p-a1       | 4 dedicated Arm64 cores (A78 class), 16GiB RAM, 2x200GB local NVMe drives                       |
 | SCS-1V:0.5                | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)                                           |
 
 # Standard SCS flavors
@@ -302,7 +302,7 @@ We expect a typical CPU:Mem[GiB] ratio of 1:4.
 Note that all vCPUs are oversubscribed -- the smallest flavor allows
 for heavy oversubscription (note the `L`), and thus can be offered very
 cheap -- imagine jump hosts ... There are two tiny 1:1 flavors.
-Disks types are not specified (and expected to be N or H typically).
+Disks types are not specified (and expected to be n or h typically).
 
 The design allows for small clouds (with CPUs with 16 Threads, 64GiB RAM
 compute hosts) to offer all flavors.
@@ -319,8 +319,8 @@ according to the previous section. (We may define a mechanism that allows except
 granted in a way that makes this very transparent and visible to clients.)
 
 You are allowed to understate your performance; you may implement a SCS-1Vl:1:5 flavor with
-a flavor that actually implements SCS-1T:1:5C (i.e. you dedicate a secured hyperthread instead
-of high oversubscription) or even SCS-1D:1.5:8S (1 dedicated core, 50% more RAM and a 8GiB SSD).
+a flavor that actually implements SCS-1T:1:5n (i.e. you dedicate a secured hyperthread instead
+of high oversubscription) or even SCS-1D:1.5:8s (1 dedicated core, 50% more RAM and a 8GiB SSD).
 
 We expect all cloud providers to offer the short, less specific flavor names (such as SCS-8V:32:100).
 Larger providers that offer more details are expected to still also offer the short variants
@@ -342,6 +342,7 @@ to suggest extensions that we can discuss and add to the official scheme.
 
 Note that all letters are case-sensitive.
 In case you wonder: Feature indicators are capitalized, modifiers are lower case.
+(An exception is the uppercase -G for a passthrough GPU vs. lowercase -g for vGPU.)
 
 ## Rationale
 
@@ -356,7 +357,7 @@ providers to invent their own names and then refer customers to `extra_specs`
 or worse a non-machine-readable service description to find out the details.
 
 So a cloud provider might well evolve from offering `SCS-8C:16:50` to offering
-`SCS-8T:16:50N`, `SCS-8T:16:50N-i2` and `SCS-8T:16:50N-a2` to specify that he
+`SCS-8T:16:50n`, `SCS-8T:16:50n-i2` and `SCS-8T:16:50n-a2` to specify that he
 is using network disks and offer a choice b/w intel Cascade-Lake and AMD Rome.
 We would expect the cloud provider to still offer the generic flavor
 `SCS-8C:16:50` and allow the scheduler (placement service) to pick both more

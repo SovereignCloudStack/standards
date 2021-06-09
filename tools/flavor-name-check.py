@@ -332,11 +332,11 @@ class Main(Prop):
 
 class Disk(Prop):
     type = "Disk"
-    parsestr = re.compile(r":([0-9]*x|)([0-9]*)([NHSP]|)")
+    parsestr = re.compile(r":([0-9]*x|)([0-9]*)([nhsp]|)")
     pattrs = ("nrdisks", "disksize", "disktype")
     pnames = ("#.NrDisks", "#.GB Disk", ".Disk type")
     outstr = "%1x%0i%s"
-    tbl_disktype = {"N": "Networked", "H": "Local HDD", "S": "SSD", "P": "HiPerf NVMe"}
+    tbl_disktype = {"n": "Networked", "h": "Local HDD", "s": "SSD", "p": "HiPerf NVMe"}
 
     def __init__(self, string):
         super().__init__(string)
@@ -385,10 +385,10 @@ class GPU(Prop):
 
 class IB(Prop):
     type = "Infiniband"
-    parsestr = re.compile(r"\-(IB)")
+    parsestr = re.compile(r"\-(ib)")
     pattrs = ("ib",)
     pnames = ("?IB",)
-    outstr = "%?IB"
+    outstr = "%?ib"
 
 def outname(cpuram, disk, hype, cpubrand, gpu, ib):
         out = "SCS-" + cpuram.out()
@@ -444,7 +444,7 @@ def parsename(nm):
         errbase += 10
         err = el.validate()
         if err:
-            raise NameError("Validation error %i (in el %i in %s)" % (err+errbase, err-1, el.type))
+            raise NameError("Validation error %i (in el %i (%s) in %s)" % (err+errbase, err-1, el.pnames[err-1], el.type))
 
     return (cpuram, disk, hype, cpubrand, gpu, ib)
 
