@@ -46,9 +46,9 @@ We believe the following characteristics are important in a flavour description:
 
 ## Complete Proposal
 
-| Prefix | CPU | Suffix     | RAM[GiB] | optional: Disk[GB] | optional: Disktype  | optional: extra features               |
-|--------|-----|------------|----------|--------------------|---------------------|----------------------------------------|
-| SCS-   | 1-n | V/T/C [i]  | :x[u][o] | [:1-n]             | [N/S/L/P]           | [-hyp][-[arch[n][h]/-GXn:m/-IB/..]     |
+| Prefix | CPU | Suffix     | RAM[GiB] | optional: Disk[GB] | optional: Disktype  | optional: extra features                  |
+|--------|-----|------------|----------|--------------------|---------------------|-------------------------------------------|
+| SCS-   | 1-n | V/T/C [i]  | :x[u][o] | [:1-n]             | [N/S/L/P]           | [-hyp][-[arch[n][h]/-GX[n][:m[h]]/-IB/..] |
 
 # Proposal Details
 
@@ -240,19 +240,23 @@ Providers could leave it out however, leaving it to `extra_specs` to make these 
 capabilities discoverable. Nothing prevents providers from registering the same flavor
 under a secondary (or tertiary) name.
 
-`-GXn[:m][h]` indicates a Pass-Through GPU from vendor X of gen n with m compute units / SMs / EUs exposed.
-`-gXn[:m][h]` indicates a vGPU from vendor X of gen n with m compute units / SMs / EUs assigned.
+`-GX[n][:m[h]]` indicates a Pass-Through GPU from vendor X of gen n with m compute units / SMs / EUs exposed.
+`-gX[n][:m[h]]` indicates a vGPU from vendor X of gen n with m compute units / SMs / EUs assigned.
+
+Note that the vendor letter is mandatory, generation and compute units are optional.
 
 | GPU | Vendor     |
 |-----|------------|
-| n   | nVidia     |
-| a   | AMD        |
-| i   | Intel      |
+| N   | nVidia     |
+| A   | AMD        |
+| I   | Intel      |
 
 Generations could be nVidia (f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=turing, a=Ampere, ...),
 AMD (GCN-x=0.x, RDNA1=1, RDNA2=2), intel (Gen9=0.9, Xe(12.1)=1, ...), ...
-(This needs further work.)
-`h` indicated high-performance (e.g. high freq or special high bandwidth gfx memory such as HBM);
+(Note: This may need further work to properly reflect what's out there.)
+
+The optional `h` suffix to the comput unit count indicates high-performance (e.g. high freq or special
+high bandwidth gfx memory such as HBM);
 `h` can be duplicated for even higher performance.
 
 `-IB` indicates Inifinband networking.
@@ -268,7 +272,7 @@ Extensions need to be specified in the above mentioned order.
 | SCS-2C:4:10N              | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk                                         |
 | SCS-8Ti:32:50P-i1         | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe                        |
 | SCS-1L:1u:5               | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)                       |
-| SCS-16T:64:200S-Gna:64-IB | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Inifiniband, 64 Passthrough nVidia Ampere SMs |
+| SCS-16T:64:200S-GNa:64-IB | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Inifiniband, 64 Passthrough nVidia Ampere SMs |
 | SCS-4C:16:2x200P-a1       | 4 dedicated Arm64 cores (A78 class), 16GiB RAM, 2x200GB local NVMe drives                       |
 | SCS-1V:0.5                | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)                                           |
 
@@ -335,6 +339,9 @@ You may offer additional flavors, not following above scheme.
 You must not offer flavors with the SCS- prefix which do not follow this naming scheme.
 You must not extend the SCS naming scheme with your own suffices; you are encouraged however
 to suggest extensions that we can discuss and add to the official scheme.
+
+Note that all letters are case-sensitive.
+In case you wonder: Feature indicators are capitalized, modifiers are lower case.
 
 ## Rationale
 
