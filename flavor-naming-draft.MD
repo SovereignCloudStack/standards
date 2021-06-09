@@ -48,7 +48,7 @@ We believe the following characteristics are important in a flavour description:
 
 | Prefix | CPU | Suffix     | RAM[GiB] | optional: Disk[GB] | optional: Disktype  | optional: extra features                    |
 |--------|-----|------------|----------|--------------------|---------------------|---------------------------------------------|
-| SCS-   |  N  | L/V/T/C[i] | :x[u][o] | [:[mx]N]           | [n/s/l/p]           | [-hyp][-[arch[N][h][-[G/g]X[N][:M[h]]][-ib] |
+| SCS-   |  N  | L/V/T/C[i] | :N[u][o] | [:[Mx]N]           | [n/s/l/p]           | [-hyp][-[arch[N][h][-[G/g]X[N][:M[h]]][-ib] |
 
 # Proposal Details
 
@@ -122,16 +122,16 @@ You have to expose this with the `o sufffix`.
 
 ## [OPTIONAL] Disk sizes and types
 
-| Disktype |  Meaning                             |
-|----------|--------------------------------------|
-|   n      | Network shared storage (ceph/cinder) |
-|   h      | Local disk (HDD: SATA/SAS class)     |
-|   s      | Local SSD disk                       |
-|   p      | Local high-perf NVMe                 |
+| Disk type |  Meaning                             |
+|-----------|--------------------------------------|
+|   n       | Network shared storage (ceph/cinder) |
+|   h       | Local disk (HDD: SATA/SAS class)     |
+|   s       | Local SSD disk                       |
+|   p       | Local high-perf NVMe                 |
 
 **Baseline**
 
-Note that Disktype might be omitted -- the user then can not take any assumptions
+Note that disk type might be omitted -- the user then can not take any assumptions
 on what storage is provided for the root disk (that the image gets provisioned to).
 
 It does make sense for `n` to be requested explicitly to allow for smooth live migration.
