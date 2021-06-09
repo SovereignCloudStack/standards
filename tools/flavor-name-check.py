@@ -323,20 +323,20 @@ class Prop:
 
 class Main(Prop):
     type = "CPU:RAM"
-    parsestr = re.compile(r"([0-9]*)([VTC])(i|)(l|):([0-9\.]*)(u|)(o|)")
-    pattrs = ("cpus", "cputype", "cpuinsecure", "cpuoversubscribed",
+    parsestr = re.compile(r"([0-9]*)([LVTC])(i|):([0-9\.]*)(u|)(o|)")
+    pattrs = ("cpus", "cputype", "cpuinsecure",
               "ram", "raminsecure", "ramoversubscribed")
-    pnames = ("#vCPUs", "CPU type", "?Insec SMT", "?CPU Over>3/T(5/C)", "##GiB RAM", "?no ECC", "?RAM Over")
-    outstr = "%i%s%?i%?l:%.1f%?u%?o"
-    tbl_cputype = {"V": "vGPU", "T": "SMT Thread", "C": "Dedicated Core"}
+    pnames = ("#vCPUs", "CPU type", "?Insec SMT", "##GiB RAM", "?no ECC", "?RAM Over")
+    outstr = "%i%s%?i:%.1f%?u%?o"
+    tbl_cputype = {"L": "LowPerf vCPU", "V": "vCPU", "T": "SMT Thread", "C": "Dedicated Core"}
 
 class Disk(Prop):
     type = "Disk"
-    parsestr = re.compile(r":([0-9]*x|)([0-9]*)([CSLN]|)")
+    parsestr = re.compile(r":([0-9]*x|)([0-9]*)([nhsp]|)")
     pattrs = ("nrdisks", "disksize", "disktype")
     pnames = ("#.NrDisks", "#.GB Disk", ".Disk type")
     outstr = "%1x%0i%s"
-    tbl_disktype = {"C": "Shared networked", "L": "Local", "S": "SSD", "N": "Local NVMe"}
+    tbl_disktype = {"n": "Networked", "h": "Local HDD", "s": "SSD", "p": "HiPerf NVMe"}
 
     def __init__(self, string):
         super().__init__(string)
@@ -370,25 +370,25 @@ class CPUBrand(Prop):
 
 class GPU(Prop):
     type = "GPU"
-    parsestr = re.compile(r"\-([gG])([nai])([^:-]*)(:[0-9]*|)(h*)")
+    parsestr = re.compile(r"\-([gG])([NAI])([^:-]*)(:[0-9]*|)(h*)")
     pattrs = ("gputype", "brand", "gen", "cu", "perf")
     pnames = (".Type", ".Brand", ".Gen", "#.CU/EU/SM", "Performance")
     outstr = "%s%s%s%:i%s"
     tbl_gputype = {"g": "vGPU", "G": "Pass-Through GPU"}
-    tbl_brand = {"n": "nVidia", "a": "AMD", "i": "Intel"}
+    tbl_brand = {"N": "nVidia", "A": "AMD", "I": "Intel"}
     tbl_perf = {"": "Std Perf", "h": "High Perf", "hh" : "Very High Perf", "hhh": "Very Very High Perf"}
     # Generation decoding
-    tbl_brand_n_gen = {"f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal", "v": "Volta", "t": "Turing", "a": "Ampere"}
-    tbl_brand_a_gen = {"0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "RDNA2/Navi2x"}
-    tbl_brand_i_gen = {"0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1"}
+    tbl_brand_N_gen = {"f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal", "v": "Volta", "t": "Turing", "a": "Ampere"}
+    tbl_brand_A_gen = {"0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "RDNA2/Navi2x"}
+    tbl_brand_I_gen = {"0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1"}
 
 
 class IB(Prop):
     type = "Infiniband"
-    parsestr = re.compile(r"\-(IB)")
+    parsestr = re.compile(r"\-(ib)")
     pattrs = ("ib",)
     pnames = ("?IB",)
-    outstr = "%?IB"
+    outstr = "%?ib"
 
 def outname(cpuram, disk, hype, cpubrand, gpu, ib):
         out = "SCS-" + cpuram.out()
@@ -444,7 +444,7 @@ def parsename(nm):
         errbase += 10
         err = el.validate()
         if err:
-            raise NameError("Validation error %i (in el %i in %s)" % (err+errbase, err-1, el.type))
+            raise NameError("Validation error %i (in el %i (%s) in %s)" % (err+errbase, err-1, el.pnames[err-1], el.type))
 
     return (cpuram, disk, hype, cpubrand, gpu, ib)
 
