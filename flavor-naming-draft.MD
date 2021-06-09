@@ -48,7 +48,7 @@ We believe the following characteristics are important in a flavour description:
 
 | Prefix | CPU | Suffix     | RAM[GiB] | optional: Disk[GB] | optional: Disktype  | optional: extra features                    |
 |--------|-----|------------|----------|--------------------|---------------------|---------------------------------------------|
-| SCS-   | 1-n | V/T/C [i]  | :x[u][o] | [:1-n]             | [n/s/l/p]           | [-hyp][-[arch[n][h][-[G/g]X[n][:m[h]]][-ib] |
+| SCS-   |  N  | L/V/T/C[i] | :x[u][o] | [:[mx]N]           | [n/s/l/p]           | [-hyp][-[arch[N][h][-[G/g]X[N][:M[h]]][-ib] |
 
 # Proposal Details
 
@@ -240,8 +240,8 @@ Providers could leave it out however, leaving it to `extra_specs` to make these 
 capabilities discoverable. Nothing prevents providers from registering the same flavor
 under a secondary (or tertiary) name.
 
-`-GX[n][:m[h]]` indicates a Pass-Through GPU from vendor X of gen n with m compute units / SMs / EUs exposed.
-`-gX[n][:m[h]]` indicates a vGPU from vendor X of gen n with m compute units / SMs / EUs assigned.
+`-GX[N][:M[h]]` indicates a Pass-Through GPU from vendor X of gen N with M compute units / SMs / EUs exposed.
+`-gX[N][:M[h]]` indicates a vGPU from vendor X of gen N with M compute units / SMs / EUs assigned.
 
 Note that the vendor letter is mandatory, generation and compute units are optional.
 
