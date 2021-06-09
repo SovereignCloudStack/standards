@@ -356,7 +356,7 @@ flavors with specific detailed properties. The goal of this proposal is to avoid
 providers to invent their own names and then refer customers to `extra_specs`
 or worse a non-machine-readable service description to find out the details.
 
-So a cloud provider might well evolve from offering `SCS-8C:16:50` to offering
+So a cloud provider might well evolve from offering `SCS-8T:16:50` to offering
 `SCS-8T:16:50n`, `SCS-8T:16:50n-i2` and `SCS-8T:16:50n-a2` to specify that he
 is using network disks and offer a choice b/w intel Cascade-Lake and AMD Rome.
 We would expect the cloud provider to still offer the generic flavor
