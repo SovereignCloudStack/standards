@@ -46,7 +46,7 @@ We believe the following characteristics are important in a flavour description:
 
 ## Complete Proposal
 
-| Prefix | CPU | Suffix     | RAM[GiB] | optional: Disk[GB] | optional: Disktype  | optional: extra features                    |
+| Prefix | CPU | Suffix     | RAM[GiB] | optional: Disk[GB] | optional: Disk type | optional: extra features                    |
 |--------|-----|------------|----------|--------------------|---------------------|---------------------------------------------|
 | SCS-   |  N  | L/V/T/C[i] | :N[u][o] | [:[Mx]N]           | [n/s/l/p]           | [-hyp][-[arch[N][h][-[G/g]X[N][:M[h]]][-ib] |
 
@@ -166,6 +166,8 @@ is provisioned M times.
 - SCS-2C:4:**n**-bms-3
 - SCS-2C:4: <- Cloud decides disk type and size
 - SCS-2C:4:-bms-z3
+- SCS-2C:4:-bms-z3h-GNa:64-ib
+- SCS-2C:4:-ib
 - SCS-2C:4 <- You need to specify a boot volume yourself (boot from volume, or use block_device_mapping_v2)
 - SCS-2C:4-bms-z3
 - SCS-2C:4:3x <- Cloud decides disk type and size and creates three of them (FIXME: Is this useful?)
@@ -188,7 +190,7 @@ or Bare Metal Systems should indicate the Hypervisor according to the following 
 
 **Examples**
 
-- SCS-2C:4:10
+- SCS-2C:4:10n
 - SCS-2C:4:10n-**bms**
 - SCS-2C:4:10n-**bms**-z3h
 
