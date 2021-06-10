@@ -283,21 +283,21 @@ These are flavors expected to exist on standard SCS clouds (x86-64).
 We expect disk sizes to be 5, 10, 20, 50, 100, 200, 500, 1000GB, 2000GB.
 We expect a typical CPU:Mem[GiB] ratio of 1:4.
 
-| vCPU:RAM ratio | Mandatory Flavors   |
-|----------------|---------------------|
-|  1:4           |  SCS-1V:4:10        |
-|  2:8           |  SCS-2V:8:20        |
-|  4:16          |  SCS-4V:16:50       |
-|  8:32          |  SCS-8V:32:100      |
-|  1:2           |  SCS-1V:2:5         |
-|  2:4           |  SCS-2V:4:10        |
-|  4:8           |  SCS-4V:8:20        |
-|  8:16          |  SCS-8V:16:50       |
-| 16:32          |  SCS-16V:32:100     |
-|  1:8           |  SCS-1V:8:20        |
-|  2:16          |  SCS-2V:16:50       |
-|  4:32          |  SCS-4V:32:100      |
-|  1:1           |  SCS-1L:1:5         |
+| vCPU:RAM ratio | Mandatory Flavors            |
+|----------------|------------------------------|
+|  1:4           |  SCS-1V:4,   SCS-1V:4:10     |
+|  2:8           |  SCS-2V:8,   SCS-2V:8:20     |
+|  4:16          |  SCS-4V:16,  SCS-4V:16:50    |
+|  8:32          |  SCS-8V:32,  SCS-8V:32:100   |
+|  1:2           |  SCS-1V:2,   SCS-1V:2:5      |
+|  2:4           |  SCS-2V:4,   SCS-2V:4:10     |
+|  4:8           |  SCS-4V:8,   SCS-4V:8:20     |
+|  8:16          |  SCS-8V:16,  SCS-8V:16:50    |
+| 16:32          |  SCS-16V:32, SCS-16V:32:100  |
+|  1:8           |  SCS-1V:8,   SCS-1V:8:20     |
+|  2:16          |  SCS-2V:16,  SCS-2V:16:50    |
+|  4:32          |  SCS-4V:32,  SCS-4V:32:100   |
+|  1:1           |  SCS-1L:1,   SCS-1L:1:5      |
 
 Note that all vCPUs are oversubscribed -- the smallest `1L:1` flavor allows
 for heavy oversubscription (note the `L`), and thus can be offered very
@@ -311,7 +311,13 @@ Note: Compared to previous drafts, we have heavily reduced the variations
 on disk sizes -- this reflects that for the standard networked cinder
 disks, you can pass block_device_mapping_v2 on server (VM) creation to
 allocate a boot disk of any size you desire. We have scaled the few
-mandatory disk sizes with the amount of RAM.
+mandatory disk sizes with the amount of RAM. For each flavor there is
+also one *without* a pre-attached disk -- these are meant to be used
+to boot from a volume (either created beforehand or allocated on-the-fly
+with block_device_mapping_v2, e.g.
+`openstack server create --flavor SCS-1V:2 --block-device-mapping sda=IMGUUID:image:12:true`
+to create a bootable 12G cinder volume from image `IMGUUID` that gets tied to the VM
+instance lifecycle.)
 
 # Naming policies
 
