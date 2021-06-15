@@ -1,6 +1,6 @@
 ---
 title: SCS Image Metadata Proposal
-version: 2021-06-14-001
+version: 2021-06-14-002
 authors: Kurt Garloff, Christian Berendt
 state: Draft
 ---
@@ -72,22 +72,22 @@ level).
 
 Technically, the thus updated image is a new image and will thus carry a new UUID.
 It is recommended that the old image gets renamed (e.g. build date or patch level attached)
-and hidden, but remains accessible via its (unchanged) UUID. 
+and hidden (`os_hidden=true`), but remains accessible via its (unchanged) UUID. 
 
 The update handling by the provider is described via the properties `replace_frequency` and
 `uuid_validity`, `provided_till`.
 
 The `replace_frequency` and `provided_till` fields reference to the image name.
 
-| replace_frequency | meaning              |
-|-------------------|----------------------|
-| yearly            | the image will get replaced *at least* once per year    |
-| quarterly         | the image will get replaced *at least* once per quarter |
-| monthly           | the image will get replaced *at least* once per month   |
-| weekly            | the image will get replaced *at least* once per week    |
-| daily             | the image will get replaced *at least* once per day     |
-| critical_bug      | the image will get replaced for critical issues only    |
-| never             | the image referenced by name will never change (until the date `provided_till`) |
+| `replace_frequency` | meaning              |
+|---------------------|----------------------|
+| `yearly`            | the image will get replaced *at least* once per year    |
+| `quarterly`         | the image will get replaced *at least* once per quarter |
+| `monthly`           | the image will get replaced *at least* once per month   |
+| `weekly`            | the image will get replaced *at least* once per week    |
+| `daily`             | the image will get replaced *at least* once per day     |
+| `critical_bug`      | the image will get replaced for critical issues only    |
+| `never`             | the image referenced by name will never change (until the date `provided_till`) |
 
 Note the *at least* wording: Providers are expected to replace images upon critical security issues
 out of order, except when indicating `never`.
@@ -101,25 +101,28 @@ If this field is not set, no promises are made.
 The `uuid_validity` field indicates how long the public image will be referencable
 by it's UUID.
 
-| uuid_validity  | meaning                |
-|----------------|------------------------|
-| none           | UUID will only be valid as long as the content does not change          |
-| last-N         | The last N images for newer replacement will remain accessible via UUID |
-| YYYY-MM-DD     | UUID will be valid until at least the date YYYY-MM-DD                   |
-| notice         | UUID will remain valid until a deprecation notice will be published     |
-| forever        | UUID will remain valid for as long as the cloud operates                |
+| `uuid_validity`  | meaning                |
+|------------------|------------------------|
+| `none`           | UUID will only be valid as long as the content does not change          |
+| `last-N`         | The last N images for newer replacement will remain accessible via UUID |
+| `YYYY-MM-DD`     | UUID will be valid until at least the date YYYY-MM-DD                   |
+| `notice`         | UUID will remain valid until a deprecation notice will be published     |
+| `forever`        | UUID will remain valid for as long as the cloud operates                |
 
 Note that the old images must be hidden from the image catalogue or renamed (or both)
 to avoid failing referencing by name. Note that `last-N` may be limited by the `provided_till`
 date.
 
+All three properties are mandatory.
+
 All dates are in UTC.
 
 ### Example:
+
 Providing an image with name `OPSYS MAJ.MIN` with
-`replace_frequency`=`monthly`, `provided_till`=`2022-09-30`, `uuid_validity`=`2022-12-31`
+`replace_frequency=monthly`, `provided_till=2022-09-30`, `uuid_validity=2022-12-31`
 means that we will have a new image with this name at least once per month until the end
-of September 2022. Old images will be hidden or renamed, but remain accessible via their
+of September 2022. Old images will be hidden and/or renamed, but remain accessible via their
 UUID until at least the end of 2022 (in Universal Time).
 
 ## Image Origin
@@ -144,12 +147,15 @@ UUID until at least the end of 2022 (in Universal Time).
 * Optional: `patchlevel` can be set to an operating specific patch level that describes the
   patch status -- typically we would expect the `image_build_date` to be sufficient.
 
-* Optional: `image_sha256`: The sha256sum (as hex in ascii) for the image file. 
-  (We recommend referencing the raw files, not .qcow2 or similar formats.)
+* Recommended: `os_hash_algo` and `os_hash_value`: The sha256 or sha512 hash
+  for the image file.  (This references the image file in the format it is stored in, we 
+  recommend raw over qcow2 for systems that use ceph.) Note that these values are
+  typically generated automatically upon image registration.
 * Optional: `image_sig`: The (ASCII armored) digital signature for the image file.
 
 * Recommended tag: `os:OPERATINGSYSTEM`
 
+It is recommended that at least `image_sha256` or `image_sig` are used.
 
 ## Licensing / Maintenance subscription / Support 
 
@@ -175,7 +181,7 @@ Windows images would typically require `license_included`, `subscription_include
   a maintenance subscription from the OS vendor in order to receive fixes
   (which is often also a prerequisite to be eligible for support).
 * Optional: `maintained_till: YYYY-MM-DD` promises maintenance from the OS vendor
-  until at least this date.
+  until at least this date (in UTC).
 * Optional: `l1_support_contact` contains a URI that provides customer support
   contact for issues with this image. Note that this field must only be set if the
   service provider does provide support for this image included in the image/flavor
