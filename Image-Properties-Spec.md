@@ -134,9 +134,9 @@ UUID until at least the end of 2022 (in Universal Time).
 
 ## Image build info
 
-* Mandatory: `image_build_date` needs to be `YYYY-MM-DD` or `YYYY-MM-DD hh:mm:ss` (time in UTC).
+* Mandatory: `image_build_date` needs to be `YYYY-MM-DD` or `YYYY-MM-DD hh:mm[:ss]` (time in UTC).
   It is recommended that all publicly released patches before this date are included in the
-  image build. If the cutoff date is earlier, this cutoff date need to be set instead, even
+  image build. If the cutoff date is earlier, this cutoff date needs to be set instead, even
   if the build happens significantly after the cutoff date.
 * Mandatory: `image_original_user` is the default login user for the operating system which can connect
   to the image via the injected SSH key or provided password. (This can be set to `none` if no default
@@ -151,6 +151,34 @@ UUID until at least the end of 2022 (in Universal Time).
 * Recommended tag: `os:OPERATINGSYSTEM`
 
 
-## Licensing / Maintenance / Support 
+## Licensing / Maintenance subscription / Support 
 
-TBW
+Some images require a license; in many cases the cloud providers include the license cost
+by a per-use (e.g. hourly) fee. However, it is also possible sometimes that customers
+use their own license agreements with the OS vendor with a bring-your-own-license (BYOL)
+program. These properties may be attached to the image. Note that free Linux images
+might not use any of these properties, except maybe `maintained_till`. Note that
+Windows images would typically require `license_included`, `subscription_included`.
+
+* Optional: `license_included` (boolean) indicates whether ot not the flavor fee
+  includes the licenses required to use this image. This field is mandatory for
+  images that contain software that requires commercial licenses.
+* Optional: `license_required` (boolean) indicates whether or not a customer must bring
+  its own license to be license compliant. This can not be true at the same time as the
+  previous setting. This field is mandatory IF customers need to bring their own
+  license to use the image.
+* Optional: `subscription_included` (boolean) indicates that the image contains already
+  a maintenance subscription which typically gives access to bug fixes, security
+  fixes and (minor) function updates. If a subscription is included, the CSP should
+  have prepared the image to also receive the maintenance updates from the vendor.
+* Optional: `subscription_required` (boolean) indicates that the customer requires
+  a maintenance subscription from the OS vendor in order to receive fixes
+  (which is often also a prerequisite to be eligible for support).
+* Optional: `maintained_till: YYYY-MM-DD` promises maintenance from the OS vendor
+  until at least this date.
+* Optional: `l1_support_contact` contains a URI that provides customer support
+  contact for issues with this image. Note that this field must only be set if the
+  service provider does provide support for this image included in the image/flavor
+  pricing (but it might be provided by a contracted 3rd party, e.g. the OS vendor).
+
+
