@@ -1,6 +1,6 @@
 ---
 title: SCS Image Metadata Proposal
-version: 2021-06-14-002
+version: 2021-06-22-001
 authors: Kurt Garloff, Christian Berendt
 state: Draft
 ---
@@ -74,10 +74,10 @@ Technically, the thus updated image is a new image and will thus carry a new UUI
 It is recommended that the old image gets renamed (e.g. build date or patch level attached)
 and hidden (`os_hidden=true`), but remains accessible via its (unchanged) UUID. 
 
-The update handling by the provider is described via the properties `replace_frequency` and
-`uuid_validity`, `provided_till`.
+The update handling by the provider is described via the properties `replace_frequency`,
+`uuid_validity`, `provided_until`, and `hotfix_policy`.
 
-The `replace_frequency` and `provided_till` fields reference to the image name.
+The `replace_frequency`, `provided_until`, and `hotfix_policy` fields reference to the image name.
 
 | `replace_frequency` | meaning              |
 |---------------------|----------------------|
@@ -87,12 +87,25 @@ The `replace_frequency` and `provided_till` fields reference to the image name.
 | `weekly`            | the image will get replaced *at least* once per week    |
 | `daily`             | the image will get replaced *at least* once per day     |
 | `critical_bug`      | the image will get replaced for critical issues only    |
-| `never`             | the image referenced by name will never change (until the date `provided_till`) |
+| `never`             | the image referenced by name will never change (until the date `provided_until`) |
 
-Note the *at least* wording: Providers are expected to replace images upon critical security issues
-out of order, except when indicating `never`.
+Note the *at least* wording: Providers can replace images more often.
+The frequency is starting from the first release; so an image published on 2021-04-14 with an
+update frequency of `monthly`, should be replaced no later than 2021-05-14. Due to weekends
+etc., up to 3 days later is not considered a violation of this policy. So the a valid sequence
+from an image with `monthly` update frequency might be 2021-04-14, 2021-05-14, 2021-06-15,
+2021-07-14, 2021-07-27 (hotfix), 2021-08-13 ...
 
-The `provided_till` field is supposed to contain a date in `YYYY-MM-DD` format that
+The `hotfix_hours` field indicates how providers deal with critical security issues
+that affect the images; it is an optional field that contains a numerical value, indicating
+how quickly (in hours) a new image is provided *after the latter of the points in time that
+the issue becomes public and a tested fix is available as maintenance update from the upstream
+distribution*. A value of 0 indicates a best-effort approach without firm SLAs; the field not
+being present indicates no commitment. A value of 48 would indicate that the provider
+commits to a new image within 48hrs. A critical issue is defined as a security vulnerability
+with a CVSS score of 9.0 or higher that affects a package that is included in the image.
+
+The `provided_until` field is supposed to contain a date in `YYYY-MM-DD` format that
 indicates until when an image under this name will be provided and (according to the
 `replace_frequency`) updated at least. (Providers are free to provide updates for
 longer or leave the non-updated image visible for longer.)
@@ -113,17 +126,20 @@ Note that the old images must be hidden from the image catalogue or renamed (or 
 to avoid failing referencing by name. Note that `last-N` may be limited by the `provided_till`
 date.
 
-All three properties are mandatory.
+The three properties `uuid_validity`, `provided_until` and `update_frequency` are mandatory;
+the field `hotfix_hours` is optional.
 
 All dates are in UTC.
 
 ### Example:
 
 Providing an image with name `OPSYS MAJ.MIN` with
-`replace_frequency=monthly`, `provided_till=2022-09-30`, `uuid_validity=2022-12-31`
-means that we will have a new image with this name at least once per month until the end
-of September 2022. Old images will be hidden and/or renamed, but remain accessible via their
-UUID until at least the end of 2022 (in Universal Time).
+`replace_frequency=monthly`, `provided_until=2022-09-30`, `uuid_validity=2022-12-31`,
+`hotfix_hours=0`
+means that we will have a new image with this name at least once per month (starting from
+the initial release) until the end of September 2022. Old images will be hidden and/or
+renamed, but remain accessible via their UUID until at least the end of 2022 (in Universal Time).
+The provider makes an effort to replace images upon critical security issues out of order.
 
 ## Image Origin
 
@@ -133,14 +149,14 @@ UUID until at least the end of 2022 (in Universal Time).
 * Mandatory: `image_description` needs to be a URL with release notes and other human readable data
   about the image.
 
-* Recommended tag: `managed_by_VENDOR`
+* Recommended *tag*: `managed_by_VENDOR`
 
 ## Image build info
 
 * Mandatory: `image_build_date` needs to be `YYYY-MM-DD` or `YYYY-MM-DD hh:mm[:ss]` (time in UTC).
-  It is recommended that all publicly released patches before this date are included in the
+  All publicly released patches before this date must be included in the
   image build. If the cutoff date is earlier, this cutoff date needs to be set instead, even
-  if the build happens significantly after the cutoff date.
+  if the actual build happens significantly after the cutoff date.
 * Mandatory: `image_original_user` is the default login user for the operating system which can connect
   to the image via the injected SSH key or provided password. (This can be set to `none` if no default
   user name exists for the operating system.)
@@ -153,9 +169,9 @@ UUID until at least the end of 2022 (in Universal Time).
   typically generated automatically upon image registration.
 * Optional: `image_sig`: The (ASCII armored) digital signature for the image file.
 
-* Recommended tag: `os:OPERATINGSYSTEM`
+* Recommended *tag*: `os:OPERATINGSYSTEM`
 
-It is recommended that at least `image_sha256` or `image_sig` are used.
+It is recommended that at least `os_hash_algo`+`os_hash_value` or `image_sig` are used.
 
 ## Licensing / Maintenance subscription / Support 
 
@@ -163,8 +179,9 @@ Some images require a license; in many cases the cloud providers include the lic
 by a per-use (e.g. hourly) fee. However, it is also possible sometimes that customers
 use their own license agreements with the OS vendor with a bring-your-own-license (BYOL)
 program. These properties may be attached to the image. Note that free Linux images
-might not use any of these properties, except maybe `maintained_till`. Note that
+might not use any of these properties, except maybe `maintained_until`. Note that
 Windows images would typically require `license_included`, `subscription_included`.
+A boolean property that is not present is considered to be `false`.
 
 * Optional: `license_included` (boolean) indicates whether ot not the flavor fee
   includes the licenses required to use this image. This field is mandatory for
@@ -176,11 +193,12 @@ Windows images would typically require `license_included`, `subscription_include
 * Optional: `subscription_included` (boolean) indicates that the image contains already
   a maintenance subscription which typically gives access to bug fixes, security
   fixes and (minor) function updates. If a subscription is included, the CSP should
-  have prepared the image to also receive the maintenance updates from the vendor.
+  have prepared the image to also receive the provided maintenance updates from the
+  vendor (optionally via a mirror).
 * Optional: `subscription_required` (boolean) indicates that the customer requires
   a maintenance subscription from the OS vendor in order to receive fixes
   (which is often also a prerequisite to be eligible for support).
-* Optional: `maintained_till: YYYY-MM-DD` promises maintenance from the OS vendor
+* Optional: `maintained_until: YYYY-MM-DD` promises maintenance from the OS vendor
   until at least this date (in UTC).
 * Optional: `l1_support_contact` contains a URI that provides customer support
   contact for issues with this image. Note that this field must only be set if the
