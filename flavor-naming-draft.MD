@@ -1,13 +1,15 @@
 ---
-title: SCS Flavor Naming Proposal
-version: 2021-06-09-001
+title: SCS Flavor Naming Standard
+version: 2021-06-09-002
 authors: Matthias Hamm, Kurt Garloff, Tim Beermann
-state: Draft
+state: v1.0 (for R0)
 ---
 
-Flavor Naming (DRAFT) SCS
+Flavor Naming for SCS
 
-Please take note, that this is a DRAFT open for discussion (2021-06-09)
+This is the standard v1.0 for SCS Release 0.
+Note that we intend to only extend it (so it's always backwards compatible),
+but try to avoid changing in incompatible ways.
 
 # Motivation
 
@@ -38,17 +40,19 @@ We believe the following characteristics are important in a flavour description:
 | Type                 | Description                                                  |
 |:---------------------|:-------------------------------------------------------------|
 | Generation           | CPU Generation                                               |
-| Number of CPU        | Number of vCPUs - suffixed by v,t,c (see below)              |
+| Number of CPU        | Number of vCPUs - suffixed by L,V,T,C (see below)            |
 | Amount of RAM        | Amount of memory available for the VM                        |
 | Performance Class    | Ability to lable high-performance CPUs, disks, network       |
 | CPU Type             | X86-intel, X86-amd, ARM, RISC-V, Generic                     |
-| "metal"              | One instance on one Host                                     |
+| "bms"                | Bare Metal System (no virtualization/hypervisor)             |
 
 ## Complete Proposal
 
 | Prefix | CPU | Suffix     | RAM[GiB] | optional: Disk[GB] | optional: Disk type | optional: extra features                    |
 |--------|-----|------------|----------|--------------------|---------------------|---------------------------------------------|
 | SCS-   |  N  | L/V/T/C[i] | :N[u][o] | [:[Mx]N]           | [n/s/l/p]           | [-hyp][-[arch[N][h][-[G/g]X[N][:M[h]]][-ib] |
+
+(Note that `N` and `M` are placeholders for numbers here).
 
 # Proposal Details
 
@@ -94,6 +98,8 @@ on L1TF susceptible CPUs w/o effective core scheduling or disabled protections o
 - SCS-**2V**:4:10n
 - SCS-**2L**:4:10n
 - SCS-**2Li**:4:10n
+- ~~SCS-**2**:**4:10n~~ <- CPU suffix missing
+- ~~SCS-**2iT**:4:10n~~ <- This order is forbidden
 
 ## [REQUIRED] Memory 
 
