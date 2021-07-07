@@ -1,13 +1,14 @@
 ---
 title: SCS Image Metadata Proposal
-version: 2021-06-22-001
+version: 2021-07-02-001
 authors: Kurt Garloff, Christian Berendt
 state: Draft
 ---
 
 SCS Image Metadata Proposal (DRAFT) SCS
 
-Please take note, that this is a DRAFT open for discussion (2021-06-14)
+Please take note, that this is a DRAFT open for discussion (2021-07-02),
+though it will be locked down for SCS R0 in a few days.
 
 # Motivation
 
@@ -153,10 +154,13 @@ The provider makes an effort to replace images upon critical security issues out
 
 ## Image build info
 
-* Mandatory: `image_build_date` needs to be `YYYY-MM-DD` or `YYYY-MM-DD hh:mm[:ss]` (time in UTC).
-  All publicly released patches before this date must be included in the
+* Mandatory: `image_build_date` needs to be `YYYY-MM-DD` or `YYYY-MM-DD hh:mm[:ss]` (time in UTC,
+  24hrs clock).
+  All publicly released and generally recommended patches before this date must be included in the
   image build. If the cutoff date is earlier, this cutoff date needs to be set instead, even
-  if the actual build happens significantly after the cutoff date.
+  if the actual build happens significantly after the cutoff date. If not all patches can be
+  included for a good reason, then the `patchlevel` field (see below) must be used to describe
+  the patch status.
 * Mandatory: `image_original_user` is the default login user for the operating system which can connect
   to the image via the injected SSH key or provided password. (This can be set to `none` if no default
   user name exists for the operating system.)
@@ -167,11 +171,12 @@ The provider makes an effort to replace images upon critical security issues out
   for the image file.  (This references the image file in the format it is stored in, we 
   recommend raw over qcow2 for systems that use ceph.) Note that these values are
   typically generated automatically upon image registration.
-* Optional: `image_sig`: The (ASCII armored) digital signature for the image file.
+* Recommended: Digital image signature according to the [glance image
+  specification](https://docs.openstack.org/glance/wallaby/user/signature.html),
+  using `img_signature`, `img_signature_hash_method`, `img_signature_key_type`,
+  `img_signature_certificate_uuid`.
 
 * Recommended *tag*: `os:OPERATINGSYSTEM`
-
-It is recommended that at least `os_hash_algo`+`os_hash_value` or `image_sig` are used.
 
 ## Licensing / Maintenance subscription / Support 
 
