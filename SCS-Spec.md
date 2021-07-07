@@ -124,6 +124,8 @@ must support resize
 
 must support rebuild
 
+must support metadata service (shoud be using config drive)
+
 may support lock/unlock
 
 may support rescue/unrescue
