@@ -83,6 +83,8 @@ We do work towards a model where our partners can actually follow our main
 development branches -- right now, our CI needs a bit more coverage though
 to make this safe.
 
+R0 was late -- this was due to the delayed start of our project.
+
 # Contribute and Connect
 
 Please see the [SCS contributor guide](https://scs.community/docs/contributor/).
