@@ -21,49 +21,37 @@ certain features, bug fixes, and sometimes inevitable breaking changes.
 ## Release Tags vs Release Version
 
 The release tags (R0, R1, ...) of the SCS point to their corresponding
-release version, which can change if, for example, a later hotfix version
-is deemed necessary.
+release version, which can change if, for example, a later hotfix
+version is deemed necessary.
 
 Think of the "Release Tag" as the name and the "Release Version" as the
 point in time.
 
 ## Numbering Syntax
 
-> v<ongoing release version>.<channel>.<ongoing hotfix version>
+> v\<ongoing release version>.\<channel>.\<ongoing hotfix version>
 
 ### Regex
 
-v[0-9]+\.[0-9]\.[0-9]+
+> v\[0-9\]+.\[0-9\].\[0-9\]+
 
 ### Channels
 
 | number | name  |
-+--------+-------+
-|      0 | alpha |
-|      1 | beta  |
+|--------|-------|
+| 0      | alpha |
+| 1      | beta  |
 
 ## Examples
 
 <img src="Release-Numbering-Scheme.png" width="50%" alt="Release Versioning Example">
 
-> v42.0.0
-
-version 42
-channel alpha
-hotfix 0
-
-> v42.0.3
-
-version 42
-channel alpha
-hotfix 3
-
-> v47.1.0
-
-version 47
-channel beta
-hotfix 0
+|         | **v42.0.0** | **v42.0.3** | ... | **v47.0.0** | **v47.1.0** |
+|---------|-------------|-------------|-----|-------------|-------------|
+| version | 42          | 42          |     | 47          | 47          |
+| channel | alpha       | alpha       |     | alpha       | beta        |
+| hotfix  | 0           | 3           |     | 0           | 0           |
 
 ## Relationship between Release Versions and Subproject Versioning
 
-tbd. see #28
+tbd. see GH-28
