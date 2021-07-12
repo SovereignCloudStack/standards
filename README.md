@@ -93,8 +93,10 @@ Please see the [SCS contributor guide](https://scs.community/docs/contributor/).
 
 We intend to work on a conformity test suite.
 
-Right now, we are basically relying on upstream tests -- RefStack (to perform
-the OpenStack trademark certification tests formerly known as DefCore).
+Right now, we are basically relying on upstream tests -- 
+[RefStack](https://refstack.openstack.org/) (to perform
+the [OpenStack trademark certification](https://refstack.openstack.org/#/guidelines)
+tests formerly known as DefCore).
 
 We have two specific standards aligned within the SCS community (and have also
 sought feedback from the broader Gaia-X and OpenStack communities):
@@ -123,6 +125,8 @@ typically needed to analyze:
 * What did you do?
 * What did you expect? What happened instead?
 * Have you done this successfully before? What changed?
+* Can this be reproduced? Occasionally? Reliably? How?
+* Any analysis you have done? Experiments and their results? Log files?
 
 
 # Other resources
