@@ -49,25 +49,9 @@ subsections.
 ## Release 0 (2021-07-15)
 
 Barring unforeseen circumstances, we will release R0 of SCS on 2021-07-15.
-It's main focus is to demonstrate the viability of our approach to a much broader
-audience by providing a well-documented testbed. This will allow anyone interested
-to study the system in real-life, test, contribute, compare, ... it.
 
-While already in productive use (on bare metal) by two providers, the bare metal
-setup currently has a few more manual steps than we would like. This will improve
-with the next releases.
+See [Release Notes for R0](Release-Notes/Release0.md) for more information.
 
-We have worked hard on supporting identity federation (OIDC and SAML) during the last
-few months. We have also spent significant effort on getting the k8s stack with
-k8s cluster API into a good shape. However, we have determined that we do not
-yet consider those two key pieces as production-ready. The goal is to change that
-for R1 (see below).
-
-For now, you can use the software to see where SCS is going and test our technical
-preview code. We really appreciate feedback we get on these pieces as well.
-However keep in mind that we do not guarantee to ship technical previews from
-Release n as production ready software in one of the next releases. We certainly
-hope to do so.
 
 ## Release 1 (2021-09-2x)
 
