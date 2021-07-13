@@ -49,9 +49,13 @@ subsections.
 ## Release 0 (2021-07-15)
 
 Barring unforeseen circumstances, we will release R0 of SCS on 2021-07-15.
-It's main focus is to demonstrate the viability of our approach to a much broader
+Its main focus is to demonstrate the viability of our approach to a much broader
 audience by providing a well-documented testbed. This will allow anyone interested
 to study the system in real-life, test, contribute, compare, ... it.
+
+See [Release Notes for R0](Release-Notes/Release0.md) for more information.
+
+### Technical previews
 
 While already in productive use (on bare metal) by two providers, the bare metal
 setup currently has a few more manual steps than we would like. This will improve
