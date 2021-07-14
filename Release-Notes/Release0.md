@@ -11,19 +11,27 @@ Also we learn performing the release process.
 
 ## Features
 
-Fully automated virtual (testbed setup) with ansible (terraform bootstrap)
+Fully automated virtual (testbed setup) with ansible (terraform bootstrap to create
+storage, networking and VM resources for bootstrapping via cloud-init injected
+scripts that call ansible).)
 
-All tooling containerized
+The infrastructure, management and openstack services are all deployed in containers.
 
-Operations Tooling: ARA, netdata, ELK, prometheus, patchman, 
+Included tools for Operations: ARA, Netbox, Cockpit, Netdata, Skydive (opt-in),
+Patchman, phpMyAdmin, Elasticsearch (b/f license change), Kibana
 
-Infrastructure: ceph, KVM, OVN
+Validation: Rally, Refstack
 
-IAM: 
+Infrastructure: Linux, KVM, ceph, OVN, MariaDB, RabbitMQ, Redis
 
-IaaS (OpenStack):
+IAM: LDAP, Keycloak
 
-TODO: Add SBOM here.
+IaaS (OpenStack): keystone, nova, glance, cinder, neutron, octavia, horizon
+
+Optional OpenStack services: designate, heat, gnocchi, ceilometer, aodh, panko,
+barbican, magnum
+
+TODO: Add link to full SBOM here.
 
 ## Known Bugs
 
@@ -49,10 +57,8 @@ hope to do so.
 
 ## Updates
 
-make patch
+TODO: make patch
 
 ## Bug reporting
 
-Open issues against the right repository on OSISM or SovereignCloudStack space on
-github. If you can't identify the right repo, open against the issues repo in
-the SCS space. Issues are welcome, PRs even more so!
+See [main README](../README.md) file.
