@@ -97,8 +97,10 @@ feedback (raise issues and PRs or start discussions).
 # Issues and bugs
 
 Please raise issues on github. If you can identify the affected component,
-raise the issue against the relevant repository. Otherwise you can use
-the issues repository. Obviously we appreciate PRs even more than issues;
+raise the issue against the relevant repository in the SovereignCloudStack
+or OSISM space. Otherwise you can use
+the [issues repository](https://github.com/SovereignCloudStack/issues).
+Obviously we appreciate PRs even more than issues;
 please don't forget to sign off your contributions (see
 [contributor guide](https://scs.community/docs/contributor/) ).
 
