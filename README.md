@@ -85,7 +85,7 @@ tests formerly known as DefCore).
 We have two specific standards aligned within the SCS community (and have also
 sought feedback from the broader Gaia-X and OpenStack communities):
 
-* [SCS Flavor naming and standard flavors standard](Operational-Docs/flavor-naming-draft.MD)
+* [SCS Flavor naming and standard flavors standard](Design-Docs/flavor-naming.md)
 
 * [SCS Image naming and metadata standard](Design-Docs/Image-Properties-Spec.md)
 
