@@ -72,7 +72,7 @@ the next releases.
 
 ## Release tagging
 
-See [Release Numbering scheme](Design-Docs/Release-Numbering-Scheme.md).
+See [Release Numbering scheme](../Design-Docs/Release-Numbering-Scheme.md).
 The containers have version number v1.0.0 for R0.
 
 ## Updates
