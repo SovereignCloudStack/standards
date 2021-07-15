@@ -37,20 +37,17 @@ point in time.
 
 ### Channels
 
-| number | name  |
-|--------|-------|
-| 0      | alpha |
-| 1      | beta  |
+future use is tbd = atm fixed value of 0
 
 ## Examples
 
 <img src="Release-Numbering-Scheme.png" width="50%" alt="Release Versioning Example">
 
-|         | **v42.0.0** | **v42.0.3** | ... | **v47.0.0** | **v47.1.0** |
-|---------|-------------|-------------|-----|-------------|-------------|
-| version | 42          | 42          |     | 47          | 47          |
-| channel | alpha       | alpha       |     | alpha       | beta        |
-| hotfix  | 0           | 3           |     | 0           | 0           |
+|         | **v42.0.0** | **v42.0.3** | ... | **v47.0.0** |
+|---------|-------------|-------------|-----|-------------|
+| version | 42          | 42          |     | 47          |
+| channel | 0           | 0           |     | 0           |
+| hotfix  | 0           | 3           |     | 0           |
 
 ## Relationship between Release Versions and Subproject Versioning
 
