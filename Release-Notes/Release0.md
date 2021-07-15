@@ -34,7 +34,13 @@ See [testbed SBOM](https://docs.osism.de/testbed/overview.html#software-bill-of-
 a complete list. The exact versions of the contained components can be retrieved from the
 [release repo](https://github.com/osism/release/tree/master/1.0.0) of OSISM.
 
+## Get SCS
+
+See [main README](../README.md).
+
 ## Known Bugs
+
+Nothing major known yet.
 
 ## Technical Previews
 
