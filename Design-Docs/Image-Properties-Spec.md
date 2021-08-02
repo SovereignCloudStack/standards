@@ -211,3 +211,25 @@ A boolean property that is not present is considered to be `false`.
   pricing (but it might be provided by a contracted 3rd party, e.g. the OS vendor).
 
 
+##  Standardized Image  
+
+Images which are "default" in Glance of any SCS-Provider and are certified by SCS, should have following Features:
+
+*   Optional: Latest LTS Distribution of:
+ -    Debian
+ -    Ubuntu, 
+ -    AlmaLinux and/or Rocky Linux
+ -    OpenSLES
+
+* Optional: A generic Kernel which is running on every Environment
+
+* Needed: Hardening: an enabled Mandatory Access Control System, either SELinux or Apparmor
+*   Optional: a definite User specification for the default Login User, not Distribution specified.
+* Needed: An only ssh-key enabled Authentication.
+* Needed: a Pipeline for building images with verification key 
+* Needed: a Pipeline pass through (install something, an test function)
+* Needed: a Mirror to hosted SCS-Images
+* Optional: default software tools
+    - tbd
+
+
