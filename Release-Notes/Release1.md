@@ -60,6 +60,9 @@ the container layer with k8s Cluster API (now in version 0.4.x).
 ### Beyond CAPI
 
 
+## Standardization
+
+
 ## SBOM and Links
 
 
