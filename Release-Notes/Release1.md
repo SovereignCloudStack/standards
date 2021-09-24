@@ -25,7 +25,7 @@ With R2 we plan to implement a basic set of these alerts and dashboards in the t
 
 We're working on bringing a basic set of prometheus exporters to the OpenStack-kolla upstream community. 
 
-As part of our effort to add further monitoring tooling, we're integrating further prometheus exporters such as [libvirt](https://review.opendev.org/c/openstack/kolla-ansible/i+/643568) and [ovn](https://review.opendev.org/c/openstack/kolla/+/762986). Integration is targeted for R2.
+As part of our effort to add more monitoring tooling, we're integrating further prometheus exporters such as [libvirt](https://review.opendev.org/c/openstack/kolla-ansible/i+/643568) and [ovn](https://review.opendev.org/c/openstack/kolla/+/762986). Integration is targeted for R2.
 
 ### openstack-health-monitor
 
