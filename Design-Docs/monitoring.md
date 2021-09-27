@@ -6,9 +6,9 @@ pre-existing monitoring options from kolla-ansible. In particular:
 * Centralised debug logs, as provided by fluentd and elasticsearch
 * Prometheus based alerts and dashboards
 
-We are looking for feedback from users on what ares are in most need
-of attention. We have already identified some areas for future work
-including:
+We are looking for feedback from users and operators on what areas are in most
+need of attention.
+For future releases we identified the following aspects as worthwhile:
 
 * audit logging framework
 * adding any missing promtheus exporters (e.g. libvirt, OVN)
