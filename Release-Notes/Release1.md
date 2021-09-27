@@ -27,6 +27,8 @@ We're working on bringing a basic set of prometheus exporters to the OpenStack-k
 
 As part of our effort to add more monitoring tooling, we're integrating further prometheus exporters such as [libvirt](https://review.opendev.org/c/openstack/kolla-ansible/i+/643568) and [ovn](https://review.opendev.org/c/openstack/kolla/+/762986). Integration is targeted for R2.
 
+More detailed information on monitoring topics will be continously provided in the [corresponding design document](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/monitoring.md).
+
 ### openstack-health-monitor
 
 ### ...
