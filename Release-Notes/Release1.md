@@ -41,10 +41,24 @@ OSISM now enables kolla-ansible centralized logging by default. The default rule
 
 ### OIDC support via keycloak
 
+Logging in to Horizon by authenticating with OIDC via Keycloak is now possible.
+For details see the [testbed documentation](
+https://github.com/osism/testbed/blob/8430afdd36307acc1bf5ebd930ecbd3dd4b1dd22/docs/source/usage.rst#authentication-with-openid-connect).
+
 ### non-TLS restrictions (testbed)
 
-### Logout
+Only TLS secured deployments get full support.
+Without TLS, certain browsers won't be able to log in.
+For deatils see the [testbed documentation](
+https://github.com/osism/testbed/blob/8430afdd36307acc1bf5ebd930ecbd3dd4b1dd22/docs/source/usage.rst#ssl-tls-connection-to-keycloak-openid-connect-provider)
 
+### Known Issue with OIDC Logout
+
+After clicking `Sign Out` on the Horizon dashboard doesn't perform
+a proper OIDC logout. This is documented in [osism testbed](
+https://github.com/osism/testbed/blob/8430afdd36307acc1bf5ebd930ecbd3dd4b1dd22/docs/source/usage.rst#openstack-web-dashboard-horizon-logout),
+with some Keycloak settings that can be relevant for alleviating the issue,
+but in Release 1 there is no solution for this yet.
 
 ## Bare Metal Service
 
@@ -60,6 +74,15 @@ OSISM now enables kolla-ansible centralized logging by default. The default rule
 ### Management scripts
 
 ### Features
+
+### Known Issues
+
+* [OIDC Logout doesn't work properly](#Known-Issue-with-OIDC-Logout).
+
+### Known restrictions
+
+* OIDC Login is meant to be used with TLS, on
+[non-TLS setups it only works with restrictions](#non-TLS-restrictions-testbed).
 
 ### Helm templates (technical preview)
 
