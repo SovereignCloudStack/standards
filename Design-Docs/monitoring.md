@@ -1,6 +1,6 @@
 # SCS Monitoring
 
-For release 1 we are focused on adopting within OSISM the best of
+For release 1 we focus on adopting within OSISM the best of
 pre-existing monitoring options from kolla-ansible. In particular:
 
 * Centralised debug logs, as provided by fluentd and elasticsearch
