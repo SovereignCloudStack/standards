@@ -32,3 +32,10 @@ of either OSISM or kolla-ansible.
 
 For more details on what kolla-ansible provides, please see:
 https://docs.openstack.org/kolla-ansible/latest/reference/logging-and-monitoring/prometheus-guide.html
+
+## Observability system resources
+
+There is a certain need of resources associated with logging as well as the collection of metrics.
+For future releases we anticipate to provide an outline for the capacity needed in certain setups
+to achieve the recommended set of observability. For the time being, please be aware that resource
+consumptions grows the more data is collected and aggregated.
