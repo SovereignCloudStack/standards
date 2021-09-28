@@ -66,6 +66,40 @@ OSISM now enables kolla-ansible centralized logging by default. The default rule
 
 ### Helm templates (technical preview)
 
+In a parallel effort to SCS, [StackHPC](https://www.stackhpc.com/) have developed a set of [Helm charts](https://helm.sh) for
+deploying Kubernetes clusters on OpenStack using Cluster API. SCS are reviewing the Helm charts as a technical preview with a
+view to establishing a closer collaboration with StackHPC going forward.
+
+Helm is a package manager for Kubernetes that is frequently used to share deployment recipes for applications running
+on Kubernetes, and these Helm charts apply the same principles to managing infrastructure. The charts define an opinionated
+"blueprint" for a Kubernetes cluster and its addons, and a cluster is deployed by specifying one or more YAML files
+containing variables for the cluster. Deploying the cluster and all its addons is then a one-line command:
+
+```sh
+helm upgrade my-cluster capi/openstack-cluster --install --devel --values clouds.yaml --values cluster.yaml
+```
+
+Addons are deployed using [Kubernetes Jobs](https://kubernetes.io/docs/concepts/workloads/controllers/job/) executed on the
+workload cluster, and use a combination of Helm charts and manifests using [kustomize](https://kubernetes-sigs.github.io/kustomize/).
+
+The Helm charts have the following features:
+
+  * Automatic remediation of unhealthy nodes using `MachineHealthCheck`s
+  * Multiple node groups, which can be independently scaled
+  * Rolling upgrades by rotating `OpenStackMachineTemplate`s and `KubeadmConfigTemplate`s based on the SHA256 of the `.spec`
+  * Ability to customise networking and Kubeadm configuration, including supporting multiple networks
+  * Support for several addons
+    * Multiple CNIs, defaulting to [Cilium](https://cilium.io/)
+    * [OpenStack CCM and Cinder CSI](https://github.com/kubernetes/cloud-provider-openstack)
+    * [Metrics server](https://github.com/kubernetes-sigs/metrics-server)
+    * [cert-manager](https://cert-manager.io/) with optional [Let's Encrypt](https://letsencrypt.org/) issuer
+    * [Nginx ingress controller](https://kubernetes.github.io/ingress-nginx/)
+    * Monitoring using the [kube-prometheus stack](https://github.com/prometheus-operator/kube-prometheus)
+    * Support for NVIDIA GPUs using the [NVIDIA GPU operator](https://github.com/NVIDIA/gpu-operator)
+    * Custom manifests and Helm charts
+
+The charts and documentation are available on GitHub at [stackhpc/capi-helm-charts](https://github.com/stackhpc/capi-helm-charts).
+
 ### Beyond CAPI
 
 
