@@ -75,13 +75,13 @@ The container layer on SCS is implemented as a Self-Service,
 leveraging the [Kubernetes cluster API](https://cluster-api.sigs.k8s.io/)
 technology. This was provided as a technical preview from the
 [SCS k8s-cluster-api-provider](https://github.com/SovereignCloudStack/k8s-cluster-api-provider)
-repository.
+repository for R0 back in July.
 
 The focus for R1 was to make it ready for production, so DevOps teams can
 use this to create and manage their k8s clusters in self-service for
 development, testing, deployment and production.
 
-To achieve this a lot of work has been invested, updating the
+To achieve this, a lot of work has been invested, updating the
 cluster API to 0.4 along the way, fixing snapshot classes, enabling
 optional metrics and ingress services, using application credentials
 and much improved management scripts. The sonobuoy test automation has
@@ -115,17 +115,4 @@ using k8s capi to bootstrap clusters on SCS clouds for Gardener management.
 * OIDC Login is meant to be used with TLS, on
 [non-TLS setups it only works with restrictions](#non-TLS-restrictions-testbed).
 
-
-
-## Project Updates
-
-### Funding, staffing, tenders
-
-### Community
-
-### Providers
-
-### Gaia-X Hackathons
-
-### IPCEI
 
