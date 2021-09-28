@@ -32,13 +32,24 @@ More detailed information on monitoring topics will be continously provided in t
 
 ### openstack-health-monitor
 
-### ...
+We have made some progress with openstack-health-monitor since R0, but we have
+not yet created ready-to-be-used influx data collection and the grafana
+dashboard.  While the black box monitoring is perceived as very useful, the
+script certainly has reached a complexity that is not handled well with bash
+scripting and makes it a difficult to maintain and even to use tool, so the
+usefulness of shipping it with SCS to make it available for Ops teams to
+monitor has been questioned. Instead an expectation has been expressed that the
+SCS uses this to monitor all SCS partner clouds and provides some transparency
+this way to the public -- and detailed statistics via e.g. a prometheus
+exporter to the respective cloud provider. This is currently under consideration.
 
 ## Logging
 
 ### Central logging
 
-OSISM now enables kolla-ansible centralized logging by default. The default rules need to be further refined to suit your needs. We plan to implement a more generic set of rules for R2.
+OSISM now enables kolla-ansible centralized logging by default. The default
+rules need to be further refined to suit your needs. We plan to implement a
+more generic set of rules for R2.
 
 ## Federation
 
@@ -66,6 +77,12 @@ but in Release 1 there is no solution for this yet.
 
 ## Bare Metal Service
 
+The ironic Bare Metal service can be deployed with the SCS (OSISM)
+installation. For it to get full test coverage, a virtual BMC
+solution has been created, so bare metal can be validated in our testbed
+setup just as nicely as the other components. While most pieces
+are ready, the final integration steps are still work-in-progress
+and will happen after R1.
 
 ## Container Layer 
 
@@ -104,9 +121,45 @@ using k8s capi to bootstrap clusters on SCS clouds for Gardener management.
 
 ## Standardization
 
+As of this writing, the list of SCS defined standards still comprises
+two standards:
+
+* [SCS Flavor naming and standard flavors standard](Design-Docs/flavor-naming.md)
+
+* [SCS Image naming and metadata standard](Design-Docs/Image-Properties-Spec.md)
+
+As before, we continue to rely on OpenStack and CNCF defined standards
+in addition to this -- the k8s clusters need to pass the conformance
+tests with sonobuoy and the OpenStack environment the OpenStack powered
+guidelines (with refstack).
+
+There is a discussion on a glossary, detailing what we expect from regions,
+availability zones etc. Some major parts of it still need to be agreed
+before a useful doc can be published -- this will happen in due time and
+is expected before R2.
 
 ## SBOM and Links
 
+We stand on the shoulders of giants:
+Without all the great work from many open source communities, we would
+not get anywhere.
+
+We are working on automation to create a complete list for all the software
+that is used and deployed with SCS, so we have a complete Software Bill
+of Materials (SBoM). The reason this is non-trivial is that we are not
+aggregating it all ourselves, but rely on pre-integrated pieces, such
+as Linux distributions, OpenStack, CNCF projects etc. The good news is
+that these projects are diligent in their work, making sure we don't need
+to be too worried about security risks or legal risks introduced this way.
+Nevertheless, the goal of creating a complete graph remains.
+
+For R1, some of the major projects we build on have had releases that we
+incorporated and whose release notes we want to link here for convenience:
+
+* [Kubernetes v1.21.x](https://github.com/kubernetes/kubernetes/releases)
+* [Kubernetes Cluster API v0.4](https://github.com/kubernetes-sigs/cluster-api/releases)
+  and [k8s cluster-api-provider openstack v0.4](https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases)
+* [OpenStack Wallaby](https://releases.openstack.org/wallaby/) [Release Highlights](https://releases.openstack.org/wallaby/highlights.html)
 
 ## List of known issues & restrictions in R1
 
