@@ -56,52 +56,36 @@ OSISM now enables kolla-ansible centralized logging by default. The default rule
 
 ### Overview and Goals for R1
 
-### k8s capi update
+The container layer on SCS is implemented as a Self-Service,
+leveraging the [Kubernetes cluster API](https://cluster-api.sigs.k8s.io/)
+technology. This was provided as a technical preview from the
+[SCS k8s-cluster-api-provider](https://github.com/SovereignCloudStack/k8s-cluster-api-provider)
+repository.
 
-### Application Credential
+The focus for R1 was to make it ready for production, so DevOps teams can
+use this to create and manage their k8s clusters in self-service for
+development, testing, deployment and production.
 
-### Management scripts
+To achieve this a lot of work has been invested, updating the
+cluster API to 0.4 along the way, fixing snapshot classes, enabling
+optional metrics and ingress services, using application credentials
+and much improved management scripts. The sonobuoy test automation has
+been included and successfully used to validate the created clusters.
+Real-world testing has happened though the Gaia-X Hackathon #1, where
+clusters were provided on the fly for the various work streams.
 
-### Features
+The detailed list of changes for R1 is covered in the
+[k8s capi provider Release Notes](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/master/Release-Notes-R1.md).
 
-### Helm templates (technical preview)
-
-In a parallel effort to SCS, [StackHPC](https://www.stackhpc.com/) have developed a set of [Helm charts](https://helm.sh) for
-deploying Kubernetes clusters on OpenStack using Cluster API. SCS are reviewing the Helm charts as a technical preview with a
-view to establishing a closer collaboration with StackHPC going forward.
-
-Helm is a package manager for Kubernetes that is frequently used to share deployment recipes for applications running
-on Kubernetes, and these Helm charts apply the same principles to managing infrastructure. The charts define an opinionated
-"blueprint" for a Kubernetes cluster and its addons, and a cluster is deployed by specifying one or more YAML files
-containing variables for the cluster. Deploying the cluster and all its addons is then a one-line command:
-
-```sh
-helm upgrade my-cluster capi/openstack-cluster --install --devel --values clouds.yaml --values cluster.yaml
-```
-
-Addons are deployed using [Kubernetes Jobs](https://kubernetes.io/docs/concepts/workloads/controllers/job/) executed on the
-workload cluster, and use a combination of Helm charts and manifests using [kustomize](https://kubernetes-sigs.github.io/kustomize/).
-
-The Helm charts have the following features:
-
-  * Automatic remediation of unhealthy nodes using `MachineHealthCheck`s
-  * Multiple node groups, which can be independently scaled
-  * Rolling upgrades by rotating `OpenStackMachineTemplate`s and `KubeadmConfigTemplate`s based on the SHA256 of the `.spec`
-  * Ability to customise networking and Kubeadm configuration, including supporting multiple networks
-  * Support for several addons
-    * Multiple CNIs, defaulting to [Cilium](https://cilium.io/)
-    * [OpenStack CCM and Cinder CSI](https://github.com/kubernetes/cloud-provider-openstack)
-    * [Metrics server](https://github.com/kubernetes-sigs/metrics-server)
-    * [cert-manager](https://cert-manager.io/) with optional [Let's Encrypt](https://letsencrypt.org/) issuer
-    * [Nginx ingress controller](https://kubernetes.github.io/ingress-nginx/)
-    * Monitoring using the [kube-prometheus stack](https://github.com/prometheus-operator/kube-prometheus)
-    * Support for NVIDIA GPUs using the [NVIDIA GPU operator](https://github.com/NVIDIA/gpu-operator)
-    * Custom manifests and Helm charts
-
-The charts and documentation are available on GitHub at [stackhpc/capi-helm-charts](https://github.com/stackhpc/capi-helm-charts).
+Still in technical preview, but very promising are the helm charts
+based k8s cluster management templates also documented there.
 
 ### Beyond CAPI
 
+Some of our partners are using [Gardener](https://gardener.io) as a layer to manage
+large fleets of (optionally cross-cloud) k8s clusters. While there is a bit of
+overlap in functionality, they do happily coexist and our partner is actually
+using k8s capi to bootstrap clusters on SCS clouds for Gardener management.
 
 ## Standardization
 
