@@ -68,6 +68,8 @@ The next release will come quickly. We intend to ship production ready k8s stack
 (with k8s cluster API), identity federation and much improved preconfiguration
 for monitoring and logging.
 
+See [Release Notes for R1](Release-Notes/Release1.md) for more information.
+
 ## Roadmap
 
 We have a 6 month release cadence -- R2 will follow in March 2022.
