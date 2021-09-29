@@ -92,7 +92,8 @@ We intend to work on a conformity test suite.
 Right now, we are basically relying on upstream tests -- 
 [RefStack](https://refstack.openstack.org/) (to perform
 the [OpenStack trademark certification](https://refstack.openstack.org/#/guidelines)
-tests formerly known as DefCore).
+tests formerly known as DefCore) and the Kubernetes CNCF conformance tests run through
+[sonobuoy](https://sonobuoy.io/).
 
 We have two specific standards aligned within the SCS community (and have also
 sought feedback from the broader Gaia-X and OpenStack communities):
