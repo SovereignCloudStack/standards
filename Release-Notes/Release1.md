@@ -90,7 +90,7 @@ https://github.com/osism/testbed/blob/8430afdd36307acc1bf5ebd930ecbd3dd4b1dd22/d
 
 ### Known Issue with OIDC Logout
 
-After clicking `Sign Out` on the Horizon dashboard doesn't perform
+Clicking `Sign Out` on the Horizon dashboard doesn't perform
 a proper OIDC logout. This is documented in [osism testbed](
 https://github.com/osism/testbed/blob/8430afdd36307acc1bf5ebd930ecbd3dd4b1dd22/docs/source/usage.rst#openstack-web-dashboard-horizon-logout),
 with some Keycloak settings that can be relevant for alleviating the issue,
