@@ -30,6 +30,15 @@ manual.
 The Requirements:Cloud access subsection also lists some clouds that we have
 SCS running on and test regularly.
 
+The work done in SCS is supposed to be fed back upstream -- into the relevant
+CNCF projects, into OpenStack, into kolla-ansible, into OSISM and others.
+An OSISM deployment thus will bring you all the SCS greatness in the base
+layer.
+
+You can easily deploy the container layer on top of the testbed (or a production
+SCS cloud of course) checking out the code from
+[k8s-cluster-api-provider](https://github.com/SovereignCloudStack/k8s-cluster-api/provider/).
+
 # Existing SCS Clouds
 
 A few production clouds are already based on SCS: betacloud and PlusCloud Open.
@@ -53,10 +62,11 @@ Barring unforeseen circumstances, we will release R0 of SCS on 2021-07-15.
 See [Release Notes for R0](Release-Notes/Release0.md) for more information.
 
 
-## Release 1 (2021-09-2x)
+## Release 1 (2021-09-29)
 
 The next release will come quickly. We intend to ship production ready k8s stack
-(with k8s cluster API) and identity federation.
+(with k8s cluster API), identity federation and much improved preconfiguration
+for monitoring and logging.
 
 ## Roadmap
 

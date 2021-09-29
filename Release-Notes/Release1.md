@@ -175,6 +175,10 @@ that these projects are diligent in their work, making sure we don't need
 to be too worried about security risks or legal risks introduced this way.
 Nevertheless, the goal of creating a complete graph remains.
 
+We have started to put SPDX license identifiers into the SCS produced
+code, so we make it easier for downstream consumers of our software to
+automate the license compliance checks when assembling an SBoM.
+
 For R1, some of the major projects we build on have had releases that we
 incorporated and whose release notes we want to link here for convenience:
 
@@ -182,6 +186,11 @@ incorporated and whose release notes we want to link here for convenience:
 * [Kubernetes Cluster API v0.4](https://github.com/kubernetes-sigs/cluster-api/releases)
   and [k8s cluster-api-provider openstack v0.4](https://github.com/kubernetes-sigs/cluster-api-provider-openstack/releases)
 * [OpenStack Wallaby](https://releases.openstack.org/wallaby/) [Release Highlights](https://releases.openstack.org/wallaby/highlights.html)
+
+## Release tagging
+
+See [Release Numbering scheme](../Design-Docs/Release-Numbering-Scheme.md) -- unchanged from R0.
+We have added the tag `v2.0.0` to the relevant repositories to designate the `SCS_RELEASE_R1`.
 
 ## List of known issues & restrictions in R1
 
