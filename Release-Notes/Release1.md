@@ -5,7 +5,7 @@
 
 Main goals for Release 1 (R1) was the strengthening of our CI test coverage and
 integration, the operational tooling (metrics collection, dashboards, logging),
-latest versions of upstream software (OpenStack Wallaby, Kubernetes-1.21.4),
+latest versions of upstream software (OpenStack Wallaby, Kubernetes-1.21.5),
 support for Bare Metal service, progress on user federation for clouds, and
 progress on the integration of the container layer with k8s Cluster API (now in
 version 0.4.x).
