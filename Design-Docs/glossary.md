@@ -17,19 +17,18 @@ This is a draft version, which is free to be discussed
 
 ## Definition of a Region
 
-An OpenStack/SCS Region consists of at least one or more Availability Zones that share a Control Plane with their services. As a result, they share an API, as well as a CEPH cluster, i.e. a data store. Within the region, any Layer 2 networks are available to the user.
+An OpenStack/SCS region consists of at least one or more Availability Zones that share a Control Plane with their services. As a result, they share one API. Also a Control Plane can share one CEPH cluster over different fire departments or each Availbility Zone can have its own CEPH cluster. Within the region, any Layer 2 networks are available to the user. Availbility Zones which build a region are connected by redundant low-latency (<2ms (guess!!) ) high bandwidth (10s of Gbps) connections.
 
 Regions can be federated when the SCS code is ready.
 
-A region is located in one fire compartment.
 
-## Definition of a Avialbility Zone
+## Definition of a Availability Zone
 
 An Availability Zone is a (physical) group of multiple compute nodes, controlled by the region's control plane that provides the API and interface.
 
 An Availability Zone allows OpenStack compute hosts to be divided into logical groups and provides a form of physical isolation and redundancy from other Availability Zones, for example by using a separate power supply or network devices.
 
-When users provision resources, they can specify in which Availability Zone their instance should be created. In this way, cloud customers can ensure that their application resources are distributed across different computers to achieve high availability in the event of a hardware failure.
+When users provision resources, they can specify in which Availability Zone their instances should be created. In this way, customers can ensure that their application resources are distributed across different failure domains to achieve high availability in the event of a hardware failure.
 
 ## Definition of Host Aggregates
 
@@ -37,7 +36,7 @@ Host aggregates are a mechanism for partitioning compute nodes which is not expl
 Administrators assign flavors to host aggregates by specifying metadata on the host aggregate and customizing the extra specifications of the flavor. It is then up to the Nova scheduler to determine the best match for the user request. Compute nodes can also be in more than one host aggregate.
 
 
-Optionally, one can designate a host aggregate as an Availability Zone, e.g. for simplificatin reasons of the user selection of an availbility zone.  
+Optionally, one can designate a host aggregate as an Availability Zone, e.g. for simplification reasons of the user selection of an availbility zone.  
 Availability Zones differ from Host Aggregates in that they are shown to the user as a Nova boot option, so Compute VMs can be started on them.
 Compute Nodes, however, can only be in a single Availability Zone. We can configure a default Availability Zone where instances will be scheduled if the user does not specify an Availability Zone.
 
@@ -57,7 +56,7 @@ The services in the Cell Controllers can still call placement APIs, but cannot a
 
 ## Definition of a Control Plane
 
-In Openstack/SCS, a Control Plane consists of 5 hardware nodes, which together serve several Availability Zones and thus provide a common usable API for a region. The Control Plane also shares the network (Neutron), the Sheduler and the CEPH services.
+In Openstack/SCS, a Control Plane consists of at least 5 hardware nodes, which together serve several Availability Zones and thus provide a common usable API for a region. The Control Plane also shares the network (Neutron), the Scheduler and the CEPH services.
 
 It includes the Controller Nodes (Galera Cluster, RabbitMQ) and the Manager Nodes, Maas,...
 
@@ -89,7 +88,7 @@ The Rest API provides the core of openstack/SCS  and can be addressed for a whol
 
 ## Horizon
 
-Horizon is openstack's preferred GUI for the end user, but also for the administrator for a quick overview. It runs on the controller node. 
+Horizon is openstack's preferred GUI for the end user, but also for the administrator for a quick overview. It runs on the controller node. Other GUIs are possible, also GUIs which replace the horizon interface
 
 ## Message Queue
 
@@ -97,7 +96,8 @@ Most OpenStack services communicate with each other through the message queue. F
 
 ## Keystone
 
-The OpenStack Identity module called Keystone is used as an authentication and rights system between the OpenStack components. Keystone divides access to projects in the cloud into so-called "clients" ("tenant"). A tenant is a tenant of the cloud and has at least one associated user. It is possible to create multiple users per tenant with different rights. Keystone uses a token system for authorization and also supports connection to other authentication options such as LDAP. Furthermore, it is possible to abstract the authentication to the web server via an upstream web server and thus, for example, directly use one of the numerous existing authentication modules of the Apache web server for authorization.
+( The OpenStack Identity module called Keystone is used as an authentication and rights system between the OpenStack components. Keystone divides access to projects in the cloud into so-called "tenants". A tenant is a tenant of the cloud and has at least one assigned user. It is possible to create multiple users per tenant with different rights. Keystone uses a token system for authorization and also supports the connection to other authentication options such as LDAP. (wikipedia) )
+
 
 ## Glance
 
