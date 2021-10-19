@@ -101,7 +101,7 @@ zypper install python-PROJECTclient
 ### MacOS
 
 ```console
-brew install python-openstackclient
+brew install openstackclient
 ```
 
 ### PIP
