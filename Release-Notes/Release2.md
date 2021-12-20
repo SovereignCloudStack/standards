@@ -17,6 +17,10 @@ Main goals for Release 2 (R2) was ...
 
 ## Resolved Issues
 
+* cAdvisor has now reduced number of Prometheus metrics and labels exported by 
+default - this will ease the load on the system.
+This implies that corresponding timeseries data will no longer be created.
+
 ## Release Tagging
 
 See [Release Numbering scheme](../Design-Docs/Release-Numbering-Scheme.md) -- unchanged from R0.
