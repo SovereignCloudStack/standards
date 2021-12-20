@@ -13,6 +13,8 @@ Main goals for Release 2 (R2) was ...
 
 ## New Features
 
+* The monitoring stack as been extended to include a set of default dashboards for grafana.
+
 ## Security Fixes
 
 ## Resolved Issues
