@@ -290,6 +290,9 @@ class Prop:
                     elif fdesc[0:2] == "##":
                         val = float(val)
                     elif fdesc[0] == "#":
+                        if fdesc[1] == ":" and not val:
+                            val = 1
+                            break
                         if fdesc[1] == "." and not val:
                             break
                         oval = val
@@ -334,17 +337,17 @@ class Disk(Prop):
     type = "Disk"
     parsestr = re.compile(r":([0-9]*x|)([0-9]*)([nhsp]|)")
     pattrs = ("nrdisks", "disksize", "disktype")
-    pnames = ("#.NrDisks", "#.GB Disk", ".Disk type")
+    pnames = ("#:NrDisks", "#.GB Disk", ".Disk type")
     outstr = "%1x%0i%s"
     tbl_disktype = {"n": "Networked", "h": "Local HDD", "s": "SSD", "p": "HiPerf NVMe"}
 
     def __init__(self, string):
         super().__init__(string)
         try:
-            if self.nrdisks == 0:
+            if not self.nrdisks:
                 self.nrdisks = 1
         except:
-            pass
+            self.nrdisks = 1
 
 class Hype(Prop):
     type = "Hypervisor"
