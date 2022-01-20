@@ -35,3 +35,19 @@ receivers:
           - id: <opsgenie-responder-id>
             type: team
 ```
+
+## Matrix
+
+To integrate with the [matrix](https://matrix.org/) protocol a bot that is able to receive webhooks such as 
+[alertmanager\_matrix](https://github.com/dkess/alertmanager_matrix) or 
+[matrix-alertmanager](https://github.com/jaywink/matrix-alertmanager) can be used.
+This example serves as a reference for any kind of system that works via webhooks.
+Within alertmanager a webhook is set as the receiver:
+
+```
+receivers:
+- name: 'matrix'
+  webhook_configs:
+    - url: <webhook-of-matrix-bot>
+```
+
