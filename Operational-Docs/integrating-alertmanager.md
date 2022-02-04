@@ -79,4 +79,3 @@ receivers:
 ```
 
 the container for Signalilo  you will get here: [quay.io](https://quay.io/repository/vshn/signalilo)
-
