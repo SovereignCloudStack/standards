@@ -51,3 +51,31 @@ receivers:
     - url: <webhook-of-matrix-bot>
 ```
 
+## Signalilo
+
+To integrated with [Signalilo](https://github.com/vshn/signalilo) the following can be used :
+
+```
+global:
+  resolve_timeout: 5m
+route:
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 12h
+  receiver: default
+  routes:
+  - match:
+      alertname: DeadMansSwitch
+    repeat_interval: 5m
+    receiver: deadmansswitch
+receivers:
+- name: default
+  webhook_configs:
+  - send_resolved: true
+    http_config:
+      bearer_token: "*****"
+    url: https://<webhook-of-signalio-service>/webhook
+- name: deadmansswitch
+```
+
+the container for Signalilo  you will get here: [quay.io](https://quay.io/repository/vshn/signalilo)
