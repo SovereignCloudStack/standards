@@ -15,7 +15,7 @@
   | Neutron |  DNS resolve     |     [x]     |    [x]      |
   | Neutron |   "real" DNS     |     [x]     |    [-]      |
   | Neutron |     VPNaaS       |     [x]     |    [?]      |
-  | Neutron |      DVR         |     [-]     |    [x]      |
+  | Neutron |      DVR         |     [x]     |    [x]      |
   | Neutron |     FWaaS        |     [?]     |    [-]      |
   | Neutron |      QoS         |     [x]     |    [-]      |
   | Neutron |      BGP         |     [x]     |    [-]      |
@@ -25,3 +25,6 @@
   | Octavia |     LbaaS TLS    |     [x]     |    [-]      |
   | Octavia | LbaaS Dualstack  |     [x]     |    [-]      |
   | Manila  |     NFS          |     [x]     |    [x]      |
+
+
+[ovs-dvr](https://docs.openstack.org/neutron/latest/admin/deploy-ovs-ha-dvr.html)
