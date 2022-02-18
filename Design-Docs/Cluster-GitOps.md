@@ -46,26 +46,26 @@ the private key can decrypt the credentials.
 The loop would roughly look like this:
 1. Get the latest clusters from git (via a regular check or an event)
 1. Per cluster
-  1. Ensure we have the image available, register if needed
-  1. For a new cluster
-    1. Optionally create a new project (for a new cluster), if so share the image to it
-    1. Create two application credentials (one for capo, one for OCCM/CSI)
-    1. Create cilium security group
-  1. Create anti-affinity
-  1. Adjust settings in the cluster-template (cluster-name, sec groups, affinity, ...)
-  1. Process with clusterctl
-  1. Submit to capo
-  1. Wait for control plane readiness
-  1. For new cluster: Extract cluster-admin creds and encrypt with pubkey
-  1. Deploy CNI (calico or cilium) -- avoid switching unless forced
-  1. Deploy OCCM
-  1. Deploy cinder
-  1. Deploy metrics service (if not disabled), otherwise remove
-  1. Sanity checks
-  1. For all other optional services (nginx, flux, cert-manager, harbor, ...):
-    1. Deploy service if enabled, otherwise remove (if deployed before)
-  1. Sanity checks
-  1. optional CI tests
+   1. Ensure we have the image available, register if needed
+   1. For a new cluster
+      1. Optionally create a new project (for a new cluster), if so share the image to it
+      1. Create two application credentials (one for capo, one for OCCM/CSI)
+      1. Create cilium security group
+   1. Create anti-affinity
+   1. Adjust settings in the cluster-template (cluster-name, sec groups, affinity, ...)
+   1. Process with clusterctl
+   1. Submit to capo
+   1. Wait for control plane readiness
+   1. For new cluster: Extract cluster-admin creds and encrypt with pubkey
+   1. Deploy CNI (calico or cilium) -- avoid switching unless forced
+   1. Deploy OCCM
+   1. Deploy cinder
+   1. Deploy metrics service (if not disabled), otherwise remove
+   1. Sanity checks
+   1. For all other optional services (nginx, flux, cert-manager, harbor, ...):
+      1. Deploy service if enabled, otherwise remove (if deployed before)
+   1. Sanity checks
+   1. optional CI tests
 
 ## Open questions
 
