@@ -6,7 +6,7 @@ Kurt Garloff, v0.1, 2022-02-18
 
 Using the Kubernetes Cluster-API (capi), we can use a k8s style declarative
 way to describe the workload clusters that should be running and can manage
-their lifecycle: creation, changes, rolling upgrades amd clean up can all be
+their lifecycle: creation, changes, rolling upgrades and clean up can all be
 performed with it. The OpenStack provider (capo) has the basic integration
 to manage the networks, virtual machines, load-balancers. For full automation,
 a few more pieces have been developed in the SCS
@@ -21,9 +21,9 @@ This follows similar ideas as described on
 
 Most of the simpler cluster setups can be done without ever touching the cluster-template.yaml
 file -- just doing a dozen adjustments in clusterctl.yaml provides a reasonable amount
-of flexibility. In SCS' k8s-cluster-api-provider setup, the standards settings from
+of flexibility. In SCS' k8s-cluster-api-provider setup, the standard settings from
 the capo templates have been extended by the settings that let you chose cilium
-as alternative CNI provider, the OCCM and CSI deployment and the extra services.
+as alternative CNI provider, anti-affinity, the OCCM and CSI deployment and the extra services.
 
 To implement a simple gitops style management for a set of clusters, we would
 basically create a reconciliation loop on the capi management node, which
@@ -43,7 +43,7 @@ the private key can decrypt the credentials.
 
 ## Implementation thoughts
 
-The loop would roughly look like this:
+The reconciliation loop would roughly look like this:
 1. Get the latest clusters from git (via a regular check or an event)
 1. Per cluster
    1. Ensure we have the image available, register if needed
@@ -51,7 +51,7 @@ The loop would roughly look like this:
       1. Optionally create a new project (for a new cluster), if so share the image to it
       1. Create two application credentials (one for capo, one for OCCM/CSI)
       1. Create cilium security group
-   1. Create anti-affinity
+   1. Create anti-affinity server groups (if not disabled)
    1. Adjust settings in the cluster-template (cluster-name, sec groups, affinity, ...)
    1. Process with clusterctl
    1. Submit to capo
@@ -59,7 +59,7 @@ The loop would roughly look like this:
    1. For new cluster: Extract cluster-admin creds and encrypt with pubkey
    1. Deploy CNI (calico or cilium) -- avoid switching unless forced
    1. Deploy OCCM
-   1. Deploy cinder
+   1. Deploy cinder CSI
    1. Deploy metrics service (if not disabled), otherwise remove
    1. Sanity checks
    1. For all other optional services (nginx, flux, cert-manager, harbor, ...):
