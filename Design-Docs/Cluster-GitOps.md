@@ -47,6 +47,7 @@ The reconciliation loop would roughly look like this:
 1. Get the latest clusters from git (via a regular check or an event)
 1. Per cluster
    1. Ensure we have the image available, register if needed
+   1. Other pre-flight sanity checks (quota, syntax, flavors, inconsistencies, ...)
    1. For a new cluster
       1. Optionally create a new project (for a new cluster), if so share the image to it
       1. Create two application credentials (one for capo, one for OCCM/CSI)
@@ -70,6 +71,9 @@ The reconciliation loop would roughly look like this:
 ## Open questions
 
 * Can this be integrated into capo or do we really need to create a loop around it?
+
+* On errors in this loop, we would move to the next cluster. However, how do we handle error reporting?
+  How do we avoid that Operators would need to log in to get capo logs?
 
 * Can we integrate this with the helm charts work?
 
