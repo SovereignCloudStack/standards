@@ -1,4 +1,4 @@
-# Contributer Code of Conduct
+# Contributor Code of Conduct
 
 ## Sovereign Cloud Stack Community
 
