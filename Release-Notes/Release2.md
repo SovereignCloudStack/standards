@@ -17,6 +17,8 @@ Main goals for Release 2 (R2) was ...
 
 ## Upgrade/Migration notes
 
+## Removals
+
 ## Deprecations
 
 ## Security Fixes
