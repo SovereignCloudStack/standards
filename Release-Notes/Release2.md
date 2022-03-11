@@ -11,9 +11,13 @@ Main goals for Release 2 (R2) was ...
 * Kubernetes Cluster API 1.0.0
 * ...
 
-## New Features
+## New Features (highlights)
 
 * The monitoring stack as been extended to include a set of default dashboards for grafana.
+
+## Upgrade/Migration notes
+
+## Deprecations
 
 ## Security Fixes
 
