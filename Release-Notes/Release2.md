@@ -60,8 +60,18 @@ Renovate (?)
 ## Removals
 
 * OpenStack Victoria images are no longer built and thus no longer kept updated
+* Support for Zabbix has been removed, Prometheus will be used as the only monitoring stack in the future
+* Heimdall as a service was removed, as an alternative Homer is now available
 
 ## Deprecations
+
+* Cockpit is deprecated in favor of Boundary by HashiCorp or Teleport
+* ceph-ansible is deprecated in preparation for cephadm
+* All osism- scripts on the manager are deprecated and will be replaced by the new OSISM CLI. The scripts will be removed in the next release
+* The following services are currently not used and are deprecated and scheduled for removal as of now: Falco, Jenkins, Rundeck, Lynis, Trivy
+* Heat will no longer be offered by default in the testbed in the future
+* The docker-compose CLI will be removed and replaced by the new compose plugin for Docker.
+docker-compose is then no longer available and docker compose must be used instead
 
 ## Security Fixes
 
