@@ -1,21 +1,27 @@
 # Release Notes for SCS Release 2
-(Release Date: 2022-03-XX)
+(Release Date: 2022-03-23)
 
 ## Scope
 
-Main goals for Release 2 (R2) was ...
+Main goals for Release 2 (R2) were massive improvements in bare
+metal deployment and our cluster management layer gaining the
+ability to handle many clusters independently with a number
+of optional services.
 
 ## Component Versions and User-visible improvements (highlights)
 
-* Kubernetes 1.22.7/1.23.4
-* Kubernetes Cluster API 1.0.5
-* OpenStack Xena
-  - SPICE support in addition to noVNC
+* We support the latest [Kubernetes 1.22](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.22.md) and 
+ [1.23](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.23.md) releases.
+* The Kubernetes Cluster API is now available in a stable v1beta1
+  [release 1.0.x](https://github.com/kubernetes-sigs/cluster-api/releases)
+  with the corresponding [cluster-api-provider-openstack 0.5.x](https://github.com/kubernetes-sigs/cluster-api/releases).
+* [OpenStack Xena release](https://releases.openstack.org/xena/highlights.html)
+  - We have also enabled SPICE support in addition to noVNC to
+    access the graphical console of VMs.
 
-* ...
-
-
-* [OSISM 3.0.0](https://github.com/osism/release/blob/main/notes/3.0.0/NOTES.md)
+* The base infastructure is provided by
+  [OSISM 3.0.0](https://github.com/osism/release/blob/main/notes/3.0.0/NOTES.md)
+  which in turn build on top of kolla and kolla-ansible.
 
 ## New Features (Highlights)
 
@@ -26,7 +32,6 @@ Main goals for Release 2 (R2) was ...
   - Flower
   - Grafana dashboards
 
-  - 
 * User federation has been prepared to be ready for Gaia-X federation integration
   - Keystone can consume users from Keycloak via OpenID-Connect
   - Keycloak uses the highly-available Galera database cluster now
