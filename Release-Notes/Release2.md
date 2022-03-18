@@ -17,7 +17,7 @@ Main goals for Release 2 (R2) was ...
 
 * [OSISM 3.0.0](https://github.com/osism/release/blob/main/notes/3.0.0/NOTES.md)
 
-## New Features (highlights)
+## New Features (Highlights)
 
 ### Operator focused improvments
 
@@ -27,7 +27,7 @@ Main goals for Release 2 (R2) was ...
   - Grafana dashboards
 
   - 
-* User federation has been prepared
+* User federation has been prepared to be ready for Gaia-X federation integration
   - Keystone can consume users from Keycloak via OpenID-Connect
   - Keycloak uses the highly-available Galera database cluster now
   - mod_oauth2 support for Keystone
@@ -50,9 +50,16 @@ Further wnoteworthy improvements to testbed:
 * Virtual BMC in testbed
 * Public DNS for testbed (`testbed.osism.xyz`)
 
-Zuul 
+We have a Zuul CI framework running and started migrating CI testing from github actions to
+using our zuul infrastructure.
 
-Renovate (?)
+Renovate is being used to keep the pinned versions up-to-date and consistent across the
+many repositories.
+
+An overview over the used software versions is available from the
+[OSISM release](https://github.com/osism/release) repository as input
+for a complete SBOM. This allows to e.g. investigate the contents of the
+used (v3.0.0) images.
 
 
 ## Upgrade/Migration notes
