@@ -59,18 +59,25 @@ subsections.
 
 ## Release 0 (2021-07-15)
 
-Barring unforeseen circumstances, we will release R0 of SCS on 2021-07-15.
+SCS R0 has been released on 2021-07-15 and bundles the work
+accomplished by the community prior to the full start of the project.
 
 See [Release Notes for R0](Release-Notes/Release0.md) for more information.
 
-
 ## Release 1 (2021-09-29)
 
-The next release will come quickly. We intend to ship production ready k8s stack
-(with k8s cluster API), identity federation and much improved preconfiguration
-for monitoring and logging.
+R1 came quickly after R0 and was the first release to ship a production ready k8s stack
+(with k8s cluster API), some identity federation integration and much improved
+preconfiguration for monitoring and logging.
 
 See [Release Notes for R1](Release-Notes/Release1.md) for more information.
+
+## Release 2 (2023-03-23)
+
+This release delivers vast improvements for bare metal automation
+and the features in the container layers.
+
+See [Release Notes for R2](Release-Notes/Release2.md) for more information.
 
 ## Roadmap
 
