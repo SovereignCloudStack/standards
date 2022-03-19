@@ -11,10 +11,20 @@ of optional services.
 ## Component Versions and User-visible improvements (highlights)
 
 * We support the latest [Kubernetes 1.22](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.22.md) and 
- [1.23](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.23.md) releases.
+  [1.23](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.23.md) releases.
 * The Kubernetes Cluster API is now available in a stable v1beta1
   [release 1.0.x](https://github.com/kubernetes-sigs/cluster-api/releases)
   with the corresponding [cluster-api-provider-openstack 0.5.x](https://github.com/kubernetes-sigs/cluster-api/releases).
+* There are a number of new standard services available for the
+  [k8s capi](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/)
+  managed clusters, amongst which cert-manager and flux. The clusters
+  have better default settings for the nginx-ingress, anti-affinity
+  for the nodes and the ability to chose cilium over calico and
+  to have stable multi-controller node setups on clouds without
+  low-latency local storage.
+  Please consult the
+  [k8s capi provider release notes](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/master/Release-Notes-R2.md)
+  for more details.
 * [OpenStack Xena release](https://releases.openstack.org/xena/highlights.html)
   - We have also enabled SPICE support in addition to noVNC to
     access the graphical console of VMs.
@@ -27,10 +37,26 @@ of optional services.
 
 ### Operator focused improvments
 
+* The Cluster Management Node is now well prepared to manage numerous
+  clusters with independent settings and different feature sets by
+  creating default settings and then keeping track of various workload
+  clusters in own directories. Documentation has been vastly improved.
+
+* The Cluster Management node now gets its aritfacts directly from
+  git, making incremental updates to it a lot easier, thus also
+  avoiding to disrupt workload clusters through redeployed management
+  nodes to roll out updates.
+
 * Added dashboards for the operators:
   - Homer
   - Flower
   - Grafana dashboards
+
+* Work is underway to supercede [openstack-health-monitor](https://SovereignCloudStack/openstack-health-monitor)
+  with a solution that is using tempest and ralley. The health-monitor
+  has received improvements though and is at this point still fully
+  supported and recommended -- it has surfaced a number of issues with
+  test clouds, especially failed metadata services.
 
 * User federation has been prepared to be ready for Gaia-X federation integration
   - Keystone can consume users from Keycloak via OpenID-Connect
@@ -48,10 +74,13 @@ of optional services.
 
 ### SCS Developer focused improvements (testbed)
 
+We now have scripts that allow us to connect to the workload cluster node network
+for debugging purposes.
+
 The configuration of the testbed was minimized and the deployment was made more production-oriented.
 
 Further wnoteworthy improvements to testbed:
-* TLS in testbed
+* TLS is implemented thoughout the services also in testbed
 * Virtual BMC in testbed
 * Public DNS for testbed (`testbed.osism.xyz`)
 
@@ -87,17 +116,80 @@ docker-compose is then no longer available and docker compose must be used inste
 
 ## Security Fixes
 
+* The ElasticSearch container included in OSISM testbed was exposed to the log4j
+  issue -- new images were provided for addressing this. See the
+  [security advisory](https://scs.community/de/security/2021/12/13/advisory-log4j/)
+
 ## Resolved Issues
+
+* The nginx-ingress load balaner could run into name conflicts before.
+  The loadbalancer now uses a health monitor to avoid routing to the wrong
+  nodes, which typically resulted in 10s delays when connecting to the service
+  behind the ingress controller.
 
 * cAdvisor has now reduced number of Prometheus metrics and labels exported by 
 default - this will ease the load on the system.
 This implies that corresponding timeseries data will no longer be created.
 
-## Conformance
+## Standards Conformance
+
+The clusters created with our cluster-API cluster management solution pass
+the [CNCF conformance tests](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/Image-Properties-Spec.md)
+as reported by [sonobuoy](https://sonobuoy.io/).
+
+The [OpenStack](https://openstack.org/) layer passes the
+[OIF](https://openinfra.dev/) trademark tests, so cloud providers
+leveraging the stack should easily be able to achieve the
+["OpenStack powered compute"](https://www.openstack.org/brand/interop/)
+trademark certification.
+
+Our partner PlusServer has [achieved](https://www.openstack.org/brand/interop/)
+a [BSI C5](https://www.bsi.bund.de/EN/Topics/CloudComputing/Compliance_Criteria_Catalogue/Compliance_Criteria_Catalogue_node.html)
+security certification for their SCS implementation PlusCloud Open.
+
+We are working within [Gaia-X](https://gaia-x.eu/) to further the power
+of Gaia-X self-descriptions and are closely working with the
+[GXFS project](https://gxfs.de/)
+to jointly deliver a standard toolbox for Gaia-X conformant
+infrastructure and service offerings.
+
+The SCS standards for [flavor naming](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/flavor-naming.md) and 
+[image metadata](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/Image-Properties-Spec.md)
+are largely unchanged since R1. We have however
+made progress in our reference implementation fully implementing
+them without any further tweaks.
 
 ## Release Tagging
 
 See [Release Numbering scheme](../Design-Docs/Release-Numbering-Scheme.md) -- unchanged from R0.
 We have added the tag `v3.0.0` to the relevant repositories to designate the `SCS_RELEASE_R2`.
 
+Note that we will release R3 (v4.0.0) in September 2022 and stop providing maintenance
+updates for R2 at the end of October.
+
 ## List of known issues & restrictions in R2
+
+## Future directions (selected Highlights)
+
+* We have a [proposal for a gitops style cluster management approach]()
+  on the table.
+* We intend to complete the disk encryption feature.
+* We want to document and validate (and probably enhance) the user
+  federation capabilities which we
+  have implemented with keycloak and OpenID Connect federation.
+* We want to heavily invest in SCS conformance testing, allowing
+  providers that differ significantly from our reference implementation
+  to still adjust their platforms for full compatibility.
+* We want to invest into metrics collection and the loadbalancer.
+* We have started to use zuul as CI framework and intend to
+  make significant progress in connecting all the existing tests
+  to it.
+
+## Contributing
+
+We appreciate contribution to strategy and implemention, please join
+our community -- or just leave input on the github issues and PRs.
+Have a look at our [contributor guide](https://scs.community/docs/contributor/).
+We also have worked on a [Code of Conduct](https://github.com/SovereignCloudStack/Docs/pull/26)
+to document the expected behavior of contributors and how we deal with
+cases where individuals fail to meet the expectation.
