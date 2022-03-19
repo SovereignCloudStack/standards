@@ -171,7 +171,8 @@ updates for R2 at the end of October.
 
 ## Future directions (selected Highlights)
 
-* We have a [proposal for a gitops style cluster management approach]()
+* We have a
+  [proposal for a gitops style cluster management approach](https://github.com/SovereignCloudStack/Docs/pull/47)
   on the table.
 * We intend to complete the disk encryption feature.
 * We want to document and validate (and probably enhance) the user
