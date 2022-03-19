@@ -65,12 +65,12 @@ of optional services.
 
 * Vast improvements in the SCS Deployment automation 
   - Full automation of bare metal deployment with Bifrost and Ironic
-  - Using Netbox as central source of truth for the complete setup
+  - Using NetBox as central source of truth for the complete setup
 
 * New services available (opt-in)
-  - ClamAV, DnsDist, Cgit, FRRouting, Nexus, Tang
+  - ClamAV, dnsdist, cgit, FRRouting, Nexus, Tang
 
-* Traefik centrally routes the connections to Nexus, Netbox, Phpmyadmin, Homer, Flower, ARA, Cgit
+* Traefik centrally routes the connections to Nexus, NetBox, phpMyAdmin, Homer, Flower, ARA, cgit
 
 ### SCS Developer focused improvements (testbed)
 
