@@ -98,6 +98,18 @@ used (v3.0.0) images.
 
 ## Upgrade/Migration notes
 
+### Cluster Management
+
+The names of a few settings have changed since R1 -- if you have diverged from the defaults,
+this may require adjusting the `environment.tfvars` or the `clusterctl.yaml` files.
+See [k8s-cluster-api-provider Release Notes](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/master/Release-Notes-R2.md#incompatible-changes)
+for more details.
+
+The updating approach has fundamentally changed:
+If you were used to deploy fresh management nodes regularly to
+benefit from the upstream improvements, this need has been vastly reduced now,
+allowing for long-living management nodes and workload clusters managed by them.
+
 ### OSISM
 
 * Playbook generic-configuration.yml was deprecated. From now on, please use the playbook of
@@ -182,7 +194,8 @@ updates for R2 at the end of October.
 
 ## Future directions (selected Highlights)
 
-Alongside with R2 we published a blog post on some first thoughts on [future directions towards R3](https://scs.community/2022/03/23/r2-and-future-directions/).
+Alongside with R2 we published a blog post on some first thoughts on
+[future directions towards R3](https://scs.community/2022/03/23/r2-and-future-directions/).
 
 ## Contributing
 
