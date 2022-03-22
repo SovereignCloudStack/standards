@@ -81,8 +81,8 @@ See [Release Notes for R2](Release-Notes/Release2.md) for more information.
 
 ## Roadmap
 
-We have a 6 month release cadence -- R2 will follow in March 2022.
-Until then, we will provide bugfixes and security fixes for R1.
+We have a 6 month release cadence -- R3 will follow in September 2022.
+Until then, we will provide bugfixes and security fixes for R2.
 
 We do work towards a model where our partners can actually follow our main
 development branches -- right now, our CI needs a bit more coverage though
