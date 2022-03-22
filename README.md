@@ -136,6 +136,7 @@ Please check our main [web page](https://scs.community/).
 If you are an onboarded SCS community member, find here a link to our
 [nextcloud](https://scs.sovereignit.de/) (login required).
 
-We have set up [mailing lists](https://scs.sovereignit.de/mailman3/postorious/)
-and chats [matrix.org:SCS](#scs-general:matrix.org), please hold on ...
+Our community interacts through our [github organization](https://github.com/sovereignCloudStack/),
+on [mailing lists](https://scs.sovereignit.de/mailman3/postorious/) as well as
+chats [matrix.org:SCS](#scs-general:matrix.org).
 
