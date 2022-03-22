@@ -106,6 +106,8 @@ used (v3.0.0) images.
 
 ## Deprecations
 
+Deprecations happen according to our [deprecation policy](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/Release-Policies.md#deprecation).
+
 * Cockpit is deprecated in favor of Boundary by HashiCorp or Teleport
 * ceph-ansible is deprecated in preparation for cephadm
 * All osism- scripts on the manager are deprecated and will be replaced by the new OSISM CLI. The scripts will be removed in the next release
