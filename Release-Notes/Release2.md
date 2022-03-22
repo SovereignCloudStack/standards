@@ -173,20 +173,7 @@ updates for R2 at the end of October.
 
 ## Future directions (selected Highlights)
 
-* We have a
-  [proposal for a gitops style cluster management approach](https://github.com/SovereignCloudStack/Docs/pull/47)
-  on the table.
-* We intend to complete the disk encryption feature.
-* We want to document and validate (and probably enhance) the user
-  federation capabilities which we
-  have implemented with keycloak and OpenID Connect federation.
-* We want to heavily invest in SCS conformance testing, allowing
-  providers that differ significantly from our reference implementation
-  to still adjust their platforms for full compatibility.
-* We want to invest into metrics collection and the loadbalancer.
-* We have started to use zuul as CI framework and intend to
-  make significant progress in connecting all the existing tests
-  to it.
+Alongside with R2 we published a blog post on some first thoughts on [future directions towards R3](https://scs.community/2022/03/23/r2-and-future-directions/).
 
 ## Contributing
 
