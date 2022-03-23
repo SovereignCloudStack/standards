@@ -173,7 +173,7 @@ security certification for their SCS implementation pluscloud open.
 We are working within [Gaia-X](https://gaia-x.eu/) to further the power
 of Gaia-X self-descriptions and are closely working with the
 [GXFS project](https://gxfs.de/)
-to jointly deliver a standard toolbox for Gaia-X conformance
+to jointly deliver a standard toolbox for Gaia-X compliant
 infrastructure and service offerings.
 
 The SCS standards for [flavor naming](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/flavor-naming.md) and
