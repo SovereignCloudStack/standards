@@ -116,7 +116,7 @@ allowing for long-living management nodes and workload clusters managed by them.
 the same name in the manager environment (manager-configuration.yml). All configuration
 parameters from environments/configuration.yml should be moved to environments/manager/configuration.yml.
 
-* In kolla-ansible the HAProxy role was renamed to load balancer. Accordingly, load balancer must now be
+* In kolla-ansible the HAProxy role was renamed to loadbalancer. Accordingly, loadbalancer must now be
 used for the deployment of HAProxy.
 
 ## Removals
@@ -145,8 +145,8 @@ docker-compose is then no longer available and docker compose must be used inste
 
 ## Resolved Issues
 
-* The nginx-ingress load balancer could run into name conflicts before.
-  The load balancer now uses a health monitor to avoid routing to the wrong
+* The nginx-ingress loadbalancer could run into name conflicts before.
+  The loadbalancer now uses a health monitor to avoid routing to the wrong
   nodes, which typically resulted in 10s delays when connecting to the service
   behind the ingress controller.
 
