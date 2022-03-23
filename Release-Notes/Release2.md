@@ -195,7 +195,7 @@ updates for R2 at the end of October.
 ## Future directions (selected Highlights)
 
 Alongside with R2 we published a blog post on some first thoughts on
-[future directions towards R3](https://scs.community/2022/03/23/r2-and-future-directions/).
+[future directions towards R3](https://scs.community/tech/2022/03/23/r2-and-future-directions/).
 
 ## Contributing
 
