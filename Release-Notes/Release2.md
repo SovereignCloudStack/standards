@@ -29,20 +29,20 @@ of optional services.
   - We have also enabled SPICE support in addition to noVNC to
     access the graphical console of VMs.
 
-* The base infastructure is provided by
+* The base infrastructure is provided by
   [OSISM 3.0.0](https://github.com/osism/release/blob/main/notes/3.0.0/NOTES.md)
   which in turn build on top of kolla and kolla-ansible.
 
 ## New Features (Highlights)
 
-### Operator focused improvments
+### Operator focused improvements
 
 * The Cluster Management Node is now well prepared to manage numerous
   clusters with independent settings and different feature sets by
   creating default settings and then keeping track of various workload
   clusters in own directories. Documentation has been vastly improved.
 
-* The Cluster Management node now gets its aritfacts directly from
+* The Cluster Management node now gets its artifacts directly from
   git, making incremental updates to it a lot easier, thus also
   avoiding to disrupt workload clusters through redeployed management
   nodes to roll out updates.
@@ -52,8 +52,8 @@ of optional services.
   - Flower
   - Grafana dashboards
 
-* Work is underway to supercede [openstack-health-monitor](https://SovereignCloudStack/openstack-health-monitor)
-  with a solution that is using tempest and ralley. The health-monitor
+* Work is underway to supersede [openstack-health-monitor](https://github.com/SovereignCloudStack/openstack-health-monitor)
+  with a solution that is using tempest and rally. The health-monitor
   has received improvements though and is at this point still fully
   supported and recommended -- it has surfaced a number of issues with
   test clouds, especially failed metadata services.
@@ -63,7 +63,7 @@ of optional services.
   - Keycloak uses the highly-available Galera database cluster now
   - mod_oauth2 support for Keystone
 
-* Vast improvements in the SCS Deployment automation 
+* Vast improvements in the SCS Deployment automation
   - Full automation of bare metal deployment with Bifrost and Ironic
   - Using NetBox as central source of truth for the complete setup
 
@@ -79,13 +79,13 @@ for debugging purposes.
 
 The configuration of the testbed was minimized and the deployment was made more production-oriented.
 
-Further wnoteworthy improvements to testbed:
-* TLS is implemented thoughout the services also in testbed
+Further noteworthy improvements to testbed:
+* TLS is implemented throughout the services also in testbed
 * Virtual BMC in testbed
 * Public DNS for testbed (`testbed.osism.xyz`)
 
 We have a Zuul CI framework running and started migrating CI testing from github actions to
-using our zuul infrastructure.
+using our Zuul infrastructure.
 
 Renovate is being used to keep the pinned versions up-to-date and consistent across the
 many repositories.
@@ -116,7 +116,7 @@ allowing for long-living management nodes and workload clusters managed by them.
 the same name in the manager environment (manager-configuration.yml). All configuration
 parameters from environments/configuration.yml should be moved to environments/manager/configuration.yml.
 
-* In kolla-ansible the haproxy role was renamed to loadbalancer. Accordingly, loadbalancer must now be
+* In kolla-ansible the HAProxy role was renamed to load balancer. Accordingly, load balancer must now be
 used for the deployment of HAProxy.
 
 ## Removals
@@ -139,20 +139,20 @@ docker-compose is then no longer available and docker compose must be used inste
 
 ## Security Fixes
 
-* The ElasticSearch container included in OSISM testbed was exposed to the log4j
+* The Elasticsearch container included in OSISM testbed was exposed to the log4j
   issue -- new images were provided for addressing this. See the
   [security advisory](https://scs.community/de/security/2021/12/13/advisory-log4j/)
 
 ## Resolved Issues
 
-* The nginx-ingress load balaner could run into name conflicts before.
-  The loadbalancer now uses a health monitor to avoid routing to the wrong
+* The nginx-ingress load balancer could run into name conflicts before.
+  The load balancer now uses a health monitor to avoid routing to the wrong
   nodes, which typically resulted in 10s delays when connecting to the service
   behind the ingress controller.
 
-* cAdvisor has now reduced number of Prometheus metrics and labels exported by 
-default - this will ease the load on the system.
-This implies that corresponding timeseries data will no longer be created.
+* cAdvisor has now reduced number of Prometheus metrics and labels exported by
+  default - this will ease the load on the system.
+  This implies that corresponding time series data will no longer be created.
 
 ## Standards Conformance
 
@@ -168,15 +168,15 @@ trademark certification.
 
 Our partner PlusServer has [achieved](https://www.openstack.org/brand/interop/)
 a [BSI C5](https://www.bsi.bund.de/EN/Topics/CloudComputing/Compliance_Criteria_Catalogue/Compliance_Criteria_Catalogue_node.html)
-security certification for their SCS implementation PlusCloud Open.
+security certification for their SCS implementation pluscloud open.
 
 We are working within [Gaia-X](https://gaia-x.eu/) to further the power
 of Gaia-X self-descriptions and are closely working with the
 [GXFS project](https://gxfs.de/)
-to jointly deliver a standard toolbox for Gaia-X conformant
+to jointly deliver a standard toolbox for Gaia-X conformance
 infrastructure and service offerings.
 
-The SCS standards for [flavor naming](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/flavor-naming.md) and 
+The SCS standards for [flavor naming](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/flavor-naming.md) and
 [image metadata](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/Image-Properties-Spec.md)
 are largely unchanged since R1. We have however
 made progress in our reference implementation fully implementing
@@ -199,7 +199,7 @@ Alongside with R2 we published a blog post on some first thoughts on
 
 ## Contributing
 
-We appreciate contribution to strategy and implemention, please join
+We appreciate contribution to strategy and implementation, please join
 our community -- or just leave input on the github issues and PRs.
 Have a look at our [contributor guide](https://scs.community/docs/contributor/).
 We also have worked on a [Code of Conduct](https://github.com/SovereignCloudStack/Docs/pull/26)
