@@ -39,7 +39,7 @@ layer.
 
 You can easily deploy the container layer on top of the testbed (or a production
 SCS cloud of course) checking out the code from
-[k8s-cluster-api-provider](https://github.com/SovereignCloudStack/k8s-cluster-api/provider/).
+[k8s-cluster-api-provider](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/).
 
 # Existing SCS Clouds
 
