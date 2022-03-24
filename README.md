@@ -72,7 +72,7 @@ preconfiguration for monitoring and logging.
 
 See [Release Notes for R1](Release-Notes/Release1.md) for more information.
 
-## Release 2 (2023-03-23)
+## Release 2 (2022-03-23)
 
 This release delivers vast improvements for bare metal automation
 and the features in the container layers.
