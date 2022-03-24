@@ -116,7 +116,7 @@ allowing for long-living management nodes and workload clusters managed by them.
 the same name in the manager environment (manager-configuration.yml). All configuration
 parameters from environments/configuration.yml should be moved to environments/manager/configuration.yml.
 
-* In kolla-ansible the HAProxy role was renamed to loadbalancer. Accordingly, loadbalancer must now be
+* In kolla-ansible the haproxy role was renamed to loadbalancer. Accordingly, loadbalancer must now be
 used for the deployment of HAProxy.
 
 ## Removals
