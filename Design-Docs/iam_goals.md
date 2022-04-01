@@ -10,7 +10,7 @@
 - Provide infrastructure to consumer payloads
   - **1** prepare Operation Users as Group in Keycloak to managed them selective in scopes 
   - **2** customize Keystone Polices to prepare trivial Self services for tenants as RAND
-  - **3** policies should released, tested and use from SCS compliant policy reposiotory 
+  - **3** policies should released, tested and used from SCS compliant policy reposiotory 
 
 # To be discussed
 
