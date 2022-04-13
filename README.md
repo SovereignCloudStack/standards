@@ -2,8 +2,6 @@
 
 [![Creative Commons Attribution-ShareAlike 4.0 International](https://licensebuttons.net/l/by-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-sa/4.0/)
 
-Entry point for SCS Docs
-
 # What is SCS? Why should I care?
 
 Please see our [public web site](https://scs.community/) and specifically
