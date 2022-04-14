@@ -21,7 +21,6 @@ Entrypoint for getting onboarded.
   - [Nextcloud](https://scs.sovereignit.de/nextcloud)
   - [Mailing-List](https://scs.sovereignit.de/mailman3/postorius/lists/announce.lists.scs.community/)
 - Task distribution
-  - [Wekan](https://scs.sovereignit.de/wekan)
   - [GitHub](https://github.com/SovereignCloudStack)
   - [Mailing-List](https://scs.sovereignit.de/mailman3/postorius/lists/announce.lists.scs.community/)
 - Guides
@@ -34,7 +33,6 @@ Entrypoint for getting onboarded.
 - reduce amount of mailing lists
 - use single source of annoucement
 - don't spam the mailing lists with complete annoucements, but rather the link to the annoucement!
-- ditch Wekan and move to GitHub to reduce tool clutter
 - provide ONE single URL for all services with proper subdomains:
   - nextcloud.sovereignit.de
   - lists.sovereignit.de
