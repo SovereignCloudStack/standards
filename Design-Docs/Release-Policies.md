@@ -71,6 +71,7 @@ A strong focus of SCS is on assuring the upstream projects are healthy and striv
 Sometimes the upstream release cycle will have an impact on when a feature or fix is available for SCS consumers. Backporting could then be considered an option.
 The following aspects should be considered in these case:
 
+* Backports should be avoided whenever possible.
 * The feature / fix must be merged upstream onto main
 * Only if upstream will not accept a backport, a local backport is adviseable
 * Is the feature a blocking requirement?
