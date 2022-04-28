@@ -77,7 +77,6 @@ The following aspects should be considered in these case:
 * Is the feature a blocking requirement?
 * Is a local backport simple enough - if not, this is a *strong* argument against a local backport.
 
-
 ## Implementation services
 
 We strive to make it easy to set up an SCS environment. This means that we provide documentation, defaults and automation to allow standard SCS setups to created by appropriately skilled engineers. However, we will no have the bandwidth to cover unusual integrations (user management, network setups, billing systems, ...) -- these could be provided by commercial companies that offer consulting and implementation services around SCS. Again, we reserve the right to create certification programs to ensure high quality services here. We explicitly encourage partners to contribute knowledge in this space to our knowledge base.
