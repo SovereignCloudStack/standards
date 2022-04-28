@@ -72,10 +72,10 @@ Sometimes the upstream release cycle will have an impact on when a feature or fi
 The following aspects should be considered in these case:
 
 * Backports should be avoided whenever possible.
-* The feature / fix must be merged upstream onto main
-* Only if upstream will not accept a backport, a local backport is adviseable
+* The feature / fix must be merged upstream onto main.
+* Only if upstream will not accept a backport, a local backport is adviseable.
 * Is the feature a blocking requirement?
-* Is a local backport simple enough - if not this is a *strong* argument against a local backport
+* Is a local backport simple enough - if not, this is a *strong* argument against a local backport.
 
 
 ## Implementation services
