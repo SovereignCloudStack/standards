@@ -65,6 +65,18 @@ When features of these categories will change in non-backwards compatible ways o
 
 Features in categories 3 and 4 have no guarantees to be included in the next release, to not change in incompatible ways or to being promoted to categories 2 or 1. However, in our monthly newsletters, we will talk about these from time to time, so our partners can easily stay up to date in their understanding where we are going.
 
+## Backports
+
+A strong focus of SCS is on assuring the upstream projects are healthy and strive. For this to be possible a strong effort is made to assure features and fixes are implemented upstream.
+Sometimes the upstream release cycle will have an impact on when a feature or fix is available for SCS consumers. Backporting could then be considered an option.
+The following aspects should be considered in these case:
+
+* Backports should be avoided whenever possible.
+* The feature / fix must be merged upstream onto main.
+* Only if upstream will not accept a backport, a local backport is adviseable.
+* Is the feature a blocking requirement?
+* Is a local backport simple enough - if not, this is a *strong* argument against a local backport.
+
 ## Implementation services
 
 We strive to make it easy to set up an SCS environment. This means that we provide documentation, defaults and automation to allow standard SCS setups to created by appropriately skilled engineers. However, we will no have the bandwidth to cover unusual integrations (user management, network setups, billing systems, ...) -- these could be provided by commercial companies that offer consulting and implementation services around SCS. Again, we reserve the right to create certification programs to ensure high quality services here. We explicitly encourage partners to contribute knowledge in this space to our knowledge base.
