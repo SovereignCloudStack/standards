@@ -3,9 +3,16 @@
 - Provide identities to consumer payloads
   - **Example:** Provide credentials to access Cortex
   - **Example:** Provide credentials to implement K8s `Service`s with type `LoadBalancer` (e. g. backed by OpenStack load balancer)
+
 - Provide identities to consumer employees
   - **Example:** Provide SSO/OAuth2 to access monitoring dashboards and Cortex
   - **Example:** Provide identity aware access to payload K8s clusters (providing K8s `User`/`Group`)
+
+- Provide infrastructure to consumer payloads
+  - **1** prepare Operation Users as Group in Keycloak to managed them selective in scopes 
+  - **2** customize Keystone Polices to prepare trivial Self services for tenants as technical preview 
+  - **3** policies should released, tested and used from SCS compliant policy reposiotory/template
+  - **4** revocation from user and workloads tokens from Keystone perspective
 
 # To be discussed
 
