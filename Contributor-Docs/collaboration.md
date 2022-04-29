@@ -11,18 +11,18 @@ for more details.
 
 ### Project updates
 
-- Weekly with all teams on Thursday at 1500 CEST (45 mins)
+- Weekly with all teams on Thursday at 1505 CEST (45 mins)
 
 ### Sprint review/Backlog refinement/Sprint planning meetings
 
-- Weekly with team 1 on Wednesdays at 1000 CEST (1 hour)
-- Weekly with team 2 on Mondays at 1000 CEST (1 hour)
-- Weekly with team 3 on Thursdays at 1000 CEST (1 hour)
+- Weekly with team 1 on Wednesdays at 1005 CEST (1 hour)
+- Weekly with team 2 on Mondays at 1005 CEST (1 hour)
+- Weekly with team 3 on Thursdays at 1005 CEST (1 hour)
 
 ### Special interest groups (SIGs)
 
-- Identity & Access Management (IAM): Bi-Weekly on Friday at 1000 CEST (1 hour)
-- Monitoring & Logging: Weekly on Friday at 1200 CEST (1 hour)
+- Identity & Access Management (IAM): Bi-Weekly on Friday at 1005 CEST (1 hour)
+- Monitoring & Logging: Weekly on Friday at 1205 CEST (1 hour)
 
 ## Videoconference
 
