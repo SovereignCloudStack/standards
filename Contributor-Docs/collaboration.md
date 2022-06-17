@@ -15,9 +15,9 @@ for more details.
 
 ### Sprint review/Backlog refinement/Sprint planning meetings
 
-- Weekly with team 1 on Wednesdays at 1005 CEST (1 hour)
-- Weekly with team 2 on Mondays at 1005 CEST (1 hour)
-- Weekly with team 3 on Thursdays at 1005 CEST (1 hour)
+- Weekly with Team IaaS on Wednesdays at 1005 CEST (1 hour)
+- Weekly with Team Container on Mondays at 1005 CEST (1 hour)
+- Weekly with Team OPS & IAM on Thursdays at 1005 CEST (1 hour)
 
 ### Special interest groups (SIGs)
 
