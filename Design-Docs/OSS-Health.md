@@ -37,6 +37,14 @@ OSS project health check
 * Defines own standards that can be implemented independently
 	- With compliance tests
 
+## Security
+
+* Supply-chain transparency / SBOM
+* Security contacts, security response
+* Secure coding practices
+* Review
+* Security-related test cases in CI
+
 ## Activity
 
 * Active development (and maintenance)
