@@ -106,7 +106,7 @@ binary linking is typically considered creating derived works. Whereas interacti
 API or starting another process is typically considered a copyright boundary.  To avoid any
 unclarity, the Linux kernel community has explicitly called out using Linux system calls (which
 includes using the interface definitions) is a copyright boundary and can thus be done by
-applications with any license implications.
+applications without any license implications.
 
 Considering linked code to be derived works (as is the case in the GPL and AGPL) and thus
 requiring it under the same (or a compatible) copyleft license is considered a Strong Copyleft
