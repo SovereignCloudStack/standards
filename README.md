@@ -45,7 +45,7 @@ A few production clouds are already based on SCS: betacloud and PlusCloud Open.
 More will come soon.
 
 For PlusCloud Open, there is also a document how to
-[get started guide for the PlusCloud Demonstrator env](PlusDemonstrator/GettingStarted.MD)
+[get started guide for the PlusCloud Demonstrator env](PlusDemonstrator/GettingStarted.MD).
 
 CityNetwork, Open Telekom Cloud, OVH clouds are also known to support the
 testbed well. (There are a few caveats with the latter two, but those are
