@@ -9,9 +9,9 @@ the [About SCS](https://scs.community/About/) page.
 
 # Get it and test it: Testbed
 
-The easiest way to get in touch with SCS is to deploy an SCS cloud virtually.
+The easiest way to get in touch with SCS is to deploy a SCS cloud virtually.
 
-This means that you set up an SCS test installation including all the infrastructure
+This means that you set up a SCS test installation including all the infrastructure
 pieces such as database, message queueing, ceph, monitoring and logging, IAM, the
 [OpenStack](https://openstack.org/) core services, and (soon) the Container layer 
 on top of an existing
