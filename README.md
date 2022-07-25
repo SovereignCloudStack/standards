@@ -27,7 +27,7 @@ testbed running. Please read carefully through the
 [deployment](https://docs.osism.de/testbed/deployment.html) section of the
 manual.
 
-The Requirements:Cloud access subsection also lists some clouds that we have
+The [Requirements:Cloud access subsection](https://docs.osism.de/testbed/deployment.html#cloud-access) also lists some clouds that we have
 SCS running on and test regularly.
 
 The work done in SCS is supposed to be fed back upstream -- into the relevant
