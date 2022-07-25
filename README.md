@@ -9,9 +9,9 @@ the [About SCS](https://scs.community/About/) page.
 
 # Get it and test it: Testbed
 
-The easiest way to get in touch with SCS is to deploy an SCS cloud virtually.
+The easiest way to get in touch with SCS is to deploy a SCS cloud virtually.
 
-This means that you set up an SCS test installation including all the infrastructure
+This means that you set up a SCS test installation including all the infrastructure
 pieces such as database, message queueing, ceph, monitoring and logging, IAM, the
 [OpenStack](https://openstack.org/) core services, and (soon) the Container layer 
 on top of an existing
@@ -27,7 +27,7 @@ testbed running. Please read carefully through the
 [deployment](https://docs.osism.de/testbed/deployment.html) section of the
 manual.
 
-The Requirements:Cloud access subsection also lists some clouds that we have
+The [Requirements:Cloud access subsection](https://docs.osism.de/testbed/deployment.html#cloud-access) also lists some clouds that we have
 SCS running on and test regularly.
 
 The work done in SCS is supposed to be fed back upstream -- into the relevant
@@ -45,7 +45,7 @@ A few production clouds are already based on SCS: betacloud and PlusCloud Open.
 More will come soon.
 
 For PlusCloud Open, there is also a document how to
-[get started guide for the PlusCloud Demonstrator env](PlusDemonstrator/GettingStarted.MD)
+[get started guide for the PlusCloud Demonstrator env](PlusDemonstrator/GettingStarted.MD).
 
 CityNetwork, Open Telekom Cloud, OVH clouds are also known to support the
 testbed well. (There are a few caveats with the latter two, but those are
