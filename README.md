@@ -6,8 +6,11 @@
 
 Please see our [public web site](https://scs.community/) and specifically
 the [About SCS](https://scs.community/About/) page.
+SCS describes a standard as well as a reference implementation of this standard.
 
-# Get it and test it: Testbed
+# The reference implementation
+
+## Get it and test it: Testbed
 
 The easiest way to get in touch with SCS is to deploy a SCS cloud virtually.
 
@@ -21,7 +24,7 @@ enabled, this performs decently). There is no fundamental limitation -- just
 noone has done the porting of the terraform recipes yet to AWS, libvirt,
 VMware, ...
 
-SCS is based on [OSISM](https://osism.tech/). Read on the 
+The SCS IaaS reference implementation is based on [OSISM](https://osism.tech/). Read on the
 [OSISM testbed docs](https://docs.osism.de/testbed/) to learn how to get the
 testbed running. Please read carefully through the
 [deployment](https://docs.osism.de/testbed/deployment.html) section of the
@@ -29,11 +32,6 @@ manual.
 
 The [Requirements:Cloud access subsection](https://docs.osism.de/testbed/deployment.html#cloud-access) also lists some clouds that we have
 SCS running on and test regularly.
-
-The work done in SCS is supposed to be fed back upstream -- into the relevant
-CNCF projects, into OpenStack, into kolla-ansible, into OSISM and others.
-An OSISM deployment thus will bring you all the SCS greatness in the base
-layer.
 
 You can easily deploy the container layer on top of the testbed (or a production
 SCS cloud of course) checking out the code from
@@ -52,6 +50,17 @@ testbed well. (There are a few caveats with the latter two, but those are
 documented and no blockers.) Read above mentioned 
 [Requirements:Cloud access](https://docs.osism.de/testbed/deployment.html#cloud-access)
 subsections.
+
+# Development of SCS
+
+The work done in SCS is supposed to be fed back upstream -- into the relevant
+CNCF projects, into OpenStack, into kolla-ansible, into OSISM and others.
+An OSISM deployment thus will bring you all the SCS greatness in the base
+layer.
+Whenever possible SCS works directly in the upstream projects. While the SCS
+projects tracks the efforts across the released in [epics and userstories](https://github.com/orgs/SovereignCloudStack/projects),
+the work on the code happens upstream - as such these repositories are usually
+not found in the SCS namespace.
 
 # Releases and Roadmap
 
