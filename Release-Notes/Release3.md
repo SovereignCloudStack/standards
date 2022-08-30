@@ -44,21 +44,14 @@ tang from the state of a technical preview to be fully supported.
 
 ### SCS Developer focused improvements (testbed)
 
-Container standardization underway ...
+* Container standardization underway ...
 
-Container cluster updating and upgrading.
+* Container cluster updating and upgrading.
 
-We now have scripts that allow us to connect to the workload cluster node network
-for debugging purposes.
+* LUKS encryption is now documented and enabled in the testbed by default.
 
-Further noteworthy improvements to testbed:
-* Public DNS for testbed (`testbed.osism.xyz`) a wildcard CA certificate.
-
-We have a Zuul CI framework running and started migrating CI testing from github actions to
-using our Zuul infrastructure.
-
-Renovate is being used to keep the pinned versions up-to-date and consistent across the
-many repositories.
+* Further noteworthy improvements to testbed:
+  * Public DNS for testbed (`testbed.osism.xyz`) a wildcard CA certificate.
 
 An overview over the used software versions is available from the
 [OSISM release](https://github.com/osism/release) repository as input
