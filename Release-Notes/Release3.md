@@ -3,7 +3,9 @@
 
 ## Scope
 
-Main goals for Release 3 (R3) were ...
+Main goals for Release 3 (R3) were user federation, increase in deployment and upgrade
+velocity by improving automated test coverage as well as bringing disk encryption based on
+tang from the state of a technical preview to be fully supported.
 
 ## Component Versions and User-visible improvements (highlights)
 
