@@ -25,7 +25,7 @@ tang from the state of a technical preview to be fully supported.
 * The base infrastructure is provided by
   [OSISM 4.0.0](https://github.com/osism/release/blob/main/notes/4.0.0/NOTES.md)
   which in turn build on top of kolla and kolla-ansible.
-* Disk encryption ...
+* Disk encryption based on Network bound disk encryption (NBDE) is available.
 
 ## New Features (Highlights)
 
