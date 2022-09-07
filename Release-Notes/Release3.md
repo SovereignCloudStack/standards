@@ -21,10 +21,11 @@ tang from the state of a technical preview to be fully supported.
   [k8s capi provider release notes](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/master/Release-Notes-R3.md)
   for more details.
 * [OpenStack Yoga release](https://releases.openstack.org/yoga/highlights.html)
+* Ceph Quincy is available, the default release of Ceph is still Pacific.
 
 * The base infrastructure is provided by
   [OSISM 4.0.0](https://github.com/osism/release/blob/main/notes/4.0.0/NOTES.md)
-  which in turn build on top of kolla and kolla-ansible.
+  which in turn builds on top of kolla and kolla-ansible.
 * Disk encryption based on Network bound disk encryption (NBDE) is available.
 
 ## New Features (Highlights)
@@ -51,7 +52,9 @@ tang from the state of a technical preview to be fully supported.
 * LUKS encryption is now documented and enabled in the testbed by default.
 
 * Further noteworthy improvements to testbed:
-  * Public DNS for testbed (`testbed.osism.xyz`) a wildcard CA certificate.
+  * Public DNS for testbed is now available (`testbed.osism.xyz`), allowing to access services
+    via TLS protected by a wildcard CA certificate.
+  * The wireguard VPN service is deployed in the testbed by default.
 
 An overview over the used software versions is available from the
 [OSISM release](https://github.com/osism/release) repository as input
@@ -72,25 +75,38 @@ Per cluster application credentials.
 
 ### OSISM
 
+* In ``environments/kolla/secrets.yml`` the parameter ``neutron_ssh_key`` must be
+  added.
+
+  ```
+  neutron_ssh_key:
+    private_key:
+    public_key:
+  ```
+
+  The ssh key can be generated as follows: ``ssh-keygen -t rsa -b 4096 -N "" -f id_rsa.neutron -C "" -m PEM``
+
 ## Removals
 
-* OpenStack Wallaby (?) images are no longer built and thus no longer kept updated
-
-CHECK WHICH OLD deprecations have resulted in removals ...
-
-* Cockpit is deprecated in favor of Boundary by HashiCorp or Teleport
-* ceph-ansible is deprecated in preparation for cephadm
+* The Cockpit service has been removed.
 * All osism- scripts on the manager are deprecated and will be replaced by the new OSISM CLI. The scripts will be removed in the next release
-* The following services are currently not used and are deprecated and scheduled for removal as of now: Falco, Jenkins, Rundeck, Lynis, Trivy
-* Heat will no longer be offered by default in the testbed in the future
-* The docker-compose CLI will be removed and replaced by the new compose plugin for Docker.
-docker-compose is then no longer available and docker compose must be used instead
 
 ## Deprecations
 
 Deprecations happen according to our [deprecation policy](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/Release-Policies.md#deprecation).
 
-What ... ?
+* Linux bridge support has been deprecated by the Neutron team and marked as experimental.
+  If Linux bridge is used in deployments, migrating to OpenVSwitch is recommended.
+* Debian dropped hddtemp (https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1002484),
+  therefore the ``hddtemp`` service will be removed from the next OSISM release, as there is
+  no package available for Ubuntu 22.04.
+* Heat will no longer be offered by default in the testbed in the future
+* The following services are currently not used and are deprecated and scheduled for removal as of now: Falco, Jenkins, Rundeck, Lynis, Trivy
+* The docker-compose CLI will be removed and replaced by the new compose plugin for Docker.
+docker-compose is then no longer available and docker compose must be used instead
+* The ``cleanup-elasticsearch`` playbook is deprecated. In the future,
+  the ``elasticsearch-curator`` service (part of Kolla) has to be used
+  for Elasticsearch cleanup.
 
 ## Security Fixes
 
@@ -136,6 +152,8 @@ Note that we will release R4 (v4.0.0) in March 2023 and stop providing maintenan
 updates for R3 at the end of April.
 
 ## List of known issues & restrictions in R3
+
+* Distributed Virtual Routing (DVR) is not officially supported by OSISM, not tested and not recommended.
 
 ## Future directions (selected Highlights)
 
