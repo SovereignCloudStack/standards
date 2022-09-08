@@ -9,9 +9,10 @@
 # 10-19: Error in CPU:Ram spec
 # 20-29: Error in Disk spec
 # 30-39: Error in Hype spec
-# 40-49: Error in optional specific CPU description
-# 50-59: Error in optional GPU spec
-# 60-69: Unknown extension
+# 40-49: Error in optional -vmx support
+# 50-59: Error in optional specific CPU description
+# 60-69: Error in optional GPU spec
+# 70-79: Unknown extension
 # 
 # (c) Kurt Garloff <garloff@osb-alliance.com>, 5/2021
 # License: CC-BY-SA 4.0
@@ -64,9 +65,9 @@ class Prop:
 
     def end(self, string):
         "find delimiting '-' and cut off"
-        ix = string.find('-')
+        ix = string[1:].find('-')
         if ix >= 1:
-            return string[:ix]
+            return string[:ix+1]
         else:
             return string
 
@@ -78,7 +79,9 @@ class Prop:
         if debug:
             print(m)
         if not m:
-            return 0
+            m = self.parsestr.match(self.end(self.string))
+            if not m:
+                return 0
         if debug:
             print(m.groups())
         for i in range(0, len(m.groups())):
@@ -368,16 +371,16 @@ class NestVirt(Prop):
 
 class CPUBrand(Prop):
     type = "CPUBrand"
-    parsestr = re.compile(r"\-([izar])([0-9]*)(h*)")
+    parsestr = re.compile(r"\-([izar])([0-9]*)(h*)$")
     pattrs = ("cpuvendor", "cpugen", "perf")
     pnames = (".CPU Vendor", "#.CPU Gen", "Performance")
-    outstr = "%s%i%s"
+    outstr = "%s%0i%s"
     tbl_cpuvendor = {"i": "Intel", "z": "AMD", "a": "ARM", "r": "RISC-V"}
     tbl_perf = {"": "Std Perf", "h": "High Perf", "hh" : "Very High Perf", "hhh": "Very Very High Perf"}
     # Generation decoding
-    tbl_cpuvendor_i_cpugen = { 0: "Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake" }
-    tbl_cpuvendor_z_cpugen = { 0: "Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3" }
-    tbl_cpuvendor_a_cpugen = { 0: "Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "Anext/NeoN2" }
+    tbl_cpuvendor_i_cpugen = { 0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake" }
+    tbl_cpuvendor_z_cpugen = { 0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3" }
+    tbl_cpuvendor_a_cpugen = { 0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "Anext/NeoN2" }
     #tbl_cpuvendor_r_cpugen = { 0: "SF U54", 1: "SF U74", 2: "SF U84"}
 
 class GPU(Prop):
@@ -454,10 +457,10 @@ def parsename(nm):
 
     if n:
         print("ERROR: Could not parse: %s" % n)
-        raise NameError("Error 60: Could not parse %s (extras?)" % n)
+        raise NameError("Error 70: Could not parse %s (extras?)" % n)
 
     errbase = 0
-    for el in (cpuram, disk, hype, cpubrand, gpu, ib):
+    for el in (cpuram, disk, hype, nvirt, cpubrand, gpu, ib):
         errbase += 10
         err = el.validate()
         if err:
@@ -519,7 +522,8 @@ def main(argv):
             print("In %s, Out %s" % (name, namecheck))
 
         if namecheck != name:
-            raise NameError("%s != %s" % (name, namecheck))
+            #raise NameError("%s != %s" % (name, namecheck))
+            print("WARNING: %s != %s" % (name, namecheck))
 
     return error
 
