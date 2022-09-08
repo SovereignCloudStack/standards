@@ -30,10 +30,10 @@ scsPre = re.compile(r'^SCS\-')
 # List of SCS mandatory flavors
 scsMandatory = ["SCS-1V:4", "SCS-1V:4:10", "SCS-2V:8", "SCS-2V:8:20",
 			"SCS-4V:16", "SCS-4V:16:50", "SCS-8V:32", "SCS-8V:32:100",
-		"SCS-1V:2", "SCS-1V:2:5", "SCS-2V:4", "SCS-2V:4:10", "SCS-4V:8",
+			"SCS-1V:2", "SCS-1V:2:5", "SCS-2V:4", "SCS-2V:4:10", "SCS-4V:8",
 			"SCS-4V:8:20", "SCS-8V:16", "SCS-8V:16:50", "SCS-16V:32", "SCS-16V:32:100",
-		"SCS-1V:8", "SCS-1V:8:20", "SCS-2V:16", "SCS-2V:16:50", "SCS-4V:32", "SCS-4V:32:100",
-		"SCS-1L:1", "SCS-1L:1:5"]
+			"SCS-1V:8", "SCS-1V:8:20", "SCS-2V:16", "SCS-2V:16:50", "SCS-4V:32", "SCS-4V:32:100",
+			"SCS-1L:1", "SCS-1L:1:5"]
 
 # help
 def usage():
