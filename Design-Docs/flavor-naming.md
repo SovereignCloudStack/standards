@@ -239,7 +239,8 @@ Not specifying arch means that we have a generic CPU (**x86-64**).
 
 It is recommended to leave out the `0` when specifying the old generation; this will
 help the parser tool, which assumes 0 for an unspecified value and does leave it
-out when generating the name for comparison.
+out when generating the name for comparison. In other words: 0 has a meaning of
+"rather old or unspecified".
 
 **Frequency Suffixes**
 
