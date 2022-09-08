@@ -1,6 +1,6 @@
 ---
 title: SCS Flavor Naming Standard
-version: 2022-09-08-001
+version: 2022-09-08-002
 authors: Matthias Hamm, Kurt Garloff, Tim Beermann
 state: v1.1 (for R3)
 ---
@@ -236,6 +236,10 @@ Not specifying arch means that we have a generic CPU (**x86-64**).
 |  1         | Skylake          | Zen-1 (Naples) | A76/NeoN1 class    | TBD        |
 |  2         | Cascade Lake     | Zen-2 (Rome)   | A78/x1/NeoV1 class | TBD        |
 |  3         | Ice Lake         | Zen-3 (Milan)  | Anext/NeoN2 class  | TBD        |
+
+It is recommended to leave out the `0` when specifying the old generation; this will
+help the parser tool, which assumes 0 for an unspecified value and does leave it
+out when generating the name for comparison.
 
 **Frequency Suffixes**
 
