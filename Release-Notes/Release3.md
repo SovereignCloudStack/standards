@@ -14,8 +14,7 @@ tang from the state of a technical preview to be fully supported.
 * The Kubernetes Cluster API is now available in a stable v1beta1
   [release 1.1.x](https://github.com/kubernetes-sigs/cluster-api/releases)
   with the corresponding [cluster-api-provider-openstack 0.6.x](https://github.com/kubernetes-sigs/cluster-api/releases).
-* The [Kubernetes Cluster API cluster management service]
-  (https://github.com/SovereignCloudStack/k8s-cluster-api-provider/)
+* The [Kubernetes Cluster API cluster management service](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/)
   has seen major managability improvements.
   Please consult the
   [k8s capi provider release notes](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/master/Release-Notes-R3.md)
