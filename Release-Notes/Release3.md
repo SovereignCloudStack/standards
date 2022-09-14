@@ -25,7 +25,7 @@ tang from the state of a technical preview to be fully supported.
 * The base infrastructure is provided by
   [OSISM 4.0.0](https://github.com/osism/release/blob/main/notes/4.0.0/NOTES.md)
   which in turn builds on top of kolla and kolla-ansible.
-* Disk encryption based on Network bound disk encryption (NBDE) is available.
+
 
 ## New Features (Highlights)
 
@@ -42,13 +42,17 @@ tang from the state of a technical preview to be fully supported.
 
 * Gaia-X self-description generator ...
 
+* LUKS encryption is now documented and available.
+
+* Disk encryption based on Network bound disk encryption (NBDE) is available.
+
 ### SCS Developer focused improvements (testbed)
 
 * Container standardization underway ...
 
 * Container cluster updating and upgrading.
 
-* LUKS encryption is now documented and enabled in the testbed by default.
+* LUKS encryption is enabled in the testbed by default.
 
 * Further noteworthy improvements to testbed:
   * Public DNS for testbed is now available (`testbed.osism.xyz`), allowing to access services
