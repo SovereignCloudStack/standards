@@ -102,14 +102,14 @@ Deprecations happen according to our [deprecation policy](https://github.com/Sov
 * Debian dropped hddtemp (https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1002484),
   therefore the ``hddtemp`` service will be removed from the next OSISM release, as there is
   no package available for Ubuntu 22.04.
-* Heat will no longer be offered by default in the testbed in the future
-* The following services are currently not used and are deprecated and scheduled for removal as of now: Falco, Jenkins, Rundeck, Lynis, Trivy
+* Heat will no longer be offered by default in the testbed in the future.
+* The following services are currently not used and are deprecated and scheduled for removal as of now: Falco, Jenkins, Rundeck, Lynis, Trivy.
 * The docker-compose CLI will be removed and replaced by the new compose plugin for Docker.
-docker-compose is then no longer available and docker compose must be used instead
+docker-compose is then no longer available and docker compose must be used instead.
 * The ``cleanup-elasticsearch`` playbook is deprecated. In the future,
   the ``elasticsearch-curator`` service (part of Kolla) has to be used
   for Elasticsearch cleanup.
-* All `osism-` scripts on the manager are deprecated and will be replaced by the new OSISM CLI. The scripts will be removed in the next release
+* All `osism-` scripts on the manager are deprecated and will be replaced by the new OSISM CLI. The scripts will be removed in the next release.
 
 ## Security Fixes
 
