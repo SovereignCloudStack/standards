@@ -92,7 +92,6 @@ Per cluster application credentials.
 ## Removals
 
 * The Cockpit service has been removed.
-* All osism- scripts on the manager are deprecated and will be replaced by the new OSISM CLI. The scripts will be removed in the next release
 
 ## Deprecations
 
@@ -110,6 +109,7 @@ docker-compose is then no longer available and docker compose must be used inste
 * The ``cleanup-elasticsearch`` playbook is deprecated. In the future,
   the ``elasticsearch-curator`` service (part of Kolla) has to be used
   for Elasticsearch cleanup.
+* All `osism-` scripts on the manager are deprecated and will be replaced by the new OSISM CLI. The scripts will be removed in the next release
 
 ## Security Fixes
 
