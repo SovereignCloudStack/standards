@@ -1,14 +1,11 @@
 ---
 title: SCS Image Metadata Proposal
-version: 2021-07-02-001
-authors: Kurt Garloff, Christian Berendt
-state: Draft
+version: 2022-09-15-001
+authors: Kurt Garloff, Christian Berendt, Felix Kronlage-Dammers, Mathias Fechner, Ralf Heiringhoff
+state: Released (v1.0)
 ---
 
-SCS Image Metadata Proposal (DRAFT) SCS
-
-Please take note, that this is a DRAFT open for discussion (2021-07-02),
-though it will be locked down for SCS R0 in a few days.
+SCS Image Metadata Standard SCS
 
 # Motivation
 
@@ -41,6 +38,40 @@ Special variants that include specific non-standard features should be named
 
 There are several policies possible to provide updated images to include the latest
 bug- and security fixes. This is outlined in update policy description below.
+
+# Standard images
+
+SCS does not at this point mandate the availability of certain images.
+We however intend to change this after a broader discussion.
+
+We intend to mandate the following images:
+* `Ubuntu 22.04`, `Ubuntu 20.04`, `Debian 11`
+* When a CentOS successor emerges, we would have one in the mandatory list.
+* Note on versions: We would move to the latest Ubuntu LTS version when the first .1 release happens
+  (in July or so). So in summer 2024, `Ubuntu 24.04` would become mandatory and `Ubuntu 20.04` become optional.
+  For Debian we follow STABLE, also with max. ~3 months delay.
+
+We intend to recommend the following images:
+* `CentOS 8`
+* `Alma Linux 8`, `Rocky 8`
+* `Debian 10` (the one pre-latest STABLE)
+* `Fedora 36` (this will get replaced quickly as the next Fedora comes out)
+
+We want to suggest the following supported images (with licensing/maintenance/support as intended from OS vendor)
+* `SLES 15SP4`
+* `RHEL 9`, `RHEL 8`
+* `Windows Server 2022`, `Windows Server 2019`
+
+We are also looking into standard suggestions for
+* `openSUSE Leap 15.4`
+* `Cirros`
+* `Alpine`
+* `Arch`
+
+The suggestions mainly serve to align image naming between providers.
+
+Note that additional images will be available on typical platforms, e.g. `ubuntu-capi-image-v1.24.4`
+for platforms that are prepared to support SCS k8s cluster management. 
 
 # Technical requirements and features
 
@@ -96,6 +127,8 @@ update frequency of `monthly`, should be replaced no later than 2021-05-14. Due 
 etc., up to 3 days later is not considered a violation of this policy. So the a valid sequence
 from an image with `monthly` update frequency might be 2021-04-14, 2021-05-14, 2021-06-15,
 2021-07-14, 2021-07-27 (hotfix), 2021-08-13 ...
+
+We recommend updating images at least monthly.
 
 The `hotfix_hours` field indicates how providers deal with critical security issues
 that affect the images; it is an optional field that contains a numerical value, indicating
