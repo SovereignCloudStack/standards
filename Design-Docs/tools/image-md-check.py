@@ -165,8 +165,8 @@ def validate_imageMD(imgnm):
     # This is a bit tricky: We need to disregard images that have been rotated out
     # - os_hidden = True is a safe sign for this
     # - A name with a date stamp or old or prev (and a newer exists)
-    #(6) tags os:*, managed_by_*
     #(2) sanity min_ram (>=64), min_disk (>= size)
+    #(6) tags os:*, managed_by_*
     #
     #(7) Recommended naming
     if verbose and imgnm[:len(constr_name)].casefold() != constr_name.casefold():
