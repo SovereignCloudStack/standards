@@ -9,24 +9,26 @@ and Shiboleth.  Currently the SCS testbed deploys a configuration
 that uses OpenID Connect for WebSSO and oauth2 for openstack CLI.
 
 The idea is to use Keycloak as switch hub for authentication
-and to give each tenant his own realm in keycloak, where he can
+and to give each tenant their own realm in keycloak, where they can
 e.g. configure several aspects, e.g. so called `identity brokering`
 out to other SCS compliant domains. This could be done be the
-tenant himself (self service).
+tenant themself (self service).
 
-Please note that the term `Federation` is used to denote different
-things in different software contexts. Keystone itself can also do
-federation to other Keystone insances but reportedly it has certain
-limitations in that regard, e.g. required restarts when adding new
-tenants (TODO: Check this argumentation).
+### Clarification of 'Federation'
 
-Please also note that `Federation` is a 1:1 relation between a
+The term `Federation` is used to denote different things in different
+software contexts. Keystone itself can also do federation to other
+Keystone insances but reportedly it has certain limitations in that
+regard, e.g. required restarts when adding new tenants.
+(TODO: Check this argumentation).
+
+Furthermore note that `Federation` is a 1:1 relation between a
 service provider (in this case Keystone) and an identity provider
 (in this case Keycloak). There are several different authentication
 flows to achieve this, each of which has its own specific use cases.
 For WebSSO the "Authorization Code grant" is used
 (see e.g. https://oauthlib.readthedocs.io/en/latest/oauth2/grants/authcode.html ).
-It's still subject of research, which flow/grant type will
+It is still subject to research, which flow/grant type will
 be used for openstacl CLI, but in 2022-02 it was demonstrated in a PoC
 that the "Resource Owner Password grant" (keystoneauth plugin `v3oidcpassword`)
 can be used for `Federation` between Keystone and Keycloak.
@@ -63,7 +65,7 @@ And a second location for `oauth2` clients like openstack cli:
 ### Horizon WebSSO
 
 The SCS testbed deploys horizon, keystone and keycloak configured to support
-Horizon login via OpenID Connect against Keycloak. The darwback of this approach
+Horizon login via OpenID Connect against Keycloak. The drawback of this approach
 is, that Horizon shows all selectable tenant realms (Keycloak) in a dropdown box
 to select from. This is not business ready, and one would probably need to provide
 dedicated login pages per tenant instead. (TODO: Verify this with other members of SIG-IAM).
