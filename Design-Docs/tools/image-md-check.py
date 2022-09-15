@@ -40,9 +40,25 @@ rec2_images = ["SLES 15SP4", "RHEL 9", "RHEL 8", "Windows Server 2022", "Windows
 sugg_images = ["openSUSE Leap 15.4", "Cirros 0.5.2", "Alpine", "Arch"]
 
 def get_imagelist(priv):
-    return list(map(lambda x: x.name, conn.image.images()))
+    if priv:
+        imgs = conn.image.images()
+    else:
+        imgs = conn.image.images(visibility='public')
+    return list(map(lambda x: x.name, imgs))
 
 def validate_imageMD(imgnm):
+    try:
+        img = conn.image.find_image(imgnm)
+    except openstack.exceptions.DuplicateResource as exc:
+        print("Error with duplicate name \"%s\": %s" % (imgnm, str(exc)), file=sys.stderr)
+        return 1
+    # Now the hard work: Look at properties ....
+    #(1) recommended os_* and hw_*
+    #(2) sanity architecture, min_ram, min_disk (vs size)
+    #(3) is_hash
+    #(4) image_build_date, image_original_user, image_source (opt image_description)
+    #(5) maintained_until, provided_until, uuid_validity, update_frequency
+    #(6) tags os:*, managed_by_*
     return 0
 
 def report_stdimage_coverage(imgs):
@@ -83,10 +99,11 @@ def main(argv):
     # Do work
     if not images:
         images = get_imagelist(private)
+    err = 0
     # Analyse image metadata
     for image in images:
-        validate_imageMD(image)
-    return report_stdimage_coverage(images)
+        err += validate_imageMD(image)
+    return err + report_stdimage_coverage(images)
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
