@@ -45,17 +45,22 @@ SCS does not at this point mandate the availability of certain images.
 We however intend to change this after a broader discussion.
 
 We intend to mandate the following images:
-* `Ubuntu 22.04`, `Ubuntu 20.04`, `Debian 11`
+* `Ubuntu <LATESTLTS>`, `Ubuntu <PREVLTS>`, `Debian <STABLE>`
+* Note that `<LATESTLTS>` refers to the latest LTS version, which at this point is `22.04`.
+  The `<PREVLTS>` is the previous LTS version, at the time of this writing (9/2022) it's `20.04`.
+  We don't carry the `.x` patch numbers in the standard image names. We switch to requiring the
+  newest Ubuntu LTS version when the `.1` version comes out (around July/August). At this point
+  the old `<PREVLTS>` version becomes optional ...
+* For Debian, we use the latest STABLE version, which is `11` at the time of this writing.
+  Similar to Ubuntu, we would do the switch and require the latest STABLE to be made available within
+  ~3 months after release.
 * When a CentOS successor emerges, we would have one in the mandatory list.
-* Note on versions: We would move to the latest Ubuntu LTS version when the first .1 release happens
-  (in July or so). So in summer 2024, `Ubuntu 24.04` would become mandatory and `Ubuntu 20.04` become optional.
-  For Debian we follow STABLE, also with max. ~3 months delay.
 
 We intend to recommend the following images:
 * `CentOS 8`
 * `Alma Linux 8`, `Rocky 8`
-* `Debian 10` (the one pre-latest STABLE)
-* `Fedora 36` (this will get replaced quickly as the next Fedora comes out)
+* `Debian <PREVSTABLE>` (the one pre-latest `<STABLE>`, `10` at the time of writing)
+* `Fedora <LATEST>` (`36` currently, this will get replaced quickly as the next Fedora comes out)
 
 We want to suggest the following supported images (with licensing/maintenance/support as intended from OS vendor)
 * `SLES 15SP4`
@@ -64,7 +69,7 @@ We want to suggest the following supported images (with licensing/maintenance/su
 
 We are also looking into standard suggestions for
 * `openSUSE Leap 15.4`
-* `Cirros`
+* `Cirros 0.5.2`
 * `Alpine`
 * `Arch`
 
