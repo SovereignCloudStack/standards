@@ -133,6 +133,12 @@ etc., up to 3 days later is not considered a violation of this policy. So the a 
 from an image with `monthly` update frequency might be 2021-04-14, 2021-05-14, 2021-06-15,
 2021-07-14, 2021-07-27 (hotfix), 2021-08-13 ...
 
+Promises to update the registered public images tpyically depend on upstream image providers
+(Linux distributors, OS vendors) keeping their promises to build and provide updated images.
+Failures from upstream are not a reason to claim the cloud provider to be in violation of his
+promises. However, if the provider observes massive upstream failures (which can e.g. cause
+increased security risks), we advise the provider to inform the users.
+
 We recommend updating images at least monthly.
 
 The `hotfix_hours` field indicates how providers deal with critical security issues
@@ -148,7 +154,9 @@ The `provided_until` field is supposed to contain a date in `YYYY-MM-DD` format 
 indicates until when an image under this name will be provided and (according to the
 `replace_frequency`) updated at least. (Providers are free to provide updates for
 longer or leave the non-updated image visible for longer.)
-If this field is not set, no promises are made.
+If this field is set to `none`, no promises are made, if it is set to `notice`, updates
+will be provided until a deprecation notice is published. (The values are the same as
+for below `uuid_validity`, except that `forever` and `last-N` don't make any sense.)
 
 The `uuid_validity` field indicates how long the public image will be referencable
 by it's UUID.
@@ -185,10 +193,17 @@ The provider makes an effort to replace images upon critical security issues out
 * Mandatory: `image_source` needs to be a URL to point to a place from which the image can be downloaded.
   (Note: This may be set to the string "private" to indicate that the image can not be freely
    downloaded.)
-* Mandatory: `image_description` needs to be a URL with release notes and other human readable data
-  about the image.
+* Mandatory: `image_description` needs to be an URL (or text) with release notes and other human readable
+  data about the image.
 
 * Recommended *tag*: `managed_by_VENDOR`
+
+Note that for most images that come straight from an upstream source, `image_description` should point
+to a an upstream web page where these images are described. If download links are available as well
+on that page, `image_source` can point to the same page, otherwise a more direct link to the image
+should be used, e.g. directly linking the `.qcow2` or `.img` file.
+If providers have their own image building machinery or do some post-processing on top of
+upstream images, they should point to the place where they document and offer these images.
 
 ## Image build info
 
