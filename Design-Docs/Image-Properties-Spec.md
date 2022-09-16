@@ -175,7 +175,7 @@ Note that the old images must be hidden from the image catalogue or renamed (or 
 to avoid failing referencing by name. Note that `last-N` may be limited by the `provided_till`
 date.
 
-The three properties `uuid_validity`, `provided_until` and `update_frequency` are mandatory;
+The three properties `uuid_validity`, `provided_until` and `replace_frequency` are mandatory;
 the field `hotfix_hours` is optional.
 
 All dates are in UTC.

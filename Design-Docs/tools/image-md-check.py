@@ -101,7 +101,7 @@ build_props = (property("image_build_date", True, ()),
                property("image_original_user", True, (), "Default ssh username"),
                property("image_source", True, ()),
                property("image_description", True, ()))
-maint_props = (property("update_frequency", True, ("yearly", "quarterly", "monthly", "weekly", "daily", "critical_bug", "never")),
+maint_props = (property("replace_frequency", True, ("yearly", "quarterly", "monthly", "weekly", "daily", "critical_bug", "never")),
                property("provided_until", True, ()),
                property("uuid_validity", True, ()),
                property("hotfix_hours", False, ()))
