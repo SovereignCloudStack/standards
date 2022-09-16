@@ -1,14 +1,11 @@
 ---
 title: SCS Image Metadata Proposal
-version: 2021-07-02-001
-authors: Kurt Garloff, Christian Berendt
-state: Draft
+version: 2022-09-15-001
+authors: Kurt Garloff, Christian Berendt, Felix Kronlage-Dammers, Mathias Fechner, Ralf Heiringhoff
+state: Released (v1.0)
 ---
 
-SCS Image Metadata Proposal (DRAFT) SCS
-
-Please take note, that this is a DRAFT open for discussion (2021-07-02),
-though it will be locked down for SCS R0 in a few days.
+SCS Image Metadata Standard SCS
 
 # Motivation
 
@@ -41,6 +38,45 @@ Special variants that include specific non-standard features should be named
 
 There are several policies possible to provide updated images to include the latest
 bug- and security fixes. This is outlined in update policy description below.
+
+# Standard images
+
+SCS does not at this point mandate the availability of certain images.
+We however intend to change this after a broader discussion.
+
+We intend to mandate the following images:
+* `Ubuntu <LATESTLTS>`, `Ubuntu <PREVLTS>`, `Debian <STABLE>`
+* Note that `<LATESTLTS>` refers to the latest LTS version, which at this point is `22.04`.
+  The `<PREVLTS>` is the previous LTS version, at the time of this writing (9/2022) it's `20.04`.
+  We don't carry the `.x` patch numbers in the standard image names. We switch to requiring the
+  newest Ubuntu LTS version when the `.1` version comes out (around July/August). At this point
+  the old `<PREVLTS>` version becomes optional ...
+* For Debian, we use the latest STABLE version, which is `11` at the time of this writing.
+  Similar to Ubuntu, we would do the switch and require the latest STABLE to be made available within
+  ~3 months after release.
+* When a CentOS successor emerges, we would have one in the mandatory list.
+
+We intend to recommend the following images:
+* `CentOS 8`
+* `Alma Linux 8`, `Rocky 8`
+* `Debian <PREVSTABLE>` (the one pre-latest `<STABLE>`, `10` at the time of writing)
+* `Fedora <LATEST>` (`36` currently, this will get replaced quickly as the next Fedora comes out)
+
+We want to suggest the following supported images (with licensing/maintenance/support as intended from OS vendor)
+* `SLES 15SP4`
+* `RHEL 9`, `RHEL 8`
+* `Windows Server 2022`, `Windows Server 2019`
+
+We are also looking into standard suggestions for
+* `openSUSE Leap 15.4`
+* `Cirros 0.5.2`
+* `Alpine`
+* `Arch`
+
+The suggestions mainly serve to align image naming between providers.
+
+Note that additional images will be available on typical platforms, e.g. `ubuntu-capi-image-v1.24.4`
+for platforms that are prepared to support SCS k8s cluster management. 
 
 # Technical requirements and features
 
@@ -97,6 +133,14 @@ etc., up to 3 days later is not considered a violation of this policy. So the a 
 from an image with `monthly` update frequency might be 2021-04-14, 2021-05-14, 2021-06-15,
 2021-07-14, 2021-07-27 (hotfix), 2021-08-13 ...
 
+Promises to update the registered public images tpyically depend on upstream image providers
+(Linux distributors, OS vendors) keeping their promises to build and provide updated images.
+Failures from upstream are not a reason to claim the cloud provider to be in violation of his
+promises. However, if the provider observes massive upstream failures (which can e.g. cause
+increased security risks), we advise the provider to inform the users.
+
+We recommend updating images at least monthly.
+
 The `hotfix_hours` field indicates how providers deal with critical security issues
 that affect the images; it is an optional field that contains a numerical value, indicating
 how quickly (in hours) a new image is provided *after the latter of the points in time that
@@ -110,7 +154,9 @@ The `provided_until` field is supposed to contain a date in `YYYY-MM-DD` format 
 indicates until when an image under this name will be provided and (according to the
 `replace_frequency`) updated at least. (Providers are free to provide updates for
 longer or leave the non-updated image visible for longer.)
-If this field is not set, no promises are made.
+If this field is set to `none`, no promises are made, if it is set to `notice`, updates
+will be provided until a deprecation notice is published. (The values are the same as
+for below `uuid_validity`, except that `forever` and `last-N` don't make any sense.)
 
 The `uuid_validity` field indicates how long the public image will be referencable
 by it's UUID.
@@ -147,10 +193,17 @@ The provider makes an effort to replace images upon critical security issues out
 * Mandatory: `image_source` needs to be a URL to point to a place from which the image can be downloaded.
   (Note: This may be set to the string "private" to indicate that the image can not be freely
    downloaded.)
-* Mandatory: `image_description` needs to be a URL with release notes and other human readable data
-  about the image.
+* Mandatory: `image_description` needs to be an URL (or text) with release notes and other human readable
+  data about the image.
 
 * Recommended *tag*: `managed_by_VENDOR`
+
+Note that for most images that come straight from an upstream source, `image_description` should point
+to a an upstream web page where these images are described. If download links are available as well
+on that page, `image_source` can point to the same page, otherwise a more direct link to the image
+should be used, e.g. directly linking the `.qcow2` or `.img` file.
+If providers have their own image building machinery or do some post-processing on top of
+upstream images, they should point to the place where they document and offer these images.
 
 ## Image build info
 
