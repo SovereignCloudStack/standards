@@ -9,7 +9,7 @@
 # 10-19: Error in CPU:Ram spec
 # 20-29: Error in Disk spec
 # 30-39: Error in Hype spec
-# 40-49: Error in optional -vmx support
+# 40-49: Error in optional -hwv support
 # 50-59: Error in optional specific CPU description
 # 60-69: Error in optional GPU spec
 # 70-79: Unknown extension
@@ -371,13 +371,13 @@ class Hype(Prop):
     outstr = "%s"
     tbl_hype = {"kvm": "KVM", "xen": "Xen", "hyv": "Hyper-V", "vmw": "VMware", "bms": "Bare Metal System"}
 
-class NestVirt(Prop):
-    type = "NestedVirtualization"
-    parsestr = re.compile(r"\-(vmx)")
-    pattrs = ("nestvirt",)
-    pnames = ("?NestedVirt",)
-    outstr = "%?vmx"
-    #tbl_hype = {"vmx": "HW virtualization (nested)"}
+class HWVirt(Prop):
+    type = "Hardware/NestedVirtualization"
+    parsestr = re.compile(r"\-(hwv)")
+    pattrs = ("hwvirt",)
+    pnames = ("?HardwareVirt",)
+    outstr = "%?hwv"
+    #tbl_hype = {"hwv": "HW virtualization (nested)"}
 
 class CPUBrand(Prop):
     type = "CPUBrand"
@@ -415,14 +415,14 @@ class IB(Prop):
     pnames = ("?IB",)
     outstr = "%?ib"
 
-def outname(cpuram, disk, hype, nvirt, cpubrand, gpu, ib):
+def outname(cpuram, disk, hype, hvirt, cpubrand, gpu, ib):
         out = "SCS-" + cpuram.out()
         if disk.parsed:
             out += ":" + disk.out()
         if hype.parsed:
             out += "-" + hype.out()
-        if nvirt.parsed:
-            out += "-" + nvirt.out()
+        if hvirt.parsed:
+            out += "-" + hvirt.out()
         if cpubrand.parsed:
             out += "-" + cpubrand.out()
         if gpu.parsed:
@@ -453,8 +453,8 @@ def parsename(nm):
     n = n[disk.parsed:]
     hype = Hype(n)
     n = n[hype.parsed:]
-    nvirt = NestVirt(n)
-    n = n[nvirt.parsed:]
+    hvirt = HWVirt(n)
+    n = n[hvirt.parsed:]
     # FIXME: Need to ensure we don't misparse -ib here
     cpubrand = CPUBrand(n)
     n = n[cpubrand.parsed:]
@@ -463,20 +463,20 @@ def parsename(nm):
     ib = IB(n)
     n = n[ib.parsed:]
     if verbose:
-        printflavor(nm, (cpuram, disk, hype, nvirt, cpubrand, gpu, ib))
+        printflavor(nm, (cpuram, disk, hype, hvirt, cpubrand, gpu, ib))
 
     if n:
         print("ERROR: Could not parse: %s" % n)
         raise NameError("Error 70: Could not parse %s (extras?)" % n)
 
     errbase = 0
-    for el in (cpuram, disk, hype, nvirt, cpubrand, gpu, ib):
+    for el in (cpuram, disk, hype, hvirt, cpubrand, gpu, ib):
         errbase += 10
         err = el.validate()
         if err:
             raise NameError("Validation error %i (in el %i (%s) in %s)" % (err+errbase, err-1, el.pnames[err-1], el.type))
 
-    return (cpuram, disk, hype, nvirt, cpubrand, gpu, ib)
+    return (cpuram, disk, hype, hvirt, cpubrand, gpu, ib)
 
 def inputflavor():
     cpuram = Main("")
@@ -485,15 +485,15 @@ def inputflavor():
     disk.input()
     hype = Hype("")
     hype.input()
-    nvirt = NestVirt("")
-    nvirt.input()
+    hvirt = HWVirt("")
+    hvirt.input()
     cpubrand = CPUBrand("")
     cpubrand.input()
     gpu = GPU("")
     gpu.input()
     ib = IB("")
     ib.input()
-    return (cpuram, disk, hype, nvirt, cpubrand, gpu, ib)
+    return (cpuram, disk, hype, hvirt, cpubrand, gpu, ib)
 
 
 def main(argv):
