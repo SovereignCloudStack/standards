@@ -109,12 +109,14 @@ level).
 
 Technically, the thus updated image is a new image and will thus carry a new UUID.
 It is recommended that the old image gets renamed (e.g. build date or patch level attached)
-and hidden (`os_hidden=true`), but remains accessible via its (unchanged) UUID. 
+and hidden (`os_hidden=true`), but remains accessible via its (unchanged) UUID for some
+time.
 
 The update handling by the provider is described via the properties `replace_frequency`,
-`uuid_validity`, `provided_until`, and `hotfix_policy`.
+`uuid_validity`, `provided_until`, and `hotfix_hours`.
 
-The `replace_frequency`, `provided_until`, and `hotfix_policy` fields reference to the image name.
+The `replace_frequency`, `provided_until`, and `hotfix_hours` fields reference to the image
+as referenced by its name.
 
 | `replace_frequency` | meaning              |
 |---------------------|----------------------|
