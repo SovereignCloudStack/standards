@@ -47,7 +47,7 @@ The spec allows for flavors to understate its own capabilities and does not forc
 expose all details; we don't mandate the
 very detailed names that encode Disk types, CPU vendor, generation, speed grade, hypervisor
 into the name. Actually we explicitly recommend for flavors to be available under the
-short `SCS-nV:m:l` names (with `n`, `m`, `l` being a numbers that denote CPUs, RAM in GiB
+short `SCS-nV:m:l` names (with `n`, `m`, `l` being numbers that denote #CPUs, RAM in GiB
 and disk size in GB resp.) and even mandate a small number of them to be available.
 
 For providers that have moderate size and low variance in their offering, we would
@@ -65,7 +65,7 @@ that will need work.
 
 ## The names are complex!
 
-True. The long names take some time to get used to: To take a worst case example:
+True. The long names take some time to get used to: To take a worst-case example:
 You will need some time before
 you can parse `SCS-4C:32:100s-kvm-hwv-i3h-GNa:64` into 4 dedicated cores, 32GiB
 Ram, 100GB SSD on a KVM hypervisor with nested virtualization support on an intel
@@ -92,7 +92,6 @@ If you dislike the hassle of parsing the names, you may want to consider them
 as opaque handles that you look up in a table from your cloud provider.
 No worse than `ai1-1-GPU` ...
 
-
 If you don't have complex requirements and you are looking for a flavor
 with just 4 vCPUs, 16 GiB of RAM and a 50GB disk, you ask for just that: `SCS-4V:16:50`
 No advanced training needed for this, no?
@@ -108,7 +107,7 @@ However, we can not allow this not being transparent.
 
 A flavor name carries a certain promise of what's included.
 We feel a need to force transparency to create a level playing field in
-our ecosystem. This is needed to ensure that users to use many cloud
+our ecosystem. This is needed to ensure that users can use many cloud
 operators together and find a somewhat similar level of performance.
 
 So yes, these caveats need to be made transparent and be visible
@@ -119,7 +118,7 @@ that noone claiming SCS compliance will cheat.
 
 If you are a large provider with lots of different flavors, the long `SCS-`
 names allow you to offer all the variance in a systematic way. The naming is
-cloud-vendor neutral, so there is a possibility that users find the same flavor
+cloud-vendor neutral, so there is a chance that users find the same flavor
 names elsewhere. So we recommend to use these names. We don't mandate it -- only
 the 26 mandatory `SCS-` flavors are required to be present. All names with
 `SCS-` however do need to follow the SCS specification.
@@ -142,12 +141,13 @@ way. Proposals on this will happen soon.
 ## Gaia-X Self-Descriptions
 
 The Gaia-X Self-Descriptions have started with making the legal entities
-behind offering transparent. We have been contributing to pushing efforts
+behind offerings transparent. We have been contributing to pushing efforts
 to also expose technical details of platforms via self-descriptions.
-So this would become another avenue to having the discoverability feature
-on the flavors.
+So this would become another avenue to provide discoverability
+of the flavor properties.
 
 Our suggested approach is to read out the platform features (the flavor properties
 and `extra_specs`, also interpret the names if they are `SCS-` names) and use
 them to automatically generate self-descriptions.
-
+Some early-stage work has been done during Gaia-X Hackathon #4 and is available
+in the gx-self-description-generator repository.
