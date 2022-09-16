@@ -88,7 +88,7 @@ that your memory is protected by ECC or better and not oversubscribed.
 
 You can also use the interactive mode `-i` to construct flavor names.
 
-If you dislike the hazzle of parsing the names, you may want to consider them
+If you dislike the hassle of parsing the names, you may want to consider them
 as opaque handles that you look up in a table from your cloud provider.
 No worse than `ai1-1-GPU` ...
 
