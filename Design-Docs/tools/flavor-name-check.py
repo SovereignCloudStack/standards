@@ -35,6 +35,7 @@ scsMandatory = ["SCS-1V:4", "SCS-1V:4:10", "SCS-2V:8", "SCS-2V:8:20",
 			"SCS-4V:8:20", "SCS-8V:16", "SCS-8V:16:50", "SCS-16V:32", "SCS-16V:32:100",
 			"SCS-1V:8", "SCS-1V:8:20", "SCS-2V:16", "SCS-2V:16:50", "SCS-4V:32", "SCS-4V:32:100",
 			"SCS-1L:1", "SCS-1L:1:5"]
+scsMandNum = len(scsMandatory)
 
 # help
 def usage():
@@ -498,7 +499,8 @@ def inputflavor():
 
 def main(argv):
     global verbose, debug, completecheck
-    if len(argv) < 1:
+    # TODO: Use getopt for proper option parsing
+    if len(argv) < 1 or argv[0] == "-h":
         usage()
     if argv[0] == "-d":
         debug = True
@@ -526,12 +528,23 @@ def main(argv):
         argv = argv[1:]
 
     error = 0
+    nonscs = 0
+    scs = 1
 
-    for name in argv:
+    # TODO: Option to get flavor list directly from API
+    # TODO: Validate additional aspects
+    # - vCPU, RAM, Disk (as reported via std. OpenStack API)
+    # - Check extra_specs (according to TBW SCS spec)
+    flavorlist = argv
+
+    for name in flavorlist:
+        if not name:
+            continue
         ret = parsename(name)
         if not ret:
-            error = 1
+            nonscs += 1
             continue
+        scs += 1
         namecheck = outname(*ret)
         if completecheck and name in scsMandatory:
             scsMandatory.remove(name)
@@ -543,11 +556,17 @@ def main(argv):
             #raise NameError("%s != %s" % (name, namecheck))
             print("WARNING: %s != %s" % (name, namecheck))
 
+    if completecheck:
+        print("Found %i SCS flavors (%i mandatory), %i non-SCS flavors" % \
+            (scs, scsMandNum, nonscs))
     if completecheck and scsMandatory:
         print("Missing mandatory flavors: %s" % scsMandatory)
         return len(scsMandatory)
 
-    return error
+    if completecheck:
+        return error
+    else:
+        return nonscs+error
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))

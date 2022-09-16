@@ -413,9 +413,13 @@ considered broken by the SCS team.
 
 # Validation
 
-There is a script in [flavor_name_check.py](../Operational-Docs/tools/flavor-name-check.py) which can be used to decode, validate
-and construct flavor names.
+There is a script in [flavor_name_check.py](../Operational-Docs/tools/flavor-name-check.py)
+which can be used to decode, validate and construct flavor names.
 This script must stay in sync with the specification text.
+
+Ensure you have your OpenStack tooling (`python3-openstackclient`, `OS_CLOUD`) setup and call
+`tools/flavor-name-check.py -c $(openstack flavor list -f value -c Name)` to get a report
+on the flavor list compliance of the cloud environment.
 
 # Beyond SCS: Gaia-X
 
