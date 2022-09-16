@@ -390,8 +390,8 @@ class CPUBrand(Prop):
     tbl_perf = {"": "Std Perf", "h": "High Perf", "hh" : "Very High Perf", "hhh": "Very Very High Perf"}
     # Generation decoding
     tbl_cpuvendor_i_cpugen = { 0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake" }
-    tbl_cpuvendor_z_cpugen = { 0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3" }
-    tbl_cpuvendor_a_cpugen = { 0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "Anext/NeoN2" }
+    tbl_cpuvendor_z_cpugen = { 0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4" }
+    tbl_cpuvendor_a_cpugen = { 0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A710/NeoN2" }
     #tbl_cpuvendor_r_cpugen = { 0: "SF U54", 1: "SF U74", 2: "SF U84"}
 
 class GPU(Prop):

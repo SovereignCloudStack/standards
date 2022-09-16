@@ -235,7 +235,8 @@ Not specifying arch means that we have a generic CPU (**x86-64**).
 |  0         | pre Skylake      | pre Zen        | pre Cortex A76     | TBD        |
 |  1         | Skylake          | Zen-1 (Naples) | A76/NeoN1 class    | TBD        |
 |  2         | Cascade Lake     | Zen-2 (Rome)   | A78/x1/NeoV1 class | TBD        |
-|  3         | Ice Lake         | Zen-3 (Milan)  | Anext/NeoN2 class  | TBD        |
+|  3         | Ice Lake         | Zen-3 (Milan)  | A71x/NeoN2 (ARMv9) | TBD        |
+|  4         |                  | Zen-4 (Genoa)  |                    | TBD        |
 
 It is recommended to leave out the `0` when specifying the old generation; this will
 help the parser tool, which assumes 0 for an unspecified value and does leave it
