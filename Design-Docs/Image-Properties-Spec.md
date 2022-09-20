@@ -30,7 +30,7 @@ We categorize the image properties into a few buckets
 # Naming
 
 We suggest plain OS images to be named "Distribution Version",
-e.g. "openSUSE Leap 15.3" or "Ubuntu 20.04" or "CentOS 8.4", "Windows Server 2012R2".
+e.g. "openSUSE Leap 15.3" or "Ubuntu 20.04" or "CentOS 8", "Windows Server 2012R2".
 We do not normally recommend to add more detailed patch levels into the name.
 
 Special variants that include specific non-standard features should be named
