@@ -1,6 +1,7 @@
 # How to create better job instance names through fqdn-based scraping
 
-Kolla-natively, Prometheus does not scrape endpoints by FQDN, as it does not integrate the infrastructure into hostname files. Conventienly, OSISM delivers this functionality with `osism-generic hosts` (https://github.com/osism/ansible-collection-commons/tree/main/roles/hosts) so we can leverage this to help Prometheus to scrape endpoints by FQDN.
+Kolla-natively, Prometheus does not scrape endpoints by FQDN, as it does not integrate the infrastructure into hostname files. This leads to Grafana only showing nodes by IP, which can be confusing and unintuitive. A better alternative would be clean FQDN names for the Grafana Dashboards provided by prometheus scrape jobs.
+Conventienly, OSISM delivers "hard-coded" FQDN functionality with `osism-generic hosts` (https://github.com/osism/ansible-collection-commons/tree/main/roles/hosts) so we can leverage this to help Prometheus to scrape endpoints by FQDN.
 
 To achieve such, we need to add a custom `prometheus.yml` as well as custom scrape definitions in prometheus.yml.d and, most importantly, custom hosts to the `hosts_additional_entries` dict object in `environments/configuration.yml`
 
