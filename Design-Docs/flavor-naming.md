@@ -50,7 +50,7 @@ We believe the following characteristics are important in a flavour description:
 
 | Prefix | CPU | Suffix     | RAM[GiB] | optional: Disk[GB] | optional: Disk type | optional: extra features                           |
 |--------|-----|------------|----------|--------------------|---------------------|----------------------------------------------------|
-| SCS-   |  N  | L/V/T/C[i] | :N[u][o] | [:[Mx]N]           | [n/s/l/p]           | [-hyp][-vmx][-[arch[N][h][-[G/g]X[N][:M[h]]][-ib] |
+| SCS-   |  N  | L/V/T/C[i] | :N[u][o] | [:[Mx]N]           | [n/s/l/p]           | [-hyp][-hwv][-[arch[N][h][-[G/g]X[N][:M[h]]][-ib] |
 
 (Note that `N` and `M` are placeholders for numbers here).
 
@@ -201,22 +201,24 @@ or Bare Metal Systems should indicate the Hypervisor according to the following 
 - SCS-2C:4:10n-**bms**
 - SCS-2C:4:10n-**bms**-z3h
 
-## [OPTIONAL] Nested virtualization
+## [OPTIONAL] Hardware virtualization / Nested virtualization
 
-If you support nested virtualization, i.e. your hypervisor exposes the (on x86)
-VMX CPU flag to its guests and does the necessary fault handling and emulation
-to make it look like you have hardware virtualization support in your guest,
-this can be reflected with a `-vmx` flag (after the optional Hypervisor).
-Flavors without the `-vmx` flag may or may not support nested virtualization (as we
+If the instances that are created with this flavor support hardware-accelerated
+virtualization, this can be reflected with the `-hwv` flag (after the optional
+Hypervisor flag). On x86, this means that in the instance, the CPU flag vmx (intel)
+or svm (AMD) is available. This will be the case on Bare Metal flavors on almost 
+all non-ancient x86 CPUs or if your virtualization hypervisor is configured to
+support nested virtualization.
+Flavors without the `-hwv` flag may or may not support hardware virtualization (as we
 recommend enabling nesting, but don't require flavor names to reflect all
 capabilities. Flavors may overdeliver ...)
 
 **Examples**
 
 - SCS-2C:4:10           <- may or may not support HW virtualization in VMs
-- SCS-2C:4:10-kvm-**vmx**
-- SCS-2C:4:10-**vmx** 	<- not recommended, but allowed
-- ~~SCS-2C:4:10-**vmx**-xen~~ 	<- illegal, wrong ordering
+- SCS-2C:4:10-kvm-**hwv**
+- SCS-2C:4:10-**hwv** 	<- not recommended, but allowed
+- ~~SCS-2C:4:10-**hwv**-xen~~ 	<- illegal, wrong ordering
 
 ## [OPTIONAL] CPU Architecture Details
 
