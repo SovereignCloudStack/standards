@@ -23,7 +23,7 @@ tang from the state of a technical preview to be fully supported.
 * Ceph Quincy is available, the default release of Ceph is still Pacific.
 
 * The base infrastructure is provided by
-  [OSISM 4.0.0](https://github.com/osism/release/blob/main/notes/4.0.0/NOTES.md)
+  [OSISM 4.0.0](https://release.osism.tech/notes/4.0.0.html)
   which in turn builds on top of kolla and kolla-ansible.
 * Disk encryption based on Network bound disk encryption (NBDE) is available.
 
