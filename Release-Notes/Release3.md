@@ -54,11 +54,19 @@ tang from the state of a technical preview to be fully supported.
   be awared a verifiable credential. Code is available in the
   [gx-self-description-generator repo](https://github.com/SovereignCloudStack/gx-self-description-generator)
 
-### SCS Developer focused improvements (testbed)
+### SCS Developer focused improvements (testbed and k8s cluster management)
 
-* Container standardization underway ...
+* We have had significant discussions how to standardize our cluster management solution.
+  While our reference implementation uses the concepts and code from k8s cluster API on
+  top of our SCS reference implementation (OpenStack automated by OSISM), we wanted to
+  define a way that allows non-OpenStack IaaS and solutions that diverge from cluster-API
+  to be SCS compliant. We have a draft concept for this now that will be worked on during
+  the R4 cycle. See [Cluster standardization](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/main/Release-Notes-R3.md#cluster-standardization)
+  section of the release notes from k8s-cluster-api-provider.
 
-* Container cluster updating and upgrading.
+* Workload clusters managed by our SCS cluster management solutions can now much
+  more easily receive k8s version upgrades, [as the cluster-template no longer needs
+  to be touched for this](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/main/Release-Notes-R3.md#simplified-rolling-node-upgrades-223). There is an [Upgrade Guide](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/main/doc/Upgrade-Guide.md) available now.
 
 * LUKS encryption is now documented and enabled in the testbed by default.
 
@@ -81,8 +89,6 @@ Upgrade from R2 to R3 for cluster management and clusters.
 
 See [k8s-cluster-api-provider Release Notes](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/master/Release-Notes-R3.md#incompatible-changes)
 for more details.
-
-Per cluster application credentials.
 
 ### OSISM
 
