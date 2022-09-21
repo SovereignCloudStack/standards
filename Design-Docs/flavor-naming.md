@@ -1,8 +1,8 @@
 ---
 title: SCS Flavor Naming Standard
-version: 2021-06-09-002
+version: 2022-09-08-002
 authors: Matthias Hamm, Kurt Garloff, Tim Beermann
-state: v1.0 (for R0)
+state: v1.1 (for R3)
 ---
 
 Flavor Naming for SCS
@@ -42,15 +42,15 @@ We believe the following characteristics are important in a flavour description:
 | Generation           | CPU Generation                                               |
 | Number of CPU        | Number of vCPUs - suffixed by L,V,T,C (see below)            |
 | Amount of RAM        | Amount of memory available for the VM                        |
-| Performance Class    | Ability to lable high-performance CPUs, disks, network       |
+| Performance Class    | Ability to label high-performance CPUs, disks, network       |
 | CPU Type             | X86-intel, X86-amd, ARM, RISC-V, Generic                     |
 | "bms"                | Bare Metal System (no virtualization/hypervisor)             |
 
 ## Complete Proposal
 
-| Prefix | CPU | Suffix     | RAM[GiB] | optional: Disk[GB] | optional: Disk type | optional: extra features                    |
-|--------|-----|------------|----------|--------------------|---------------------|---------------------------------------------|
-| SCS-   |  N  | L/V/T/C[i] | :N[u][o] | [:[Mx]N]           | [n/s/l/p]           | [-hyp][-[arch[N][h][-[G/g]X[N][:M[h]]][-ib] |
+| Prefix | CPU | Suffix     | RAM[GiB] | optional: Disk[GB] | optional: Disk type | optional: extra features                           |
+|--------|-----|------------|----------|--------------------|---------------------|----------------------------------------------------|
+| SCS-   |  N  | L/V/T/C[i] | :N[u][o] | [:[Mx]N]           | [n/s/l/p]           | [-hyp][-hwv][-[arch[N][h][-[G/g]X[N][:M[h]]][-ib] |
 
 (Note that `N` and `M` are placeholders for numbers here).
 
@@ -78,11 +78,12 @@ We expect that microcode gets updated within less than a month of a new release;
 we expect less than a week.
 The provider must enable at least all mitigations that are enabled by default in the Linux kernel. CPUs that
 are susceptible to L1TF (intel x86 pre Cascade Lake) must switch off hyperthreading OR (in the future)
-use core scheduling implementations that are deemed to be secure by the SCS security team.
+use core scheduling implementations that are deemed to be secure by the SCS security team, or declare themselves
+as insecure with the `i` suffix (see below).
 
 **Higher oversubscription**
 
-Must be indicated with a `L` vCPU type (low performance for > 5x/core or > 3x/thread oversuscription and
+Must be indicated with a `L` vCPU type (low performance for > 5x/core or > 3x/thread oversubscription and
 the lack of workload management that would prevent worst case performance <20% in more than 7.2h per month).
 
 **Insufficient microcode**
@@ -200,6 +201,25 @@ or Bare Metal Systems should indicate the Hypervisor according to the following 
 - SCS-2C:4:10n-**bms**
 - SCS-2C:4:10n-**bms**-z3h
 
+## [OPTIONAL] Hardware virtualization / Nested virtualization
+
+If the instances that are created with this flavor support hardware-accelerated
+virtualization, this can be reflected with the `-hwv` flag (after the optional
+Hypervisor flag). On x86, this means that in the instance, the CPU flag vmx (intel)
+or svm (AMD) is available. This will be the case on Bare Metal flavors on almost 
+all non-ancient x86 CPUs or if your virtualization hypervisor is configured to
+support nested virtualization.
+Flavors without the `-hwv` flag may or may not support hardware virtualization (as we
+recommend enabling nesting, but don't require flavor names to reflect all
+capabilities. Flavors may overdeliver ...)
+
+**Examples**
+
+- SCS-2C:4:10           <- may or may not support HW virtualization in VMs
+- SCS-2C:4:10-kvm-**hwv**
+- SCS-2C:4:10-**hwv** 	<- not recommended, but allowed
+- ~~SCS-2C:4:10-**hwv**-xen~~ 	<- illegal, wrong ordering
+
 ## [OPTIONAL] CPU Architecture Details
 
 Arch details provide more details on the specific CPU:
@@ -217,7 +237,13 @@ Not specifying arch means that we have a generic CPU (**x86-64**).
 |  0         | pre Skylake      | pre Zen        | pre Cortex A76     | TBD        |
 |  1         | Skylake          | Zen-1 (Naples) | A76/NeoN1 class    | TBD        |
 |  2         | Cascade Lake     | Zen-2 (Rome)   | A78/x1/NeoV1 class | TBD        |
-|  3         | Ice Lake         | Zen-3 (Milan)  | Anext/NeoN2 class  | TBD        |
+|  3         | Ice Lake         | Zen-3 (Milan)  | A71x/NeoN2 (ARMv9) | TBD        |
+|  4         |                  | Zen-4 (Genoa)  |                    | TBD        |
+
+It is recommended to leave out the `0` when specifying the old generation; this will
+help the parser tool, which assumes 0 for an unspecified value and does leave it
+out when generating the name for comparison. In other words: 0 has a meaning of
+"rather old or unspecified".
 
 **Frequency Suffixes**
 
@@ -390,9 +416,13 @@ considered broken by the SCS team.
 
 # Validation
 
-There is a script in [flavor_name_check.py](../Operational-Docs/tools/flavor-name-check.py) which can be used to decode, validate
-and construct flavor names.
+There is a script in [flavor_name_check.py](../Operational-Docs/tools/flavor-name-check.py)
+which can be used to decode, validate and construct flavor names.
 This script must stay in sync with the specification text.
+
+Ensure you have your OpenStack tooling (`python3-openstackclient`, `OS_CLOUD`) setup and call
+`tools/flavor-name-check.py -c $(openstack flavor list -f value -c Name)` to get a report
+on the flavor list compliance of the cloud environment.
 
 # Beyond SCS: Gaia-X
 
