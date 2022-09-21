@@ -89,7 +89,8 @@ used (v4.0.0) images.
 Upgrade from R2 to R3 for cluster management and clusters.
 
 See [k8s-cluster-api-provider Release Notes](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/master/Release-Notes-R3.md#incompatible-changes)
-for more details.
+for more details. There is an Upgrade Guide written specifically to address the steps needed for upgrading
+your cluster management and the workload clusters.
 
 ### OSISM
 
