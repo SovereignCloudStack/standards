@@ -127,6 +127,9 @@ docker-compose is then no longer available and docker compose must be used inste
 
 ## Security Fixes
 
+No severe security issues need to be highlighted since Release 2. However, by updating to the latest stable version of 
+the integrated open source components, we benefit from the upstream security fixes and thus recommend to upgrade all
+SCS environments. Please note that Release 2 maintenance by the SCS project team will end by the end of October.
 
 ## Resolved Issues
 
