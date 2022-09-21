@@ -131,7 +131,7 @@ docker-compose is then no longer available and docker compose must be used inste
 
 ## Resolved Issues
 
-* Certificates in k8s clusters can expire (typically after one year).
+* Certificates in k8s clusters are subject to expiration - typically after one year.
   We ensure these are renewed on control-plane upgrades, but operators may need manual attention
   in case upgrades are not performed for extended periods of time. This is documented in
   the k8s-cluster-api-provider's
