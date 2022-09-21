@@ -18,7 +18,7 @@ tang from the state of a technical preview to be fully supported.
   (https://github.com/SovereignCloudStack/k8s-cluster-api-provider/)
   has seen major managability improvements.
   Please consult the
-  [k8s capi provider release notes](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/master/Release-Notes-R3.md)
+  [k8s cluster api provider release notes](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/main/Release-Notes-R3.md)
   for more details.
 * [OpenStack Yoga release](https://releases.openstack.org/yoga/highlights.html)
 * Ceph Quincy is available, the default release of Ceph is still Pacific.
@@ -86,9 +86,8 @@ used (v4.0.0) images.
 
 ### Cluster Management
 
-Upgrade from R2 to R3 for cluster management and clusters.
-
-See [k8s-cluster-api-provider Release Notes](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/master/Release-Notes-R3.md#incompatible-changes)
+Upgrade from R2 to R3 for cluster management and clusters:
+See [k8s-cluster-api-provider Release Notes](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/main/Release-Notes-R3.md#incompatible-changes)
 for more details. There is an Upgrade Guide written specifically to address the steps needed for upgrading
 your cluster management and the workload clusters.
 
@@ -132,7 +131,11 @@ docker-compose is then no longer available and docker compose must be used inste
 
 ## Resolved Issues
 
-* certificate rotation in k8s clusters
+* Certificates in k8s clusters are subject to expiration - typically after one year.
+  We ensure these are renewed on control-plane upgrades, but operators may need manual attention
+  in case upgrades are not performed for extended periods of time. This is documented in
+  the k8s-cluster-api-provider's
+  [Maintenance and Troubleshooting Guide](certificate rotation in k8s cluster://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/main/doc/Maintenance_and_Troubleshooting.md).
 
 ## Standards Conformance
 
@@ -178,9 +181,6 @@ updates for R3 at the end of April 2023.
 
 * Distributed Virtual Routing (DVR) is not officially supported by OSISM, not tested and not recommended.
 
-## Future directions (selected Highlights)
-
-
 ## Contributing
 
 We appreciate contribution to strategy and implementation, please join
@@ -189,4 +189,13 @@ Have a look at our [How to contribute page](https://scs.community/contribute/).
 
 ## Thanks
 
-Thanks to our contributors (provide some stats here)
+The work for R3 has been done by many contributors from our community.
+We have not collected detailed stats that would split out the individual contributor's
+and companies shares ... we may do so in the future. We are grateful to have such an
+active and engaged community that has done so much work! Thanks to our contributors!
+
+Of course we are leveraging a huge amount of open source technology that has been
+created by our friends in other communities, many of which are part of the
+CNCF, Linux Foudation, OIF, and others. We participate and contribute where
+we can and definitely want to acknowledge the great work that we build upon.
+
