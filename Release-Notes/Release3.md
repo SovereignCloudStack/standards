@@ -137,7 +137,7 @@ SCS environments. Please note that Release 2 maintenance by the SCS project team
   We ensure these are renewed on control-plane upgrades, but operators may need manual attention
   in case upgrades are not performed for extended periods of time. This is documented in
   the k8s-cluster-api-provider's
-  [Maintenance and Troubleshooting Guide](certificate rotation in k8s cluster://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/main/doc/Maintenance_and_Troubleshooting.md).
+  [Maintenance and Troubleshooting Guide](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/main/doc/Maintenance_and_Troubleshooting.md).
 
 ## Standards Conformance
 
