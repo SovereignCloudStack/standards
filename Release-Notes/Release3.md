@@ -21,7 +21,6 @@ tang from the state of a technical preview to be fully supported.
   for more details.
 * [OpenStack Yoga release](https://releases.openstack.org/yoga/highlights.html)
 * Ceph Quincy is available, the default release of Ceph is still Pacific.
-
 * The base infrastructure is provided by
   [OSISM 4.0.0](https://release.osism.tech/notes/4.0.0.html)
   which in turn builds on top of kolla and kolla-ansible.
@@ -79,7 +78,6 @@ An overview over the used software versions is available from the
 [OSISM release](https://github.com/osism/release) repository as input
 for a complete SBOM. This allows to e.g. investigate the contents of the
 used (v4.0.0) images.
-
 
 ## Upgrade/Migration notes
 
