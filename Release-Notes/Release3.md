@@ -174,12 +174,6 @@ updates for R3 at the end of April 2023.
 
 * Distributed Virtual Routing (DVR) is not officially supported by OSISM, not tested and not recommended.
 
-## Future directions (selected Highlights)
-
-We have numerous plans (some of which you can already find in the project / repository
-specific Release Notes and of course in open issues) which we will highlight in a
-blog post in the next weeks.
-
 ## Contributing
 
 We appreciate contribution to strategy and implementation, please join
@@ -188,4 +182,13 @@ Have a look at our [How to contribute page](https://scs.community/contribute/).
 
 ## Thanks
 
-Thanks to our contributors (provide some stats here)
+The work for R3 has been done by many contributors from our community.
+We have not collected detailed stats that would split out the individual contributor's
+and companies shares ... we may do so in the future. We are grateful to have such an
+active and engaged community that has done so much work! Thanks to our contributors!
+
+Of course we are leveraging a huge amount of open source technology that has been
+created by our friends in other communities, many of which are part of the
+CNCF, Linux Foudation, OIF, and others. We participate and contribute where
+we can and definitely want to acknowledge the great work that we build upon.
+
