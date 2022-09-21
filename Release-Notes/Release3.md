@@ -9,10 +9,10 @@ tang from the state of a technical preview to be fully supported.
 
 ## Component Versions and User-visible improvements (highlights)
 
-* We support the latest [Kubernetes 1.24](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.24.md)
+* We support the latest [Kubernetes 1.25](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.25.md)
   releases.
 * The Kubernetes Cluster API is now available in a stable v1beta1
-  [release 1.1.x](https://github.com/kubernetes-sigs/cluster-api/releases)
+  [release 1.2.x](https://github.com/kubernetes-sigs/cluster-api/releases)
   with the corresponding [cluster-api-provider-openstack 0.6.x](https://github.com/kubernetes-sigs/cluster-api/releases).
 * The [Kubernetes Cluster API cluster management service]
   (https://github.com/SovereignCloudStack/k8s-cluster-api-provider/)
@@ -148,8 +148,8 @@ them without any further tweaks.
 See [Release Numbering scheme](../Design-Docs/Release-Numbering-Scheme.md) -- unchanged from R0.
 We have added the tag `v4.0.0` to the relevant repositories to designate the `SCS_RELEASE_R3`.
 
-Note that we will release R4 (v4.0.0) in March 2023 and stop providing maintenance
-updates for R3 at the end of April.
+Note that we will release R4 (v5.0.0) in March 2023 and stop providing maintenance
+updates for R3 at the end of April 2023.
 
 ## List of known issues & restrictions in R3
 
