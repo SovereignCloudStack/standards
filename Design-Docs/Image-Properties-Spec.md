@@ -2,6 +2,7 @@
 title: SCS Image Metadata Proposal
 version: 2022-09-15-001
 authors: Kurt Garloff, Christian Berendt, Felix Kronlage-Dammers, Mathias Fechner, Ralf Heiringhoff
+effective-date: 2022-10-31
 state: Released (v1.0)
 ---
 
