@@ -18,7 +18,7 @@ tang from the state of a technical preview to be fully supported.
   (https://github.com/SovereignCloudStack/k8s-cluster-api-provider/)
   has seen major managability improvements.
   Please consult the
-  [k8s cluster api provider release notes](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/master/Release-Notes-R3.md)
+  [k8s cluster api provider release notes](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/main/Release-Notes-R3.md)
   for more details.
 * [OpenStack Yoga release](https://releases.openstack.org/yoga/highlights.html)
 * Ceph Quincy is available, the default release of Ceph is still Pacific.
@@ -79,7 +79,7 @@ used (v4.0.0) images.
 
 Upgrade from R2 to R3 for cluster management and clusters.
 
-See [k8s-cluster-api-provider Release Notes](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/master/Release-Notes-R3.md#incompatible-changes)
+See [k8s-cluster-api-provider Release Notes](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/main/Release-Notes-R3.md#incompatible-changes)
 for more details.
 
 Per cluster application credentials.
