@@ -44,7 +44,15 @@ tang from the state of a technical preview to be fully supported.
   This works well for the Web-Interface; we have still some work to do to also make it smooth
   also for API/CLI usage. We have [documented the current status](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/IAM-federation/keystone-keycloak-federation.md)
 
-* Gaia-X self-description generator ...
+* We believe that Gaia-X self-descriptions should also contain a description of
+  technical properties of services; higher-level services and workloads can than
+  declare their requirements and be matched against lower level services / platforms.
+  In good platforms, most (or all) technical properties are discoverable. In the
+  Gaia-X Hackathon #4, we have worked on a demonstrator that characterizes some
+  aspects of an OpenStack-based IaaS platform and which produces self-descriptions
+  that can be submitted to the Gaia-X trust service, pass the tests and you can
+  be awared a verifiable credential. Code is available in the
+  [gx-self-description-generator repo](https://github.com/SovereignCloudStack/gx-self-description-generator)
 
 ### SCS Developer focused improvements (testbed)
 
