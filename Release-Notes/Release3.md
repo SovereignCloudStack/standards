@@ -56,13 +56,14 @@ tang from the state of a technical preview to be fully supported.
 
 ### SCS Developer focused improvements (testbed and k8s cluster management)
 
-* We have had significant discussions how to standardize our cluster management solution.
-  While our reference implementation uses the concepts and code from k8s cluster API on
-  top of our SCS reference implementation (OpenStack automated by OSISM), we wanted to
-  define a way that allows non-OpenStack IaaS and solutions that diverge from cluster-API
-  to be SCS compliant. We have a draft concept for this now that will be worked on during
+* Following significant discussions on how to standardize our cluster management solution,
+  there is a draft concept as part of R3 now, which will be further worked on during
   the R4 cycle. See [Cluster standardization](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/blob/main/Release-Notes-R3.md#cluster-standardization)
   section of the release notes from k8s-cluster-api-provider.
+  While our reference implementation uses the concepts and code from k8s cluster API on
+  top of our SCS reference implementation (OpenStack automated by OSISM), we want to
+  assure that non-OpenStack IaaS and solutions that diverge from cluster-API have the possibility
+  to be SCS compliant.
 
 * Workload clusters managed by our SCS cluster management solutions can now much
   more easily receive k8s version upgrades, [as the cluster-template no longer needs
