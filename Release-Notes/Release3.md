@@ -141,7 +141,11 @@ The SCS standards for [flavor naming](https://github.com/SovereignCloudStack/Doc
 [image metadata](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/Image-Properties-Spec.md)
 are largely unchanged since R1. We have however
 made progress in our reference implementation fully implementing
-them without any further tweaks.
+them without any further tweaks. The
+[conformance test for the flavor naming](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/tools/flavor-name-check.py)
+has seen minor improvements; a
+[conformance test for the image metadata](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/tools/image-md-check.py)
+has been added.
 
 ## Release Tagging
 
