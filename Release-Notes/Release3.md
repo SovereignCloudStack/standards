@@ -39,7 +39,10 @@ tang from the state of a technical preview to be fully supported.
   collection with telegraf and influxdb as well as a good dashboard
   with grafana.
 
-* User federation ...
+* We have used our keystone to keycloak federation to use keycloak as identity
+  broker to federate identities from other (SCS) clouds' keycloaks.
+  This works well for the Web-Interface; we have still some work to do to also make it smooth
+  also for API/CLI usage. We have [documented the current status](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/IAM-federation/keystone-keycloak-federation.md)
 
 * Gaia-X self-description generator ...
 
