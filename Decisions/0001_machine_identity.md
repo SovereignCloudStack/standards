@@ -13,20 +13,24 @@ Using a cloud means using cloud services like S3 storage, DBaaS, container regis
 But: *Most of the time*, during normal operation, not humans, but machines/workloads access the cloud services.
 This kind of access is the topic of this ADR.
 
-### AuthN
+### Situation prior to implementation of machine identities
+
+**AuthN**:
 
 The usual implementation not based on identity is this: Human operators (mostly from customer side) fetch static application credentials and place them manually alongside the workload.
 
 Effectively, this drives operators to maintain long lived, hard to rotate secrets. This not only means a lot of manual work, it also has a negative impact on the overall security posture.
 While this is true even for a small number of workloads, the problem becomes worse with each workload and secret there are. [^1]
 
-### AuthZ
+**AuthZ**:
 
 The usual implementation not based on identity is this: Undefined. Each service may have different kinds of authorization systems in place, but it is not possible to manage access in one place.
 
 If machine/workload identities can be used for AuthN equally to user identities, further streamlining of AuthZ would become easier/possible, but this is not topic of this ADR.
 
 ### Possible Implementations
+
+Essentially, any form of identity document needs to be accessible for workloads. Examples include:
 
 #### Federation of `ServiceAccounts` from Kubernetes Workload Clusters
 
