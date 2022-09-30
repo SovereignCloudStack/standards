@@ -23,10 +23,10 @@ Implementation of previous decision record. See its "Motivation" section.
 
 # Design considerations
 
-## Use of SVIDs ([Secure Production Identity Framework for Everyone](https://github.com/spiffe/spiffe/blob/064d6faece28cfd500faffaee2cb6f9d1423e31d/standards/SPIFFE.md)(SPIFFE) Verifiable Identity Document)
+## Use of SVIDs ([Secure Production Identity Framework for Everyone](https://github.com/spiffe/spiffe/blob/064d6faece28cfd500faffaee2cb6f9d1423e31d/standards/SPIFFE.md) (SPIFFE) Verifiable Identity Document)
 
 **How to verify Identity at attestation time:**
-Depends on implementation; E.g. SPIRE integrated with Kubernetes
+Depends on implementation; E.g. using SPIRE (being SPIFFE's reference implementation) integrated with Kubernetes.
 
 **Form of "Verifiable Identity Document":**
 [SVID](https://github.com/spiffe/spiffe/blob/064d6faece28cfd500faffaee2cb6f9d1423e31d/standards/SPIFFE-ID.md) (See also the other documents `X509-SVID.md`, `JWT-SVID.md`)
@@ -35,20 +35,20 @@ Depends on implementation; E.g. SPIRE integrated with Kubernetes
 [SPIFFE Workload API](https://github.com/spiffe/spiffe/blob/064d6faece28cfd500faffaee2cb6f9d1423e31d/standards/SPIFFE_Workload_API.md)
 
 **How to verify "Verifiable Identity Document" at resource API side:**
-Using SPIFFE trust bundle
+Using SPIFFE trust bundle.
 
 **Assessment of suitability:**
-SPIFFE (along with its reference implementation SPIRE) is a CNCF graduated project defining how machines can authenticate towards other services.
+SPIFFE (along with its reference implementation "SPIRE") is a CNCF graduated project defining how machines can authenticate towards other services.
 As such, it is not designed to cover user identities, even there is most probably no technical reason to not use SVIDs for users as well - maybe even the "Workload API".
 Hence, if adopting SPIFFE, either (1) resource API's need to accept different means of authentication for users and for machines or (2) non-workload identities need to get SVIDs as well - stretching the scope of SVIDs quite a bit.
 
 ## Access Tokens (OIDC-ish style):
 
 **How to verify Identity at attestation time:**
-(1) In Case of K8s `ServiceAccounts`: K8s takes care of this (2) In case of users: Password/FIDO2/... (3) In case of virtual machine: Infrastructure-level checks
+(1) In Case of K8s `ServiceAccounts`: K8s takes care of this (2) In case of users: Password/FIDO2/... (3) In case of virtual machine: Infrastructure-level checks.
 
 **Form of "Verifiable Identity Document":**
-JWT with some common claims identifying entity
+JWT with some common claims identifying entity.
 
 **How to obtain "Verifiable Identity Document":**
 (1) In case of K8s `ServiceAccounts`: Configure [Service Account Token Volume Projection](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection), read it from file system (2) In case of users: Some kind of API call to IdP? (3) In case of virtual machines: Pre-provision it or make it available via host-only API (HTTP/UNIX-Socket/...)?
@@ -67,13 +67,13 @@ Ultimately, the decision is to use DIDs.
 ## DIDs (Decentralized Identifiers)
 
 **How to verify Identity at attestation time:**
-Depending on type of entity having identity
+Depending on type of entity having identity.
 
 **Form of "Verifiable Identity Document":**
 [Verifiable Credentials](https://www.w3.org/TR/vc-data-model/) containing ["Decentralized Identifier" aka DID](https://www.w3.org/TR/did-core/)
 
 **How to obtain "Verifiable Identity Document":**
-Depending on type of entity having identity
+Depending on type of entity having identity.
 
 **How to verify "Verifiable Identity Document" at resource API side:**
 Universally in the same manner for all identity types.
