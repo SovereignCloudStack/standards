@@ -123,9 +123,9 @@ Proposal, Draft, Stable, Deprecated, and Rejected.
 All decisions for phase transitions follow loose consensus,
 where the group which has to form the consensus depends on the `track` of the document:
 
-- IaaS: The team working on infrastructure-as-a-service topics (formerly Team 1)
-- KaaS: The team working on Kubernetes-as-a-service topics (formerly Team 2)
-- Ops: The team working on operations topics (formerly Team 3)
+- IaaS: The team working on infrastructure-as-a-service topics
+- KaaS: The team working on Kubernetes-as-a-service topics
+- Ops: The team working on operations topics
 - Global: The entire SCS community
 
 ## Proposal phase
