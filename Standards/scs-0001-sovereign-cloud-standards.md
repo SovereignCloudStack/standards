@@ -90,7 +90,7 @@ embedded in the markdown header.
 | --- | --- | --- |
 | `type` | REQUIRED | one of `Procedural`, `Standard`, or `Decision Record` |
 | `status` | REQUIRED | one of `Draft`, `Stable`, `Deprecated`, or `Rejected` |
-| `track` | REQUIRED | one of `Global`, `IaaS`, `Ops`, `KaaS` |
+| `track` | REQUIRED | one of `Global`, `IaaS`, `Ops`, `KaaS`, `IAM` |
 | `obsoleted_at` | REQUIRED if `status` is `Deprecated` | ISO formatted date indicating the date after which the deprecation is in effect |
 | `stabilized_at` | REQUIRED if `status` was ever `Stable` | ISO formatted date indicating the date after which the document was considered stable |
 | `rejected_at` | REQUIRED if `status` is `Rejected` | ISO formatted date indicating the date on which the document was rejected |
@@ -126,6 +126,7 @@ where the group which has to form the consensus depends on the `track` of the do
 - IaaS: The team working on infrastructure-as-a-service topics
 - KaaS: The team working on Kubernetes-as-a-service topics
 - Ops: The team working on operations topics
+- IAM: The team working on idenity and access management topics
 - Global: The entire SCS community
 
 ## Proposal phase
