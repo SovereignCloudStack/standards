@@ -15,16 +15,16 @@ But: *Most of the time*, during normal operation, not humans, but machines/workl
 
 # Motivation
 
-## Situation prior to implementation of machine identities
+Having no machine identities or a similar concept imposes some problems.
 
-### AuthN
+## Problems with AuthN
 
 The usual implementation not based on identity is this: Human operators (mostly from customer side) fetch static application credentials and place them manually alongside the workload.
 
 Effectively, this drives operators to maintain long lived, hard to rotate secrets. This not only means a lot of manual work, it also has a negative impact on the overall security posture.
 While this is true even for a small number of workloads, the problem becomes worse with each existing workload and consumed service. [^1]
 
-### AuthZ
+## Problems with AuthZ
 
 The usual implementation not based on identity is this: Undefined. Each service may have different kinds of authorization systems in place, but it is not possible to manage access in one place.
 
