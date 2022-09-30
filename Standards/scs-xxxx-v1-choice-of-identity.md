@@ -54,10 +54,10 @@ JWT with some common claims identifying entity.
 (1) In case of K8s `ServiceAccounts`: Configure [Service Account Token Volume Projection](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-token-volume-projection), read it from file system (2) In case of users: Some kind of API call to IdP? (3) In case of virtual machines: Pre-provision it or make it available via host-only API (HTTP/UNIX-Socket/...)?
 
 **How to verify "Verifiable Identity Document" at resource API side:**
-(1) In case of K8s `ServiceAccounts`: Validate access tokens using JWKS from K8s OpenID Discovery endpoints [^1] (2) In case of users: Validate access tokens using e.g. JWKS from IdP (3) In case of virtual machines: ?
+(1) In case of K8s `ServiceAccounts`: Validate access tokens using JWKS from K8s OpenID Discovery endpoints [^1] (2) In case of users: Validate access tokens using e.g. JWKS from IdP (3) In case of virtual machines: Validate access tokens using e.g. JWKS from IdP
 
 **Assessment of suitability:**
-While e.g. Kubernetes offers a pragmatic approach to use `ServiceAccount` identities outside of Kubernetes, access tokens are not standardized.
+While e.g. Kubernetes offers a pragmatic approach to use `ServiceAccount` identities outside of Kubernetes, OIDC ID tokens generated via a web based OIDC flow (e.g. for users) should not be used directly on resource API's, and access tokens are not standardized.
 As such, access tokens from different sources may look fundamentally different and may need to be harmonized by an extra layer.
 
 # Decision
