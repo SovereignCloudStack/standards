@@ -82,4 +82,4 @@ Universally in the same manner for all identity types.
 DIDs, being defined by the W3C, are propagated by [GXFS](https://www.gxfs.eu/ssi-whitepaper/) for SSI ("Self Sovereign Identity"). The linked white paper explicitly says that SSI is applicable for humans as well as for machines.
 As such, it seems a good fit, even if the "Decentralized" bit may feel a bit alien and there are more simple, more established methods for narrower use cases.
 
-[^1]: Not sure whether these projected tokens should be considered an OIDC "ID token" which according to usual OIDC terms, should **not** be sent to resource API's.
+[^1]: Not sure whether these projected tokens should be considered an OIDC "ID token" which according to usual OIDC terms, should **not** be sent to resource API's. The implementation in Kubernetes and documentation of e.g. [Vault](https://www.vaultproject.io/docs/auth/jwt/oidc-providers/kubernetes) do suggest that this is alright.
