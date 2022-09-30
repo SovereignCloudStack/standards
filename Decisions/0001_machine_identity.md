@@ -30,36 +30,25 @@ If machine/workload identities can be used for AuthN equally to user identities,
 
 ### Use Cases
 
-Essentially, any form of identity document needs to be accessible for workloads. Examples include:
+Essentially, any form of identity document needs to be accessible for workloads. Examples of such workload types include:
 
-#### Federation of `ServiceAccounts` from Kubernetes Workload Clusters
+#### Kubernetes Pods
 
-Options to evaluate:
-- Kubernetes itself offers to use K8s `ServiceAccounts` identities outside of K8s itself: [Docs](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#service-account-issuer-discovery). This way, Kubernetes Pods could use their native identity for AuthN towards cloud services.
-- Embracing SPIFFE/SPIRE
+With Kubernetes as primary means of deploying workloads, this most likely is the most important use case, enabling customers to use identities without the need to roll their own IdP infrastructure.
 
-With Kubernetes as primary means of deploying workloads, this most likely is the most important (partially user-facing) use case.
+#### (Virtual/Bare metal) machines
 
-#### Make VM instances have some identity
-
-Any secure means of passing down an identity document from the infrastructure layer to a virtual machine should be enough to satisfy this use-case [^2].
-
-Options to evaluate:
-
-* Using cloud-init to provision a bootstrapping document, allowing the VM renewal of its identity document.
-* Always serve a recent identity document via OpenStack metadata service
-* Always serve a recent identity document via a file system mount
-* Embracing SPIFFE/SPIRE [^3]
+* Customers running their workloads on VM's instead of Kubernetes
+* let Kubernetes nodes access PaaS container registry
+* let Kubernetes nodes fetch [cluster certificates](https://github.com/SovereignCloudStack/issues/discussions/114)
 
 ## Considered options
 
 * Implement Machine/Workload identity
     - settling wording, appending it to SCS glossary
-    - Details may be determined in other ADR's
 * Do not plan to implement such concept
+    - instead, try to give advice on non-identity-based best practices
+
+Any details regarding these two options may be discussed in further proposals, but are not topic of this ADR.
 
 [^1]: This process may be streamlined with tooling like Terraform or Ansible, but generally, the process remains the same. If renewal is kind-of automated by such tooling, it is mission critical to run it constantly, which is usually not what it is designed for.
-
-[^2]: Use cases including: (1) Customers running their workloads on VM's instead of Kubernetes, (2) let Kubernetes nodes access PaaS container registry, (3) let Kubernetes nodes fetch [cluster certificates](https://github.com/SovereignCloudStack/issues/discussions/114)
-
-[^3]: https://spiffe.io/ There was/is an [SPIRE OpenStack plugin](https://github.com/zlabjp/spire-openstack-plugin) already
