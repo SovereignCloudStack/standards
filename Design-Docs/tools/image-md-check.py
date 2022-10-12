@@ -8,8 +8,11 @@
 # (c) Kurt Garloff <kurt@garloff.de>, 09/2022
 # SPDX-License-Identifier: CC-BY-SA-4.0
 
-import os, sys, getopt, time
+import getopt
 import openstack
+import os
+import sys
+import time
 
 def usage(rc):
     "Usage information"
@@ -35,10 +38,10 @@ if "OS_CLOUD" in os.environ:
     cloud = os.environ["OS_CLOUD"]
 else:
     cloud = None
-        
+
 # Image list
 mand_images = ["Ubuntu 22.04", "Ubuntu 20.04", "Debian 11"]
-rec1_images = ["CentOS 8", "Rocky 8", "Alma Linux 8", "Debian 10", "Fedora 36"]
+rec1_images = ["CentOS 8", "Rocky 8", "AlmaLinux 8", "Debian 10", "Fedora 36"]
 rec2_images = ["SLES 15SP4", "RHEL 9", "RHEL 8", "Windows Server 2022", "Windows Server 2019"]
 sugg_images = ["openSUSE Leap 15.4", "Cirros 0.5.2", "Alpine", "Arch"]
 
@@ -93,7 +96,7 @@ class property:
 os_props = (property("os_distro", True, ()),
             property("os_version", True, ()))
 arch_props = (property("architecture", True, ("x86_64", "aarch64", "risc-v"), "CPU architecture"),
-              property("hypervisor_type", True, ("kvm", "xen", "hyper-v", "esxi", None)))
+              property("hypervisor_type", True, ("qemu", "kvm", "xen", "hyper-v", "esxi", None)))
 hw_props = (property("hw_rng_model", False, ("virtio", None), "Random Number Generator"),
             property("hw_disk_bus", True, ("virtio", "scsi", None), "Disk bus: vda or sda"))
 build_props = (property("image_build_date", True, ()),
