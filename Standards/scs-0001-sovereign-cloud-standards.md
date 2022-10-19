@@ -43,11 +43,8 @@ Sometimes during the development of the SCS standard,
 a complex technical decision needs to be taken,
 which does not directly result in a new standard.
 
-To keep a record of such decisions for future reference,
-they were formerly documented in a format called
-"Architecture Decision Records" (ADRs).
-
-The SCS document format supersedes and integrates such ADRs
+The SCS document format formally integrates
+the documentation of such decisions
 as documents of type `Decision Record`.
 
 ## Document format
