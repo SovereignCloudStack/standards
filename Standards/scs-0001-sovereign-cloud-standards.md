@@ -21,10 +21,6 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 In addition, "FORBIDDEN" is to be interpreted equivalent to "MUST NOT".
 
-# Motivation and Objectives
-
-TBD.
-
 # Sovereign Cloud Standard documents
 
 One of the main products of the SCS organisation are Sovereign Cloud Standard documents.
