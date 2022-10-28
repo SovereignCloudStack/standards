@@ -15,7 +15,7 @@ Granted that it is accepted to establish machine identities, settling on...
 
 ...is required.
 
-Given that cloud services ("resource API's") need to consume/verify such "Verifiable Identity Document" and implementing distinct authentication mechanisms for human users as well as for machines would make things more complex, this choice also most likely affects how human users authenticate themselves.
+**Important**: Given that cloud services ("resource API's") need to consume/verify such "Verifiable Identity Document" and implementing multiple, distinct authentication mechanisms for human users as well as for machines would make things more complex, this choice also most likely affects how human users (and their user agents) authenticate themselves to cloud services.
 
 # Motivation
 
@@ -60,7 +60,7 @@ Hence, if adopting SPIFFE, either (1) resource API's need to accept different me
 While e.g. Kubernetes offers a pragmatic approach to use `ServiceAccount` identities outside of Kubernetes, OIDC ID tokens generated via a web based OIDC flow (e.g. for users) should not be used directly on resource API's [^2].
 Hence, using OIDC ID tokens as authentication tokens may be alright in some areas, but it does not provide a generally applicable solution.
 
-## RFC9068 Access Tokens:
+## RFC9068 Access Tokens
 
 **How to verify Identity at attestation/login time:**
 Depending on type of entity having identity.
