@@ -177,8 +177,8 @@ some scenarios, but not covered here.
 
 Two new mandatory flavors: `SCS-2V:4:20s` and `SCS-4V:16:100s` are added
 to the SCS flavor naming standard. The first is meant to be a good fit for
-k8s control nodes with etcd while the latter is a solid base for a database
-server.
+k8s control nodes with etcd while the latter is a solid base for a
+small database server.
 
 Obviously providers are free to offer many more combinations and e.g. create
 flavors with large local SSDs.
@@ -187,6 +187,11 @@ The local storage needs to support more than 1000 *sequential* IOPS per
 VM of type `SCS-2V:4:20s` (which means a write latency lower than 1ms --
 this typically means SSDs/NVMes that support at least several 10ks of
 parallel IOPS, not a challenge for current hardware).
+
+Local disks, SSDs, NVMe mjst have Power-Loss-Protection such that
+data reported to be written, but in reality being stored in RAM or SLC
+cache of an SSD or NVMe, is guaranteed to not be lost in case of a power
+loss.
 
 # Out of Scope
 
@@ -226,6 +231,9 @@ not meant to mandate or prevent the implementation via either route.
 The flavors will be added as mandatory flavors to the
 (flavor-naming standard)[https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/flavor-naming.md],
 which will thus have to be released in a v2.
+
+The IOPS and Power-Loss requirements from this standard should become
+part of the flavor-naming standard for disk type `s`.
 
 When we standardize storage types in the future, additional possibilities
 to solve the latency requirements for databases and etcd may emerge.
