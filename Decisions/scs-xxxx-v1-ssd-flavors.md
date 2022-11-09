@@ -150,23 +150,90 @@ However, they are not enabled by default for good reasons.
 
 ### Flavors with local storage
 
-disk, ssd, nvme
+Flavors with local storage will have their root filesystem on a local storage
+device. To fulfill the need for high IOPS that etcd and especially databases
+have, the local storage device should be a solid state device -- an SSD or
+NVMe device. While some use cases might even be fulfilled with local
+spinning disks (or raid arrays of local spinning disks).
 
-(nvme can be labeled as ssd to fulfill standard, understatement is allowed)
+Local solid state storage avoids any network overhead and offers best latency.
+It however is not typically redundant, meaning that the loss of the device
+or the complete hardware node will result in data loss. So it is meant to
+be used with applications such as database clusters, replicating filesystems
+or block devices or etcd which can handle this at the application layer.
 
-Implementation via nova, not via cinder (iscsi-tgt)
+The flavor naming spec in SCS allows performance to be understated -- a
+flavor with NVMe storage can be advertized under the SSD storage name
+(and of course can be offered under both names).
+
+Note that this addresses the simple case where the root disk with the
+root filesystem (and possibly additional filesystems that are set up
+when first booting) uses the local storage. Scenarios where additional
+low-latency networked or local storage are made available via cinder
+and attached for database storage are possible and viable options for
+some scenarios, but not covered here.
 
 # Decision
 
-Add two new mandatory flavors: SCS-2V:4:20s and SCS-4V:16:100s.
+Two new mandatory flavors: `SCS-2V:4:20s` and `SCS-4V:16:100s` are added
+to the SCS flavor naming standard. The first is meant to be a good fit for
+k8s control nodes with etcd while the latter is a solid base for a database
+server.
 
-# Open Questions
+Obviously providers are free to offer many more combinations and e.g. create
+flavors with large local SSDs.
 
-QoS for disks to prevent DoS
+The local storage needs to support more than 1000 *sequential* IOPS per
+VM of type `SCS-2V:4:20s` (which means a write latency lower than 1ms --
+this typically means SSDs/NVMes that support at least several 10ks of
+parallel IOPS, not a challenge for current hardware).
 
-Implication on live-migration performance / capability
+# Out of Scope
+
+Hardware nodes (hypervisors in OpenStack language) that support flavors
+with local storage (are part of an appropriate OpenStack host aggregate)
+may have many VMs competing for bandwidth to the attached local storage
+devices; the host needs to be configured such that it can sustain VMs
+writing at full speed without causing the host to be overloaded or
+to cause huge queues for these writes.
+
+A more generic approach is to apply storage QoS policies to the VMs to
+manage bandwidth and IOPS and create the ability to have better
+performance isolation with certain guarantees. While this is desirable,
+it has not been found a necessity for etcd in our tests.
+Disk IO QoS is not part of this spec but may be considered in another one.
+
+Live-migration with local storage is significantly more difficult than with
+networked storage: The contents of the local disks also need to be replicated
+over to the new host. Live-migration for these VMs may thus take significantly
+longer or not be possible at all, depending the configuration from the provider.
+Not supporting live-migration is OK for flavors with local disks according
+to the flavor naming spec -- a capability to indicate whether or not
+live-migration is supported will subject to a flavor-metadata spec that
+is planned for the future.
+
+# Implementation note
+
+Local storage in OpenStack can be provided directly via nova or via the
+cinder service. While the latter has the advantage of making volumes
+visible and managable via most of the normal cinder capabilities, it
+has the disadvanatage of creating an indirection via iSCSI. This
+results in higher latency. The requirements in the above spec are
+not meant to mandate or prevent the implementation via either route.
 
 # Connection to other standards
 
-The flavors are added as mandatory flavors to the flavor-naming standard,
+The flavors will be added as mandatory flavors to the
+(flavor-naming standard)[https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/flavor-naming.md],
 which will thus have to be released in a v2.
+
+When we standardize storage types in the future, additional possibilities
+to solve the latency requirements for databases and etcd may emerge.
+
+When we standardize QoS features there, we may amend this standard with
+QoS recommendations or possibly requirements.
+
+A future flavor metadata standard will indicate whether or not these
+flavors can be live-migrated. A future VM metadata standard will allow
+users to request live-migration and/or cold migration or restart to
+be or to not be performed.
