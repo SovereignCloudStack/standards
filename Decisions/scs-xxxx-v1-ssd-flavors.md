@@ -25,9 +25,9 @@ that include flavors with local SSD (or better) storage.
 
 The [currently defined standard flavors](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/flavor-naming.md)
 (as of v1.1 from 2022-09-08) do not include
-flavors that use local storage. For certain workloads such as big data (hadoop),
+flavors that use local storage. For certain workloads such as big data (Hadoop),
 databases, local storage is highly desirable as replication may be handled at
-the application layer, making replication/redudancy in a networked storage solution
+the application layer, making replication/redundancy in a networked storage solution
 (ceph in the SCS reference implementation) an unneeded and undesired property.
 Furthermore, write access to networked and replicated storage typically incurs
 a certain latency, as the writes can only be acknowledged once all the replicas
@@ -93,8 +93,8 @@ production scenarios, but would seem a possible fallback position.
 
 ### Heartbeat slowdown
 
-To avoid causing too many failovers by occasional high latencies, the
-frqeuency of heartbeats can be lowered from the default 1/100ms.
+To avoid causing too many fail-overs by occasional high latencies, the
+frequency of heartbeats can be lowered from the default 1/100ms.
 The reelection timeout should change along with it (typically set to
 10 beats).
 
@@ -124,7 +124,7 @@ Databases must ensure that certain data has hit stable storage before acknowledg
 writes -- this is required in order to live up to the [ACID](https://en.wikipedia.org/wiki/ACID)
 guarantees in situations when disruptions might happen. Databases typically use
 `fsync()` calls to ensure that write buffers are written to real persistent storage
-unless they use raw/direct block devices circumventing Linux's page and buffer cachce.
+unless they use raw/direct block devices circumventing Linux's page and buffer cache.
 
 etcd normally uses a write-ahead-log (WOL) file that lives on a Linux filesystem and
 uses `fsync` to ensure the correct write ordering. Trouble with fsync is that it
@@ -163,7 +163,7 @@ be used with applications such as database clusters, replicating filesystems
 or block devices or etcd which can handle this at the application layer.
 
 The flavor naming spec in SCS allows performance to be understated -- a
-flavor with NVMe storage can be advertized under the SSD storage name
+flavor with NVMe storage can be advertised under the SSD storage name
 (and of course can be offered under both names).
 
 Note that this addresses the simple case where the root disk with the
@@ -178,17 +178,19 @@ some scenarios, but not covered here.
 Two new mandatory flavors: `SCS-2V:4:20s` and `SCS-4V:16:100s` are added
 to the SCS flavor naming standard. The first is meant to be a good fit for
 k8s control nodes with etcd while the latter is a solid base for a
-small database server.
+small database server. Clouds claiming SCS-compliance for their IaaS
+layer MUST provide these two additional flavors.
 
-Obviously providers are free to offer many more combinations and e.g. create
+Obviously providers MAY offer many more combinations and e.g. create
 flavors with large local SSDs.
 
-The local storage needs to support more than 1000 *sequential* IOPS per
-VM of type `SCS-2V:4:20s` (which means a write latency lower than 1ms --
-this typically means SSDs/NVMes that support at least several 10ks of
-parallel IOPS, not a challenge for current hardware).
+The local storage advertised this way MUST support more than
+1000 *sequential* IOPS per VM of type `SCS-2V:4:20s` (which means a
+write latency lower than 1ms -- this typically means SSDs/NVMEs that
+support at least several 10ks of parallel IOPS, not a challenge for
+current hardware).
 
-Local disks, SSDs, NVMe mjst have Power-Loss-Protection such that
+Local disks, SSDs, NVMes MUST have Power-Loss-Protection such that
 data reported to be written, but in reality being stored in RAM or SLC
 cache of an SSD or NVMe, is guaranteed to not be lost in case of a power
 loss.
@@ -221,8 +223,8 @@ is planned for the future.
 
 Local storage in OpenStack can be provided directly via nova or via the
 cinder service. While the latter has the advantage of making volumes
-visible and managable via most of the normal cinder capabilities, it
-has the disadvanatage of creating an indirection via iSCSI. This
+visible and manageable via most of the normal cinder capabilities, it
+has the disadvantage of creating an indirection via iSCSI. This
 results in higher latency. The requirements in the above spec are
 not meant to mandate or prevent the implementation via either route.
 
