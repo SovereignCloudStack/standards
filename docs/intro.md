@@ -20,6 +20,10 @@ In order to get all the different docs into one place and to render a comprehens
 
 [The Power of Git Subtree by Nicola Paolucci](https://blog.developer.atlassian.com/the-power-of-git-subtree/?_ga=2-71978451-1385799339-1568044055-1068396449-1567112770)
 
+```bash
+git subtree add --prefix {local directory being pulled into} {remote repo URL} {remote branch} --squash
+```
+
 ## Implications to subtree repositories structure
 
 As the final output in this repository will be a statically generated website, the subtree docs repositories should only contain markdown and static files for visualisation.
@@ -28,7 +32,7 @@ As the final output in this repository will be a statically generated website, t
 
 ```jsx
 project
-├── static  // static content 
+├── static  // static content
 ├── blog    // optional blog
 ├── src     // source files
 ├── docs    // the folder where all individual docs reside as subtree modules
