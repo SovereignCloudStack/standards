@@ -1,9 +1,11 @@
+---
 title: SSD Flavors
 type: Decision Record
 status: Draft
 track: IaaS
 version: v0.1
 enhances: scs-xxxx-v1-flavor-naming.md
+---
 
 # Introduction
 
