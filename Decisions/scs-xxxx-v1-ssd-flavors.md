@@ -25,7 +25,7 @@ that include flavors with local SSD (or better) storage.
 
 The [currently defined standard flavors](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/flavor-naming.md)
 (as of v1.1 from 2022-09-08) do not include
-flavors that use local storage. For certain workloads such as big data (Hadoop),
+flavors that use local storage. For certain workloads such as big data filesystems,
 databases, local storage is highly desirable as replication may be handled at
 the application layer, making replication/redundancy in a networked storage solution
 (ceph in the SCS reference implementation) an unneeded and undesired property.
@@ -89,7 +89,8 @@ that is realistic to keep in main memory. (Typical database sizes are
 much smaller.)
 
 This option requires additional care and may not be suitable for all
-production scenarios, but would seem a possible fallback position.
+production scenarios, but would seem a possible fallback position for
+etcd. It does obviously not address the database scenario.
 
 ### Heartbeat slowdown
 
@@ -100,23 +101,23 @@ The reelection timeout should change along with it (typically set to
 
 This will cause etcd to take a bit more time to notice the loss of a node,
 which is not typically critical if done within reasonable limits.
-This change however is not a silver bullet -- occasional write latencies
+This change however does not fully address the issue -- occasional write latencies
 above 100ms will still cause failed heartbeats, just less often.
 
 This change has been implemented in SCS's
 (k8s-cluster-api-provider)[https://etcd.io/docs/v3.5/op-guide/hardware/#example-hardware-configurations]
 reference implementation: The heartbeat has been changed from 1/100ms (10/s)
-to 1/250ms (4/s) and the reelection timeout form 1s to 2.5s.
+to 1/250ms (4/s) and the reelection timeout from 1s to 2.5s.
 
 The etcd process also is afforded a higher CPU priority (lower niceness),
 resulting in a lower scheduling latency, as high-prio processes preempt lower-prio
-ones when they get woken up. The etcd process also gets it's IO priority
+ones when they get woken up. The etcd process also gets its IO priority
 increased to get treated preferentially in case the IO scheduler has many
 outstanding requests. This has some positive effects with the CFQ IO scheduler.
 
 The slower heartbeat and the priority tweaks do lower the amount of leader
 changes but are insufficient to completely address the issue on the tests
-performed against networked ceph backed storage.
+performed against networked ceph-backed storage.
 
 ### Filesystem tuning
 
