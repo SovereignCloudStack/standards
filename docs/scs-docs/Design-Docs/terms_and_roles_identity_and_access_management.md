@@ -2,15 +2,15 @@
 
 The objective of this document is to define a basic set of roles and their identifiers / names in SCS. These roles can be used in the Identity and Access Management (IAM) of SCS itself and / or in services provided based on SCS. As Roles are often derived from Usecases which are derived from terms used in a project, the document starts with a definition of terms used in SCS and/or GAIA-X. These definitions should be moved into a separate document in the future.
 
-# Principles used to create this document
+## Principles used to create this document
 
 Where possible the roles and names are derived from existing definitions or conventions used in the underlying software. As SCS is part of GAIA-X, the terms/definitions of GAIA-X are taken as a baseline and will be extended with additional roles needed in SCS. For reference, the current state of relevant GAIA-X definitions can be found at the end of this document.
 
-# SCS terms and their definition
+## SCS terms and their definition
 
 These terms were defined taking into account the GAIA-X definitions to ensure that the same terms are shared.
 
-term               | definition 
+term               | definition
 -------------------|---------------
 Provider           | Legal entity providing SCS to customers. The Provider is typically in control of physical infrastructure (Datacenter, Hosts, Storage, Network etc.) but also employs people who deploy and operate SCS.
 Consumer           | Legal entity which can access and/or consume services hosted on SCS. Typically a Consumer is a customer of a Provider.
@@ -24,7 +24,7 @@ Host               | A Host is a physical machine which is part of a Node. A Nod
 Node               | A Node is a deployment of SCS which offers Services for Customers and/or Endusers. A Node typically is a group of physical Hosts.
 Operator           | Person operating parts of SCS. Each Person is represented by an Identity. Access rights needed to operate are given by assigning an Identity to a Role.
 
-# SCS modules / components
+## SCS modules / components
 
 A module or component of SCS typically is a software stack deployed with a dedicated usecase. This list needs to be elaborated over time.
 
@@ -32,15 +32,17 @@ A module or component of SCS typically is a software stack deployed with a dedic
 
 module                 | description
 -----------------------|--------------------------
-OpenStack_<submodule>  | TBD
-Kubernetes_<submodule> | TBD
+OpenStack_```<submodule>```  | TBD
+Kubernetes_```<submodule>``` | TBD
 *to be continued*      |
 
-# SCS Roles
+## SCS Roles
 
 Set of Roles which are initially part of SCS.
 
+```xml
 A Role should be defined as "<Module>_<Usecase>", where "<Module>" is the main module this role applies to and "<Usecase>" a short term to give context which kind of rights / options are given to an identity as member of this role.
+```
 
 **this is a best guess example and needs review**
 
@@ -56,9 +58,7 @@ Kubernetes_Operator   | TBD
 Kubernetes_Customer   | TBD
 *to be continued*      |
 
-
-
-# Current definitions of GAIA-X
+## Current definitions of GAIA-X
 
 This is an excerpt if terms defined in the GAIA-X project. The definitions are work in progress and might change, so this document might be outdated.
 
