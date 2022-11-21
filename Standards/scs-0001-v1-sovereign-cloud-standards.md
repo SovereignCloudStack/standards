@@ -1,7 +1,8 @@
 ---
 type: Procedural
-status: Draft
+status: Stable
 track: Global
+stabilized_at: 2022-11-28
 ---
 
 # Introduction
