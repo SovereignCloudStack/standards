@@ -416,7 +416,7 @@ considered broken by the SCS team.
 
 # Validation
 
-There is a script in [flavor_name_check.py](../Operational-Docs/tools/flavor-name-check.py)
+There is a script in [flavor_name_check.py](tools/flavor-name-check.py)
 which can be used to decode, validate and construct flavor names.
 This script must stay in sync with the specification text.
 
