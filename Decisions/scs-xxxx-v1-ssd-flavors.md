@@ -107,7 +107,7 @@ This change however does not fully address the issue -- occasional write latenci
 above 100ms will still cause failed heartbeats, just less often.
 
 This change has been implemented in SCS's
-(k8s-cluster-api-provider)[https://etcd.io/docs/v3.5/op-guide/hardware/#example-hardware-configurations]
+[k8s-cluster-api-provider](https://etcd.io/docs/v3.5/op-guide/hardware/#example-hardware-configurations)
 reference implementation: The heartbeat has been changed from 1/100ms (10/s)
 to 1/250ms (4/s) and the reelection timeout from 1s to 2.5s.
 
