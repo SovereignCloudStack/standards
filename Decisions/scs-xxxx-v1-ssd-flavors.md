@@ -234,7 +234,7 @@ not meant to mandate or prevent the implementation via either route.
 # Connection to other standards
 
 The flavors will be added as mandatory flavors to the
-(flavor-naming standard)[https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/flavor-naming.md],
+[flavor-naming standard](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/flavor-naming.md),
 which will thus have to be released in a v2.
 
 The IOPS and Power-Loss requirements from this standard should become
