@@ -13,10 +13,10 @@ SCS defines an IaaS Flavor Naming standard that mandates a number of standard fl
 to be available in each SCS-compliant IaaS offering. While offering or exposing
 IaaS is not a requirement for SCS-compliant infrastructure offerings -- SCS allows
 for platforms only exposing the container layer (plus S3 compatible object storage)
-for gen2 (container-based) cloud-native workloads --
+for wave 2 (container-based) cloud-native workloads --
 the SCS reference implementation does include a complete IaaS implementation that
 many providers want to expose as they have customers desiring access at this layer
-for gen1 (VM-based) cloud-native workloads or for the virtualization of more
+for wave 1 (VM-based) cloud-native workloads or for the virtualization of more
 classical (not cloud-native) workloads. The IaaS implementation thus comes with
 standards.
 
