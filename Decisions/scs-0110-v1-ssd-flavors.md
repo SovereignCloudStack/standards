@@ -79,12 +79,13 @@ Neither scenario fulfills typical requirements for production workloads.
 ### RAM (tmpfs) etcd storage
 
 etcd could keep its database in volatile memory (e.g. on a tmpfs filesystem).
-For multi-node etcd clusters, this would actually work, as long as at least one
-cluster member stays alive. A loss of power affecting all nodes or a hardware
+For multi-node etcd clusters, this could actually be made work, as long as at
+least one cluster member stays alive and proper care is taken to remove shut-down
+nodes from the cluster. A loss of power affecting all nodes or a hardware
 maintenance operation not tracking etcd needs would result in a complete
 loss of all cluster state. The control plane nodes would require live migration
 to avoid this in the maintenance case. For the power loss scenario, a frequent
-backup might mitigate the cluster state loss case.
+backup might mitigate the cluster state loss case somewhat.
 
 The etcd database is normally limited to 2GiB in size, which is something
 that is realistic to keep in main memory. (Typical database sizes are
