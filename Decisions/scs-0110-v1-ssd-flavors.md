@@ -27,8 +27,8 @@ that include flavors with local SSD (or better) storage.
 
 The [currently defined standard flavors](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/flavor-naming.md)
 (as of v1.1 from 2022-09-08) do not include
-flavors that use local storage. For certain workloads such as big data filesystems
-or databases, local storage is highly desirable as replication may be handled at
+flavors that use local storage. For certain workloads such as databases or big data
+filesystems, local storage is highly desirable as replication may be handled at
 the application layer, making replication/redundancy in a networked storage solution
 (ceph in the SCS reference implementation) an unneeded and undesired property.
 Furthermore, write access to networked and replicated storage typically incurs
