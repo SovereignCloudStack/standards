@@ -198,6 +198,11 @@ data reported to be written, but in reality being stored in RAM or SLC
 cache of an SSD or NVMe, is guaranteed to not be lost in case of a power
 loss.
 
+Like with networked storage, the provider must ensure that data
+from previous users is not accessible (e.g. by securely erasing it
+or by using a different encryption key) when local storage gets
+allocated to a new VM.
+
 # Out of Scope
 
 Hardware nodes (hypervisors in OpenStack language) that support flavors
