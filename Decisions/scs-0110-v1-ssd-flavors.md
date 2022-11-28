@@ -237,7 +237,7 @@ has the disadvantage of creating an indirection via iSCSI. This
 results in higher latency. The requirements in the above spec are
 not meant to mandate or prevent the implementation via either route.
 
-# Connection to other standards
+# Related Documents
 
 The flavors will be added as mandatory flavors to the
 [flavor-naming standard](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/flavor-naming.md),
@@ -256,3 +256,14 @@ A future flavor metadata standard will indicate whether or not these
 flavors can be live-migrated. A future VM metadata standard will allow
 users to request live-migration and/or cold migration or restart to
 be or to not be performed.
+
+# Conformance Tests
+
+The checks for all mandatory flavors being present should be added to the
+[flavor-name-check.py](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/tools/flavor-name-check.py)
+as soon as this ADR becomes part of the certification requirements.
+
+Checks for conforming with IOPS and purging requirements will require
+test instances to be launched and might become part of a monitoring
+solution.
+
