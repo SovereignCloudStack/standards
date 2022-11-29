@@ -128,6 +128,7 @@ A Ceph OSD (Object Storage Daemon) logically represents a storage device in a Ce
 ## Personas
 
 |Persona|Description|
+--------|-------------|
 |SCS Operator|The SCS Operator is the one who owns and operates a standardized cloud environment.|
 |SCS Consumer|The SCS Consumer consumes a standardized SCS environment and operates and orchestrates applications on top of it. The SCS Consumer is typically a customer or user of the SCS Operator.|
 |SCS Integrator|The SCS Integrator assists in or is building up a standardized cloud environment. The SCS Integrator can be 2nd or 3rd level support for the SCS Operator.|
