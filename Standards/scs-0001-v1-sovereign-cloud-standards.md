@@ -108,6 +108,10 @@ In addition, the following OPTIONAL sections should be considered:
   detailing any open discussion points with respect to a document.
   This section is RECOMMENDED during the discussion phase (pre 1.0.0)
   as a "table of contents" of things to work on in that context.
+- A *Related Documents* section which references related Standards
+  or Decisions, both upstream and/or other SCS documents.
+- A *Conformance Tests* section that contains hints on how to validate
+  conformance with this spec, ideally links to conformance test cases.
 
 # Process
 
