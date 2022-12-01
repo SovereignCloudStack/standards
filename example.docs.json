@@ -1,0 +1,10 @@
+[
+    {
+        "name": "openstack-image-manager",
+        "org": "osism"
+    },
+    {
+        "name": "testbed",
+        "org": "osism"
+    }
+]

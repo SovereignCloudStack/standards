@@ -1,0 +1,72 @@
+---
+name: Synchronize SCS Docs
+
+"on":
+  push:
+    paths:
+    # only trigger the workflow when docs.json has been changed
+      - 'docs.json'
+    branches:
+      - main
+
+jobs:
+  provide_repos_json:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout the docusaurus repo (B)
+        uses: actions/checkout@v3
+
+      - name: Set Matrix
+        id: set-matrix
+        run: |
+          REPOS=$(echo $(cat ././docs.json) | sed 's/ //g' )
+          echo "::set-output name=matrix::$REPOS"
+  
+  sync_repos:
+    needs: provide_repos_json
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: 
+        repos: ${{ fromJson(needs.provide_repos_json.outputs.matrix) }}
+    steps: 
+      - name: checkout the docusaurus repo (B)
+        uses: actions/checkout@v3
+  
+      - name: clone repo A which is about to be synchronized
+        uses: sudosubin/git-clone-action@v1.0.1
+        with:
+          repository: ${{matrix.repos.org}}/${{matrix.repos.name}}
+          path: 'repo_to_be_edited'
+
+      - name: remove git folders from A
+        run: |
+          rm -rf $(pwd)/repo_to_be_edited/.git
+
+      - name: remove README.md files from A
+        run: |
+          find $(pwd)/repo_to_be_edited -name "README.md" | xargs rm -f
+
+      - name: create docusaurus subdirectory
+        run: |
+          mkdir $(pwd)/docs/${{matrix.repos.name}} || true
+
+      - name: copy docs content from A to B
+        run: |
+          cp -r $(pwd)/repo_to_be_edited/docs/* $(pwd)/docs/${{matrix.repos.name}}
+          
+      - name: remove repo A
+        run: |
+          rm -rf $(pwd)/repo_to_be_edited/
+
+      - name: commit and push B
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: 'bot@maxwolfs'
+          committer_name: Action Bot
+          commit: --signoff
+          message: "distill"
+          push: true
+          pull: --rebase --autostash
+          add: "docs"
