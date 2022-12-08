@@ -17,31 +17,30 @@ against access data to data on storage media in case of lost or vendor lifecycle
 ## Proposal
 
 NBDE should be an optional security feature for the SouvereignCloudStack's infrastructure,
-to handle certification like C5 
+to handle certification like C5
 
 ## Technical requirements and features
 
 the involved components:
-    
-* clevis -  is a JOSE'based pluggable framework which is handled automated luks encryption local 
-            inside the boot procedure an is able to handle network base encryption or combine it
-            other methods.
 
-            https://github.com/latchset/clevis
-                          
-* tang  -   is a small webserver with the Jose library, which  is able response to clevis prepared
-            encryption.chain and save  it as a key answer it with a advertisement request, Tang 
-            relies on the JSON Object Signing and Encryption (JOSE) standards
-           
-            https://github.com/latchset/tang
+- clevis - is a JOSE'based pluggable framework which is handled automated luks encryption local
+    inside the boot procedure an is able to handle network base encryption or combine it
+    other methods.
 
-* Jose -    is the Javascript Object Signing and Encryption  Framework, in NBDE context it.
-            use an rsa based. Encryption.
-            https://jose.readthedocs.io/
+                https://github.com/latchset/clevis
 
-* LUKS -    is Linux Unified Key Setup and in Version 2 the default Linux Disk Encryption
+- tang - is a small webserver with the Jose library, which is able response to clevis prepared
+    encryption.chain and save it as a key answer it with a advertisement request, Tang
+    relies on the JSON Object Signing and Encryption (JOSE) standards
 
+                https://github.com/latchset/tang
 
-* NBDE -    in detailed overview and boot procedure
+- Jose - is the Javascript Object Signing and Encryption Framework, in NBDE context it.
+    use an rsa based. Encryption.
+    <https://jose.readthedocs.io/>
 
-<img src="nbde.png" width="50%" alt="Release Versioning Example">
+- LUKS - is Linux Unified Key Setup and in Version 2 the default Linux Disk Encryption
+
+- NBDE - in detailed overview and boot procedure
+
+![Release Versioning Example](nbde.png)
