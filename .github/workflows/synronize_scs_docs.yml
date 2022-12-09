@@ -63,7 +63,7 @@ jobs:
       - name: commit and push B
         uses: EndBug/add-and-commit@v9
         with:
-          author_name: 'bot@maxwolfs'
+          author_name: 'bot@scs'
           committer_name: Action Bot
           commit: --signoff
           message: "distill"
