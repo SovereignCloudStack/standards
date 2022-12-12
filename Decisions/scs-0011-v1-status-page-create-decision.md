@@ -8,10 +8,10 @@ enhances: status-page-comparison.md
 
 # Introduction
 
-Creating and maintaining IaaS is a complex task. Operators can
+Creating and maintaining IaaS is a complex task. Any kind of consumer (e.g. operators, cutsomers) can
 be supported by presenting the status of all possible parts of the
 serving infrastructure. Whether a service is not reachable or
-the used hardware is having an outage we want operators to be easily informed
+the used hardware is having an outage we want the consumers to be easily informed
 by using a "Status Page" application. The need for a "Status Page"
 came up early in Team OPS and the requirements a "Status Page" application 
 has to fulfill were defined and written down on 2022-06-02 [see](https://github.com/SovereignCloudStack/issues/issues/123).
@@ -107,7 +107,7 @@ they are presented in a similar way (eg. the status page application should guid
 resulting infos are presented in a identical way. Example: when updating infos of an incident
 over time the timeline should automatically be sorted by the status page application so that it
 does not depend on the Operator whether the newest info is on top or at the bottom. This is
-typical thing that varies if several people update items ;)
+typical thing that varies if several people update items
 
 * Allow for templates for certain types of incidents
 
