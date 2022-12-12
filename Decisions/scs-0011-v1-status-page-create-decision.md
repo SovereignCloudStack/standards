@@ -2,7 +2,7 @@
 title: Status Page create decision
 type: Decision Record
 status: Draft
-track: IaaS
+track: Ops
 enhances: status-page-comparison.md
 ---
 
@@ -46,6 +46,76 @@ own additional patches.
 So there will be a reference implementation that will match the requirements we have.
 In addition there will be an architecture design documentation. So if the reference
 implementation may not fit to you, it will be possible to create your own application.
+
+# Status Page Requirements and decisions from [Requirement discussion results](https://github.com/SovereignCloudStack/issues/files/8822531/20220602-status-page-scs-session.pdf)
+
+* The status page application should be simplistic in software design to not depend on a large
+variety of services
+* * simplistic, yet existing user management for write access (outh?)
+* * * Existing tools (like cachet) do not have a role concept that allows fine-grined access to
+status bits
+* * do we want to support hidden components eg. components that are only visibile to logged in
+users?
+* * * (is this the type of feature that is considered "bells & whistles" and can be added at a later
+stage)
+* * * does this conflict with our goal of Open Operations?
+* * * On-Prem use case might be handled by having an authenticating reverse proxy in front
+* The status page applicaton should allow for simple and easy theming
+* * Page = (Possibly simple) Web-UI
+
+* As a CSP, I want to have a status page that allows to
+* * define locations and similar grouping (AZs, ...)
+* * define components globally or per location
+* * * to ease maintainence I want to define per component where it belongs so that I only have
+to define a component once, but have it visible in several locations
+* * * status per component should be allowed to be toggeable per location or overall
+* * * a component should allow for several status, that are defined by me
+
+* Status, Status Items should be easy to extract
+* * REST(less)-API to interact with
+* * * API should be versioned
+* * * this allows for embedding status information in other applications, such as cloud
+dashboards
+* * * this also allows for submitting items from other tooling
+* * * * incoming webhooks (https POST) should be supported (e.g. for air-gapped setups) –
+i.e. submitting a health beacon every x seconds
+* * * * web-UI wanted for posting updates as well
+* * * * Token based Auth
+
+* Configuration should be manageable with YAML files (imho this annoys me using Uptime Kuma)
+
+* As a consumer of the status page, I'd like to subscribe to events on the status page via e-mail
+* * for everything
+* * for specific components
+* Don't we need (read-)user management for this anyway?
+* TBD: is there a need for alternate ways of pushing infos from the status page application?
+Example: RSS feed
+* Allow for the ability to trigger webhooks upon certain events (to submit info to other systems via
+webhooks, e.g. chat/messenger)
+
+* As a CSP Operator, I want to be able to flag a component with a new status quick and easy
+* * updating the status of a component should not be hard brainwork and minimize the possibilty
+* * updates can be both machine generated status changes (triggered e.g. by health monitoring)
+as well as updates from human operators
+* * updating a status should allow the CSP Operator to do that in a fashion that either pushes
+infos to the subscribers or just updates the status on the status page
+* * updating the status can either be toggling the status of the component or can be
+accompanied by additional textual information.
+* * When updating a status with textual information the status page application should make it
+easy for me as the CSP Operator to do in a way that if different people submit infos over time
+they are presented in a similar way (eg. the status page application should guide so that the
+resulting infos are presented in a identical way. Example: when updating infos of an incident
+over time the timeline should automatically be sorted by the status page application so that it
+does not depend on the Operator whether the newest info is on top or at the bottom. This is
+typical thing that varies if several people update items ;)
+
+* Allow for templates for certain types of incidents
+
+* User-specific monitoring (how are MY instances, load-balancers, ... doing?) is OUT OF SCOPE for
+the status page.
+* * But having it would be useful and if we have something like this, link it from the status page
+(and a link to horizon might be the default)
+* Sidenote: External hosting is desired to avoid status page going down with infra
 
 # Related Documents
 
