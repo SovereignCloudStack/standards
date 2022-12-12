@@ -120,7 +120,9 @@ the status page.
 # Related Documents
 
 [Requirement discussion results](https://github.com/SovereignCloudStack/issues/files/8822531/20220602-status-page-scs-session.pdf)
+
 [Status Page comparison](https://github.com/SovereignCloudStack/Docs/blob/main/Decisions/status-page-comparison.md)
+
 [Architecture design documentation](https://github.com/joshmue/scs-docs/tree/statuspage-design/Design-Docs/statuspage)
 
 # Conformance Tests
