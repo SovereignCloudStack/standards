@@ -30,6 +30,7 @@ def main(argv):
 		cloud = os.environ["OS_CLOUD"]
 	except KeyError:
 		pass
+	# Note: Convert this to gnu_getopt if we get more params supported
 	if len(argv):
 		if argv[0][:10] == "--os-cloud":
 			if len(argv[0]) > 10 and argv[0][10] == "=":
@@ -44,6 +45,7 @@ def main(argv):
         	print("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
 	conn = openstack.connect(cloud=cloud, timeout=32)
 	flavors = conn.compute.flavors()
+	# Lists of flavors: mandatory, good-SCS, bad-SCS, non-SCS, with-warnings
 	MSCSFlv = []
 	SCSFlv = []
 	wrongFlv = []
@@ -51,12 +53,16 @@ def main(argv):
 	warnFlv = []
 	errors = 0
 	for flv in flavors:
+		# Skip non-SCS flavors
 		if flv.name and flv.name[:4] != "SCS-":
 			nonSCSFlv.append(flv.name)
 			continue
 		try:
 			ret = fnmck.parsename(flv.name)
 			assert(ret)
+			# We have a successfully parsed SCS- name now
+			# See if the OpenStack provided data fulfills what we
+			# expect from the flavor based on its name
 			err = 0
 			warn = 0
 			# vCPUS
@@ -80,8 +86,10 @@ def main(argv):
 				warn += 1
 			# DISK
 			accdisk = (0, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000)
+			# Disk could have been omitted
 			if not ret[1].parsed:
 				ret[1].disksize = 0
+			# We have a recommendation for disk size steps
 			if ret[1].disksize not in accdisk:
 				print("WARNING: Flavor %s advertizes disk size %i, should have (5, 10, 20, 50, 100, 200, ...)" % \
 					(flv.name, ret[1].disksize), file=sys.stderr)
@@ -94,6 +102,7 @@ def main(argv):
 				print("WARNING: Flavor %s has %i GB root disk, only needs %i GB" % \
 					(flv.name, flv.disk, ret[1].disksize), file=sys.stderr)
 				warn += 1
+			# Ev'thing checked, react to errors by putting the bad flavors in the bad bucket
 			if err:
 				wrongFlv.append(flv.name)
 				errors += 1
@@ -105,19 +114,21 @@ def main(argv):
 					SCSFlv.append(flv.name)
 				if warn:
 					warnFlv.append(flv.name)
-			# TODO: Check OpenStack params vs name
+		# Parser error
 		except NameError as e:
 			errors += 1
 			wrongFlv.append(flv.name)
 			print("Wrong flavor \"%s\": %s" % (flv.name, e), file=sys.stderr)
+	# This makes the output more readable
 	MSCSFlv.sort()
 	SCSFlv.sort()
 	nonSCSFlv.sort()
 	wrongFlv.sort()
 	warnFlv.sort()
+	# We have counted errors on the fly, add missing flavors to the final result
 	if (fnmck.scsMandatory):
-		ln = len(fnmck.scsMandatory)
-		errors += ln
+		errors += len(fnmck.scsMandatory)
+	# Produce dict for YAML reporting
 	flvRep = {"MandatoryFlavors": MSCSFlv,
 			"GoodSCSFlavors": SCSFlv,
 			"WrongSCSFlavors": wrongFlv,
