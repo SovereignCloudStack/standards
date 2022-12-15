@@ -96,6 +96,7 @@ def main(argv):
 				warn += 1
 			if err:
 				wrongFlv.append(flv.name)
+				errors += 1
 			else:
 				if flv.name in fnmck.scsMandatory:
 					fnmck.scsMandatory.remove(flv.name)
