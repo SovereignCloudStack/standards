@@ -75,23 +75,24 @@ def main(argv):
 	if (fnmck.scsMandatory):
 		ln = len(fnmck.scsMandatory)
 		errors += ln
-	Report = {cloud: {"FlavorReport": {"MandatoryFlavors": MSCSFlv,
-					"GoodSCSFlavors": SCSFlv,
-					"WrongSCSFlavors": wrongFlv,
-					"nonSCSFlavors": nonSCSFlv,
-					"WarnSCSFlavors": warnFlv,
-					"MissingFlavors": fnmck.scsMandatory}},
-			{"Summary": {"MandatoryFlavors": len(MSCSFlv),
-					"GoodSCSFlavors": len(SCSFlv),
-					"WrongSCSFlavors": len(wrongFlv),
-					"nonSCSFlavors": len(nonSCSFlv),
-					"MissingFlavors": len(fnmck.scsMandatory),
-					"warnings": len(warnFlv),
-					"errors": errors}}}
+	flvRep = {"MandatoryFlavors": MSCSFlv,
+			"GoodSCSFlavors": SCSFlv,
+			"WrongSCSFlavors": wrongFlv,
+			"nonSCSFlavors": nonSCSFlv,
+			"WarnSCSFlavors": warnFlv,
+			"MissingFlavors": fnmck.scsMandatory}
+	flvSum = {"MandatoryFlavors": len(MSCSFlv),
+			"GoodSCSFlavors": len(SCSFlv),
+			"WrongSCSFlavors": len(wrongFlv),
+			"nonSCSFlavors": len(nonSCSFlv),
+			"MissingFlavors": len(fnmck.scsMandatory),
+			"warnings": len(warnFlv),
+			"errors": errors} 
+	Report = {cloud: {"FlavorReport": flvRep, "FlavorSummary": flvSum}}
 	print("%s" % yaml.dump(Report, default_flow_style=False))
 	return errors
 
 
 if __name__ == "__main__":
-	main(sys.argv[1:])
+	sys.exit(main(sys.argv[1:]))
 
