@@ -12,11 +12,12 @@
 # provided by openstack, such as the number of vCPUs and memory.
 # 
 # (c) Kurt Garloff <garloff@osb-alliance.com>, 12/2022
-# License: CC-BY-SA 4.0
+# SPDX-License-Identifier: CC-BY-SA 4.0
 
 import os, sys
 import openstack
 import importlib
+import yaml
 fnmck = importlib.import_module("flavor-name-check")
 
 def usage():
@@ -43,9 +44,10 @@ def main(argv):
         	print("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
 	conn = openstack.connect(cloud=cloud, timeout=32)
 	flavors = conn.compute.flavors()
-	nonSCSFlv = []
+	MSCSFlv = []
 	SCSFlv = []
 	wrongFlv = []
+	nonSCSFlv = []
 	warnFlv = []
 	errors = 0
 	for flv in flavors:
@@ -55,25 +57,38 @@ def main(argv):
 		try:
 			ret = fnmck.parsename(flv.name)
 			assert(ret)
-			SCSFlv.append(flv.name)
 			if flv.name in fnmck.scsMandatory:
 				fnmck.scsMandatory.remove(flv.name)
+				MSCSFlv.append(flv.name)
+			else:
+				SCSFlv.append(flv.name)
 			# TODO: Check OpenStack params vs name
 		except NameError as e:
 			errors += 1
 			wrongFlv.append(flv.name)
 			print("Wrong flavor \"%s\": %s" % (flv.name, e), file=sys.stderr)
+	MSCSFlv.sort()
 	SCSFlv.sort()
+	nonSCSFlv.sort()
 	wrongFlv.sort()
 	warnFlv.sort()
-	print("Flavor analysis report on %s" % cloud)
-	print("Good flavors (%i): %s" % (len(SCSFlv), SCSFlv))
-	print("WRONG flavors (%i): %s" % (len(wrongFlv), wrongFlv))
-	print("Warnings (%i): %s" % (len(warnFlv), warnFlv))
 	if (fnmck.scsMandatory):
 		ln = len(fnmck.scsMandatory)
 		errors += ln
-		print("Missing mandatory SCS flavors (%i): %s" % (ln, fnmck.scsMandatory))
+	Report = {cloud: {"FlavorReport": {"MandatoryFlavors": MSCSFlv,
+					"GoodSCSFlavors": SCSFlv,
+					"WrongSCSFlavors": wrongFlv,
+					"nonSCSFlavors": nonSCSFlv,
+					"WarnSCSFlavors": warnFlv,
+					"MissingFlavors": fnmck.scsMandatory}},
+			{"Summary": {"MandatoryFlavors": len(MSCSFlv),
+					"GoodSCSFlavors": len(SCSFlv),
+					"WrongSCSFlavors": len(wrongFlv),
+					"nonSCSFlavors": len(nonSCSFlv),
+					"MissingFlavors": len(fnmck.scsMandatory),
+					"warnings": len(warnFlv),
+					"errors": errors}}}
+	print("%s" % yaml.dump(Report, default_flow_style=False))
 	return errors
 
 
