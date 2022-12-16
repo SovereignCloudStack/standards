@@ -27,22 +27,18 @@ completecheck = False
 
 # search strings
 scsPre = re.compile(r'^SCS\-')
+# TODO SCSx:
+#scsPre2 = re.compile(r'^SCSx\-')
 
-# List of SCS mandatory flavors
-scsMandatory = ["SCS-1V:4", "SCS-1V:4:10", "SCS-2V:8", "SCS-2V:8:20",
-			"SCS-4V:16", "SCS-4V:16:50", "SCS-8V:32", "SCS-8V:32:100",
-			"SCS-1V:2", "SCS-1V:2:5", "SCS-2V:4", "SCS-2V:4:10", "SCS-4V:8",
-			"SCS-4V:8:20", "SCS-8V:16", "SCS-8V:16:50", "SCS-16V:32", "SCS-16V:32:100",
-			"SCS-1V:8", "SCS-1V:8:20", "SCS-2V:16", "SCS-2V:16:50", "SCS-4V:32", "SCS-4V:32:100",
-			"SCS-1L:1", "SCS-1L:1:5"]
-scsMandNum = len(scsMandatory)
+# List of SCS mandatory flavors: Read from file
 
 # help
 def usage():
-    print("Usage: flavor-name-check.py [-d] [-v] [-c] [-i | NAME [NAME [...]]]")
+    print("Usage: flavor-name-check.py [-d] [-v] [-c] [-C mand.yaml] [-i | NAME [NAME [...]]]")
     print("Flavor name checker returns 0 if no error, 1 for non SCS flavors and 10+ for wrong flavor names")
     print("-d enables debug mode, -v outputs a verbose description, -i enters interactive input mode")
     print("-c checks the SCS names AND checks the list for completeness w.r.t. SCS mandatory flavors.")
+    print("-C mand.yaml reads the mandatory flavor list from mand.yaml instead of SCS-Spec.MandatoryFlavors.yaml")
     print("Example: flavor-name-check.py -c $(openstack flavor list -f value -c Name)")
     sys.exit(2)
 
@@ -55,7 +51,12 @@ def to_bool(stg):
 
 
 def is_scs(nm):
-    return scsPre.match(nm) != None
+    if scsPre.match(nm):
+        return 4
+    # TODO SCSx: Add check for SCSx-
+    #if scsPre2.match(nm):
+    #    return 5
+    return 0
 
 class Prop:
     # Name of the property
@@ -417,6 +418,7 @@ class IB(Prop):
     outstr = "%?ib"
 
 def outname(cpuram, disk, hype, hvirt, cpubrand, gpu, ib):
+        # TODO SCSx: Differentiate b/w SCS- and SCSx-
         out = "SCS-" + cpuram.out()
         if disk.parsed:
             out += ":" + disk.out()
@@ -440,11 +442,12 @@ def printflavor(nm, lst):
     print()
 
 def parsename(nm):
-    if not is_scs(nm):
+    scsln = is_scs(nm)
+    if not scsln:
         if verbose:
             print("WARNING: %s: Not an SCS flavor" % nm)
         return None
-    n = nm[4:]
+    n = nm[scsln:]
     cpuram = Main(n)
     if cpuram.parsed == 0:
         raise NameError("Error 10: Failed to parse main part of %s" % n)
@@ -496,6 +499,27 @@ def inputflavor():
     ib.input()
     return (cpuram, disk, hype, hvirt, cpubrand, gpu, ib)
 
+# Path to the python script
+_bindir = sys.argv[0]
+_bindir_pidx = _bindir.rfind('/')
+if _bindir_pidx != -1:
+	_bindir = (_bindir[:_bindir_pidx],)
+else:
+	_bindir = os.environ('PATH').split(':')
+
+def readmandflavors(fnm):
+    import yaml
+    searchpath = (".",  *_bindir, '/opt/share/SCS')
+    if fnm.rfind('/') == -1:
+        for sp in searchpath:
+            tnm = "%s/%s" % (sp, fnm)
+            if debug:
+                print("Search %s" % tnm)
+            if os.access(tnm, os.R_OK):
+                fnm = tnm
+                break
+    yamldict = yaml.safe_load(open(fnm, "r"))
+    return yamldict["SCS-Spec"]["MandatoryFlavors"]
 
 def main(argv):
     global verbose, debug, completecheck
@@ -510,9 +534,18 @@ def main(argv):
         argv = argv[1:]
     if argv[0] == "-c":
         completecheck = True
+        scsMandatory = readmandflavors("SCS-Spec.MandatoryFlavors.yaml")
+        scsMandNum = len(scsMandatory)
         if debug:
-            print("Check for completeness (%i): %s" % (len(scsMandatory), scsMandatory))
+            print("Check for completeness (%i): %s" % (scsMandNum, scsMandatory))
         argv = argv[1:]
+    if argv[0] == "-C":
+        completecheck = True
+        scsMandatory = readmandflavors(argv[1])
+        scsMandNum = len(scsMandatory)
+        if debug:
+            print("Check for completeness (%i): %s" % (scsMandNum, scsMandatory))
+        argv = argv[2:]
 
     if argv[0] == "-i":
         ret = inputflavor()
