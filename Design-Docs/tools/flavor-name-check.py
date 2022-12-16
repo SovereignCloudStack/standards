@@ -499,6 +499,10 @@ def inputflavor():
 
 def main(argv):
     global verbose, debug, completecheck
+    scs = 0
+    error = 0
+    nonscs = 0
+
     # TODO: Use getopt for proper option parsing
     if len(argv) < 1 or argv[0] == "-h":
         usage()
@@ -526,10 +530,7 @@ def main(argv):
             #raise NameError("%s != %s" % (nm, nm2))
         #print(outname(*ret))
         argv = argv[1:]
-
-    error = 0
-    nonscs = 0
-    scs = 1
+        scs = 1
 
     # TODO: Option to get flavor list directly from API
     # TODO: Validate additional aspects
