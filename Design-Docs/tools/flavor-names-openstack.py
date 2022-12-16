@@ -65,42 +65,51 @@ def main(argv):
 			# expect from the flavor based on its name
 			err = 0
 			warn = 0
+			# Split list for readability
+			cpuram = ret[0]
+			disk = ret[1]
+			# next qwould be hype, hwvirt, cpubrand, gpu, ib
+			# see flavor-name-check.py: parsename()
 			# vCPUS
-			if (flv.vcpus < ret[0].cpus):
+			if (flv.vcpus < cpuram.cpus):
 				print("ERROR: Flavor %s has only %i vCPUs, should have >= %i" % \
-					(flv.name, flv.vcpus, ret[0].cpus), file=sys.stderr)
+					(flv.name, flv.vcpus, cpuram.cpus), file=sys.stderr)
 				err += 1
-			elif (flv.vcpus > ret[0].cpus):
+			elif (flv.vcpus > cpuram.cpus):
 				print("WARNING: Flavor %s has %i vCPUs, only needs %i" % \
-					(flv.name, flv.vcpus, ret[0].cpus), file=sys.stderr)
+					(flv.name, flv.vcpus, cpuram.cpus), file=sys.stderr)
 				warn += 1
 			# RAM
 			flvram = int((flv.ram+51)/102.4)/10
-			if (flvram < ret[0].ram):
+			# Warn for strange sizes (want integer numbers, half allowed for < 10GiB)
+			if (flvram >= 10 and flvram != int(flvram) or flvram*2 != int(flvram*2)):
+				print("WARNING: Flavor %s uses discouraged uneven size of memory %.1f GiB" % \
+					(flv.name, flvram), file=sys.stderr)
+			if (flvram < cpuram.ram):
 				print("ERROR: Flavor %s has only %.1f GiB RAM, should have >= %.1f GiB" % \
-					(flv.name, flvram, ret[0].ram), file=sys.stderr)
+					(flv.name, flvram, cpuram.ram), file=sys.stderr)
 				err += 1
-			elif (flvram > ret[0].ram):
+			elif (flvram > cpuram.ram):
 				print("WARNING: Flavor %s has %.1f GiB RAM, only needs %.1f GiB" % \
-					(flv.name, flvram, ret[0].ram), file=sys.stderr)
+					(flv.name, flvram, cpuram.ram), file=sys.stderr)
 				warn += 1
 			# DISK
 			accdisk = (0, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000)
 			# Disk could have been omitted
-			if not ret[1].parsed:
-				ret[1].disksize = 0
+			if not disk.parsed:
+				disk.disksize = 0
 			# We have a recommendation for disk size steps
-			if ret[1].disksize not in accdisk:
+			if disk.disksize not in accdisk:
 				print("WARNING: Flavor %s advertizes disk size %i, should have (5, 10, 20, 50, 100, 200, ...)" % \
-					(flv.name, ret[1].disksize), file=sys.stderr)
+					(flv.name, disk.disksize), file=sys.stderr)
 				warn += 1
-			if (flv.disk < ret[1].disksize):
+			if (flv.disk < disk.disksize):
 				print("ERROR: Flavor %s has only %i GB root disk, should have >= %i GB" % \
-					(flv.name, flv.disk, ret[1].disksize), file=sys.stderr)
+					(flv.name, flv.disk, disk.disksize), file=sys.stderr)
 				err += 1
-			elif (flv.disk > ret[1].disksize):
+			elif (flv.disk > disk.disksize):
 				print("WARNING: Flavor %s has %i GB root disk, only needs %i GB" % \
-					(flv.name, flv.disk, ret[1].disksize), file=sys.stderr)
+					(flv.name, flv.disk, disk.disksize), file=sys.stderr)
 				warn += 1
 			# Ev'thing checked, react to errors by putting the bad flavors in the bad bucket
 			if err:
