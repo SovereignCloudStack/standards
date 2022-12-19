@@ -110,6 +110,8 @@ In addition, the following OPTIONAL sections should be considered:
   as a "table of contents" of things to work on in that context.
 - A *Related Documents* section which references related Standards
   or Decisions, both upstream and/or other SCS documents.
+- A *Conformance Tests* section that contains hints on how to validate
+  conformance with this spec, ideally links to conformance test cases.
 
 # Process
 
