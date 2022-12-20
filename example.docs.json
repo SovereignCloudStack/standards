@@ -1,10 +1,12 @@
 [
     {
         "name": "openstack-image-manager",
-        "org": "osism"
+        "org": "osism",
+        "directory": "doc"
     },
     {
         "name": "testbed",
-        "org": "osism"
+        "org": "osism",
+        "directory": "docs"
     }
 ]
