@@ -1,4 +1,4 @@
-name: Build and Deploy to Github Pages
+name: Build and Deploy to staging Branch
 
 on:
   push:
