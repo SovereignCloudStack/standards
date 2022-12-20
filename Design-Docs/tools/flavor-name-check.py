@@ -14,6 +14,11 @@
 # 60-69: Error in optional GPU spec
 # 70-79: Unknown extension
 # 
+# When checking a list of flavors for completeness with respect
+# to mandatory flavors, we disregard non-scs flavors (code 1 above)
+# and only report the number of missing flavors or -- if none was found --
+# the sum of parsing errors (>=10) according to above scheme.
+#
 # (c) Kurt Garloff <garloff@osb-alliance.com>, 5/2021
 # License: CC-BY-SA 4.0
 
@@ -499,9 +504,12 @@ def inputflavor():
 
 def main(argv):
     global verbose, debug, completecheck
+    # Number of good SCS flavors
     scs = 0
-    error = 0
+    # Number of non-SCS flavors
     nonscs = 0
+    # Number of errors
+    error = 0
 
     # TODO: Use getopt for proper option parsing
     if len(argv) < 1 or argv[0] == "-h":
@@ -518,6 +526,7 @@ def main(argv):
             print("Check for completeness (%i): %s" % (len(scsMandatory), scsMandatory))
         argv = argv[1:]
 
+    # Interactive input of flavor
     if argv[0] == "-i":
         ret = inputflavor()
         print()
@@ -560,12 +569,11 @@ def main(argv):
     if completecheck:
         print("Found %i SCS flavors (%i mandatory), %i non-SCS flavors" % \
             (scs, scsMandNum, nonscs))
-    if completecheck and scsMandatory:
-        print("Missing mandatory flavors: %s" % scsMandatory)
-        return len(scsMandatory)
-
-    if completecheck:
-        return error
+        if scsMandatory:
+            print("Missing mandatory flavors: %s" % scsMandatory)
+            return len(scsMandatory)
+        else:
+            return error
     else:
         return nonscs+error
 
