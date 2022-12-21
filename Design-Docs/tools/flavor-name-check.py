@@ -418,6 +418,7 @@ class IB(Prop):
     outstr = "%?ib"
 
 def outname(cpuram, disk, hype, hvirt, cpubrand, gpu, ib):
+        "Return name constructed from tuple"
         # TODO SCSx: Differentiate b/w SCS- and SCSx-
         out = "SCS-" + cpuram.out()
         if disk.parsed:
@@ -436,12 +437,16 @@ def outname(cpuram, disk, hype, hvirt, cpubrand, gpu, ib):
 
 
 def printflavor(nm, lst):
+    "Output details on flavor with name nm described by tuple in lst"
     print("Flavor: %s" % nm)
     for l in lst:
         print(l)
     print()
 
 def parsename(nm):
+    """Extract properties from SCS flavor name, return None (if not SCS-),
+       raise NameError exception (if not conforming) or return tuple
+       (cpuram, disk, hype, hvirt, cpubrand, gpu, ib)"""
     scsln = is_scs(nm)
     if not scsln:
         if verbose:
@@ -483,6 +488,7 @@ def parsename(nm):
     return (cpuram, disk, hype, hvirt, cpubrand, gpu, ib)
 
 def inputflavor():
+    "Interactively input a flavor"
     cpuram = Main("")
     cpuram.input()
     disk = Disk("")
@@ -499,7 +505,7 @@ def inputflavor():
     ib.input()
     return (cpuram, disk, hype, hvirt, cpubrand, gpu, ib)
 
-# Path to the python script
+# Path to the python script, used to search mandatory flavor YAML file
 _bindir = sys.argv[0]
 _bindir_pidx = _bindir.rfind('/')
 if _bindir_pidx != -1:
@@ -508,6 +514,7 @@ else:
 	_bindir = os.environ('PATH').split(':')
 
 def readmandflavors(fnm):
+    "Read mandatory flavors from passed YAML file, search in a few paths"
     import yaml
     searchpath = (".",  *_bindir, '/opt/share/SCS')
     if fnm.rfind('/') == -1:
@@ -521,7 +528,11 @@ def readmandflavors(fnm):
     yamldict = yaml.safe_load(open(fnm, "r"))
     return yamldict["SCS-Spec"]["MandatoryFlavors"]
 
+# Default file name for mandatpry flavors
+mandFlavorFile = "SCS-Spec.MandatoryFlavors.yaml"
+
 def main(argv):
+    "Entry point when used as selfstanding tool"
     global verbose, debug, completecheck
     # TODO: Use getopt for proper option parsing
     if len(argv) < 1 or argv[0] == "-h":
@@ -534,7 +545,7 @@ def main(argv):
         argv = argv[1:]
     if argv[0] == "-c":
         completecheck = True
-        scsMandatory = readmandflavors("SCS-Spec.MandatoryFlavors.yaml")
+        scsMandatory = readmandflavors(mandFlavorFile)
         scsMandNum = len(scsMandatory)
         if debug:
             print("Check for completeness (%i): %s" % (scsMandNum, scsMandatory))

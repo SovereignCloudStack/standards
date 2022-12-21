@@ -31,7 +31,8 @@ def main(argv):
 	cloud = None
 	verbose = False
 	quiet = False
-	scsMandFile = "SCS-Spec.MandatoryFlavors.yaml"
+	scsMandFile = fnmck.mandFlavorFile
+
 	try:
 		cloud = os.environ["OS_CLOUD"]
 	except KeyError:
