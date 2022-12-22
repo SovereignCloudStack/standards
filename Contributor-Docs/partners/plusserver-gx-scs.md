@@ -1,5 +1,5 @@
 ---
-title:  Getting Started Gaia-X Demonstrator @ PlusServer
+title:  Getting Started Gaia-X Demonstrator @ plusserver
 version: 2022-12-21
 author: Ralf Heiringhoff, Mathias Fechner
 ---
@@ -16,9 +16,9 @@ author: Ralf Heiringhoff, Mathias Fechner
 
 For your login you will need:
 
-*  Username (u500924-<github handle>)
+*  Username (`u500924-<github handle>`)
 *  Password
-*  Domain (d500924)
+*  Domain (`d500924`)
 
 ## OpenStackClient (CLI)
 
@@ -30,7 +30,7 @@ further Information see the OpenStack Project upstream website
 This repo holds examples for `clouds-public.yaml` + `clouds.yaml`.
 
 Alternatively you can download an OpenRC Environment file when you're logged in to Horizon:
-*  upper left side -> <your login name>
+*  upper left side :arrow_right: <your login name>
 *  OpenStack RC File
 
 ```
