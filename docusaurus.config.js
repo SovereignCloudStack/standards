@@ -6,9 +6,9 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-    title: "SCS Docs",
-    tagline: "Putting users and providers in control.",
-    url: "https://scsdocs.com",
+    title: "Sovereign Cloud Stack Documentation",
+    tagline: "One platform - standardized, built and operated by many.",
+    url: "https://docs.scs.community.com",
     baseUrl: "/",
     onBrokenLinks: "throw",
     onBrokenMarkdownLinks: "warn",
@@ -17,7 +17,7 @@ const config = {
     // GitHub pages deployment config.
     // If you aren't using GitHub pages, you don't need these.
     organizationName: "SovereignCloudStack", // Usually your GitHub org/user name.
-    projectName: "Docs", // Usually your repo name.
+    projectName: "docs-page", // Usually your repo name.
 
     // Even if you don't use internalization, you can use this field to set useful
     // metadata like html lang. For example, if your site is Chinese, you may want
@@ -37,14 +37,14 @@ const config = {
                     // Please change this to your repo.
                     // Remove this to remove the "edit this page" links.
                     editUrl:
-                        "https://github.com/SovereignCloudStack/Docs/tree/main/",
+                        "https://github.com/SovereignCloudStack/docs-page/tree/main/",
                 },
                 blog: {
                     showReadingTime: true,
                     // Please change this to your repo.
                     // Remove this to remove the "edit this page" links.
                     editUrl:
-                        "https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/",
+                        "https://github.com/SovereignCloudStack/docs-page/tree/main/"
                 },
                 theme: {
                     customCss: require.resolve("./src/css/custom.css"),
@@ -71,7 +71,7 @@ const config = {
                     },
                     { to: "/blog", label: "Blog", position: "left" },
                     {
-                        href: "https://github.com/SovereignCloudStack/Docs",
+                        href: "https://github.com/SovereignCloudStack/docs-page",
                         label: "GitHub",
                         position: "right",
                     },
@@ -111,7 +111,7 @@ const config = {
                             },
                             {
                                 label: "GitHub",
-                                href: "https://github.com/SovereignCloudStack/Docs",
+                                href: "https://github.com/SovereignCloudStack/docs-page",
                             },
                         ],
                     },
