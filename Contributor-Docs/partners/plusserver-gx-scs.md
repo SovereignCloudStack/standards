@@ -30,7 +30,7 @@ further Information see the OpenStack Project upstream website
 This repo holds examples for `clouds-public.yaml` + `clouds.yaml`.
 
 Alternatively you can download an OpenRC Environment file when you're logged in to Horizon:
-*  upper left side :arrow_right: <your login name>
+*  upper left side :arrow_right: `<your login name>`
 *  OpenStack RC File
 
 ```
