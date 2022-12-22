@@ -1,4 +1,4 @@
-# partner cloud resources
+# Test and development cloud resources
 
 This document gives an overview of the test and development cloud resources currently provided by our partners.
 
