@@ -1,10 +1,10 @@
 ---
 title:  Getting Started Gaia-X Demonstrator @ plusserver
-version: 2022-12-21
+version: 2022-12-22
 author: Ralf Heiringhoff, Mathias Fechner
 ---
 
-# Getting Started for the Gaia-X Demonstrator @ PlusServer
+# Getting Started for the Gaia-X Demonstrator @ plusserver
 
 # URLs for access
 
