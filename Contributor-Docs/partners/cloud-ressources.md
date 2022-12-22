@@ -6,9 +6,9 @@ This document gives an overview of the test and development cloud resources curr
 
 To request access to an existing project, please contact the responsible community member. To apply for a new project, please create a pull request against this document and assign it to the particular CSP team (e.g. @SovereignCloudStack/plusserver, @SovereignCloudStack/wavecon, ...)
 
-## PlusServer
+## plusserver
 
-## Projects
+### Projects
 
 | Unique Identifier | Project Name | Community Contact | Description | Needed until |
 |:---:|---|---|---|:---:|
@@ -23,7 +23,7 @@ To request access to an existing project, please contact the responsible communi
 | 3501db829014406884990a1016f3e25d | p500924-sig-monitoring1 | fkr | SIG Monitoring - cloudmon target | 31.12.2023 |
 |  |  |  |  |  |
 
-## Service User
+### Service User
 
 | Unique Identifier | Service User Name | Community Contact | Description | Needed until |
 |:---:|---|---|---|:---:|
@@ -31,4 +31,4 @@ To request access to an existing project, please contact the responsible communi
 |  |  |  |  |  |
 
 
-# Wavecon
+## Wavecon
