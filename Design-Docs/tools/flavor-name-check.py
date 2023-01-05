@@ -153,7 +153,7 @@ class Prop:
            %.Nf gets converted to %.0f if the number is an integer
            %1x gets converted to %ix if the number is not == 1, otherwise it's left out
            %0i gets converted to %i if the number is not == 0, otherwise it's left out
-           %:i gets converted to :%i if number is non-null, otherwise left out
+           %:i gets converted to :%i if number is non-null, otherwise left out and cut-off (no more output is produced)
            """
         par = 0
         i = 0
@@ -208,6 +208,7 @@ class Prop:
                     lst.append(att)
                 else:
                     i += 3
+                    break
                 par += 1
             else:
                 ostr += self.outstr[i]
