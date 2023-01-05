@@ -293,7 +293,7 @@ The optional `h` suffix to the comput unit count indicates high-performance (e.g
 high bandwidth gfx memory such as HBM);
 `h` can be duplicated for even higher performance.
 
-It us also allowable to use the high-frequency/bandwidth indicator `h` without specifying the number of
+It is also allowable to use the high-frequency/bandwidth indicator `h` without specifying the number of
 CUs/SMs/EUs, using the syntax `-GX[N][h]` (for pass-through GPU) or `-gX[N][h]` (for virtualized GPUs).
 
 `-ib` indicates Inifinband networking.
