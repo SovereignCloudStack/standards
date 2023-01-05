@@ -396,7 +396,7 @@ class CPUBrand(Prop):
 
 class GPU(Prop):
     type = "GPU"
-    parsestr = re.compile(r"\-([gG])([NAI])([^:-]*)(:[0-9]*|)(h*)")
+    parsestr = re.compile(r"\-([gG])([NAI])([^:-h]*)(:[0-9]*|)(h*)")
     pattrs = ("gputype", "brand", "gen", "cu", "perf")
     pnames = (".Type", ".Brand", ".Gen", "#.CU/EU/SM", "Performance")
     outstr = "%s%s%s%:i%s"
