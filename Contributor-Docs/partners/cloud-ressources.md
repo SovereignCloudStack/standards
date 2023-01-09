@@ -13,7 +13,7 @@ A brief guide on how to use the ressources provided by PlusServer can be found [
 
 ### Users
 
-As suggested in #155 the username for non-"service users" will contain the users github handle and are prefixed with a plusserver default.
+As suggested in [#155](https://github.com/SovereignCloudStack/Docs/issues/155) the username for non-"service users" will contain the users github handle and are prefixed with a plusserver default.
 ``prefix-<github handle>``
 
 :bulb: atm this is not directly connected to the SovereignCloudStack github org membership, accounts will be created manually for now.
