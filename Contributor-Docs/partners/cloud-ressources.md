@@ -8,6 +8,9 @@ To request access to an existing project, please contact the responsible communi
 
 ## plusserver
 
+### Usage
+A brief guide on how to use the ressources provided by PlusServer can be found [here](plusserver-gx-scs.md)
+
 ### Users
 
 As suggested in #155 the username for non-"service users" will contain the users github handle and are prefixed with a plusserver default.
@@ -25,7 +28,6 @@ Example:
 
 :information_source: To easy collaboration & transparency within the SCS team all users will have their default_project_id set to ``p500924-scs-community`` by default and will have full access on all projects listed below.
 
-
 ### Service User
 
 Service users will have their default_project_id set to a specific project and will NOT be granted full access to other projects by default.
@@ -34,7 +36,6 @@ Service users will have their default_project_id set to a specific project and w
 |:---:|---|---|---|:---:|
 | 9a1576af59644a2dbbace773ad17158d | u500924-svc-sig-monitoring | fkr | Service User - SIG Monitoring | 31.12.2023 |
 |  |  |  |  |  |
-
 
 ### Projects
 
@@ -50,6 +51,5 @@ Service users will have their default_project_id set to a specific project and w
 | 2c9e0e4ef8d44c36807df50b06b3c81d | p500924-cloudmon-target | costelter | Target project for CloudMon tests | 31.12.2023 |
 | 3501db829014406884990a1016f3e25d | p500924-sig-monitoring1 | fkr | SIG Monitoring - cloudmon target | 31.12.2023 |
 |  |  |  |  |  |
-
 
 ## Wavecon
