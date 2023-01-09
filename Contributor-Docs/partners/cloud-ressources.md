@@ -16,7 +16,8 @@ A brief guide on how to use the ressources provided by PlusServer can be found [
 As suggested in #155 the username for non-"service users" will contain the users github handle and are prefixed with a plusserver default.
 ``prefix-<github handle>``
 
-:bulb: atm this is not directly connected to the SovereignCloudStack github org membership, accounts will be created manually for now.
+> **Note**  
+>  ATM this is not directly connected to the SovereignCloudStack github org membership, accounts will be created manually for now.
 
 Example:
 
@@ -26,7 +27,8 @@ Example:
 | fkr | u500924-fkr |
 | | |
 
-:information_source: To easy collaboration & transparency within the SCS team all users will have their default_project_id set to ``p500924-scs-community`` by default and will have full access on all projects listed below.
+> **Note**  
+> To easy collaboration & transparency within the SCS team all users will have their default_project_id set to ``p500924-scs-community`` by default and will have full access on all projects listed below.
 
 ### Service User
 
