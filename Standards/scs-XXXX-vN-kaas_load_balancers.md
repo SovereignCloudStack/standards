@@ -11,37 +11,43 @@ Kubernetes `Services` with [`type: LoadBalancer`](https://kubernetes.io/docs/con
 
 The "cloud" (respectively the cloud controller manager) is responsible to implement this.
 
-In effect, when a user creates such `Service` on any cloud provider, there are generally no provider specific operations required for basic use cases.
+In effect, when a user creates such `Service` on any cloud provider, there are generally no provider specific parameters required, even though implementation might vary significantly from one provider to another.
 
-# Motivation
+That being said, there are some parameters with default values which may be overriden, introducing details which affect cross-provider-support.
 
-While the user-facing API of `type=LoadBalancer` `Services` is actually quite small, there are a few caveats when setting [`externalTrafficPolicy: Local`](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip) using the default OpenStack configuration.
+This standard record is intended to clarify: What exact configurations and use cases can be expected to work out of the box on a SCS compliant cloud?
 
-An user may opt to set it to `Local` in order to e.g. preserve client IP addresses or because of performance concerns. In the following, this use case is referred to as "The Special Use Case".
+# Motivation / desirable features
 
-# Design Considerations
+## `externalTrafficPolicy: Local`
 
-## Options considered
+By default `externalTrafficPolicy` is set to `Cluster`. Changing it to `Local` does address some problems of the default `Cluster` setting, but also requires the underlaying load balancers and cluster setups to work a bit differently.
 
-### **Do not require** that "The Special Use Case" works out of the box
+### Benefits
 
-By default, `create-monitor` is not enabled in the OpenStack controller manager. While [changing this](https://github.com/SovereignCloudStack/k8s-cluster-api-provider/commit/002cecdc3680be3dc64b0dd71a84a6696b62c908) seems to make it work, there may be good reasons for keeping this opt-in.
+* <a name="keepip"></a>Preserving the actual client/source IP for backing Pods. [K8s Docs](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip).
+  * Kubernetes nodes stop doing SNAT, so they do not obfuscate the IP anymore
+* <a name="ootb"></a>Being the default setting for e.g. [nginx's nginx-ingress-controller helm chart](https://docs.nginx.com/nginx-ingress-controller/installation/installation-with-helm/#configuration), supporting this will make such helm charts work out of the box
+* <a name="performance"></a> Improve performance
+  * Requests will not hop across nodes, so performance should be improved
 
-Because of these reasons (which are yet to be researched), it might be best to keep things as-is and do not require SCS KaaS clusters to work out of the box in this configuration.
+### Drawbacks / Neutralized benefits / Countering arguments
 
-### **Do require** that "The Special Use Case" works out of the box
+* [Preserving the actual client/source IP for backing Pods](#keepip)
+  * This only really is a benefit if the nodes see the actual client/source IP themselves - for example when the load balancer is implemented as a low level packet forwarder ([K8s docs](https://kubernetes.io/docs/tutorials/services/source-ip/#cross-platform-support)). In the OpenStack Octavia case, which seems to include an HAProxy (terminating TCP) operating on a higher level, setting `externalTrafficPolicy: Local` would only make the HAProxy IP visible. In effect, setting it in this case would not really help preserving client IPs.
+  * So, handling `externalTrafficPolicy: Local` as "supported" may cause confusion, as client IP preservation is its most prominent feature - most likely also more prominent than the reduced number of hops
+* [Being the default setting for e.g. nginx's nginx-ingress-controller helm chart](#ootb)
+  * Ultimately, there will be always opt-in/opt-out fields in Kubernetes resources which impact cross-provider-support.
+  * The fact that e.g. nginx inc.'s ingress helm chart expects `externalTrafficPolicy: Local` to work without problems does not mandate that SCS must share this view. In fact, while it is not the only helm chart to set it by default, there are a few popular ingress controller charts which apparently do not: [`kubernetes/ingress-nginx` helm chart](https://github.com/kubernetes/ingress-nginx/blob/e7bee5308e84269d13b58352aeae3a6f27ea6e52/charts/ingress-nginx/values.yaml#L475), [traefik helm chart](https://github.com/traefik/traefik-helm-chart/blob/d1a2c281fb12eca2693932acbea6fec7c2212872/traefik/values.yaml), [contour helm chart](https://github.com/bitnami/charts/blob/30300ee924e6e6c55fe9069bf03791d8bcae65b7/bitnami/contour/values.yaml).
+  * Furthermore, even when `externalTrafficPolicy: Local` is required to work while not being required to preserve the client IP, this directly contradicts the nginx's helm chart parameter docs, which say that ["Local preserves the client source IP"](https://docs.nginx.com/nginx-ingress-controller/installation/installation-with-helm/#configuration).
+* [Improve performance](#performance)
+  * Significant improvements are possible, but are not validated yet
 
-The reasons which are mentioned in the previous section may also not lead to the decision that keeping `create-monitor` opt-in is the best way to go. In this case, set `create-monitor` by default.
+### Conclusion
 
-# Open questions
-
-- What are the reasons for setting `create-monitor` being opt-in?
-
-# Decision
-
-The default use case of using a `Service` with `type: LoadBalancer` and `externalTrafficPolicy: Cluster` is required to work.
-
-"The Special Use Case" of using a `Service` with `type: LoadBalancer` and `externalTrafficPolicy: Local` is TBD.
+| Option 1 | Option 2 |
+|----|----|
+| Require SCS compliant clouds to work with `externalTrafficPolicy: Local` (enabling the health check mechanism to avoid constant connectivity problems) | Do not require SCS compliant cloud providers to support `externalTrafficPolicy: Local` |
 
 # Conformance Tests
 
