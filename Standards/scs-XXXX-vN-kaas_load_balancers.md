@@ -13,7 +13,7 @@ The "cloud" (respectively the cloud controller manager) is responsible to implem
 
 In effect, when a user creates such `Service` on any cloud provider, there are generally no provider specific parameters required, even though implementation might vary significantly from one provider to another.
 
-That being said, there are some parameters with default values which may be overriden, introducing details which affect cross-provider-support.
+That being said, there are some parameters with default values which may be overridden, introducing some sort of implementation details which affect cross-provider-support.
 
 This standard record is intended to clarify: What exact configurations and use cases can be expected to work out of the box on a SCS compliant cloud?
 
@@ -43,11 +43,16 @@ By default `externalTrafficPolicy` is set to `Cluster`. Changing it to `Local` d
 * [Improve performance](#performance)
   * Significant improvements are possible, but are not validated yet
 
-### Conclusion
+### Conclusion (**TBD**)
 
 | Option 1 | Option 2 |
 |----|----|
 | Require SCS compliant clouds to work with `externalTrafficPolicy: Local` (enabling the health check mechanism to avoid constant connectivity problems) | Do not require SCS compliant cloud providers to support `externalTrafficPolicy: Local` |
+
+# Decision
+
+* A "vanilla" Kubernetes `Service` with `type=LoadBalancer` without any special fields set: Must work as expected, out of the box
+* An otherwise "vanilla" `Service` with `externalTrafficPolicy: Local` set: **TBD**
 
 # Conformance Tests
 
