@@ -56,7 +56,7 @@ By default `externalTrafficPolicy` is set to `Cluster`. Changing it to `Local` d
 
 # Conformance Tests
 
-For default use case:
+With default `externalTrafficPolicy: Cluster`:
 
 ```bash
 #!/bin/bash
@@ -89,7 +89,7 @@ kubectl delete pod nginx-$suffix
 kubectl delete svc nginx-$suffix-svc
 ```
 
-For "The Special Use Case":
+With `externalTrafficPolicy: Local` being set:
 
 ```bash
 #!/bin/bash
