@@ -29,7 +29,7 @@ By default `externalTrafficPolicy` is set to `Cluster`. Changing it to `Local` d
   * Kubernetes nodes stop doing SNAT, so they do not obfuscate the IP anymore
 * <a name="ootb"></a>Being the default setting for e.g. [nginx's nginx-ingress-controller helm chart](https://docs.nginx.com/nginx-ingress-controller/installation/installation-with-helm/#configuration), supporting this will make such helm charts work out of the box
 * <a name="performance"></a> Improve performance
-  * Requests will not hop across nodes, so performance should be improved
+  * Connections will not hop across nodes, so performance should be improved
 
 ### Drawbacks / Neutralized benefits / Countering arguments
 
