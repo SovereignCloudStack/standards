@@ -21,7 +21,7 @@ This standard record is intended to clarify: What exact configurations and use c
 
 ## `externalTrafficPolicy: Local`
 
-By default `externalTrafficPolicy` is set to `Cluster`. Changing it to `Local` does address some problems of the default `Cluster` setting, but to have its full effect, it also requires the underlaying load balancers and cluster setups to work a bit differently.
+By default `externalTrafficPolicy` is set to `Cluster`. Changing it to `Local` does address some problems of the default `Cluster` setting, but to have its full effect, it also requires the underlaying load balancers and cluster setups to work a bit more opinionated.
 
 ### Benefits
 
