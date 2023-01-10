@@ -54,8 +54,8 @@ By default `externalTrafficPolicy` is set to `Cluster`. Changing it to `Local` d
 
 # Decision
 
-* A "vanilla" Kubernetes `Service` with `type=LoadBalancer` without any special fields set: Must work as expected, out of the box
-* An otherwise "vanilla" `Service` with `externalTrafficPolicy: Local` set: **TBD**
+* A "vanilla" Kubernetes `Service` of `type=LoadBalancer` without any special fields set: Must work as expected, out of the box
+* An otherwise "vanilla" `Service` of `type=LoadBalancer` with `externalTrafficPolicy: Local` set: **TBD**
 
 # Conformance Tests
 
