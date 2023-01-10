@@ -33,6 +33,9 @@ By default `externalTrafficPolicy` is set to `Cluster`. Changing it to `Local` d
 
 ### Drawbacks / Neutralized benefits / Countering arguments
 
+* In the SCS reference implementation, some default setting of the OpenStack cloud controller needs to be changed in order to prevent constant connectivity issues.
+  * Regards load balancer health checks
+  * Reasoning behind default setting is still unknown, so there may be some unconsidered edge cases
 * [Preserving the actual client/source IP for backing Pods](#keepip)
   * This only really is a benefit if the nodes see the actual client/source IP themselves - for example when the load balancer is implemented as a low level packet forwarder ([K8s docs](https://kubernetes.io/docs/tutorials/services/source-ip/#cross-platform-support)). In the OpenStack Octavia case, which seems to include an HAProxy (terminating TCP) operating on a higher level, setting `externalTrafficPolicy: Local` would only make the HAProxy IP visible. In effect, setting it in this case would not really help preserving client IPs.
   * So, handling `externalTrafficPolicy: Local` as "supported" may cause confusion, as client IP preservation is its most prominent feature - most likely also more prominent than the reduced number of hops
