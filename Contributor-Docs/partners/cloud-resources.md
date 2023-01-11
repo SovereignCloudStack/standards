@@ -40,15 +40,6 @@ Service users will have their default_project_id set to a specific project and w
 | 9a1576af59644a2dbbace773ad17158d | u500924-svc-sig-monitoring | fkr | Service User - SIG Monitoring | 31.12.2023 |
 |  |  |  |  |  |
 
-### Service User
-
-Service users will have their default_project_id set to a specific project and will NOT be granted full access to other projects by default.
-
-| Unique Identifier | Service User Name | Community Contact | Description | Needed until |
-|:---:|---|---|---|:---:|
-| 9a1576af59644a2dbbace773ad17158d | u500924-svc-sig-monitoring | fkr | Service User - SIG Monitoring | 31.12.2023 |
-|  |  |  |  |  |
-
 ### Projects
 
 | Unique Identifier | Project Name | Community Contact | Description | Needed until |
