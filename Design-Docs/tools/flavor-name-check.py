@@ -2,7 +2,7 @@
 #
 # Flavor naming checker
 # https://github.com/SovereignCloudStack/Operational-Docs/
-# 
+#
 # Return codes:
 # 0: Matching
 # 1: No SCS flavor
@@ -13,12 +13,17 @@
 # 50-59: Error in optional specific CPU description
 # 60-69: Error in optional GPU spec
 # 70-79: Unknown extension
-# 
+#
+# When checking a list of flavors for completeness with respect
+# to mandatory flavors, we disregard non-scs flavors (code 1 above)
+# and only report the number of missing flavors or -- if none was found --
+# the sum of parsing errors (>=10) according to above scheme.
+#
 # (c) Kurt Garloff <garloff@osb-alliance.com>, 5/2021
 # License: CC-BY-SA 4.0
 
-
-import os, sys, re
+import sys
+import re
 
 # globals
 verbose = False
@@ -29,13 +34,36 @@ completecheck = False
 scsPre = re.compile(r'^SCS\-')
 
 # List of SCS mandatory flavors
-scsMandatory = ["SCS-1V:4", "SCS-1V:4:10", "SCS-2V:8", "SCS-2V:8:20",
-			"SCS-4V:16", "SCS-4V:16:50", "SCS-8V:32", "SCS-8V:32:100",
-			"SCS-1V:2", "SCS-1V:2:5", "SCS-2V:4", "SCS-2V:4:10", "SCS-4V:8",
-			"SCS-4V:8:20", "SCS-8V:16", "SCS-8V:16:50", "SCS-16V:32", "SCS-16V:32:100",
-			"SCS-1V:8", "SCS-1V:8:20", "SCS-2V:16", "SCS-2V:16:50", "SCS-4V:32", "SCS-4V:32:100",
-			"SCS-1L:1", "SCS-1L:1:5"]
+scsMandatory = [
+    "SCS-1L:1",
+    "SCS-1L:1:5",
+    "SCS-1V:2",
+    "SCS-1V:2:5",
+    "SCS-1V:4",
+    "SCS-1V:4:10",
+    "SCS-1V:8",
+    "SCS-1V:8:20",
+    "SCS-2V:16",
+    "SCS-2V:16:50",
+    "SCS-2V:4",
+    "SCS-2V:4:10",
+    "SCS-2V:8",
+    "SCS-2V:8:20",
+    "SCS-4V:16",
+    "SCS-4V:16:50",
+    "SCS-4V:32",
+    "SCS-4V:32:100",
+    "SCS-4V:8",
+    "SCS-4V:8:20",
+    "SCS-8V:16",
+    "SCS-8V:16:50",
+    "SCS-8V:32",
+    "SCS-8V:32:100",
+    "SCS-16V:32",
+    "SCS-16V:32:100"
+]
 scsMandNum = len(scsMandatory)
+
 
 # help
 def usage():
@@ -46,6 +74,7 @@ def usage():
     print("Example: flavor-name-check.py -c $(openstack flavor list -f value -c Name)")
     sys.exit(2)
 
+
 def to_bool(stg):
     if stg == "" or stg == "0" or stg.upper()[0] == "N" or stg.upper()[0] == "F":
         return False
@@ -55,7 +84,8 @@ def to_bool(stg):
 
 
 def is_scs(nm):
-    return scsPre.match(nm) != None
+    return scsPre.match(nm) is not None
+
 
 class Prop:
     # Name of the property
@@ -125,23 +155,24 @@ class Prop:
     def __repr__(self):
         "verbose representation"
         if not self.parsed:
-            return " No %s" % self.type
-        st = " " + self.type + ":"
+            return f" No {self.type}"
+        st = f" {self.type}:"
         for i in range(0, len(self.pattrs)):
             if not self.pnames[i]:
                 continue
             fname = self.pattrs[i]
             try:
                 attr = self.__getattribute__(fname)
-            except AttributeError as e:
+            except AttributeError:
                 attr = None
-            if hasattr(self, "tbl_%s" % fname):
+            if hasattr(self, f"tbl_{fname}"):
                 self.create_dep_tbl(i, attr)
                 if debug:
-                    print("  Table lookup for element %s in %s" % (attr, self.__getattribute__("tbl_%s" % fname)))
-                try: 
-                    attr = self.__getattribute__("tbl_%s" % fname)[attr]
-                except:
+                    tmp = self.__getattribute__(f"tbl_{fname}")
+                    print(f"  Table lookup for element {attr} in {tmp}")
+                try:
+                    attr = self.__getattribute__(f"tbl_{fname}")[attr]
+                except AttributeError:
                     pass
             st += " " + self.pnames[i] + ": " + str(attr) + ","
         return st[:-1]
@@ -175,7 +206,7 @@ class Prop:
                 lst.append(att)
                 par += 1
             elif self.outstr[i+1] == "?":
-                n = i + 2
+                n = i+2
                 if att:
                     n = i+2
                     while n < len(self.outstr) and self.outstr[n].isalnum():
@@ -215,20 +246,20 @@ class Prop:
                 lst.append(self.__getattribute__(self.pattrs[par]))
                 par += 1
         if debug:
-            print("%s: %s" % (ostr, lst))
+            print(f"{ostr}: {lst}")
         return ostr % tuple(lst)
 
     def create_dep_tbl(self, idx, val):
         "Based on choice of attr idx, can we select a table for idx+1?"
         fname = self.pattrs[idx]
-        otbl = "tbl_%s" % fname
+        otbl = f"tbl_{fname}"
         if not hasattr(self, otbl):
             return False
         ntbl = ""
         dtbl = ""
         if idx < len(self.pattrs) - 1:
-            ntbl = "tbl_%s" % self.pattrs[idx+1]
-            dtbl = "tbl_%s_%s_%s" % (fname, val, self.pattrs[idx+1])
+            ntbl = f"tbl_{self.pattrs[idx+1]}"
+            dtbl = f"tbl_{fname}_{val}_{self.pattrs[idx+1]}"
         else:
             return False
         if hasattr(self, ntbl):
@@ -239,7 +270,6 @@ class Prop:
         else:
             return False
 
-
     def std_validator(self):
         """Check that all numbers are positive, all selections valid.
            return code 0 => OK, 1 ... N => error in field x-1"""
@@ -247,7 +277,7 @@ class Prop:
             val = None
             try:
                 val = self.__getattribute__(self.pattrs[i])
-            except:
+            except AttributeError:
                 pass
             # Empty entry OK
             if (self.pnames[i][0] == "." or self.pnames[i][0:2] == "#.") and not val:
@@ -266,13 +296,12 @@ class Prop:
                     return i+1
                 continue
             # Tables
-            if hasattr(self, "tbl_%s" % self.pattrs[i]):
-                tbl = self.__getattribute__("tbl_%s" % self.pattrs[i])
-                if not val in tbl:
+            if hasattr(self, f"tbl_{self.pattrs[i]}"):
+                tbl = self.__getattribute__(f"tbl_{self.pattrs[i]}")
+                if val not in tbl:
                     return i+1
                 self.create_dep_tbl(i, val)
                 continue
-
 
     def validate(self):
         "Hook to add checks. By default only look if parser succeeded."
@@ -282,18 +311,18 @@ class Prop:
         "Interactive input"
         self.parsed = 0
         print(self.type)
-        for i in range (0, len(self.pnames)):
+        for i in range(0, len(self.pnames)):
             tbl = None
             fname = self.pattrs[i]
             fdesc = self.pnames[i]
-            if hasattr(self, "tbl_%s" % fname):
-                tbl = self.__getattribute__("tbl_%s" % fname)
+            if hasattr(self, f"tbl_{fname}"):
+                tbl = self.__getattribute__(f"tbl_{fname}")
             if tbl:
-                print(" %s Options:" % fdesc)
-                for k in tbl.keys():
-                    print("  %s: %s" % (k, tbl[k]))
+                print(f" {fdesc} Options:")
+                for key in tbl.keys():
+                    print(f"  {key}: {tbl[key]}")
             while True:
-                print(" %s: " % fdesc, end="")
+                print(f" {fdesc}: ", end="")
                 val = input()
                 try:
                     if fdesc[0] == "." and not val and i == 0:
@@ -331,9 +360,9 @@ class Prop:
                         print(" INVALID!")
                         continue
                 except BaseException as e:
-                        print(e)
-                        print(" INVALID!")
-                        continue
+                    print(e)
+                    print(" INVALID!")
+                    continue
                 self.parsed += 1
                 break
             self.__setattr__(fname, val)
@@ -347,6 +376,7 @@ class Main(Prop):
     pnames = ("#vCPUs", "CPU type", "?Insec SMT", "##GiB RAM", "?no ECC", "?RAM Over")
     outstr = "%i%s%?i:%.1f%?u%?o"
     tbl_cputype = {"L": "LowPerf vCPU", "V": "vCPU", "T": "SMT Thread", "C": "Dedicated Core"}
+
 
 class Disk(Prop):
     type = "Disk"
@@ -364,6 +394,7 @@ class Disk(Prop):
         except:
             self.nrdisks = 1
 
+
 class Hype(Prop):
     type = "Hypervisor"
     parsestr = re.compile(r"\-(kvm|xen|vmw|hyv|bms)")
@@ -371,6 +402,7 @@ class Hype(Prop):
     pnames = (".Hypervisor",)
     outstr = "%s"
     tbl_hype = {"kvm": "KVM", "xen": "Xen", "hyv": "Hyper-V", "vmw": "VMware", "bms": "Bare Metal System"}
+
 
 class HWVirt(Prop):
     type = "Hardware/NestedVirtualization"
@@ -380,6 +412,7 @@ class HWVirt(Prop):
     outstr = "%?hwv"
     #tbl_hype = {"hwv": "HW virtualization (nested)"}
 
+
 class CPUBrand(Prop):
     type = "CPUBrand"
     parsestr = re.compile(r"\-([izar])([0-9]*)(h*)$")
@@ -387,12 +420,13 @@ class CPUBrand(Prop):
     pnames = (".CPU Vendor", "#.CPU Gen", "Performance")
     outstr = "%s%0i%s"
     tbl_cpuvendor = {"i": "Intel", "z": "AMD", "a": "ARM", "r": "RISC-V"}
-    tbl_perf = {"": "Std Perf", "h": "High Perf", "hh" : "Very High Perf", "hhh": "Very Very High Perf"}
+    tbl_perf = {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"}
     # Generation decoding
-    tbl_cpuvendor_i_cpugen = { 0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake" }
-    tbl_cpuvendor_z_cpugen = { 0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4" }
-    tbl_cpuvendor_a_cpugen = { 0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A710/NeoN2" }
-    #tbl_cpuvendor_r_cpugen = { 0: "SF U54", 1: "SF U74", 2: "SF U84"}
+    tbl_cpuvendor_i_cpugen = {0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake"}
+    tbl_cpuvendor_z_cpugen = {0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4"}
+    tbl_cpuvendor_a_cpugen = {0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A710/NeoN2"}
+    #tbl_cpuvendor_r_cpugen = {0: "SF U54", 1: "SF U74", 2: "SF U84"}
+
 
 class GPU(Prop):
     type = "GPU"
@@ -402,7 +436,7 @@ class GPU(Prop):
     outstr = "%s%s%s%:i%s"
     tbl_gputype = {"g": "vGPU", "G": "Pass-Through GPU"}
     tbl_brand = {"N": "nVidia", "A": "AMD", "I": "Intel"}
-    tbl_perf = {"": "Std Perf", "h": "High Perf", "hh" : "Very High Perf", "hhh": "Very Very High Perf"}
+    tbl_perf = {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"}
     # Generation decoding
     tbl_brand_N_gen = {"f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal", "v": "Volta", "t": "Turing", "a": "Ampere"}
     tbl_brand_A_gen = {"0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "RDNA2/Navi2x"}
@@ -416,38 +450,40 @@ class IB(Prop):
     pnames = ("?IB",)
     outstr = "%?ib"
 
+
 def outname(cpuram, disk, hype, hvirt, cpubrand, gpu, ib):
-        out = "SCS-" + cpuram.out()
-        if disk.parsed:
-            out += ":" + disk.out()
-        if hype.parsed:
-            out += "-" + hype.out()
-        if hvirt.parsed:
-            out += "-" + hvirt.out()
-        if cpubrand.parsed:
-            out += "-" + cpubrand.out()
-        if gpu.parsed:
-            out += "-" + gpu.out()
-        if ib.parsed:
-            out += "-" + ib.out()
-        return out
+    out = "SCS-" + cpuram.out()
+    if disk.parsed:
+        out += ":" + disk.out()
+    if hype.parsed:
+        out += "-" + hype.out()
+    if hvirt.parsed:
+        out += "-" + hvirt.out()
+    if cpubrand.parsed:
+        out += "-" + cpubrand.out()
+    if gpu.parsed:
+        out += "-" + gpu.out()
+    if ib.parsed:
+        out += "-" + ib.out()
+    return out
 
 
-def printflavor(nm, lst):
-    print("Flavor: %s" % nm)
-    for l in lst:
-        print(l)
+def printflavor(nm, item_list):
+    print(f"Flavor: {nm}")
+    for item in item_list:
+        print(item)
     print()
+
 
 def parsename(nm):
     if not is_scs(nm):
         if verbose:
-            print("WARNING: %s: Not an SCS flavor" % nm)
+            print(f"WARNING: {nm}: Not an SCS flavor")
         return None
     n = nm[4:]
     cpuram = Main(n)
     if cpuram.parsed == 0:
-        raise NameError("Error 10: Failed to parse main part of %s" % n)
+        raise NameError(f"Error 10: Failed to parse main part of {n}")
 
     n = n[cpuram.parsed:]
     disk = Disk(n)
@@ -467,17 +503,18 @@ def parsename(nm):
         printflavor(nm, (cpuram, disk, hype, hvirt, cpubrand, gpu, ib))
 
     if n:
-        print("ERROR: Could not parse: %s" % n)
-        raise NameError("Error 70: Could not parse %s (extras?)" % n)
+        print(f"ERROR: Could not parse: {n}")
+        raise NameError(f"Error 70: Could not parse {n} (extras?)")
 
     errbase = 0
     for el in (cpuram, disk, hype, hvirt, cpubrand, gpu, ib):
         errbase += 10
         err = el.validate()
         if err:
-            raise NameError("Validation error %i (in el %i (%s) in %s)" % (err+errbase, err-1, el.pnames[err-1], el.type))
+            raise NameError(f"Validation error {err + errbase} (in el {err - 1} ({el.pnames[err - 1]}) in {el.type})")
 
     return (cpuram, disk, hype, hvirt, cpubrand, gpu, ib)
+
 
 def inputflavor():
     cpuram = Main("")
@@ -499,6 +536,13 @@ def inputflavor():
 
 def main(argv):
     global verbose, debug, completecheck
+    # Number of good SCS flavors
+    scs = 0
+    # Number of non-SCS flavors
+    nonscs = 0
+    # Number of errors
+    error = 0
+
     # TODO: Use getopt for proper option parsing
     if len(argv) < 1 or argv[0] == "-h":
         usage()
@@ -511,9 +555,10 @@ def main(argv):
     if argv[0] == "-c":
         completecheck = True
         if debug:
-            print("Check for completeness (%i): %s" % (len(scsMandatory), scsMandatory))
+            print(f"Check for completeness ({len(scsMandatory)}): {scsMandatory}")
         argv = argv[1:]
 
+    # Interactive input of flavor
     if argv[0] == "-i":
         ret = inputflavor()
         print()
@@ -522,14 +567,11 @@ def main(argv):
         ret2 = parsename(nm)
         nm2 = outname(*ret2)
         if nm != nm2:
-            print("WARNING: %s != %s" % (nm, nm2))
-            #raise NameError("%s != %s" % (nm, nm2))
+            print(f"WARNING: {nm} != {nm2}")
+            #raise NameError(f"{nm} != {nm2}")
         #print(outname(*ret))
         argv = argv[1:]
-
-    error = 0
-    nonscs = 0
-    scs = 1
+        scs = 1
 
     # TODO: Option to get flavor list directly from API
     # TODO: Validate additional aspects
@@ -550,23 +592,22 @@ def main(argv):
             scsMandatory.remove(name)
 
         if debug:
-            print("In %s, Out %s" % (name, namecheck))
+            print(f"In {name}, Out {namecheck}")
 
         if namecheck != name:
-            #raise NameError("%s != %s" % (name, namecheck))
-            print("WARNING: %s != %s" % (name, namecheck))
+            #raise NameError(f"{name} != {namecheck}")
+            print(f"WARNING: {name} != {namecheck}")
 
     if completecheck:
-        print("Found %i SCS flavors (%i mandatory), %i non-SCS flavors" % \
-            (scs, scsMandNum, nonscs))
-    if completecheck and scsMandatory:
-        print("Missing mandatory flavors: %s" % scsMandatory)
-        return len(scsMandatory)
-
-    if completecheck:
-        return error
+        print(f"Found {scs} SCS flavors ({scsMandNum} mandatory), {nonscs} non-SCS flavors")
+        if scsMandatory:
+            print(f"Missing mandatory flavors: {scsMandatory}")
+            return len(scsMandatory)
+        else:
+            return error
     else:
         return nonscs+error
+
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))
