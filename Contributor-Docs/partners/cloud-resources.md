@@ -35,10 +35,10 @@ Example:
 
 Service users will have their default_project_id set to a specific project and will NOT be granted full access to other projects by default.
 
-| Unique Identifier | Service User Name | Community Contact | Description | Needed until |
+| Unique Identifier | Service User Name | Full Access on | Community Contact | Description | Needed until |
 |:---:|---|---|---|:---:|
-| 9a1576af59644a2dbbace773ad17158d | u500924-svc-sig-monitoring | fkr | Service User - SIG Monitoring | 31.12.2023 |
-| 4925967416894fd78be6701689059653 | u500924-svc-cloudmon | costelter | Service User - CloudMon Test Project | 31.12.2023 |
+| 9a1576af59644a2dbbace773ad17158d | u500924-svc-sig-monitoring | p500924-sig-monitoring1 | fkr | Service User - SIG Monitoring | 31.12.2023 |
+| 4925967416894fd78be6701689059653 | u500924-svc-cloudmon | p500924-cloudmon-target | costelter | Service User - CloudMon Test Project | 31.12.2023 |
 |  |  |  |  |  |
 
 ### Service User
