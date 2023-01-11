@@ -50,7 +50,7 @@ By default `externalTrafficPolicy` is set to `Cluster`. Changing it to `Local` d
 
 | Option 1 | Option 2 | Option 3 |
 |----|----|----|
-| Require SCS compliant clouds to work with `externalTrafficPolicy: Local` (in the reference implementation: enabling the health check mechanism to avoid constant connectivity problems); Do NOT require them to preserve the client IP | Do not require SCS compliant cloud providers to support `externalTrafficPolicy: Local` (But: configure health checks in the reference implementation to make it work without constant connectivity issues) | Do not require SCS compliant cloud providers to support `externalTrafficPolicy: Local` (Do NOT configure health checks in the reference implementation in order to not derive from upstream defaults) |
+| DO require SCS compliant clouds to work with `externalTrafficPolicy: Local` (in the reference implementation: enabling the health check mechanism to avoid constant connectivity problems); Do NOT require them to preserve the client IP | DO NOT require SCS compliant cloud providers to support `externalTrafficPolicy: Local` (in the reference implementation: enabling the health check mechanism to avoid constant connectivity problems if users set it anyway) | DO NOT require SCS compliant cloud providers to support `externalTrafficPolicy: Local` (Do NOT configure health checks in the reference implementation in order to not derive from upstream defaults) |
 
 # Decision
 
