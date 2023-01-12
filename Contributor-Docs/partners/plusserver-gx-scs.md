@@ -27,7 +27,7 @@ or directly via [pypi](https://pypi.org/project/python-openstackclient). For
 further Information see the OpenStack Project upstream website
 [python-openstackclient](https://docs.openstack.org/python-openstackclient/latest/index.html).
 
-This repo holds examples for `clouds-public.yaml` + `clouds.yaml`.
+This repo holds examples for (clouds-public.yaml)[clouds-public.yaml] + (clouds.yaml)[clouds.yaml.sample].
 
 Alternatively you can download an OpenRC Environment file when you're logged in to Horizon:
 *  upper left side :arrow_right: `<your login name>`
