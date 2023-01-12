@@ -8,9 +8,9 @@ author: Ralf Heiringhoff, Mathias Fechner
 
 # URLs for access
 
-*  UI (Horizon): https://ui.gx-scs.sovereignit.cloud/
-*  API auth url (Keystone): https://api.gx-scs.sovereignit.cloud:5000
-*  Object Storage endpoint (S3/SWIFT): https://api.gx-scs.sovereignit.cloud:8080
+*  UI (Horizon): [https://ui.gx-scs.sovereignit.cloud/](https://ui.gx-scs.sovereignit.cloud/)
+*  API auth url (Keystone): [https://api.gx-scs.sovereignit.cloud:5000](https://api.gx-scs.sovereignit.cloud:5000)
+*  Object Storage endpoint (S3/SWIFT): [https://api.gx-scs.sovereignit.cloud:8080](https://api.gx-scs.sovereignit.cloud:8080)
 
 ## Authentication (UI)
 
@@ -27,7 +27,7 @@ or directly via [pypi](https://pypi.org/project/python-openstackclient). For
 further Information see the OpenStack Project upstream website
 [python-openstackclient](https://docs.openstack.org/python-openstackclient/latest/index.html).
 
-This repo holds examples for `clouds-public.yaml` + `clouds.yaml`.
+This repo holds examples for [clouds-public.yaml](clouds-public.yaml) + [clouds.yaml](clouds.yaml.sample).
 
 Alternatively you can download an OpenRC Environment file when you're logged in to Horizon:
 *  upper left side :arrow_right: `<your login name>`
