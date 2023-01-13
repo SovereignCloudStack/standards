@@ -57,10 +57,33 @@ def errcode_to_text(err):
         return "PASSED"
     return f"{err} ERRORS"
 
+def dictval(dct, key):
+    "Helper: Return dct[key] if it exists, None otherwise"
+    if key in dct:
+        return dct[key]
+    return None
+
+def search_version(layerdict, checkdate, forceversion=None):
+    "Return dict with latest matching version, None if not found"
+    bestdays = datetime.timedelta(999999999)    # Infinity
+    bestversion = None
+    for versdict in layerdict["versions"]:
+        # print(f'Version {versdict["version"]}')
+        if forceversion and forceversion == versdict["version"]:
+            return versdict
+        stabilized = dictval(versdict, "stabilized_at")
+        if is_valid_standard(checkdate, stabilized, dictval(versdict, "replaced_at")):
+            diffdays = checkdate - stabilized
+            if diffdays < bestdays:
+                bestdays = diffdays
+                bestversion = versdict
+    # print(f"Identified best version {bestversion}")
+    return bestversion
 
 def main(argv):
     """Entry point for the checker"""
     quiet = False
+    versionoverride = None
     if len(argv) < 2:
         usage()
         return 1
@@ -70,23 +93,7 @@ def main(argv):
     checkdate = datetime.date.today()
     allerrors = 0
     for layer in argv[1:]:
-        layerdict = specdict[layer]
-        bestdays = datetime.timedelta(999999999)    # Infinity
-        bestversion = None
-        for versdict in layerdict["versions"]:
-            # print(f'Version {versdict["version"]}')
-            stabilized = None
-            replaced = None
-            if "stabilized_at" in versdict:
-                stabilized = versdict["stabilized_at"]
-            if "replaced_at" in versdict:
-                replaced = versdict["replaced_at"]
-            if is_valid_standard(checkdate, stabilized, replaced):
-                diffdays = checkdate - stabilized
-                if diffdays < bestdays:
-                    bestdays = diffdays
-                    bestversion = versdict
-        # print(f"Identified version {bestversion}")
+        bestversion = search_version(specdict[layer], checkdate, versionoverride)
         if not bestversion:
             print(f"No valid standard found for {checkdate}", file=sys.stderr)
             return 2
