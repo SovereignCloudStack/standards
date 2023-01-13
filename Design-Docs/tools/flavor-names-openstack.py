@@ -87,7 +87,7 @@ def main(argv):
                 print(f"WARNING: Flavor {flv.name} has {flv.vcpus} vCPUs, only needs {cpuram.cpus}", file=sys.stderr)
                 warn += 1
             # RAM
-            flvram = int((flv.ram+51)/102.4)/10
+            flvram = int((flv.ram + 51) / 102.4) / 10
             # Warn for strange sizes (want integer numbers, half allowed for < 10GiB)
             if (flvram >= 10 and flvram != int(flvram) or flvram * 2 != int(flvram * 2)):
                 print("WARNING: Flavor %s uses discouraged uneven size of memory %.1f GiB" % (flv.name, flvram), file=sys.stderr)
@@ -150,7 +150,7 @@ def main(argv):
         "OtherFlavors": nonSCSFlv
     }
     flvSCSRep = {
-        "TotalAmount": len(MSCSFlv)+len(SCSFlv)+len(wrongFlv),
+        "TotalAmount": len(MSCSFlv) + len(SCSFlv) + len(wrongFlv),
         "MandatoryFlavorsPresent": len(MSCSFlv),
         "MandatoryFlavorsMissing": len(fnmck.scsMandatory),
         "OptionalFlavorsValid": len(SCSFlv),
