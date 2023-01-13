@@ -17,10 +17,10 @@
 
 import os
 import sys
-import openstack
 import importlib
-import yaml
 fnmck = importlib.import_module("flavor-name-check")
+import yaml
+import openstack
 
 
 def usage():
@@ -80,21 +80,21 @@ def main(argv):
             # next qwould be hype, hwvirt, cpubrand, gpu, ib
             # see flavor-name-check.py: parsename()
             # vCPUS
-            if (flv.vcpus < cpuram.cpus):
+            if flv.vcpus < cpuram.cpus:
                 print(f"ERROR: Flavor {flv.name} has only {flv.vcpus} vCPUs, should have >= {cpuram.cpus}", file=sys.stderr)
                 err += 1
-            elif (flv.vcpus > cpuram.cpus):
+            elif flv.vcpus > cpuram.cpus:
                 print(f"WARNING: Flavor {flv.name} has {flv.vcpus} vCPUs, only needs {cpuram.cpus}", file=sys.stderr)
                 warn += 1
             # RAM
             flvram = int((flv.ram + 51) / 102.4) / 10
             # Warn for strange sizes (want integer numbers, half allowed for < 10GiB)
-            if (flvram >= 10 and flvram != int(flvram) or flvram * 2 != int(flvram * 2)):
+            if flvram >= 10 and flvram != int(flvram) or flvram * 2 != int(flvram * 2):
                 print("WARNING: Flavor %s uses discouraged uneven size of memory %.1f GiB" % (flv.name, flvram), file=sys.stderr)
-            if (flvram < cpuram.ram):
+            if flvram < cpuram.ram:
                 print("ERROR: Flavor %s has only %.1f GiB RAM, should have >= %.1f GiB" % (flv.name, flvram, cpuram.ram), file=sys.stderr)
                 err += 1
-            elif (flvram > cpuram.ram):
+            elif flvram > cpuram.ram:
                 print("WARNING: Flavor %s has %.1f GiB RAM, only needs %.1f GiB" % (flv.name, flvram, cpuram.ram), file=sys.stderr)
                 warn += 1
             # DISK
@@ -106,10 +106,10 @@ def main(argv):
             if disk.disksize not in accdisk:
                 print("WARNING: Flavor {flv.name} advertizes disk size {disk.disksize}, should have (5, 10, 20, 50, 100, 200, ...)", file=sys.stderr)
                 warn += 1
-            if (flv.disk < disk.disksize):
+            if flv.disk < disk.disksize:
                 print(f"ERROR: Flavor {flv.name} has only {flv.disk} GB root disk, should have >= {disk.disksize} GB", file=sys.stderr)
                 err += 1
-            elif (flv.disk > disk.disksize):
+            elif flv.disk > disk.disksize:
                 print("WARNING: Flavor {flv.name} has {flv.disk} GB root disk, only needs {disk.disksize} GB", file=sys.stderr)
                 warn += 1
             # Ev'thing checked, react to errors by putting the bad flavors in the bad bucket
@@ -125,10 +125,10 @@ def main(argv):
                 if warn:
                     warnFlv.append(flv.name)
         # Parser error
-        except NameError as e:
+        except NameError as exc:
             errors += 1
             wrongFlv.append(flv.name)
-            print("Wrong flavor \"%s\": %s" % (flv.name, e), file=sys.stderr)
+            print("Wrong flavor \"%s\": %s" % (flv.name, exc), file=sys.stderr)
     # This makes the output more readable
     MSCSFlv.sort()
     SCSFlv.sort()
@@ -136,7 +136,7 @@ def main(argv):
     wrongFlv.sort()
     warnFlv.sort()
     # We have counted errors on the fly, add missing flavors to the final result
-    if (fnmck.scsMandatory):
+    if fnmck.scsMandatory:
         errors += len(fnmck.scsMandatory)
     # Produce dict for YAML reporting
     flvSCSList = {
