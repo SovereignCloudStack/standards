@@ -102,7 +102,7 @@ Every list of standards consists of several standards that – altogether – de
 | `{layer}.versions.standards.name` | String | Full name of the particular standard | _Flavor naming_ |
 | `{layer}.versions.standards.url` | String |  Valid URL to the latest raw version of the particular standard  | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md_ |
 | `{layer}.versions.standards.check_tool` | String | Valid URL to the latest check tool that verifies compliance with the particular standard | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/flavor-name-check.py_ |
-| `{layer}.versions.standards.mandatory` | String | State of the particular standard, currently either `mandatory` or `optional` | _mandatory_ |
+| `{layer}.versions.standards.condition` | String | State of the particular standard, currently either `mandatory` or `optional` | _mandatory_ |
 
 ## Basic Example
 
@@ -123,11 +123,11 @@ iaas:
         - name: Flavor naming
           url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md
           check_tool: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/flavor-name-check.py
-          state: mandatory
+          condition: mandatory
         - name: Image metadata
           url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
           check_tool: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/image-md-check.py
-          state: optional
+          condition: optional
     - version: v4  # This is the upcoming standard with a given target date. No further changes should be done to this set of standards
       standards:
         - name: ....
