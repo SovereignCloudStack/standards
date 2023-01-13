@@ -14,7 +14,7 @@ iaas:
           check_tool: ./image-md-check.py
           condition: mandatory
     - version: v1
-      stabilized_at: 2023-04-03
+      stabilized_at: 2023-01-01
       replaced_at: 2023-10-03
       standards:
         - name: Flavor naming
