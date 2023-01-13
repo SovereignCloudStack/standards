@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# vim: set ts=4 sw=4 et:
 #
 # Flavor naming checker
 # https://github.com/SovereignCloudStack/Docs/Design-Docs/tools
@@ -28,12 +29,17 @@ def usage():
 
 
 def main(argv):
+    verbose = False
     cloud = None
     try:
         cloud = os.environ["OS_CLOUD"]
     except KeyError:
         pass
     # Note: Convert this to gnu_getopt if we get more params supported
+    if len(argv):
+        if argv[0] == "-v" or argv[0] == "--verbose":
+            verbose = True
+            argv = argv[1:]
     if len(argv):
         if argv[0][:10] == "--os-cloud":
             if len(argv[0]) > 10 and argv[0][10] == "=":
@@ -133,24 +139,36 @@ def main(argv):
     if (fnmck.scsMandatory):
         errors += len(fnmck.scsMandatory)
     # Produce dict for YAML reporting
-    flvRep = {
-        "MandatoryFlavors": MSCSFlv,
-        "GoodSCSFlavors": SCSFlv,
-        "WrongSCSFlavors": wrongFlv,
-        "nonSCSFlavors": nonSCSFlv,
-        "WarnSCSFlavors": warnFlv,
-        "MissingFlavors": fnmck.scsMandatory
+    flvSCSList = {
+        "MandatoryFlavorsPresent": MSCSFlv,
+        "MandatoryFlavorsMissing": fnmck.scsMandatory,
+        "OptionalFlavorsValid": SCSFlv,
+        "OptionalFlavorsWrong": wrongFlv,
+        "FlavorsWithWarnings": warnFlv,
     }
-    flvSum = {
-        "MandatoryFlavors": len(MSCSFlv),
-        "GoodSCSFlavors": len(SCSFlv),
-        "WrongSCSFlavors": len(wrongFlv),
-        "nonSCSFlavors": len(nonSCSFlv),
-        "MissingFlavors": len(fnmck.scsMandatory),
-        "warnings": len(warnFlv),
-        "errors": errors
+    flvOthList = {
+        "OtherFlavors": nonSCSFlv
     }
-    Report = {cloud: {"FlavorReport": flvRep, "FlavorSummary": flvSum}}
+    flvSCSRep = {
+        "TotalAmount": len(MSCSFlv)+len(SCSFlv)+len(wrongFlv),
+        "MandatoryFlavorsPresent": len(MSCSFlv),
+        "MandatoryFlavorsMissing": len(fnmck.scsMandatory),
+        "OptionalFlavorsValid": len(SCSFlv),
+        "OptionalFlavorsWrong": len(wrongFlv),
+        "FlavorsWithWarnings": len(warnFlv)
+    }
+    flvOthRep = {
+        "TotalAmount": len(nonSCSFlv)
+    }
+    totSummary = {
+        "Errors": errors,
+        "Warnings": len(warnFlv)
+    }
+    Report = {cloud: {"SCSFlavorSummary": flvSCSRep, "OtherFlavorSummary": flvOthRep,
+                      "TotalSummary": totSummary}}
+    if verbose:
+        Report[cloud]["SCSFlavorReport"] = flvSCSList
+        Report[cloud]["OtherFlavorReport"] = flvOthList
     print("%s" % yaml.dump(Report, default_flow_style=False))
     return errors
 
