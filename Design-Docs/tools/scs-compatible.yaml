@@ -1,25 +1,25 @@
 name: SCS Compatible
-url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/scs-compatible.yml
+url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/scs-compatible.yaml
 iaas:
   versions:
     - version: v2
       stabilized_at: 2023-10-03
       standards:
         - name: Flavor naming
-          url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md
-          check_tool: ./flavor-name-check.py
+          url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v2-flavor-naming.md
+          check_tool: ./flavor-names-openstack.py
           condition: mandatory
         - name: Image metadata
           url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
           check_tool: ./image-md-check.py
           condition: mandatory
     - version: v1
-      stabilized_at: 2023-01-01
+      stabilized_at: 2021-01-01
       replaced_at: 2023-10-03
       standards:
         - name: Flavor naming
           url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md
-          check_tool: ./flavor-name-check.py
+          check_tool: ./flavor-names-openstack.py
           condition: mandatory
         - name: Image metadata
           url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
