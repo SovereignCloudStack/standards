@@ -286,7 +286,7 @@ class Prop:
                     return i+1
                 self.create_dep_tbl(i, val)
                 continue
-        return i+1
+        return 0
 
     def validate(self):
         "Hook to add checks. By default only look if parser succeeded."

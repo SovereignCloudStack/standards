@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 # vim: set ts=4 sw=4 et:
-#
-# Flavor naming checker
-# https://github.com/SovereignCloudStack/Docs/Design-Docs/tools
-#
-# Uses the flavor-name-check.py tool
-# Assumes a connection to an OpenStack tenant,
-# retrieves the list of flavors from there and validates them.
-# Something similar could be achieved by:
-# flavor-name-check.py -c $(openstack flavor list -f value -c Name)
-# In addition we check consistency by looking at the information
-# provided by openstack, such as the number of vCPUs and memory.
-#
-# (c) Kurt Garloff <garloff@osb-alliance.com>, 12/2022
-# SPDX-License-Identifier: CC-BY-SA 4.0
+
+"""Flavor naming checker
+https://github.com/SovereignCloudStack/Docs/Design-Docs/tools
+
+Uses the flavor-name-check.py tool
+Assumes a connection to an OpenStack tenant,
+retrieves the list of flavors from there and validates them.
+Something similar could be achieved by:
+flavor-name-check.py -c $(openstack flavor list -f value -c Name)
+In addition we check consistency by looking at the information
+provided by openstack, such as the number of vCPUs and memory.
+
+(c) Kurt Garloff <garloff@osb-alliance.com>, 12/2022
+SPDX-License-Identifier: CC-BY-SA 4.0
+"""
 
 import os
 import sys
@@ -23,13 +24,15 @@ import yaml
 import openstack
 fnmck = importlib.import_module("flavor-name-check")
 
-def usage(rcode = 1):
+
+def usage(rcode=1):
     "help output"
     print("Usage: flavor-names-openstack.py [--os-cloud OS_CLOUD] [-C mand.yaml] [-v] [-q]", file=sys.stderr)
     print(" This tool retrieves the list of flavors from the OpenStack cloud OS_CLOUD", file=sys.stderr)
     print(" and checks for the presence of the mandatory SCS flavors (read from mand.yaml)", file=sys.stderr)
     print(" and reports inconsistencies, errors etc. It returns 0 on success.", file=sys.stderr)
     sys.exit(rcode)
+
 
 def main(argv):
     "Entry point -- main loop going over flavors"
@@ -43,10 +46,10 @@ def main(argv):
     except KeyError:
         pass
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:C:vhq", \
-            ("os-cloud=", "mand=", "verbose", "help", "quiet"))
+        opts, args = getopt.gnu_getopt(argv, "c:C:vhq",
+                                       ("os-cloud=", "mand=", "verbose", "help", "quiet"))
     except getopt.GetoptError as exc:
-        print("%s" % exc, file=sys.stderr)
+        print(f"{exc}", file=sys.stderr)
         usage(1)
     for opt in opts:
         if opt[0] == "-h" or opt[0] == "--help":
@@ -81,7 +84,7 @@ def main(argv):
     errors = 0
     for flv in flavors:
         # Skip non-SCS flavors
-        if flv.name and flv.name[:4] != "SCS-": #and flv.name[:4] != "SCSx"
+        if flv.name and flv.name[:4] != "SCS-":  # and flv.name[:4] != "SCSx"
             nonSCSFlv.append(flv.name)
             continue
         try:
