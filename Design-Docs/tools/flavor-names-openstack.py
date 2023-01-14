@@ -61,7 +61,7 @@ def main(argv):
         else:
             usage(2)
     if len(args) > 0:
-        print("Extra arguments %s" % str(args), file=sys.stderr)
+        print(f"Extra arguments {str(args)}", file=sys.stderr)
         usage(1)
 
     scsMandatory = fnmck.readmandflavors(scsMandFile)
@@ -107,12 +107,12 @@ def main(argv):
             flvram = int((flv.ram + 51) / 102.4) / 10
             # Warn for strange sizes (want integer numbers, half allowed for < 10GiB)
             if flvram >= 10 and flvram != int(flvram) or flvram * 2 != int(flvram * 2):
-                print("WARNING: Flavor %s uses discouraged uneven size of memory %.1f GiB" % (flv.name, flvram), file=sys.stderr)
+                print(f"WARNING: Flavor {flv.name} uses discouraged uneven size of memory {flvram:.1f} GiB", file=sys.stderr)
             if flvram < cpuram.ram:
-                print("ERROR: Flavor %s has only %.1f GiB RAM, should have >= %.1f GiB" % (flv.name, flvram, cpuram.ram), file=sys.stderr)
+                print(f"ERROR: Flavor {flv.name} has only {flvram:.1f} GiB RAM, should have >= {cpuram.ram:.1f} GiB", file=sys.stderr)
                 err += 1
             elif flvram > cpuram.ram:
-                print("WARNING: Flavor %s has %.1f GiB RAM, only needs %.1f GiB" % (flv.name, flvram, cpuram.ram), file=sys.stderr)
+                print(f"WARNING: Flavor {flv.name} has {flvram:.1f} GiB RAM, only needs {cpuram.ram:.1f} GiB", file=sys.stderr)
                 warn += 1
             # DISK
             accdisk = (0, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000)
@@ -121,13 +121,13 @@ def main(argv):
                 disk.disksize = 0
             # We have a recommendation for disk size steps
             if disk.disksize not in accdisk:
-                print("WARNING: Flavor {flv.name} advertizes disk size {disk.disksize}, should have (5, 10, 20, 50, 100, 200, ...)", file=sys.stderr)
+                print(f"WARNING: Flavor {flv.name} advertizes disk size {disk.disksize}, should have (5, 10, 20, 50, 100, 200, ...)", file=sys.stderr)
                 warn += 1
             if flv.disk < disk.disksize:
                 print(f"ERROR: Flavor {flv.name} has only {flv.disk} GB root disk, should have >= {disk.disksize} GB", file=sys.stderr)
                 err += 1
             elif flv.disk > disk.disksize:
-                print("WARNING: Flavor {flv.name} has {flv.disk} GB root disk, only needs {disk.disksize} GB", file=sys.stderr)
+                print(f"WARNING: Flavor {flv.name} has {flv.disk} GB root disk, only needs {disk.disksize} GB", file=sys.stderr)
                 warn += 1
             # Ev'thing checked, react to errors by putting the bad flavors in the bad bucket
             if err:
