@@ -33,6 +33,8 @@ completecheck = False
 
 # search strings
 scsPre = re.compile(r'^SCS\-')
+# TODO SCSx:
+#scsPre2 = re.compile(r'^SCSx\-')
 
 # List of SCS mandatory flavors: Read from file
 
@@ -56,8 +58,13 @@ def to_bool(stg):
 
 
 def is_scs(nm):
-    return scsPre.match(nm) is not None
-
+    "return number of matching chars of SCS- prefix"
+    if scsPre.match(nm):
+        return 4
+    # TODO SCSx: Add check for SCSx-
+    #if scsPre2.match(nm):
+    #    return 5
+    return 0
 
 class Prop:
     # Name of the property
@@ -424,6 +431,8 @@ class IB(Prop):
 
 
 def outname(cpuram, disk, hype, hvirt, cpubrand, gpu, ib):
+    "Return name constructed from tuple"
+    # TODO SCSx: Differentiate b/w SCS- and SCSx-
     out = "SCS-" + cpuram.out()
     if disk.parsed:
         out += ":" + disk.out()
@@ -441,6 +450,7 @@ def outname(cpuram, disk, hype, hvirt, cpubrand, gpu, ib):
 
 
 def printflavor(nm, item_list):
+    "Output details on flavor with name nm described by tuple in lst"
     print(f"Flavor: {nm}")
     for item in item_list:
         print(item)
@@ -448,11 +458,15 @@ def printflavor(nm, item_list):
 
 
 def parsename(nm):
-    if not is_scs(nm):
+    """Extract properties from SCS flavor name, return None (if not SCS-),
+       raise NameError exception (if not conforming) or return tuple
+       (cpuram, disk, hype, hvirt, cpubrand, gpu, ib)"""
+    scsln = is_scs(nm)
+    if not scsln:
         if verbose:
             print(f"WARNING: {nm}: Not an SCS flavor")
         return None
-    n = nm[4:]
+    n = nm[scsln:]
     cpuram = Main(n)
     if cpuram.parsed == 0:
         raise NameError(f"Error 10: Failed to parse main part of {n}")
@@ -489,6 +503,7 @@ def parsename(nm):
 
 
 def inputflavor():
+    "Interactively input a flavor"
     cpuram = Main("")
     cpuram.input()
     disk = Disk("")
@@ -532,6 +547,7 @@ def readmandflavors(fnm):
 mandFlavorFile = "SCS-Spec.MandatoryFlavors.yaml"
 
 def main(argv):
+    "Entry point when used as selfstanding tool"
     global verbose, debug, completecheck
     # Number of good SCS flavors
     scs = 0
