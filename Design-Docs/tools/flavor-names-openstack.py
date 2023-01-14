@@ -86,7 +86,7 @@ def main(argv):
             continue
         try:
             ret = fnmck.parsename(flv.name)
-            assert(ret)
+            assert ret
             # We have a successfully parsed SCS- name now
             # See if the OpenStack provided data fulfills what we
             # expect from the flavor based on its name
@@ -190,12 +190,14 @@ def main(argv):
         "Errors": errors,
         "Warnings": len(warnFlv)
     }
-    Report = {cloud: {"SCSFlavorSummary": flvSCSRep, "OtherFlavorSummary": flvOthRep,
-                      "TotalSummary": totSummary}}
+    Report = {cloud: {"TotalSummary": totSummary}}
+    if not quiet:
+        Report[cloud]["SCSFlavorSummary"] = flvSCSRep
+        Report[cloud]["OtherFlavorSummary"] = flvOthRep
     if verbose:
         Report[cloud]["SCSFlavorReport"] = flvSCSList
         Report[cloud]["OtherFlavorReport"] = flvOthList
-    print("%s" % yaml.dump(Report, default_flow_style=False))
+    print(f"{yaml.dump(Report, default_flow_style=False)}")
     return errors
 
 
