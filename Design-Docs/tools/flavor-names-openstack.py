@@ -17,43 +17,60 @@
 
 import os
 import sys
+import getopt
 import importlib
-fnmck = importlib.import_module("flavor-name-check")
 import yaml
 import openstack
+fnmck = importlib.import_module("flavor-name-check")
 
-
-def usage():
-    print("Usage: flavor-names-openstack.py [--os-cloud OS_CLOUD]", file=sys.stderr)
-    sys.exit(1)
-
+def usage(rcode = 1):
+    "help output"
+    print("Usage: flavor-names-openstack.py [--os-cloud OS_CLOUD] [-C mand.yaml] [-v] [-q]", file=sys.stderr)
+    print(" This tool retrieves the list of flavors from the OpenStack cloud OS_CLOUD", file=sys.stderr)
+    print(" and checks for the presence of the mandatory SCS flavors (read from mand.yaml)", file=sys.stderr)
+    print(" and reports inconsistencies, errors etc. It returns 0 on success.", file=sys.stderr)
+    sys.exit(rcode)
 
 def main(argv):
-    verbose = False
     cloud = None
+    verbose = False
+    quiet = False
+    scsMandFile = fnmck.mandFlavorFile
+
     try:
         cloud = os.environ["OS_CLOUD"]
     except KeyError:
         pass
-    # Note: Convert this to gnu_getopt if we get more params supported
-    if len(argv):
-        if argv[0] == "-v" or argv[0] == "--verbose":
+    try:
+        opts, args = getopt.gnu_getopt(argv, "c:C:vhq", \
+            ("os-cloud=", "mand=", "verbose", "help", "quiet"))
+    except getopt.GetoptError as exc:
+        print("%s" % exc, file=sys.stderr)
+        usage(1)
+    for opt in opts:
+        if opt[0] == "-h" or opt[0] == "--help":
+            usage(0)
+        elif opt[0] == "-c" or opt[0] == "--os-cloud":
+            cloud = opt[1]
+        elif opt[0] == "-C" or opt[0] == "--mand":
+            scsMandFile = opt[1]
+        elif opt[0] == "-v" or opt[0] == "--verbose":
             verbose = True
-            argv = argv[1:]
-    if len(argv):
-        if argv[0][:10] == "--os-cloud":
-            if len(argv[0]) > 10 and argv[0][10] == "=":
-                cloud = argv[0][11:]
-            elif argv[0] == "--os-cloud" and len(argv) == 2:
-                cloud = argv[1]
-            else:
-                usage()
+        elif opt[0] == "-q" or opt[0] == "--quiet":
+            quiet = True
         else:
-            usage()
+            usage(2)
+    if len(args) > 0:
+        print("Extra arguments %s" % str(args), file=sys.stderr)
+        usage(1)
+
+    scsMandatory = fnmck.readmandflavors(scsMandFile)
+
     if not cloud:
-        print("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
+        print("ERROR: You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
     conn = openstack.connect(cloud=cloud, timeout=32)
     flavors = conn.compute.flavors()
+
     # Lists of flavors: mandatory, good-SCS, bad-SCS, non-SCS, with-warnings
     MSCSFlv = []
     SCSFlv = []
@@ -117,8 +134,8 @@ def main(argv):
                 wrongFlv.append(flv.name)
                 errors += 1
             else:
-                if flv.name in fnmck.scsMandatory:
-                    fnmck.scsMandatory.remove(flv.name)
+                if flv.name in scsMandatory:
+                    scsMandatory.remove(flv.name)
                     MSCSFlv.append(flv.name)
                 else:
                     SCSFlv.append(flv.name)
@@ -136,12 +153,12 @@ def main(argv):
     wrongFlv.sort()
     warnFlv.sort()
     # We have counted errors on the fly, add missing flavors to the final result
-    if fnmck.scsMandatory:
-        errors += len(fnmck.scsMandatory)
-    # Produce dict for YAML reporting
+    if scsMandatory:
+        errors += len(scsMandatory)
+    # Produce dicts for YAML reporting
     flvSCSList = {
         "MandatoryFlavorsPresent": MSCSFlv,
-        "MandatoryFlavorsMissing": fnmck.scsMandatory,
+        "MandatoryFlavorsMissing": scsMandatory,
         "OptionalFlavorsValid": SCSFlv,
         "OptionalFlavorsWrong": wrongFlv,
         "FlavorsWithWarnings": warnFlv,
@@ -152,7 +169,7 @@ def main(argv):
     flvSCSRep = {
         "TotalAmount": len(MSCSFlv) + len(SCSFlv) + len(wrongFlv),
         "MandatoryFlavorsPresent": len(MSCSFlv),
-        "MandatoryFlavorsMissing": len(fnmck.scsMandatory),
+        "MandatoryFlavorsMissing": len(scsMandatory),
         "OptionalFlavorsValid": len(SCSFlv),
         "OptionalFlavorsWrong": len(wrongFlv),
         "FlavorsWithWarnings": len(warnFlv)
