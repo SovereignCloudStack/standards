@@ -46,7 +46,9 @@ def is_valid_standard(now, stable, replace):
 
 def run_check_tool(executable, verbose=False, quiet=False):
     "Run executable and return exit code"
-    compl = subprocess.run([executable, ], capture_output=True, text=True, check=False)
+    # compl = subprocess.run([executable, ], capture_output=True, text=True, check=False)
+    compl = subprocess.run([executable, ], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                           encoding='UTF-8', check=False)
     if verbose:
         print(compl.stdout)
     if not quiet:
@@ -144,13 +146,17 @@ def main(argv):
             return 2
         errors = 0
         if not quiet:
-            print(f"Testing Standard version {bestversion['version']}")
+            print(f"Testing {layer} standard version {bestversion['version']}")
         for standard in bestversion["standards"]:
             if not quiet:
                 print(f"Testing standard {standard['name']} ...")
-            error = run_check_tool(standard["check_tool"], verbose, quiet)
+            if "check_tool" not in standard:
+                print(f"WARNING: No compliance check tool implemented yet for {standard['name']}")
+                error = 0
+            else:
+                error = run_check_tool(standard["check_tool"], verbose, quiet)
             errors += error
-            if not quiet:
+            if not quiet and "check_tool" in standard:
                 print(f"... returned {error}")
         print(f"Verdict for layer {layer}, version {bestversion['version']}: "
               f"{errcode_to_text(errors)}")
