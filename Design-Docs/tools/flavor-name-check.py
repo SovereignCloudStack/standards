@@ -1,26 +1,28 @@
 #!/usr/bin/env python3
+# vim: set ts=4 sw=4 et:
 #
-# Flavor naming checker
-# https://github.com/SovereignCloudStack/Operational-Docs/
-#
-# Return codes:
-# 0: Matching
-# 1: No SCS flavor
-# 10-19: Error in CPU:Ram spec
-# 20-29: Error in Disk spec
-# 30-39: Error in Hype spec
-# 40-49: Error in optional -hwv support
-# 50-59: Error in optional specific CPU description
-# 60-69: Error in optional GPU spec
-# 70-79: Unknown extension
-#
-# When checking a list of flavors for completeness with respect
-# to mandatory flavors, we disregard non-scs flavors (code 1 above)
-# and only report the number of missing flavors or -- if none was found --
-# the sum of parsing errors (>=10) according to above scheme.
-#
-# (c) Kurt Garloff <garloff@osb-alliance.com>, 5/2021
-# License: CC-BY-SA 4.0
+"""Flavor naming checker
+https://github.com/SovereignCloudStack/Operational-Docs/
+
+Return codes:
+0: Matching
+1: No SCS flavor
+10-19: Error in CPU:Ram spec
+20-29: Error in Disk spec
+30-39: Error in Hype spec
+40-49: Error in optional -hwv support
+50-59: Error in optional specific CPU description
+60-69: Error in optional GPU spec
+70-79: Unknown extension
+
+When checking a list of flavors for completeness with respect
+to mandatory flavors, we disregard non-scs flavors (code 1 above)
+and only report the number of missing flavors or -- if none was found --
+the sum of parsing errors (>=10) according to above scheme.
+
+(c) Kurt Garloff <garloff@osb-alliance.com>, 5/2021
+License: CC-BY-SA 4.0
+"""
 
 import sys
 import os
@@ -34,12 +36,13 @@ completecheck = False
 # search strings
 scsPre = re.compile(r'^SCS\-')
 # TODO SCSx:
-#scsPre2 = re.compile(r'^SCSx\-')
+# scsPre2 = re.compile(r'^SCSx\-')
 
 # List of SCS mandatory flavors: Read from file
 
-# help
+
 def usage():
+    "help"
     print("Usage: flavor-name-check.py [-d] [-v] [-c] [-C mand.yaml] [-i | NAME [NAME [...]]]")
     print("Flavor name checker returns 0 if no error, 1 for non SCS flavors and 10+ for wrong flavor names")
     print("-d enables debug mode, -v outputs a verbose description, -i enters interactive input mode")
@@ -50,6 +53,7 @@ def usage():
 
 
 def to_bool(stg):
+    "interpret string input as bool"
     if stg == "" or stg == "0" or stg.upper()[0] == "N" or stg.upper()[0] == "F":
         return False
     if stg == "1" or stg.upper()[0] == "Y" or stg.upper()[0] == "T":
@@ -57,16 +61,18 @@ def to_bool(stg):
     raise ValueError
 
 
-def is_scs(nm):
+def is_scs(name):
     "return number of matching chars of SCS- prefix"
-    if scsPre.match(nm):
+    if scsPre.match(name):
         return 4
     # TODO SCSx: Add check for SCSx-
-    #if scsPre2.match(nm):
-    #    return 5
+    # if scsPre2.match(name):
+    #     return 5
     return 0
 
+
 class Prop:
+    "Class to hold properties"
     # Name of the property
     type = ""
     # regular expression to parse input
@@ -85,11 +91,10 @@ class Prop:
 
     def end(self, string):
         "find delimiting '-' and cut off"
-        ix = string[1:].find('-')
-        if ix >= 1:
-            return string[:ix+1]
-        else:
-            return string
+        idx = string[1:].find('-')
+        if idx >= 1:
+            return string[:idx+1]
+        return string
 
     def parse(self):
         "Try to match parsestr; return number of chars successfully consumed"
@@ -113,9 +118,9 @@ class Prop:
                     attr = float(attr)
                 else:
                     if attr:
-                        if (attr[0] == ":"):
+                        if attr[0] == ":":
                             attr = int(attr[1:])
-                        elif (attr[-1] == "x"):
+                        elif attr[-1] == "x":
                             attr = int(attr[:-1])
                         else:
                             attr = int(attr)
@@ -124,10 +129,11 @@ class Prop:
             elif self.pnames[i][0] == "?":
                 attr = bool(attr)
             self.__setattr__(self.pattrs[i], attr)
-        #return len(self.string)
+        # return len(self.string)
         return len(m.group(0))
 
     def __init__(self, string):
+        "c'tor parses the string and stores the reuslts"
         self.string = self.end(string)
         self.parsed = self.parse()
 
@@ -135,7 +141,7 @@ class Prop:
         "verbose representation"
         if not self.parsed:
             return f" No {self.type}"
-        st = f" {self.type}:"
+        stg = f" {self.type}:"
         for i in range(0, len(self.pattrs)):
             if not self.pnames[i]:
                 continue
@@ -153,8 +159,8 @@ class Prop:
                     attr = self.__getattribute__(f"tbl_{fname}")[attr]
                 except AttributeError:
                     pass
-            st += " " + self.pnames[i] + ": " + str(attr) + ","
-        return st[:-1]
+            stg += " " + self.pnames[i] + ": " + str(attr) + ","
+        return stg[:-1]
 
     def out(self):
         """Output name again:
@@ -246,8 +252,7 @@ class Prop:
         if hasattr(self, dtbl):
             self.__setattr__(ntbl, self.__getattribute__(dtbl))
             return True
-        else:
-            return False
+        return False
 
     def std_validator(self):
         """Check that all numbers are positive, all selections valid.
@@ -281,6 +286,7 @@ class Prop:
                     return i+1
                 self.create_dep_tbl(i, val)
                 continue
+        return i+1
 
     def validate(self):
         "Hook to add checks. By default only look if parser succeeded."
@@ -338,8 +344,8 @@ class Prop:
                             break
                         print(" INVALID!")
                         continue
-                except BaseException as e:
-                    print(e)
+                except BaseException as exc:
+                    print(exc)
                     print(" INVALID!")
                     continue
                 self.parsed += 1
@@ -348,6 +354,7 @@ class Prop:
 
 
 class Main(Prop):
+    "Class representing the first part (CPU+RAM)"
     type = "CPU:RAM"
     parsestr = re.compile(r"([0-9]*)([LVTC])(i|):([0-9\.]*)(u|)(o|)")
     pattrs = ("cpus", "cputype", "cpuinsecure",
@@ -358,6 +365,7 @@ class Main(Prop):
 
 
 class Disk(Prop):
+    "Class representing the disk part (CPU+RAM)"
     type = "Disk"
     parsestr = re.compile(r":([0-9]*x|)([0-9]*)([nhsp]|)")
     pattrs = ("nrdisks", "disksize", "disktype")
@@ -366,15 +374,17 @@ class Disk(Prop):
     tbl_disktype = {"n": "Networked", "h": "Local HDD", "s": "SSD", "p": "HiPerf NVMe"}
 
     def __init__(self, string):
+        "Override c'tor, as unset nrdisks should be 1, not 0"
         super().__init__(string)
         try:
             if not self.nrdisks:
                 self.nrdisks = 1
-        except:
+        except AttributeError:
             self.nrdisks = 1
 
 
 class Hype(Prop):
+    "Class repesenting Hypervisor"
     type = "Hypervisor"
     parsestr = re.compile(r"\-(kvm|xen|vmw|hyv|bms)")
     pattrs = ("hype",)
@@ -384,15 +394,17 @@ class Hype(Prop):
 
 
 class HWVirt(Prop):
+    "Class repesenting support for hardware virtualization"
     type = "Hardware/NestedVirtualization"
     parsestr = re.compile(r"\-(hwv)")
     pattrs = ("hwvirt",)
     pnames = ("?HardwareVirt",)
     outstr = "%?hwv"
-    #tbl_hype = {"hwv": "HW virtualization (nested)"}
+    # tbl_hype = {"hwv": "HW virtualization (nested)"}
 
 
 class CPUBrand(Prop):
+    "Class repesenting CPU brand"
     type = "CPUBrand"
     parsestr = re.compile(r"\-([izar])([0-9]*)(h*)$")
     pattrs = ("cpuvendor", "cpugen", "perf")
@@ -404,10 +416,11 @@ class CPUBrand(Prop):
     tbl_cpuvendor_i_cpugen = {0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake"}
     tbl_cpuvendor_z_cpugen = {0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4"}
     tbl_cpuvendor_a_cpugen = {0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A710/NeoN2"}
-    #tbl_cpuvendor_r_cpugen = {0: "SF U54", 1: "SF U74", 2: "SF U84"}
+    # tbl_cpuvendor_r_cpugen = {0: "SF U54", 1: "SF U74", 2: "SF U84"}
 
 
 class GPU(Prop):
+    "Class repesenting GPU support"
     type = "GPU"
     parsestr = re.compile(r"\-([gG])([NAI])([^:-]*)(:[0-9]*|)(h*)")
     pattrs = ("gputype", "brand", "gen", "cu", "perf")
@@ -417,12 +430,14 @@ class GPU(Prop):
     tbl_brand = {"N": "nVidia", "A": "AMD", "I": "Intel"}
     tbl_perf = {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"}
     # Generation decoding
-    tbl_brand_N_gen = {"f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal", "v": "Volta", "t": "Turing", "a": "Ampere"}
+    tbl_brand_N_gen = {"f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal",
+                       "v": "Volta", "t": "Turing", "a": "Ampere"}
     tbl_brand_A_gen = {"0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "RDNA2/Navi2x"}
     tbl_brand_I_gen = {"0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1"}
 
 
 class IB(Prop):
+    "Class representing Infiniband"
     type = "Infiniband"
     parsestr = re.compile(r"\-(ib)")
     pattrs = ("ib",)
@@ -430,7 +445,7 @@ class IB(Prop):
     outstr = "%?ib"
 
 
-def outname(cpuram, disk, hype, hvirt, cpubrand, gpu, ib):
+def outname(cpuram, disk, hype, hvirt, cpubrand, gpu, ibd):
     "Return name constructed from tuple"
     # TODO SCSx: Differentiate b/w SCS- and SCSx-
     out = "SCS-" + cpuram.out()
@@ -444,29 +459,29 @@ def outname(cpuram, disk, hype, hvirt, cpubrand, gpu, ib):
         out += "-" + cpubrand.out()
     if gpu.parsed:
         out += "-" + gpu.out()
-    if ib.parsed:
-        out += "-" + ib.out()
+    if ibd.parsed:
+        out += "-" + ibd.out()
     return out
 
 
-def printflavor(nm, item_list):
-    "Output details on flavor with name nm described by tuple in lst"
-    print(f"Flavor: {nm}")
+def printflavor(name, item_list):
+    "Output details on flavor with name name described by tuple in lst"
+    print(f"Flavor: {name}")
     for item in item_list:
         print(item)
     print()
 
 
-def parsename(nm):
+def parsename(name):
     """Extract properties from SCS flavor name, return None (if not SCS-),
        raise NameError exception (if not conforming) or return tuple
        (cpuram, disk, hype, hvirt, cpubrand, gpu, ib)"""
-    scsln = is_scs(nm)
+    scsln = is_scs(name)
     if not scsln:
         if verbose:
-            print(f"WARNING: {nm}: Not an SCS flavor")
+            print(f"WARNING: {name}: Not an SCS flavor")
         return None
-    n = nm[scsln:]
+    n = name[scsln:]
     cpuram = Main(n)
     if cpuram.parsed == 0:
         raise NameError(f"Error 10: Failed to parse main part of {n}")
@@ -483,23 +498,24 @@ def parsename(nm):
     n = n[cpubrand.parsed:]
     gpu = GPU(n)
     n = n[gpu.parsed:]
-    ib = IB(n)
-    n = n[ib.parsed:]
+    ibd = IB(n)
+    n = n[ibd.parsed:]
     if verbose:
-        printflavor(nm, (cpuram, disk, hype, hvirt, cpubrand, gpu, ib))
+        printflavor(name, (cpuram, disk, hype, hvirt, cpubrand, gpu, ibd))
 
     if n:
         print(f"ERROR: Could not parse: {n}")
         raise NameError(f"Error 70: Could not parse {n} (extras?)")
 
     errbase = 0
-    for el in (cpuram, disk, hype, hvirt, cpubrand, gpu, ib):
+    for elem in (cpuram, disk, hype, hvirt, cpubrand, gpu, ibd):
         errbase += 10
-        err = el.validate()
+        err = elem.validate()
         if err:
-            raise NameError(f"Validation error {err + errbase} (in el {err - 1} ({el.pnames[err - 1]}) in {el.type})")
+            raise NameError(f"Validation error {err + errbase} (in elem {err - 1} "
+                            f"({elem.pnames[err - 1]}) in {elem.type})")
 
-    return (cpuram, disk, hype, hvirt, cpubrand, gpu, ib)
+    return (cpuram, disk, hype, hvirt, cpubrand, gpu, ibd)
 
 
 def inputflavor():
@@ -516,35 +532,40 @@ def inputflavor():
     cpubrand.input()
     gpu = GPU("")
     gpu.input()
-    ib = IB("")
-    ib.input()
-    return (cpuram, disk, hype, hvirt, cpubrand, gpu, ib)
+    ibd = IB("")
+    ibd.input()
+    return (cpuram, disk, hype, hvirt, cpubrand, gpu, ibd)
+
 
 # Path to the python script, used to search mandatory flavor YAML file
 _bindir = sys.argv[0]
 _bindir_pidx = _bindir.rfind('/')
 if _bindir_pidx != -1:
-	_bindir = (_bindir[:_bindir_pidx],)
+    _bindir = (_bindir[:_bindir_pidx],)
 else:
-	_bindir = os.environ('PATH').split(':')
+    _bindir = os.environ('PATH').split(':')
+
 
 def readmandflavors(fnm):
     "Read mandatory flavors from passed YAML file, search in a few paths"
     import yaml
-    searchpath = (".",  *_bindir, '/opt/share/SCS')
+    searchpath = (".", *_bindir, '/opt/share/SCS')
     if fnm.rfind('/') == -1:
-        for sp in searchpath:
-            tnm = "%s/%s" % (sp, fnm)
+        for spath in searchpath:
+            tnm = f"{spath}/{fnm}"
             if debug:
-                print("Search %s" % tnm)
+                print(f"Search {tnm}")
             if os.access(tnm, os.R_OK):
                 fnm = tnm
                 break
-    yamldict = yaml.safe_load(open(fnm, "r"))
+    with open(fnm, "r", encoding="UTF-8)") as fobj:
+        yamldict = yaml.safe_load(fobj)
     return yamldict["SCS-Spec"]["MandatoryFlavors"]
+
 
 # Default file name for mandatpry flavors
 mandFlavorFile = "SCS-Spec.MandatoryFlavors.yaml"
+
 
 def main(argv):
     "Entry point when used as selfstanding tool"
@@ -584,14 +605,14 @@ def main(argv):
     if argv[0] == "-i":
         ret = inputflavor()
         print()
-        nm = outname(*ret)
-        print(nm)
-        ret2 = parsename(nm)
+        nm1 = outname(*ret)
+        print(nm1)
+        ret2 = parsename(nm1)
         nm2 = outname(*ret2)
-        if nm != nm2:
-            print(f"WARNING: {nm} != {nm2}")
-            #raise NameError(f"{nm} != {nm2}")
-        #print(outname(*ret))
+        if nm1 != nm2:
+            print(f"WARNING: {nm1} != {nm2}")
+            # raise NameError(f"{nm} != {nm2}")
+        # print(outname(*ret))
         argv = argv[1:]
         scs = 1
 
@@ -617,7 +638,7 @@ def main(argv):
             print(f"In {name}, Out {namecheck}")
 
         if namecheck != name:
-            #raise NameError(f"{name} != {namecheck}")
+            # raise NameError(f"{name} != {namecheck}")
             print(f"WARNING: {name} != {namecheck}")
 
     if completecheck:
@@ -625,10 +646,8 @@ def main(argv):
         if scsMandatory:
             print(f"Missing mandatory flavors: {scsMandatory}")
             return len(scsMandatory)
-        else:
-            return error
-    else:
-        return nonscs+error
+        return error
+    return nonscs+error
 
 
 if __name__ == "__main__":
