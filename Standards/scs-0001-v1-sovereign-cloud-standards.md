@@ -83,7 +83,7 @@ embedded in the markdown header.
 | Field name | Requirement | Description |
 | --- | --- | --- |
 | `type` | REQUIRED | one of `Procedural`, `Standard`, or `Decision Record` |
-| `status` | REQUIRED | one of `Draft`, `Stable`, `Deprecated`, or `Rejected` |
+| `status` | REQUIRED | one of `Proposal`, `Draft`, `Stable`, `Deprecated`, or `Rejected` |
 | `track` | REQUIRED | one of `Global`, `IaaS`, `Ops`, `KaaS`, `IAM` |
 | `obsoleted_at` | REQUIRED if `status` is `Deprecated` | ISO formatted date indicating the date after which the deprecation is in effect |
 | `stabilized_at` | REQUIRED if `status` was ever `Stable` | ISO formatted date indicating the date after which the document was considered stable |
