@@ -14,7 +14,7 @@ Storage requirements may vary across use cases, so there is the concept of `Stor
 
 # Motivation
 
-While often times, consumers will choose a `StorageClass` explicitly, usually, there is also a default `StorageClass` with generally average properties to fall back on in case `storageClassName` is not set on the `PersistentVolumeClaim`.
+While often times, consumers will choose a `StorageClass` explicitly, usually, there is also a default `StorageClass` to fall back on in case it is *not* chosen explicitly (that is, when `storageClassName` is not set on the `PersistentVolumeClaim`).
 
 This document attempts to define the properties this default `StorageClass` should have.
 
