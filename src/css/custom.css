@@ -4,6 +4,10 @@
  * work well for content-centric websites.
  */
 
+table {
+  display: table!important;
+}
+
 /* You can override the default Infima variables here. */
 :root {
   --ifm-color-primary: #0F5FE1;
