@@ -11,6 +11,15 @@
 reads SCS certification requirements from e.g. scs-compatible.yaml
 and performs all the checks for the specified level and outputs a
 verdict from all tests (which is reflected in the exit code)
+The tests require the OpenStack SDK (and in the future probably
+also k8s python bindings) to be installed and access to IaaS
+(for the iaas layer tests) via configure clouds/secure.yaml
+which are passed in OS_CLOUD (or --os-cloud cmdline param).
+In the future als access to a cluster with KUBECONFIG pointing
+to a working file.
+The goal is to work without any special admin privileges.
+(If we find things that can't be tested as normal user, we
+would split these tests out.)
 """
 
 import os
