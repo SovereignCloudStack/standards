@@ -52,11 +52,10 @@ Options:
 1. Option "No support"
   - DO NOT require SCS compliant cloud providers to support `externalTrafficPolicy: Local`.
   - In the reference implementation: DO NOT configure health checks in order to not deviate from upstream defaults
-1. Option "No support; Support application level IP preservation"
+1. Option "No support; Support opt-in IP preservation at a higher level"
   - DO NOT require SCS compliant clouds to work with `externalTrafficPolicy: Local`.
-  - DO require them to preserve the client IP for some set of application protocols, e. g. via HTTP `Forwarded` headers
+  - DO require them to let the user opt-in to preserve the client IP using the PROXY protocol, HTTP `Forwarded` headers or other means (This should be an option, as client IP preservation at this layer also should work with `externalTrafficPolicy: Cluster`)
   - In the reference implementation: DO NOT configure health checks in order to not deviate from upstream defaults
-  - This should be an option, as application level IP preservation also should work with `externalTrafficPolicy: Cluster`
 1. Option "No support; best effort compatibility in reference implementation"
   - DO NOT require SCS compliant cloud providers to support `externalTrafficPolicy: Local`.
   - In the reference implementation: enabling the health check mechanism to avoid constant connectivity problems if users set it anyway
@@ -64,9 +63,9 @@ Options:
   - DO require SCS compliant clouds to work with `externalTrafficPolicy: Local`.
   - Do NOT require them to preserve the client IP.
   - In the reference implementation: Enabling the health check mechanism to avoid constant connectivity problems
-1. Option "Partial support; Support application level IP preservation"
+1. Option "Partial support; Support opt-in IP preservation at a higher level"
   - DO require SCS compliant clouds to work with `externalTrafficPolicy: Local`.
-  - DO require them to preserve the client IP for some set of application protocols, e. g. via HTTP `Forwarded` headers
+  - DO require them to let the user opt-in to preserve the client IP using the PROXY protocol, HTTP `Forwarded` headers or other means
   - Do NOT require them to preserve the client IP at network level.
   - In the reference implementation: Enabling the health check mechanism to avoid constant connectivity problems
 1. Option "Full support"
