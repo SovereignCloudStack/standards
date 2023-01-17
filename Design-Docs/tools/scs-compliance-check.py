@@ -44,10 +44,14 @@ def is_valid_standard(now, stable, replace):
     return True
 
 
-def run_check_tool(executable, verbose=False, quiet=False):
+def run_check_tool(executable, args, verbose=False, quiet=False):
     "Run executable and return exit code"
-    # compl = subprocess.run([executable, ], capture_output=True, text=True, check=False)
-    compl = subprocess.run([executable, ], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    exe = [executable,]
+    if args:
+        exe.extend(args.split(" "))
+    # print(f"{exe}")
+    # compl = subprocess.run(exe, capture_output=True, text=True, check=False)
+    compl = subprocess.run(exe, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                            encoding='UTF-8', check=False)
     if verbose:
         print(compl.stdout)
@@ -150,11 +154,13 @@ def main(argv):
         for standard in bestversion["standards"]:
             if not quiet:
                 print(f"Testing standard {standard['name']} ...")
+                print(f"Reference: {standard['url']} ...")
             if "check_tool" not in standard:
                 print(f"WARNING: No compliance check tool implemented yet for {standard['name']}")
                 error = 0
             else:
-                error = run_check_tool(standard["check_tool"], verbose, quiet)
+                args = dictval(standard, 'check_tool_args')
+                error = run_check_tool(standard["check_tool"], args, verbose, quiet)
             errors += error
             if not quiet and "check_tool" in standard:
                 print(f"... returned {error}")
