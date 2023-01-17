@@ -48,79 +48,37 @@ By default `externalTrafficPolicy` is set to `Cluster`. Changing it to `Local` d
 
 ### Conclusion (**TBD**)
 
-| Option 1 | Option 2 | Option 3 |
-|----|----|----|
-| DO require SCS compliant clouds to work with `externalTrafficPolicy: Local` (in the reference implementation: enabling the health check mechanism to avoid constant connectivity problems); Do NOT require them to preserve the client IP | DO NOT require SCS compliant cloud providers to support `externalTrafficPolicy: Local` (in the reference implementation: enabling the health check mechanism to avoid constant connectivity problems if users set it anyway) | DO NOT require SCS compliant cloud providers to support `externalTrafficPolicy: Local` (Do NOT configure health checks in the reference implementation in order to not derive from upstream defaults) |
+Options:
+1. Option "No support"
+  - DO NOT require SCS compliant cloud providers to support `externalTrafficPolicy: Local`.
+  - In the reference implementation: DO NOT configure health checks in order to not deviate from upstream defaults
+1. Option "No support; Support application level IP preservation"
+  - DO NOT require SCS compliant clouds to work with `externalTrafficPolicy: Local`.
+  - DO require them to preserve the client IP for some set of application protocols, e. g. via HTTP `Forwarded` headers
+  - In the reference implementation: DO NOT configure health checks in order to not deviate from upstream defaults
+  - This should be an option, as application level IP preservation also should work with `externalTrafficPolicy: Cluster`
+1. Option "No support; best effort compatibility in reference implementation"
+  - DO NOT require SCS compliant cloud providers to support `externalTrafficPolicy: Local`.
+  - In the reference implementation: enabling the health check mechanism to avoid constant connectivity problems if users set it anyway
+1. Option "Partial support; No IP preservation"
+  - DO require SCS compliant clouds to work with `externalTrafficPolicy: Local`.
+  - Do NOT require them to preserve the client IP.
+  - In the reference implementation: Enabling the health check mechanism to avoid constant connectivity problems
+1. Option "Partial support; Support application level IP preservation"
+  - DO require SCS compliant clouds to work with `externalTrafficPolicy: Local`.
+  - DO require them to preserve the client IP for some set of application protocols, e. g. via HTTP `Forwarded` headers
+  - Do NOT require them to preserve the client IP at network level.
+  - In the reference implementation: Enabling the health check mechanism to avoid constant connectivity problems
+1. Option "Full support"
+  - DO require SCS compliant clouds to work with `externalTrafficPolicy: Local`.
+  - DO require them to preserve the client IP at network level.
+  - In the reference implementation: Implement network level load balancing
 
 # Decision
 
-* A Kubernetes `Service` of `type=LoadBalancer` with all non-madatory fields being unset: Must work as expected, out of the box
-* A Kubernetes `Service` of `type=LoadBalancer` with `externalTrafficPolicy: Local` set and all other non-madatory fields being unset: **TBD**
+* A Kubernetes `Service` of `type=LoadBalancer` with all non-mandatory fields being unset: Must work as expected, out of the box
+* A Kubernetes `Service` of `type=LoadBalancer` with `externalTrafficPolicy: Local` set and all other non-mandatory fields being unset: **TBD**
 
 # Conformance Tests
 
-With default `externalTrafficPolicy: Cluster`:
-
-```bash
-#!/bin/bash
-
-set -e
-
-suffix=$(openssl rand -hex 3)
-
-kubectl get pods nginx-$suffix > /dev/null || kubectl run nginx-$suffix --restart=Never --image=nginx --port 80
-kubectl get svc nginx-$suffix-svc > /dev/null || kubectl expose pod nginx-$suffix --port 80 --name nginx-$suffix-svc --type=LoadBalancer
-
-while [[ -z "$IP" ]]; do
-  IP=$(kubectl get svc nginx-$suffix-svc '--output=go-template={{range .status.loadBalancer.ingress}}{{.ip}}{{end}}')
-done
-
-echo "Testing access to $IP.
-externalTrafficPolicy: Cluster
-"
-set -x
-for i in {1..30};do
-  curl --max-time 5 -sS $IP > /dev/null && break || echo "pretest $i: curl failed, but wait until one call succeeded or enough tests failed to stop waiting"
-done
-echo "Do actual testing, now"
-for i in {1..50};do
-  curl --max-time 2 -sS $IP > /dev/null
-  echo "test $i: succeeded"
-done
-
-kubectl delete pod nginx-$suffix
-kubectl delete svc nginx-$suffix-svc
-```
-
-With `externalTrafficPolicy: Local` being set:
-
-```bash
-#!/bin/bash
-
-set -e
-
-suffix=$(openssl rand -hex 3)
-
-kubectl get pods nginx-$suffix > /dev/null || kubectl run nginx-$suffix --restart=Never --image=nginx --port 80
-kubectl get svc nginx-$suffix-svc > /dev/null || kubectl expose pod nginx-$suffix --port 80 --name nginx-$suffix-svc --type=LoadBalancer --overrides='{"metadata": {"apiVersion": "v1"}, "spec": {"externalTrafficPolicy": "Local"}}'
-while [[ -z "$IP" ]]; do
-  IP=$(kubectl get svc nginx-$suffix-svc '--output=go-template={{range .status.loadBalancer.ingress}}{{.ip}}{{end}}')
-done
-
-echo "Testing access to $IP.
-externalTrafficPolicy: Local
-"
-set -x
-for i in {1..30};do
-  curl --max-time 5 -sS $IP > /dev/null && break || echo "pretest $i: curl failed, but wait until one call succeeded or enough tests failed to stop waiting"
-done
-echo "Do actual testing, now"
-for i in {1..50};do
-  curl --max-time 2 -sS $IP > /dev/null
-  echo "test $i: succeeded"
-done
-
-kubectl delete pod nginx-$suffix
-kubectl delete svc nginx-$suffix-svc
-```
-
+TBD, depends on decision
