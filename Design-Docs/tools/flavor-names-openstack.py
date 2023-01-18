@@ -17,43 +17,60 @@
 
 import os
 import sys
+import getopt
 import importlib
-fnmck = importlib.import_module("flavor-name-check")
 import yaml
 import openstack
+fnmck = importlib.import_module("flavor-name-check")
 
-
-def usage():
-    print("Usage: flavor-names-openstack.py [--os-cloud OS_CLOUD]", file=sys.stderr)
-    sys.exit(1)
-
+def usage(rcode = 1):
+    "help output"
+    print("Usage: flavor-names-openstack.py [--os-cloud OS_CLOUD] [-C mand.yaml] [-v] [-q]", file=sys.stderr)
+    print(" This tool retrieves the list of flavors from the OpenStack cloud OS_CLOUD", file=sys.stderr)
+    print(" and checks for the presence of the mandatory SCS flavors (read from mand.yaml)", file=sys.stderr)
+    print(" and reports inconsistencies, errors etc. It returns 0 on success.", file=sys.stderr)
+    sys.exit(rcode)
 
 def main(argv):
-    verbose = False
     cloud = None
+    verbose = False
+    quiet = False
+    scsMandFile = fnmck.mandFlavorFile
+
     try:
         cloud = os.environ["OS_CLOUD"]
     except KeyError:
         pass
-    # Note: Convert this to gnu_getopt if we get more params supported
-    if len(argv):
-        if argv[0] == "-v" or argv[0] == "--verbose":
+    try:
+        opts, args = getopt.gnu_getopt(argv, "c:C:vhq", \
+            ("os-cloud=", "mand=", "verbose", "help", "quiet"))
+    except getopt.GetoptError as exc:
+        print("%s" % exc, file=sys.stderr)
+        usage(1)
+    for opt in opts:
+        if opt[0] == "-h" or opt[0] == "--help":
+            usage(0)
+        elif opt[0] == "-c" or opt[0] == "--os-cloud":
+            cloud = opt[1]
+        elif opt[0] == "-C" or opt[0] == "--mand":
+            scsMandFile = opt[1]
+        elif opt[0] == "-v" or opt[0] == "--verbose":
             verbose = True
-            argv = argv[1:]
-    if len(argv):
-        if argv[0][:10] == "--os-cloud":
-            if len(argv[0]) > 10 and argv[0][10] == "=":
-                cloud = argv[0][11:]
-            elif argv[0] == "--os-cloud" and len(argv) == 2:
-                cloud = argv[1]
-            else:
-                usage()
+        elif opt[0] == "-q" or opt[0] == "--quiet":
+            quiet = True
         else:
-            usage()
+            usage(2)
+    if len(args) > 0:
+        print(f"Extra arguments {str(args)}", file=sys.stderr)
+        usage(1)
+
+    scsMandatory = fnmck.readmandflavors(scsMandFile)
+
     if not cloud:
-        print("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
+        print("ERROR: You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
     conn = openstack.connect(cloud=cloud, timeout=32)
     flavors = conn.compute.flavors()
+
     # Lists of flavors: mandatory, good-SCS, bad-SCS, non-SCS, with-warnings
     MSCSFlv = []
     SCSFlv = []
@@ -90,12 +107,12 @@ def main(argv):
             flvram = int((flv.ram + 51) / 102.4) / 10
             # Warn for strange sizes (want integer numbers, half allowed for < 10GiB)
             if flvram >= 10 and flvram != int(flvram) or flvram * 2 != int(flvram * 2):
-                print("WARNING: Flavor %s uses discouraged uneven size of memory %.1f GiB" % (flv.name, flvram), file=sys.stderr)
+                print(f"WARNING: Flavor {flv.name} uses discouraged uneven size of memory {flvram:.1f} GiB", file=sys.stderr)
             if flvram < cpuram.ram:
-                print("ERROR: Flavor %s has only %.1f GiB RAM, should have >= %.1f GiB" % (flv.name, flvram, cpuram.ram), file=sys.stderr)
+                print(f"ERROR: Flavor {flv.name} has only {flvram:.1f} GiB RAM, should have >= {cpuram.ram:.1f} GiB", file=sys.stderr)
                 err += 1
             elif flvram > cpuram.ram:
-                print("WARNING: Flavor %s has %.1f GiB RAM, only needs %.1f GiB" % (flv.name, flvram, cpuram.ram), file=sys.stderr)
+                print(f"WARNING: Flavor {flv.name} has {flvram:.1f} GiB RAM, only needs {cpuram.ram:.1f} GiB", file=sys.stderr)
                 warn += 1
             # DISK
             accdisk = (0, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000)
@@ -104,21 +121,21 @@ def main(argv):
                 disk.disksize = 0
             # We have a recommendation for disk size steps
             if disk.disksize not in accdisk:
-                print("WARNING: Flavor {flv.name} advertizes disk size {disk.disksize}, should have (5, 10, 20, 50, 100, 200, ...)", file=sys.stderr)
+                print(f"WARNING: Flavor {flv.name} advertizes disk size {disk.disksize}, should have (5, 10, 20, 50, 100, 200, ...)", file=sys.stderr)
                 warn += 1
             if flv.disk < disk.disksize:
                 print(f"ERROR: Flavor {flv.name} has only {flv.disk} GB root disk, should have >= {disk.disksize} GB", file=sys.stderr)
                 err += 1
             elif flv.disk > disk.disksize:
-                print("WARNING: Flavor {flv.name} has {flv.disk} GB root disk, only needs {disk.disksize} GB", file=sys.stderr)
+                print(f"WARNING: Flavor {flv.name} has {flv.disk} GB root disk, only needs {disk.disksize} GB", file=sys.stderr)
                 warn += 1
             # Ev'thing checked, react to errors by putting the bad flavors in the bad bucket
             if err:
                 wrongFlv.append(flv.name)
                 errors += 1
             else:
-                if flv.name in fnmck.scsMandatory:
-                    fnmck.scsMandatory.remove(flv.name)
+                if flv.name in scsMandatory:
+                    scsMandatory.remove(flv.name)
                     MSCSFlv.append(flv.name)
                 else:
                     SCSFlv.append(flv.name)
@@ -136,12 +153,12 @@ def main(argv):
     wrongFlv.sort()
     warnFlv.sort()
     # We have counted errors on the fly, add missing flavors to the final result
-    if fnmck.scsMandatory:
-        errors += len(fnmck.scsMandatory)
-    # Produce dict for YAML reporting
+    if scsMandatory:
+        errors += len(scsMandatory)
+    # Produce dicts for YAML reporting
     flvSCSList = {
         "MandatoryFlavorsPresent": MSCSFlv,
-        "MandatoryFlavorsMissing": fnmck.scsMandatory,
+        "MandatoryFlavorsMissing": scsMandatory,
         "OptionalFlavorsValid": SCSFlv,
         "OptionalFlavorsWrong": wrongFlv,
         "FlavorsWithWarnings": warnFlv,
@@ -152,7 +169,7 @@ def main(argv):
     flvSCSRep = {
         "TotalAmount": len(MSCSFlv) + len(SCSFlv) + len(wrongFlv),
         "MandatoryFlavorsPresent": len(MSCSFlv),
-        "MandatoryFlavorsMissing": len(fnmck.scsMandatory),
+        "MandatoryFlavorsMissing": len(scsMandatory),
         "OptionalFlavorsValid": len(SCSFlv),
         "OptionalFlavorsWrong": len(wrongFlv),
         "FlavorsWithWarnings": len(warnFlv)
