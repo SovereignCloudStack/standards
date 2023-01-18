@@ -76,8 +76,8 @@ class Property:
         if self.name in props:
             if self.values and not props[self.name] in self.values:
                 if warn:
-                    print("Error: Image \"%s\": value \"%s\" for property \"%s\" not allowed" %
-                          (warn, props[self.name], self.name), file=sys.stderr)
+                    print(f'Error: Image "{warn}": value "{props[self.name]}" for property '
+                          f'"{self.name}" not allowed', file=sys.stderr)
                 return False
             else:
                 if not props[self.name] and not self.values:
@@ -87,17 +87,16 @@ class Property:
                     err = "Warning"
                     ret = True
                 if not props[self.name] and (verbose or not self.values) and warn:
-                    print("%s: Image \"%s\": empty value for property \"%s\" not recommended" %
-                          (err, warn, self.name), file=sys.stderr)
+                    print(f'{err}: Image "{warn}": empty value for property "{self.name}" not recommended',
+                          file=sys.stderr)
                 return ret
         elif self.ismand:
             if warn:
-                print("Error: Image \"%s\": Mandatory property \"%s\" is missing" %
-                      (warn, self.name), file=sys.stderr)
+                print(f'Error: Image "{warn}": Mandatory property "{self.name}" is missing',
+                      file=sys.stderr)
             return False
         elif warn and verbose:
-            print("Info: Image \"%s\": Optional property \"%s\" is missing" %
-                  (warn, self.name))  # , file=sys.stderr)
+            print(f'Info: Image "{warn}": Optional property "{self.name}" is missing')  # , file=sys.stderr)
         return True
 
 
@@ -136,10 +135,10 @@ def validate_imageMD(imgnm):
     try:
         img = conn.image.find_image(imgnm)
     except openstack.exceptions.DuplicateResource as exc:
-        print("Error with duplicate name \"%s\": %s" % (imgnm, str(exc)), file=sys.stderr)
+        print(f'Error with duplicate name "{imgnm}": {str(exc)}', file=sys.stderr)
         return 1
     if not img:
-        print("Image \"%s\" not found" % imgnm, file=sys.stderr)
+        print(f'Image "{imgnm}" not found' % imgnm, file=sys.stderr)
         return 1
     # Now the hard work: Look at properties ....
     errors = 0
@@ -147,11 +146,10 @@ def validate_imageMD(imgnm):
     for prop in (*os_props, *arch_props, *hw_props):
         if not prop.is_ok(img, imgnm):
             errors += 1
-    constr_name = "%s %s" % (img.os_distro, img.os_version)
+    constr_name = f"{img.os_distro} {img.os_version}"
     # (3) os_hash
     if img.hash_algo not in ('sha256', 'sha512'):
-        print("Error: Image \"%s\": no valid hash algorithm %s" % (imgnm, img.hash_algo),
-              file=sys.stderr)
+        print(f'Error: Image "{imgnm}": no valid hash algorithm {img.hash_algo}', file=sys.stderr)
         errors += 1
 
     # (4) image_build_date, image_original_user, image_source (opt image_description)
@@ -165,17 +163,17 @@ def validate_imageMD(imgnm):
     if "image_build_date" in img.properties:
         try:
             bdate = time.strptime(img.properties["image_build_date"][:10], "%Y-%m-%d")
+            # This never evals to True, but makes bdate used for flake8
             if verbose and False:
-                print(f"Info: Image \"{imgnm}\" with build date {bdate}")
+                print(f'Info: Image "{imgnm}" with build date {bdate}')
         except Exception:
-            print("Error: Image \"%s\": no valid image_build_date %s" %
-                  (imgnm, img.properties["image_build_date"]), file=sys.stderr)
+            print(f'Error: Image "{imgnm}": no valid image_build_date '
+                  f'{img.properties["image_build_date"]}', file=sys.stderr)
             errors += 1
     # - image_source should be an URL
     if "image_source" in img.properties:
         if not is_url(img.properties["image_source"]):
-            print("Error: Image \"%s\": image_source should be an URL" % imgnm,
-                  file=sys.stderr)
+            print(f'Error: Image "{imgnm}": image_source should be an URL', file=sys.stderr)
     #  - uuid_validity has a distinct set of options (none, last-X, DATE, notice, forever)
     #  - hotfix hours (if set!) should be numeric
     # (5a) Sanity: Are we actually in violation of update_frquency?
@@ -187,11 +185,11 @@ def validate_imageMD(imgnm):
     #
     # (7) Recommended naming
     if verbose and imgnm[:len(constr_name)].casefold() != constr_name.casefold():
-        print("Warning: Image \"%s\" does not start with recommended name \"%s\"" %
-              (imgnm, constr_name), file=sys.stderr)
+        print(f'Warning: Image "{imgnm}" does not start with recommended name "{constr_name}"',
+              file=sys.stderr)
 
     if not errors and verbose:
-        print("Image \"%s\": All good" % imgnm)
+        print(f'Image "{imgnm}": All good')
     return errors
 
 
@@ -201,10 +199,10 @@ def report_stdimage_coverage(imgs):
     for inm in mand_images:
         if inm not in imgs:
             err += 1
-            print("WARNING: Mandatory image \"%s\" is missing" % inm, file=sys.stderr)
+            print(f'WARNING: Mandatory image "{inm}" is missing', file=sys.stderr)
     for inm in (*rec1_images, *rec2_images):
         if inm not in imgs:
-            print("INFO: Recommended image \"%s\" is missing" % inm, file=sys.stderr)
+            print(f'INFO: Recommended image "{inm}" is missing', file=sys.stderr)
     # Ignore sugg_images for now
     return err
 
