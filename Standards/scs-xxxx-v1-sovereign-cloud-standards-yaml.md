@@ -111,7 +111,7 @@ Every list of standards consists of several standards that – altogether – de
 | `{layer}.versions.standards.url` | String |  Valid URL to the latest raw version of the particular standard  | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md_ |
 | `{layer}.versions.standards.check_tool` | String | Valid local filename or URL to the latest check tool that verifies compliance with the particular standard | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/flavor-name-check.py_ |
 | `{layer}.versions.standards.check_tool_args` | String | *Optional* list of arguments to be passed to the `check_tool`. Preferably none needed. | `-v` |
-| `{layer}.versions.standards.condition` | String | State of the particular standard, currently either `mandatory` or `optional` | _mandatory_ |
+| `{layer}.versions.standards.condition` | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory` | _mandatory_ |
 
 ## Basic Example
 
