@@ -164,8 +164,15 @@ def main(argv):
             print(f"WARNING: No standards defined yet for {layer} version {bestversion['version']}",
                   file=sys.stderr)
         for standard in bestversion["standards"]:
+            optional = False
+            optstr = ""
+            if "condition" in standard and standard['condition'] == 'optional':
+                optional = True
+                optstr = "optional "
+            # TODO: Check for misspelling of condition
             if not quiet:
-                print(f"Testing standard {standard['name']} ...")
+                print("*******************************************************")
+                print(f"Testing {optstr}standard {standard['name']} ...")
                 print(f"Reference: {standard['url']} ...")
             if "check_tool" not in standard:
                 print(f"WARNING: No compliance check tool implemented yet for {standard['name']}")
@@ -173,10 +180,14 @@ def main(argv):
             else:
                 args = dictval(standard, 'check_tool_args')
                 error = run_check_tool(standard["check_tool"], args, verbose, quiet)
-            errors += error
+            if not optional:
+                errors += error
             if not quiet and "check_tool" in standard:
                 print(f"... returned {error}")
-            # TODO: Check for unknown keywords and issue an error
+            for kwd in standard:
+                if kwd not in ('check_tool', 'check_tool_args', 'url', 'name', 'condition'):
+                    print(f"ERROR in spec: standard.{kwd} is an unknown keyword", file=sys.stderr)
+        # TODO: Option to write output-report.yaml
         print(f"Verdict for layer {layer}, version {bestversion['version']}: "
               f"{errcode_to_text(errors)}")
         allerrors += errors
