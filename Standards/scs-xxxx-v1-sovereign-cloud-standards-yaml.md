@@ -172,7 +172,7 @@ in accordance to the current plan of the SIG Standardization & Certification, we
 certification for now.
 
 # Tooling
-The SCS repository Docs has a tool `scs-compliance-check.py` tool in the `Design-Docs/tools` directory
+The SCS repository Docs has a tool `scs-compliance-check.py` in the `Design-Docs/tools` directory
 which parses the SCS Certification YAML and then runs the tests referenced there, returning the results
 of the tests.
 
