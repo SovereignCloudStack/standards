@@ -131,7 +131,21 @@ const config = {
             darkTheme: darkCodeTheme,
             additionalLanguages: ['powershell', 'ruby']
           }
-        })
+        }),
+
+  themes: [
+    [
+      // @ts-ignore
+      '@easyops-cn/docusaurus-search-local',
+      /** @type {import('@easyops-cn/docusaurus-search-local').PluginOptions} */
+      // @ts-ignore
+      ({
+        hashed: true,
+        docsDir: ['docs', 'community'],
+        docsRouteBasePath: ['/docs', 'community']
+      })
+    ]
+  ]
 }
 
 module.exports = config
