@@ -188,8 +188,10 @@ def main(argv):
                 if kwd not in ('check_tool', 'check_tool_args', 'url', 'name', 'condition'):
                     print(f"ERROR in spec: standard.{kwd} is an unknown keyword", file=sys.stderr)
         # TODO: Option to write output-report.yaml
-        print(f"Verdict for layer {layer}, version {bestversion['version']}: "
-              f"{errcode_to_text(errors)}")
+        if not quiet:
+            print("*******************************************************")
+        print(f"Verdict for cloud {os.environ['OS_CLOUD']}, layer {layer}, "
+              f"version {bestversion['version']}: {errcode_to_text(errors)}")
         allerrors += errors
     return allerrors
 
