@@ -55,7 +55,7 @@ def is_valid_standard(now, stable, replace):
 
 def run_check_tool(executable, args, verbose=False, quiet=False):
     "Run executable and return exit code"
-    exe = [executable,]
+    exe = [executable, ]
     if args:
         exe.extend(args.split(" "))
     # print(f"{exe}")
@@ -160,6 +160,9 @@ def main(argv):
         errors = 0
         if not quiet:
             print(f"Testing {layer} standard version {bestversion['version']}")
+        if "standards" not in bestversion:
+            print(f"WARNING: No standards defined yet for {layer} version {bestversion['version']}",
+                  file=sys.stderr)
         for standard in bestversion["standards"]:
             if not quiet:
                 print(f"Testing standard {standard['name']} ...")
@@ -173,6 +176,7 @@ def main(argv):
             errors += error
             if not quiet and "check_tool" in standard:
                 print(f"... returned {error}")
+            # TODO: Check for unknown keywords and issue an error
         print(f"Verdict for layer {layer}, version {bestversion['version']}: "
               f"{errcode_to_text(errors)}")
         allerrors += errors
