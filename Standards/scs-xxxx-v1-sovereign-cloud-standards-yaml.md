@@ -10,12 +10,12 @@ The [Sovereign Cloud Stack (SCS)](https://scs.community) provides standards for 
 It strives for interoperable and sovereign cloud offerings which can be deployed and used by a wide range of organizations and individuals.
 
 With a growing number of documents and certification levels for Sovereign Cloud Stack, it is becoming increasingly difficult to keep track
-of all stable as well as all upcoming standards. This document describes the standard we use to technically describe certification levels and
-the mandatory standards therein.
+of all stable, obsoleted as well as all upcoming standards. This decision record describes how we use technically describe 
+certification levels and the mandatory standards therein.
 
 # Motivation
 
-This standard has three main objectives:
+This decision record has three main objectives:
 - to provide an overview of the mandatory standards for the different SCS certification levels
 - to make the lifecycle of certification levels traceable
 - to provide a machine-readable document for further processing (e.g. for a compliance tool suite or continuous integration).
@@ -173,7 +173,7 @@ certification for now.
 
 # Tooling
 The SCS repository Docs has a tool `scs-compliance-check.py` tool in the `Design-Docs/tools` directory
-which parses the SCS Certficiation YAML and then runs the tests referenced there, returning the results
+which parses the SCS Certification YAML and then runs the tests referenced there, returning the results
 of the tests.
 
 # Open Questions
