@@ -151,10 +151,10 @@ def main(argv):
     with open(args[0], "r", encoding="UTF-8") as specfile:
         specdict = yaml.load(specfile, Loader=yaml.SafeLoader)
     allerrors = 0
-    report = {}
+    report = dict()
     if output:
         for key in "name", "url":
-            report.update({key: dictval(specdict, key)})
+            report[key] = dictval(specdict, key)
     if "depends_on" in specdict and not single_layer:
         print("WARNING: depends_on not yet implemented!", file=sys.stderr)
     # Iterate over layers
@@ -169,6 +169,9 @@ def main(argv):
         if "standards" not in bestversion:
             print(f"WARNING: No standards defined yet for {layer} version {bestversion['version']}",
                   file=sys.stderr)
+        if output:
+            report[layer] = dict()
+            report[layer]["versions"] = [bestversion.copy()]
         for standard in bestversion["standards"]:
             optional = False
             optstr = ""
@@ -187,23 +190,24 @@ def main(argv):
                 args = dictval(standard, 'check_tool_args')
                 error = run_check_tool(standard["check_tool"], args, verbose, quiet)
                 if output:
-                    standard.update({"result" : error})
+                    version_index = report[layer]["versions"].index(bestversion)
+                    standard_index = bestversion["standards"].index(standard)
+                    report[layer]["versions"][version_index]["standards"][standard_index]["result"] = error
             if not optional:
                 errors += error
             if not quiet and "check_tool" in standard:
                 print(f"... returned {error}")
-            if output:
-                report.update({layer : {"versions": [bestversion]}})
             for kwd in standard:
-                if kwd not in ('check_tool', 'check_tool_args', 'url', 'name', 'condition', 'result'):
+                if kwd not in ('check_tool', 'check_tool_args', 'url', 'name', 'condition'):
                     print(f"ERROR in spec: standard.{kwd} is an unknown keyword", file=sys.stderr)
         if output:
-            # TODO: Add overall result to {layer}.versions.{version}.result
+            report[layer]["versions"][version_index]["result"] = errors
+            report[layer]["versions"][version_index]["checked_at"] = checkdate
             with open(output, 'w') as file:
                 output = yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)
         if not quiet:
             print("*******************************************************")
-        print(f"Verdict for cloud {os.environ['OS_CLOUD']}, layer {layer}, "
+            print(f"Verdict for cloud {os.environ['OS_CLOUD']}, layer {layer}, "
               f"version {bestversion['version']}: {errcode_to_text(errors)}")
         allerrors += errors
     return allerrors
