@@ -10,12 +10,12 @@ The [Sovereign Cloud Stack (SCS)](https://scs.community) provides standards for 
 It strives for interoperable and sovereign cloud offerings which can be deployed and used by a wide range of organizations and individuals.
 
 With a growing number of documents and certification levels for Sovereign Cloud Stack, it is becoming increasingly difficult to keep track
-of all stable as well as all upcoming standards. This document describes the standard we use to technically describe certification levels and
-the mandatory standards therein.
+of all stable, obsoleted as well as all upcoming standards. This decision record describes how we use technically describe 
+certification levels and the mandatory standards therein.
 
 # Motivation
 
-This standard has three main objectives:
+This decision record has three main objectives:
 - to provide an overview of the mandatory standards for the different SCS certification levels
 - to make the lifecycle of certification levels traceable
 - to provide a machine-readable document for further processing (e.g. for a compliance tool suite or continuous integration).
@@ -89,15 +89,15 @@ Every layer keeps record of the whole history of defined standards in a `version
 ## Time evolution
 
 Every version of the standard has a date at which it is effective (`stabilized_at`)
-and may have an expiration date (`replaced_at`).
+and may have an expiration date (`obsoleted_at`).
 
 | Key 	| Type 	| Description 	| Example   |
 |-----	|------	|-------------	|---------- |
 | `{layer}.versions.stabilized_at` | Date | ISO formatted date indicating the date after which the set of standards was considered stable | _2022-11-09_ |
-| `{layer}.versions.replaced_at` | Date | ISO formatted date indicating the date on which this version of the standard can no longer be used for certification | _2023-04-09_ |
+| `{layer}.versions.obsoleted_at` | Date | ISO formatted date indicating the date on which this version of the standard can no longer be used for certification | _2023-04-09_ |
 
 Note that at any point in time, all versions that are older (`stabilized_at` is at or before this point)
-can be certified against, unless the version is already obsoleted (the opint is after `replaced_at`).
+can be certified against, unless the version is already obsoleted (the point is after `obsoleted_at`).
 This means that more than one version may be allowable at a certain point in time. Tooling should default
 to use the newest allowable version (the one with the most recent `stabilized_at` date) then.
 
@@ -125,7 +125,7 @@ iaas:
   versions:
     - version: v5  # This version is in a draft state and work in progress
       stabilized_at: 2022-11-09
-      replaced_at: 2023-04-09
+      obsoleted_at: 2023-04-09
       standards:
         - name: Flavor naming
           url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md
@@ -142,13 +142,13 @@ iaas:
 
     - version: v3  # This is the stable set of standards that us currently active
       stabilized_at: 2021-10-01
-      replaced_at: 2022-11-08
+      obsoleted_at: 2022-11-08
       standards:
         - name: ....
 
     - version: v2  # This set of standards is obsolete and has been replaced by v3
-      stabilizied_at: 2021-07-01
-      replaced_at: 2021-11-01
+      stabilized_at: 2021-07-01
+      obsoleted_at: 2021-11-01
       standards:
         - name: ....
  kaas:
@@ -172,8 +172,8 @@ in accordance to the current plan of the SIG Standardization & Certification, we
 certification for now.
 
 # Tooling
-The SCS repository Docs has a tool `scs-compliance-check.py` tool in the `Design-Docs/tools` directory
-which parses the SCS Certficiation YAML and then runs the tests referenced there, returning the results
+The SCS repository Docs has a tool `scs-compliance-check.py` in the `Design-Docs/tools` directory
+which parses the SCS Certification YAML and then runs the tests referenced there, returning the results
 of the tests.
 
 # Open Questions

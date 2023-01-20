@@ -42,13 +42,13 @@ def usage():
     print(" -c/--os-cloud CLOUD: Use specified cloud env (instead of OS_CLOUD env var)")
 
 
-def is_valid_standard(now, stable, replace):
-    "Check if now is after stable and not after replace"
+def is_valid_standard(now, stable, obsolete):
+    "Check if now is after stable and not after obsolete"
     if not stable:
         return False
     if now < stable:
         return False
-    if replace and now > replace:
+    if obsolete and now > obsolete:
         return False
     return True
 
@@ -92,7 +92,7 @@ def search_version(layerdict, checkdate, forceversion=None):
         if forceversion and forceversion == versdict["version"]:
             return versdict
         stabilized = dictval(versdict, "stabilized_at")
-        if is_valid_standard(checkdate, stabilized, dictval(versdict, "replaced_at")):
+        if is_valid_standard(checkdate, stabilized, dictval(versdict, "obsoleted_at")):
             diffdays = checkdate - stabilized
             if diffdays < bestdays:
                 bestdays = diffdays
