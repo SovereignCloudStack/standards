@@ -1,7 +1,0 @@
-# K8s manifest summary
-
-| | Smoke test |
-| --- | --- |
-{% for repo in repos -%}
-| [{{ repo.name }}](https://github.com/SovereignCloudStack/{{ repo.name }}) | ![X](https://github.com/SovereignCloudStack/{{ repo.name }}/workflows/CI/badge.svg) |
-{% endfor %}
