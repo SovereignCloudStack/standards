@@ -201,8 +201,10 @@ def main(argv):
             # TODO: Add overall result to {layer}.versions.{version}.result
             with open(output, 'w') as file:
                 output = yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)
-        print(f"Verdict for layer {layer}, version {bestversion['version']}: "
-              f"{errcode_to_text(errors)}")
+        if not quiet:
+            print("*******************************************************")
+        print(f"Verdict for cloud {os.environ['OS_CLOUD']}, layer {layer}, "
+              f"version {bestversion['version']}: {errcode_to_text(errors)}")
         allerrors += errors
     return allerrors
 
