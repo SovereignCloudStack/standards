@@ -2,6 +2,14 @@
 
 [![Creative Commons Attribution-ShareAlike 4.0 International](https://licensebuttons.net/l/by-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-sa/4.0/)
 
+> :warning: The /Docs repository has been split up into:
+>
+> 1. [standards](https://github.com/SovereignCloudStack/standards) repository – containing ADRs and related files.
+> 2. [release-notes](https://github.com/SovereignCloudStack/release-notes) repository – containing only SCS Release Notes.
+> 3. This [docs](https://github.com/SovereignCloudStack/docs) repository – containing the entry point for documentation to SCS.
+>
+> The [docs](https://github.com/SovereignCloudStack/docs) and [release-notes](https://github.com/SovereignCloudStack/release-notes) are also part of the SCS rendered documentation page [Documentation Page](https://docs.scs.community/) which is built from [docs-page](https://github.com/SovereignCloudStack/docs-page) source
+
 # What is SCS? Why should I care?
 
 Please see our [public web site](https://scs.community/) and specifically
