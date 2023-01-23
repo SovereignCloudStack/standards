@@ -1,5 +1,5 @@
 ---
-title: SCS K8S Version Policy
+title: SCS K8S Version Policy for new Kubernetes versions
 type: Standard
 status: Draft
 track: KaaS
