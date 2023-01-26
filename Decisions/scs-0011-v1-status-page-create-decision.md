@@ -14,7 +14,8 @@ serving infrastructure. Whether a service is not reachable or
 the used hardware is having an outage we want the consumers to be easily informed
 by using a "Status Page" application. The need for a "Status Page"
 came up early in Team OPS and the requirements a "Status Page" application 
-has to fulfill were defined and written down on 2022-06-02 [see](https://github.com/SovereignCloudStack/issues/issues/123).
+has to fulfill were defined and written down on 2022-06-02 as a 
+[MVP-0 epic](https://github.com/SovereignCloudStack/issues/issues/123).
 The upcoming research on existing solutions came to the conclusion that we want to
 create a new "Status Page" application.
 
@@ -27,14 +28,16 @@ decision to create a new "Status Page" application.
 Before the decision was made some existing and known applications were tested
 and analyzed if they would fit to our use case. An overview of this
 comparsion can be found [here](https://github.com/SovereignCloudStack/Docs/blob/main/Decisions/status-page-comparison.md)
-This is most likely not a complete list of all existing applications but it
-was used as a basis to decide whether to create a new application, that
-will indeed consume development resources, or to contribute to another project.
+While this is not not a complete list of all existing applications it did
+capture the most promising ones from the [awesome-status-page list](https://github.com/ivbeg/awesome-status-pages)
+in order to have base to decide upon.
 
-As you may notice the list contains projects that do not fit in a meaningful manner
-and potential candidates we could contribute to. But in these cases where
-contribution seems possible the candidates looked abandoned
-and long existing CVEs weren't worked on.
+Work on an existing project only makes sense if the project is healthy OR can be
+brought into a healthy state. If upstream does not accept patches a fork is needed.
+The fork however only makes sense if the underlying technology is worth to be maintained.
+The possible candidates did not fullfill these - in the cases where
+contribution seemed possible the candidates looked abandoned and long existing CVEs weren't
+worked on.
 
 # Decision
 
@@ -125,6 +128,3 @@ the status page.
 
 [Architecture design documentation](https://github.com/joshmue/scs-docs/tree/statuspage-design/Design-Docs/statuspage)
 
-# Conformance Tests
-
-TODO: Conformance Tests for ADRs?
