@@ -39,11 +39,12 @@ SCS cloud of course) checking out the code from
 
 # Existing SCS Clouds
 
-A few production clouds are already based on SCS: betacloud and PlusCloud Open.
+A few production clouds are already based on SCS: betacloud and pluscloud open.
 More will come soon.
 
-For PlusCloud Open, there is also a document how to
-[get started guide for the PlusCloud Demonstrator env](PlusDemonstrator/GettingStarted.MD).
+The SCS Community partners (PlusServer, Wavecon, etc.) are providing pro-bono
+resources to further the development of the Project. The resources provided can
+be found [here](Contributor-Docs/partners/cloud-resources.md).
 
 CityNetwork, Open Telekom Cloud, OVH clouds are also known to support the
 testbed well. (There are a few caveats with the latter two, but those are
@@ -69,7 +70,7 @@ not found in the SCS namespace.
 SCS R0 has been released on 2021-07-15 and bundles the work
 accomplished by the community prior to the full start of the project.
 
-See [Release Notes for R0](Release-Notes/Release0.md) for more information.
+See [Release Notes for R0](https://github.com/SovereignCloudStack/release-notes/blob/main/Release0.md) for more information.
 
 ## Release 1 (2021-09-29)
 
@@ -77,14 +78,14 @@ R1 came quickly after R0 and was the first release to ship a production ready k8
 (with k8s cluster API), some identity federation integration and much improved
 preconfiguration for monitoring and logging.
 
-See [Release Notes for R1](Release-Notes/Release1.md) for more information.
+See [Release Notes for R1](https://github.com/SovereignCloudStack/release-notes/blob/main/Release1.md) for more information.
 
 ## Release 2 (2022-03-23)
 
 This release delivers vast improvements for bare metal automation
 and the features in the container layers.
 
-See [Release Notes for R2](Release-Notes/Release2.md) for more information.
+See [Release Notes for R2](https://github.com/SovereignCloudStack/release-notes/blob/main/Release2.md) for more information.
 
 ## Release 3 (2022-09-21)
 
@@ -92,7 +93,7 @@ Release 3 features user federation, increase in deployment and upgrade
 velocity by improving automated test coverage as well as bringing disk encryption
 based on tang from the state of a technical preview to be fully supported.
 
-See [Release Notes for R3](Release-Notes/Release3.md) for more information.
+See [Release Notes for R3](https://github.com/SovereignCloudStack/release-notes/blob/main/Release3.md) for more information.
 
 ## Roadmap
 
