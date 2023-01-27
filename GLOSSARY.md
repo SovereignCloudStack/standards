@@ -135,4 +135,3 @@ A Ceph OSD (Object Storage Daemon) logically represents a storage device in a Ce
 |SCS Integrator|The SCS Integrator assists in or is building up a standardized cloud environment. The SCS Integrator can be 2nd or 3rd level support for the SCS Operator.|
 |SCS Project|The SCS Project oversees the overall activities around the Sovereign Cloud Stack.|
 |SCS Developer|The SCS Developer actively contributes to technical elements of the Sovereign Cloud Stack.|
-

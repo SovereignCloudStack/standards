@@ -4,7 +4,7 @@ The Developer Certificate of Origin (DCO) is a lightweight way for contributors
 to certify that they wrote or otherwise have the right to submit the code they
 are contributing to the Sovereign Cloud Stack.
 
-```
+```bash
 By making a contribution to this project, I certify that:
 
 (a) The contribution was created in whole or in part by me and I
@@ -41,7 +41,7 @@ Own documentation content is licensed under [Creative Commons BY-SA 4.0](https:/
 Contributors sign-off that they adhere to these requirements by adding a `Signed-off-by`
 line to commit messages.
 
-```
+```bash
 My fancy commit message
 
 Signed-off-by: Christian Berendt <berendt@betacloud-solutions.de>
@@ -49,7 +49,7 @@ Signed-off-by: Christian Berendt <berendt@betacloud-solutions.de>
 
 Git has a `-s` command line option to append this automatically to your commit message:
 
-```
+```bash
 git commit -s -m 'My fancy commit message'
 ```
 
