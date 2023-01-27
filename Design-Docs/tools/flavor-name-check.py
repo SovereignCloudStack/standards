@@ -566,31 +566,6 @@ def readmandflavors(fnm):
 # Default file name for mandatpry flavors
 mandFlavorFile = "SCS-Spec.MandatoryFlavors.yaml"
 
-# Path to the python script, used to search mandatory flavor YAML file
-_bindir = sys.argv[0]
-_bindir_pidx = _bindir.rfind('/')
-if _bindir_pidx != -1:
-	_bindir = (_bindir[:_bindir_pidx],)
-else:
-	_bindir = os.environ('PATH').split(':')
-
-def readmandflavors(fnm):
-    "Read mandatory flavors from passed YAML file, search in a few paths"
-    import yaml
-    searchpath = (".",  *_bindir, '/opt/share/SCS')
-    if fnm.rfind('/') == -1:
-        for sp in searchpath:
-            tnm = "%s/%s" % (sp, fnm)
-            if debug:
-                print("Search %s" % tnm)
-            if os.access(tnm, os.R_OK):
-                fnm = tnm
-                break
-    yamldict = yaml.safe_load(open(fnm, "r"))
-    return yamldict["SCS-Spec"]["MandatoryFlavors"]
-
-# Default file name for mandatpry flavors
-mandFlavorFile = "SCS-Spec.MandatoryFlavors.yaml"
 
 def main(argv):
     "Entry point when used as selfstanding tool"
