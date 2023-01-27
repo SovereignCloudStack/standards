@@ -42,6 +42,7 @@ def usage():
     print(" -c/--os-cloud CLOUD: Use specified cloud env (instead of OS_CLOUD env var)")
     print(" -o/--output path: Generate report of compliance check under given path")
 
+
 def is_valid_standard(now, stable, obsolete):
     "Check if now is after stable and not after obsolete"
     if not stable:
@@ -81,6 +82,7 @@ def dictval(dct, key):
     if key in dct:
         return dct[key]
     return None
+
 
 def search_version(layerdict, checkdate, forceversion=None):
     "Return dict with latest matching version, None if not found"
@@ -151,7 +153,7 @@ def main(argv):
     with open(args[0], "r", encoding="UTF-8") as specfile:
         specdict = yaml.load(specfile, Loader=yaml.SafeLoader)
     allerrors = 0
-    report = dict()
+    report = {}
     if output:
         for key in "name", "url":
             report[key] = dictval(specdict, key)
@@ -173,7 +175,7 @@ def main(argv):
             print(f"WARNING: No standards defined yet for {layer} version {bestversion['version']}",
                   file=sys.stderr)
         if output:
-            report[layer] = dict()
+            report[layer] = {}
             report[layer]["versions"] = [bestversion.copy()]
         for standard in bestversion["standards"]:
             optional = False
@@ -210,7 +212,7 @@ def main(argv):
         if not quiet:
             print("*******************************************************")
             print(f"Verdict for os_cloud {os.environ['OS_CLOUD']}, layer {layer}, "
-              f"version {bestversion['version']}: {errcode_to_text(errors)}")
+                  f"version {bestversion['version']}: {errcode_to_text(errors)}")
         allerrors += errors
     return allerrors
 
