@@ -155,6 +155,9 @@ def main(argv):
     if output:
         for key in "name", "url":
             report[key] = dictval(specdict, key)
+        report["os_cloud"] = os.environ["OS_CLOUD"]
+        # TODO: Add kubeconfig context as well
+        report["checked_at"] = checkdate
     if "depends_on" in specdict and not single_layer:
         print("WARNING: depends_on not yet implemented!", file=sys.stderr)
     # Iterate over layers
@@ -192,22 +195,21 @@ def main(argv):
                 if output:
                     version_index = report[layer]["versions"].index(bestversion)
                     standard_index = bestversion["standards"].index(standard)
-                    report[layer]["versions"][version_index]["standards"][standard_index]["result"] = error
+                    report[layer]["versions"][version_index]["standards"][standard_index]["errors"] = error
             if not optional:
                 errors += error
             if not quiet and "check_tool" in standard:
-                print(f"... returned {error}")
+                print(f"... returned {error} errors")
             for kwd in standard:
                 if kwd not in ('check_tool', 'check_tool_args', 'url', 'name', 'condition'):
                     print(f"ERROR in spec: standard.{kwd} is an unknown keyword", file=sys.stderr)
         if output:
-            report[layer]["versions"][version_index]["result"] = errors
-            report[layer]["versions"][version_index]["checked_at"] = checkdate
+            report[layer]["versions"][version_index]["errors"] = errors
             with open(output, 'w') as file:
                 output = yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)
         if not quiet:
             print("*******************************************************")
-            print(f"Verdict for cloud {os.environ['OS_CLOUD']}, layer {layer}, "
+            print(f"Verdict for os_cloud {os.environ['OS_CLOUD']}, layer {layer}, "
               f"version {bestversion['version']}: {errcode_to_text(errors)}")
         allerrors += errors
     return allerrors
