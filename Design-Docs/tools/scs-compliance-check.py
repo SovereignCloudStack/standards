@@ -28,6 +28,7 @@ import getopt
 # import time
 import datetime
 import subprocess
+import copy
 import yaml
 
 
@@ -176,7 +177,7 @@ def main(argv):
                   file=sys.stderr)
         if output:
             report[layer] = {}
-            report[layer]["versions"] = [bestversion.copy()]
+            report[layer]["versions"] = [copy.deepcopy(bestversion)]
         for standard in bestversion["standards"]:
             optional = False
             optstr = ""
@@ -195,7 +196,7 @@ def main(argv):
                 args = dictval(standard, 'check_tool_args')
                 error = run_check_tool(standard["check_tool"], args, verbose, quiet)
                 if output:
-                    version_index = report[layer]["versions"].index(bestversion)
+                    version_index = 0  # report[layer]["versions"].index(bestversion)
                     standard_index = bestversion["standards"].index(standard)
                     report[layer]["versions"][version_index]["standards"][standard_index]["errors"] = error
             if not optional:
@@ -207,7 +208,7 @@ def main(argv):
                     print(f"ERROR in spec: standard.{kwd} is an unknown keyword", file=sys.stderr)
         if output:
             report[layer]["versions"][version_index]["errors"] = errors
-            with open(output, 'w') as file:
+            with open(output, 'w', encoding='UTF-8') as file:
                 output = yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)
         if not quiet:
             print("*******************************************************")
