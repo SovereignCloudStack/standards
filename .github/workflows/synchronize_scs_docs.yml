@@ -1,13 +1,8 @@
 ---
 name: Synchronize SCS Docs
 
-"on":
-  push:
-    paths:
-    # only trigger the workflow when docs.json has been changed
-      - 'docs.json'
-    branches:
-      - main
+on:
+  workflow_call:
 
 jobs:
   provide_repos_json:
@@ -21,7 +16,7 @@ jobs:
       - name: Set Matrix
         id: set-matrix
         run: |
-          REPOS=$(echo $(cat ././docs.json) | sed 's/ //g' )
+          REPOS=$(echo $(cat ././docs.package.json) | sed 's/ //g' )
           echo "::set-output name=matrix::$REPOS"
   
   sync_repos:
@@ -50,11 +45,11 @@ jobs:
 
       - name: create docusaurus subdirectory
         run: |
-          mkdir $(pwd)/docs/${{matrix.repos.name}} || true
+          mkdir $(pwd)/${{matrix.repos.target}}/${{matrix.repos.name}} || true
 
       - name: copy docs content from A to B
         run: |
-          cp -r $(pwd)/repo_to_be_edited/{{matrix.repos.directory}}/* $(pwd)/docs/${{matrix.repos.name}}
+          cp -r $(pwd)/repo_to_be_edited/${{matrix.repos.directory}}/*.md $(pwd)/${{matrix.repos.target}}/${{matrix.repos.name}}
           
       - name: remove repo A
         run: |

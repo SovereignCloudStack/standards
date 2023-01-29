@@ -1,0 +1,26 @@
+[
+    {
+        "name": "docs",
+        "org": "SovereignCloudStack",
+        "directory": "docs/operations",
+        "target": "docs"
+    },
+    {
+        "name": "release-notes",
+        "org": "SovereignCloudStack",
+        "directory": "release-notes",
+        "target": "docs"
+    },
+    {
+        "name": "standards",
+        "org": "SovereignCloudStack",
+        "directory": "standards/standards",
+        "target": "docs"
+    },
+    {
+        "name": "docs",
+        "org": "SovereignCloudStack",
+        "directory": "docs/community",
+        "target": "community"
+    }
+]
