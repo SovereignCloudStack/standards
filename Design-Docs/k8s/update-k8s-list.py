@@ -3,8 +3,10 @@ import jinja2
 
 repos = Github().get_organization('SovereignCloudStack').get_repos()
 
+
 def looks_like_k8s_repo(repo):
     return repo.name.startswith('k8s-')
+
 
 repos = filter(looks_like_k8s_repo, repos)
 
