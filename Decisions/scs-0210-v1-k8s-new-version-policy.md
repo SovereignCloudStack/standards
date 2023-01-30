@@ -1,7 +1,8 @@
 ---
 title: SCS K8S Version Policy for new Kubernetes versions
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2023-02-06
 track: KaaS
 ---
 
