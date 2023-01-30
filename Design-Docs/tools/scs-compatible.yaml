@@ -6,11 +6,13 @@ iaas:
     standards:
       - name: Flavor naming
         url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v2-flavor-naming.md
-        check_tool: flavor-names-openstack.py
+        check_tools:
+          - url: flavor-names-openstack.py
         condition: mandatory
       - name: Image metadata
         url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
-        check_tool: image-md-check.py
+        check_tools:
+          - url: image-md-check.py
         condition: mandatory
       - name: OpenStack Powered Compute v2022.06
         url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.06.json
@@ -21,12 +23,16 @@ iaas:
     standards:
       - name: Flavor naming
         url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md
-        check_tool: flavor-names-openstack.py
+        check_tools:
+          - url: flavor-names-openstack.py
+          - url: flavor-name-check.py
+            args: SCS-1V:4:10
         condition: mandatory
       - name: Image metadata
         url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
-        check_tool: image-md-check.py
-        check_tool_args: -v
+        check_tools:
+          - url: image-md-check.py
+            args: -v
         condition: mandatory
       - name: OpenStack Powered Compute v2020.11
         url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2020.11.json
