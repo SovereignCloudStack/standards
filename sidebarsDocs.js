@@ -22,7 +22,7 @@ const sidebarsDocs = {
         'standards/scs-0001-v1-sovereign-cloud-standards',
         'standards/scs-xxxx-v1-sovereign-cloud-standards-yaml'
       ]
-    },
+    }
     /* No documents available yet in https://github.com/SovereignCloudStack/docs/tree/main/operations
     {
       type: 'category',
@@ -35,17 +35,17 @@ const sidebarsDocs = {
       ]
     },
     */
-    {
-      type: 'category',
-      label: 'Openstack Image Manager',
-      items: [
-        'openstack-image-manager/configuration',
-        'openstack-image-manager/contribute',
-        'openstack-image-manager/overview',
-        'openstack-image-manager/quickstart',
-        'openstack-image-manager/requirements'
-      ]
-    }
+    // {
+    //   type: 'category',
+    //   label: 'Openstack Image Manager',
+    //   items: [
+    //     'openstack-image-manager/configuration',
+    //     'openstack-image-manager/contribute',
+    //     'openstack-image-manager/overview',
+    //     'openstack-image-manager/quickstart',
+    //     'openstack-image-manager/requirements'
+    //   ]
+    // }
   ]
 }
 

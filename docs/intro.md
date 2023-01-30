@@ -76,7 +76,7 @@ not found in the SCS namespace.
 SCS R0 has been released on 2021-07-15 and bundles the work
 accomplished by the community prior to the full start of the project.
 
-See [Release Notes for R0](/docs/release%20notes/Release0.md) for more information.
+See [Release Notes for R0](/docs/release-notes/Release0.md) for more information.
 
 ### Release 1 (2021-09-29)
 
@@ -84,14 +84,14 @@ R1 came quickly after R0 and was the first release to ship a production ready k8
 (with k8s cluster API), some identity federation integration and much improved
 preconfiguration for monitoring and logging.
 
-See [Release Notes for R1](/docs/release%20notes/Release1.md) for more information.
+See [Release Notes for R1](/docs/release-notes/Release1.md) for more information.
 
 ### Release 2 (2022-03-23)
 
 This release delivers vast improvements for bare metal automation
 and the features in the container layers.
 
-See [Release Notes for R2](/docs/release%20notes/Release2.md) for more information.
+See [Release Notes for R2](/docs/release-notes/Release2.md) for more information.
 
 ### Release 3 (2022-09-21)
 
@@ -99,7 +99,7 @@ Release 3 features user federation, increase in deployment and upgrade
 velocity by improving automated test coverage as well as bringing disk encryption
 based on tang from the state of a technical preview to be fully supported.
 
-See [Release Notes for R3](/docs/release%20notes/Release3.md) for more information.
+See [Release Notes for R3](/docs/release-notes/Release3.md) for more information.
 
 ### Roadmap
 

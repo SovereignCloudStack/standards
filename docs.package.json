@@ -1,26 +1,26 @@
 [
     {
-        "name": "docs",
-        "org": "SovereignCloudStack",
-        "directory": "docs/operations",
-        "target": "docs"
+        "repo": "SovereignCloudStack/docs",
+        "source": "community/contribute",
+        "target": "community",
+        "label": ""
     },
     {
-        "name": "release-notes",
-        "org": "SovereignCloudStack",
-        "directory": "release-notes",
-        "target": "docs"
+        "repo": "SovereignCloudStack/docs",
+        "source": "operations",
+        "target": "docs",
+        "label": ""
     },
     {
-        "name": "standards",
-        "org": "SovereignCloudStack",
-        "directory": "standards/standards",
-        "target": "docs"
+        "repo": "SovereignCloudStack/release-notes",
+        "source": "*.md",
+        "target": "docs",
+        "label": "release-notes"
     },
     {
-        "name": "docs",
-        "org": "SovereignCloudStack",
-        "directory": "docs/community",
-        "target": "community"
+        "repo": "SovereignCloudStack/standards",
+        "source": "Standards/*.md",
+        "target": "docs",
+        "label": "standards"
     }
 ]
