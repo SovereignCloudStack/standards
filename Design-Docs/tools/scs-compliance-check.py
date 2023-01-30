@@ -106,7 +106,7 @@ def search_version(layerdict, checkdate, forceversion=None):
     "Return dict with latest matching version, None if not found"
     bestdays = datetime.timedelta(999999999)    # Infinity
     bestversion = None
-    for versdict in layerdict["versions"]:
+    for versdict in layerdict:
         # print(f'Version {versdict["version"]}')
         if forceversion and forceversion == versdict["version"]:
             return versdict
@@ -193,8 +193,7 @@ def main(argv):
             print(f"WARNING: No standards defined yet for {layer} version {bestversion['version']}",
                   file=sys.stderr)
         if output:
-            report[layer] = {}
-            report[layer]["versions"] = [copy.deepcopy(bestversion)]
+            report[layer] = [copy.deepcopy(bestversion)]
         for standard in bestversion["standards"]:
             optional = False
             optstr = ""
@@ -213,9 +212,9 @@ def main(argv):
                 args = dictval(standard, 'check_tool_args')
                 error = run_check_tool(standard["check_tool"], args, verbose, quiet)
                 if output:
-                    version_index = 0  # report[layer]["versions"].index(bestversion)
+                    version_index = 0  # report[layer].index(bestversion)
                     standard_index = bestversion["standards"].index(standard)
-                    report[layer]["versions"][version_index]["standards"][standard_index]["errors"] = error
+                    report[layer][version_index]["standards"][standard_index]["errors"] = error
             if not optional:
                 errors += error
             if not quiet and "check_tool" in standard:
@@ -224,7 +223,7 @@ def main(argv):
                 if kwd not in ('check_tool', 'check_tool_args', 'url', 'name', 'condition'):
                     print(f"ERROR in spec: standard.{kwd} is an unknown keyword", file=sys.stderr)
         if output:
-            report[layer]["versions"][version_index]["errors"] = errors
+            report[layer][version_index]["errors"] = errors
             with open(output, 'w', encoding='UTF-8') as file:
                 output = yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)
         if not quiet:

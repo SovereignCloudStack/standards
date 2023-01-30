@@ -69,8 +69,8 @@ mandatory or optional standards. Every layer is noted as a dedicated map in the 
 
 | Key 	| Type 	| Description 	| Example   |
 |-----	|------	|-------------	|---------- |
-| `iaas` | Map | List of versioned sets of SCS standards for the IaaS layer  | |
-| `kaas` | Map | List of versioned sets of SCS standards for the KaaS layer  | |
+| `iaas` | Array | List of versioned sets of SCS standards for the IaaS layer  | |
+| `kaas` | Array | List of versioned sets of SCS standards for the KaaS layer  | |
 
 Note that we don't currently have separate certification layers for Operations and IAM.
 We expect that tests for these aspects will exist, but be incorporated into the IaaS
@@ -82,9 +82,8 @@ Every layer keeps record of the whole history of defined standards in a `version
 
 | Key 	| Type 	| Description 	| Example   |
 |-----	|------	|-------------	|---------- |
-| `{layer}.versions` | Array of maps | List of all past and upcoming set of standards | |
-| `{layer}.versions.version` | String | Version of the particular list of standards  | _v3_ |
-| `{layer}.versions.standards` | Array of maps | List of standards for this particular layer  | |
+| `{layer}.version` | String | Version of the particular list of standards  | _v3_ |
+| `{layer}.standards` | Array of maps | List of standards for this particular layer  | |
 
 ## Time evolution
 
@@ -93,8 +92,8 @@ and may have an expiration date (`obsoleted_at`).
 
 | Key 	| Type 	| Description 	| Example   |
 |-----	|------	|-------------	|---------- |
-| `{layer}.versions.stabilized_at` | Date | ISO formatted date indicating the date after which the set of standards was considered stable | _2022-11-09_ |
-| `{layer}.versions.obsoleted_at` | Date | ISO formatted date indicating the date on which this version of the standard can no longer be used for certification | _2023-04-09_ |
+| `{layer}.stabilized_at` | Date | ISO formatted date indicating the date after which the set of standards of this version was considered stable | _2022-11-09_ |
+| `{layer}.obsoleted_at` | Date | ISO formatted date indicating the date on which this version of the standard can no longer be used for certification | _2023-04-09_ |
 
 Note that at any point in time, all versions that are older (`stabilized_at` is at or before this point)
 can be certified against, unless the version is already obsoleted (the point is after `obsoleted_at`).
@@ -107,11 +106,11 @@ Every list of standards consists of several standards that – altogether – de
 
 | Key 	| Type 	| Description 	| Example   |
 |-----	|------	|-------------	|---------- |
-| `{layer}.versions.standards.name` | String | Full name of the particular standard | _Flavor naming_ |
-| `{layer}.versions.standards.url` | String |  Valid URL to the latest raw version of the particular standard  | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md_ |
-| `{layer}.versions.standards.check_tool` | String | *Optional* valid local filename (relative to the path of scs-compliance-check.py) or URL to the latest check tool that verifies compliance with the particular standard | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/flavor-name-check.py_ |
-| `{layer}.versions.standards.check_tool_args` | String | *Optional* list of arguments to be passed to the `check_tool`. Preferably none needed. | `-v` |
-| `{layer}.versions.standards.condition` | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory` | _mandatory_ |
+| `{layer}.standards.name` | String | Full name of the particular standard | _Flavor naming_ |
+| `{layer}.standards.url` | String |  Valid URL to the latest raw version of the particular standard  | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md_ |
+| `{layer}.standards.check_tool` | String | *Optional* valid local filename (relative to the path of scs-compliance-check.py) or URL to the latest check tool that verifies compliance with the particular standard | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/flavor-name-check.py_ |
+| `{layer}.standards.check_tool_args` | String | *Optional* list of arguments to be passed to the `check_tool`. Preferably none needed. | `-v` |
+| `{layer}.standards.condition` | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory` | _mandatory_ |
 
 ## Basic Example
 
@@ -122,38 +121,36 @@ depends_on:
   name: SCS Compatible
   url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Certification/scs-compatible.yaml
 iaas:
-  versions:
-    - version: v5  # This version is in a draft state and work in progress
-      stabilized_at: 2022-11-09
-      obsoleted_at: 2023-04-09
-      standards:
-        - name: Flavor naming
-          url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md
-          check_tool: flavor-name-check.py
-          condition: mandatory
-        - name: Image metadata
-          url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
-          check_tool: image-md-check.py
-          condition: optional
-    - version: v4  # This is the upcoming standard with a given target date. No further changes should be done to this set of standards
-      stabilized_at: 2022-04-01
-      standards:
-        - name: ....
+  - version: v5  # This version is in a draft state and work in progress
+    stabilized_at: 2022-11-09
+    obsoleted_at: 2023-04-09
+    standards:
+      - name: Flavor naming
+        url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md
+        check_tool: flavor-name-check.py
+        condition: mandatory
+      - name: Image metadata
+        url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
+        check_tool: image-md-check.py
+        condition: optional
+  - version: v4  # This is the upcoming standard with a given target date. No further changes should be done to this set of standards
+    stabilized_at: 2022-04-01
+    standards:
+      - name: ....
 
-    - version: v3  # This is the stable set of standards that us currently active
-      stabilized_at: 2021-10-01
-      obsoleted_at: 2022-11-08
-      standards:
-        - name: ....
+  - version: v3  # This is the stable set of standards that us currently active
+    stabilized_at: 2021-10-01
+    obsoleted_at: 2022-11-08
+    standards:
+      - name: ....
 
-    - version: v2  # This set of standards is obsolete and has been replaced by v3
-      stabilized_at: 2021-07-01
-      obsoleted_at: 2021-11-01
-      standards:
-        - name: ....
- kaas:
-   versions:
-     - ...
+  - version: v2  # This set of standards is obsolete and has been replaced by v3
+    stabilized_at: 2021-07-01
+    obsoleted_at: 2021-11-01
+    standards:
+      - name: ....
+kaas:
+   - ...
 
 ```
 
