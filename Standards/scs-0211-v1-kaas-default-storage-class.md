@@ -2,7 +2,7 @@
 title: SCS KaaS default storage class
 type: Standard
 status: Stable
-stabilized_at: 2022-02-13
+stabilized_at: 2023-02-13
 track: KaaS
 ---
 
