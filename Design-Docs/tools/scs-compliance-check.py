@@ -55,9 +55,26 @@ def is_valid_standard(now, stable, obsolete):
     return True
 
 
+MYPATH = "."
+
+
+def add_search_path(arg0):
+    """Store path of scs-compliance-check.py to search path, as check tools
+       referenced in compliance.spec might be relative to it.
+    """
+    global MYPATH
+    arg0_pidx = arg0.rfind('/')
+    assert arg0_pidx != -1
+    MYPATH = arg0[:arg0_pidx]
+    # os.environ['PATH'] += ":" + MYPATH
+
+
 def run_check_tool(executable, args, verbose=False, quiet=False):
     "Run executable and return exit code"
-    exe = [executable, ]
+    if executable.startswith("http://") or executable.startswith("https://"):
+        print(f"ERROR: remote check_tool {executable} not yet supported", file=sys.stderr)
+        return "UNSUPPORTED"
+    exe = [MYPATH + "/" + executable, ]
     if args:
         exe.extend(args.split(" "))
     # print(f"{exe}")
@@ -219,4 +236,5 @@ def main(argv):
 
 
 if __name__ == "__main__":
+    add_search_path(sys.argv[0])
     sys.exit(main(sys.argv[1:]))
