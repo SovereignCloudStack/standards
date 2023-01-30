@@ -109,7 +109,7 @@ Every list of standards consists of several standards that – altogether – de
 |-----	|------	|-------------	|---------- |
 | `{layer}.versions.standards.name` | String | Full name of the particular standard | _Flavor naming_ |
 | `{layer}.versions.standards.url` | String |  Valid URL to the latest raw version of the particular standard  | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md_ |
-| `{layer}.versions.standards.check_tool` | String | Valid local filename or URL to the latest check tool that verifies compliance with the particular standard | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/flavor-name-check.py_ |
+| `{layer}.versions.standards.check_tool` | String | *Optional* valid local filename (relative to the path of scs-compliance-check.py) or URL to the latest check tool that verifies compliance with the particular standard | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/flavor-name-check.py_ |
 | `{layer}.versions.standards.check_tool_args` | String | *Optional* list of arguments to be passed to the `check_tool`. Preferably none needed. | `-v` |
 | `{layer}.versions.standards.condition` | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory` | _mandatory_ |
 
@@ -129,11 +129,11 @@ iaas:
       standards:
         - name: Flavor naming
           url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md
-          check_tool: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/flavor-name-check.py
+          check_tool: flavor-name-check.py
           condition: mandatory
         - name: Image metadata
           url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
-          check_tool: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/image-md-check.py
+          check_tool: image-md-check.py
           condition: optional
     - version: v4  # This is the upcoming standard with a given target date. No further changes should be done to this set of standards
       stabilized_at: 2022-04-01
