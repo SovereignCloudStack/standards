@@ -172,15 +172,14 @@ def condition_optional(cond, default=False):
        - If set to something else, error out
        - If unset, return default
     """
-    if not "condition" in cond:
+    if "condition" not in cond:
         return default
     if cond["condition"] == "optional":
         return True
-    elif cond["condition"] == "mandatory":
+    if cond["condition"] == "mandatory":
         return False
-    else:
-        print(f"ERROR in spec parsing condition: {cond['condition']}", file=sys.stderr)
-        return default
+    print(f"ERROR in spec parsing condition: {cond['condition']}", file=sys.stderr)
+    return default
 
 
 def optstr(optional):
@@ -244,7 +243,8 @@ def main(argv):
                     chkidx += 1
                     for kwd in check:
                         if kwd not in ('executable', 'args', 'condition'):
-                            print(f"ERROR in spec: check_tools.{kwd} is an unknown keyword", file=sys.stderr)
+                            print(f"ERROR in spec: check_tools.{kwd} is an unknown keyword",
+                                  file=sys.stderr)
             for kwd in standard:
                 if kwd not in ('check_tools', 'url', 'name', 'condition'):
                     print(f"ERROR in spec: standard.{kwd} is an unknown keyword", file=sys.stderr)
