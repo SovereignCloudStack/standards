@@ -21,7 +21,7 @@ This document attempts to define the properties this default `StorageClass` shou
 
 # Decision
 
-The default `StorageClass` is made default using the `storageclass.kubernetes.io/is-default-class` annotation, following [Kubernetes upstream](storageclass.kubernetes.io/is-default-class). Hence, standardizing its name is not required for the intents of this standard.
+The default `StorageClass` is made default using the `storageclass.kubernetes.io/is-default-class` annotation, following [Kubernetes upstream](https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/). Hence, standardizing its name is not required for the intents of this standard.
 
 ## Required non-performance-related properties
 
