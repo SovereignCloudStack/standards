@@ -16,11 +16,6 @@ jobs:
     steps:
       - name: Checkout the docusaurus repo (B)
         uses: actions/checkout@v3
-
-      - name: remove all previous docs for clean install
-        run: |
-          rm -rf $(pwd)/docs 
-          rm -rf $(pwd)/community 
           
       - name: Set Matrix
         id: set-matrix
@@ -40,6 +35,10 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.PAT }}
+
+      - name: remove previous docs for clean install
+        run: |
+          rm -rf $(pwd)/${{matrix.repos.target}}/${{matrix.repos.label}} 
   
       - name: clone repo A which is about to be synchronized
         uses: sudosubin/git-clone-action@v1.0.1
