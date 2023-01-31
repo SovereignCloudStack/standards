@@ -37,8 +37,15 @@ jobs:
           token: ${{ secrets.PAT }}
 
       - name: remove previous docs for clean install
+        if: ${{matrix.repos.label != null }}
         run: |
           rm -rf $(pwd)/${{matrix.repos.target}}/${{matrix.repos.label}} 
+
+      - name: remove previous docs for clean install
+        if: ${{matrix.repos.label == null }}
+        run: |
+          rm -rf $(pwd)/${{matrix.repos.target}}/${{matrix.repos.source}} 
+          rm -rf $(pwd)/${{matrix.repos.source}} 
   
       - name: clone repo A which is about to be synchronized
         uses: sudosubin/git-clone-action@v1.0.1
