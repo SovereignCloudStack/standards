@@ -108,10 +108,11 @@ Every list of standards consists of several standards that – altogether – de
 |-----	|------	|-------------	|---------- |
 | `{layer}.standards.name` | String | Full name of the particular standard | _Flavor naming_ |
 | `{layer}.standards.url` | String |  Valid URL to the latest raw version of the particular standard  | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md_ |
-| `{layer}.standards.check_tools` | Array | List of `url`, `args` maps that list all tools that must pass | |
-| `{layer}.standards.check_tools.url` | String | *Optional* valid local filename (relative to the path of scs-compliance-check.py) or URL to the latest check tool that verifies compliance with the particular standard | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/flavor-name-check.py_ |
-| `{layer}.standards.check_tools.args` | String | *Optional* list of arguments to be passed to the `check_tool`. Preferably none needed. | `-v` |
 | `{layer}.standards.condition` | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory` | _mandatory_ |
+| `{layer}.standards.check_tools` | Array | List of `url`, `args` maps that list all tools that must pass | |
+| `{layer}.standards.check_tools.executable` | String | Valid local filename (relative to the path of scs-compliance-check.py) or URL to the latest check tool that verifies compliance with the particular standard | _https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Design-Docs/tools/flavor-names-openstack.py_ |
+| `{layer}.standards.check_tools.args` | String | *Optional* list of arguments to be passed to the `check_tool`. Preferably none needed. | `-v` |
+| `{layer}.standards.check_tools.condition` | String | *Optionally* overrides the per-standard condition (`mandatory` or `optional`) | _optional_ |
 
 ## Basic Example
 
