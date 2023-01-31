@@ -31,7 +31,7 @@ jobs:
       - name: checkout the docusaurus repo (B)
         uses: actions/checkout@v3
         with:
-          token: '${{ secrets.PAT }}'
+          token: ${{ secrets.PAT }}
   
       - name: clone repo A which is about to be synchronized
         uses: sudosubin/git-clone-action@v1.0.1
