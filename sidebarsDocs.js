@@ -14,14 +14,6 @@ const sidebarsDocs = {
         'release-notes/Release4',
         'release-notes/ReleaseX'
       ]
-    },
-    {
-      type: 'category',
-      label: 'Standards',
-      items: [
-        'standards/scs-0001-v1-sovereign-cloud-standards',
-        'standards/scs-xxxx-v1-sovereign-cloud-standards-yaml'
-      ]
     }
     /* No documents available yet in https://github.com/SovereignCloudStack/docs/tree/main/operations
     {
