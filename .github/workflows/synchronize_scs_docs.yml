@@ -3,6 +3,7 @@ name: Synchronize SCS Docs
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   provide_repos_json:
