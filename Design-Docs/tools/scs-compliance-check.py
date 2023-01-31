@@ -73,7 +73,14 @@ def run_check_tool(executable, args, verbose=False, quiet=False):
     "Run executable and return exit code"
     if executable.startswith("http://") or executable.startswith("https://"):
         print(f"ERROR: remote check_tool {executable} not yet supported", file=sys.stderr)
-        return "UNSUPPORTED"
+        # TODO: When we start supporting this, consider security concerns
+        # Running downloaded code is always risky
+        # - Certificate pinning for https downloads
+        # - Refuse http
+        # - Check sha256/512 or gpg signature
+        return 999999
+    if executable.startswith("file://"):
+        executable = executable[7:]
     if executable[0] == "/":
         exe = [executable, ]
     else:

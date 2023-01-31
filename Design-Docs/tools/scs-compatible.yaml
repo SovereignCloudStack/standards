@@ -25,7 +25,7 @@ iaas:
         condition: mandatory
         check_tools:
           - executable: flavor-names-openstack.py
-          - executable: flavor-name-check.py
+          - executable: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Design-Docs/tools/flavor-name-check.py
             args: SCS-1V:4:10
             condition: optional
       - name: Image metadata
