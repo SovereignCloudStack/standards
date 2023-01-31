@@ -129,7 +129,7 @@ iaas:
       - name: Flavor naming
         url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md
         check_tools: 
-	  - url: flavor-name-check.py
+          - url: flavor-name-check.py
         condition: mandatory
       - name: Image metadata
         url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
