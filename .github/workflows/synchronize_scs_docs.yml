@@ -17,6 +17,11 @@ jobs:
       - name: Checkout the docusaurus repo (B)
         uses: actions/checkout@v3
 
+      - name: remove all previous docs for clean install
+        run: |
+          rm -rf $(pwd)/docs 
+          rm -rf $(pwd)/community 
+          
       - name: Set Matrix
         id: set-matrix
         run: |

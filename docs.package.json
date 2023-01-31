@@ -16,11 +16,5 @@
         "source": "*.md",
         "target": "docs",
         "label": "release-notes"
-    },
-    {
-        "repo": "SovereignCloudStack/standards",
-        "source": "Standards/*.md",
-        "target": "docs",
-        "label": "standards"
     }
 ]
