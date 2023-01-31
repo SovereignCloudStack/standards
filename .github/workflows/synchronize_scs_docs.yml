@@ -3,6 +3,9 @@ name: Synchronize SCS Docs
 
 on:
   workflow_call:
+    secrets:
+      PAT:
+        required: true
   workflow_dispatch:
 
 jobs:

@@ -9,6 +9,8 @@ on:
 jobs:
   synchronize-scs-docs:
     uses: ./.github/workflows/synchronize_scs_docs.yml
+    secrets:
+      PAT: ${{ secrets.PAT }}
   build_and_staging:
     needs: synchronize-scs-docs
     runs-on: ubuntu-latest
