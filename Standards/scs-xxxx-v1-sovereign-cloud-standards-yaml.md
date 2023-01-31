@@ -92,7 +92,7 @@ and may have an expiration date (`obsoleted_at`).
 
 | Key 	| Type 	| Description 	| Example   |
 |-----	|------	|-------------	|---------- |
-| `{layer}.stabilized_at` | Date | ISO formatted date indicating the date after which the set of standards of this version was considered stable | _2022-11-09_ |
+| `{layer}.stabilized_at` | Date | ISO formatted date indicating the date after which the set of standards of this version was considered stable. Mandatory for standards that have ever been in effect. | _2022-11-09_ |
 | `{layer}.obsoleted_at` | Date | ISO formatted date indicating the date on which this version of the standard can no longer be used for certification | _2023-04-09_ |
 
 Note that at any point in time, all versions that are older (`stabilized_at` is at or before this point)
@@ -110,7 +110,7 @@ Every list of standards consists of several standards that – altogether – de
 | `{layer}.standards.url` | String |  Valid URL to the latest raw version of the particular standard  | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md_ |
 | `{layer}.standards.condition` | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory` | _mandatory_ |
 | `{layer}.standards.check_tools` | Array | List of `url`, `args` maps that list all tools that must pass | |
-| `{layer}.standards.check_tools.executable` | String | Valid local filename (relative to the path of scs-compliance-check.py) or URL to the latest check tool that verifies compliance with the particular standard | _https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Design-Docs/tools/flavor-names-openstack.py_ |
+| `{layer}.standards.check_tools.executable` | String | Valid local filename (relative to the path of scs-compliance-check.py) or URL to the latest check tool that verifies compliance with the particular standard. (URL is not yet supported due to security considertations.) | _image-md-check.py_ |
 | `{layer}.standards.check_tools.args` | String | *Optional* list of arguments to be passed to the `check_tool`. Preferably none needed. | `-v` |
 | `{layer}.standards.check_tools.condition` | String | *Optionally* overrides the per-standard condition (`mandatory` or `optional`) | _optional_ |
 
@@ -124,27 +124,27 @@ depends_on:
   url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Certification/scs-compatible.yaml
 iaas:
   - version: v5  # This version is in a draft state and work in progress
-    stabilized_at: 2022-11-09
-    obsoleted_at: 2023-04-09
+    stabilized_at: 9999-12-31  # No valid date set yet
     standards:
       - name: Flavor naming
         url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md
+        condition: mandatory  # is default and can be left out
         check_tools: 
-          - url: flavor-name-check.py
-        condition: mandatory
+          - executable: flavor-name-check.py
       - name: Image metadata
         url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
+        condition: mandatory
         check_tools:
-          - url: image-md-check.py
+          - executable: image-md-check.py
             args: -v
-          - url: image-md-check2.py
-        condition: optional
+          - executable: image-md-check2.py
+            condition: optional
   - version: v4  # This is the upcoming standard with a given target date. No further changes should be done to this set of standards
     stabilized_at: 2022-04-01
     standards:
       - name: ....
 
-  - version: v3  # This is the stable set of standards that us currently active
+  - version: v3  # This is the stable set of standards that is currently active
     stabilized_at: 2021-10-01
     obsoleted_at: 2022-11-08
     standards:

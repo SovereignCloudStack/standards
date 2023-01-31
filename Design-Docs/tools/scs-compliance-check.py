@@ -73,7 +73,14 @@ def run_check_tool(executable, args, verbose=False, quiet=False):
     "Run executable and return exit code"
     if executable.startswith("http://") or executable.startswith("https://"):
         print(f"ERROR: remote check_tool {executable} not yet supported", file=sys.stderr)
-        return "UNSUPPORTED"
+        # TODO: When we start supporting this, consider security concerns
+        # Running downloaded code is always risky
+        # - Certificate pinning for https downloads
+        # - Refuse http
+        # - Check sha256/512 or gpg signature
+        return 999999
+    if executable.startswith("file://"):
+        executable = executable[7:]
     if executable[0] == "/":
         exe = [executable, ]
     else:
@@ -112,6 +119,9 @@ def search_version(layerdict, checkdate, forceversion=None):
     for versdict in layerdict:
         # print(f'Version {versdict["version"]}')
         if forceversion and forceversion == versdict["version"]:
+            if "stabilized_at" not in versdict:
+                print(f"WARNING: Forced version {forceversion} not stable",
+                      file=sys.stderr)
             return versdict
         stabilized = dictval(versdict, "stabilized_at")
         if is_valid_standard(checkdate, stabilized, dictval(versdict, "obsoleted_at")):
