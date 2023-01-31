@@ -74,7 +74,10 @@ def run_check_tool(executable, args, verbose=False, quiet=False):
     if executable.startswith("http://") or executable.startswith("https://"):
         print(f"ERROR: remote check_tool {executable} not yet supported", file=sys.stderr)
         return "UNSUPPORTED"
-    exe = [MYPATH + "/" + executable, ]
+    if executable[0] == "/":
+        exe = [executable, ]
+    else:
+        exe = [MYPATH + "/" + executable, ]
     if args:
         exe.extend(args.split(" "))
     # print(f"{exe}")
