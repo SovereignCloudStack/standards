@@ -119,6 +119,9 @@ def search_version(layerdict, checkdate, forceversion=None):
     for versdict in layerdict:
         # print(f'Version {versdict["version"]}')
         if forceversion and forceversion == versdict["version"]:
+            if "stabilized_at" not in versdict:
+                print(f"WARNING: Forced version {forceversion} not stable",
+                      file=sys.stderr)
             return versdict
         stabilized = dictval(versdict, "stabilized_at")
         if is_valid_standard(checkdate, stabilized, dictval(versdict, "obsoleted_at")):
