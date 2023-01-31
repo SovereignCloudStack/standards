@@ -74,7 +74,10 @@ def run_check_tool(executable, args, verbose=False, quiet=False):
     if executable.startswith("http://") or executable.startswith("https://"):
         print(f"ERROR: remote check_tool {executable} not yet supported", file=sys.stderr)
         return "UNSUPPORTED"
-    exe = [MYPATH + "/" + executable, ]
+    if executable[0] == "/":
+        exe = [executable, ]
+    else:
+        exe = [MYPATH + "/" + executable, ]
     if args:
         exe.extend(args.split(" "))
     # print(f"{exe}")
@@ -165,6 +168,30 @@ def optparse(argv):
     return (args, verbose, quiet, checkdate, version, single_layer, output)
 
 
+def condition_optional(cond, default=False):
+    """check whether condition is in dict cond
+       - If set to mandatory, return False
+       - If set to optional, return True
+       - If set to something else, error out
+       - If unset, return default
+    """
+    if "condition" not in cond:
+        return default
+    if cond["condition"] == "optional":
+        return True
+    if cond["condition"] == "mandatory":
+        return False
+    print(f"ERROR in spec parsing condition: {cond['condition']}", file=sys.stderr)
+    return default
+
+
+def optstr(optional):
+    "return 'optional ' if True, otherwise ''"
+    if optional:
+        return 'optional '
+    return ''
+
+
 def main(argv):
     """Entry point for the checker"""
     args, verbose, quiet, checkdate, version, single_layer, output = optparse(argv)
@@ -195,32 +222,34 @@ def main(argv):
         if output:
             report[layer] = [copy.deepcopy(bestversion)]
         for standard in bestversion["standards"]:
-            optional = False
-            optstr = ""
-            if "condition" in standard and standard['condition'] == 'optional':
-                optional = True
-                optstr = "optional "
-            # TODO: Check for misspelling of condition
+            optional = condition_optional(standard)
             if not quiet:
                 print("*******************************************************")
-                print(f"Testing {optstr}standard {standard['name']} ...")
+                print(f"Testing {optstr(optional)}standard {standard['name']} ...")
                 print(f"Reference: {standard['url']} ...")
-            if "check_tool" not in standard:
+            if "check_tools" not in standard:
                 print(f"WARNING: No compliance check tool implemented yet for {standard['name']}")
                 error = 0
             else:
-                args = dictval(standard, 'check_tool_args')
-                error = run_check_tool(standard["check_tool"], args, verbose, quiet)
-                if output:
-                    version_index = 0  # report[layer].index(bestversion)
-                    standard_index = bestversion["standards"].index(standard)
-                    report[layer][version_index]["standards"][standard_index]["errors"] = error
-            if not optional:
-                errors += error
-            if not quiet and "check_tool" in standard:
-                print(f"... returned {error} errors")
+                chkidx = 0
+                for check in standard["check_tools"]:
+                    args = dictval(check, 'args')
+                    error = run_check_tool(check["executable"], args, verbose, quiet)
+                    if output:
+                        version_index = 0  # report[layer].index(bestversion)
+                        standard_index = bestversion["standards"].index(standard)
+                        report[layer][version_index]["standards"][standard_index]["check_tools"][chkidx]["errors"] = error
+                    if not condition_optional(check, optional):
+                        errors += error
+                    if not quiet:
+                        print(f"... returned {error} errors")
+                    chkidx += 1
+                    for kwd in check:
+                        if kwd not in ('executable', 'args', 'condition'):
+                            print(f"ERROR in spec: check_tools.{kwd} is an unknown keyword",
+                                  file=sys.stderr)
             for kwd in standard:
-                if kwd not in ('check_tool', 'check_tool_args', 'url', 'name', 'condition'):
+                if kwd not in ('check_tools', 'url', 'name', 'condition'):
                     print(f"ERROR in spec: standard.{kwd} is an unknown keyword", file=sys.stderr)
         if output:
             report[layer][version_index]["errors"] = errors
