@@ -169,3 +169,15 @@ track: _Global | IaaS | Ops | KaaS
   OpenStack Project Router. Logical it works as DSR based Loadbalancing,
   which controled by the Openflow definition of OVN.
    
+   OVN in a small showcase
+  
+   ```
+      openstack loadbalancer create --provider ovn --vip-subnet-id=subnet-test
+      openstack loadbalancer set --name lb1 13f4ff79-0e58-4bf2-8ad6-c2dc0e1d15a3
+
+      openstack loadbalancer pool create --name p1 --loadbalancer lb1 --protocol TCP --lb-algorithm SOURCE_IP_PORT
+
+      openstack loadbalancer member create --address 192.168.112.122 --subnet-id 6816715b-53db-4322-a56a-31b5c537c1b8 --protocol-port 22 p1
+
+      openstack loadbalancer listener create --name l1 --protocol TCP  --protocol-port 2222 --default-pool p1 lb1
+   ```
