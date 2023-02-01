@@ -83,4 +83,4 @@ ansible playbooks again. Details are in the
 
 ## Bug reporting
 
-See [main README](../README.md) file.
+See [main README](https://github.com/SovereignCloudStack/release-notes/blob/main/README.md) file.
