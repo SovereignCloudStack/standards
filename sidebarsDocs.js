@@ -31,7 +31,8 @@ const sidebarsDocs = {
         'release-notes/Release4',
         'release-notes/ReleaseX'
       ]
-    }
+    },
+    'glossary'
     /* No documents available yet in https://github.com/SovereignCloudStack/docs/tree/main/operations
     {
       type: 'category',
