@@ -36,7 +36,7 @@ a complete list. The exact versions of the contained components can be retrieved
 
 ## Get SCS
 
-See [main README](../README.md).
+See [main README](https://github.com/SovereignCloudStack/release-notes/blob/main/README.md).
 
 ## Known Bugs
 
