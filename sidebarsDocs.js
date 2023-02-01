@@ -6,7 +6,24 @@ const sidebarsDocs = {
     'intro',
     {
       type: 'category',
+      label: 'Openstack Image Manager',
+      link: {
+        type: 'generated-index'
+      },
+      items: [
+        'openstack-image-manager/overview',
+        'openstack-image-manager/requirements',
+        'openstack-image-manager/quickstart',
+        'openstack-image-manager/configuration',
+        'openstack-image-manager/contribute'
+      ]
+    },
+    {
+      type: 'category',
       label: 'Release Notes',
+      link: {
+        type: 'generated-index'
+      },
       items: [
         'release-notes/Release1',
         'release-notes/Release2',
@@ -27,17 +44,6 @@ const sidebarsDocs = {
       ]
     },
     */
-    // {
-    //   type: 'category',
-    //   label: 'Openstack Image Manager',
-    //   items: [
-    //     'openstack-image-manager/configuration',
-    //     'openstack-image-manager/contribute',
-    //     'openstack-image-manager/overview',
-    //     'openstack-image-manager/quickstart',
-    //     'openstack-image-manager/requirements'
-    //   ]
-    // }
   ]
 }
 

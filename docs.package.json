@@ -16,5 +16,11 @@
         "source": "*.md",
         "target": "docs",
         "label": "release-notes"
+    },
+    {
+        "repo": "osism/openstack-image-manager",
+        "source": "doc/*.md",
+        "target": "docs",
+        "label": "openstack-image-manager"
     }
 ]

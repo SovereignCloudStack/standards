@@ -32,10 +32,7 @@ const config = {
       'classic',
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
-        docs: {
-          sidebarPath: require.resolve('./sidebarsDocs.js'),
-          editUrl: 'https://github.com/SovereignCloudStack/docs-page/tree/main/'
-        },
+        docs: { sidebarPath: require.resolve('./sidebarsDocs.js') },
         blog: {
           showReadingTime: true,
           editUrl: 'https://github.com/SovereignCloudStack/docs-page/tree/main/'
