@@ -10,12 +10,12 @@ The [Sovereign Cloud Stack (SCS)](https://scs.community) provides standards for 
 It strives for interoperable and sovereign cloud offerings which can be deployed and used by a wide range of organizations and individuals.
 
 With a growing number of documents and certification levels for Sovereign Cloud Stack, it is becoming increasingly difficult to keep track
-of all stable as well as all upcoming standards. This document describes the standard we use to technically describe certification levels and
-the mandatory standards therein.
+of all stable, obsoleted as well as all upcoming standards. This decision record describes how we use technically describe 
+certification levels and the mandatory standards therein.
 
 # Motivation
 
-This standard has three main objectives:
+This decision record has three main objectives:
 - to provide an overview of the mandatory standards for the different SCS certification levels
 - to make the lifecycle of certification levels traceable
 - to provide a machine-readable document for further processing (e.g. for a compliance tool suite or continuous integration).
@@ -64,25 +64,17 @@ on which certification this level is depending on.
 
 ## Layers
 
-The Sovereign Cloud Stack project is compiled of several layers: Infrastructure, Container, IAM and Operations. Every layer may include different
+The Sovereign Cloud Stack project is compiled of several layers: Infrastructure and Container. Every layer may include different
 mandatory or optional standards. Every layer is noted as a dedicated map in the certification YAML.
 
 | Key 	| Type 	| Description 	| Example   |
 |-----	|------	|-------------	|---------- |
-| `iaas` | Map | List of versioned sets of SCS standards for the IaaS layer  | |
-| `kaas` | Map | List of versioned sets of SCS standards for the KaaS layer  | |
-| `iam` | Map | List of versioned sets of SCS standards for the IAM layer  | |
-| `ops` | Map | List of versioned sets of SCS standards for the Ops layer  | |
+| `iaas` | Array | List of versioned sets of SCS standards for the IaaS layer  | |
+| `kaas` | Array | List of versioned sets of SCS standards for the KaaS layer  | |
 
-Every layer map keeps track of the particular SCS standards for this layer and their history over time.
-
-| Key 	| Type 	| Description 	| Example   |
-|-----	|------	|-------------	|---------- |
-| `{layer}.stable` | String | Version of stabilized set of standards for this layer | _v3_ |
-| `{layer}.stabilized_at` | Date | ISO formatted date indicating the date after which the set of standards was considered stable | _2022-11-09_ |
-| `{layer}.upcoming` | String | Version of upcoming set of standards for this layer | _v4_ |
-| `{layer}.replaced_at` | Date | ISO formatted date indicating the date on which the upcoming set of standards will replace the current stable | _2023-04-09_ |
-| `{layer}.versions` | Array of maps | List of all past and upcoming set of standards | |
+Note that we don't currently have separate certification layers for Operations and IAM.
+We expect that tests for these aspects will exist, but be incorporated into the IaaS
+and KaaS layers.
 
 ## Set of standards
 
@@ -90,8 +82,23 @@ Every layer keeps record of the whole history of defined standards in a `version
 
 | Key 	| Type 	| Description 	| Example   |
 |-----	|------	|-------------	|---------- |
-| `{layer}.versions.version` | String | Version of the particular list of standards  | _v3_ |
-| `{layer}.versions.standards` | Array of maps | List of standards for this particular layer  | |
+| `{layer}.version` | String | Version of the particular list of standards  | _v3_ |
+| `{layer}.standards` | Array of maps | List of standards for this particular layer  | |
+
+## Time evolution
+
+Every version of the standard has a date at which it is effective (`stabilized_at`)
+and may have an expiration date (`obsoleted_at`).
+
+| Key 	| Type 	| Description 	| Example   |
+|-----	|------	|-------------	|---------- |
+| `{layer}.stabilized_at` | Date | ISO formatted date indicating the date after which the set of standards of this version was considered stable. Mandatory for standards that have ever been in effect. | _2022-11-09_ |
+| `{layer}.obsoleted_at` | Date | ISO formatted date indicating the date on which this version of the standard can no longer be used for certification | _2023-04-09_ |
+
+Note that at any point in time, all versions that are older (`stabilized_at` is at or before this point)
+can be certified against, unless the version is already obsoleted (the point is after `obsoleted_at`).
+This means that more than one version may be allowable at a certain point in time. Tooling should default
+to use the newest allowable version (the one with the most recent `stabilized_at` date) then.
 
 ## Standards
 
@@ -99,10 +106,13 @@ Every list of standards consists of several standards that – altogether – de
 
 | Key 	| Type 	| Description 	| Example   |
 |-----	|------	|-------------	|---------- |
-| `{layer}.versions.standards.name` | String | Full name of the particular standard | _Flavor naming_ |
-| `{layer}.versions.standards.url` | String |  Valid URL to the latest raw version of the particular standard  | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md_ |
-| `{layer}.versions.standards.check_tool` | String | Valid URL to the latest check tool that verifies compliance with the particular standard | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/flavor-name-check.py_ |
-| `{layer}.versions.standards.condition` | String | State of the particular standard, currently either `mandatory` or `optional` | _mandatory_ |
+| `{layer}.standards.name` | String | Full name of the particular standard | _Flavor naming_ |
+| `{layer}.standards.url` | String |  Valid URL to the latest raw version of the particular standard  | _https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md_ |
+| `{layer}.standards.condition` | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory` | _mandatory_ |
+| `{layer}.standards.check_tools` | Array | List of `url`, `args` maps that list all tools that must pass | |
+| `{layer}.standards.check_tools.executable` | String | Valid local filename (relative to the path of scs-compliance-check.py) or URL to the latest check tool that verifies compliance with the particular standard. (URL is not yet supported due to security considerations.) | _image-md-check.py_ |
+| `{layer}.standards.check_tools.args` | String | *Optional* list of arguments to be passed to the `check_tool`. Preferably none needed. | `-v` |
+| `{layer}.standards.check_tools.condition` | String | *Optionally* overrides the per-standard condition (`mandatory` or `optional`) | _optional_ |
 
 ## Basic Example
 
@@ -113,36 +123,40 @@ depends_on:
   name: SCS Compatible
   url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Certification/scs-compatible.yaml
 iaas:
-  stable: v3
-  stabilized_at: 2022-11-09
-  upcoming: v4
-  replaced_at: 2023-04-09
-  versions:
-    - version: v5  # This version is in a draft state and work in progress
-      standards:
-        - name: Flavor naming
-          url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md
-          check_tool: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/flavor-name-check.py
-          condition: mandatory
-        - name: Image metadata
-          url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
-          check_tool: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Design-Docs/tools/image-md-check.py
-          condition: optional
-    - version: v4  # This is the upcoming standard with a given target date. No further changes should be done to this set of standards
-      standards:
-        - name: ....
+  - version: v5  # This version is in a draft state and work in progress
+    # No stabilized_at: date set yet
+    standards:
+      - name: Flavor naming
+        url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0003-v1-flavor-naming.md
+        condition: mandatory  # is default and can be left out
+        check_tools: 
+          - executable: flavor-name-check.py
+      - name: Image metadata
+        url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
+        condition: mandatory
+        check_tools:
+          - executable: image-md-check.py
+            args: -v
+          - executable: image-md-check2.py
+            condition: optional
+  - version: v4  # This is the upcoming standard with a given target date. No further changes should be done to this set of standards
+    stabilized_at: 2022-04-01
+    standards:
+      - name: ....
 
-    - version: v3  # This is the stable set of standards that us currently active
-      standards:
-        - name: ....
+  - version: v3  # This is the stable set of standards that is currently active
+    stabilized_at: 2021-10-01
+    obsoleted_at: 2022-11-08
+    standards:
+      - name: ....
 
-    - version: v2  # This set of standards is obsolete and has been replaced by v3
-      replaced_by: v3
-      standards:
-        - name: ....
- kaas:
-   stable: v2
-   stabilized_at: ....
+  - version: v2  # This set of standards is obsolete and has been replaced by v3
+    stabilized_at: 2021-07-01
+    obsoleted_at: 2021-11-01
+    standards:
+      - name: ....
+kaas:
+   - ...
 
 ```
 
@@ -159,6 +173,11 @@ domain, the choice is obvious.
 This standard only allows exactly one depending certification, otherwise we would need to use a list of mappings. Since this is
 in accordance to the current plan of the SIG Standardization & Certification, we can safely ignore multiple dependency of
 certification for now.
+
+# Tooling
+The SCS repository Docs has a tool `scs-compliance-check.py` in the `Design-Docs/tools` directory
+which parses the SCS Certification YAML and then runs the tests referenced there, returning the results
+of the tests.
 
 # Open Questions
 
