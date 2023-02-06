@@ -104,6 +104,10 @@ const config = {
                   {
                     label: 'Twitter',
                     href: 'https://twitter.com/scs_osballiance'
+                  },
+                  {
+                    label: 'Mastodon',
+                    href: 'https://fosstodon.org/@sovereigncloudstack'
                   }
                 ]
               },
