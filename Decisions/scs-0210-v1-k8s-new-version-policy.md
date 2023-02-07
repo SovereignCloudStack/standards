@@ -30,10 +30,9 @@ The remaining 2 months are only for:
 
 # Motivation
 
-Kubernetes is a fast paced project. We want to achieve that providers keep up to date with upstream
-and do not fall behind Kubernetes releases.
-This ensures that nodes images are available and can be upgraded to which are up-to-date with respect
-to addressed security issues, bug fixes and new features when using SCS compliant clusters.
+Kubernetes is a fast paced project.
+We want to achieve that providers keep up to date with upstream and do not fall behind Kubernetes releases.
+This ensures that users are able to upgrade their clusters to address security issues, bug fixes and new features when using SCS compliant clusters in regards of Kubernetes.
 However, providers should have reasonable time to implement the new Kubernetes versions and test them.
 
 # Decision
