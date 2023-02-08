@@ -54,10 +54,21 @@ service needs to be really, really robust.
 Customers shall be able to access self service, so that
 they can make reasonable adjustments e.g. to role mapping.
 At the time of writing this document it's still undecided
-if SCS has the requirement of a decicated "self service"
+if SCS has the requirement of a dedicated "self service" service
 that serves as a frontend to provision and re-configure
 customer specific data, abstracting e.g. from IdP specific
 user interface particularities.
+
+Keycloak is currently being deployed as part of the OSISM testbed.
+Technically this IdP component shall be shifted from the management
+plane to be run on the basis of a "minimal" Kubernetes (e.g. K3S),
+e.g. to make use of the "self healing" and scaling features achievable
+with that.
+
+So one of the considerations is if the solution will work well on a
+K8S environment. The instances will need to share configuration
+(probably via the shared backend database) as well as session state.
+Maybe one is better prepared for horizontal scaling than the other.
 
 ## Options considered
 
@@ -93,7 +104,7 @@ Beyond this capability of using other IdPs as identity sources, it also supports
 using classic LDAP based IAM services as backend (OpenLDAP and Active Directory,
 e.g.).
 
-Keycloaks implementation makes some design decisions, that are specific
+Keycloak's implementation makes some design decisions, that are specific
 to it and have consequences for clients of the service. E.g. Keycloak
 has a concept of management "Realms", which have their own specific
 set of HTTP API entrypoints, both for administration as well as for IdP
@@ -123,13 +134,6 @@ Keycloak supports several SQL backends through JDBC. Thus
 it can be hooked up to a Postgres Database or to a
 MariaDB/Galera cluster e.g..
 
-Keycloak is currently being deployed as part of the OSISM testbed.
-Technically this IdP component shall be shifted from the management
-plane to be run on the basis of a "minimal" Kubernetes (e.g. K3S),
-e.g. to make use of the "self healing" and scaling features achievable
-with that. As a central service for identity handling, the IdP
-service needs to be realy really robust.
-
 ### Zitadel
 
 Zitadel is a newer implementation of a SSO IdP. It is implemented
@@ -155,11 +159,8 @@ for SCS to be able use OpenStack CLI and APIs with federated
 identities. At Zitadel there are at least two [Github issues](https://github.com/zitadel/oidc/issues/141)
 proposed to implement this feature.
 
-Currently it still lacks support to consume identity data from LDAP backends.
-This may become relevant in the context of SCS in case we would choose
-an LDAP compliant service to store and retrieve SCS local accounts (or
-account metadata) for example to have ephemeral workload identities in
-the CaaS layer or to track life cycle of SCS artefacts for federated identities.
+At the time of writing it lacks support to consume identity data from LDAP backends.
+But that is currently not a relevant factor in the SCS context.
 
 At time of writing an PoC "spike" is done to assess and verify the hopes
 connected with Zitadel in the context of the SCS testbed.
