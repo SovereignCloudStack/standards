@@ -67,7 +67,7 @@ state: v0.9
     hw_rng:rate_bytes - The allowed amount of bytes for the the guest to read from the host’s entropy per period. hw_rng:rate_period
     ```
     
-    in images must to activate the attribute hw_rng_model: virtio
-    at least on compute nodes must to activate the rng-utils.
-    this is requirement to guarantee to work with a confindent cryptography
+    Images must activate the[ attribute hw_rng_model: virtio
+    On compute nodes the rng-utils must be activated.
+    tThis is a requirement to guarantee working confident cryptography
     in SCS Cloud Infrastructures.  
