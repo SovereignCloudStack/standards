@@ -118,6 +118,14 @@ In addition, the following OPTIONAL sections should be considered:
 The lifecycle of an SCS document goes through the following phases:
 Proposal, Draft, Stable, Deprecated, and Rejected.
 
+```mermaid
+graph TD
+    A[Proposal] -->|Pull Request| B[Draft]
+    B -->|Pull Request| D[Stable]
+    B -->|Pull Request| E[Rejected]
+    D -->|Pull Request| F[Deprecated]
+```
+
 All decisions for phase transitions follow loose consensus,
 where the group which has to form the consensus depends on the `track` of the document:
 
@@ -145,7 +153,7 @@ For a document with a slugified title `flavor-naming`,
 the file name would for instance be `scs-xxxx-v1-flavor-naming.md`.
 
 The metadata MUST indicate the intended `track` and `type` of the document,
-and the `status` MUST be set to `Draft`.
+and the `status` MUST be set to `Proposal`.
 
 Upon acceptance by the group of people identified by the `track`,
 a number is assigned
@@ -159,7 +167,7 @@ if no further discussion is required.
 
 Hereafter,
 the pull request can be merged
-and henceforth the document is an official SCS document in Draft state.
+and henceforth the document is an official SCS document in `Draft` state.
 
 ### Proposal of a major update to a stable document
 
@@ -184,7 +192,7 @@ the file name may be `scs-0390-v4-flavor-naming-this-time-its-serious.md`.
 
 Other than the file naming difference,
 the proposal process is the same as for new documents.
-In particular, the new document starts out in Draft state
+In particular, the new document starts out in `Draft` state
 and does not automatically become part of the normative corpus of an SCS release.
 
 ## Development phase (Draft)
