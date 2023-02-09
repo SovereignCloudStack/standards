@@ -11,7 +11,7 @@ The [Sovereign Cloud Stack (SCS)](https://scs.community) provides standards
 for a range of cloud infrastructure types.
 It strives for interoperable and sovereign cloud stacks
 which can be deployed and used by a wide range of organizations and individuals.
-Whereever feasible,
+Wherever feasible,
 transparency and openness both in respect to the inner workings of the platforms standardised by SCS,
 as well as the SCS organisation itself
 are a paradigm we intend to live.
@@ -132,7 +132,7 @@ where the group which has to form the consensus depends on the `track` of the do
 - IaaS: The team working on infrastructure-as-a-service topics
 - KaaS: The team working on Kubernetes-as-a-service topics
 - Ops: The team working on operations topics
-- IAM: The team working on idenity and access management topics
+- IAM: The team working on identity and access management topics
 - Global: The entire SCS community
 
 ## Proposal phase
@@ -292,7 +292,7 @@ The disadvantages of that approach are:
   when referring to an SCS document.
 
   This implies having to keep all former versions around in a canonical, linkable form.
-  This induces non-trivial organzational and editorial overhead
+  This induces non-trivial organizational and editorial overhead
   and raises questions around which changes are acceptable to "archived" versions,
   if any.
 
