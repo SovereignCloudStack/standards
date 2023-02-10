@@ -5,7 +5,7 @@ status: Draft
 track: _Global | IaaS | Ops | KaaS
 ---
 
-## 1. The Loadbalancer Userstory
+## 1. The Loadbalancer User story
 
    the Terminology of Loadbalancing is a bundle of different types of 
    Loadbalancing, which explain in the Section 2.
@@ -21,9 +21,10 @@ track: _Global | IaaS | Ops | KaaS
 ### 2.1 Definition of typical loadbalancer parts
 
 ![Loadbalancer Overview](LoadbalancerShema1.png)
+
 ### 2.1.1 Listener
 
-   A listener or a virtual server is a Socket, a interface or a 
+   A listener or a virtual server is a Socket, an interface or a 
    ip address with a port definition to accept traffic
 
 ### 2.1.2 Backend
@@ -50,15 +51,17 @@ track: _Global | IaaS | Ops | KaaS
    DNS Based Loadbalancing means to address more then 1 Record to a A
    Record, least the client will cache this entry. if is answer is fault, 
    it will to next.
-   ```
+
+   ```console
    www.example.org       A         1.2.3.4
    www.example.org       A         4.3.2.1 
    ```
+
    A especial form of DNS Loadbalancing is apply to the MX Records, here
    is it possible to address every record with priority count to control
    the loadbalancing scale.
    
-   ```
+   ```console
    mail.example.org       MX       10        mx-01.example.org
    mail.example.org       MX       20        mx-01.example.org
    ```
@@ -69,6 +72,7 @@ track: _Global | IaaS | Ops | KaaS
    the expected performance footprint is irrelevant
 
 ### 2.2.2 Reverse Proxy Loadbalancing
+
    ![Loadbalancer proxy](reverse-proxy.png)
 
    Reverse proxy is a form of loadbalancing, which terminates connections
@@ -84,11 +88,13 @@ track: _Global | IaaS | Ops | KaaS
    the expected performance footprint is minimal.
 
    examples for this are:
-    * [haproxy.org](https://haproxy.org)
-    * [nginx.org](https://nginx.org)
-    * [traefik.io](https://traefik.io/)
+
+   * [haproxy.org](https://haproxy.org)
+   * [nginx.org](https://nginx.org)
+   * [traefik.io](https://traefik.io/)
 
 ### 2.2.3  Direct Routing (NAT Based) Loadbalancing
+
 ![Loadbalancer Nat](natbased.png)
 
    Direct Routing or Network Address Translation Loadbalancing,
@@ -109,69 +115,72 @@ track: _Global | IaaS | Ops | KaaS
    it could be a bottleneck.
 
    example for this are:
+
    * Linux Virtual Server (IPVS) kernel module
-     - which is addapted by [keepalived](https://github.com/acassen/keepalived)
+     - which is adapted by [keepalived](https://github.com/acassen/keepalived)
 
 ### 2.2.4  Direct Server Return Loadbalancing
+
    ![DSR](dsr.png)
 
    Direct Server Return is from the architecture layer beside of the 
-   gateway as own instance and is from the definition a "flatbased" 
+   gateway as own instance and is from the definition a "flat based" 
    form of loadbalancing. In the Direction of Trafficflow, from the
-   public origin source ip to listener. From Listener as clientside,
-   rewrite the clientside ip with the origin source ip to the serverside,
+   public origin source ip to listener. From Listener as client side,
+   rewrite the client side ip with the origin source ip to the server side,
    the responsive member response to origin source ip.
 
 ### 2.2.5  ECMP Loadbalancing
 
    For this form of Loadbalancing, it will use the function of Routers to 
-   forwarding traffic. In Wide Area Network there is often the possiblity
-   to have mulitple datapathes to the dedicate network hops. The idea 
+   forwarding traffic. In Wide Area Network there is often the possibility
+   to have multiple datapathes to the dedicate network hops. The idea 
    behind is to have network redundancy, where are some of this datapathes
    are standby. it is handled by routing protocols to it own metrics or 
    "costs" where datapathes take place. With ECMP or in long form 
    Equal Path Multi Path will realized by insert the route in forward 
    table of a router  to use the same "costs" to a single destination hop. 
-   This means you will have a addition form of scheduling  mechanism 
+   This means you will have an addition form of scheduling  mechanism 
    to manipulate the chosen route. ECMP is expressed in [RFC2992](https://www.rfc-editor.org/rfc/rfc2992)
    the most chosen routing protocol is BGP with Support for scaling
    virtual services.
 
    there two forms of Loadbalancing
 
-   Roundrobin which is known under packet based Loadbalancing
+   Round robin which is known under packet based Loadbalancing
 
    session loadbalancing which will decided with every new session,
    with routes the flow by the first session decision, with schedulers
    round robin, hashed or least recently using.
 
-  ## 2.3.  LBaaS in SCS Clouds
+## 2.3.  LBaaS in SCS Clouds
 
   With OpenStack octavia as project is shipped as Loadbalancer as
   Service in SCS stacks. It works in two scenarios. 
 
-  ### 2.3.1 Amphora Provider
+### 2.3.1 Amphora Provider
+
  ![amphora](Amphora-diagram.png)
 
   The amphora provider with ha-instances of amphora's Amphora works in
   typical OpenStack Projects as instance as single or as HA-Pair. 
   An amphora is instance with interface for management  by octavia 
-  control plane and a amphora-namespace to handle the loadbalancing and
+  control plane and an amphora-namespace to handle the loadbalancing and
   the HA-VIP things itself. In the amphora-namespace itself work haproxy
   as reverse-proxy for http, tcp and TLS termination + keepalived as VRRP 
   and ipvsadm for UDP.
 
-  ### 2.3.2 OVN Provider
+### 2.3.2 OVN Provider
   
-  the Secound Provider in Octavia work with the SDN integration 
+  the Second Provider in Octavia work with the SDN integration 
   Open Virtual Network. The Design it much easier from the architecture
   perspective. the listener is just another router port in the
   OpenStack Project Router. Logical it works as DSR based Loadbalancing,
-  which controled by the Openflow definition of OVN.
+  which controlled by the Openflow definition of OVN.
    
    OVN in a small showcase
   
-   ```
+   ```console
       openstack loadbalancer create --provider ovn --vip-subnet-id=subnet-test
       openstack loadbalancer set --name lb1 13f4ff79-0e58-4bf2-8ad6-c2dc0e1d15a3
 
