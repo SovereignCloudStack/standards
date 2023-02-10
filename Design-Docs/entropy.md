@@ -9,39 +9,37 @@ state: v0.9
 
 ### 1.1. Entropy in information Technology
 
-Entropy is a concept that is widely used in a scope of information 
-technology. It is a measure of the amount of disorder or randomness in
+Entropy is a concept that is widely used in the scope of information 
+technology. It is a measurement of the amount of disorder or randomness in
 a system. Entropy is used to measure the amount of information in a
 self contained systems, as well as the amount of incertitude that exists
 in this system. For cryptographic procedures and operations good entropy 
 is a must have! 
 
-In traditional Baremetal System the amount of incertitude is or was generated
-by the randomness Ready/write cycle of the disk heads of a disk-drive, 
-bus timings or Keyboard Timings.
+In traditional baremetal systems the amount of incertitude is generated
+by the randomness of read/write cycle of the disk heads of a disk-drive, 
+bus timings as well as items such as keyboard timings.
 
 ### 1.2 Entropy in Virtual Instances
 
-A virtual instance or virtual machines does not have these sources
-for random numbers. An instance will operate normally, but if 
-cryptographic operations will happen,  Procedures will take an 
-abnormal long time, because with a small entropy count cryptographic
-operation can not operate in realtime.  Examples are malfunctioning 
-applications and OpenSSL operations that will not work. 
+Virtual instances or virtual machines do not have these sources
+for random numbers. An instance will operate normally, but as
+cryptographic operations happen, procedures will take an abnormal long time,
+because with a small entropy count cryptographic operation can not operate
+in realtime. Examples are malfunctioning applications and OpenSSL
+operations that will not work. 
 
 ```console
   $cat /proc/sys/kernel/random/entropy_avail 
   256
 ```
 
-#### 1.2.1 How to generate Entropy "Out-Of-Nothing" ?
+#### 1.2.1 How to generate entropy "Out-Of-Nothing" ?
 
-One Procedure from the past in virtual machines or virtual appliances
-is to use an entropy daemon, in order to ensure to have a sufficient 
+One procedure that was used in the past in virtual machines or virtual appliances
+was the use of an entropy daemon to ensure that here is a sufficient 
 amount of entropy. Today this is a common operation although for embedded devices.
-HavegeD is one example which use the combination of the Linux random device
-
-[haveged](http://www.issihosts.com/haveged/)
+[HavegeD](http://www.issihosts.com/haveged/) is one of those daemons.
 
 ```console
    $cat /proc/sys/kernel/random/entropy_avail 
@@ -50,12 +48,12 @@ HavegeD is one example which use the combination of the Linux random device
 
 #### 1.2.2 CPU Hardware random number generator
 
-Modern Server CPU's of ARM, AMD and Intel ship Hardware random 
-number generator. This Feature will pass-through to the virtualization
-layer. This will addressed by virtio-rng.
+Modern server CPUs of ARM, AMD and Intel ship Hardware random 
+number generator. This feature will be passed through to the virtualization
+layer. This will be addressed by virtio-rng.
 
-On Baremetal-systems and virtual Instances will need the rng-tools or 
-rng-utils, which will need to running.
+Baremetal systems and virtual instances will need the rng-tools or 
+rng-utils.
 
 ```console
      #cat /proc/sys/kernel/random/entropy_avail
@@ -64,7 +62,7 @@ rng-utils, which will need to running.
 
 ### 1.3  Entropy in SCS Clouds
 
-All flavors will have to have the relevant attributed activated:
+All flavors will have to have the relevant attributes activated:
 
 ```console
 hw_rng:allowed=True
@@ -75,6 +73,8 @@ hw_rng:rate_period
 ```
 
 Images must activate the[ attribute hw_rng_model: virtio
+
 On compute nodes the rng-utils must be activated.
 This is a requirement to guarantee working confident cryptography
 in SCS Cloud Infrastructures.
+
