@@ -4,7 +4,7 @@ This document gives an overview of the test and development cloud resources curr
 
 ## How to request cloud resources
 
-To request access to an existing project, please contact the responsible community member. To apply for a new project, please create a pull request against this document and assign it to the particular CSP team (e.g. @SovereignCloudStack/plusserver, @SovereignCloudStack/wavecon, ...)
+To request access to an existing project, please contact the responsible community member. To apply for a new project, please create a pull request against this document (leave `Unique Identifier` blank) and assign it to the particular CSP team (e.g. @SovereignCloudStack/plusserver, @SovereignCloudStack/wavecon, ...)
 
 ## PlusServer
 
