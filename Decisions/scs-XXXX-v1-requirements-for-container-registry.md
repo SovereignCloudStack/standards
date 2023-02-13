@@ -209,7 +209,67 @@ have and also a set of desirable (nice to have) features are defined and evaluat
 
 **Required features**
 
-TODO
+- Audit Logs
+  - Ability to record use in auditable logs so that activity can be traced to a single user
+- Authentication
+  - Support for multiple authentication systems (IdM integration). User and user account management
+- Authorization
+  - Role-based access control to ensure strict access controls
+- Automation
+  - Integration with CI/CD tools e.g. via webhooks
+- Vulnerability scanning
+  - Reveal security vulnerabilities in container images
+- Content Trust and Validation
+  - Verify image authenticity before running - image signing
+- Multi-tenancy
+  - Container registry is able to serve multiple tenants (projects, teams, namespaces)
+- Backup and restore
+  - It is important for disaster recovery and data migration scenarios
+- Monitoring
+  - Observability is a key feature for operating a service in production so the container registry should expose key metrics
+- HA mode
+  - Ensure system uptime even in the event of a failure
+- Registry replication
+  - Replication allows users to replicate container images between registries of the same instances and between registries of different instances as well
+- Proxy cache (pull-through cache)
+  - Proxy cache allows you to use a container registry to proxy and cache images from a target public or private registry
+- Quota management
+  - Control over resource use
+- Garbage collection
+  - Removing blobs from the filesystem when they are no longer referenced by a manifest
+- Retention policy
+  - Reduce the number of image tags, many of which might not be required after a given time or once a subsequent image tag has superseded them
+
+**Desirable features**
+
+- Additionally supported artifacts
+  - Additional artifacts that the registry is able to store in addition to OCI artifacts, e.g. Java, Node.js, or Python packages
+- Integration possibilities
+  - Ability to cooperate with another software solution in order to improve own feature set (e.g. integration of P2P solution for improving container image distribution (download speed and stability, high scalability ...))
+
+Refer to the table of evaluated projects with their features. Note that only container
+registry implementations that passed the OSS health stage (Harbor, Quay, and Dragonfly)
+are evaluated here.
+
+| Features                       | Harbor                                        | Quay                                                                | Dragonfly                |
+|--------------------------------|-----------------------------------------------|---------------------------------------------------------------------|--------------------------|
+| Audit Logs                     | ✓                                             | ✓                                                                   | ✗                        |
+| Authentication                 | ✓ Local database, LDAP, OIDC, UAA             | ✓ Local database, LDAP, Keystone, JWT                               | ✓ Local database         |
+| Authorization                  | ✓                                             | ✓                                                                   | ✓                        |
+| Automation                     | ✓ Webhooks                                    | ✓ Webhooks, building images                                         | ✗                        |
+| Vulnerability scanning         | ✓ Trivy, Clair                                | ✓ Clair                                                             | ✗                        |
+| Content Trust and Validation   | ✓ Notary, Cosign                              | ✓ Cosign                                                            | ✗                        |
+| Multi-tenancy                  | ✓                                             | ✓                                                                   | ✓                        |
+| Backup and restore             | ✓                                             | ✓                                                                   | ✗                        |
+| Monitoring                     | ✓ Prometheus metrics                          | ✓ Prometheus metrics                                                | ✓ Prometheus metrics     |
+| HA mode                        | ✓                                             | ✓                                                                   | ✗                        |
+| Registry replication           | ✓                                             | ✓                                                                   | ✓                        |
+| Proxy cache                    | ✓                                             | ✓ Feature is in the technology preview stage (non production ready) | ✗                        |
+| Quota management               | ✓ Based on storage consumption or image count | ✓ Based on storage consumption                                      | ✗                        |
+| Garbage collection             | ✓                                             | ✓                                                                   | ✗                        |
+| Retention policy               | ✓ Multiple tag retention rules                | ✓ Only tag expiration rules                                         | ✗                        |
+| Additional supported artifacts | ✓ non-OCI Helm charts (ChartMuseum)           | ✗ (only OCI artifacts)                                              | ✓ Maven, YUM             |
+| Integration possibilities      | ✓ Dragonfly (P2P), Kraken (P2P)               | ✗                                                                   | ✓ Harbor, Nydus, eStargz |
 
 ## Conclusion
 
