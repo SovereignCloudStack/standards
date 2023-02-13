@@ -4,7 +4,7 @@ As Sovereign Cloud Stack ([SCS](https://scs.community/)), our mission is to prov
 (be it Cloud Service Providers or just internal IT departments) with a well working software
 stack, that avoids exposing them to legal risks or additional restrictions that limits the
 usefulness. Free software licenses have this intention but differ in how they achieve it and in
-what kind of protections they provide. In the first approximation, all [OSI](<https://opensource.org/licenses)-approved
+what kind of protections they provide. In the first approximation, all [OSI](https://opensource.org/licenses)-approved
 open source licenses can be considered as valid options. As a matter of fact,
 we do consider projects under such licenses as valid modules for SCS -- where we
 use such projects and adjust or extend them, we would provide our contributions
@@ -76,7 +76,7 @@ the AGPL, GNU GPL, GNU LGPL, MPL or the [OSL](https://opensource.org/licenses/OS
 
 Despite this, many of the recent open source projects, especially in the cloud world
 have adopted permissive licenses, such as X11, BSD 3-clause, MIT and especially the popular
-[Apache software license](https://en.wikipedia.org/wiki/Apache_License>) (ASL2), as it
+[Apache software license](https://en.wikipedia.org/wiki/Apache_License) (ASL2), as it
 appears to allow for faster adoption by companies that may not have mature open source
 policies in place or that simply have overly careful lawyers which may be influenced
 by the scare tactics some bad companies have built on top of copyleft licenses.
