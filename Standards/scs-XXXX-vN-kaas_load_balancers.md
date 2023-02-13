@@ -46,16 +46,14 @@ By default `externalTrafficPolicy` is set to `Cluster`. Changing it to `Local` d
 * [Improve performance](#performance)
   * Significant improvements are possible, but are not validated yet
 
-### Conclusion (**TBD**)
+### Conclusion
 
-Options:
-1. Option "No support"
+Options regarding `externalTrafficPolicy: Local`:
+
+1. <a name="selectedoption"></a>Option "No support"
     - DO NOT require SCS compliant cloud providers to support `externalTrafficPolicy: Local`.
     - In the reference implementation: DO NOT configure health checks in order to not deviate from upstream defaults
-1. Option "No support; Support opt-in IP preservation at a higher level"
-    - DO NOT require SCS compliant clouds to work with `externalTrafficPolicy: Local`.
-    - DO require them to let the user opt-in to preserve the client IP using the PROXY protocol, HTTP `Forwarded` headers or other means (This should be an option, as client IP preservation at this layer also should work with `externalTrafficPolicy: Cluster`)
-    - In the reference implementation: DO NOT configure health checks in order to not deviate from upstream defaults
+    - Leave the option open to standardize e. g. proxy protocol (and/or HTTP `Forwarded` headers) later
 1. Option "No support; best effort compatibility in reference implementation"
     - DO NOT require SCS compliant cloud providers to support `externalTrafficPolicy: Local`.
     - In the reference implementation: enabling the health check mechanism to avoid constant connectivity problems if users set it anyway
@@ -65,7 +63,7 @@ Options:
     - In the reference implementation: Enabling the health check mechanism to avoid constant connectivity problems
 1. Option "Partial support; Support opt-in IP preservation at a higher level"
     - DO require SCS compliant clouds to work with `externalTrafficPolicy: Local`.
-    - DO require them to let the user opt-in to preserve the client IP using the PROXY protocol, HTTP `Forwarded` headers or other means
+    - DO require them to let the user opt-in to preserve the client IP using the proxy protocol, HTTP `Forwarded` headers or other means
     - Do NOT require them to preserve the client IP at network level.
     - In the reference implementation: Enabling the health check mechanism to avoid constant connectivity problems
 1. Option "Full support"
@@ -76,7 +74,7 @@ Options:
 # Decision
 
 * A Kubernetes `Service` of `type=LoadBalancer` with all non-mandatory fields being unset: Must work as expected, out of the box
-* A Kubernetes `Service` of `type=LoadBalancer` with `externalTrafficPolicy: Local` set and all other non-mandatory fields being unset: **TBD**
+* A Kubernetes `Service` of `type=LoadBalancer` with `externalTrafficPolicy: Local` set and all other non-mandatory fields being unset: [Option 1](#selectedoption): "No support" required
 
 # Conformance Tests
 
