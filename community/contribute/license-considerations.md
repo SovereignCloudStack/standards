@@ -40,7 +40,7 @@ Reciprocity has many advantages:
 * The obligation to make the changes available avoids fragmentation. As changed and
   "improved" versions need to be made available, it is much easier to review and feed
   those changes back and create a unified upstream codebase that reflects the needs of
-  the complete userbase by including the needed changes. This was observed and
+  the complete user base by including the needed changes. This was observed and
   [reported](https://lwn.net/Articles/660428/) by Martin Fink (HP's former CTO).
 
 The hugely successful [Linux kernel](https://kernel.org/) project uses the GNU GPL;
@@ -125,8 +125,8 @@ libraries of standardized services.
 
 ## Patents
 
-Free software lienses are intended to give users broad rights -- the GNU GPL talks about the
-[four freedoms](https://fsfe.org/freesoftware/) to use software for any purpose, to study und
+Free software licenses are intended to give users broad rights -- the GNU GPL talks about the
+[four freedoms](https://fsfe.org/freesoftware/) to use software for any purpose, to study and
 adjust the software (this needs source code access), to redistribute the software and to improve
 it and to make these improvements available.
 
