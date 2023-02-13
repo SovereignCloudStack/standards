@@ -8,7 +8,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 const config = {
   title: 'Sovereign Cloud Stack Documentation',
   tagline: 'One platform - standardized, built and operated by many.',
-  url: 'https://docs.scs.community.com',
+  url: 'https://docs.scs.community',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
