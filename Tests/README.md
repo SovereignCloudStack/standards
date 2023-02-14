@@ -23,12 +23,12 @@ You can also request a YAML report using the option `-o OUTPUT.yaml`
 ```text
 Usage: scs-compliance-check.py [options] compliance-spec.yaml layer [layer [layer]]
 Options: -v/--verbose: More verbose output
- -q/-quiet: Don't output anythin but errors
- -s/--single-layer: Don't perform require checks for dependantr layers
+ -q/-quiet: Don't output anything but errors
+ -s/--single-layer: Don't perform required checks for dependant layers
  -d/--date YYYY-MM-DD: Check standards valid on specified date instead of today
  -V/--version VERS: Force version VERS of the standard (instead of deriving from date)
  -c/--os-cloud CLOUD: Use specified cloud env (instead of OS_CLOUD env var)
- -o/--output path: Generate report of compliance check under given path
+ -o/--output path: Generate yaml report of compliance check under given path
 ```
 
 ## Testing in docker containers
