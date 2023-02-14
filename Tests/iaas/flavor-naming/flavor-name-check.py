@@ -549,7 +549,7 @@ else:
 def readmandflavors(fnm):
     "Read mandatory flavors from passed YAML file, search in a few paths"
     import yaml
-    searchpath = (".", *_bindir, '/opt/share/SCS')
+    searchpath = (".", "..", *_bindir, _bindir[0] + "/..", '/opt/share/SCS')
     if fnm.rfind('/') == -1:
         for spath in searchpath:
             tnm = f"{spath}/{fnm}"
