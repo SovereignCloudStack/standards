@@ -36,7 +36,7 @@ def usage():
     "Output usage information"
     print("Usage: scs-compliance-check.py [options] compliance-spec.yaml layer [layer [layer]]")
     print("Options: -v/--verbose: More verbose output")
-    print(" -q/-quiet: Don't output anything but errors")
+    print(" -q/--quiet: Don't output anything but errors")
     print(" -s/--single-layer: Don't perform required checks for dependant layers")
     print(" -d/--date YYYY-MM-DD: Check standards valid on specified date instead of today")
     print(" -V/--version VERS: Force version VERS of the standard (instead of deriving from date)")

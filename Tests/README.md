@@ -23,7 +23,7 @@ You can also request a YAML report using the option `-o OUTPUT.yaml`
 ```text
 Usage: scs-compliance-check.py [options] compliance-spec.yaml layer [layer [layer]]
 Options: -v/--verbose: More verbose output
- -q/-quiet: Don't output anything but errors
+ -q/--quiet: Don't output anything but errors
  -s/--single-layer: Don't perform required checks for dependant layers
  -d/--date YYYY-MM-DD: Check standards valid on specified date instead of today
  -V/--version VERS: Force version VERS of the standard (instead of deriving from date)
