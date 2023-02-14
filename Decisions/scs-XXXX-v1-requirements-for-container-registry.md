@@ -13,23 +13,21 @@ results of build processes and to maintain freely available images. They're acti
 the intermediary for sharing container images between systems. They could be connected 
 directly to the container orchestration platforms like Kubernetes.
 
-There are 2 types of container registries: public and private. Public registries are 
-commonly used by individuals and smaller teams. However, once teams begin to scale up,
-this can bring more complex security issues, e.g. privacy, and access control. 
-A private container registry often comes with security scanning capabilities, 
-role-based access control, and advanced management. These private registries could be
-either hosted remotely or on-premises.
+The container registries could be publicly accessible e.g. Docker Hub or could be
+self-hosted or hosted by the cloud service providers (CSP). These container registries
+may apply various access control mechanisms to restrict public access and make them
+private. Both solutions offer a wide range of features that may or may not attract
+potential users and CSPs.
 
 # Motivation
 
-Our motivation is that there are use cases, where cloud service providers (CSP) would 
-like to be able to offer customers to store and access their container images using 
-the SCS-compliant private container registry. The specific use cases should be discussed,
-but overall the CSPs could offer a private container registry as a service or the CSPs 
-could offer a recipe for customers to deploy the private registry themselves utilizing 
-the CSP infrastructure. In both cases, the private container registry should be 
-SCS-compliant and should fulfill a set of needed requirements e.g. for security and 
-privacy. 
+Our motivation is that there are use cases, where CSP would like to be able to offer
+customers to store and access their container images using the SCS-compliant private
+container registry. The specific use cases should be discussed, but overall the CSPs
+could offer a private container registry as a service or the CSPs could offer a recipe
+for customers to deploy the private registry themselves utilizing the CSP infrastructure.
+In both cases, the private container registry should be SCS-compliant and should fulfill
+a set of needed requirements e.g. for security and privacy.
 
 The idea here and the purpose of this document is to specify what requirements a 
 specific technical container registry implementation (i.e. software solution) needs to 
@@ -37,7 +35,7 @@ fulfill in the context of SCS.
 
 The purpose of this document is also to select an appropriate container registry 
 implementation that meets all defined requirements and makes an architectural 
-decision on what implementation is fully SCS-compliant and recommended by the SCS.
+decision on what implementation is fully SCS-compliant and will be used by the SCS.
 
 # Design considerations
 
