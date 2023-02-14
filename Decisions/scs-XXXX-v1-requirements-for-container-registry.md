@@ -11,7 +11,7 @@ A container registry is a repository or collection of repositories used to store
 access container images. Container registries are used by the teams to store the 
 results of build processes and to maintain freely available images. They're acting as 
 the intermediary for sharing container images between systems. They could be connected 
-directly to the container orchestration platforms like Docker and Kubernetes.
+directly to the container orchestration platforms like Kubernetes.
 
 There are 2 types of container registries: public and private. Public registries are 
 commonly used by individuals and smaller teams. However, once teams begin to scale up,
@@ -211,7 +211,9 @@ have and also a set of desirable (nice to have) features are defined and evaluat
 
 - Audit Logs
   - Ability to record use in auditable logs so that activity can be traced to a single user
-- Authentication
+- Authentication of system identities
+  - Support for authenticating system identities like Kubernetes clusters. Ideally supporting dynamic identity tokens from some IdP; Less ideal: Supporting static "system tokens"
+- Authentication of users
   - Support for multiple authentication systems (IdM integration). User and user account management
 - Authorization
   - Role-based access control to ensure strict access controls
