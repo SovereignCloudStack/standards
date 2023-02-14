@@ -276,16 +276,87 @@ are evaluated here.
 
 ## Conclusion
 
-A wide range of open-source container registry projects (Quay, Harbor, Dragonfly, 
-Keppel, Portus, Kraken, etc.) has been carefully evaluated based on the two main 
-factors that reviewed their open-source health as well as their range of supported 
-features.
+A wide range of open-source container registry projects (Quay, Harbor, Dragonfly,
+Keppel, Portus, Kraken, etc.) has been carefully evaluated based on the two main
+factors: the open-source health and range of supported features.
 
-TODO 
+The open-source software health is crucial and container registry implementation should
+pass it to be SCS-compliant. The OSS health check evaluates several important metrics
+of an open source software like whether the code/community/development/design is
+fully open or whether the project's maturity, security, and activity are on the desired
+level. This check also evaluates the lock-in risk due to possible single points of
+failure or internal project conflicts and several other aspects.
+Overall, three projects passed the OSS health checks:
+- [Harbor][harbor]
+- [Project Quay][projectquay]
+- [Dragonfly][dragonfly]
+
+The above projects were then evaluated from the "supported features" perspective.
+The [Required and desirable features check](#required-and-desirable-features-check)
+did an overview of the feature set of open-source container registry implementations
+and map SCS requirements (and nice-to-haves) against it. The list of required features
+is quite long and contains features that are primarily focused on security
+(authentication, vulnerability scanning, content trust, and validation, etc.),
+scalability (HA mode, registry replication, p2p integration, etc.) and visibility
+(monitoring), see the full list [here](#required-and-desirable-features-check).
+These requirements should ensure that the selected container registry implementation
+could be offered by the CSPs as a secure and enterprise-ready solution.
+
+Let's discuss and compare the projects Dragonfly, Quay, and Harbor in the following
+section.
+
+[Dragonfly][dragonfly] is a healthy open-source project with a growing community
+and CNCF incubating maturity level. It is considered stable, and it is used by many
+companies in their production environments. We currently see that it is not as
+feature-rich as Harbor or Quay, hence it is not considered the best choice here.
+It seems, that its main aim (currently) is to offer (an efficient, stable, and secure)
+container distribution solution based on p2p technology. This improves download
+efficiency and saves bandwidth across CSPs. It also offers integration possibilities
+that allow one to use it as a p2p distribution network via a "preheat" API. This
+integration was implemented in the Harbor project via Dragonfly "preheat" adapter, and
+both parties may benefit from the integration. The Harbor profits from Dragonfly's p2p
+distribution capabilities and on the other hand the Dragonfly project profits from
+Harbor's feature-rich container registry "frontend".
+
+[Quay][projectquay] is the Red Hat open-source project. Its OSS health is on a good level,
+the community around is growing, the maturity is considered also well as the project
+represents the code that powers enterprise solutions Red Hat Quay and Quay.io.
+Besides this, there is still a place for OSS health improvement. It is hard to
+distinguish the risk of project failure caused by low diversity across the companies
+because the project's owners/maintainers list is not publicly available and is stored in
+the Red Hat private repository.
+Its feature set is impressive and this project fulfills all must-haves defined in
+this document. Quay gives you security over your repositories with image
+vulnerability scanning (Clair integration), content validation (Cosign integration),
+and access controls. Harbor stands out here as it allows users to use also project Trivy
+for vulnerability scanning and project Notary for content trust and validation.
+Project Quay also provides a scalable open-source platform to host container images
+across any size organization. One drawback in comparison to Harbor is that the proxy cache
+feature is still marked as a [Technology Preview](https://docs.projectquay.io/use_quay.html#quay-as-cache-proxy),
+hence this feature may not be completely production-ready yet. On the other hand,
+the project Quay supports [building Dockerfiles](https://docs.projectquay.io/use_quay.html#build-support)
+using a set of workers on e.g. Kubernetes. Build triggers, such as GitHub webhooks
+can be configured to automatically build new versions of repositories when new code is
+committed. This feature is not supported by the [Harbor project](https://github.com/goharbor/harbor/issues/6235).
+
+[Harbor][harbor] is an outstanding open-source, community-led project with fully open and
+well-documented processes. Its large and thriving community powers the fast-growing
+the feature set and attracts more and more developers and companies to active contributions.
+Harbor’s CNCF graduation in 2020 made it one of the best choices for enterprise
+customers that want to operate container registries securely and in a large scale.
+Its community size, landscape, and CNCF graduation make a significant difference in
+comparison to Quay's open-source health capabilities.
+The list of supported features is also impressive. This project fulfills all must-haves
+defined in this document and overcome project Quay with a production-ready proxy cache
+feature and more options that the user may use in case of image vulnerability scanning
+and content validation. In addition, Harbor is able to store non-OCI Helm charts
+via ChartMuseum integration and profits from p2p distribution capabilities via
+integration of p2p solutions like Kraken and Dragonfly.
 
 # Decision
 
-_Decision_
+Based on the research and conclusion above we've decided to use the **Harbor** project
+as an SCS-compliant container registry implementation.
 
 
 <!-- Frequently used references -->
