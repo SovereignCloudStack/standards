@@ -53,16 +53,12 @@ implementation may not fit to you, it will be possible to create your own applic
 
 # Status Page Requirements
 
-* The status page application should be simplistic in software design to not depend on a large
+* The status page application should be simplistic in software design and should not depend on a large
 variety of services
-* * simplistic, yet existing user management for write access (outh?)
-* * * Existing tools (like cachet) do not have a role concept that allows fine-grined access to
-status bits
-* * do we want to support hidden components eg. components that are only visibile to logged in
-users?
-* * * (is this the type of feature that is considered "bells & whistles" and can be added at a later
-stage)
-* * * does this conflict with our goal of Open Operations?
+* * simplistic, yet existing user management for write access (oauth? OIDC?)
+* * * Simple RBAC (role based access control) is nice to have
+* * support that components are only visible to a subset of users
+* * * implies that there is a role that is read-only
 * * * On-Prem use case might be handled by having an authenticating reverse proxy in front
 * The status page applicaton should allow for simple and easy theming
 * * Page = (Possibly simple) Web-UI
@@ -147,7 +143,7 @@ With those requirements in mind the projects that initially were found, were eva
 | ... send by eMail                        | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ |
 | watchdog for status page support         | ⁇ | ⁇ | ✅ | ❌ | ✅ | ⁇ | ❌ |
 | trigger webhook support                  | ❌ needs cachet-monitor | ⁇ | ✅ | ⁇ | ✅ | ⁇ | ❌ |
-| ADDITIONAL INFORMATION                   | - | basically a theme for hugo cms, depends on netlify cms | - | basically a theme for hugo cms, depends on netlify cms | - | It's highly optimized for github pages  | SPA created with netlify |
+| additional infos                         | - | basically a theme for hugo cms, depends on netlify cms | - | basically a theme for hugo cms, depends on netlify cms | - | It's highly optimized for github pages  | SPA created with netlify |
 | hidden components                        | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | user management                          | ✅ | ❌ | ❌ | ❌ | ✅ by OIDC | ⁇ through github? | ❌ |
 | different output format on notification  | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ |
@@ -155,7 +151,7 @@ With those requirements in mind the projects that initially were found, were eva
 | project healthy                          | ❌ last commit 17 months | ❌ last commit 3 years | ❌ last commit 5 months | ✅ last commit 2 months | ✅ recent activities | ✅ recent activities | ❌ archived and abondend by the owner |
 | documentation                            | ✅ API ❌ User Documentation | ❌ | ❌ | ❌ | ✅ | ⁇u | ❌ not reachable anymore |
 | git based                                | ❌ | ✅ | ❌ | ✅ | ❌ | ✅ | ⁇ a netlify based installation is able to communicate with github |
-| project URL                              | https://cachethq.io/ | https://github.com/weeblrpress/clearstatus | https://www.brotandgames.com/ciao/ | https://cstate.netlify.app/ | https://gatus.io/ | https://github.com/tadhglewis/issue-status | https://marquez.co/statusfy |
+| project page                             | https://cachethq.io/ | https://github.com/weeblrpress/clearstatus | https://www.brotandgames.com/ciao/ | https://cstate.netlify.app/ | https://gatus.io/ | https://github.com/tadhglewis/issue-status | https://marquez.co/statusfy |
 
 # Related Documents
 
