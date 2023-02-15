@@ -87,9 +87,9 @@ i.e. submitting a health beacon every x seconds
 * As a consumer of the status page, I'd like to subscribe to events on the status page via e-mail
   * for everything
   * for specific components
-* Don't we need (read-)user management for this anyway?
-* TBD: is there a need for alternate ways of pushing infos from the status page application?
-Example: RSS feed
+
+* As a consumer of the status page, I'd like to subscribe to a RSS or atom feed
+
 * Allow for the ability to trigger webhooks upon certain events (to submit info to other systems via
 webhooks, e.g. chat/messenger)
 
