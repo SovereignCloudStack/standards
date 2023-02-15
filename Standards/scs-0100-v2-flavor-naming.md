@@ -42,7 +42,7 @@ but try to avoid changing in incompatible ways.
  features to express something like "I want a flavor with 2 vCPUs, 8GiB of RAM, a local
  20GB SSD disk and Infiniband support but I don't care whether it's AMD or intel" in a
  reasonable manner. Using flavor names to express this will thus continue to be useful
- and we don't expect the the need for standardization of flavor names to go away until
+ and we don't expect the need for standardization of flavor names to go away until
  the commonly used IaC tools work on a higher abstraction layer than they currently do.
 
 # Design Considerations
@@ -90,7 +90,7 @@ the following characteristics are important in a flavor description:
 **Baseline**
 
 Note that vCPU oversubscription for a `V` vCPU should be implemented such, that we
-can guarantee `at least 20% of a core in >99% of the time`; this can be achieved by
+can guarantee *at least 20% of a core in >99% of the time*; this can be achieved by
 limiting vCPU oversubscription to 5x per core (or 3x per thread when SMT/HT is enabled)
 or by more advanced workload management logic. Otherwise `L` (low performance) must be
 used. The >99% is measured over a month (1% is 7.2h/month).
@@ -110,7 +110,7 @@ the lack of workload management that would prevent worst case performance <20% i
 
 **Insufficient microcode**
 
-Not using these mitigations must be indicated by an additional `i suffix` for insecure 
+Not using these mitigations must be indicated by an additional `i` suffix for insecure 
 (weak protection against CPU vulns through insufficient microcode, lack of disabled hyperthreading
 on L1TF susceptible CPUs w/o effective core scheduling or disabled protections on the host/hypervisor).
 
@@ -134,11 +134,11 @@ It is allowed to specify half GiBs (e.g. 3.5), though this is discouraged for la
 
 **No ECC**
 
-If no ECC is used, the `u suffix` must indicate this.
+If no ECC is used, the `u` suffix must indicate this.
 
 **Enabled Oversubscription**
 
-You have to expose this with the `o suffix`.
+You have to expose this with the `o` suffix.
 
 **Examples**
 
@@ -199,14 +199,14 @@ is provisioned M times.
 - SCS-2C-4-_ib
 - SCS-2C-4 <- You need to specify a boot volume yourself (boot from volume, or use `block_device_mapping_v2`)
 - SCS-2C-4_bms_z3
-- SCS-2C-4-3x _- Cloud decides disk type and size and creates three of them (FIXME: Is this useful?)
+- SCS-2C-4-3x- <- Cloud decides disk type and size and creates three of them (FIXME: Is this useful?)
 - SCS-2C-4-3xs <- Cloud decides size and creates three local SSD volumes (FIXME: useful?)
 - SCS-2C-4-3x10 <- Cloud decides type and creates three 10GB volumes
 - ~~SCS-2C-4-**1.5n**~~ <- You must not specify disk sizes which are not in full GiBs
 
 ## [OPTIONAL] Hypervisor
 
-The `default Hypervisor` is assumed to be `KVM`. Clouds, that offer different hypervisors
+The *default Hypervisor* is assumed to be `KVM`. Clouds, that offer different hypervisors
 or Bare Metal Systems should indicate the Hypervisor according to the following table:
 
 | hyp    |   Meaning         |
@@ -329,12 +329,12 @@ Extensions need to be specified in the above mentioned order.
 | SCS-8Ti-32-50p_i1         | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe                       |
 | SCS-1L-1u-5               | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)                      |
 | SCS-16T-64-200s_GNa:64_ib | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Infiniband, 64 Passthrough nVidia Ampere SMs |
-| SCS-4C-16-2x200p_a1       | 4 dedicated Arm64 cores (A78 class), 16GiB RAM, 2x200GB local NVMe drives                      |
+| SCS-4C-16-2x200p_a1       | 4 dedicated Arm64 cores (A76 class), 16GiB RAM, 2x200GB local NVMe drives                      |
 | SCS-1V-0.5                | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)                                          |
 
 # Standard SCS flavors
 
-These are flavors expected to exist on standard SCS clouds (x86-64).
+These are flavors that must exist on standard SCS clouds (x86-64).
 
 We expect disk sizes to be 5, 10, 20, 50, 100, 200, 500, 1000GB, 2000GB.
 We expect a typical CPU:Mem[GiB] ratio of 1:4.
@@ -439,7 +439,7 @@ an image is considered broken by the SCS team.
 
 # Validation
 
-There is a script in [`flavor_name_check.py`](Tests/iaas/flavor-naming/flavor-name-check.py)
+There is a script in [`flavor_name_check.py`](../Tests/iaas/flavor-naming/flavor-name-check.py)
 which can be used to decode, validate and construct flavor names.
 This script must stay in sync with the specification text.
 
@@ -455,7 +455,7 @@ features of flavors (vCPUs, RAM, Disk) match what the flavor names claim.
 
 # Previous standard versions
 
-[Version 1 of the standard](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set)
+[Version 1 of the standard](../Drafts/flavor-naming.md)
 used a slightly different naming syntax while the logic was exactly the same.
 What is a `-` in v2 used to be a `:`; `_` used to be `-`. The reason for
 the change was certain Kubernetes tools using the flavor names as labels.
@@ -465,11 +465,11 @@ for a discussion.
 
 Version 1 flavor names can be translated to v2 using the following transformation:
 ```shell
-NAMEV2 = $(echo "$NAMEV1" | sed -e 's/\-/_/g' -e 's/:/-/g' -e /^SCS_/SCS-/')
+NAMEV2=$(echo "$NAMEV1" | sed -e 's/\-/_/g' -e 's/:/-/g' -e 's/^SCS_/SCS-/')
 ```
 and the way back can be done with
 ```shell
-NAMEV1 = $(echo "$NAMEV2" | sed -e 's/\-/:/g' -e 's/_/-/g' -e '/^SCS:/SCS-/')
+NAMEV1=$(echo "$NAMEV2" | sed -e 's/\-/:/g' -e 's/_/-/g' -e 's/^SCS:/SCS-/')
 ```
 
 Considerations for how providers can ensure a smooth transition for their customers
@@ -483,7 +483,7 @@ v1 mandatory flavors will produce 26 warnings (for using old flavors) and 26
 errors (for missing the 26 mandatory v2 flavors). Registering the 26 mandatory
 v2 flavor names in addition will result in passing the test with only 26
 warnings -- unless you specify `-2`. If you do and want to pass you'll need
-to remove the old v1 names.
+to remove the old v1 names or rename them to no longer start with `SCS-`.
 
 # Beyond SCS
 
