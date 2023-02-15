@@ -32,6 +32,7 @@ import re
 verbose = False
 debug = False
 completecheck = False
+disallow_old = False
 
 # search strings
 scsPre = re.compile(r'^SCS\-')
@@ -43,9 +44,10 @@ scsPre = re.compile(r'^SCS\-')
 
 def usage():
     "help"
-    print("Usage: flavor-name-check.py [-d] [-v] [-c] [-C mand.yaml] [-i | NAME [NAME [...]]]")
+    print("Usage: flavor-name-check.py [-d] [-v] [-o] [-c] [-C mand.yaml] [-i | NAME [NAME [...]]]")
     print("Flavor name checker returns 0 if no error, 1 for non SCS flavors and 10+ for wrong flavor names")
     print("-d enables debug mode, -v outputs a verbose description, -i enters interactive input mode")
+    print("-2 disallows old v1 flavor naming")
     print("-c checks the SCS names AND checks the list for completeness w.r.t. SCS mandatory flavors.")
     print("-C mand.yaml reads the mandatory flavor list from mand.yaml instead of SCS-Spec.MandatoryFlavors.yaml")
     print("Example: flavor-name-check.py -c $(openstack flavor list -f value -c Name)")
@@ -70,6 +72,11 @@ def is_scs(name):
     #     return 5
     return 0
 
+# field limiters
+new_delim = "_"
+old_delim = "-"
+new_quant = "-"
+old_quant = ":"
 
 class Prop:
     "Class to hold properties"
@@ -77,6 +84,7 @@ class Prop:
     type = ""
     # regular expression to parse input
     parsestr = re.compile(r"")
+    oldparsestr = None
     # attributes that are set
     pattrs = ()
     # Names of attributes; special meaning of first char of name:
@@ -89,22 +97,30 @@ class Prop:
     # output conversion (see comment at out() function
     outstr = ""
 
-    def end(self, string):
-        "find delimiting '-' and cut off"
-        idx = string[1:].find('-')
+    def end(self, string, limiter=new_delim):
+        "find delimiting limiter and cut off"
+        idx = string[1:].find(limiter)
         if idx >= 1:
             return string[:idx+1]
         return string
 
-    def parse(self):
+    def parse(self, old=False):
         "Try to match parsestr; return number of chars successfully consumed"
+        if old:
+            pstr = self.oldparsestr
+            numdel = old_quant
+            lim = old_delim
+        else:
+            pstr = self.parsestr
+            numdel = new_quant
+            lim = new_delim
         if debug:
             print(self.string)
-        m = self.parsestr.match(self.string)
+        m = pstr.match(self.string)
         if debug:
             print(m)
         if not m:
-            m = self.parsestr.match(self.end(self.string))
+            m = pstr.match(self.end(self.string, lim))
             if not m:
                 return 0
         if debug:
@@ -118,7 +134,7 @@ class Prop:
                     attr = float(attr)
                 else:
                     if attr:
-                        if attr[0] == ":":
+                        if attr[0] == numdel:
                             attr = int(attr[1:])
                         elif attr[-1] == "x":
                             attr = int(attr[:-1])
@@ -132,10 +148,23 @@ class Prop:
         # return len(self.string)
         return len(m.group(0))
 
-    def __init__(self, string):
+    def __init__(self, string, forceold = False):
         "c'tor parses the string and stores the reuslts"
-        self.string = self.end(string)
-        self.parsed = self.parse()
+        #global disallow_old
+        self.isold = False
+        if not forceold:
+            self.string = self.end(string)
+            self.parsed = self.parse()
+            if self.parsed:
+                return
+        if disallow_old:
+            return
+        if not self.oldparsestr:
+            self.oldparsestr = self.parsestr
+        self.string = self.end(string, old_delim)
+        self.parsed = self.parse(True)
+        if self.parsed:
+            self.isold = True
 
     def __repr__(self):
         "verbose representation"
@@ -154,10 +183,11 @@ class Prop:
                 self.create_dep_tbl(i, attr)
                 if debug:
                     tmp = self.__getattribute__(f"tbl_{fname}")
-                    print(f"  Table lookup for element {attr} in {tmp}")
+                    print(f"  Table lookup for element '{attr}' in {tmp}")
                 try:
                     attr = self.__getattribute__(f"tbl_{fname}")[attr]
-                except AttributeError:
+                except KeyError:
+                    #print(f'   Table {fname} has no attribute "{attr}"')
                     pass
             stg += " " + self.pnames[i] + ": " + str(attr) + ","
         return stg[:-1]
@@ -217,9 +247,10 @@ class Prop:
                     i += 3
                     lst.append(att)
                 par += 1
-            elif self.outstr[i+1] == ":":
+            elif self.outstr[i+1] == ":":   # change?
                 if att:
-                    ostr += ":%"
+                    #ostr += ":%"
+                    ostr += "-%"
                     i += 2
                     lst.append(att)
                 else:
@@ -319,7 +350,7 @@ class Prop:
                     elif fdesc[0:2] == "##":
                         val = float(val)
                     elif fdesc[0] == "#":
-                        if fdesc[1] == ":" and not val:
+                        if fdesc[1] == ":" and not val:     # change?
                             val = 1
                             break
                         if fdesc[1] == "." and not val:
@@ -355,27 +386,29 @@ class Prop:
 
 class Main(Prop):
     "Class representing the first part (CPU+RAM)"
-    type = "CPU:RAM"
-    parsestr = re.compile(r"([0-9]*)([LVTC])(i|):([0-9\.]*)(u|)(o|)")
+    type = "CPU-RAM"
+    parsestr = re.compile(r"([0-9]*)([LVTC])(i|)\-([0-9\.]*)(u|)(o|)")
+    oldparsestr = re.compile(r"([0-9]*)([LVTC])(i|):([0-9\.]*)(u|)(o|)")
     pattrs = ("cpus", "cputype", "cpuinsecure",
               "ram", "raminsecure", "ramoversubscribed")
     pnames = ("#vCPUs", "CPU type", "?Insec SMT", "##GiB RAM", "?no ECC", "?RAM Over")
-    outstr = "%i%s%?i:%.1f%?u%?o"
+    outstr = "%i%s%?i-%.1f%?u%?o"
     tbl_cputype = {"L": "LowPerf vCPU", "V": "vCPU", "T": "SMT Thread", "C": "Dedicated Core"}
 
 
 class Disk(Prop):
     "Class representing the disk part (CPU+RAM)"
     type = "Disk"
-    parsestr = re.compile(r":([0-9]*x|)([0-9]*)([nhsp]|)")
+    parsestr = re.compile(r"\-([0-9]*x|)([0-9]*)([nhsp]|)")
+    oldparsestr = re.compile(r":([0-9]*x|)([0-9]*)([nhsp]|)")
     pattrs = ("nrdisks", "disksize", "disktype")
     pnames = ("#:NrDisks", "#.GB Disk", ".Disk type")
     outstr = "%1x%0i%s"
     tbl_disktype = {"n": "Networked", "h": "Local HDD", "s": "SSD", "p": "HiPerf NVMe"}
 
-    def __init__(self, string):
+    def __init__(self, string, forceold=False):
         "Override c'tor, as unset nrdisks should be 1, not 0"
-        super().__init__(string)
+        super().__init__(string, forceold)
         try:
             if not self.nrdisks:
                 self.nrdisks = 1
@@ -386,7 +419,8 @@ class Disk(Prop):
 class Hype(Prop):
     "Class repesenting Hypervisor"
     type = "Hypervisor"
-    parsestr = re.compile(r"\-(kvm|xen|vmw|hyv|bms)")
+    parsestr = re.compile(r"_(kvm|xen|vmw|hyv|bms)")
+    oldparsestr = re.compile(r"\-(kvm|xen|vmw|hyv|bms)")
     pattrs = ("hype",)
     pnames = (".Hypervisor",)
     outstr = "%s"
@@ -396,7 +430,8 @@ class Hype(Prop):
 class HWVirt(Prop):
     "Class repesenting support for hardware virtualization"
     type = "Hardware/NestedVirtualization"
-    parsestr = re.compile(r"\-(hwv)")
+    parsestr = re.compile(r"_(hwv)")
+    oldparsestr = re.compile(r"\-(hwv)")
     pattrs = ("hwvirt",)
     pnames = ("?HardwareVirt",)
     outstr = "%?hwv"
@@ -406,7 +441,8 @@ class HWVirt(Prop):
 class CPUBrand(Prop):
     "Class repesenting CPU brand"
     type = "CPUBrand"
-    parsestr = re.compile(r"\-([izar])([0-9]*)(h*)$")
+    parsestr = re.compile(r"_([izar])([0-9]*)(h*)$")
+    oldparsestr = re.compile(r"\-([izar])([0-9]*)(h*)$")
     pattrs = ("cpuvendor", "cpugen", "perf")
     pnames = (".CPU Vendor", "#.CPU Gen", "Performance")
     outstr = "%s%0i%s"
@@ -422,7 +458,8 @@ class CPUBrand(Prop):
 class GPU(Prop):
     "Class repesenting GPU support"
     type = "GPU"
-    parsestr = re.compile(r"\-([gG])([NAI])([^:-]*)(:[0-9]*|)(h*)")
+    parsestr = re.compile(r"_([gG])([NAI])([^-]*)(\-[0-9]*|)(h*)")
+    oldparsestr = re.compile(r"\-([gG])([NAI])([^:-]*)(:[0-9]*|)(h*)")
     pattrs = ("gputype", "brand", "gen", "cu", "perf")
     pnames = (".Type", ".Brand", ".Gen", "#.CU/EU/SM", "Performance")
     outstr = "%s%s%s%:i%s"
@@ -439,7 +476,8 @@ class GPU(Prop):
 class IB(Prop):
     "Class representing Infiniband"
     type = "Infiniband"
-    parsestr = re.compile(r"\-(ib)")
+    parsestr = re.compile(r"_(ib)")
+    oldparsestr = re.compile(r"\-(ib)")
     pattrs = ("ib",)
     pnames = ("?IB",)
     outstr = "%?ib"
@@ -450,17 +488,17 @@ def outname(cpuram, disk, hype, hvirt, cpubrand, gpu, ibd):
     # TODO SCSx: Differentiate b/w SCS- and SCSx-
     out = "SCS-" + cpuram.out()
     if disk.parsed:
-        out += ":" + disk.out()
+        out += "-" + disk.out()
     if hype.parsed:
-        out += "-" + hype.out()
+        out += "_" + hype.out()
     if hvirt.parsed:
-        out += "-" + hvirt.out()
+        out += "_" + hvirt.out()
     if cpubrand.parsed:
-        out += "-" + cpubrand.out()
+        out += "_" + cpubrand.out()
     if gpu.parsed:
-        out += "-" + gpu.out()
+        out += "_" + gpu.out()
     if ibd.parsed:
-        out += "-" + ibd.out()
+        out += "_" + ibd.out()
     return out
 
 
@@ -476,33 +514,42 @@ def parsename(name):
     """Extract properties from SCS flavor name, return None (if not SCS-),
        raise NameError exception (if not conforming) or return tuple
        (cpuram, disk, hype, hvirt, cpubrand, gpu, ib)"""
+    #global verbose, debug
     scsln = is_scs(name)
     if not scsln:
         if verbose:
             print(f"WARNING: {name}: Not an SCS flavor")
         return None
     n = name[scsln:]
-    cpuram = Main(n)
+    isold = False
+    cpuram = Main(n, isold)
     if cpuram.parsed == 0:
         raise NameError(f"Error 10: Failed to parse main part of {n}")
-
+    isold = isold or cpuram.isold
     n = n[cpuram.parsed:]
-    disk = Disk(n)
+    disk = Disk(n, isold)
+    isold = isold or disk.isold
     n = n[disk.parsed:]
-    hype = Hype(n)
+    hype = Hype(n, isold)
+    isold = isold or hype.isold
     n = n[hype.parsed:]
-    hvirt = HWVirt(n)
+    hvirt = HWVirt(n, isold)
+    isold = isold or hvirt.isold
     n = n[hvirt.parsed:]
     # FIXME: Need to ensure we don't misparse -ib here
-    cpubrand = CPUBrand(n)
+    cpubrand = CPUBrand(n, isold)
+    isold = isold or cpubrand.isold
     n = n[cpubrand.parsed:]
-    gpu = GPU(n)
+    gpu = GPU(n, isold)
+    isold = isold or gpu.isold
     n = n[gpu.parsed:]
-    ibd = IB(n)
+    ibd = IB(n, isold)
+    isold = isold or ibd.isold
     n = n[ibd.parsed:]
     if verbose:
         printflavor(name, (cpuram, disk, hype, hvirt, cpubrand, gpu, ibd))
-
+    if isold:
+        print(f'WARNING: Old flavor found: "{name}"')
     if n:
         print(f"ERROR: Could not parse: {n}")
         raise NameError(f"Error 70: Could not parse {n} (extras?)")
@@ -569,7 +616,7 @@ mandFlavorFile = "SCS-Spec.MandatoryFlavors.yaml"
 
 def main(argv):
     "Entry point when used as selfstanding tool"
-    global verbose, debug, completecheck
+    global verbose, debug, disallow_old, completecheck
     # Number of good SCS flavors
     scs = 0
     # Number of non-SCS flavors
@@ -585,6 +632,9 @@ def main(argv):
         argv = argv[1:]
     if argv[0] == "-v":
         verbose = True
+        argv = argv[1:]
+    if argv[0] == "-2":
+        disallow_old = True
         argv = argv[1:]
     if argv[0] == "-c":
         completecheck = True

@@ -27,7 +27,7 @@ fnmck = importlib.import_module("flavor-name-check")
 
 def usage(rcode=1):
     "help output"
-    print("Usage: flavor-names-openstack.py [--os-cloud OS_CLOUD] [-C mand.yaml] [-v] [-q]", file=sys.stderr)
+    print("Usage: flavor-names-openstack.py [--os-cloud OS_CLOUD] [-C mand.yaml] [-v] [-q] [-2]", file=sys.stderr)
     print(" This tool retrieves the list of flavors from the OpenStack cloud OS_CLOUD", file=sys.stderr)
     print(" and checks for the presence of the mandatory SCS flavors (read from mand.yaml)", file=sys.stderr)
     print(" and reports inconsistencies, errors etc. It returns 0 on success.", file=sys.stderr)
@@ -46,8 +46,8 @@ def main(argv):
     except KeyError:
         pass
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:C:vhq",
-                                       ("os-cloud=", "mand=", "verbose", "help", "quiet"))
+        opts, args = getopt.gnu_getopt(argv, "c:C:vhq2",
+                                       ("os-cloud=", "mand=", "verbose", "help", "quiet", "v2plus"))
     except getopt.GetoptError as exc:
         print(f"{exc}", file=sys.stderr)
         usage(1)
@@ -58,8 +58,11 @@ def main(argv):
             cloud = opt[1]
         elif opt[0] == "-C" or opt[0] == "--mand":
             scsMandFile = opt[1]
+        elif opt[0] == "-2" or opt[0] == "--v2plus":
+            fnmck.disallow_old = True
         elif opt[0] == "-v" or opt[0] == "--verbose":
             verbose = True
+            #fnmck.verbose = True
         elif opt[0] == "-q" or opt[0] == "--quiet":
             quiet = True
         else:
