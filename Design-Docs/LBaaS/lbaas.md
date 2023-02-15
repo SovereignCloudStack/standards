@@ -1,8 +1,8 @@
 ---
 title: LoadBalancer As Service
-type: Architecture Decision Record
+type: Decision Record
 status: Draft
-track: _Global | IaaS | Ops | KaaS
+track: Global
 ---
 
 ## 1. The Loadbalancer User story
