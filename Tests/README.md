@@ -41,6 +41,11 @@ docker build --tag scs-compliance-check .
 ```shell
 docker run -it --env OS_CLOUD=CLOUDNAME -v ~/.config/openstack:/root/.config/openstack:ro scs-compliance-check
 ```
+The Docker entrypoint uses [scs-compatible.yaml](scs-compatible.yaml) on the `iaas` layer by default. You can use an alternative spec file
+by simply appending it to the above call, e.g.
+```shell
+docker run -it --env OS_CLOUD=CLOUDNAME -v ~/.config/openstack:/root/.config/openstack:ro scs-compliance-check my-own-certification.yaml iaas
+``` 
 
 ### Debugging
 ```shell
