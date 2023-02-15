@@ -1,15 +1,20 @@
 ---
 title: SCS Flavor Naming Standard
-version: v2
-authors: Matthias Hamm, Kurt Garloff, Tim Beermann
-state: v2 (for R4)
+type: Standard
+status: Draft
+track: IaaS
+replaces: flavor-naming.md
 ---
 
 Flavor Naming for SCS
 
+# Introduction
+
 This is the standard v2.0 for SCS Release 4.
 Note that we intend to only extend it (so it's always backwards compatible),
 but try to avoid changing in incompatible ways.
+(See at the end for the v1 to v2 transition where we have not met that
+ goal, but at least managed to have a 1:1 relationship between v1 and v2 names.)
 
 # Motivation
 
@@ -28,14 +33,24 @@ but try to avoid changing in incompatible ways.
  Extra features are important as well: There will be flavors with GPU support, fast disks for databases,
  memory-heavy applications, and other useful aspects of an instance.
 
- It may also be important to make the CPU generation clearly recognisable, as this is always a topic in
+ It may also be important to make the CPU generation clearly recognizable, as this is always a topic in
  discussions with customers.
 
-# Proposal
+ Note that not all relevant properties of flavors can be discovered; creating a specification
+ to address this is a separate but related effort to the name standardization.
+ Commonly used infrastructure-as-code tools do not provide a way to use discoverability
+ features to express something like "I want a flavor with 2 vCPUs, 8GiB of RAM, a local
+ 20GB SSD disk and Infiniband support but I don't care whether it's AMD or intel" in a
+ reasonable manner. Using flavor names to express this will thus continue to be useful
+ and we don't expect the the need for standardization of flavor names to go away until
+ the commonly used IaC tools work on a higher abstraction layer than they currently do.
+
+# Design Considerations
 
 ## Type of information included
 
-We believe the following characteristics are important in a flavor description:
+From discussions of our operators with their customers we learned that
+the following characteristics are important in a flavor description:
 
 | Type                 | Description                                                  |
 |:---------------------|:-------------------------------------------------------------|
@@ -46,7 +61,14 @@ We believe the following characteristics are important in a flavor description:
 | CPU Type             | X86-intel, X86-amd, ARM, RISC-V, Generic                     |
 | "bms"                | Bare Metal System (no virtualization/hypervisor)             |
 
-## Complete Proposal
+ This list is likely not comprehensive and will grow over time.
+
+ Rather than using random names `s5a.medium` and assigning a discrete set of properties
+ to them, we wanted to come up with a scheme that allows to systematically derive
+ names from properties and vice versa. The scheme allows for short names (by not
+ encoding all details) as well as very detailed longer names.
+
+# Complete Proposal
 
 | Prefix | CPU |   Suffix     |  RAM[GiB]  | optional: Disk[GB] | optional: Disk type | optional: extra features                            |
 |--------|-----|--------------|------------|--------------------|---------------------|-----------------------------------------------------|
@@ -116,7 +138,7 @@ If no ECC is used, the `u suffix` must indicate this.
 
 **Enabled Oversubscription**
 
-You have to expose this with the `o sufffix`.
+You have to expose this with the `o suffix`.
 
 **Examples**
 
@@ -152,7 +174,7 @@ that is large enough to fit the root file system (`min_disk` in image). This aut
 allocation is indicated with `-` without a disk size.
 If the `-` is left out completely, the user must create a boot volume manually and
 tell the instance to boot from it or use the 
-[block_device_mapping_v2](https://docs.openstack.org/api-ref/compute/?expanded=create-server-detail#create-server)
+[`block_device_mapping_v2`](https://docs.openstack.org/api-ref/compute/?expanded=create-server-detail#create-server)
 mechanism explicitly to create the boot volume from an image.
 
 **Multi-provisioned Disk**
@@ -175,7 +197,7 @@ is provisioned M times.
 - SCS-2C-4-_bms_z3
 - SCS-2C-4-_bms_z3h_GNa-64_ib
 - SCS-2C-4-_ib
-- SCS-2C-4 <- You need to specify a boot volume yourself (boot from volume, or use block_device_mapping_v2)
+- SCS-2C-4 <- You need to specify a boot volume yourself (boot from volume, or use `block_device_mapping_v2`)
 - SCS-2C-4_bms_z3
 - SCS-2C-4-3x _- Cloud decides disk type and size and creates three of them (FIXME: Is this useful?)
 - SCS-2C-4-3xs <- Cloud decides size and creates three local SSD volumes (FIXME: useful?)
@@ -211,7 +233,7 @@ all non-ancient x86 CPUs or if your virtualization hypervisor is configured to
 support nested virtualization.
 Flavors without the `_hwv` flag may or may not support hardware virtualization (as we
 recommend enabling nesting, but don't require flavor names to reflect all
-capabilities. Flavors may overdeliver ...)
+capabilities. Flavors may over-deliver ...)
 
 **Examples**
 
@@ -238,7 +260,7 @@ Not specifying arch means that we have a generic CPU (**x86-64**).
 |  1         | Skylake          | Zen-1 (Naples) | A76/NeoN1 class    | TBD        |
 |  2         | Cascade Lake     | Zen-2 (Rome)   | A78/x1/NeoV1 class | TBD        |
 |  3         | Ice Lake         | Zen-3 (Milan)  | A71x/NeoN2 (ARMv9) | TBD        |
-|  4         | Saphhire Rapids  | Zen-4 (Genoa)  |                    | TBD        |
+|  4         | Sapphire Rapids  | Zen-4 (Genoa)  |                    | TBD        |
 
 It is recommended to leave out the `0` when specifying the old generation; this will
 help the parser tool, which assumes 0 for an unspecified value and does leave it
@@ -289,11 +311,11 @@ Generations could be nVidia (f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=
 AMD (GCN-x=0.x, RDNA1=1, RDNA2=2, RDNA3=3), intel (Gen9=0.9, Xe(12.1)=1, ...), ...
 (Note: This may need further work to properly reflect what's out there.)
 
-The optional `h` suffix to the comput unit count indicates high-performance (e.g. high freq or special
+The optional `h` suffix to the compute unit count indicates high-performance (e.g. high freq or special
 high bandwidth gfx memory such as HBM);
 `h` can be duplicated for even higher performance.
 
-`_ib` indicates Inifinband networking.
+`_ib` indicates Infiniband networking.
 
 More extensions will be forthcoming.
 
@@ -301,14 +323,14 @@ Extensions need to be specified in the above mentioned order.
 
 # Proposal Examples
 
-|         Example           |                 Decoding                                                                        |
-|---------------------------|-------------------------------------------------------------------------------------------------|
-| SCS-2C-4-10n              | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk                                         |
-| SCS-8Ti-32-50p_i1         | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe                        |
-| SCS-1L-1u-5               | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)                       |
-| SCS-16T-64-200s_GNa:64_ib | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Inifiniband, 64 Passthrough nVidia Ampere SMs |
-| SCS-4C-16-2x200p_a1       | 4 dedicated Arm64 cores (A78 class), 16GiB RAM, 2x200GB local NVMe drives                       |
-| SCS-1V-0.5                | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)                                           |
+|         Example           |                 Decoding                                                                       |
+|---------------------------|------------------------------------------------------------------------------------------------|
+| SCS-2C-4-10n              | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk                                        |
+| SCS-8Ti-32-50p_i1         | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe                       |
+| SCS-1L-1u-5               | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)                      |
+| SCS-16T-64-200s_GNa:64_ib | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Infiniband, 64 Passthrough nVidia Ampere SMs |
+| SCS-4C-16-2x200p_a1       | 4 dedicated Arm64 cores (A78 class), 16GiB RAM, 2x200GB local NVMe drives                      |
+| SCS-1V-0.5                | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)                                          |
 
 # Standard SCS flavors
 
@@ -351,7 +373,7 @@ to boot from a volume (either created beforehand or allocated on-the-fly
 with `block_device_mapping_v2`, e.g.
 `openstack server create --flavor SCS-1V:2 --block-device-mapping sda=IMGUUID:image:12:true`
 to create a bootable 12G cinder volume from image `IMGUUID` that gets tied to the VM
-instance lifecycle.)
+instance life cycle.)
 
 # Naming policies
 
@@ -367,7 +389,7 @@ We expect all cloud providers to offer the short, less specific flavor names (su
 Larger providers that offer more details are expected to still also offer the short variants
 for usability and easier portability, even beyond the mandated flavors.
 
-You must be very careful to expose low vCPU guarantees (`L` instead ov `V`), insecure
+You must be very careful to expose low vCPU guarantees (`L` instead of `V`), insecure
 hyperthreading/microcode `i`, non-ECC-RAM `u`, memory oversubscription `o`. Note that omitting these qualifiers is
 overstating your security, reliability or performance properties and may be reason for
 clients to feel betrayed or claim damages. It might in extreme cases also cause SCS to withdraw certification
@@ -383,9 +405,9 @@ to suggest extensions that we can discuss and add to the official scheme.
 
 Note that all letters are case-sensitive.
 In case you wonder: Feature indicators are capitalized, modifiers are lower case.
-(An exception is the uppercase -G for a passthrough GPU vs. lowercase -g for vGPU.)
+(An exception is the uppercase -G for a pass-through GPU vs. lowercase -g for vGPU.)
 
-## Rationale
+## Naming options advice
 
 Note that we expect most clouds to prefer short flavor names,
 not indicating CPU details or hypervisor types. See above list
@@ -394,8 +416,9 @@ of standard flavors to get a feeling.
 However, more successful providers will often need to differentiate their
 offerings in response to customer demand and allow customers to request
 flavors with specific detailed properties. The goal of this proposal is to avoid
-providers to invent their own names and then refer customers to `extra_specs`
-or worse a non-machine-readable service description to find out the details.
+providers to invent their own names and then refer customers to (currently
+incompletely standardized) `extra_specs`
+or worse a non-machine-readable service descriptions to find out the details.
 
 So a cloud provider might well evolve from offering `SCS-8T-16-50` to offering
 `SCS-8T-16-50n`, `SCS-8T-16-50n_i2` and `SCS-8T-16-50n_a2` to specify that he
@@ -411,12 +434,12 @@ mechanism and [extra_specs](https://docs.openstack.org/api-guide/compute/extra_s
 to allow customers to ask for specific flavor properties without the need to
 encode all these flavor details into the flavor name, so the optional pieces
 may not be needed much. However, there must be a way to request flavor
-properties without encoding the need into an image -- this indirection is
-considered broken by the SCS team.
+properties without encoding the need into an image -- the indirection via
+an image is considered broken by the SCS team.
 
 # Validation
 
-There is a script in [flavor_name_check.py](tools/flavor-name-check.py)
+There is a script in [`flavor_name_check.py`](Tests/iaas/flavor-naming/flavor-name-check.py)
 which can be used to decode, validate and construct flavor names.
 This script must stay in sync with the specification text.
 
@@ -427,12 +450,13 @@ on the flavor list compliance of the cloud environment.
 The script `flavor-names-openstack.py` talks to the OpenStack API of the
 cloud specified by the `OS_CLOUD` environment and queries properties and checks
 the names for standards compliance and completeness w.r.t. the mandatory
-flavor list.
+flavor list. It goes beyond the above example in checking that the discoverable
+features of flavors (vCPUs, RAM, Disk) match what the flavor names claim.
 
 # Previous standard versions
 
 [Version 1 of the standard](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set)
-used a slightly different naming syntax (while the logic was exactly the same.
+used a slightly different naming syntax while the logic was exactly the same.
 What is a `-` in v2 used to be a `:`; `_` used to be `-`. The reason for
 the change was certain Kubernetes tools using the flavor names as labels.
 Labels however are subject to stricter naming rules and in particular don't
@@ -463,8 +487,8 @@ to remove the old v1 names.
 
 # Beyond SCS
 
-The Gaia-X provider working group which could have created a superceeding standard
+The Gaia-X provider working group which could have created a superseding standard
 does no longer exist.
 
-However, we have been reaching out to the OpenStack Public Cloud SIG and the Alasca
+However, we have been reaching out to the OpenStack Public Cloud SIG and the ALASCA
 members to seek further alignment.
