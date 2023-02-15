@@ -1,7 +1,7 @@
 # Testsuite for SCS standards
 
 The tool `scs-compliance-check.py` parses a 
-[compliance definition file](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0003-v1-sovereign-cloud-standards-yaml.md)
+[compliance definition file](../Standards/scs-0003-v1-sovereign-cloud-standards-yaml.md)
 and executes the test executables referenced in there for
 the specified layer (`iaas` or `kaas`).
 
