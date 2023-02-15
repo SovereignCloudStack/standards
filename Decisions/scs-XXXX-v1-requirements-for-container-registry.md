@@ -7,48 +7,47 @@ track: KaaS
 
 # Introduction  
 
-A container registry is a repository or collection of repositories used to store and 
-access container images. Container registries are used by the teams to store the 
-results of build processes and to maintain freely available images. They're acting as 
-the intermediary for sharing container images between systems. They could be connected 
-directly to the container orchestration platforms like Kubernetes.
+A container registry is a repository or collection of repositories that store and
+access container images. It acts as the intermediary for sharing container images
+between systems and could be connected directly to container orchestration platforms
+like Kubernetes.
 
-The container registries could be publicly accessible e.g. Docker Hub or could be
-self-hosted or hosted by the cloud service providers (CSP). These container registries
-may apply various access control mechanisms to restrict public access and make them
-private. Both solutions offer a wide range of features that may or may not attract
-potential users and CSPs.
+Container registries could be publicly accessible e.g. Docker Hub, could be
+self-hosted or hosted by cloud service providers (CSP). These container registries may
+apply various access control mechanisms to restrict public access and make them private.
+Both solutions offer a wide range of features that may or may not attract potential
+users and CSPs.
 
 # Motivation
 
-Our motivation is that there are use cases, where CSP would like to be able to offer
-customers to store and access their container images using the SCS-compliant private
-container registry. The specific use cases should be discussed, but overall the CSPs
-could offer a private container registry as a service or the CSPs could offer a recipe
-for customers to deploy the private registry themselves utilizing the CSP infrastructure.
-In both cases, the private container registry should be SCS-compliant and should fulfill
-a set of needed requirements e.g. for security and privacy.
+This proposal is motivated by use cases in which CSPs would like to offer SCP-compliant
+private container registries to their customers. The specific use cases should be
+discussed, but overall CSP could offer a private container registry as a service or
+CSP could offer a recipe for customers to deploy the private registry themselves
+utilizing CSP infrastructure. In both cases, the private container registry should
+be SCS-compliant and should fulfill a set of needed requirements e.g. for security and
+privacy.
 
-The idea here and the purpose of this document is to specify what requirements a 
+The idea and purpose of this document is to specify what requirements a
 specific technical container registry implementation (i.e. software solution) needs to 
 fulfill in the context of SCS.
 
-The purpose of this document is also to select an appropriate container registry 
-implementation that meets all defined requirements and makes an architectural 
+Another purpose is the selection of an appropriate container registry
+implementation that meets all defined requirements to make architectural
 decision on what implementation is fully SCS-compliant and will be used by the SCS.
 
 # Design considerations
 
 There are numerous features to look for when evaluating a container registry solution.
-Our decision process goes through two main stages. 
+Our decision process goes through two main stages:
 
 1. [OSS health check](#oss-health-check)
 2. [Required and desirable features check](#required-and-desirable-features-check)
 
-The open-source software (OSS) health check does the first filter stage. This stage is 
-crucial in the context of SCS and container registry implementation should pass it to 
-promote itself to the second consideration stage. The second stage does an overview over
-the feature set of open source container registry implementations and map out 
+The open-source software (OSS) health check is the first filter stage. This stage is
+crucial in the context of SCS and container registry implementation should pass it to
+promote itself to the second consideration stage. The second stage provides an overview
+over the feature set of open source container registry implementations and map out
 requirements (and nice-to-haves) against it to have a well-documented decision.
 
 Note: Keep in mind that at the time of writing this document, we’ve made our best effort 
@@ -69,14 +68,14 @@ document. The main health checks are:
 - Activity
 - Lock-in risk assessment
 
-Each selected OSS project is evaluated based on the above checks, and it is classified 
-to one of three categories as follows:
+Each selected OSS project is evaluated based on the above checks, and it is classified
+into one of three categories as follows:
 
 - :heavy_check_mark: The project passed all OSS health checks and will be considered 
   further as a valid candidate.
 
 - :grey_question: The project passed almost all OSS health checks. 
-  There is a place for improvement, but the missing points are not crucial from the OSS 
+  There is place for improvement, but the missing points are not crucial from the OSS
   health check perspective. The project will be considered further as a valid candidate.
 
 - :x: The project does not pass the OSS health checks. Some OSS health check 
@@ -99,7 +98,7 @@ Refer to the list of evaluated projects with their classified categories and com
       The decision process is well described as well. The project's roadmap is 
       available in the [roadmap](https://github.com/goharbor/harbor/blob/main/ROADMAP.md) document
   - Maturity is on the CNCF [graduation](https://www.cncf.io/projects/harbor/) level.
-    CNCF graduated project is considered stable, widely adopted and production-ready
+    CNCF graduated projects are considered to be stable, widely adopted and production-ready
   - Security
     - The security disclosure and response policy is well described in the project's
       [security](https://github.com/goharbor/harbor/blob/main/SECURITY.md) document
@@ -117,8 +116,8 @@ Refer to the list of evaluated projects with their classified categories and com
   - Lock-in risk assessment 
     - The project's [maintainers](https://github.com/goharbor/community/blob/main/MAINTAINERS.md) 
       document shows that there are a sufficient number of core 
-      maintainers/contributors that differ over various companies, therefore the single 
-      point of failure is not a case here
+      maintainers/contributors that differ over various companies, we therefore deem
+      the lock-in risk arising from a single point of failure to be low
   
 - :heavy_check_mark: [Dragonfly][dragonfly]
   - Dragonfly project meets all "four opens"
@@ -196,7 +195,7 @@ Refer to the list of evaluated projects with their classified categories and com
 
 ## Required and desirable features check
 
-This section does an overview of the feature set of open source container registry 
+This section provides an overview of the feature set of open source container registry
 implementations (which passed the OSS health stage above) and map out requirements 
 (and nice-to-haves) against it. SCS-compliant software must be robust enough, to be able 
 to operate under heavy load (e.g. high availability (HA) mode, federation, etc.) and 
@@ -291,20 +290,19 @@ Overall, three projects passed the OSS health checks:
 
 The above projects were then evaluated from the "supported features" perspective.
 The [Required and desirable features check](#required-and-desirable-features-check)
-did an overview of the feature set of open-source container registry implementations
-and map SCS requirements (and nice-to-haves) against it. The list of required features
+investigated the feature set of open-source container registry implementations and
+mapped SCS requirements (and nice-to-haves) against it. The list of required features
 is quite long and contains features that are primarily focused on security
 (authentication, vulnerability scanning, content trust, and validation, etc.),
 scalability (HA mode, registry replication, p2p integration, etc.) and visibility
 (monitoring), see the full list [here](#required-and-desirable-features-check).
 These requirements should ensure that the selected container registry implementation
-could be offered by the CSPs as a secure and enterprise-ready solution.
+could be offered by CSPs as a secure and enterprise-ready solution.
 
-Let's discuss and compare the projects Dragonfly, Quay, and Harbor in the following
-section.
+The following section compares projects Dragonfly, Quay, and Harbor.
 
 [Dragonfly][dragonfly] is a healthy open-source project with a growing community
-and CNCF incubating maturity level. It is considered stable, and it is used by many
+and CNCF incubating maturity level. It is considered stable, and widely used by many
 companies in their production environments. We currently see that it is not as
 feature-rich as Harbor or Quay, hence it is not considered the best choice here.
 It seems, that its main aim (currently) is to offer (an efficient, stable, and secure)
@@ -312,13 +310,13 @@ container distribution solution based on p2p technology. This improves download
 efficiency and saves bandwidth across CSPs. It also offers integration possibilities
 that allow one to use it as a p2p distribution network via a "preheat" API. This
 integration was implemented in the Harbor project via Dragonfly "preheat" adapter, and
-both parties may benefit from the integration. The Harbor profits from Dragonfly's p2p
+both parties may benefit from the integration. Harbor profits from Dragonfly's p2p
 distribution capabilities and on the other hand the Dragonfly project profits from
 Harbor's feature-rich container registry "frontend".
 
-[Quay][projectquay] is the Red Hat open-source project. Its OSS health is on a good level,
-the community around is growing, the maturity is considered also well as the project
-represents the code that powers enterprise solutions Red Hat Quay and Quay.io.
+[Quay][projectquay] is an open-source project maintained by Red Hat. Its OSS health is
+on a good level, the community around it is growing, and we consider it to be quite
+mature as it powers enterprise solutions like Red Hat Quay and Quay.io.
 Besides this, there is still a place for OSS health improvement. It is hard to
 distinguish the risk of project failure caused by low diversity across the companies
 because the project's owners/maintainers list is not publicly available and is stored in
