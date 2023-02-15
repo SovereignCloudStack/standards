@@ -55,38 +55,38 @@ implementation may not fit to you, it will be possible to create your own applic
 
 * The status page application should be simplistic in software design and should not depend on a large
 variety of services
-* * simplistic, yet existing user management for write access (oauth? OIDC?)
-* * * Simple RBAC (role based access control) is nice to have
-* * support that components are only visible to a subset of users
-* * * implies that there is a role that is read-only
-* * * On-Prem use case might be handled by having an authenticating reverse proxy in front
+  * simplistic, yet existing user management for write access (oauth? OIDC?)
+    * Simple RBAC (role based access control) is nice to have
+  * support that components are only visible to a subset of users
+    * implies that there is a role that is read-only
+    * On-Prem use case might be handled by having an authenticating reverse proxy in front
 * The status page applicaton should allow for simple and easy theming
-* * Page = (Possibly simple) Web-UI
+  * Page = (Possibly simple) Web-UI
 
 * As a CSP, I want to have a status page that allows to
-* * define locations and similar grouping (AZs, ...)
-* * define components globally or per location
-* * * to ease maintainence I want to define per component where it belongs so that I only have
+  * define locations and similar grouping (AZs, ...)
+  * define components globally or per location
+    * to ease maintainence I want to define per component where it belongs so that I only have
 to define a component once, but have it visible in several locations
-* * * status per component should be allowed to be toggeable per location or overall
-* * * a component should allow for several status, that are defined by me
+    * status per component should be allowed to be toggeable per location or overall
+    * a component should allow for several status, that are defined by me
 
 * Status, Status Items should be easy to extract
-* * REST(less)-API to interact with
-* * * API should be versioned
-* * * this allows for embedding status information in other applications, such as cloud
+  * REST(less)-API to interact with
+    * API should be versioned
+    * this allows for embedding status information in other applications, such as cloud
 dashboards
-* * * this also allows for submitting items from other tooling
-* * * * incoming webhooks (https POST) should be supported (e.g. for air-gapped setups) –
+    * this also allows for submitting items from other tooling
+      * incoming webhooks (https POST) should be supported (e.g. for air-gapped setups) –
 i.e. submitting a health beacon every x seconds
-* * * * web-UI wanted for posting updates as well
-* * * * Token based Auth
+      * web-UI wanted for posting updates as well
+        * Token based Auth
 
 * Configuration should be manageable with YAML files (imho this annoys me using Uptime Kuma)
 
 * As a consumer of the status page, I'd like to subscribe to events on the status page via e-mail
-* * for everything
-* * for specific components
+  * for everything
+  * for specific components
 * Don't we need (read-)user management for this anyway?
 * TBD: is there a need for alternate ways of pushing infos from the status page application?
 Example: RSS feed
@@ -94,14 +94,14 @@ Example: RSS feed
 webhooks, e.g. chat/messenger)
 
 * As a CSP Operator, I want to be able to flag a component with a new status quick and easy
-* * updating the status of a component should not be hard brainwork and minimize the possibilty
-* * updates can be both machine generated status changes (triggered e.g. by health monitoring)
+  * updating the status of a component should not be hard brainwork and minimize the possibilty
+  * updates can be both machine generated status changes (triggered e.g. by health monitoring)
 as well as updates from human operators
-* * updating a status should allow the CSP Operator to do that in a fashion that either pushes
+  * updating a status should allow the CSP Operator to do that in a fashion that either pushes
 infos to the subscribers or just updates the status on the status page
-* * updating the status can either be toggling the status of the component or can be
+  * updating the status can either be toggling the status of the component or can be
 accompanied by additional textual information.
-* * When updating a status with textual information the status page application should make it
+  * When updating a status with textual information the status page application should make it
 easy for me as the CSP Operator to do in a way that if different people submit infos over time
 they are presented in a similar way (eg. the status page application should guide so that the
 resulting infos are presented in a identical way. Example: when updating infos of an incident
@@ -113,7 +113,7 @@ typical thing that varies if several people update items
 
 * User-specific monitoring (how are MY instances, load-balancers, ... doing?) is OUT OF SCOPE for
 the status page.
-* * But having it would be useful and if we have something like this, link it from the status page
+  * But having it would be useful and if we have something like this, link it from the status page
 (and a link to horizon might be the default)
 * Sidenote: External hosting is desired to avoid status page going down with infra
 
