@@ -34,15 +34,15 @@ Options: -v/--verbose: More verbose output
 ## Testing in docker containers
 ### Build a docker container
 ```shell
-docker build --tag scs-test .
+docker build --tag scs-compliance-check .
 ```
 
 ### Run tests in a docker container
 ```shell
-docker run -it --env OS_CLOUD=CLOUDNAME -v ~/.config/openstack:/root/.config/openstack:ro scs-test
+docker run -it --env OS_CLOUD=CLOUDNAME -v ~/.config/openstack:/root/.config/openstack:ro scs-compliance-check
 ```
 
 ### Debugging
 ```shell
-docker run -it --env OS_CLOUD=CLOUDNAME -v ~/.config/openstack:/root/.config/openstack:ro --entrypoint /bin/bash scs-test
+docker run -it --env OS_CLOUD=CLOUDNAME -v ~/.config/openstack:/root/.config/openstack:ro --entrypoint /bin/bash scs-compliance-check
 ```
