@@ -8,12 +8,13 @@ enhances: status-page-comparison.md
 
 # Introduction
 
-Creating and maintaining IaaS is a complex task. Any kind of consumer (e.g. operators, cutsomers) can
+Creating and maintaining IT infrastructure is a complex task.
+Any kind of consumer (e.g. operators, cutsomers) can
 be supported by presenting the status of all possible parts of the
 serving infrastructure. Whether a service is not reachable or
 the used hardware is having an outage we want the consumers to be easily informed
 by using a "Status Page" application. The need for a "Status Page"
-came up early in Team OPS and the requirements a "Status Page" application 
+came up early in the SCS project and the requirements a "Status Page" application
 has to fulfill were defined and written down on 2022-06-02 as a 
 [MVP-0 epic](https://github.com/SovereignCloudStack/issues/issues/123).
 The upcoming research on existing solutions came to the conclusion that we want to
@@ -50,7 +51,7 @@ So there will be a reference implementation that will match the requirements we 
 In addition there will be an architecture design documentation. So if the reference
 implementation may not fit to you, it will be possible to create your own application.
 
-# Status Page Requirements and decisions from [Requirement discussion results](https://github.com/SovereignCloudStack/issues/files/8822531/20220602-status-page-scs-session.pdf)
+# Status Page Requirements
 
 * The status page application should be simplistic in software design to not depend on a large
 variety of services
@@ -120,9 +121,43 @@ the status page.
 (and a link to horizon might be the default)
 * Sidenote: External hosting is desired to avoid status page going down with infra
 
-# Related Documents
+With those requirements in mind the projects that initially were found, were evaluated.
 
-[Requirement discussion results](https://github.com/SovereignCloudStack/issues/files/8822531/20220602-status-page-scs-session.pdf)
+#### Comparison matrix
+
+|                                          | CachetHQ  | ClearStatus | ciao | cState | Gatus | Issue Status | statusfy |
+|------------------------------------------|-----------|-------------|------|--------|-------|--------------|----------|
+| CSP VIEW                                 |           |             |      |        |       |              |          |
+| small dependency tree                    | ❌ Composer | ✅ | ❌ ruby gems | ✅ | ⁇ helm chart | ❌ npm/github/zapier | ❌ npm dependencies very huge |
+| easy themable                            | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| grouping (by location...)                | ✅ | ❌ | ❌ | ❌ | ✅ | ⁇ | ✅ |
+| components definition ...
+| ... local or global                      | ✅ | ❌ | ❌ | ✅ | ⁇ | ✅ | ❌ |
+| ... easy flagging with new status        | ✅ | ✅ | ❌ | ✅ | ⁇ | ✅ | ❌ |
+| ... push notification on update          | ✅ | ❌ | ✅ | ❌ | ✅ | ⁇ | ✅ |
+| ... updates with additional information  | ✅ | ✅ | ❌ | ✅ | ⁇ | ⁇ | ⁇ |
+| API Support ...                          | ✅ | ✅ | ✅ | ❌ read only | ❌ | ✅ GitHub API | ❌ | ❌ read only |
+| ... versioned                            | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ⁇ |
+| ... web ui for posting updates           | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| ... token based auth                     | ✅ | ✅ Auth managed by git provider | ❌ only basic auth | ❌ | ❌ BUT OIDC! | ✅ | ❌ |
+| manageable configuration                 | ❌ config depends on web server and initial install relies on env variables | ❌ based on hugo CMS | ❌ config by env variables | ❌ based on hugo CMS | ✅ | ❌ | ❌ no real config needed |
+| templating support                       | ✅ twig | ❌ Hugo itself uses GO template libraries | ❌ | ❌ | ❌ | ❌ | ❌ |
+| CUSTOMER VIEW                            |   |   |   |   |   |   |
+| subscription support ...                 | ✅ | ❌ only by git provider | ✅ | ❌ | ❌ | ✅ | ✅ |
+| ... send by eMail                        | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ |
+| watchdog for status page support         | ⁇ | ⁇ | ✅ | ❌ | ✅ | ⁇ | ❌ |
+| trigger webhook support                  | ❌ needs cachet-monitor | ⁇ | ✅ | ⁇ | ✅ | ⁇ | ❌ |
+| ADDITIONAL INFORMATION                   | - | basically a theme for hugo cms, depends on netlify cms | - | basically a theme for hugo cms, depends on netlify cms | - | It's highly optimized for github pages  | SPA created with netlify |
+| hidden components                        | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| user management                          | ✅ | ❌ | ❌ | ❌ | ✅ by OIDC | ⁇ through github? | ❌ |
+| different output format on notification  | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ |
+| external hosting                         | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ looks like you are limited to github | ✅ |
+| project healthy                          | ❌ last commit 17 months | ❌ last commit 3 years | ❌ last commit 5 months | ✅ last commit 2 months | ✅ recent activities | ✅ recent activities | ❌ archived and abondend by the owner |
+| documentation                            | ✅ API ❌ User Documentation | ❌ | ❌ | ❌ | ✅ | ⁇u | ❌ not reachable anymore |
+| git based                                | ❌ | ✅ | ❌ | ✅ | ❌ | ✅ | ⁇ a netlify based installation is able to communicate with github |
+| project URL                              | https://cachethq.io/ | https://github.com/weeblrpress/clearstatus | https://www.brotandgames.com/ciao/ | https://cstate.netlify.app/ | https://gatus.io/ | https://github.com/tadhglewis/issue-status | https://marquez.co/statusfy |
+
+# Related Documents
 
 [Status Page comparison](https://github.com/SovereignCloudStack/Docs/blob/main/Decisions/status-page-comparison.md)
 
