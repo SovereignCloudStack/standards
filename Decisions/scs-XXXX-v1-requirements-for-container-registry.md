@@ -20,13 +20,12 @@ users and CSPs.
 
 # Motivation
 
-This proposal is motivated by use cases in which CSPs would like to offer SCP-compliant
+This proposal is motivated by use cases in which CSPs would like to offer
 private container registries to their customers. The specific use cases should be
 discussed, but overall CSP could offer a private container registry as a service or
 CSP could offer a recipe for customers to deploy the private registry themselves
-utilizing CSP infrastructure. In both cases, the private container registry should
-be SCS-compliant and should fulfill a set of needed requirements e.g. for security and
-privacy.
+utilizing CSP infrastructure. In both cases, the private container registry
+should fulfill a set of needed requirements e.g. for security and privacy.
 
 The idea and purpose of this document is to specify what requirements a
 specific technical container registry implementation (i.e. software solution) needs to 
@@ -34,7 +33,7 @@ fulfill in the context of SCS.
 
 Another purpose is the selection of an appropriate container registry
 implementation that meets all defined requirements to make architectural
-decision on what implementation is fully SCS-compliant and will be used by the SCS.
+decision on what implementation will be used by the SCS.
 
 # Design considerations
 
@@ -58,8 +57,8 @@ Note: Keep in mind that at the time of writing this document, we’ve made our b
 ## OSS health check
 
 This section evaluates the health of the open-source projects that were selected from 
-the currently available solutions. SCS-compliant software must fulfill all OSS health 
-checks defined by the [OSS-Health](https://github.com/SovereignCloudStack/standards/blob/main/Design-Docs/OSS-Health.md) 
+the currently available solutions. The container registry software must fulfill all OSS
+health checks defined by the [OSS-Health](https://github.com/SovereignCloudStack/standards/blob/main/Design-Docs/OSS-Health.md)
 document. The main health checks are:
 - Four Opens (code is fully open source, community is open and diverse, development 
   process is open, design process is open)
@@ -197,8 +196,8 @@ Refer to the list of evaluated projects with their classified categories and com
 
 This section provides an overview of the feature set of open source container registry
 implementations (which passed the OSS health stage above) and map out requirements 
-(and nice-to-haves) against it. SCS-compliant software must be robust enough, to be able 
-to operate under heavy load (e.g. high availability (HA) mode, federation, etc.) and 
+(and nice-to-haves) against it. The container registry software must be robust enough,
+to be able to operate under heavy load (e.g. high availability (HA) mode, federation, etc.) and
 the crucial feature is security.
 We defined a set of required features that the container registry implementation must 
 have and also a set of desirable (nice to have) features are defined and evaluated here. 
@@ -278,7 +277,7 @@ Keppel, Portus, Kraken, etc.) has been carefully evaluated based on the two main
 factors: the open-source health and range of supported features.
 
 The open-source software health is crucial and container registry implementation should
-pass it to be SCS-compliant. The OSS health check evaluates several important metrics
+pass it. The OSS health check evaluates several important metrics
 of an open source software like whether the code/community/development/design is
 fully open or whether the project's maturity, security, and activity are on the desired
 level. This check also evaluates the lock-in risk due to possible single points of
@@ -352,7 +351,7 @@ integration of p2p solutions like Kraken and Dragonfly.
 # Decision
 
 Based on the research and conclusion above we've decided to use the **Harbor** project
-as an SCS-compliant container registry implementation.
+as a container registry implementation for the SCS ecosystem.
 
 
 <!-- Frequently used references -->
