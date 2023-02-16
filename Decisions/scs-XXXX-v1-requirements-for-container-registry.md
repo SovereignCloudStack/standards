@@ -257,7 +257,7 @@ are evaluated here.
 | Authorization                       | ✓                                             | ✓                                                                   | ✓                            |
 | Automation                          | ✓ Webhooks                                    | ✓ Webhooks, building images                                         | ✗                            |
 | Vulnerability scanning              | ✓ Trivy, Clair                                | ✓ Clair                                                             | ✗                            |
-| Content Trust and Validation        | ✓ Notary, Cosign                              | ✓ Cosign                                                            | ✗                            |
+| Content Trust and Validation        | ✓ Cosign                                      | ✓ Cosign                                                            | ✗                            |
 | Multi-tenancy                       | ✓ (not on the storage level)                  | ✓ (not on the storage level)                                        | ✓ (not on the storage level) |
 | Backup and restore                  | ✓                                             | ✓                                                                   | ✗                            |
 | Monitoring                          | ✓ Prometheus metrics                          | ✓ Prometheus metrics                                                | ✓ Prometheus metrics         |
@@ -267,8 +267,11 @@ are evaluated here.
 | Quota management                    | ✓ Based on storage consumption or image count | ✓ Based on storage consumption                                      | ✗                            |
 | Garbage collection                  | ✓                                             | ✓                                                                   | ✗                            |
 | Retention policy                    | ✓ Multiple tag retention rules                | ✓ Only tag expiration rules                                         | ✗                            |
-| Additional supported artifacts      | ✓ non-OCI Helm charts (ChartMuseum)           | ✗ (only OCI artifacts)                                              | ✓ Maven, YUM                 |
+| Additional supported artifacts      | ✗ (only OCI artifacts)                        | ✗ (only OCI artifacts)                                              | ✓ Maven, YUM                 |
 | Integration possibilities           | ✓ Dragonfly (P2P), Kraken (P2P)               | ✗                                                                   | ✓ Harbor, Nydus, eStargz     |
+
+Note: Harbor announced the deprecation of [Notary](https://github.com/goharbor/harbor/discussions/16612) and [Chartmuseum](https://github.com/goharbor/harbor/discussions/15057)
+integrations, hence they are not mentioned in the table
 
 ## Conclusion
 
@@ -324,10 +327,10 @@ Its feature set is impressive and this project fulfills all must-haves defined i
 this document. Quay gives you security over your repositories with image
 vulnerability scanning (Clair integration), content validation (Cosign integration),
 and access controls. Harbor stands out here as it allows users to use also project Trivy
-for vulnerability scanning and project Notary for content trust and validation.
-Project Quay also provides a scalable open-source platform to host container images
-across any size organization. One drawback in comparison to Harbor is that the proxy cache
-feature is still marked as a [Technology Preview](https://docs.projectquay.io/use_quay.html#quay-as-cache-proxy),
+for vulnerability scanning. Project Quay also provides a scalable open-source
+platform to host container images across any size organization. One drawback in
+comparison to Harbor is that the proxy cache feature is still marked as a
+[Technology Preview](https://docs.projectquay.io/use_quay.html#quay-as-cache-proxy),
 hence this feature may not be completely production-ready yet. On the other hand,
 the project Quay supports [building Dockerfiles](https://docs.projectquay.io/use_quay.html#build-support)
 using a set of workers on e.g. Kubernetes. Build triggers, such as GitHub webhooks
@@ -343,10 +346,9 @@ Its community size, landscape, and CNCF graduation make a significant difference
 comparison to Quay's open-source health capabilities.
 The list of supported features is also impressive. This project fulfills all must-haves
 defined in this document and overcome project Quay with a production-ready proxy cache
-feature and more options that the user may use in case of image vulnerability scanning
-and content validation. In addition, Harbor is able to store non-OCI Helm charts
-via ChartMuseum integration and profits from p2p distribution capabilities via
-integration of p2p solutions like Kraken and Dragonfly.
+feature and more options that the user may use in case of image vulnerability scanning.
+In addition, Harbor profits from p2p distribution capabilities via integration of p2p
+solutions like Kraken and Dragonfly.
 
 # Decision
 
