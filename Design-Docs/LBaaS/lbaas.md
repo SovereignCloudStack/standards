@@ -10,8 +10,8 @@ track: Global
 The Terminology of Loadbalancing is a bundle of different types of
 Loadbalancing, which is explained in the Section 2.
 
-From an operator perspective it is today possible to use LBaaS,
-the SCS Stack shipped Octavia as LBaaS. but there are some open
+From an operator perspective, it is today possible to use LBaaS,
+the SCS Stack shipped Octavia as LBaaS. But there are some open
 questions. For some application use cases, audit trail or geolocating
 protection it is helpful to be able to get origin source ip
 in.
@@ -24,33 +24,35 @@ in.
 
 ### 2.1.1 Listener
 
-A listener or a virtual server is a Socket, an interface or an
-ip address with a port definition to accept traffic.
+A listener or virtual server can be a socket, an interface or a
+ip address with a port definition. That is able to accept traffic.
 
 ### 2.1.2 Backend
 
 A backend or a pool is a collective of member servers.
-The listener represents the client-side and the backend the
-server side.
+The listener represents the client-side and the backend 
+of the server-side.
 
 ### 2.1.3 Member server
 
-A member server or real server is by definition an ip and
-a port, which represents a real, virtual instance or container.
-It could be a local socket too.
+A member server or real server is a ip and a port, that 
+represents a real, virtual instance or a container.It 
+could also be a local unix-socket.
 
 ### 2.1.4 Monitor
 
-A monitor in loadbalancers scope means this a healtscheck which is
-proof the service of the responsibility of each member server.
+A monitor in the load balancer context means having a health check 
+that checks the service for availability of each member server.
 
 ### 2.2  Types of Loadbalancing
 
 ### 2.2.1  DNS Based Loadbalancing
 
-DNS Based Loadbalancing means to resolve a DNS name to more than to one A
-or AAAA Record. The client will likely cache this entry. if is answer is fault,
-it will to next.
+DNS-based load balancing means, have a DNS A Record more than with one entry.
+
+The DNS client cache will keep the first entry and the client will try to 
+reach the first destination. If the answer is incorrect, the client should 
+try to reach the next entry.
 
 ```console
 www.example.org       A         1.2.3.4
@@ -66,15 +68,15 @@ is a very simplistic way of loadbalancing.
 
 Reverse proxy is a form of loadbalancing, which terminates connections
 and recreates a new client-server connection form the listener to 
-its own backend. For HTTP this solution is working in a good manner,
-the HTTP Protocol contains mechanisms, which are able to forward origin ip
-and origin port forwarding. This is specified in [RFC7239](https://www.rfc-editor.org/rfc/rfc7239.html).
+its own backend. This solution works well for HTTP, the HTTP protocol 
+contains mechanisms that can forward origin ip and port of origin.
+This is specified in [RFC7239](https://www.rfc-editor.org/rfc/rfc7239.html).
 
 For the TCP connection it is a workaround with flaw. TCP itself has no
 mechanism to forwarded the origin source ip. TLS Termination works
 even to for HTTP and TCP.
 
-the expected performance footprint is minimal.
+The expected performance footprint is minimal.
 
 examples for this are:
 
@@ -86,22 +88,24 @@ examples for this are:
 
 ![Loadbalancer Nat](natbased.png)
 
-Direct Routing or Network Address Translation Loadbalancing,
-is a form of Loadbalancing provided, where loadbalancing 
-component works directly on a network gateway. This network
-gateway is present to the member server as the default gateway.
+Direct Routing or Network Address Translation Loadbalancing is a form
+of load balancing that provides the component directly on a network 
+gateway. The gateway is available as a standard gateway for the 
+member servers.
 
-The NAT provided origin source ip packages which is a way to balance
-L3 Traffic. There is no header modification needed protocol.
+The NAT passes through the original source-ip packages, which then 
+provide a possibility for balancing decision based on the
+L3 traffic. No header modification is required in the protocol.
 
-TLS Termination for TCP should handle by backend application directly.
+The TLS termination for TCP should be negotiated directly at the 
+Backend application.
 
-Another benefit is use a masquerade ip network cidr to connect from
-server to client network to use multiple nat addresses to public
-internet.
+Another advantage is the use of a masked network CIDR, the servers 
+behind a NAT pool with more Client IP's can request on the Internet
 
-the expected performance footprint is medium, so for software defined
-it could be a bottleneck.
+The expected performance footprint is to be assessed as medium, 
+specifically for software defined networks considering the NAT 
+translation, it could become a bottleneck.
 
 example for this are:
 
@@ -112,58 +116,68 @@ example for this are:
 
 ![DSR](dsr.png)
 
-Direct Server Return is from the architecture layer beside of the 
-gateway as own instance and is from the definition a "flat based" 
-form of loadbalancing. In the Direction of Trafficflow, from the
-public origin source ip to listener. From Listener as client side,
-rewrite the client side ip with the origin source ip to the server side,
-the responsive member response to origin source ip.
+Direct server return is located next to the gateway, 
+viewed from the architecture layer.
+
+It is from the definition a "flat based" load balancer.
+In view of the direction of the traffic flow, the original source 
+ip of incoming traffic passes from the "listener" as a client-side 
+and rewrites the client-side ip with the source of origin ip to 
+the server-side, the response of the responding member server 
+then follows the source of origin ip and passes the network default 
+gateway.
+
 
 ### 2.2.5  ECMP Loadbalancing
 
-For this form of Loadbalancing, it will use the function of Routers to 
-forwarding traffic. In Wide Area Network there is often the possibility
-to have multiple datapathes to the dedicate network hops. The idea 
-behind is to have network redundancy, where are some of this datapathes
-are standby. it is handled by routing protocols to it own metrics or 
-"costs" where datapathes take place. With ECMP or in long form 
-Equal Path Multi Path will realized by insert the route in forward 
-table of a router  to use the same "costs" to a single destination hop. 
-This means you will have an addition form of scheduling  mechanism 
-to manipulate the chosen route. ECMP is expressed in [RFC2992](https://www.rfc-editor.org/rfc/rfc2992)
-the most chosen routing protocol is BGP with Support for scaling
-virtual services.
+For this form of load balancing, the function of routing is used 
+to forward the traffic. In Wide Area Network there is often the 
+possibility to have multiple data paths to the dedicated network hops.
+
+The idea behind this concept is to have network redundancy, 
+with some of these data paths as a standby. This is controlled 
+by routing protocols based on metrics, for example by "costs" 
+where the data paths take place. With ECMP or in long form
+Equal Path Multi Path is realized by inserting the route forward. 
+In the routing table of a router, hops are expanded with the same 
+"costs" to a single target. This means that you have an additional 
+form of scheduling mechanism manipulate the selected route. 
+ECMP is explained in detail in [RFC2992](https://www.rfc-editor.org/rfc/rfc2992).
+the most used routing protocol is BGP, which supports scaling 
+for virtual services.
 
 there two forms of Loadbalancing
 
-Round robin which is known under packet based Loadbalancing
+Round robin, known as package-based load balancing
 
-session loadbalancing which will decided with every new session,
-with routes the flow by the first session decision, with schedulers
-round robin, hashed or least recently using.
+Loadbalancing session decided with any new session,
+Routes to manipulate the flow through the first session decision. 
+This can be done with the schedulers round robin, hashed or least-conection.
 
 ## 2.3.  LBaaS in SCS Clouds
 
-With OpenStack octavia as project is shipped as Loadbalancer as
-Service in SCS stacks. It works in two scenarios. 
+OpenStack brings octavia as its own load balancer as a service solution. 
+This can be activated as a service in SCS stacks. It works in two scenarios. 
 
 ### 2.3.1 Amphora Provider
 
 ![amphora](Amphora-diagram.png)
 
-The amphora provider with ha-instances of amphora's Amphora works in
-typical OpenStack Projects as instance as single or as HA-Pair.
-An amphora is instance with interface for management  by octavia
-control plane and an amphora-namespace to handle the loadbalancing and
-the HA-VIP things itself. In the amphora-namespace itself work haproxy
-as reverse-proxy for http, tcp and TLS termination + keepalived as VRRP
-and ipvsadm for UDP.
+The Amphora provider with HA-Instances with named amphora's.
+Amphora works in a service OpenStack project  either as an individual instance,
+or better as a HA pair.
+
+An amphora instance consists of an interface for management by octavia
+control plane and an amphora name space to cope with load balancing 
+capability and the HA-VIP things themselves. 
+In the amphora-namespace itself work haproxy as reverse proxy for http, 
+tcp and TLS termination, ipvsadm for UDP and high availibility as VRRP.
 
 ### 2.3.2 OVN Provider
   
 the Second Provider in Octavia work with the SDN integration
-Open Virtual Network. The Design it much easier from the architecture
-perspective. the listener is just another router port in the
+Open Virtual Network. The design is much simpler, viewed from architecture
+perspective. The listener is just another router port in the
 OpenStack Project Router. Logical it works as DSR based Loadbalancing,
 which controlled by the Openflow definition of OVN.
 
@@ -172,10 +186,7 @@ OVN in a small showcase
 ```console
   openstack loadbalancer create --provider ovn --vip-subnet-id=subnet-test
   openstack loadbalancer set --name lb1 13f4ff79-0e58-4bf2-8ad6-c2dc0e1d15a3
-
   openstack loadbalancer pool create --name p1 --loadbalancer lb1 --protocol TCP --lb-algorithm SOURCE_IP_PORT
-
   openstack loadbalancer member create --address 192.168.112.122 --subnet-id 6816715b-53db-4322-a56a-31b5c537c1b8 --protocol-port 22 p1
-
   openstack loadbalancer listener create --name l1 --protocol TCP  --protocol-port 2222 --default-pool p1 lb1
 ```
