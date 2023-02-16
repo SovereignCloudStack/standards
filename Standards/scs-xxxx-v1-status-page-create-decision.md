@@ -153,9 +153,3 @@ With those requirements in mind the projects that initially were found, were eva
 | git based                                | ❌ | ✅ | ❌ | ✅ | ❌ | ✅ | ⁇ a netlify based installation is able to communicate with github |
 | project page                             | https://cachethq.io/ | https://github.com/weeblrpress/clearstatus | https://www.brotandgames.com/ciao/ | https://cstate.netlify.app/ | https://gatus.io/ | https://github.com/tadhglewis/issue-status | https://marquez.co/statusfy |
 
-# Related Documents
-
-[Status Page comparison](https://github.com/SovereignCloudStack/Docs/blob/main/Decisions/status-page-comparison.md)
-
-[Architecture design documentation](https://github.com/joshmue/scs-docs/tree/statuspage-design/Design-Docs/statuspage)
-
