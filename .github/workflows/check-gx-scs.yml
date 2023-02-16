@@ -11,7 +11,7 @@ on:
   
 jobs:
   check-gx-scs:
-    uses: ./.github/workflows/scs-compliance-check/scs-compliance-check.yml
+    uses: ./.github/workflows/scs-compliance-check.yml
     with:
       cloud: "gx-scs"
       secret_name: "OS_PASSWORD_GXSCS"
