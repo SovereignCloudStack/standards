@@ -23,9 +23,10 @@ users and CSPs.
 This proposal is motivated by use cases in which CSPs would like to offer
 private container registries to their customers. The specific use cases should be
 discussed, but overall CSP could offer a private container registry as a service or
-CSP could offer a recipe for customers to deploy the private registry themselves
-utilizing CSP infrastructure. In both cases, the private container registry
-should fulfill a set of needed requirements e.g. for security and privacy.
+CSP could offer a recipe (maintained by SCS) for customers to deploy the private
+registry themselves utilizing CSP infrastructure. In both cases, the private
+container registry should fulfill a set of needed requirements e.g. for security and
+privacy.
 
 The idea and purpose of this document is to specify what requirements a
 specific technical container registry implementation (i.e. software solution) needs to 
