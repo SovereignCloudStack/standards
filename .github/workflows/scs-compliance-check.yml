@@ -17,7 +17,7 @@ jobs:
       image: ghcr.io/sovereigncloudstack/scs-compliance-check:main
     steps:
       - name: "Get clouds.yaml"
-        run: "mkdir /etc/openstack && wget -P /etc/openstack https://raw.githubusercontent.com/sovereigncloudstack/standards/main/.github/workflows/scs-compliance-check/openstack/clouds.yaml"
+        run: "mkdir /etc/openstack && wget -P /etc/openstack https://raw.githubusercontent.com/sovereigncloudstack/standards/main/.github/scs-compliance-check/openstack/clouds.yaml"
       - name: "Create secure.yaml"
         run: |
           cat << EOF > /etc/openstack/secure.yaml
