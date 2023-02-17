@@ -4,7 +4,7 @@ on:
   # Trigger compliance check every day at 4:30 UTC
   schedule:
     - cron:  '30 4 * * *'
-  # Trigger compliance check after every push to Tests directory
+  # Trigger compliance check after Docker image has been built
   workflow_run:
     workflows: [Build and publish scs-compliance-check Docker image]
     types:
