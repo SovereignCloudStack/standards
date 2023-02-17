@@ -62,7 +62,7 @@ def main(argv):
             fnmck.disallow_old = True
         elif opt[0] == "-v" or opt[0] == "--verbose":
             verbose = True
-            #fnmck.verbose = True
+            # fnmck.verbose = True
         elif opt[0] == "-q" or opt[0] == "--quiet":
             quiet = True
         else:

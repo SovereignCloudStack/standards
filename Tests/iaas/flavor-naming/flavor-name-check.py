@@ -27,6 +27,7 @@ License: CC-BY-SA 4.0
 import sys
 import os
 import re
+# import getopt
 
 # globals
 verbose = False
@@ -72,11 +73,13 @@ def is_scs(name):
     #     return 5
     return 0
 
+
 # field limiters
 new_delim = "_"
 old_delim = "-"
 new_quant = "-"
 old_quant = ":"
+
 
 class Prop:
     "Class to hold properties"
@@ -150,7 +153,7 @@ class Prop:
 
     def __init__(self, string, forceold = False):
         "c'tor parses the string and stores the reuslts"
-        #global disallow_old
+        # global disallow_old
         self.isold = False
         if not forceold:
             self.string = self.end(string)
@@ -187,7 +190,7 @@ class Prop:
                 try:
                     attr = self.__getattribute__(f"tbl_{fname}")[attr]
                 except KeyError:
-                    #print(f'   Table {fname} has no attribute "{attr}"')
+                    # print(f'   Table {fname} has no attribute "{attr}"')
                     pass
             stg += " " + self.pnames[i] + ": " + str(attr) + ","
         return stg[:-1]
@@ -249,7 +252,7 @@ class Prop:
                 par += 1
             elif self.outstr[i+1] == ":":   # change?
                 if att:
-                    #ostr += ":%"
+                    # ostr += ":%"
                     ostr += "-%"
                     i += 2
                     lst.append(att)
@@ -510,11 +513,18 @@ def printflavor(name, item_list):
     print()
 
 
+def parseone(name, cname, forceold=False, checkold=True):
+    obj = cname(name, forceold)
+    if checkold and not forceold and obj.isold:
+        raise NameError(f"Error 80: New start, old end of flavor name {name}")
+    return obj
+
+
 def parsename(name):
     """Extract properties from SCS flavor name, return None (if not SCS-),
        raise NameError exception (if not conforming) or return tuple
        (cpuram, disk, hype, hvirt, cpubrand, gpu, ib)"""
-    #global verbose, debug
+    # global verbose, debug
     scsln = is_scs(name)
     if not scsln:
         if verbose:
@@ -522,29 +532,23 @@ def parsename(name):
         return None
     n = name[scsln:]
     isold = False
-    cpuram = Main(n, isold)
+    cpuram = parseone(n, Main, isold, False)
     if cpuram.parsed == 0:
         raise NameError(f"Error 10: Failed to parse main part of {n}")
     isold = isold or cpuram.isold
     n = n[cpuram.parsed:]
-    disk = Disk(n, isold)
-    isold = isold or disk.isold
+    disk = parseone(n, Disk, isold)
     n = n[disk.parsed:]
-    hype = Hype(n, isold)
-    isold = isold or hype.isold
+    hype = parseone(n, Hype, isold)
     n = n[hype.parsed:]
-    hvirt = HWVirt(n, isold)
-    isold = isold or hvirt.isold
+    hvirt = parseone(n, HWVirt, isold)
     n = n[hvirt.parsed:]
     # FIXME: Need to ensure we don't misparse -ib here
-    cpubrand = CPUBrand(n, isold)
-    isold = isold or cpubrand.isold
+    cpubrand = parseone(n, CPUBrand, isold)
     n = n[cpubrand.parsed:]
-    gpu = GPU(n, isold)
-    isold = isold or gpu.isold
+    gpu = parseone(n, GPU, isold)
     n = n[gpu.parsed:]
-    ibd = IB(n, isold)
-    isold = isold or ibd.isold
+    ibd = parseone(n, IB, isold)
     n = n[ibd.parsed:]
     if verbose:
         printflavor(name, (cpuram, disk, hype, hvirt, cpubrand, gpu, ibd))
@@ -616,7 +620,7 @@ mandFlavorFile = "SCS-Spec.MandatoryFlavors.yaml"
 
 def main(argv):
     "Entry point when used as selfstanding tool"
-    global verbose, debug, disallow_old, completecheck
+    global verbose, debug, disallow_old, completecheck, version1
     # Number of good SCS flavors
     scs = 0
     # Number of non-SCS flavors
