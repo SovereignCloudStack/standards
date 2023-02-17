@@ -34,6 +34,7 @@ verbose = False
 debug = False
 completecheck = False
 disallow_old = False
+prefer_old = False
 
 # search strings
 scsPre = re.compile(r'^SCS\-')
@@ -45,10 +46,10 @@ scsPre = re.compile(r'^SCS\-')
 
 def usage():
     "help"
-    print("Usage: flavor-name-check.py [-d] [-v] [-o] [-c] [-C mand.yaml] [-i | NAME [NAME [...]]]")
+    print("Usage: flavor-name-check.py [-d] [-v] [-2] [-1] [-c] [-C mand.yaml] [-i | NAME [NAME [...]]]")
     print("Flavor name checker returns 0 if no error, 1 for non SCS flavors and 10+ for wrong flavor names")
     print("-d enables debug mode, -v outputs a verbose description, -i enters interactive input mode")
-    print("-2 disallows old v1 flavor naming")
+    print("-2 disallows old v1 flavor naming, -1 checks old names for completeness")
     print("-c checks the SCS names AND checks the list for completeness w.r.t. SCS mandatory flavors.")
     print("-C mand.yaml reads the mandatory flavor list from mand.yaml instead of SCS-Spec.MandatoryFlavors.yaml")
     print("Example: flavor-name-check.py -c $(openstack flavor list -f value -c Name)")
@@ -524,7 +525,7 @@ def parsename(name):
     """Extract properties from SCS flavor name, return None (if not SCS-),
        raise NameError exception (if not conforming) or return tuple
        (cpuram, disk, hype, hvirt, cpubrand, gpu, ib)"""
-    # global verbose, debug
+    # global verbose, debug, prefer_old
     scsln = is_scs(name)
     if not scsln:
         if verbose:
@@ -552,8 +553,10 @@ def parsename(name):
     n = n[ibd.parsed:]
     if verbose:
         printflavor(name, (cpuram, disk, hype, hvirt, cpubrand, gpu, ibd))
-    if isold:
-        print(f'WARNING: Old flavor found: "{name}"')
+    if isold and not prefer_old:
+        print(f'WARNING: Old flavor name found: "{name}"')
+    elif prefer_old and not isold:
+        print(f'WARNING: New flavor name found: "{name}"')
     if n:
         print(f"ERROR: Could not parse: {n}")
         raise NameError(f"Error 70: Could not parse {n} (extras?)")
@@ -597,6 +600,12 @@ else:
     _bindir = os.environ('PATH').split(':')
 
 
+def new_to_old(nm):
+    nm = nm.replace('-', ':')            
+    nm = nm.replace('_', '-')            
+    nm = nm.replace('SCS:', 'SCS-')            
+    return nm
+
 def readmandflavors(fnm):
     "Read mandatory flavors from passed YAML file, search in a few paths"
     import yaml
@@ -611,7 +620,11 @@ def readmandflavors(fnm):
                 break
     with open(fnm, "r", encoding="UTF-8)") as fobj:
         yamldict = yaml.safe_load(fobj)
-    return yamldict["SCS-Spec"]["MandatoryFlavors"]
+    ydict = yamldict["SCS-Spec"]["MandatoryFlavors"]
+    if prefer_old:
+        for ix in range(0, len(ydict)):
+            ydict[ix] = new_to_old(ydict[ix])
+    return ydict
 
 
 # Default file name for mandatpry flavors
@@ -620,7 +633,7 @@ mandFlavorFile = "SCS-Spec.MandatoryFlavors.yaml"
 
 def main(argv):
     "Entry point when used as selfstanding tool"
-    global verbose, debug, disallow_old, completecheck, version1
+    global verbose, debug, disallow_old, completecheck, prefer_old
     # Number of good SCS flavors
     scs = 0
     # Number of non-SCS flavors
@@ -639,6 +652,9 @@ def main(argv):
         argv = argv[1:]
     if argv[0] == "-2":
         disallow_old = True
+        argv = argv[1:]
+    if argv[0] == "-1":
+        prefer_old = True
         argv = argv[1:]
     if argv[0] == "-c":
         completecheck = True
@@ -691,6 +707,8 @@ def main(argv):
         if debug:
             print(f"In {name}, Out {namecheck}")
 
+        if prefer_old:
+            namecheck = new_to_old(namecheck)
         if namecheck != name:
             # raise NameError(f"{name} != {namecheck}")
             print(f"WARNING: {name} != {namecheck}")
@@ -698,7 +716,7 @@ def main(argv):
     if completecheck:
         print(f"Found {scs} SCS flavors ({scsMandNum} mandatory), {nonscs} non-SCS flavors")
         if scsMandatory:
-            print(f"Missing mandatory flavors: {scsMandatory}")
+            print(f"Missing {len(scsMandatory)} mandatory flavors: {scsMandatory}")
             return len(scsMandatory)
         return error
     return nonscs+error

@@ -46,8 +46,8 @@ def main(argv):
     except KeyError:
         pass
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:C:vhq2",
-                                       ("os-cloud=", "mand=", "verbose", "help", "quiet", "v2plus"))
+        opts, args = getopt.gnu_getopt(argv, "c:C:vhq21",
+                                       ("os-cloud=", "mand=", "verbose", "help", "quiet", "v2plus", "v1prefer"))
     except getopt.GetoptError as exc:
         print(f"{exc}", file=sys.stderr)
         usage(1)
@@ -60,6 +60,8 @@ def main(argv):
             scsMandFile = opt[1]
         elif opt[0] == "-2" or opt[0] == "--v2plus":
             fnmck.disallow_old = True
+        elif opt[0] == "-1" or opt[0] == "--v1prefer":
+            fnmck.prefer_old = True
         elif opt[0] == "-v" or opt[0] == "--verbose":
             verbose = True
             # fnmck.verbose = True
