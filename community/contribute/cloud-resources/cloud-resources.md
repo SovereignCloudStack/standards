@@ -14,7 +14,7 @@ A brief guide on how to use the resources provided by PlusServer can be found [h
 
 ### Users
 
-As suggested in [#155](https://github.com/SovereignCloudStack/Docs/issues/155) the username for non-"service users" will contain the users github handle and are prefixed with a PlusServer default.
+As suggested in [#155](https://github.com/SovereignCloudStack/standards/issues/155) the username for non-"service users" will contain the users github handle and are prefixed with a PlusServer default.
 ``prefix-<github handle>``
 
 > **Note**
@@ -35,11 +35,13 @@ Example:
 
 Service users will have their default_project_id set to a specific project and will NOT be granted full access to other projects by default.
 
-| Unique Identifier | Service User Name | Full Access on | Community Contact | Description | Needed until |
-|:---:|---|---|---|---|:---:|
-| 9a1576af59644a2dbbace773ad17158d | u500924-svc-sig-monitoring | p500924-sig-monitoring1 | fkr | Service User - SIG Monitoring | 31.12.2023 |
-| 4925967416894fd78be6701689059653 | u500924-svc-cloudmon | p500924-cloudmon-target | costelter | Service User - CloudMon Test Project | 31.12.2023 |
-|  |  |  |  |  |
+|         Unique Identifier        | Service User Name          | Full Access on            | Community Contact | Description                                   | Needed until |
+|:--------------------------------:|----------------------------|---------------------------|-------------------|-----------------------------------------------|:------------:|
+| 9a1576af59644a2dbbace773ad17158d | u500924-svc-sig-monitoring | p500924-sig-monitoring1   | fkr               | Service User - SIG Monitoring                 |  31.12.2023  |
+| 4925967416894fd78be6701689059653 | u500924-svc-cloudmon       | p500924-cloudmon-target   | costelter         | Service User - CloudMon Test Project          |  31.12.2023  |
+| f89b3d64ddff4d9d8cadb5e06fa22299 | u500924-svc-healthmonitor  | p500924-scs-healthmonitor | garloff           | Service User - SCS Health Monitor             |       ∞      |
+| 49cc3d72fbdf41fe8dc407f57f026dbf | u500924-svc-standards      | p500924-scs-healthmonitor | itrich            | Service User - SCS Standards Compliance Check |       ∞      |
+|                                  |                            |                           |                   |                                               |
 
 ### Projects
 
