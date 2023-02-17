@@ -250,29 +250,31 @@ Refer to the table of evaluated projects with their features. Note that only con
 registry implementations that passed the OSS health stage (Harbor, Quay, and Dragonfly)
 are evaluated here.
 
-| Features                            | Harbor                                        | Quay                                                                | Dragonfly                    |
-|-------------------------------------|-----------------------------------------------|---------------------------------------------------------------------|------------------------------|
-| Audit Logs                          | ✓                                             | ✓                                                                   | ✗                            |
-| Authentication of system identities | ✓ Robot Accounts                              | ✓ Robot Accounts                                                    | ✗                            |
-| Authentication of users             | ✓ Local database, LDAP, OIDC, UAA             | ✓ Local database, LDAP, Keystone, JWT                               | ✓ Local database             |
-| Authorization                       | ✓                                             | ✓                                                                   | ✓                            |
-| Automation                          | ✓ Webhooks                                    | ✓ Webhooks, building images                                         | ✗                            |
-| Vulnerability scanning              | ✓ Trivy, Clair                                | ✓ Clair                                                             | ✗                            |
-| Content Trust and Validation        | ✓ Cosign                                      | ✓ Cosign                                                            | ✗                            |
-| Multi-tenancy                       | ✓ (not on the storage level)                  | ✓ (not on the storage level)                                        | ✓ (not on the storage level) |
-| Backup and restore                  | ✓                                             | ✓                                                                   | ✗                            |
-| Monitoring                          | ✓ Prometheus metrics                          | ✓ Prometheus metrics                                                | ✓ Prometheus metrics         |
-| HA mode                             | ✓                                             | ✓                                                                   | ✗                            |
-| Registry replication                | ✓                                             | ✓                                                                   | ✓                            |
-| Proxy cache                         | ✓                                             | ✓ Feature is in the technology preview stage (non production ready) | ✗                            |
-| Quota management                    | ✓ Based on storage consumption or image count | ✓ Based on storage consumption                                      | ✗                            |
-| Garbage collection                  | ✓                                             | ✓                                                                   | ✗                            |
-| Retention policy                    | ✓ Multiple tag retention rules                | ✓ Only tag expiration rules                                         | ✗                            |
-| Additional supported artifacts      | ✗ (only OCI artifacts)                        | ✗ (only OCI artifacts)                                              | ✓ Maven, YUM                 |
-| Integration possibilities           | ✓ Dragonfly (P2P), Kraken (P2P)               | ✗                                                                   | ✓ Harbor, Nydus, eStargz     |
+| Features                            | Harbor                            | Quay                                                                | Dragonfly                     |
+|-------------------------------------|-----------------------------------|---------------------------------------------------------------------|-------------------------------|
+| Audit Logs                          | ✓                                 | ✓                                                                   | ✗                             |
+| Authentication of system identities | ✓ Robot Accounts                  | ✓ Robot Accounts                                                    | ✗                             |
+| Authentication of users             | ✓ Local database, LDAP, OIDC, UAA | ✓ Local database, LDAP, Keystone, JWT                               | ✓ Local database              |
+| Authorization                       | ✓                                 | ✓                                                                   | ✓                             |
+| Automation                          | ✓ Webhooks (HTTP, Slack)          | ✓ Webhooks (HTTP, Slack, E-mail ...), building images               | ✗                             |
+| Vulnerability scanning              | ✓ Trivy, Clair                    | ✓ Clair                                                             | ✗                             |
+| Content Trust and Validation        | ✓ Cosign                          | ✓ Cosign                                                            | ✗                             |
+| Multi-tenancy                       | ✓ (not on the storage level)      | ✓ (not on the storage level)                                        | ✓ (not on the storage level)  |
+| Backup and restore                  | ✓                                 | ✓                                                                   | ✗                             |
+| Monitoring                          | ✓ Prometheus metrics, Tracing     | ✓ Prometheus metrics, Tracing (only for Clair)                      | ✓ Prometheus metrics, Tracing |
+| HA mode                             | ✓                                 | ✓                                                                   | ✗                             |
+| Registry replication                | ✓                                 | ✓                                                                   | ✓                             |
+| Proxy cache                         | ✓                                 | ✓ Feature is in the technology preview stage (non production ready) | ✗                             |
+| Quota management                    | ✓ Based on storage consumption    | ✓ Based on storage consumption                                      | ✗                             |
+| Garbage collection                  | ✓ Non-blocking                    | ✓ Non-blocking                                                      | ✗                             |
+| Retention policy                    | ✓ Multiple tag retention rules    | ✓ Only tag expiration rules                                         | ✗                             |
+| Additional supported artifacts      | ✗ (only OCI artifacts)            | ✗ (only OCI artifacts)                                              | ✓ Maven, YUM                  |
+| Integration possibilities           | ✓ Dragonfly (P2P), Kraken (P2P)   | ✗                                                                   | ✓ Harbor, Nydus, eStargz      |
 
-Note: Harbor announced the deprecation of [Notary](https://github.com/goharbor/harbor/discussions/16612) and [Chartmuseum](https://github.com/goharbor/harbor/discussions/15057)
+Notes:
+- Harbor announced the deprecation of [Notary](https://github.com/goharbor/harbor/discussions/16612) and [Chartmuseum](https://github.com/goharbor/harbor/discussions/15057)
 integrations, hence they are not mentioned in the table
+- Harbor should support webhooks following CloudEvents spec in the [next release](https://github.com/goharbor/harbor/issues/17748)
 
 ## Conclusion
 
