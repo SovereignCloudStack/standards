@@ -1,9 +1,11 @@
 name: "Compliance of gx-scs"
 
 on:
+  # Trigger compliance check every day at 4:30 UTC
+  schedule:
+    - cron:  '30 4 * * *'
+  # Trigger compliance check after every push to Tests directory
   push:
-    branches:
-    - main
     paths:
       - Tests/**
   # Allows you to run this workflow manually from the Actions tab
