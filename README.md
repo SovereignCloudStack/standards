@@ -9,6 +9,7 @@ This is a list of clouds that we test on a nightly basis against our `scs-compat
 | Name | Description | Operator | Compliance check |
 | ---- | ----------- | -------- | ---------- |
 | [gx-scs](https://github.com/SovereignCloudStack/docs/blob/main/community/contribute/cloud-resources/plusserver-gx-scs.md) | Dev environment provided for SCS & GAIA-X context | PlusServer GmbH | [![Compliance of gx-scs](https://github.com/SovereignCloudStack/standards/actions/workflows/check-gx-scs.yml/badge.svg)](https://github.com/SovereignCloudStack/standards/actions/workflows/check-gx-scs.yml) |
+| [pluscloud open](https://www.plusserver.com/en/products/pluscloud-open) | Public cloud for customers | PlusServer GmbH | [![Compliance of pco-prod1](https://github.com/SovereignCloudStack/standards/actions/workflows/check-pco-prod1.yml/badge.svg)](https://github.com/SovereignCloudStack/standards/actions/workflows/check-pco-prod1.yml) <br /> [![Compliance of pco-prod2](https://github.com/SovereignCloudStack/standards/actions/workflows/check-pco-prod2.yml/badge.svg)](https://github.com/SovereignCloudStack/standards/actions/workflows/check-pco-prod2.yml)
 
 ## SCS standards overview
 
