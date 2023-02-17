@@ -9,3 +9,23 @@ clouds:
     region_name: "RegionOne"
     interface: "public"
     identity_api_version: 3
+  pco-prod1:
+    auth:
+      auth_url: https://prod1.api.pco.get-cloud.io:5000
+      username: "u500924-svc-standards"
+      project_id: 204eba6723954d0d900d1144b4c9e48d
+      project_name: "p500924-scs-healthmonitor"
+      user_domain_name: "d500924"
+    region_name: "prod1"
+    interface: "public"
+    identity_api_version: 3
+  pco-prod2:
+    auth:
+      auth_url: https://prod2.api.pco.get-cloud.io:5000
+      username: "u500924-svc-standards"
+      project_id: 6e54c8e75b744902a4c5f4389cdb0529
+      project_name: "p500924-scs-healthmonitor"
+      user_domain_name: "d500924"
+    region_name: "prod2"
+    interface: "public"
+    identity_api_version: 3
