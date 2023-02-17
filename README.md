@@ -106,7 +106,7 @@ to make this safe.
 
 ## Contribute and Connect
 
-Please see the [SCS contributor guide](https://scs.community/docs/contributor/).
+Please see the [SCS contributor guide](https://docs.scs.community/community).
 
 ## Standards, Conformity and Certification
 
@@ -121,11 +121,11 @@ tests formerly known as DefCore) and the Kubernetes CNCF conformance tests run t
 We have two specific standards aligned within the SCS community (and have also
 sought feedback from the broader Gaia-X and OpenStack communities):
 
-- [SCS Flavor naming and standard flavors standard](https://github.com/SovereignCloudStack/standards/blob/main/Design-Docs/flavor-naming.md)
+- [SCS Flavor naming and standard flavors standard](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/flavor-naming.md)
 
-- [SCS Image naming and metadata standard](https://github.com/SovereignCloudStack/standards/blob/main/Design-Docs/Image-Properties-Spec.md)
+- [SCS Image naming and metadata standard](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/Image-Properties-Spec.md)
 
-Beyond this, we have a [draft document](https://github.com/SovereignCloudStack/standards/blob/main/Design-Docs/SCS-Spec.md) that captures our
+Beyond this, we have a [draft document](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/SCS-Spec.md) that captures our
 view on how SCS compatible environments should look like. This one has not yet
 seen sufficient review to be eligible for standardization. However, we appreciate
 feedback (raise issues and PRs or start discussions).
