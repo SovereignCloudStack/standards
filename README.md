@@ -28,10 +28,6 @@ Decision Records, see [Standards/scs-0001-v1-sovereign-cloud-standards.md](Stand
 
 Old Design-Docs folder with existing Architectural Decision Records (ADRs). This directory is currently in the process of being consolidated and cleaned up. See [cleanup step-1](Decisions/scs-0002-v1-standards-docs-org.md#suggested-cleanup-step-1) and [open questions](Decisions/scs-0002-v1-standards-docs-org.md#open-questions).
 
-### Operational-Docs
-
-FIXME, best practises
-
 ### Standards
 
 Official SCS standards, see [Standards/scs-0001-v1-sovereign-cloud-standards.md](Standards/scs-0001-v1-sovereign-cloud-standards.md).
