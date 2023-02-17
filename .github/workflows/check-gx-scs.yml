@@ -1,11 +1,14 @@
 name: "Compliance of gx-scs"
 
 on:
-  push:
-    branches:
-    - main
-    paths:
-      - Tests/**
+  # Trigger compliance check every day at 4:30 UTC
+  schedule:
+    - cron:  '30 4 * * *'
+  # Trigger compliance check after Docker image has been built
+  workflow_run:
+    workflows: [Build and publish scs-compliance-check Docker image]
+    types:
+      - completed
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
   
