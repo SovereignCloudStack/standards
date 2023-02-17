@@ -7,10 +7,9 @@ track: KaaS
 
 # Introduction  
 
-A container registry is a repository or collection of repositories that store and
-access container images. It acts as the intermediary for sharing container images
-between systems and could be connected directly to container orchestration platforms
-like Kubernetes.
+A container registry is an infrastructure service to enable storing and accessing container
+images. Images can be pushed to the registry by e.g. Continuous integration pipelines and
+be pulled from by runtime environments like Kubernetes clusters.
 
 Container registries could be publicly accessible e.g. Docker Hub, could be
 self-hosted or hosted by cloud service providers (CSP). These container registries may
