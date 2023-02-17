@@ -8,7 +8,7 @@ This is a list of clouds that we test on a nightly basis against our `scs-compat
 
 | Name | Description | Operator | Compliance check |
 | ---- | ----------- | -------- | ---------- |
-| gx-scs | dev environment made for SCS & GAIA-X context | PlusServer GmbH | [![Compliance of gx-scs](https://github.com/SovereignCloudStack/standards/actions/workflows/check-gx-scs.yml/badge.svg)](https://github.com/SovereignCloudStack/standards/actions/workflows/check-gx-scs.yml) |
+| [gx-scs](https://github.com/SovereignCloudStack/docs/blob/main/community/contribute/cloud-resources/plusserver-gx-scs.md) | Dev environment provided for SCS & GAIA-X context | PlusServer GmbH | [![Compliance of gx-scs](https://github.com/SovereignCloudStack/standards/actions/workflows/check-gx-scs.yml/badge.svg)](https://github.com/SovereignCloudStack/standards/actions/workflows/check-gx-scs.yml) |
 
 ## SCS standards overview
 
