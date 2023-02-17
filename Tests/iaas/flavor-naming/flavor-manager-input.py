@@ -48,7 +48,7 @@ class SpecSyntax:
     def mand_dict(name, flv):
         "return a dict for a single flavor, input is the name and the list of properties"
         dct = {}
-        for key in SpecSyntax.vocabulary.items():
+        for key in SpecSyntax.vocabulary:
             valsel = SpecSyntax.vocabulary[key]
             if valsel == "name":
                 val = name
