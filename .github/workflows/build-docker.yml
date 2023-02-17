@@ -3,7 +3,7 @@ name: Build and publish scs-compliance-check Docker image
 on:
   push:
     branches:
-    - main
+      - main
     paths:
       - Tests/**
   # Allows you to run this workflow manually from the Actions tab
