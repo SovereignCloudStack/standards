@@ -27,6 +27,11 @@ jobs:
                 password: ${{ secrets[inputs.secret_name] }}
           EOF
       - name: "Run scs-compliance-check"
-        run: "cd /scs-compliance && ./scs-compliance-check.py scs-compatible.yaml iaas"
+        run: "cd /scs-compliance && ./scs-compliance-check.py scs-compatible.yaml iaas -o result.yaml"
         env:
           OS_CLOUD: ${{ inputs.cloud }}
+      - name: "Upload results"
+        uses: actions/upload-artifact@v3
+        with:
+          name: result
+          path: /scs-compliance/result.yaml
