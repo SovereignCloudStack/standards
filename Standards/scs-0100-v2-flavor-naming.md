@@ -68,13 +68,17 @@ the following characteristics are important in a flavor description:
  names from properties and vice versa. The scheme allows for short names (by not
  encoding all details) as well as very detailed longer names.
 
-# Complete Proposal
+# Complete Proposal for systematic flavor naming
 
 | Prefix | CPU |   Suffix     |  RAM[GiB]  | optional: Disk[GB] | optional: Disk type | optional: extra features                            |
 |--------|-----|--------------|------------|--------------------|---------------------|-----------------------------------------------------|
 | `SCS-` | `N` | `L/V/T/C[i]` | `-N[u][o]` | `[-[Mx]N]`         | `[n/s/l/p]`         | `[_hyp][_hwv][_[arch[N][h][_[G/g]X[N][-M[h]]][_ib]` |
 
 (Note that `N` and `M` are placeholders for numbers here).
+
+Note that all letters are case-sensitive.
+In case you wonder: Feature indicators are capitalized, modifiers are lower case.
+(An exception is the uppercase -G for a pass-through GPU vs. lowercase -g for vGPU.)
 
 # Proposal Details
 
@@ -92,16 +96,19 @@ the following characteristics are important in a flavor description:
 Note that vCPU oversubscription for a `V` vCPU should be implemented such, that we
 can guarantee *at least 20% of a core in >99% of the time*; this can be achieved by
 limiting vCPU oversubscription to 5x per core (or 3x per thread when SMT/HT is enabled)
-or by more advanced workload management logic. Otherwise `L` (low performance) must be
-used. The >99% is measured over a month (1% is 7.2h/month).
+or by more advanced workload management logic. Otherwise `L` (low performance) instead
+of `V` must be used. The >99% is measured over a month (1% is 7.2h/month).
 
-Note that CPUs must use latest microcode to protect against CPU vulnerabilities (Spectre, Meltdown, L1TF, etc.).
-We expect that microcode gets updated within less than a month of a new release; for CVSS scores above 8,
-we expect less than a week.
-The provider must enable at least all mitigations that are enabled by default in the Linux kernel. CPUs that
-are susceptible to L1TF (intel x86 pre Cascade Lake) must switch off hyperthreading OR (in the future)
-use core scheduling implementations that are deemed to be secure by the SCS security team, or declare themselves
-as insecure with the `i` suffix (see below).
+Note that CPUs should use latest microcode to protect against CPU vulnerabilities (Spectre, Meltdown, L1TF, etc.).
+Microcode must be updated within less than a month of a new release; for CVSS scores above 8,
+providers should do it in less than a week.
+The provider should enable at least all mitigations that are enabled by default in the Linux kernel and the
+KVM hypervisor. CPUs that are susceptible to L1TF (intel x86 pre Cascade Lake) should switch off hyperthreading
+OR (in the future) use core scheduling implementations that are deemed to be secure by the SCS security team.
+
+If microcode updates needed for mitigation are lacking for longer than a month, default kernel/hypervisor
+mitigations are disabled or hyperthreading is enabled despite the CPU being susceptible to L1TF, the
+flavors must declare themselves insecure with the `i` suffix (see below).
 
 **Higher oversubscription**
 
@@ -128,9 +135,9 @@ on L1TF susceptible CPUs w/o effective core scheduling or disabled protections o
 
 **Baseline**
 
-We expect cloud providers to use ECC memory.
-Memory oversubscription is not recommended.
-It is allowed to specify half GiBs (e.g. 3.5), though this is discouraged for larger memory sizes (>= 10GiB).
+Cloud providers should use ECC memory.
+Memory oversubscription should not be used.
+It is allowed to specify half GiBs (e.g. 3.5), though this is should not be done for larger memory sizes (>= 10GiB).
 
 **No ECC**
 
@@ -138,7 +145,7 @@ If no ECC is used, the `u` suffix must indicate this.
 
 **Enabled Oversubscription**
 
-You have to expose this with the `o` suffix.
+If memory is oversubscribed, you must expose this with the `o` suffix.
 
 **Examples**
 
@@ -150,6 +157,8 @@ You have to expose this with the `o` suffix.
 - ~~SCS-2C-**4ou**-10n~~ <- This order is forbidden
 
 ## [OPTIONAL] Disk sizes and types
+
+Disk sizes (in GB) should use sizes 5, 10, 20, 50, 100, 200, 500, 1000.
 
 | Disk type |  Meaning                             |
 |-----------|--------------------------------------|
@@ -180,7 +189,8 @@ mechanism explicitly to create the boot volume from an image.
 **Multi-provisioned Disk**
 
 The disk size can be prefixed with `Mx prefix`, where M is an integer specifying that the disk
-is provisioned M times.
+is provisioned M times. Multiple disks provided this way should be independent storage media,
+so users can expect some level of parallelism and independence.
 
 **Examples**
 
@@ -375,17 +385,19 @@ with `block_device_mapping_v2`, e.g.
 to create a bootable 12G cinder volume from image `IMGUUID` that gets tied to the VM
 instance life cycle.)
 
-# Naming policies
+# Naming policy compliance
 
 To be certified as an SCS compliant x86-64 IaaS platform, you must offer all standard SCS flavors
 according to the previous section. (We may define a mechanism that allows exceptions to be
 granted in a way that makes this very transparent and visible to clients.)
 
-You are allowed to understate your performance; you may implement a SCS-1Vl-1-5 flavor with
+You are allowed to understate your performance; you may implement a SCS-1V-1-5 flavor with
 a flavor that actually implements SCS-1T-1-5n (i.e. you dedicate a secured hyperthread instead
 of high oversubscription) or even SCS-1D-1.5-8s (1 dedicated core, 50% more RAM and a 8GiB SSD).
 
-We expect all cloud providers to offer the short, less specific flavor names (such as SCS-8V:32:100).
+Flavor names indicating certain capabilities must *at least* provide these.
+
+We expect all cloud providers to offer the short, less specific flavor names (such as SCS-8V-32-100).
 Larger providers that offer more details are expected to still also offer the short variants
 for usability and easier portability, even beyond the mandated flavors.
 
@@ -395,17 +407,13 @@ overstating your security, reliability or performance properties and may be reas
 clients to feel betrayed or claim damages. It might in extreme cases also cause SCS to withdraw certification
 along with public statements.
 
-You may offer additional SCS- flavors, following the naming scheme outlined here.
+You may offer additional `SCS-` flavors, following the naming scheme and rules outlined here.
 
-You may offer additional flavors, not following above scheme.
+You may offer additional flavors, not following above scheme and not starting with `SCS-`
 
-You must not offer flavors with the SCS- prefix which do not follow this naming scheme.
+You must not offer flavors with the `SCS-` prefix which do not follow this naming scheme.
 You must not extend the SCS naming scheme with your own suffices; you are encouraged however
 to suggest extensions that we can discuss and add to the official scheme.
-
-Note that all letters are case-sensitive.
-In case you wonder: Feature indicators are capitalized, modifiers are lower case.
-(An exception is the uppercase -G for a pass-through GPU vs. lowercase -g for vGPU.)
 
 ## Naming options advice
 
@@ -478,9 +486,11 @@ from v1 to v2 are written in a separate document.
 For the time being, the validation tools still accept the old names with a warning
 (despite the unchanged `SCS-` prefix) unless you pass option `-2` to them. They will
 however not count v1 flavors towards fulfilling the needs against the corresponding
-v2 mandatory flavor list. In other words: An IaaS infrastructure with the 26
+v2 mandatory flavor list unless you pass the option `-1`.
+In other words: An IaaS infrastructure with the 26
 v1 mandatory flavors will produce 26 warnings (for using old flavors) and 26
-errors (for missing the 26 mandatory v2 flavors). Registering the 26 mandatory
+errors (for missing the 26 mandatory v2 flavors) unless you pass `-1` in which
+case no errors and no warnings will be produced. Registering the 26 mandatory
 v2 flavor names in addition will result in passing the test with only 26
 warnings -- unless you specify `-2`. If you do and want to pass you'll need
 to remove the old v1 names or rename them to no longer start with `SCS-`.
