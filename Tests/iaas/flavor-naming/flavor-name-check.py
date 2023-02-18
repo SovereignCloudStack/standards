@@ -27,7 +27,6 @@ License: CC-BY-SA 4.0
 import sys
 import os
 import re
-# import getopt
 
 # globals
 verbose = False
@@ -253,7 +252,6 @@ class Prop:
                 par += 1
             elif self.outstr[i+1] == ":":   # change?
                 if att:
-                    # ostr += ":%"
                     ostr += "-%"
                     i += 2
                     lst.append(att)
@@ -601,10 +599,11 @@ else:
 
 
 def new_to_old(nm):
-    nm = nm.replace('-', ':')            
-    nm = nm.replace('_', '-')            
-    nm = nm.replace('SCS:', 'SCS-')            
+    nm = nm.replace('-', ':')
+    nm = nm.replace('_', '-')
+    nm = nm.replace('SCS:', 'SCS-')
     return nm
+
 
 def readmandflavors(fnm):
     "Read mandatory flavors from passed YAML file, search in a few paths"
