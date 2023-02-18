@@ -338,7 +338,7 @@ Extensions need to be specified in the above mentioned order.
 | SCS-2C-4-10n              | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk                                        |
 | SCS-8Ti-32-50p_i1         | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe                       |
 | SCS-1L-1u-5               | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)                      |
-| SCS-16T-64-200s_GNa:64_ib | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Infiniband, 64 Passthrough nVidia Ampere SMs |
+| SCS-16T-64-200s_GNa-64_ib | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Infiniband, 64 Passthrough nVidia Ampere SMs |
 | SCS-4C-16-2x200p_a1       | 4 dedicated Arm64 cores (A76 class), 16GiB RAM, 2x200GB local NVMe drives                      |
 | SCS-1V-0.5                | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)                                          |
 
