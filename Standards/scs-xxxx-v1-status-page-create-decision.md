@@ -28,7 +28,7 @@ decision to create a new "Status Page" application.
 
 Before the decision was made some existing and known applications were tested
 and analyzed if they would fit to our use case. An overview of this
-comparison can be found [here](https://github.com/SovereignCloudStack/standards/blob/main/Decisions/status-page-comparison.md)
+comparison can be found [below in this document](#comparison-matrix)
 While this is not a complete list of all existing applications it did
 capture the most promising ones from the [awesome-status-page list](https://github.com/ivbeg/awesome-status-pages)
 in order to have base to decide upon.
