@@ -28,15 +28,15 @@ decision to create a new "Status Page" application.
 
 Before the decision was made some existing and known applications were tested
 and analyzed if they would fit to our use case. An overview of this
-comparsion can be found [here](https://github.com/SovereignCloudStack/standards/blob/main/Decisions/status-page-comparison.md)
-While this is not not a complete list of all existing applications it did
+comparison can be found [here](https://github.com/SovereignCloudStack/standards/blob/main/Decisions/status-page-comparison.md)
+While this is not a complete list of all existing applications it did
 capture the most promising ones from the [awesome-status-page list](https://github.com/ivbeg/awesome-status-pages)
 in order to have base to decide upon.
 
 Work on an existing project only makes sense if the project is healthy OR can be
 brought into a healthy state. If upstream does not accept patches a fork is needed.
 The fork however only makes sense if the underlying technology is worth to be maintained.
-The possible candidates did not fullfill these - in the cases where
+The possible candidates did not fulfill these - in the cases where
 contribution seemed possible the candidates looked abandoned and long existing CVEs weren't
 worked on.
 
@@ -66,10 +66,10 @@ variety of services
 * As a CSP, I want to have a status page that allows to
   * define locations and similar grouping (AZs, ...)
   * define components globally or per location
-    * to ease maintainence I want to define per component where it belongs so that I only have
+    * to ease maintenance I want to define per component where it belongs so that I only have
 to define a component once, but have it visible in several locations
-    * status per component should be allowed to be toggeable per location or overall
-    * a component should allow for several status, that are defined by me
+    * status per component should be allowed to be toggleable per location or overall
+    * a component should allow for several statuses, that are defined by me
 
 * Status, Status Items should be easy to extract
   * REST(less)-API to interact with
@@ -88,7 +88,7 @@ i.e. submitting a health beacon every x seconds
   * for everything
   * for specific components
 
-* As a consumer of the status page, I'd like to subscribe to a RSS or atom feed
+* As a consumer of the status page, I'd like to subscribe to an RSS or atom feed
 
 * Allow for the ability to trigger webhooks upon certain events (to submit info to other systems via
 webhooks, e.g. chat/messenger)
