@@ -543,7 +543,7 @@ _bindir_pidx = _bindir.rfind('/')
 if _bindir_pidx != -1:
     _bindir = (_bindir[:_bindir_pidx],)
 else:
-    _bindir = os.environ('PATH').split(':')
+    _bindir = os.environ.get('PATH').split(':')
 
 
 def readmandflavors(fnm):
