@@ -1,7 +1,6 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/github')
 const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 
 /** @type {import('@docusaurus/types').Config} */
@@ -128,7 +127,7 @@ const config = {
             copyright: 'Sovereign Cloud Stack, SCS and the logo are registered trademarks of the Open Source Business Alliance e.V. — Other trademarks are property of their respective owners.'
           },
           prism: {
-            theme: lightCodeTheme,
+            theme: darkCodeTheme,
             darkTheme: darkCodeTheme,
             additionalLanguages: ['powershell', 'ruby']
           }
