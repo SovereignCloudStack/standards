@@ -34,7 +34,8 @@ def usage(rcode=1):
 
 class SpecSyntax:
     "Abstraction for the output flavor-manager spec file"
-    vocabulary = {"name": "name", "cpus": "0.cpus", "ram": "0.ram*1024", "disk": "1.disksize"}
+    vocabulary = {"name": "name", "cpus": "0.cpus", "ram": "0.ram*1024", "disk": "1.disksize",
+                  "description": "oldname"}
 
     def spec_dict():
         "return dict with syntax specification"
@@ -42,7 +43,8 @@ class SpecSyntax:
                {"field": "public", "default": "true"},
                {"field": "disabled", "default": "false"}]
         for key in SpecSyntax.vocabulary:
-            ref.append({"field": key})
+            if not fnmck.prefer_old:
+                ref.append({"field": key})
         return {"reference": ref}
 
     def mand_dict(name, flv):
@@ -52,6 +54,8 @@ class SpecSyntax:
             valsel = SpecSyntax.vocabulary[key]
             if valsel == "name":
                 val = name
+            elif valsel == "oldname":
+                val = "alias=" + fnmck.new_to_old(name)
             else:
                 fno, attrcalc = valsel.split('.')
                 attrnm = attrcalc.split("*")[0]
@@ -61,7 +65,8 @@ class SpecSyntax:
                         val = int(val*int(attrcalc.split("*")[1]))
                 except AttributeError:
                     val = 0
-            dct[key] = val
+            if not fnmck.prefer_old or not valsel == "oldname":
+                dct[key] = val
         return dct
 
 
