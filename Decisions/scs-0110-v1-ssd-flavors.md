@@ -3,7 +3,7 @@ title: SSD Flavors
 type: Decision Record
 status: Draft
 track: IaaS
-enhances: scs-xxxx-v1-flavor-naming.md
+enhances: scs-0100-v2-flavor-naming.md
 ---
 
 # Introduction
@@ -24,7 +24,7 @@ that include flavors with local SSD (or better) storage.
 
 # Motivation
 
-The [currently defined standard flavors](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/flavor-naming.md)
+The [currently defined standard flavors](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/flavor-naming.md)
 (as of v1.1 from 2022-09-08) do not include
 flavors that use local storage. For certain workloads such as databases or big data
 filesystems, local storage is highly desirable as replication may be handled at
@@ -178,7 +178,7 @@ some scenarios, but not covered here.
 
 # Decision
 
-Two new mandatory flavors: `SCS-2V:4:20s` and `SCS-4V:16:100s` are added
+Two new mandatory flavors: `SCS-2V-4-20s` and `SCS-4V-16-100s` are added
 to the SCS flavor naming standard. The first is meant to be a good fit for
 k8s control nodes with etcd while the latter is a solid base for a
 small database server. Clouds claiming SCS-compliance for their IaaS
@@ -188,7 +188,7 @@ Obviously providers MAY offer many more combinations and e.g. create
 flavors with large local SSDs.
 
 The local storage advertised this way MUST support more than
-1000 *sequential* IOPS per VM of type `SCS-2V:4:20s` (which means a
+1000 *sequential* IOPS per VM of both new mandatory types (which means a
 write latency lower than 1ms -- this typically means SSDs/NVMEs that
 support at least several 10ks of parallel IOPS, not a challenge for
 current hardware).
@@ -224,8 +224,8 @@ over to the new host. Live-migration for these VMs may thus take significantly
 longer or not be possible at all, depending the configuration from the provider.
 Not supporting live-migration is OK for flavors with local disks according
 to the flavor naming spec -- a capability to indicate whether or not
-live-migration is supported will subject to a flavor-metadata spec that
-is planned for the future.
+live-migration is supported will be subject to a flavor-metadata discoverability
+spec that is planned for the future.
 
 # Implementation note
 
@@ -239,7 +239,7 @@ not meant to mandate or prevent the implementation via either route.
 # Related Documents
 
 The flavors will be added as mandatory flavors to the
-[flavor-naming standard](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/flavor-naming.md),
+[flavor-naming standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0100-v2-flavor-naming.md),
 which will thus have to be released in a v2.
 
 The IOPS and Power-Loss requirements from this standard should become
@@ -251,16 +251,16 @@ to solve the latency requirements for databases and etcd may emerge.
 When we standardize QoS features there, we may amend this standard with
 QoS recommendations or possibly requirements.
 
-A future flavor metadata standard will indicate whether or not these
-flavors can be live-migrated. A future VM metadata standard will allow
-users to request live-migration and/or cold migration or restart to
-be or to not be performed.
+A future flavor metadata discoverability standard will indicate whether or not
+these flavors can be live-migrated. A future VM metadata standard will allow
+users to request live-migration and/or cold migration or restart to be or to
+not be performed.
 
 # Conformance Tests
 
-The checks for all mandatory flavors being present should be added to the
-[flavor-name-check.py](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/tools/flavor-name-check.py)
-as soon as this ADR becomes part of the certification requirements.
+The list of mandatory flavors that needs to be present should be added to the
+[SCS-Spec.MandatoryFlavors.yaml](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/SCS-Spec.MandatoryFlavors.yaml)
+spec as soon as this ADR becomes part of the certification requirements.
 
 Checks for conforming with IOPS and purging requirements will require
 test instances to be launched and might become part of a monitoring
