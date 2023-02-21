@@ -86,7 +86,7 @@ def main(argv):
         elif opt[0] == "-C" or opt[0] == "--mand":
             scs_mand_file = opt[1]
         elif opt[0] == "-1" or opt[0] == "--v1prefer":
-            # fnmck.prefer_old = True
+            fnmck.prefer_old = True
             pass
         elif opt[0] == "-o" or opt[0] == "--outfile":
             outfile = open(opt[1], "w", encoding="UTF-8")
@@ -114,7 +114,7 @@ def main(argv):
             errors += 1
     outspec[flavor_type] = olist
     # print(outspec, file=outfile)
-    print(yaml.dump(outspec, default_flow_style=False), file=outfile)
+    print(yaml.dump(outspec, default_flow_style=False, sort_keys=False), file=outfile)
     return errors
 
 
