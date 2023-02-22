@@ -25,6 +25,14 @@ To put it in other words, in SCS we would like to be able to delegate
 authentication to external identity providers and map those users to roles in
 SCS that can be used for authorization decisions when users access SCS services.
 
+In addition to user identities there we also see the necessity to support the
+use of "machine identites" (aka "workload identities" or "service accounts).
+These will probably be SCS-local accounts and have for example the purpose
+to grant CaaS workload access to storage resources served by the infrastructure
+layer. Exact architectural details for this are still in active discussion,
+but it is anticipated that the IdP component should be very useful in
+facilitating the integration.
+
 # Motivation for this document
 
 SCS has multiple service layers, like IaaS and CaaS, both of which running their
