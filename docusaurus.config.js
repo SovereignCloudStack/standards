@@ -34,8 +34,8 @@ const config = {
         docs: { sidebarPath: require.resolve('./sidebarsDocs.js') },
         blog: {
           showReadingTime: true,
-          editUrl: 'https://github.com/SovereignCloudStack/docs-page/tree/main/'
-
+          editUrl:
+                        'https://github.com/SovereignCloudStack/docs-page/tree/main/'
         },
         theme: {
           customCss: [require.resolve('./src/css/custom.css')]
@@ -53,7 +53,8 @@ const config = {
         sidebarPath: require.resolve('./sidebarsCommunity.js')
         // ... other options
       }
-    ]
+    ],
+    'docusaurus-plugin-matomo'
   ],
 
   themeConfig:
@@ -124,12 +125,19 @@ const config = {
                 ]
               }
             ],
-            copyright: 'Sovereign Cloud Stack, SCS and the logo are registered trademarks of the Open Source Business Alliance e.V. — Other trademarks are property of their respective owners.'
+            copyright:
+                    'Sovereign Cloud Stack, SCS and the logo are registered trademarks of the Open Source Business Alliance e.V. — Other trademarks are property of their respective owners.'
           },
           prism: {
             theme: darkCodeTheme,
             darkTheme: darkCodeTheme,
             additionalLanguages: ['powershell', 'ruby']
+          },
+          matomo: {
+            matomoUrl: 'https://matomo.scs.community/',
+            siteId: '2',
+            phpLoader: 'matomo.php',
+            jsLoader: 'matomo.js'
           }
         }),
 
