@@ -39,4 +39,7 @@ jobs:
       with:
         commit_message: Auto-generate verbose flavors spec file
         commit_options: '--signoff'
+        commit_user_name: github-actions[bot]
+        commit_user_email: github-actions[bot]@users.noreply.github.com
+        commit_author: github-actions[bot] <github-actions[bot]@users.noreply.github.com> # defaults to author of the commit that triggered the run
         file_pattern: 'Tests/iaas/SCS-Spec.MandatoryFlavors.verbose.yaml'
