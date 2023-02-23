@@ -40,5 +40,3 @@ jobs:
         commit_message: Auto-generate verbose flavors spec file
         commit_options: '--signoff'
         file_pattern: 'Tests/iaas/SCS-Spec.MandatoryFlavors.verbose.yaml'
-
-      
