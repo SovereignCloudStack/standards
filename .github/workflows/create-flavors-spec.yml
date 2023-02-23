@@ -33,7 +33,7 @@ jobs:
         pip install PyYAML==6.0
     - name: Run flavor-manager-input.py
       run: |
-        python Tests/iaas/flavor-naming/flavor-manager-input.py -o ../../SCS-Spec.MandatoryFlavors.verbose.yaml
+        python Tests/iaas/flavor-naming/flavor-manager-input.py -o SCS-Spec.MandatoryFlavors.verbose.yaml
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
