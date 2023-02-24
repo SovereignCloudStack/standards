@@ -133,7 +133,7 @@ where the group which has to form the consensus depends on the `track` of the do
 
 To propose a new SCS document,
 a community participant creates a pull request on GitHub
-against the [Docs repository in the SovereignCloudStack organisation](https://github.com/SovereignCloudStack/Docs).
+against the [Standards repository in the SovereignCloudStack organisation](https://github.com/SovereignCloudStack/Standards).
 
 The pull request MUST add exactly one SCS document,
 in the `Standards` folder.
@@ -165,7 +165,7 @@ and henceforth the document is an official SCS document in Draft state.
 
 To propose major update to a Stable SCS document,
 a community participant creates a pull request on GitHub
-against the [Docs repository in the SovereignCloudStack organisation](https://github.com/SovereignCloudStack/Docs).
+against the [Standards repository in the SovereignCloudStack organisation](https://github.com/SovereignCloudStack/Standards).
 
 The pull request MUST add exactly one SCS document,
 in the `Standards` folder.
