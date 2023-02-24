@@ -1,0 +1,40 @@
+name: Generate Spec.MandatoryFlavors.verbose.yaml
+
+on:
+  push:
+    branches:
+    - main
+    paths:
+      - 'Tests/iaas/flavor-naming/flavor-manager-input.py'
+      - 'Tests/iaas/SCS-Spec.MandatoryFlavors.yaml'
+      - 'Tests/iaas/SCS-Spec.MandatoryFlavors.verbose.yaml'
+  workflow_dispatch:
+
+jobs:
+  default:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.FLAVORS_SPEC_PAT }}
+    - name: Set up Python 3.10.5
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10.5"
+        cache: 'pip'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install PyYAML==6.0
+    - name: Run flavor-manager-input.py
+      run: |
+        python Tests/iaas/flavor-naming/flavor-manager-input.py -o Tests/iaas/SCS-Spec.MandatoryFlavors.verbose.yaml
+    - name: Commit changes
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Auto-generate verbose flavors spec file
+        commit_options: '--signoff'
+        commit_user_name: github-actions[bot]
+        commit_user_email: github-actions[bot]@users.noreply.github.com
+        commit_author: github-actions[bot] <github-actions[bot]@users.noreply.github.com> # defaults to author of the commit that triggered the run
+        file_pattern: 'Tests/iaas/SCS-Spec.MandatoryFlavors.verbose.yaml'
