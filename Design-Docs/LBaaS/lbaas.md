@@ -177,7 +177,7 @@ tcp and TLS termination, ipvsadm for UDP and high availibility as VRRP.
 
 ### 2.3.2 OVN Provider
   
-The Second Provider in Octavia work with the SDN integration
+The second provider in Octavia works with the SDN integration
 Open Virtual Network. Viewed from the architecture viewpoint, this design
 is much simpler. The listener is just another router port in the
 OpenStack Project Router. Logically it works as DSR based Loadbalancing,
