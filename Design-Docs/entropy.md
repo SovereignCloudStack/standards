@@ -62,7 +62,9 @@ rng-utils.
 
 ### 1.3  Entropy in SCS Clouds
 
-All flavors will have to have the relevant attributes activated:
+#### 1.3.1 Flavors
+
+All flavors need to have the relevant attributes activated:
 
 ```console
 hw_rng:allowed=True
@@ -72,9 +74,13 @@ to read from the host’s entropy per period.
 hw_rng:rate_period
 ```
 
-Images must activate the[ attribute hw_rng_model: virtio
+#### 1.3.2 Images
 
-On compute nodes the rng-utils must be activated.
+Images must activate the attribute `hw_rng_model: virtio`.
+
+#### 1.3.3 Compute Nodes
+
+On compute nodes the rng-utils must be present and activate.
 This is a requirement to guarantee working confident cryptography
 in SCS Cloud Infrastructures.
 
