@@ -277,9 +277,14 @@ are evaluated here.
 | Administration capabilities         | ✓ Terraform, CRDs, Client libraries    | ✓ Ansible, Client libraries                                         | ✓ Client libraries            |
 
 Notes:
-- Harbor announced the deprecation of [Notary](https://github.com/goharbor/harbor/discussions/16612) and [Chartmuseum](https://github.com/goharbor/harbor/discussions/15057)
-integrations, hence they are not mentioned in the table
-- Harbor should support webhooks following CloudEvents spec in the [next release](https://github.com/goharbor/harbor/issues/17748)
+- Automation: Harbor should support webhooks following CloudEvents spec in the [next release](https://github.com/goharbor/harbor/issues/17748)
+- Content Trust and Validation: Harbor announced the deprecation of [Notary](https://github.com/goharbor/harbor/discussions/16612)
+  integration, hence it is not mentioned in the table
+- Multi-tenancy: Harbor, Quay, as well as Dragonfly, operates on a single storage
+  backend (e.g. S3), i.e. the storage of container images is shared between tenants
+- Additional supported artifacts: Harbor announced the deprecation of [Chartmuseum](https://github.com/goharbor/harbor/discussions/15057)
+  integration, hence it is not mentioned in the table
+
 
 ## Conclusion
 
@@ -347,7 +352,7 @@ committed. This feature is not supported by the [Harbor project](https://github.
 
 [Harbor][harbor] is an outstanding open-source, community-led project with fully open and
 well-documented processes. Its large and thriving community powers the fast-growing
-the feature set and attracts more and more developers and companies to active contributions.
+feature set and attracts more and more developers and companies to active contributions.
 Harbor’s CNCF graduation in 2020 made it one of the best choices for enterprise
 customers that want to operate container registries securely and in a large scale.
 Its community size, landscape, and CNCF graduation make a significant difference in
@@ -356,7 +361,13 @@ The list of supported features is also impressive. This project fulfills all mus
 defined in this document and overcome project Quay with a production-ready proxy cache
 feature and more options that the user may use in case of image vulnerability scanning.
 In addition, Harbor profits from p2p distribution capabilities via integration of p2p
-solutions like Kraken and Dragonfly.
+solutions like Kraken and Dragonfly. It is worth mentioning that Harbor, by design,
+operates on a single storage backend (e.g. S3). It means that the storage of container
+images is shared even when the Harbor instance serves multiple tenants. The same
+approach is used in Quay and Dragonfly projects, but e.g. Keppel uses multi-tenant-aware
+storage drivers instead so that each customer gets their own separate storage backend.
+CSP that considers offering container registry "as a service" solution based on Harbor
+should be aware of this shared storage backend architecture.
 
 # Decision
 
