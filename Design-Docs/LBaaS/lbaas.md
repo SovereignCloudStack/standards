@@ -130,8 +130,8 @@ gateway.
 
 ### 2.2.5  ECMP Loadbalancing
 
-For this form of load balancing, the function of routing is used 
-to forward the traffic. In Wide Area Network there is often the 
+For this type of load balancing, the routing technique is used
+to forward the traffic. In Wide Area Network (WAN) there is often the
 possibility to have multiple data paths to the dedicated network hops.
 
 The idea behind this concept is to have network redundancy, 
@@ -143,14 +143,16 @@ In the routing table of a router, hops are expanded with the same
 "costs" to a single target. This means that you have an additional 
 form of scheduling mechanism manipulate the selected route. 
 ECMP is explained in detail in [RFC2992](https://www.rfc-editor.org/rfc/rfc2992).
-the most used routing protocol is BGP, which supports scaling 
-for virtual services.
+The most widely used routing protocol is the Border Gateway Protocol (BGP),
+which supports scaling for virtual services.
 
-there two forms of Loadbalancing
+There various forms of loadbalancing. Two fairly prominent ways
+are:
 
-Round robin, known as package-based load balancing
+Round Robin: known as package-based load balancing
 
-Loadbalancing session decided with any new session,
+Session affinity: The loadbalacing is decided upon session initiated.
+
 Routes to manipulate the flow through the first session decision. 
 This can be done with the schedulers round robin, hashed or least-conection.
 
@@ -164,7 +166,7 @@ This can be activated as a service in SCS stacks. It works in two scenarios.
 ![amphora](Amphora-diagram.png)
 
 The Amphora provider with HA-Instances with named amphora's.
-Amphora works in a service OpenStack project  either as an individual instance,
+Amphora works in a service OpenStack project either as an individual instance,
 or better as a HA pair.
 
 An amphora instance consists of an interface for management by octavia
@@ -175,10 +177,10 @@ tcp and TLS termination, ipvsadm for UDP and high availibility as VRRP.
 
 ### 2.3.2 OVN Provider
   
-the Second Provider in Octavia work with the SDN integration
-Open Virtual Network. The design is much simpler, viewed from architecture
-perspective. The listener is just another router port in the
-OpenStack Project Router. Logical it works as DSR based Loadbalancing,
+The Second Provider in Octavia work with the SDN integration
+Open Virtual Network. Viewed from the architecture viewpoint, this design
+is much simpler. The listener is just another router port in the
+OpenStack Project Router. Logically it works as DSR based Loadbalancing,
 which controlled by the Openflow definition of OVN.
 
 OVN in a small showcase
