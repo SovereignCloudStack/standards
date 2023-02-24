@@ -30,18 +30,18 @@ ip address with a port definition. That is able to accept traffic.
 ### 2.1.2 Backend
 
 A backend or a pool is a collective of member servers.
-The listener represents the client-side and the backend 
+The listener represents the client-side and the backend
 of the server-side.
 
 ### 2.1.3 Member server
 
-A member server or real server is a ip and a port, that 
-represents a real, virtual instance or a container.It 
+A member server or real server is a ip and a port, that
+represents a real, virtual instance or a container.It
 could also be a local unix-socket.
 
 ### 2.1.4 Monitor
 
-A monitor in the load balancer context means having a health check 
+A monitor in the load balancer context means having a health check
 that checks the service for availability of each member server.
 
 ### 2.2  Types of Loadbalancing
@@ -50,8 +50,8 @@ that checks the service for availability of each member server.
 
 DNS-based load balancing means, have a DNS A Record more than with one entry.
 
-The DNS client cache will keep the first entry and the client will try to 
-reach the first destination. If the answer is incorrect, the client should 
+The DNS client cache will keep the first entry and the client will try to
+reach the first destination. If the answer is incorrect, the client should
 try to reach the next entry.
 
 ```console
@@ -67,8 +67,8 @@ is a very simplistic way of loadbalancing.
 ![Loadbalancer proxy](reverse-proxy.png)
 
 Reverse proxy is a form of loadbalancing, which terminates connections
-and recreates a new client-server connection form the listener to 
-its own backend. This solution works well for HTTP, the HTTP protocol 
+and recreates a new client-server connection form the listener to
+its own backend. This solution works well for HTTP, the HTTP protocol
 contains mechanisms that can forward origin ip and port of origin.
 This is specified in [RFC7239](https://www.rfc-editor.org/rfc/rfc7239.html).
 
@@ -89,22 +89,22 @@ examples for this are:
 ![Loadbalancer Nat](natbased.png)
 
 Direct Routing or Network Address Translation Loadbalancing is a form
-of load balancing that provides the component directly on a network 
-gateway. The gateway is available as a standard gateway for the 
+of load balancing that provides the component directly on a network
+gateway. The gateway is available as a standard gateway for the
 member servers.
 
-The NAT passes through the original source-ip packages, which then 
+The NAT passes through the original source-ip packages, which then
 provide a possibility for balancing decision based on the
 L3 traffic. No header modification is required in the protocol.
 
-The TLS termination for TCP should be negotiated directly at the 
+The TLS termination for TCP should be negotiated directly at the
 Backend application.
 
-Another advantage is the use of a masked network CIDR, the servers 
+Another advantage is the use of a masked network CIDR, the servers
 behind a NAT pool with more Client IP's can request on the Internet
 
-The expected performance footprint is to be assessed as medium, 
-specifically for software defined networks considering the NAT 
+The expected performance footprint is to be assessed as medium,
+specifically for software defined networks considering the NAT
 translation, it could become a bottleneck.
 
 example for this are:
@@ -116,15 +116,15 @@ example for this are:
 
 ![DSR](dsr.png)
 
-Direct server return is located next to the gateway, 
+Direct server return is located next to the gateway,
 viewed from the architecture layer.
 
 It is from the definition a "flat based" load balancer.
-In view of the direction of the traffic flow, the original source 
-ip of incoming traffic passes from the "listener" as a client-side 
-and rewrites the client-side ip with the source of origin ip to 
-the server-side, the response of the responding member server 
-then follows the source of origin ip and passes the network default 
+In view of the direction of the traffic flow, the original source
+ip of incoming traffic passes from the "listener" as a client-side
+and rewrites the client-side ip with the source of origin ip to
+the server-side, the response of the responding member server
+then follows the source of origin ip and passes the network default
 gateway.
 
 
@@ -134,14 +134,14 @@ For this type of load balancing, the routing technique is used
 to forward the traffic. In Wide Area Network (WAN) there is often the
 possibility to have multiple data paths to the dedicated network hops.
 
-The idea behind this concept is to have network redundancy, 
-with some of these data paths as a standby. This is controlled 
-by routing protocols based on metrics, for example by "costs" 
+The idea behind this concept is to have network redundancy,
+with some of these data paths as a standby. This is controlled
+by routing protocols based on metrics, for example by "costs"
 where the data paths take place. With ECMP or in long form
-Equal Path Multi Path is realized by inserting the route forward. 
-In the routing table of a router, hops are expanded with the same 
-"costs" to a single target. This means that you have an additional 
-form of scheduling mechanism manipulate the selected route. 
+Equal Path Multi Path is realized by inserting the route forward.
+In the routing table of a router, hops are expanded with the same
+"costs" to a single target. This means that you have an additional
+form of scheduling mechanism manipulate the selected route.
 ECMP is explained in detail in [RFC2992](https://www.rfc-editor.org/rfc/rfc2992).
 The most widely used routing protocol is the Border Gateway Protocol (BGP),
 which supports scaling for virtual services.
@@ -153,13 +153,13 @@ Round Robin: known as package-based load balancing
 
 Session affinity: The loadbalacing is decided upon session initiated.
 
-Routes to manipulate the flow through the first session decision. 
+Routes to manipulate the flow through the first session decision.
 This can be done with the schedulers round robin, hashed or least-conection.
 
 ## 2.3.  LBaaS in SCS Clouds
 
-OpenStack brings octavia as its own load balancer as a service solution. 
-This can be activated as a service in SCS stacks. It works in two scenarios. 
+OpenStack brings octavia as its own load balancer as a service solution.
+This can be activated as a service in SCS stacks. It works in two scenarios
 
 ### 2.3.1 Amphora Provider
 
@@ -170,9 +170,9 @@ Amphora works in a service OpenStack project either as an individual instance,
 or better as a HA pair.
 
 An amphora instance consists of an interface for management by octavia
-control plane and an amphora name space to cope with load balancing 
-capability and the HA-VIP things themselves. 
-In the amphora-namespace itself work haproxy as reverse proxy for http, 
+control plane and an amphora name space to cope with load balancing
+capability and the HA-VIP things themselves.
+In the amphora-namespace itself work haproxy as reverse proxy for http,
 tcp and TLS termination, ipvsadm for UDP and high availibility as VRRP.
 
 ### 2.3.2 OVN Provider
