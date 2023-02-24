@@ -72,9 +72,9 @@ its own backend. This solution works well for HTTP, the HTTP protocol
 contains mechanisms that can forward origin ip and port of origin.
 This is specified in [RFC7239](https://www.rfc-editor.org/rfc/rfc7239.html).
 
-For the TCP connection it is a workaround with flaw. TCP itself has no
+For TCP connections this is a flawed workaround. TCP itself has no
 mechanism to forwarded the origin source ip. TLS Termination works
-even to for HTTP and TCP.
+for HTTP as well as TCP.
 
 The expected performance footprint is minimal.
 
