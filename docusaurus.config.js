@@ -54,7 +54,7 @@ const config = {
         // ... other options
       }
     ],
-    'docusaurus-plugin-matomo'
+    './src/plugins/docusaurus-plugin-matomo-analytics/index.js'
   ],
 
   themeConfig:
@@ -133,11 +133,13 @@ const config = {
             darkTheme: darkCodeTheme,
             additionalLanguages: ['powershell', 'ruby']
           },
-          matomo: {
-            matomoUrl: 'https://matomo.scs.community/',
+          matomoAnalytics: {
+            matomoUrl:
+              'matomo.scs.community',
             siteId: '2',
             phpLoader: 'matomo.php',
-            jsLoader: 'matomo.js'
+            jsLoader: 'matomo.js',
+            disableCookies: true
           }
         }),
 
