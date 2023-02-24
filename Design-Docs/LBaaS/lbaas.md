@@ -94,7 +94,7 @@ gateway. The gateway is available as a standard gateway for the
 member servers.
 
 The NAT passes through the original source-ip packages, which then
-provide a possibility for balancing decision based on the
+provides a possibility for balancing decision based on the
 L3 traffic. No header modification is required in the protocol.
 
 The TLS termination for TCP should be negotiated directly at the
@@ -107,7 +107,7 @@ The expected performance footprint is to be assessed as medium,
 specifically for software defined networks considering the NAT
 translation, it could become a bottleneck.
 
-example for this are:
+An example is:
 
 * Linux Virtual Server (IPVS) kernel module
  - which is adapted by [keepalived](https://github.com/acassen/keepalived)
