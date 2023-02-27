@@ -29,3 +29,13 @@ clouds:
     region_name: "prod2"
     interface: "public"
     identity_api_version: 3
+  wavestack:
+    auth:
+      auth_url: https://api.wavestack.de:5000
+      username: "scs-standards"
+      project_id: 00de553df86949b49365baee6375fb5a
+      project_name: "scs-standards"
+      user_domain_name: "scs"
+    region_name: "MUC5"
+    interface: "public"
+    identity_api_version: 3
