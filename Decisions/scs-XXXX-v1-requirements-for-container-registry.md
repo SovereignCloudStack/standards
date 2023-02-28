@@ -86,7 +86,7 @@ Refer to the list of evaluated projects with their classified categories and com
 - :heavy_check_mark: [Harbor][harbor]
   - Harbor project meets all "four opens"
     - Source code is open and available under the [Apache 2 license](https://github.com/goharbor/harbor/blob/main/LICENSE)
-    - Community is [open](https://github.com/goharbor/harbor#community, structured and 
+    - Community is [open](https://github.com/goharbor/harbor#community), structured and 
       well organized via [workgroups](https://github.com/goharbor/community) and 
       various communications channels e.g. Slack, mailing lists, etc. 
       (#harbor Slack channel contains 3k+ members)
