@@ -111,7 +111,7 @@ Refer to the list of evaluated projects with their classified categories and com
       project's website)
     - The project is visible and actively contributes to various conferences, e.g.
       [FOSDEM 22](https://goharbor.io/blog/harbor-at-fosdem-2022/),
-      [KubeCon Europe](https://www.youtube.com/watch?v=MGNtPHQYP14), etc. 
+      [KubeCon Europe](https://www.youtube.com/watch?v=REgvBPH369M), etc.
   - Lock-in risk assessment 
     - The project's [maintainers](https://github.com/goharbor/community/blob/main/MAINTAINERS.md) 
       document shows that there are a sufficient number of core 
