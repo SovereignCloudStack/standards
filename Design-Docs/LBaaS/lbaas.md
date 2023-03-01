@@ -1,5 +1,5 @@
 ---
-title: LoadBalancer As Service
+title: LoadBalancer As A Service
 type: Decision Record
 status: Draft
 track: Global
