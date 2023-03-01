@@ -36,7 +36,7 @@ of the server-side.
 ### 2.1.3 Member server
 
 A member server or real server is a ip and a port, that
-represents a real, virtual instance or a container.It
+represents a real, virtual instance or a container. It
 could also be a local unix-socket.
 
 ### 2.1.4 Monitor
