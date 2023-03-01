@@ -76,6 +76,15 @@ The file name of an SCS document is formed using the following pattern:
 `T` is replaced with the slugified title.
 For a document with the number 390, with a major version number 2 and a slugified title `flavor-naming`,
 the resulting file name would be `scs-0390-v2-flavor-naming.md`.
+The second digit in `XXXX` describes the track where the document belongs:
+
+| Track | Number |
+| --- | --- |
+| IaaS | 1 |
+| KaaS | 2 |
+| OPS | 3 |
+| IAM | 4 |
+| Global | 5 |
 
 In addition to the number, each document has the following metadata,
 embedded in the markdown header.
