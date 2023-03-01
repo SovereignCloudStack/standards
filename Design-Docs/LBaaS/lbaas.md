@@ -44,14 +44,15 @@ could also be a local unix-socket.
 A monitor in the load balancer context means having a health check
 that checks the service for availability of each member server.
 
-### 2.2  Types of Loadbalancing
+### 2.2 Types of Loadbalancing
 
-### 2.2.1  DNS Based Loadbalancing
+### 2.2.1 DNS Based Loadbalancing
 
-DNS-based load balancing means, have a DNS A Record more than with one entry.
+DNS-based load balancing is implemented by numerous DNS A records with the same
+name that point to different ip addresses.
 
 The DNS client cache will keep the first entry and the client will try to
-reach the first destination. If the answer is incorrect, the client should
+reach the first destination. If a connection can not be established, the client should
 try to reach the next entry.
 
 ```console
@@ -59,7 +60,7 @@ www.example.org       A         1.2.3.4
 www.example.org       A         4.3.2.1
 ```
 
-But DNS servers do not know the backend state, as such DNS-based loadbalancing
+The DNS servers do not know the backend state, as such DNS-based loadbalancing
 is a very simplistic way of loadbalancing.
 
 ### 2.2.2 Reverse Proxy Loadbalancing
@@ -73,12 +74,12 @@ contains mechanisms that can forward origin ip and port of origin.
 This is specified in [RFC7239](https://www.rfc-editor.org/rfc/rfc7239.html).
 
 For TCP connections this is a flawed workaround. TCP itself has no
-mechanism to forwarded the origin source ip. TLS Termination works
+mechanism to forwarded the origin source ip. TLS termination works
 for HTTP as well as TCP.
 
 The expected performance footprint is minimal.
 
-examples for this are:
+Examples for this are:
 
 * [haproxy.org](https://haproxy.org)
 * [nginx.org](https://nginx.org)
@@ -119,8 +120,8 @@ An example is:
 Direct server return is located next to the gateway,
 viewed from the architecture layer.
 
-It is from the definition a "flat based" load balancer.
-In view of the direction of the traffic flow, the original source
+It is by definition a "flat based" load balancer.
+Viewing the direction of the traffic flow, the original source
 ip of incoming traffic passes from the "listener" as a client-side
 and rewrites the client-side ip with the source of origin ip to
 the server-side, the response of the responding member server
