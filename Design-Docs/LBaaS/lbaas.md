@@ -7,14 +7,14 @@ track: Global
 
 ## 1. The Loadbalancer User story
 
-The Terminology of Loadbalancing is a bundle of different types of
-Loadbalancing, which is explained in the Section 2.
+When speaking of _Loadbalancing_ there are numerous ways this can
+be achieved with various technical aspects.
 
-From an operator perspective, it is today possible to use LBaaS,
-the SCS Stack shipped Octavia as LBaaS. But there are some open
-questions. For some application use cases, audit trail or geolocating
-protection it is helpful to be able to get origin source ip
-in.
+From an SCS operator perspective, LBaaS (Loadbalancer as a Service) is available
+to users, since the SCS Stack contains OpenStack's Octavia as LBaaS.
+However currently this leaves a number of open questions.
+For some application use cases, for example geolocation protection,
+it is useful to be able to get origin source ip of a request.
 
 ## 2. Terms of Loadbalancing
 
