@@ -82,7 +82,7 @@ The second digit in `XXXX` describes the track where the document belongs:
 | --- | --- |
 | IaaS | 1 |
 | KaaS | 2 |
-| OPS | 3 |
+| Ops | 3 |
 | IAM | 4 |
 | Global | 5 |
 
