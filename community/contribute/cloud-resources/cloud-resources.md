@@ -59,6 +59,7 @@ Service users will have their default_project_id set to a specific project and w
 | 602778bad3d3470cbe58c4f7611e8eb7 | p500924-dnation             | chess-knight      | dNation Dev Project               |      ∞       |
 | 91091d4039a6457db27d48d58bb1b4e4 | p500924-jschoone            | jschoone          | KaaS dev and evaluation           |      ∞       |
 | 93956190702b4a7d8a8886806d57713f | p500924-metering            | cah-link          | Metering Dev Project              |  31.12.2023  |
+| abbe6561cf6248b6af395334aa09af85 | p500924-harbor              | chess-knight      | Project for Harbor deployment     |      ∞       |
 |                                  |                             |                   |                                   |              |
 
 ## Wavecon
