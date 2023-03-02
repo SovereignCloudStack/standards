@@ -31,7 +31,7 @@ Example:
 > **Note**
 > To easy collaboration & transparency within the SCS team all users will have their default_project_id set to ``p500924-scs-community`` by default and will have full access on all projects listed below.
 
-### Service User
+### Service Users
 
 Service users will have their default_project_id set to a specific project and will NOT be granted full access to other projects by default.
 
@@ -63,3 +63,18 @@ Service users will have their default_project_id set to a specific project and w
 |                                  |                             |                   |                                   |              |
 
 ## Wavecon
+
+### Service Users
+
+|         Unique Identifier        | Service User Name          | Full Access on            | Community Contact | Description                                   | Needed until |
+|:--------------------------------:|----------------------------|---------------------------|-------------------|-----------------------------------------------|:------------:|
+| df4af5376bbd4de587c4335622149be7 | scs-standards              |  scs-standards            | itrich            | Service User - SCS Standards Compliance Check |       ∞      |
+
+### Projects
+
+|        Unique Identifier         | Project Name                | Community Contact | Description                       | Needed until |
+|:--------------------------------:|-----------------------------|-------------------|-----------------------------------|:------------:|
+| 718964b4b87446688ac04b151519fb51 | scs                         | garloff           | SCS Health Monitor                |      ∞       |
+| c46ccc9e695c4b23bacee2ad11145d9a | scs-health-monitor          | garloff           | SCS Health Monitor                |      ∞       |
+| 00de553df86949b49365baee6375fb5a | scs-standards               | itrich            | SCS Health Monitor                |      ∞       |
+
