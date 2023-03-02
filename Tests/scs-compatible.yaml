@@ -8,11 +8,12 @@ iaas:
       - name: Flavor naming
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/SCS-0003-v1-flavor-naming.md
         check_tools:
-          - executable: flavor-names-openstack.py
+          - executable: ./iaas/flavor-naming/flavor-names-openstack.py
+            args: "-1"
       - name: Image metadata
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/SCS-0004-v1-image-metadata.md
         check_tools:
-          - executable: image-md-check.py
+          - executable: ./iaas/image-metadata/image-md-check.py
             args: -v
       - name: OpenStack Powered Compute v2020.11
         url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2020.11.json
