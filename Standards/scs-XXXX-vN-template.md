@@ -1,6 +1,6 @@
 ---
 title: _Descriptive title_
-type: _Standard_ | _Decision Record_
+type: _Standard | Decision Record_
 status: Draft
 track: _Global | IaaS | Ops | KaaS | IAM_
 ---
