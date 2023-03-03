@@ -57,7 +57,7 @@ The status of a pull request is set to failed if commits do not contain a valid 
 
 ![Failed DCO in GitHub](github-failed-dco.png)
 
-Considerations behind the choice of AGPLv3, CC-BY-SA and the usage of the DCO can be found [here](license-considerations.md).
+Considerations behind the choice of AGPLv3, CC-BY-SA and the usage of the DCO can be found [here]([license-considerations.md](https://github.com/SovereignCloudStack/docs/blob/main/community/license-considerations.md)).
 
 ## Further reading
 
