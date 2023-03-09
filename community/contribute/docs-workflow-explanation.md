@@ -8,9 +8,9 @@ The aim within this documentation is to have a good developer experience and a l
 
 * Docs that explain, guide or contextualize specific modules such as the openstack-image-manager or the k8s-cluster-api-provider reside within their repository in a seperate docs directory.
 
-Both, the general docs and docs of the external repositories are combined into the one  unified documentation collection that is being rendered in a static page on <https://docs.scs.community>. In order to make this work we have developed a workflow that syncs all doc repositories and distills only the relevant markdown files.
+Both, the general docs and docs of the external repositories are combined into the one unified documentation collection that is being rendered in a static page on <https://docs.scs.community>. In order to make this work we have developed a workflow that syncs all doc repositories and distills only the relevant markdown files.
 
-The script is called `getDocs` a postinstall script and executed after `npm install`. This has the advantage to have the docs – coming from the cloud – in your local docusaurus development environment aswell as in the build process.
+The script is called `getDocs`. It is a postinstall script and is executed after `npm install`. This has the advantage to have the docs – coming from the cloud – in your local docusaurus development environment as well as in the build process.
 
 You'll find the script in the root directory of the [SovereignCloudStack/docs-page](https://github.com/SovereignCloudStack/docs-page) repository:
 

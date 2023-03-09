@@ -10,20 +10,20 @@ Determine the type of your documentation and click to continue.
 2. [Operational documentation](#2-operational-documentation)
 3. [Community documentation](#3-community-documentation)
 
-If unsure don't hestitate to ask us at [Matrix](/community/communication/matrix.md)
+If unsure don't hestitate to ask us at [Matrix](/community/communication/matrix.md).
 
 ## 1. Technical Documentation
 
 ### Step 1 – Checklist
 
-Your repository containing the documentation has to be:
+Your repository containing the documentation has to...
 
-- a public repository
+- be a public repository
 - contain a directory named `/doc` or `/docs` within root, containing the documentation files
 
-The documentation files have to be in markdown format and:
+The documentation files have to be in markdown format and...
 
-- comply [SCS licensing guidelines](../git◊hub/dco-and-licenses.md)
+- comply with [SCS licensing guidelines](../github/dco-and-licenses.md)
 - match our
   - [markdown file structure guideline](../contribute/doc-files-structure-guide-md)
   - linting Rules
@@ -33,24 +33,24 @@ The documentation files have to be in markdown format and:
 
 File a Pull Request within the [docs-page](https://github.com/SovereignCloudStack/docs-page) repository and add your repo to the docs.package.json:
 
-```json
+```json5
 [
     {
-        "repo": "demo-organisation/demo-repository",
         // link to github organisation and repository 
-        "source": "doc/*.md",
+        "repo": "demo-organisation/demo-repository",
         // directory which shall be copied. Optional to specify only copying markdown files
-        "target": "docs",
+        "source": "doc/*.md",
         // directory where the files should be copied to within the docs-page repo
-        "label": "demo-repository-label"
+        "target": "docs",
         // label for directory. only mandatory if source file is set to copy only *.md files and not the complete directory
+        "label": "demo-repository-label"
     }
 ]
 ```
 
-Once it is approved and merged, a postinstall script will be triggered within the build process. This initiates downloading, copy and distilling which results in this static generated [documentation](https://docs.scs.community) page – now with your content.
+Once it is approved and merged, a postinstall script will be triggered within the build process. This initiates downloading, copying and distilling which results in this static generated [documentation](https://docs.scs.community) page – now with your content.
 
-An explanation on how the sync & distill workflow and a guide on how to test it in a local development environment you will find [here](../contribute/docs-workflow-explanation.md).
+An explanation on how the sync & distill workflow works and a guide on how to test it in a local development environment you will find [here](../contribute/docs-workflow-explanation.md).
 
 ## 2. Operational documentation
 
