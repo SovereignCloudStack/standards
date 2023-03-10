@@ -5,7 +5,7 @@ status: Draft
 track: KaaS
 ---
 
-# Introduction  
+# Introduction
 
 A container registry is an infrastructure service to enable storing and accessing container
 images. Images can be pushed to the registry by e.g. Continuous integration pipelines and
@@ -28,7 +28,7 @@ container registry should fulfill a set of needed requirements e.g. for security
 privacy.
 
 The idea and purpose of this document is to specify what requirements a
-specific technical container registry implementation (i.e. software solution) needs to 
+specific technical container registry implementation (i.e. software solution) needs to
 fulfill in the context of SCS.
 
 Another purpose is the selection of an appropriate container registry
@@ -49,18 +49,18 @@ promote itself to the second consideration stage. The second stage provides an o
 over the feature set of open source container registry implementations and map out
 requirements (and nice-to-haves) against it to have a well-documented decision.
 
-Note: Keep in mind that at the time of writing this document, we’ve made our best effort 
+Note: Keep in mind that at the time of writing this document, we’ve made our best effort
  to survey the container registry landscape based on publicly available materials.
  If you find something outdated (with respect to the time of writing this document) or
  outright erroneous, please submit a PR or raise an issue, and we’ll fix it right away.
 
 ## OSS health check
 
-This section evaluates the health of the open-source projects that were selected from 
+This section evaluates the health of the open-source projects that were selected from
 the currently available solutions. The container registry software must fulfill all OSS
-health checks defined by the [OSS-Health](https://github.com/SovereignCloudStack/standards/blob/main/Design-Docs/OSS-Health.md)
+health checks defined by the [OSS-Health](../Drafts/OSS-Health.md)
 document. The main health checks are:
-- Four Opens (code is fully open source, community is open and diverse, development 
+- Four Opens (code is fully open source, community is open and diverse, development
   process is open, design process is open)
 - Maturity
 - Security
@@ -70,15 +70,15 @@ document. The main health checks are:
 Each selected OSS project is evaluated based on the above checks, and it is classified
 into one of three categories as follows:
 
-- :heavy_check_mark: The project passed all OSS health checks and will be considered 
+- :heavy_check_mark: The project passed all OSS health checks and will be considered
   further as a valid candidate.
 
-- :grey_question: The project passed almost all OSS health checks. 
+- :grey_question: The project passed almost all OSS health checks.
   There is place for improvement, but the missing points are not crucial from the OSS
   health check perspective. The project will be considered further as a valid candidate.
 
-- :x: The project does not pass the OSS health checks. Some OSS health check 
-  showstoppers have been found (e.g. open core software, not actively maintained). 
+- :x: The project does not pass the OSS health checks. Some OSS health check
+  showstoppers have been found (e.g. open core software, not actively maintained).
   The project is filtered at this stage and won't be considered further.
 
 Refer to the list of evaluated projects with their classified categories and comments.
@@ -86,15 +86,15 @@ Refer to the list of evaluated projects with their classified categories and com
 - :heavy_check_mark: [Harbor][harbor]
   - Harbor project meets all "four opens"
     - Source code is open and available under the [Apache 2 license](https://github.com/goharbor/harbor/blob/main/LICENSE)
-    - Community is [open](https://github.com/goharbor/harbor#community), structured and 
-      well organized via [workgroups](https://github.com/goharbor/community) and 
-      various communications channels e.g. Slack, mailing lists, etc. 
+    - Community is [open](https://github.com/goharbor/harbor#community), structured and
+      well organized via [workgroups](https://github.com/goharbor/community) and
+      various communications channels e.g. Slack, mailing lists, etc.
       (#harbor Slack channel contains 3k+ members)
-    - The development process is open via GitHub issues and well described in the 
-      [contributing](https://github.com/goharbor/harbor/blob/main/CONTRIBUTING.md) 
+    - The development process is open via GitHub issues and well described in the
+      [contributing](https://github.com/goharbor/harbor/blob/main/CONTRIBUTING.md)
       document
     - The design process is open via GitHub issues. Proposals are [public](https://github.com/goharbor/community/tree/main/proposals).
-      The decision process is well described as well. The project's roadmap is 
+      The decision process is well described as well. The project's roadmap is
       available in the [roadmap](https://github.com/goharbor/harbor/blob/main/ROADMAP.md) document
   - Maturity is on the CNCF [graduation](https://www.cncf.io/projects/harbor/) level.
     CNCF graduated projects are considered to be stable, widely adopted and production-ready
@@ -104,17 +104,17 @@ Refer to the list of evaluated projects with their classified categories and com
     - The code is reviewed within a standard PR process
   - Activity
     - 250+ contributors, 4k+ forks, 13k+ GitHub stars
-    - The project has been [adopted](https://github.com/goharbor/harbor/blob/main/ADOPTERS.md) 
+    - The project has been [adopted](https://github.com/goharbor/harbor/blob/main/ADOPTERS.md)
       by many companies that run Harbor in their production environments
     - The project collaborates with other communities and projects
-      (see [Partners of Harbor](https://goharbor.io/community/) section of the 
+      (see [Partners of Harbor](https://goharbor.io/community/) section of the
       project's website)
     - The project is visible and actively contributes to various conferences, e.g.
       [FOSDEM 22](https://goharbor.io/blog/harbor-at-fosdem-2022/),
       [KubeCon Europe](https://www.youtube.com/watch?v=REgvBPH369M), etc.
-  - Lock-in risk assessment 
-    - The project's [maintainers](https://github.com/goharbor/community/blob/main/MAINTAINERS.md) 
-      document shows that there are a sufficient number of core 
+  - Lock-in risk assessment
+    - The project's [maintainers](https://github.com/goharbor/community/blob/main/MAINTAINERS.md)
+      document shows that there are a sufficient number of core
       maintainers/contributors that differ over various companies, we therefore deem
       the lock-in risk arising from a single point of failure to be low
   
@@ -129,7 +129,7 @@ Refer to the list of evaluated projects with their classified categories and com
     - The design process is open via GitHub issues. The project's roadmap is available in
       the project's [webpage](https://d7y.io/docs/others/roadmap/#2022-roadmap)
   - Maturity is on the CNCF [incubating](https://www.cncf.io/projects/dragonfly/) level
-    CNCF incubating project is considered stable and used in production by users with 
+    CNCF incubating project is considered stable and used in production by users with
     the healthy pool of contributors
   - Security
     - The security disclosure is handled via a dedicated email address
@@ -140,9 +140,9 @@ Refer to the list of evaluated projects with their classified categories and com
       by many companies that run Harbor in their production environments
     - The project is visible and actively contributes to various conferences,
       e.g. [KubeCon North America](https://www.youtube.com/watch?v=LcxBgmmeA80),
-      [KubeCon Europe](https://www.youtube.com/watch?v=MGNtPHQYP14), etc. 
+      [KubeCon Europe](https://www.youtube.com/watch?v=MGNtPHQYP14), etc.
   - Lock-in risk assessment
-    - The list of the project's [maintainers](https://github.com/dragonflyoss/Dragonfly2/blob/main/MAINTAINERS.md
+    - The list of the project's [maintainers](https://github.com/dragonflyoss/Dragonfly2/blob/main/MAINTAINERS.md)
       includes contributors from various companies and the [companies contributing dashboard](https://dragonfly.devstats.cncf.io/d/7/companies-contributing-in-repository-groups)
       shows that ~10 companies are actively contributing to a repository group
 
@@ -168,13 +168,13 @@ Refer to the list of evaluated projects with their classified categories and com
       run Quay in their production environments
   - Lock-in risk assessment
     - The project's owners/maintainers list is not publicly available and is stored in
-      the [downstream repository](https://github.com/quay/quay-docs#how-do-i-set-up). 
+      the [downstream repository](https://github.com/quay/quay-docs#how-do-i-set-up).
       Therefore, it is hard to distinguish the risk of project failure caused by low
       diversity across the companies. This should be improved
 
 - :x: [Keppel](https://github.com/sapcc/keppel)
   - The project seems to be not widely used in a productive way and also the activity
-    around is currently not on a good level (5+ contributors). The development 
+    around is currently not on a good level (5+ contributors). The development
     process as well as the design process seem to be open, but not documented yet
 
 - :x: [Nexus](https://github.com/sonatype/nexus-public)
@@ -186,22 +186,21 @@ Refer to the list of evaluated projects with their classified categories and com
 
 - :x: [Kraken](https://github.com/uber/kraken)
   - It seems that the project is not actively maintained as is discussed in the related
-    project's [issue](https://github.com/uber/kraken/issues/313) 
+    project's [issue](https://github.com/uber/kraken/issues/313)
 
 - :x: [Portus](https://github.com/SUSE/Portus)
   - It seems that the project is not actively maintained as is discussed in the related
-    project's [issue](https://github.com/SUSE/Portus/issues/2352) 
+    project's [issue](https://github.com/SUSE/Portus/issues/2352)
 
 ## Required and desirable features check
 
 This section provides an overview of the feature set of open source container registry
-implementations (which passed the OSS health stage above) and map out requirements 
+implementations (which passed the OSS health stage above) and map out requirements
 (and nice-to-haves) against it. The container registry software must be robust enough,
 to be able to operate under heavy load (e.g. high availability (HA) mode, federation, etc.) and
 the crucial feature is security.
-We defined a set of required features that the container registry implementation must 
-have and also a set of desirable (nice to have) features are defined and evaluated here. 
-
+We defined a set of required features that the container registry implementation must
+have and also a set of desirable (nice to have) features are defined and evaluated here.
 
 **Required features**
 
@@ -285,7 +284,6 @@ Notes:
 - Additional supported artifacts: Harbor announced the deprecation of [Chartmuseum](https://github.com/goharbor/harbor/discussions/15057)
   integration, hence it is not mentioned in the table
 
-
 ## Conclusion
 
 A wide range of open-source container registry projects (Quay, Harbor, Dragonfly,
@@ -330,7 +328,7 @@ distribution capabilities and on the other hand the Dragonfly project profits fr
 Harbor's feature-rich container registry "frontend".
 
 [Quay][projectquay] is an open-source project maintained by Red Hat. Its OSS health is
-on a good level, the community around it is growing, and we consider it to be quite
+on a good level, the surrounding community is growing, and we consider it to be quite
 mature as it powers enterprise solutions like Red Hat Quay and Quay.io.
 Besides this, there is still a place for OSS health improvement. It is hard to
 distinguish the risk of project failure caused by low diversity across the companies
@@ -373,7 +371,6 @@ should be aware of this shared storage backend architecture.
 
 Based on the research and conclusion above we've decided to use the **Harbor** project
 as a container registry implementation for the SCS ecosystem.
-
 
 <!-- Frequently used references -->
 
