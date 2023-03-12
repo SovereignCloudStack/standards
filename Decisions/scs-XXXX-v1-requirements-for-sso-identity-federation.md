@@ -11,7 +11,7 @@ Our assumption is that there are use cases, where CSPs would like to be able to
 let customers access their SCS based services by identifying themselves with
 credentials that are stored and managed external to the CSP's SCS installation.
 
-This is based on the observation that prospective customers of a SCS based CSP
+This is based on the observation that prospective customers of an SCS based CSP
 sometimes already come equipped with an IAM solution of their choice, either on
 premises or e.g. as an external 3rd party cloud service. To ease onboarding of
 customer employees (or e.g. customer contracted 3rd party admin staff) as SCS
@@ -26,7 +26,7 @@ authentication to external identity providers and map those users to roles in
 SCS that can be used for authorization decisions when users access SCS services.
 
 In addition to user identities there we also see the necessity to support the
-use of "machine identites" (aka "workload identities" or "service accounts).
+use of "machine identites" (aka "workload identities" or "service accounts").
 These will probably be SCS-local accounts and have for example the purpose
 to grant CaaS workload access to storage resources served by the infrastructure
 layer. Exact architectural details for this are still in active discussion,
@@ -37,8 +37,7 @@ facilitating the integration.
 
 SCS has multiple service layers, like IaaS and CaaS, both of which running their
 own technological stack with specific internal models of accounts and
-authorization. OTOH there are also specific services like the "Status Page"
-application that require consumption of identities.
+authorization.
 
 One thing these services have in common, is that they are able
 to use SSO protocols like OAuth 2.0 or OpenID Connect (OIDC) on top of it to
@@ -46,7 +45,7 @@ delegate authentication. They are service providers (SAML terminology) and can
 be relying parties (OIDC terminology) of a protocol compliant identity provider
 (IdP).
 
-So the idea is, to run a SSO IdP as part of SCS to provide a dedicated point
+So the idea is, to run an SSO IdP as part of SCS to provide a dedicated point
 of entry for identites, which the SCS service layers can use as a common
 interface to consume external user identities.
 
@@ -57,7 +56,7 @@ in the context of SCS.
 # Design Considerations
 
 As a central service for identity handling, the IdP
-service needs to be really, really robust.
+service needs to be robust and reliable.
 
 Customers shall be able to access self service, so that
 they can make reasonable adjustments e.g. to role mapping.
@@ -67,7 +66,7 @@ that serves as a frontend to provision and re-configure
 customer specific data, abstracting e.g. from IdP specific
 user interface particularities.
 
-Keycloak is currently being deployed as part of the OSISM testbed.
+Keycloak is currently being deployed as part of the IaaS reference implementation.
 Technically this IdP component shall be shifted from the management
 plane to be run on the basis of a "minimal" Kubernetes (e.g. K3S),
 e.g. to make use of the "self healing" and scaling features achievable
@@ -144,8 +143,20 @@ MariaDB/Galera cluster e.g..
 
 ### Zitadel
 
-Zitadel is a newer implementation of a SSO IdP. It is implemented
-in Go and under active development.
+Zitadel is a newer implementation of an SSO IdP.
+It is implemented in Go and under active development and maintained by ZITADEL.
+
+The project is open for community [contributions](https://github.com/zitadel/zitadel/blob/main/CONTRIBUTING.md)
+to all parts of the eco system.
+Feature requests and bugs being tracked on [Github](https://github.com/orgs/zitadel/projects/2/views/5) for development.
+Community questions can be asked in the [public chat](https://zitadel.com/chat) or via [Github Discussions](https://github.com/zitadel/zitadel/discussions).
+ZITADEL offers support for the commonly used authentication and authorization protocols such as OIDC, OAuth2, SAML2.
+It is a compliant and certified OpenID Connect provider with support for various Grant Types for both human users and machine users.
+Compared to Keycloak SPIs, ZITADEL offers Actions to customize and integrate (eg, calling external APIs, Webhooks, customizing pre-built workflows, customizing tokens)
+Actions are executed at runtime and can be maintained independently of platform.
+Identity brokering (OIDC, SAML, JWT) can be configured system-wide or for each organization with templates.
+Users will be created just in time for audit purposes and linked to the external identity provider.
+Users can have multiple identity providers linked to their profile.
 
 It came to attention of the SCS project because it offers a
 fresh take of an organization focussed data model, which has
@@ -157,6 +168,11 @@ in the following areas:
   configuration.
 * For SCS customers for a robust user experience for self servicing.
 
+The concept for [Delegated Access Management](https://zitadel.com/docs/concepts/structure/organizations)
+reduces the management overhead compared to isolated realms.
+Projects (Applications + Roles) can be maintained by one organization and delegated to be used by other Organizations.
+Managers that receive granted Projects can assign users permissions to use the project.
+
 [Zitadel is offering REST APIs](https://zitadel.com/docs/apis/introduction)
 for multiple areas of use and configuration.
 
@@ -164,13 +180,16 @@ In comparison to Keycloak it currently lacks support for the
 [Device Authorization Grant](https://github.com/SovereignCloudStack/issues/issues/221),
 which, at time of writing, is a feauture that is relevant
 for SCS to be able use OpenStack CLI and APIs with federated
-identities. At Zitadel there are at least two [Github issues](https://github.com/zitadel/oidc/issues/141)
-proposed to implement this feature.
+identities. Support for this is under active development ([Github issues](https://github.com/zitadel/oidc/issues/141)).
 
-At the time of writing it lacks support to consume identity data from LDAP backends.
-But that is currently not a relevant factor in the SCS context.
+Support for consumption of LDAP backends is [currently in development](https://github.com/zitadel/zitadel/issues/4609).
 
-At time of writing an PoC "spike" is done to assess and verify the hopes
+ZITADEL supported backend databases are CockroachDB and PostgreSQL.
+
+For [production setups](https://zitadel.com/docs/self-hosting/manage/production) it is recommended
+to use Kubernetes (or similar like Knative) and CockroachDB.
+
+At time of writing a PoC "spike" is done to assess and verify the hopes
 connected with Zitadel in the context of the SCS testbed.
 
 # Open questions
@@ -182,10 +201,6 @@ connected with Zitadel in the context of the SCS testbed.
     * What's the benefit?
     * How would we allow SCS operators to choose?
 * Do we need some kind of SWOT analysis to come to a decision?
-
-# Decision
-
-_Decision_
 
 # Related Documents
 
