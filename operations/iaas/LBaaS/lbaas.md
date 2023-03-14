@@ -81,11 +81,11 @@ The expected performance footprint is minimal.
 
 Examples for this are:
 
-* [haproxy.org](https://haproxy.org)
-* [nginx.org](https://nginx.org)
-* [traefik.io](https://traefik.io/)
+- [haproxy.org](https://haproxy.org)
+- [nginx.org](https://nginx.org)
+- [traefik.io](https://traefik.io/)
 
-### 2.2.3  Direct Routing (NAT Based) Loadbalancing
+### 2.2.3 Direct Routing (NAT Based) Loadbalancing
 
 ![Loadbalancer Nat](natbased.png)
 
@@ -110,10 +110,11 @@ translation, it could become a bottleneck.
 
 An example is:
 
-* Linux Virtual Server (IPVS) kernel module
- - which is adapted by [keepalived](https://github.com/acassen/keepalived)
+- Linux Virtual Server (IPVS) kernel module
 
-### 2.2.4  Direct Server Return Loadbalancing
+- which is adapted by [keepalived](https://github.com/acassen/keepalived)
+
+### 2.2.4 Direct Server Return Loadbalancing
 
 ![DSR](dsr.png)
 
@@ -128,8 +129,7 @@ the server-side, the response of the responding member server
 then follows the source of origin ip and passes the network default
 gateway.
 
-
-### 2.2.5  ECMP Loadbalancing
+### 2.2.5 ECMP Loadbalancing
 
 For this type of load balancing, the routing technique is used
 to forward the traffic. In Wide Area Network (WAN) there is often the
@@ -157,7 +157,7 @@ Session affinity: The loadbalacing is decided upon session initiated.
 Routes to manipulate the flow through the first session decision.
 This can be done with the schedulers round robin, hashed or least-conection.
 
-## 2.3.  LBaaS in SCS Clouds
+## 2.3. LBaaS in SCS Clouds
 
 OpenStack brings octavia as its own load balancer as a service solution.
 This can be activated as a service in SCS stacks. It works in two scenarios
@@ -177,7 +177,7 @@ In the amphora-namespace itself work haproxy as reverse proxy for http,
 tcp and TLS termination, ipvsadm for UDP and high availibility as VRRP.
 
 ### 2.3.2 OVN Provider
-  
+
 The second provider in Octavia works with the SDN integration
 Open Virtual Network. Viewed from the architecture viewpoint, this design
 is much simpler. The listener is just another router port in the

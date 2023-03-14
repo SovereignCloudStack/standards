@@ -10,7 +10,6 @@ OTOH one could probably also script pretty much everything of this to allow
 tenants to use a CLI tool to automate the setup. For that purpose the documentation
 may be useful to guide the implementation of such a scripted solution.
 
-
 ## Detailed tutorial on how to configure Federation (OpenID Connect) between two Keycloak instances in two separate SCS domains
 
 Assume you have two CSPs using SCS. The first one wants to grant access to users of the other.
@@ -22,12 +21,12 @@ Assuming the "resource domain" is called `foo` and the "accounts domain" is call
 1. In the accounts domain (`bar`) open Keycloak realm `osism`, click on `Clients` in the sidebar and click on `Create client`.
    Leave the client type as `OpenID Connect` and enter the `Client ID`, e.g. `oidc-rp-foo`.
    Turn on `Client authentication` for it and click `Save`.
-   
+
    On the `Client details` page open the tab `Credentials` and copy the `Client secret`. Communicate this to the operato of the "resource domain" `foo` via a secure channel.
-   
+
 2. In the resource domain (`foo`) open Keycloak realm `osism`, click on `Identity providers`
    and create a new provider definition of type `OpenID Connect v1.0`. As `Alias` choose a name,
-   e.g. `oidc-op-bar`.  Don't copy the `Redirect URI` given at the top yet, because is will change depending
+   e.g. `oidc-op-bar`. Don't copy the `Redirect URI` given at the top yet, because is will change depending
    on the chosen `Alias`. Instead, scroll down to the mandatory field `Discovery endpoint` and paste
    the OpenID Connect metadata URL of the KEycloak realm `osism` in the "accounts domain" (`bar`).
    The operator of the "accounts domain" (`bar`) may easily copy that URL from the `Realm Settins` in the
@@ -40,19 +39,19 @@ Assuming the "resource domain" is called `foo` and the "accounts domain" is call
    java stack traces. If you find any, the top of those stack traces may indicate what kind of problem
    occurred to the java code. From here we will assume that the emtadata URL could be fecthed without
    any issues.
-   
+
    Now, go to the bottom of that form and insert tjhe `Client ID` (`oidc-rp-foo`) and the
    `Client secret` that was provided by the operator of the "accounts domain" (`bar`).
    Finally click on `Add`. From the `Provider Details` page on the top for the `Settings` tab copy the value of the
    `Redirect URI` and communicate it back to the operator of the "accounts domain" (`bar`).
-   
+
 3. In the accounts domain (`bar`) open Keycloak realm `osism`, click on `Clients` in the sidebar and click
    on the name of the OIDC RP clinent that you created for domain `foo` (e.g. `oidc-rp-foo`).
    On the `Client details` page on the tab `Settings` fill in the field `Valid redirect URIs` with the value
    obtained from the resource domain (`foo`), which should look similar to
    `https://foo.com/auth/realms/osism/broker/oidc-op-bar/endpoint`. Additionally the
    `Valid post logout redirect URIs` need to be set to something like `https://foo.com/auth/realms/osism/*`.
-   
+
 4. To test federated login in the "resource domain" (`foo`) open the URL of the Keycloak admin console for
    the realm `osism`: `https://foo.com/auth/admin/osism/console` (or `https://foo.com/auth/realms/osism/protocol/openid-connect/auth?client_id=security-admin-console`).
    Ignore the top section of the login form titled
@@ -63,5 +62,5 @@ Assuming the "resource domain" is called `foo` and the "accounts domain" is call
    After successull authentication your broser should be redirected to admin console of the "resource domain",
    which may offer you a "first login flow" form where you can choose a username, email, firstname and lastname.
    The details depend on the `Mappers` that have been configured for the Identity Provider `oidc-op-bar`.
-   After that you will be presented with a Keycloak themed page with the error message `Request failed with status code 403`, 
+   After that you will be presented with a Keycloak themed page with the error message `Request failed with status code 403`,
    which is normal because the test account is not authorized to access any elements of the Keycloak admin console.

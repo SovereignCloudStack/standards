@@ -6,7 +6,7 @@ stack, that avoids exposing them to legal risks or additional restrictions that 
 usefulness. Free software licenses have this intention but differ in how they achieve it and in
 what kind of protections they provide. In the first approximation, all [OSI](https://opensource.org/licenses)-approved
 open source licenses can be considered as valid options. As a matter of fact,
-we do consider projects under such licenses as valid modules for SCS -- where we
+we do consider projects under such licenses as valid modules for SCS — where we
 use such projects and adjust or extend them, we would provide our contributions
 under the license terms of the respective project, so we can achieve our goal to feed back code
 upstream to the respective project, contribute to it and avoid fragmentation.
@@ -22,22 +22,22 @@ code.
 
 ## Reciprocity
 
-The GPL family of licenses are reciprocal licenses -- sometimes called [copyleft](https://en.wikipedia.org/wiki/Copyleft)
-licenses -- the recipient of the licensed code can make all sorts of modifications,
+The GPL family of licenses are reciprocal licenses — sometimes called [copyleft](https://en.wikipedia.org/wiki/Copyleft)
+licenses — the recipient of the licensed code can make all sorts of modifications,
 but if she uses the code to release software (GPL) or provide a networked service
-(AGPL) to others, then she must grant the same rights to the recipients -- this
+(AGPL) to others, then she must grant the same rights to the recipients — this
 includes making the modifications available under the same terms as the received software.
 Microsoft has infamously [attacked](https://web.archive.org/web/20010615205548/http://suntimes.com/output/tech/cst-fin-micro01.html)
 copyleft licenses (and specifically the GPL) as cancerous "viral" license.
 
 Reciprocity has many advantages:
 
-* Code that has been created as free software will stay free. While GPL code can be
+- Code that has been created as free software will stay free. While GPL code can be
   combined in a larger software collection with proprietary software, the code itself
   including its enhancements etc. (technically: all derived works, see below) will
   remain free.
 
-* The obligation to make the changes available avoids fragmentation. As changed and
+- The obligation to make the changes available avoids fragmentation. As changed and
   "improved" versions need to be made available, it is much easier to review and feed
   those changes back and create a unified upstream codebase that reflects the needs of
   the complete user base by including the needed changes. This was observed and
@@ -49,28 +49,28 @@ the AGPL, GNU GPL, GNU LGPL, MPL or the [OSL](https://opensource.org/licenses/OS
 
 ## Controversy
 
-* Not fulfilling the license terms of a software license typically leads to the ability for the
-  license owner to revoke the license -- as it is relatively easy to not fulfill all obligations
+- Not fulfilling the license terms of a software license typically leads to the ability for the
+  license owner to revoke the license — as it is relatively easy to not fulfill all obligations
   of the GPL out of sheer negligence, the revocation without prior warning seems
-  disproportionate -- this is sometimes called the GPL death penalty.  The open source community
+  disproportionate — this is sometimes called the GPL death penalty. The open source community
   though has a strong interest in bringing every licensee into compliance by giving violators a
   fair chance to correct their behavior. SCS explicitly supports the [GPL Cooperation Commitment](https://gplcc.github.io/gplcc/)
   and the respective [document](https://www.kernel.org/doc/html/v4.15/process/kernel-enforcement-statement.html)
   from the Linux kernel developers and pledges to give violators a warning and a chance to correct action
-  by allowing for a cure period. This is a bit of a legacy issue -- it is relevant to (L)GPLv2
-  code only -- v3 of L/A/GPL does already contain language that has cure provisions, so it's
+  by allowing for a cure period. This is a bit of a legacy issue — it is relevant to (L)GPLv2
+  code only — v3 of L/A/GPL does already contain language that has cure provisions, so it's
   clear by the licensing terms.
 
-* Many companies seem to be worried that they will inadvertently violate the GPL by negligence.
+- Many companies seem to be worried that they will inadvertently violate the GPL by negligence.
   And it is true that a company needs a tighter control of the usage of inbound source code
   which comes with a reciprocal license than the permissive BSD 3-clause or Apache Software (v2)
   licenses. This advantage however quickly turns into a disadvantage as soon as the company does
-  significant outbound open source contributions under a permissive license -- they rarely want
+  significant outbound open source contributions under a permissive license — they rarely want
   to give their competitors an opportunity to consume their contributions and then add
-  proprietary changes to gain an advantage.  In general, companies are well advised to have a
+  proprietary changes to gain an advantage. In general, companies are well advised to have a
   detailed understanding of all code that is being used and contributed and their respective
-  license terms -- for proprietary and open source code and for reciprocal and for permissive
-  licenses.  Some companies have successfully installed license review boards or
+  license terms — for proprietary and open source code and for reciprocal and for permissive
+  licenses. Some companies have successfully installed license review boards or
   [open source review boards](https://www.linuxfoundation.org/resources/open-source-guides/using-open-source-code/)
   to create oversight, recommendations and policies to ease the governance.
 
@@ -83,12 +83,12 @@ by the scare tactics some bad companies have built on top of copyleft licenses.
 
 ## Affero
 
-The reciprocity of the GNU GPL does not apply on the *creation* of a derived work. A company
+The reciprocity of the GNU GPL does not apply on the _creation_ of a derived work. A company
 can consume GPL'ed code and change it to their own liking without ever making any the
 changes available if only used in-house. The terms however do apply as soon as the derived
-work is *released*, i.e. the software is passed on to a third party.
+work is _released_, i.e. the software is passed on to a third party.
 
-In modern times, software is often used to provide a *networked service* (think SaaS) to third
+In modern times, software is often used to provide a _networked service_ (think SaaS) to third
 parties. Unlike the standard GPL, the Affero GPL (AGPL) does consider the act of making it
 available in such a way as similar to releasing the software and does require that applied
 changes to the software are being made available in this case.
@@ -100,10 +100,10 @@ The very successful [Nextcloud](https://nextcloud.org/) project uses the AGPLv3.
 
 ## Derived works and Strong vs. Weak Copyleft
 
-What exactly constitutes derived work needs to be defined -- it's one of the questions where
+What exactly constitutes derived work needs to be defined — it's one of the questions where
 copyright law can get subtle. From a practical view, consuming (non-trivial) source code and
 binary linking is typically considered creating derived works. Whereas interacting via a network
-API or starting another process is typically considered a copyright boundary.  To avoid any
+API or starting another process is typically considered a copyright boundary. To avoid any
 unclarity, the Linux kernel community has explicitly called out using Linux system calls (which
 includes using the interface definitions) is a copyright boundary and can thus be done by
 applications without any license implications.
@@ -116,8 +116,8 @@ Libraries are often providing implementations for standard services and helpers;
 reasonable to consider applications that want to use a library as derived works from that
 library and requiring the application to thus be licensed under a (compatible) copyleft license.
 For these libraries, a Weak Copyleft license (such as the [LGPL](https://www.gnu.org/licenses/lgpl-3.0.en.html)
-or the [EPL](https://www.eclipse.org/legal/epl-2.0/) can be used.  This would still require changes to
-the library *itself* to me made available under the copyleft license but would make binary
+or the [EPL](https://www.eclipse.org/legal/epl-2.0/) can be used. This would still require changes to
+the library _itself_ to me made available under the copyleft license but would make binary
 linking (including the use of interface definitions) a copyright barrier and thus allow for
 non-copylefted code to be linked against a weakly copylefted library. This license is used by
 many of the standard and system libraries in the Linux world and is often a good choice for
@@ -125,12 +125,12 @@ libraries of standardized services.
 
 ## Patents
 
-Free software licenses are intended to give users broad rights -- the GNU GPL talks about the
+Free software licenses are intended to give users broad rights — the GNU GPL talks about the
 [four freedoms](https://fsfe.org/freesoftware/) to use software for any purpose, to study and
 adjust the software (this needs source code access), to redistribute the software and to improve
 it and to make these improvements available.
 
-Software patents can significantly subvert the intended rights -- the open source community in
+Software patents can significantly subvert the intended rights — the open source community in
 general dislikes software patents for this and many other reasons that are discussed
 [elsewhere](https://en.wikipedia.org/wiki/Software_patents_and_free_software) .
 In some countries, there are rules that prevent pure software from being patented, though [not
@@ -157,12 +157,12 @@ it pledges to contribute these to the OIN pool.
 Very few Open Source projects require copyright assignment; the GNU projects are the
 only commonly used ones that the author is aware of. This results in fully centralized
 copyright ownership. This puts the FSF into a very
-strong position -- a position to enforce copyright, to change licenses etc. This requires
+strong position — a position to enforce copyright, to change licenses etc. This requires
 a lot of trust towards the copyright assigneed.
 
-Most open source projects prefer distributed copyright -- the authors (or their
+Most open source projects prefer distributed copyright — the authors (or their
 employers) retain the copyright to their works. They grant a license for the open
-source project to use and integrate and redistribute the work -- typically the
+source project to use and integrate and redistribute the work — typically the
 license grant is extended to the public. In a sufficiently distributed copyright model,
 it is very hard to change a license, as all copyright holders would need to agree.
 This can both be considered advantageous and disadvantageous.
@@ -171,7 +171,7 @@ Many software projects use [Contributor License Agreements](https://en.wikipedia
 (CLAs), documenting that contributed code grants certain rights to the project
 owner (a foundation or sometimes a company). This ensures that the project owner
 has all needed rights to use, protect, redistribute ... the code. If the CLA contains
-*copyright assignment*, it also allows the project to change the license or to
+_copyright assignment_, it also allows the project to change the license or to
 create derived works under a different license.
 
 While this is advantageous for the project owner, it is not necessarily advantageous for the
@@ -182,7 +182,7 @@ of significant copyrights can actually enforce it against violators.
 
 The Linux kernel and an increasing number of projects do not work with copyright assignments
 nor CLAs, but with [Developer Certificates of Origin](https://en.wikipedia.org/wiki/Developer_Certificate_of_Origin)
-(DCO -- the signed-off lines of kernel commits).  This is deemed sufficient to document the origin and the authorization to
+(DCO — the signed-off lines of kernel commits). This is deemed sufficient to document the origin and the authorization to
 contribute code.
 
 The SCS project will not change the license. There however might be cases, where potential users
@@ -208,10 +208,10 @@ SCS follows this best practice.
 
 ## Further reading
 
-* <https://en.wikipedia.org/wiki/Comparison_of_free_and_open-source_software_licences>
-* <https://en.wikipedia.org/wiki/Software_patents_and_free_software>
-* <https://joinup.ec.europa.eu/collection/eupl/matrix-eupl-compatible-open-source-licences>
-* <https://lwn.net/Articles/592503/>
-* <https://sfconservancy.org/blog/2020/jan/06/copyleft-equality/>
-* <https://developercertificate.org>
-* <https://julien.ponge.org/blog/developer-certificate-of-origin-versus-contributor-license-agreements/>
+- <https://en.wikipedia.org/wiki/Comparison_of_free_and_open-source_software_licences>
+- <https://en.wikipedia.org/wiki/Software_patents_and_free_software>
+- <https://joinup.ec.europa.eu/collection/eupl/matrix-eupl-compatible-open-source-licences>
+- <https://lwn.net/Articles/592503/>
+- <https://sfconservancy.org/blog/2020/jan/06/copyleft-equality/>
+- <https://developercertificate.org>
+- <https://julien.ponge.org/blog/developer-certificate-of-origin-versus-contributor-license-agreements/>

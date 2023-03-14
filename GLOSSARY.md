@@ -20,10 +20,10 @@ When users provision resources, they can specify in which Availability Zone thei
 
 ## Definition of Host Aggregates
 
-Host aggregates are a mechanism for partitioning compute nodes which is not explicitly visible to users in an OpenStack/SCS cloud.  Host aggregates are based on arbitrary characteristics such as server type, processor type, GPU, disk speed, etc.
+Host aggregates are a mechanism for partitioning compute nodes which is not explicitly visible to users in an OpenStack/SCS cloud. Host aggregates are based on arbitrary characteristics such as server type, processor type, GPU, disk speed, etc.
 Administrators assign flavors to host aggregates by specifying metadata on the host aggregate and customizing the extra specifications of the flavor. It is then up to the Nova scheduler to determine the best match for the user request. Compute nodes can also be in more than one host aggregate.
 
-Optionally, one can designate a host aggregate as an Availability Zone, e.g. for simplification reasons of the user selection of an availbility zone.  
+Optionally, one can designate a host aggregate as an Availability Zone, e.g. for simplification reasons of the user selection of an availbility zone.
 Availability Zones differ from Host Aggregates in that they are shown to the user as a Nova boot option, so Compute VMs can be started on them.
 Compute Nodes, however, can only be in a single Availability Zone. We can configure a default Availability Zone where instances will be scheduled if the user does not specify an Availability Zone.
 
@@ -71,7 +71,7 @@ The provider network is the network that is "in front", i.e. at the output point
 
 ## Definition of API
 
-The Rest API provides the core of openstack/SCS  and can be addressed for a whole region. It accepts and responds to end-user API calls.  The service supports the OpenStack Compute API, the Amazon EC2 API, and a special Admin API for privileged users to perform administrative actions. Policies are enforced and most orchestration actions can be started, such as launching an instance.
+The Rest API provides the core of openstack/SCS and can be addressed for a whole region. It accepts and responds to end-user API calls. The service supports the OpenStack Compute API, the Amazon EC2 API, and a special Admin API for privileged users to perform administrative actions. Policies are enforced and most orchestration actions can be started, such as launching an instance.
 
 ## Horizon
 
@@ -79,7 +79,7 @@ Horizon is openstack's preferred GUI for the end user, but also for the administ
 
 ## Message Queue
 
-Most OpenStack services communicate with each other through the message queue. For example, Compute communicates with Block Storage services and Network services via the message queue. RabbitMQ, Qpid, and Zeromq are popular choices for a message queue service. When the message queue fails or becomes inaccessible, the cluster generally comes to a halt and ends up in a read-only state where the information is stuck at the point where the last message was sent. Therefore, this is clustered.  RabbitMQ has shown itself to be the most widespread and best supported variant in the OpenStack context, Qpid occurs occasionally, ZeroMQ lacks HA functionality to date
+Most OpenStack services communicate with each other through the message queue. For example, Compute communicates with Block Storage services and Network services via the message queue. RabbitMQ, Qpid, and Zeromq are popular choices for a message queue service. When the message queue fails or becomes inaccessible, the cluster generally comes to a halt and ends up in a read-only state where the information is stuck at the point where the last message was sent. Therefore, this is clustered. RabbitMQ has shown itself to be the most widespread and best supported variant in the OpenStack context, Qpid occurs occasionally, ZeroMQ lacks HA functionality to date
 
 ## Keystone
 
@@ -127,11 +127,11 @@ A Ceph OSD (Object Storage Daemon) logically represents a storage device in a Ce
 
 ## Personas
 
-|Persona|Description|
---------|-------------|
-|SCS Operator|The SCS Operator is the one who owns and operates a standardized cloud environment.|
-|SCS Operations Team|The team at the SCS Operator which actually runs the cloud environment.|
-|SCS Consumer|The SCS Consumer consumes a standardized SCS environment and operates and orchestrates applications on top of it. The SCS Consumer is typically a customer or user of the SCS Operator.|
-|SCS Integrator|The SCS Integrator assists in or is building up a standardized cloud environment. The SCS Integrator can be 2nd or 3rd level support for the SCS Operator.|
-|SCS Project|The SCS Project oversees the overall activities around the Sovereign Cloud Stack.|
-|SCS Developer|The SCS Developer actively contributes to technical elements of the Sovereign Cloud Stack.|
+| Persona             | Description                                                                                                                                                                             |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SCS Operator        | The SCS Operator is the one who owns and operates a standardized cloud environment.                                                                                                     |
+| SCS Operations Team | The team at the SCS Operator which actually runs the cloud environment.                                                                                                                 |
+| SCS Consumer        | The SCS Consumer consumes a standardized SCS environment and operates and orchestrates applications on top of it. The SCS Consumer is typically a customer or user of the SCS Operator. |
+| SCS Integrator      | The SCS Integrator assists in or is building up a standardized cloud environment. The SCS Integrator can be 2nd or 3rd level support for the SCS Operator.                              |
+| SCS Project         | The SCS Project oversees the overall activities around the Sovereign Cloud Stack.                                                                                                       |
+| SCS Developer       | The SCS Developer actively contributes to technical elements of the Sovereign Cloud Stack.                                                                                              |

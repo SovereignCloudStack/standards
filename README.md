@@ -19,8 +19,8 @@ pieces such as database, message queueing, ceph, monitoring and logging, IAM, th
 [OpenStack](https://openstack.org/) core services, and (soon) the Container layer
 on top of an existing
 IaaS platform. Currently, only OpenStack is supported as IaaS under the SCS cloud
-(so you end up using OpenStack on top of OpenStack -- with nested virtualization
-enabled, this performs decently). There is no fundamental limitation -- just
+(so you end up using OpenStack on top of OpenStack — with nested virtualization
+enabled, this performs decently). There is no fundamental limitation — just
 noone has done the porting of the terraform recipes yet to AWS, libvirt,
 VMware, ...
 
@@ -44,7 +44,7 @@ More will come soon.
 
 The SCS Community partners (PlusServer, Wavecon, etc.) are providing pro-bono
 resources to further the development of the Project. The resources provided can
-be found [here](community/contribute/cloud-resources/cloud-resources.md).
+be found [here](https://github.com/SovereignCloudStack/docs/blob/main/community/cloud-resources/cloud-resources.md).
 
 CityNetwork, Open Telekom Cloud, OVH clouds are also known to support the
 testbed well. (There are a few caveats with the latter two, but those are
@@ -54,7 +54,7 @@ subsections.
 
 ## Development of SCS
 
-The work done in SCS is supposed to be fed back upstream -- into the relevant
+The work done in SCS is supposed to be fed back upstream — into the relevant
 CNCF projects, into OpenStack, into kolla-ansible, into OSISM and others.
 An OSISM deployment thus will bring you all the SCS greatness in the base
 layer.
@@ -97,11 +97,11 @@ See [Release Notes for R3](https://github.com/SovereignCloudStack/release-notes/
 
 ### Roadmap
 
-We have a 6 month release cadence -- R4 will follow in March 2023.
+We have a 6 month release cadence — R4 will follow in March 2023.
 Until then, we will provide bugfixes and security fixes for R3.
 
 We do work towards a model where our partners can actually follow our main
-development branches -- right now, our CI needs a bit more coverage though
+development branches — right now, our CI needs a bit more coverage though
 to make this safe.
 
 ## Contribute and Connect

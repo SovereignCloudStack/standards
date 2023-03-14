@@ -1,10 +1,10 @@
 ---
-title:  Getting Started with OpenStack
+title: Getting Started with OpenStack
 version: 2023-03-02
 author: Ralf Heiringhoff, Eduard Itrich
 ---
 
-# Getting Started with OpenStack CLI
+## Getting Started with OpenStack CLI
 
 ## OpenStackClient (CLI)
 
@@ -16,10 +16,11 @@ further Information see the OpenStack Project upstream website
 This repo holds examples for [clouds-public.yaml](clouds-public.yaml) + [clouds.yaml](clouds.yaml.sample).
 
 Alternatively you can download an OpenRC Environment file when you're logged in to Horizon:
-*  upper right side :arrow_right: `<your login name>`
-*  OpenStack RC File
 
-```
+- upper right side :arrow_right: `<your login name>`
+- OpenStack RC File
+
+```bash
 $ source ./<your file>-openrc.sh
 Please enter your OpenStack Password for project XXX as user YYY:
 ```
@@ -35,11 +36,11 @@ If you use libs3, store the access field in `S3_ACCESS_KEY_ID` and the secret fi
 You will see the same buckets (containers) and objects whether you access your object store
 via the swift or via the s3 protocol.
 
-# References
+## References
 
-*  [OpenStack](https://www.openstack.org "OpenStack Site")
-*  [SovereignCloudStack](https://github.com/SovereignCloudStack "SovereignCloudStack on github")
-*  [OSISM](https://github.com/osism "OSISM on github")
-*  [ansible](https://docs.ansible.com/ansible/latest/collections/openstack/cloud/index.html "Ansible Module OpenStack" )
-*  [terraform](https://registry.terraform.io/providers/terraform-provider-openstack/openstack/latest/docs "OpenStack Terraform Provider")
-*  [cloud-init](https://cloudinit.readthedocs.io/en/latest/ "cloud-init documentation")
+- [OpenStack](https://www.openstack.org "OpenStack Site")
+- [SovereignCloudStack](https://github.com/SovereignCloudStack "SovereignCloudStack on github")
+- [OSISM](https://github.com/osism "OSISM on github")
+- [ansible](https://docs.ansible.com/ansible/latest/collections/openstack/cloud/index.html "Ansible Module OpenStack")
+- [terraform](https://registry.terraform.io/providers/terraform-provider-openstack/openstack/latest/docs "OpenStack Terraform Provider")
+- [cloud-init](https://cloudinit.readthedocs.io/en/latest/ "cloud-init documentation")
