@@ -35,6 +35,9 @@ const sidebars = {
     {
       type: 'category',
       label: 'Contribute',
+      link: {
+        type: 'generated-index'
+      },
       items: [
         'community/contribute/adding-docs-guide',
         'community/contribute/doc-files-structure-guide',
