@@ -25,7 +25,7 @@ The documentation files have to be in markdown format and...
 
 - comply [SCS licensing guidelines](https://github.com/SovereignCloudStack/docs/blob/main/community/github/dco-and-licenses.md)
 - match our
-  - [markdown file structure guideline](https://github.com/SovereignCloudStack/docs/blob/main/community/contribute/doc-files-structure-guide-md)
+  - [markdown file structure guideline](https://github.com/SovereignCloudStack/docs/blob/main/community/contribute/doc-files-structure-guide.md)
   - linting Rules
   - [styleguide](https://github.com/SovereignCloudStack/docs/blob/main/community/contribute/styleguide.md)
 
@@ -37,10 +37,10 @@ File a Pull Request within the [docs-page](https://github.com/SovereignCloudStac
 [
   {
     "repo": "demo-organisation/demo-repository",
-    source: "doc/*.md",
-    target: "docs",
-    label: "demo-repository-label",
-  },
+    "source": "doc/*.md",
+    "target": "docs",
+    "label": "demo-repository-label"
+  }
 ]
 ```
 
