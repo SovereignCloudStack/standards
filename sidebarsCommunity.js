@@ -38,9 +38,9 @@ const sidebars = {
       items: [
         'community/contribute/adding-docs-guide',
         'community/contribute/doc-files-structure-guide',
-        'community/contribute/docs-workflow-explanation'
-        'community/contribute/linting-guide'
-        'community/contribute/local-docusaurus-development-guide'
+        'community/contribute/docs-workflow-explanation',
+        'community/contribute/linting-guide',
+        'community/contribute/local-docusaurus-development-guide',
         'community/contribute/styleguide'
       ]
     },
