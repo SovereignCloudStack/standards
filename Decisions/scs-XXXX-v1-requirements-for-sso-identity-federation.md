@@ -192,6 +192,16 @@ to use Kubernetes (or similar like Knative) and CockroachDB.
 At time of writing a PoC "spike" is done to assess and verify the hopes
 connected with Zitadel in the context of the SCS testbed.
 
+Currently Zitadel is lacking the possibility to easily add custom claims.
+It supports `urn:zitadel:iam:user:metadata`, but that is more suitable
+towards Kubernetes and cannot be parsed with the OpenStack mapping mechanism.
+[There is work going on](https://github.com/zitadel/zitadel/issues/3997) which
+may be suitable to resolve this issue.
+An approach based on Zitadel actions is also currently evaluated.
+OpenStack currently makes use of custom claims to pass `openstack-default-project`
+from the IdP to OpenStack. Combined with federation to external customer managed IdPs
+this should allow customers to manage settings like these in their own IAM.
+
 # Open questions
 
 * How would we implement testbed deployment support for Zitadel?
