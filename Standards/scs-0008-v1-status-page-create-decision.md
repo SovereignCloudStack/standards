@@ -36,7 +36,7 @@ in order to have base to decide upon.
 Work on an existing project only makes sense if the project is healthy OR can be
 brought into a healthy state. If upstream does not accept patches a fork is needed.
 The fork however only makes sense if the underlying technology is worth to be maintained.
-The possible candidates did not fulfill these - in the cases where
+The possible candidates did not fulfill these conditions - in the cases where
 contribution seemed possible the candidates looked abandoned and long existing CVEs weren't
 worked on.
 
@@ -94,7 +94,8 @@ i.e. submitting a health beacon every x seconds
 webhooks, e.g. chat/messenger)
 
 * As a CSP Operator, I want to be able to flag a component with a new status quick and easy
-  * updating the status of a component should not be hard brainwork and minimize the possibilty
+  * to minimize the probability of making errors, updating the status of a component should not be
+hard brainwork
   * updates can be both machine generated status changes (triggered e.g. by health monitoring)
 as well as updates from human operators
   * updating a status should allow the CSP Operator to do that in a fashion that either pushes
