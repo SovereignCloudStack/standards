@@ -3,7 +3,7 @@
     {
       "urls": ["https://www.researchgate.net"],
       "headers": {
-        "Accept-Encoding": "zstd, br, gzip, deflate"
+        "Accept-Encoding": "*"
       }
     }
   ],
