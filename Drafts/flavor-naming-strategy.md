@@ -17,8 +17,9 @@ allows to encode a lot of details about the properties of a flavor into the name
 Why put it all in the name?
 
 By putting the details in the name, two things are achieved:
-* We create transparency about the detailed properties of a flavor
-* We allow customers to explicitly chose these properties when starting a VM
+
+- We create transparency about the detailed properties of a flavor
+- We allow customers to explicitly chose these properties when starting a VM
 
 There are better ways to creating transparency and providing discoverability than
 putting standardized abbreviations into a flavor name. OpenStack flavors have metadata
@@ -41,7 +42,7 @@ an option, but it is tedious and does not integrate well with the common Infra-a
 tools out there. Having a way to express needs from the flavor in a cloud-neutral way
 thus adds convenience.
 
-## I don't want hundreds of flavors!
+## I don't want hundreds of flavors
 
 The spec allows for flavors to understate its own capabilities and does not force to
 expose all details; we don't mandate the
@@ -63,7 +64,7 @@ work across different cloud vendors.
 Horizon does not currently seem to handle very long lists of flavors so well, so
 that will need work.
 
-## The names are complex!
+## The names are complex
 
 True. The long names take some time to get used to: To take a worst-case example:
 You will need some time before
@@ -71,7 +72,8 @@ you can parse `SCS-4C:32:100s-kvm-hwv-i3h-GNa:64` into 4 dedicated cores, 32GiB
 Ram, 100GB SSD on a KVM hypervisor with nested virtualization support on an intel
 IceLake high clocked CPU and a pass-through nVidia Ampere GPU with 64 Compute Units
 without looking it up in the Spec. You might want to throw such a name at the tool
-```
+
+```yaml
 ./tools/flavor-name-check.py -v SCS-4C:32:100s-kvm-hwv-i3h-GNa:64
 Flavor: SCS-4C:32:100s-kvm-hwv-i3h-GNa:64
  CPU:RAM: #vCPUs: 4, CPU type: Dedicated Core, ?Insec SMT: False, ##GiB RAM: 32.0, ?no ECC: False, ?RAM Over: False
@@ -82,6 +84,7 @@ Flavor: SCS-4C:32:100s-kvm-hwv-i3h-GNa:64
  GPU: .Type: Pass-Through GPU, .Brand: nVidia, .Gen: Ampere, #.CU/EU/SM: 64, Performance: Std Perf
  No Infiniband
 ```
+
 and learn in addition that the provider promises not to have insecure
 SMT enabled or other CPU vulnerability protections turned off and
 that your memory is protected by ECC or better and not oversubscribed.
@@ -96,7 +99,7 @@ If you don't have complex requirements and you are looking for a flavor
 with just 4 vCPUs, 16 GiB of RAM and a 50GB disk, you ask for just that: `SCS-4V:16:50`
 No advanced training needed for this, no?
 
-## I don't like exposing `i`(nsecure), `L`(ow CPU share), `u`(nprotected memory), `o`(versubscribed mem) flags!
+## I don't like exposing `i`(nsecure), `L`(ow CPU share), `u`(nprotected memory), `o`(versubscribed mem) flags
 
 We were considering not even allowing this ...
 In the end, the market demands may be more diverse than we can imagine and there
@@ -119,14 +122,14 @@ that noone claiming SCS compliance will cheat.
 If you are a large provider with lots of different flavors, the long `SCS-`
 names allow you to offer all the variance in a systematic way. The naming is
 cloud-vendor neutral, so there is a chance that users find the same flavor
-names elsewhere. So we recommend to use these names. We don't mandate it -- only
+names elsewhere. So we recommend to use these names. We don't mandate it — only
 the 26 mandatory `SCS-` flavors are required to be present. All names with
 `SCS-` however do need to follow the SCS specification.
 
 When you are a small provider that has not so much variance in its offerings,
 we would recommend to not expose all details (hypervisor, CPU vendor and
 generation, ...) via the optional name extensions. Keep your names short
-by *not* encoding all features (e.g. hw virt) and technical details (e.g.
+by _not_ encoding all features (e.g. hw virt) and technical details (e.g.
 hypervisor and cpu brand and generation)
 until your growth and customer demand requires a more fine-grained offering.
 The spec does allow for not disclosing details and for overdelivering.

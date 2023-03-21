@@ -12,40 +12,40 @@ Replace at least all text which is _italic_.
 See https://github.com/SovereignCloudStack/Docs/blob/main/Standards/scs-0001-v1-sovereign-cloud-standards.md
 --->
 
-# Introduction
+## Introduction
 
-_Introduction_
+Introduction
 
-# Motivation
+## Motivation
 
-_Motivation_
+Motivation
 
-# Design Considerations
+## Design Considerations
 
-_OPTIONAL_
+OPTIONAL
 
-## Options considered
+### Options considered
 
-### _Option 1_
+#### _Option 1_
 
-_Option 1 description_
+Option 1 description
 
-### _Option 2_
+#### _Option 2_
 
-_Option 2 description_
+Option 2 description
 
-# Open questions
+## Open questions
 
-_RECOMMENDED_
+RECOMMENDED
 
-# Decision
+## Decision
 
-_Decision_
+Decision
 
-# Related Documents
+## Related Documents
 
-_Related Documents, OPTIONAL_
+Related Documents, OPTIONAL
 
-# Conformance Tests
+## Conformance Tests
 
-_Conformance Tests, OPTIONAL_
+Conformance Tests, OPTIONAL
