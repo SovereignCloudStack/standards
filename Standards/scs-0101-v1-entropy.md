@@ -3,7 +3,6 @@ title: SCS Entropy
 type: Standard
 status: Draft
 track: IaaS
-enhances: scs-0100-v1-entropy.md
 ---
 
 ## 1. Terminology of Entropy
