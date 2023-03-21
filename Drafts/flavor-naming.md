@@ -344,10 +344,10 @@ compute hosts) to offer all flavors.
 
 Note: Compared to previous drafts, we have heavily reduced the variations
 on disk sizes — this reflects that for the standard networked cinder
-disks, you can pass block_device_mapping_v2 on server (VM) creation to
+disks, you can pass block*device_mapping_v2 on server (VM) creation to
 allocate a boot disk of any size you desire. We have scaled the few
 mandatory disk sizes with the amount of RAM. For each flavor there is
-also one _without_ a pre-attached disk — these are meant to be used
+also one \_without* a pre-attached disk — these are meant to be used
 to boot from a volume (either created beforehand or allocated on-the-fly
 with block_device_mapping_v2, e.g.
 `openstack server create --flavor SCS-1V:2 --block-device-mapping sda=IMGUUID:image:12:true`
@@ -417,7 +417,7 @@ considered broken by the SCS team.
 
 ## Validation
 
-There is a script in [flavor_name_check.py](tools/flavor-name-check.py)
+There is a script in [flavor_name_check.py](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-check.py)
 which can be used to decode, validate and construct flavor names.
 This script must stay in sync with the specification text.
 

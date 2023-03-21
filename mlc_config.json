@@ -1,7 +1,7 @@
 {
   "httpHeaders": [
     {
-      "urls": ["https://opensource.org/"],
+      "urls": ["*"],
       "headers": {
         "Accept-Encoding": "zstd, br, gzip, deflate"
       }

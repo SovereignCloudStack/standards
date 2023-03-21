@@ -2,7 +2,7 @@
 
 ## Objective
 
-The objective of this document is to establish a common understanding of the monitoring architecture of the SCS stack. This document refers to various roles. These are defined in the [overall role definitions](https://github.com/SovereignCloudStack/Design-Docs/blob/master/terms_and_roles_identity_and_access_management.md).
+The objective of this document is to establish a common understanding of the monitoring architecture of the SCS stack. This document refers to various roles. These are defined in the [overall role definitions](https://github.com/SovereignCloudStack/standards/blob/master/Drafts/terms_and_roles_identity_and_access_management.md).
 
 ## Definitions
 

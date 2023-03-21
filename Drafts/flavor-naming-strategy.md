@@ -12,7 +12,7 @@ and is supposed to serve as starting point for further discussions.
 
 ## Why encoding all the details in a flavor name?
 
-The [SCS flavor standard](https://github.com/SovereignCloudStack/Docs/blob/main/Design-Docs/flavor-naming.md)
+The [SCS flavor standard](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/flavor-naming.md)
 allows to encode a lot of details about the properties of a flavor into the name.
 Why put it all in the name?
 
