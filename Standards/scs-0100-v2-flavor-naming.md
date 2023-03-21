@@ -246,7 +246,7 @@ capabilities. Flavors may over-deliver ...)
 #### Examples
 
 - SCS-2C-4-10 <- may or may not support HW virtualization in VMs
-- SCS-2C-4-10*kvm***hwv**
+- SCS-2C-4-10_kvm_**hwv**
 - SCS-2C-4-10\_**hwv** <- not recommended, but allowed
 - ~~SCS-2C-4-10\_**hwv**\_xen~~ <- illegal, wrong ordering
 
@@ -291,11 +291,11 @@ out when generating the name for comparison. In other words: 0 has a meaning of
 - SCS-2C-4-10n\_**z3**
 - SCS-2C-4-10n\_**z3h**
 - SCS-2C-4-10n\_**z3hh**
-- SCS-2C-4-10n*bms***z**
-- SCS-2C-4-10n*bms***z3**
-- SCS-2C-4-10n*bms***z3**
-- SCS-2C-4-10n*bms***z3h**
-- SCS-2C-4-10n*bms***z3hh**
+- SCS-2C-4-10n_bms_**z**
+- SCS-2C-4-10n_bms_**z3**
+- SCS-2C-4-10n_bms_**z3**
+- SCS-2C-4-10n_bms_**z3h**
+- SCS-2C-4-10n_bms_**z3hh**
 
 ### [OPTIONAL] Extra features
 
