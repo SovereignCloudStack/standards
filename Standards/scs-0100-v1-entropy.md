@@ -1,5 +1,5 @@
 ---
-title: ADR SCS Entropy
+title: SCS Entropy
 type: Standard
 status: Draft
 track: IaaS
@@ -69,6 +69,10 @@ All flavors need to have the relevant attributes activated:
 
 ```console
 hw_rng:allowed=True
+```
+optional:
+
+```console
 hw_rng:rate_bytes - The allowed amount of bytes for the the guest
 to read from the host’s entropy per period.
 
