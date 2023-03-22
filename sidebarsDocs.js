@@ -85,7 +85,7 @@ const sidebarsDocs = {
         'release-notes/Release1',
         'release-notes/Release2',
         'release-notes/Release3',
-        'release-notes/Release4',
+        'release-notes/Release4'
       ]
     },
     'glossary'
