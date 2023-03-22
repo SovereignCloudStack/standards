@@ -9,7 +9,7 @@ track: _Global | IaaS | Ops | KaaS | IAM_
 This is a template striving to provide a starting point for
 creating a standard or decision record adhering to scs-0001.
 Replace at least all text which is _italic_.
-See https://github.com/SovereignCloudStack/Docs/blob/main/Standards/scs-0001-v1-sovereign-cloud-standards.md
+See https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0001-v1-sovereign-cloud-standards.md
 --->
 
 ## Introduction
