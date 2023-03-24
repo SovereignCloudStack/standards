@@ -384,6 +384,10 @@ with `block_device_mapping_v2`, e.g.
 to create a bootable 12G cinder volume from image `IMGUUID` that gets tied to the VM
 instance life cycle.)
 
+## Automated compliance
+
+The [openstack-flavor-manager](https://github.com/osism/openstack-flavor-manager) is able to create all standard, mandatory SCS flavors for you.
+
 ## Naming policy compliance
 
 To be certified as an SCS compliant x86-64 IaaS platform, you must offer all standard SCS flavors
