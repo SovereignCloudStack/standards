@@ -11,7 +11,7 @@ The [Sovereign Cloud Stack (SCS)](https://scs.community) provides standards
 for a range of cloud infrastructure types.
 It strives for interoperable and sovereign cloud stacks
 which can be deployed and used by a wide range of organizations and individuals.
-Whereever feasible,
+Wherever feasible,
 transparency and openness both in respect to the inner workings of the platforms standardised by SCS,
 as well as the SCS organisation itself
 are a paradigm we intend to live.
@@ -83,7 +83,7 @@ embedded in the markdown header.
 | Field name | Requirement | Description |
 | --- | --- | --- |
 | `type` | REQUIRED | one of `Procedural`, `Standard`, or `Decision Record` |
-| `status` | REQUIRED | one of `Draft`, `Stable`, `Deprecated`, or `Rejected` |
+| `status` | REQUIRED | one of `Proposal`, `Draft`, `Stable`, `Deprecated`, or `Rejected` |
 | `track` | REQUIRED | one of `Global`, `IaaS`, `Ops`, `KaaS`, `IAM` |
 | `obsoleted_at` | REQUIRED if `status` is `Deprecated` | ISO formatted date indicating the date after which the deprecation is in effect |
 | `stabilized_at` | REQUIRED if `status` was ever `Stable` | ISO formatted date indicating the date after which the document was considered stable |
@@ -118,13 +118,21 @@ In addition, the following OPTIONAL sections should be considered:
 The lifecycle of an SCS document goes through the following phases:
 Proposal, Draft, Stable, Deprecated, and Rejected.
 
+```mermaid
+graph TD
+    A[Proposal] -->|Pull Request| B[Draft]
+    B -->|Pull Request| D[Stable]
+    B -->|Pull Request| E[Rejected]
+    D -->|Pull Request| F[Deprecated]
+```
+
 All decisions for phase transitions follow loose consensus,
 where the group which has to form the consensus depends on the `track` of the document:
 
 - IaaS: The team working on infrastructure-as-a-service topics
 - KaaS: The team working on Kubernetes-as-a-service topics
 - Ops: The team working on operations topics
-- IAM: The team working on idenity and access management topics
+- IAM: The team working on identity and access management topics
 - Global: The entire SCS community
 
 ## Proposal phase
@@ -133,7 +141,7 @@ where the group which has to form the consensus depends on the `track` of the do
 
 To propose a new SCS document,
 a community participant creates a pull request on GitHub
-against the [Standards repository in the SovereignCloudStack organisation](https://github.com/SovereignCloudStack/Standards).
+against the [standards repository in the SovereignCloudStack organisation][scs-standards-repo].
 
 The pull request MUST add exactly one SCS document,
 in the `Standards` folder.
@@ -145,7 +153,7 @@ For a document with a slugified title `flavor-naming`,
 the file name would for instance be `scs-xxxx-v1-flavor-naming.md`.
 
 The metadata MUST indicate the intended `track` and `type` of the document,
-and the `status` MUST be set to `Draft`.
+and the `status` MUST be set to `Proposal`.
 
 Upon acceptance by the group of people identified by the `track`,
 a number is assigned
@@ -159,13 +167,13 @@ if no further discussion is required.
 
 Hereafter,
 the pull request can be merged
-and henceforth the document is an official SCS document in Draft state.
+and henceforth the document is an official SCS document in `Draft` state.
 
 ### Proposal of a major update to a stable document
 
 To propose major update to a Stable SCS document,
 a community participant creates a pull request on GitHub
-against the [Standards repository in the SovereignCloudStack organisation](https://github.com/SovereignCloudStack/Standards).
+against the [standards repository in the SovereignCloudStack organisation][scs-standards-repo].
 
 The pull request MUST add exactly one SCS document,
 in the `Standards` folder.
@@ -184,7 +192,7 @@ the file name may be `scs-0390-v4-flavor-naming-this-time-its-serious.md`.
 
 Other than the file naming difference,
 the proposal process is the same as for new documents.
-In particular, the new document starts out in Draft state
+In particular, the new document starts out in `Draft` state
 and does not automatically become part of the normative corpus of an SCS release.
 
 ## Development phase (Draft)
@@ -284,7 +292,7 @@ The disadvantages of that approach are:
   when referring to an SCS document.
 
   This implies having to keep all former versions around in a canonical, linkable form.
-  This induces non-trivial organzational and editorial overhead
+  This induces non-trivial organizational and editorial overhead
   and raises questions around which changes are acceptable to "archived" versions,
   if any.
 
@@ -300,3 +308,4 @@ This document is heavily inspired by [XEP-0001](https://xmpp.org/extensions/xep-
 
 
    [semver]: https://semver.org/
+   [scs-standards-repo]: https://github.com/SovereignCloudStack/standards

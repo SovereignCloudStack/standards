@@ -1,6 +1,6 @@
 ---
 title: SSD Flavors
-type: Decision Record
+type: Standard
 status: Draft
 track: IaaS
 enhances: scs-0100-v2-flavor-naming.md
@@ -19,7 +19,7 @@ for wave 1 (VM-based) cloud-native workloads or for the virtualization of more
 classical (not cloud-native) workloads. The IaaS implementation thus comes with
 standards.
 
-This Decision Record is about adding a few mandatory flavors on the IaaS level
+This standard is about requiring a few mandatory flavors on the IaaS level
 that include flavors with local SSD (or better) storage.
 
 # Motivation

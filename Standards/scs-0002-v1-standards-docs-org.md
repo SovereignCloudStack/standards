@@ -27,14 +27,7 @@ We want to improve this (while avoiding unnecessary churn).
     conformance check tool, certification specs and README remain in `Tests/`.
 * Rename `Design-Docs/` to `Drafts/`.
   - Use individual PRs to rewrite existing ADRs and Standards there to conform
-    to our standards and move them over to `Decisions/` or `Standards/`.
-
-# Open Questions
-
-We don't know yet whether there is always a clear distinction between Standards
-and Decisions (ADRs) -- if this turns out too hard to decide, we may unify those
-two directories. (The decision will still be needed and be reflected in the header,
-but finding the docs will be easier.)
+    to our standards and move them over to `Standards/`.
 
 Some documents with findings will remain in the `Drafts` directory.
 We may want to categorize these and have a folder e.g. for research results.
