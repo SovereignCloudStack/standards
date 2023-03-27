@@ -112,7 +112,7 @@ to make this safe.
 
 ## Contribute and Connect
 
-Please see the [SCS contributor guide](https://scs.community/docs/contributor/).
+Please see the [SCS contributor guide](https://docs.scs.community/community).
 
 ## Standards, Conformity and Certification
 
@@ -124,14 +124,10 @@ the [OpenStack trademark certification](https://refstack.openstack.org/#/guideli
 tests formerly known as DefCore) and the Kubernetes CNCF conformance tests run through
 [sonobuoy](https://sonobuoy.io/).
 
-We have two specific standards aligned within the SCS community (and have also
-sought feedback from the broader Gaia-X and OpenStack communities):
+We have specific [standards](https://github.com/SovereignCloudStack/standards/tree/main/Standards) aligned within the SCS community 
+(and have also sought feedback from the broader Gaia-X and OpenStack communities).
 
-- [SCS Flavor naming and standard flavors standard](https://github.com/SovereignCloudStack/standards/blob/main/Design-Docs/flavor-naming.md)
-
-- [SCS Image naming and metadata standard](https://github.com/SovereignCloudStack/standards/blob/main/Design-Docs/Image-Properties-Spec.md)
-
-Beyond this, we have a [draft document](https://github.com/SovereignCloudStack/standards/blob/main/Design-Docs/SCS-Spec.md) that captures our
+Beyond this, we have a [draft document](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/SCS-Spec.md) that captures our
 view on how SCS compatible environments should look like. This one has not yet
 seen sufficient review to be eligible for standardization. However, we appreciate
 feedback (raise issues and PRs or start discussions).
@@ -144,7 +140,7 @@ or OSISM space. Otherwise you can use
 the [issues repository](https://github.com/SovereignCloudStack/issues).
 Obviously we appreciate PRs even more than issues;
 please don't forget to sign off your contributions (see
-[contributor guide](https://scs.community/docs/contributor/) ).
+[contributor guide](https://docs.scs.community/community) ).
 
 When reporting bugs, it is very useful to include some standard information
 typically needed to analyze:

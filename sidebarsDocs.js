@@ -82,6 +82,7 @@ const sidebarsDocs = {
         type: 'generated-index'
       },
       items: [
+        'release-notes/Release0',
         'release-notes/Release1',
         'release-notes/Release2',
         'release-notes/Release3',
