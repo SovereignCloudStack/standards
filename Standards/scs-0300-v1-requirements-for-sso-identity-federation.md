@@ -5,7 +5,7 @@ status: Draft
 track: IAM
 ---
 
-# Introduction
+## Introduction
 
 Our assumption is that there are use cases, where CSPs would like to be able to
 let customers access their SCS based services by identifying themselves with
@@ -33,7 +33,7 @@ layer. Exact architectural details for this are still in active discussion,
 but it is anticipated that the IdP component should be very useful in
 facilitating the integration.
 
-# Motivation for this document
+## Motivation for this document
 
 SCS has multiple service layers, like IaaS and CaaS, both of which running their
 own technological stack with specific internal models of accounts and
@@ -53,7 +53,7 @@ The purpose of this document is to specify what requirements a specific
 technical IdP implementation (i.e. software solution) needs to fulfill
 in the context of SCS.
 
-# Design Considerations
+## Design Considerations
 
 As a central service for identity handling, the IdP
 service needs to be robust and reliable.
@@ -77,9 +77,9 @@ K8S environment. The instances will need to share configuration
 (probably via the shared backend database) as well as session state.
 Maybe one is better prepared for horizontal scaling than the other.
 
-## Options considered
+### Options considered
 
-### Keycloak
+#### Keycloak
 
 Keycloak is a commonly used IdP solution implemented in Java.
 It is developed as an open source community project.
@@ -141,7 +141,7 @@ Keycloak supports several SQL backends through JDBC. Thus
 it can be hooked up to a Postgres Database or to a
 MariaDB/Galera cluster e.g..
 
-### Zitadel
+#### Zitadel
 
 Zitadel is a newer implementation of an SSO IdP.
 It is implemented in Go and under active development and maintained by ZITADEL.
@@ -162,11 +162,12 @@ It came to attention of the SCS project because it offers a
 fresh take of an organization focussed data model, which has
 the potential to simplify IdP federation to SCS customer domains
 in the following areas:
-* For client services (single set of HTTP API endpoints).
-* For SCS operators for provisioning customer [organizations](https://zitadel.com/docs/concepts/structure/organizations)
+
+- For client services (single set of HTTP API endpoints).
+- For SCS operators for provisioning customer [organizations](https://zitadel.com/docs/concepts/structure/organizations)
   and robust configuraton by using templated client, role and mapping
   configuration.
-* For SCS customers for a robust user experience for self servicing.
+- For SCS customers for a robust user experience for self servicing.
 
 The concept for [Delegated Access Management](https://zitadel.com/docs/concepts/structure/organizations)
 reduces the management overhead compared to isolated realms.
@@ -202,20 +203,20 @@ OpenStack currently makes use of custom claims to pass `openstack-default-projec
 from the IdP to OpenStack. Combined with federation to external customer managed IdPs
 this should allow customers to manage settings like these in their own IAM.
 
-# Open questions
+## Open questions
 
-* How would we implement testbed deployment support for Zitadel?
-    * e.g. `wsgi-keystone.conf` would need to look different. One template covering both options?
-    * e.g. steps like `openstack federation protocol create` would probably be different.
-* Should we support both as options?
-    * What's the benefit?
-    * How would we allow SCS operators to choose?
-* Do we need some kind of SWOT analysis to come to a decision?
+- How would we implement testbed deployment support for Zitadel?
+  - e.g. `wsgi-keystone.conf` would need to look different. One template covering both options?
+  - e.g. steps like `openstack federation protocol create` would probably be different.
+- Should we support both as options?
+  - What's the benefit?
+  - How would we allow SCS operators to choose?
+- Do we need some kind of SWOT analysis to come to a decision?
 
-# Related Documents
+## Related Documents
 
-* https://github.com/SovereignCloudStack/standards/tree/main/Design-Docs/IAM-federation
+- <https://github.com/SovereignCloudStack/standards/tree/main/Design-Docs/IAM-federation>
 
-# Conformance Tests
+## Conformance Tests
 
-_Conformance Tests, OPTIONAL_
+## Conformance Tests, OPTIONAL
