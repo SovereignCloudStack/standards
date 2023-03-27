@@ -68,20 +68,20 @@ implementation may not fit to you, it will be possible to create your own applic
 
   - define locations and similar grouping (AZs, ...)
   - define components globally or per location
-    _ to ease maintenance I want to define per component where it belongs so that I only have
+    _to ease maintenance I want to define per component where it belongs so that I only have
     to define a component once, but have it visible in several locations
     _ status per component should be allowed to be toggleable per location or overall \* a component should allow for several statuses, that are defined by me
 
 - Status, Status Items should be easy to extract
 
   - REST(less)-API to interact with
-    _ API should be versioned
+    _API should be versioned
     _ this allows for embedding status information in other applications, such as cloud
     dashboards
-    _ this also allows for submitting items from other tooling
+    _this also allows for submitting items from other tooling
     _ incoming webhooks (https POST) should be supported (e.g. for air-gapped setups) –
     i.e. submitting a health beacon every x seconds
-    _ web-UI wanted for posting updates as well
+    _web-UI wanted for posting updates as well
     _ Token based Auth
 
 - Configuration should be manageable with YAML files (imho this annoys me using Uptime Kuma)
