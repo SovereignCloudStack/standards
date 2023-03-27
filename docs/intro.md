@@ -101,6 +101,14 @@ based on tang from the state of a technical preview to be fully supported.
 
 See [Release Notes for R3](/docs/release-notes/Release3.md) for more information.
 
+### Release 4 (2023-03-22)
+
+The implemented open source components have been updated to the latest stable versions.
+Among others, this includes OpenStack Zed, Kubernetes Cluster API 1.3.x, Cluster API Provider
+for OpenStack 0.7.x, Kubernetes 1.26.x, and Ubuntu 22.04 LTS.
+
+See [Release Notes for R4](/docs/release-notes/Release4.md) for more information.
+
 ### Roadmap
 
 We have a 6 month release cadence -- R4 will follow in March 2023.
