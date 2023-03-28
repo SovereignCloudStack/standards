@@ -45,5 +45,5 @@ Wether the source are logs, metrics or health checks alerts need to be aggregate
 
 ## Architecture
 
-Monitoring happens on two layers: _infrastructure layer_ and the _container layer_. This is illustrated in [the overview diagram](https://github.com/SovereignCloudStack/Design-Docs/blob/wip-overview-monitoring-architecture/overview_monitoring_architecture.svg).
+Monitoring happens on two layers: _infrastructure layer_ and the _container layer_. This is illustrated in [the overview diagram](https://github.com/SovereignCloudStack/standards/blob/1fb174da1ee906f0da6a8bbefbd3d95884df5669/Drafts/overview_monitoring_architecture.svg).
 Each layer has their own set of components to assure independence.
