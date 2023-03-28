@@ -1,5 +1,5 @@
 name: SCS Compatible
-url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Design-Docs/tools/scs-compatible.yaml
+url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible.yaml
 iaas:
   - version: v1
     stabilized_at: 2021-01-01
