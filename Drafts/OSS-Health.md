@@ -77,5 +77,5 @@ OSS project health check
 - [https://opensource.com/article/20/3/community-metrics](https://opensource.com/article/20/3/community-metrics)
 - [https://opensource.com/article/19/8/measure-project](https://opensource.com/article/19/8/measure-project)
 - [https://medium.com/@tobie/measuring-the-health-of-open-source-projects-8a54eca9bc2d](https://medium.com/@tobie/measuring-the-health-of-open-source-projects-8a54eca9bc2d)
-- [https://nadia.xyz/project-health](https://nadia.xyz/project-health)
-- [https://www.researchgate.net/publication/261715766_Measuring_the_Health_of_Open_Source_Software_Ecosystems_Beyond_the_Scope_of_Project_Health](https://www.researchgate.net/publication/261715766_Measuring_the_Health_of_Open_Source_Software_Ecosystems_Beyond_the_Scope_of_Project_Health)
+- [https://nadia.xyz/project-health](https://nadia.xyz/project-health) <!-- markdown-link-check-disable -->
+- [https://www.researchgate.net/publication/261715766_Measuring_the_Health_of_Open_Source_Software_Ecosystems_Beyond_the_Scope_of_Project_Health](https://www.researchgate.net/publication/261715766_Measuring_the_Health_of_Open_Source_Software_Ecosystems_Beyond_the_Scope_of_Project_Health) <!-- markdown-link-check-enable-->
