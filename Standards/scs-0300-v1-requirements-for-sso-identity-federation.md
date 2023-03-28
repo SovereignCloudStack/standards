@@ -215,7 +215,7 @@ this should allow customers to manage settings like these in their own IAM.
 
 ## Related Documents
 
-- <https://github.com/SovereignCloudStack/standards/tree/main/Design-Docs/IAM-federation>
+- <https://github.com/SovereignCloudStack/standards/tree/main/Drafts/IAM-federation>
 
 ## Conformance Tests
 
