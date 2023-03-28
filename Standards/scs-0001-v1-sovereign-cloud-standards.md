@@ -1,11 +1,12 @@
 ---
+title: Sovereign Cloud Standards
 type: Procedural
 status: Stable
 track: Global
 stabilized_at: 2022-11-28
 ---
 
-# Introduction
+## Introduction
 
 The [Sovereign Cloud Stack (SCS)](https://scs.community) provides standards
 for a range of cloud infrastructure types.
@@ -16,29 +17,29 @@ transparency and openness both in respect to the inner workings of the platforms
 as well as the SCS organisation itself
 are a paradigm we intend to live.
 
-# Requirements
+## Requirements
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
 In addition, "FORBIDDEN" is to be interpreted equivalent to "MUST NOT".
 
-# Sovereign Cloud Standard documents
+## Sovereign Cloud Standard documents
 
 One of the main products of the SCS organisation are Sovereign Cloud Standard documents.
 
-## Types of documents
+### Types of documents
 
-### Procedural
+#### Procedural
 
 A procedural SCS document describes a process, a policy or a guideline
 to which the SCS community adheres.
 
-### Standard
+#### Standard
 
 A standard SCS document describes a technical standard for SCS compliant clouds.
 Note that it may not be necessary for all clouds to implement all standards.
 
-### Decision Record
+#### Decision Record
 
 Sometimes during the development of the SCS standard,
 a complex technical decision needs to be taken,
@@ -48,7 +49,7 @@ The SCS document format formally integrates
 the documentation of such decisions
 as documents of type `Decision Record`.
 
-## Document format
+### Document format
 
 The SCS documents are provided in GitHub flavored markdown.
 Each document is assigned a unique number.
@@ -80,40 +81,40 @@ the resulting file name would be `scs-0390-v2-flavor-naming.md`.
 In addition to the number, each document has the following metadata,
 embedded in the markdown header.
 
-| Field name | Requirement | Description |
-| --- | --- | --- |
-| `type` | REQUIRED | one of `Procedural`, `Standard`, or `Decision Record` |
-| `status` | REQUIRED | one of `Proposal`, `Draft`, `Stable`, `Deprecated`, or `Rejected` |
-| `track` | REQUIRED | one of `Global`, `IaaS`, `Ops`, `KaaS`, `IAM` |
-| `obsoleted_at` | REQUIRED if `status` is `Deprecated` | ISO formatted date indicating the date after which the deprecation is in effect |
-| `stabilized_at` | REQUIRED if `status` was ever `Stable` | ISO formatted date indicating the date after which the document was considered stable |
-| `rejected_at` | REQUIRED if `status` is `Rejected` | ISO formatted date indicating the date on which the document was rejected |
-| `replaced_by` | RECOMMENDED if `status` is `Deprecated` or `Rejected`, FORBIDDEN otherwise | List of documents which replace this document. |
-| `replaces` | OPTIONAL | List of documents which this document replaces. |
+| Field name      | Requirement                                                                | Description                                                                           |
+| --------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `type`          | REQUIRED                                                                   | one of `Procedural`, `Standard`, or `Decision Record`                                 |
+| `status`        | REQUIRED                                                                   | one of `Proposal`, `Draft`, `Stable`, `Deprecated`, or `Rejected`                     |
+| `track`         | REQUIRED                                                                   | one of `Global`, `IaaS`, `Ops`, `KaaS`, `IAM`                                         |
+| `obsoleted_at`  | REQUIRED if `status` is `Deprecated`                                       | ISO formatted date indicating the date after which the deprecation is in effect       |
+| `stabilized_at` | REQUIRED if `status` was ever `Stable`                                     | ISO formatted date indicating the date after which the document was considered stable |
+| `rejected_at`   | REQUIRED if `status` is `Rejected`                                         | ISO formatted date indicating the date on which the document was rejected             |
+| `replaced_by`   | RECOMMENDED if `status` is `Deprecated` or `Rejected`, FORBIDDEN otherwise | List of documents which replace this document.                                        |
+| `replaces`      | OPTIONAL                                                                   | List of documents which this document replaces.                                       |
 
-## Sections
+### Sections
 
 Each document SHOULD have the following sections:
 
-- An *Introduction* providing context on the document and linking to other relevant materials.
-- A *Motivation* section which details why this document or the thing it describes is necessary.
+- An _Introduction_ providing context on the document and linking to other relevant materials.
+- A _Motivation_ section which details why this document or the thing it describes is necessary.
 
 In addition, the following OPTIONAL sections should be considered:
 
-- A *Design Considerations* section for Standard type documents,
+- A _Design Considerations_ section for Standard type documents,
   which details other choices
   which have been considered for the specific feature
   but were ultimately rejected.
-- An *Open Questions* section which links to issues
+- An _Open Questions_ section which links to issues
   detailing any open discussion points with respect to a document.
   This section is RECOMMENDED during the discussion phase (pre 1.0.0)
   as a "table of contents" of things to work on in that context.
-- A *Related Documents* section which references related Standards
+- A _Related Documents_ section which references related Standards
   or Decisions, both upstream and/or other SCS documents.
-- A *Conformance Tests* section that contains hints on how to validate
+- A _Conformance Tests_ section that contains hints on how to validate
   conformance with this spec, ideally links to conformance test cases.
 
-# Process
+## Process
 
 The lifecycle of an SCS document goes through the following phases:
 Proposal, Draft, Stable, Deprecated, and Rejected.
@@ -135,9 +136,9 @@ where the group which has to form the consensus depends on the `track` of the do
 - IAM: The team working on identity and access management topics
 - Global: The entire SCS community
 
-## Proposal phase
+### Proposal phase
 
-### Proposal of a new document
+#### Proposal of a new document
 
 To propose a new SCS document,
 a community participant creates a pull request on GitHub
@@ -169,7 +170,7 @@ Hereafter,
 the pull request can be merged
 and henceforth the document is an official SCS document in `Draft` state.
 
-### Proposal of a major update to a stable document
+#### Proposal of a major update to a stable document
 
 To propose major update to a Stable SCS document,
 a community participant creates a pull request on GitHub
@@ -195,7 +196,7 @@ the proposal process is the same as for new documents.
 In particular, the new document starts out in `Draft` state
 and does not automatically become part of the normative corpus of an SCS release.
 
-## Development phase (Draft)
+### Development phase (Draft)
 
 In this phase,
 the document is developed inside the SCS community.
@@ -208,7 +209,7 @@ however, implementors must be prepared for breaking changes.
 
 Changes to the documents are gated through pull requests.
 
-## Stabilized phase (Stable)
+### Stabilized phase (Stable)
 
 Once the document is deemed ready for production use,
 its `status` is changed to `Stable`.
@@ -223,7 +224,7 @@ If a breaking change to an existing SCS document is deemed necessary,
 a new document with a new number shall be created
 and the old document SHOULD be deprecated.
 
-## Deprecation phase (Deprecated)
+### Deprecation phase (Deprecated)
 
 Should a document become obsolete,
 it can be deprecated.
@@ -237,7 +238,7 @@ is not considered necessary or state of the art anymore.
 If one or more replacement documents for the document exists,
 it MUST be listed in the `replaced_by` metadata field.
 
-## Rejection
+### Rejection
 
 If a document is removed from the normative corpus of SCS standards,
 its status is changed to `Rejected`.
@@ -245,32 +246,32 @@ its status is changed to `Rejected`.
 If one or more replacement documents for the document exists,
 it MUST be listed in the `replaced_by` metadata field.
 
-# Open Questions
+## Open Questions
 
-## Stabilization criteria
+### Stabilization criteria
 
 When should a document be stabilized?
 Should we require at least one public implementation?
 Should we require a minimum experimental time?
 What about non-Standard track documents?
 
-## Breaking change criteria
+### Breaking change criteria
 
 When is a change breaking and cannot be applied to a Stable document?
 What about previously undefined behaviour (uncovered edge case)?
 What about ambiguous wording?
 Do we need a separate "Errata" section?
 
-# Design Considerations
+## Design Considerations
 
-## Versioning
+### Versioning
 
 An alternative to the proposed scheme for stabilization
 is the use of [SemVer-like][semver] versioning.
 
 In that case, one would have an individual version number with each document,
 where a major version greater than zero indicates a stable document.
-The `Stable` state would be merged with `Draft` state into an *Active* state
+The `Stable` state would be merged with `Draft` state into an _Active_ state
 and shared between the stabilized and the development phase.
 
 The advantages of such an approach are:
@@ -302,10 +303,9 @@ The disadvantages of that approach are:
   (at least not in the standard-as-written)
   cover specifics of a standards organisation's use-cases.
 
-# Acknowledgements
+## Acknowledgements
 
 This document is heavily inspired by [XEP-0001](https://xmpp.org/extensions/xep-0001.html), as published by the XMPP Standards Foundation.
 
-
-   [semver]: https://semver.org/
-   [scs-standards-repo]: https://github.com/SovereignCloudStack/standards
+[semver]: https://semver.org/
+[scs-standards-repo]: https://github.com/SovereignCloudStack/standards

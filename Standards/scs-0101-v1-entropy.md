@@ -69,6 +69,7 @@ All flavors need to have the relevant attributes activated:
 ```console
 hw_rng:allowed=True
 ```
+
 optional:
 
 ```console

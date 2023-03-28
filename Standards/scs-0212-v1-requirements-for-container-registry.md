@@ -5,7 +5,7 @@ status: Draft
 track: KaaS
 ---
 
-# Introduction
+## Introduction
 
 A container registry is an infrastructure service to enable storing and accessing container
 images. Images can be pushed to the registry by e.g. Continuous integration pipelines and
@@ -17,7 +17,7 @@ apply various access control mechanisms to restrict public access and make them 
 Both solutions offer a wide range of features that may or may not attract potential
 users and CSPs.
 
-# Motivation
+## Motivation
 
 This proposal is motivated by use cases in which CSPs would like to offer
 private container registries to their customers. The specific use cases should be
@@ -35,7 +35,7 @@ Another purpose is the selection of an appropriate container registry
 implementation that meets all defined requirements to make architectural
 decision on what implementation will be used by the SCS.
 
-# Design considerations
+## Design considerations
 
 There are numerous features to look for when evaluating a container registry solution.
 Our decision process goes through two main stages:
@@ -49,17 +49,18 @@ promote itself to the second consideration stage. The second stage provides an o
 over the feature set of open source container registry implementations and map out
 requirements (and nice-to-haves) against it to have a well-documented decision.
 
-Note: Keep in mind that at the time of writing this document, we’ve made our best effort
- to survey the container registry landscape based on publicly available materials.
- If you find something outdated (with respect to the time of writing this document) or
- outright erroneous, please submit a PR or raise an issue, and we’ll fix it right away.
+Note: Keep in mind that at the time of writing this document, we've made our best effort
+to survey the container registry landscape based on publicly available materials.
+If you find something outdated (with respect to the time of writing this document) or
+outright erroneous, please submit a PR or raise an issue, and we'll fix it right away.
 
-## OSS health check
+### OSS health check
 
 This section evaluates the health of the open-source projects that were selected from
 the currently available solutions. The container registry software must fulfill all OSS
-health checks defined by the [OSS-Health](../Drafts/OSS-Health.md)
+health checks defined by the [OSS-Health](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/OSS-Health.md)
 document. The main health checks are:
+
 - Four Opens (code is fully open source, community is open and diverse, development
   process is open, design process is open)
 - Maturity
@@ -84,6 +85,7 @@ into one of three categories as follows:
 Refer to the list of evaluated projects with their classified categories and comments.
 
 - :heavy_check_mark: [Harbor][harbor]
+
   - Harbor project meets all "four opens"
     - Source code is open and available under the [Apache 2 license](https://github.com/goharbor/harbor/blob/main/LICENSE)
     - Community is [open](https://github.com/goharbor/harbor#community), structured and
@@ -117,8 +119,9 @@ Refer to the list of evaluated projects with their classified categories and com
       document shows that there are a sufficient number of core
       maintainers/contributors that differ over various companies, we therefore deem
       the lock-in risk arising from a single point of failure to be low
-  
+
 - :heavy_check_mark: [Dragonfly][dragonfly]
+
   - Dragonfly project meets all "four opens"
     - Source code is open and available under the [Apache 2 license](https://github.com/dragonflyoss/Dragonfly2/blob/main/LICENSE)
     - Community is [open](https://github.com/dragonflyoss/Dragonfly2#community)
@@ -147,6 +150,7 @@ Refer to the list of evaluated projects with their classified categories and com
       shows that ~10 companies are actively contributing to a repository group
 
 - :grey_question: [Project Quay][projectquay]
+
   - Project Quay meets all "four opens"
     - Source code is open and available under the [Apache 2 license](https://github.com/quay/quay/blob/master/LICENSE)
     - Community is [open](https://github.com/quay/quay#community) organized via mailing
@@ -173,18 +177,22 @@ Refer to the list of evaluated projects with their classified categories and com
       diversity across the companies. This should be improved
 
 - :x: [Keppel](https://github.com/sapcc/keppel)
+
   - The project seems to be not widely used in a productive way and also the activity
     around is currently not on a good level (5+ contributors). The development
     process as well as the design process seem to be open, but not documented yet
 
 - :x: [Nexus](https://github.com/sonatype/nexus-public)
+
   - Nexus is an **open core** software that offers paid [pro version](https://www.sonatype.com/products/repository-oss-vs-pro-features) with advanced features
 
 - :x: [JFrog](https://jfrog.com/community/open-source/)
+
   - JFrog Artifactory is shipped as an **open core** [software](https://jfrog.com/community/open-source/)
     with limited features. The software is primarily offered as a paid [pro version](https://jfrog.com/pricing/#devops-onprem)
 
 - :x: [Kraken](https://github.com/uber/kraken)
+
   - It seems that the project is not actively maintained as is discussed in the related
     project's [issue](https://github.com/uber/kraken/issues/313)
 
@@ -192,7 +200,7 @@ Refer to the list of evaluated projects with their classified categories and com
   - It seems that the project is not actively maintained as is discussed in the related
     project's [issue](https://github.com/SUSE/Portus/issues/2352)
 
-## Required and desirable features check
+### Required and desirable features check
 
 This section provides an overview of the feature set of open source container registry
 implementations (which passed the OSS health stage above) and map out requirements
@@ -202,7 +210,7 @@ the crucial feature is security.
 We defined a set of required features that the container registry implementation must
 have and also a set of desirable (nice to have) features are defined and evaluated here.
 
-**Required features**
+#### Required features
 
 - Audit Logs
   - Ability to record use in auditable logs so that activity can be traced to a single user
@@ -237,7 +245,7 @@ have and also a set of desirable (nice to have) features are defined and evaluat
 - Retention policy
   - Reduce the number of image tags, many of which might not be required after a given time or once a subsequent image tag has superseded them
 
-**Desirable features**
+#### Desirable features
 
 - Additionally supported artifacts
   - Additional artifacts that the registry is able to store in addition to OCI artifacts, e.g. Java, Node.js, or Python packages
@@ -253,7 +261,7 @@ registry implementations that passed the OSS health stage (Harbor, Quay, and Dra
 are evaluated here.
 
 | Features                            | Harbor                                 | Quay                                                                | Dragonfly                     |
-|-------------------------------------|----------------------------------------|---------------------------------------------------------------------|-------------------------------|
+| ----------------------------------- | -------------------------------------- | ------------------------------------------------------------------- | ----------------------------- |
 | Audit Logs                          | ✓                                      | ✓                                                                   | ✗                             |
 | Authentication of system identities | ✓ Robot Accounts                       | ✓ Robot Accounts                                                    | ✗                             |
 | Authentication of users             | ✓ Local database, LDAP, OIDC, UAA      | ✓ Local database, LDAP, Keystone, JWT                               | ✓ Local database              |
@@ -276,6 +284,7 @@ are evaluated here.
 | Administration capabilities         | ✓ Terraform, CRDs, Client libraries    | ✓ Ansible, Client libraries                                         | ✓ Client libraries            |
 
 Notes:
+
 - Automation: Harbor should support webhooks following CloudEvents spec in the [next release](https://github.com/goharbor/harbor/issues/17748)
 - Content Trust and Validation: Harbor announced the deprecation of [Notary](https://github.com/goharbor/harbor/discussions/16612)
   integration, hence it is not mentioned in the table
@@ -284,7 +293,7 @@ Notes:
 - Additional supported artifacts: Harbor announced the deprecation of [Chartmuseum](https://github.com/goharbor/harbor/discussions/15057)
   integration, hence it is not mentioned in the table
 
-## Conclusion
+### Conclusion
 
 A wide range of open-source container registry projects (Quay, Harbor, Dragonfly,
 Keppel, Portus, Kraken, etc.) has been carefully evaluated based on the two main
@@ -297,6 +306,7 @@ fully open or whether the project's maturity, security, and activity are on the 
 level. This check also evaluates the lock-in risk due to possible single points of
 failure or internal project conflicts and several other aspects.
 Overall, three projects passed the OSS health checks:
+
 - [Harbor][harbor]
 - [Project Quay][projectquay]
 - [Dragonfly][dragonfly]
@@ -351,7 +361,7 @@ committed. This feature is not supported by the [Harbor project](https://github.
 [Harbor][harbor] is an outstanding open-source, community-led project with fully open and
 well-documented processes. Its large and thriving community powers the fast-growing
 feature set and attracts more and more developers and companies to active contributions.
-Harbor’s CNCF graduation in 2020 made it one of the best choices for enterprise
+Harbor's CNCF graduation in 2020 made it one of the best choices for enterprise
 customers that want to operate container registries securely and in a large scale.
 Its community size, landscape, and CNCF graduation make a significant difference in
 comparison to Quay's open-source health capabilities.
@@ -367,7 +377,7 @@ storage drivers instead so that each customer gets their own separate storage ba
 CSP that considers offering container registry "as a service" solution based on Harbor
 should be aware of this shared storage backend architecture.
 
-# Decision
+## Decision
 
 Based on the research and conclusion above we've decided to use the **Harbor** project
 as a container registry implementation for the SCS ecosystem.
