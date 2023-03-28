@@ -77,6 +77,18 @@ const sidebarsDocs = {
     },
     {
       type: 'category',
+      label: 'Status Page',
+      link: {
+        type: 'generated-index'
+      },
+      items: [
+        'status-page-openapi/docs/overview',
+        'status-page-openapi/docs/components',
+        'status-page-openapi/docs/levels_of_consensus'
+      ]
+    },
+    {
+      type: 'category',
       label: 'Release Notes',
       link: {
         type: 'generated-index'

@@ -17,6 +17,7 @@
   "dependencies": {
     "@docusaurus/core": "^2.3.1",
     "@docusaurus/preset-classic": "^2.3.1",
+    "@docusaurus/theme-mermaid": "^2.3.1",
     "@easyops-cn/docusaurus-search-local": "^0.33.6",
     "@fullcalendar/core": "^6.0.1",
     "@fullcalendar/daygrid": "^6.0.1",

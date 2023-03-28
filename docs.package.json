@@ -40,5 +40,11 @@
         "source": "doc",
         "target": "docs",
         "label": "k8s-cluster-api-provider"
+    },
+    {
+        "repo": "SovereignCloudStack/status-page-openapi",
+        "source": "docs",
+        "target": "docs",
+        "label": "status-page-openapi"
     }
 ]

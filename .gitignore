@@ -6,6 +6,7 @@
 /docs/release-notes
 /docs/testbed
 /docs/k8s-cluster-api-provider
+/docs/status-page-openapi
 
 # Dependencies
 /node_modules
