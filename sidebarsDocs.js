@@ -3,7 +3,7 @@
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
 const sidebarsDocs = {
   docs: [
-    'intro',
+    'index',
     {
       type: 'category',
       label: 'K8s Cluster API Provider',

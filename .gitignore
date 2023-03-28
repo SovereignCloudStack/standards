@@ -7,6 +7,9 @@
 /docs/testbed
 /docs/k8s-cluster-api-provider
 /docs/status-page-openapi
+/standards/*
+!/standards/index.md
+
 
 # Dependencies
 /node_modules

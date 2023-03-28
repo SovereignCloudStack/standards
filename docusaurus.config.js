@@ -15,12 +15,8 @@ const config = {
   markdown: {
     mermaid: true
   },
-
-  // GitHub pages deployment config.
-  // If you aren't using GitHub pages, you don't need these.
   organizationName: 'SovereignCloudStack', // Usually your GitHub org/user name.
   projectName: 'docs-page', // Usually your repo name.
-
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
   // to replace "en" with "zh-Hans".
@@ -37,8 +33,7 @@ const config = {
         docs: { sidebarPath: require.resolve('./sidebarsDocs.js') },
         blog: {
           showReadingTime: true,
-          editUrl:
-                        'https://github.com/SovereignCloudStack/docs-page/tree/main/'
+          editUrl: 'https://github.com/SovereignCloudStack/docs-page/tree/main/'
         },
         theme: {
           customCss: [require.resolve('./src/css/custom.css')]
@@ -57,6 +52,15 @@ const config = {
         // ... other options
       }
     ],
+    [
+      '@docusaurus/plugin-content-docs',
+      {
+        id: 'standards',
+        path: 'standards',
+        routeBasePath: 'standards',
+        sidebarPath: require.resolve('./sidebarsStandards.js')
+      }
+    ],
     './src/plugins/docusaurus-plugin-matomo-analytics/index.js'
   ],
 
@@ -70,13 +74,9 @@ const config = {
               src: 'img/logo.svg'
             },
             items: [
-              {
-                type: 'doc',
-                docId: 'intro',
-                position: 'left',
-                label: 'Docs'
-              },
               //   { to: '/blog', label: 'Blog', position: 'left' },
+              { to: '/docs', label: 'Docs', position: 'left' },
+              { to: '/standards', label: 'Standards', position: 'left' },
               { to: '/community', label: 'Community', position: 'left' },
               {
                 href: 'https://github.com/SovereignCloudStack/docs-page',
@@ -93,7 +93,7 @@ const config = {
                 items: [
                   {
                     label: 'Contribute',
-                    to: '/docs/intro'
+                    to: '/docs'
                   }
                 ]
               },
@@ -128,8 +128,7 @@ const config = {
                 ]
               }
             ],
-            copyright:
-                    'Sovereign Cloud Stack, SCS and the logo are registered trademarks of the Open Source Business Alliance e.V. — Other trademarks are property of their respective owners.'
+            copyright: 'Sovereign Cloud Stack, SCS and the logo are registered trademarks of the Open Source Business Alliance e.V. — Other trademarks are property of their respective owners.'
           },
           prism: {
             theme: darkCodeTheme,
@@ -137,8 +136,7 @@ const config = {
             additionalLanguages: ['powershell', 'ruby']
           },
           matomoAnalytics: {
-            matomoUrl:
-              'matomo.scs.community',
+            matomoUrl: 'matomo.scs.community',
             siteId: '2',
             phpLoader: 'matomo.php',
             jsLoader: 'matomo.js',
@@ -155,8 +153,8 @@ const config = {
       // @ts-ignore
       ({
         hashed: true,
-        docsDir: ['docs', 'community'],
-        docsRouteBasePath: ['/docs', 'community']
+        docsDir: ['docs', 'community', 'standards'],
+        docsRouteBasePath: ['docs', 'community', 'standards']
       })
     ]
   ]
