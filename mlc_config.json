@@ -1,7 +1,7 @@
 {
   "httpHeaders": [
     {
-      "urls": ["https://www.researchgate.net"],
+      "urls": ["*"],
       "headers": {
         "Accept-Encoding": "zstd, br, gzip, deflate"
       }
