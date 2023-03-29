@@ -6,7 +6,7 @@ or: What does a release mean in the SCS world?
 
 Our release schedule is time-based: We release every 6 months.\
 Release dates are in Mar and Sep, which gives us \~5 months to integrate the latest OpenStack and Ubuntu releases. (We will only use Ubuntu LTS versions however.)\
-First release will be R0, which will ship in April 2021 -- the delay is due to the delayed start of the funded project.
+First release will be R0, which will ship in April 2021 — the delay is due to the delayed start of the funded project.
 
 Releases are announced on our web page and via press releases. There is an announcement mailing list that all users of SCS should subscribe to, where release information will be posted.
 
@@ -34,25 +34,25 @@ There are a few kinds of features included in a release:
 
 1\.Things that we consider standardized and stable: **Official standard Features**
 
-* Every SCS cloud provider should use these
-* We should have tests in place to ensure these things don't break
+- Every SCS cloud provider should use these
+- We should have tests in place to ensure these things don't break
 
 2\.Things that we consider stable, but optional: **Official optional features**
 
-* Cloud providers may decide to implement these
-* We should also have tests in place (though less urgently)
+- Cloud providers may decide to implement these
+- We should also have tests in place (though less urgently)
 
 3\. Things that we do not consider stable yet, but still want to include it for demos, to show where we are going etc: **Technical Preview Features**
 
-* Ideally, these stabilize after the release and can be selectively enabled by partners (after alignment with the SCS team)
-* There is no guarantee for this to happen
-* We are open to feedback and contributions for these -- we explicitly welcome suggestions, qualified bug reports etc.
+- Ideally, these stabilize after the release and can be selectively enabled by partners (after alignment with the SCS team)
+- There is no guarantee for this to happen
+- We are open to feedback and contributions for these — we explicitly welcome suggestions, qualified bug reports etc.
 
 4\.Things that are not included but that we **document** how users (or providers) set it up themselves
 
 Ideally, we have some automation that does set this up in our CI and tests is, so the documentation stays true
 
-5. Not included / not supported
+5\. Not included / not supported
 
 **Services not listed are not officially supported.**
 
@@ -71,15 +71,15 @@ A strong focus of SCS is on assuring the upstream projects are healthy and striv
 Sometimes the upstream release cycle will have an impact on when a feature or fix is available for SCS consumers. Backporting could then be considered an option.
 The following aspects should be considered in these case:
 
-* Backports should be avoided whenever possible.
-* The feature / fix must be merged upstream onto main.
-* Only if upstream will not accept a backport, a local backport is adviseable.
-* Is the feature a blocking requirement?
-* Is a local backport simple enough - if not, this is a *strong* argument against a local backport.
+- Backports should be avoided whenever possible.
+- The feature / fix must be merged upstream onto main.
+- Only if upstream will not accept a backport, a local backport is adviseable.
+- Is the feature a blocking requirement?
+- Is a local backport simple enough - if not, this is a _strong_ argument against a local backport.
 
 ## Implementation services
 
-We strive to make it easy to set up an SCS environment. This means that we provide documentation, defaults and automation to allow standard SCS setups to created by appropriately skilled engineers. However, we will no have the bandwidth to cover unusual integrations (user management, network setups, billing systems, ...) -- these could be provided by commercial companies that offer consulting and implementation services around SCS. Again, we reserve the right to create certification programs to ensure high quality services here. We explicitly encourage partners to contribute knowledge in this space to our knowledge base.
+We strive to make it easy to set up an SCS environment. This means that we provide documentation, defaults and automation to allow standard SCS setups to created by appropriately skilled engineers. However, we will no have the bandwidth to cover unusual integrations (user management, network setups, billing systems, ...) — these could be provided by commercial companies that offer consulting and implementation services around SCS. Again, we reserve the right to create certification programs to ensure high quality services here. We explicitly encourage partners to contribute knowledge in this space to our knowledge base.
 
 ## Operations services
 
@@ -98,9 +98,9 @@ SCS partners that want to offer SCS compatible stacks and want to use the SCS tr
 
 Thinking about SCS trademarks:
 
-* "SCS powered public platform" (this includes compatibility and monitoring) -- we plan to not charge for this (?)
-* "SCS powered private platform" -- this should have the same technical requirements minus possibly some federation features what many not make sense in this setting. We might also not be able to monitor ... the platform and thus can not provide visibility into it
-* "SCS ... with XXX" -- this allows to advertise **optional standardized features** of SCS. Applications may depend on these (and thus only work on the subset of SCS providers that chose to implement these features). There will be conformance tests for such features. All XXX terms are defined by SCS -- it is not allowed for partners to invent terms here.
-* "SCS ... gold/platinum" -- this will indicate higher levels of compliance. We would disallow non-open-source pieces in the stack and mandate public availability of all downstream changes, enforce certain security and data-protection standards (e.g. only ops personell from a certain region or encryption), transparency for RCAs, SLAs, proven skills for the Ops personell, architectural review by SCS , .... This will need to be defined in the future. We would expect to charge for this.[\*]
+- "SCS powered public platform" (this includes compatibility and monitoring) — we plan to not charge for this (?)
+- "SCS powered private platform" — this should have the same technical requirements minus possibly some federation features what many not make sense in this setting. We might also not be able to monitor ... the platform and thus can not provide visibility into it
+- "SCS ... with XXX" — this allows to advertise **optional standardized features** of SCS. Applications may depend on these (and thus only work on the subset of SCS providers that chose to implement these features). There will be conformance tests for such features. All XXX terms are defined by SCS — it is not allowed for partners to invent terms here.
+- "SCS ... gold/platinum" — this will indicate higher levels of compliance. We would disallow non-open-source pieces in the stack and mandate public availability of all downstream changes, enforce certain security and data-protection standards (e.g. only ops personell from a certain region or encryption), transparency for RCAs, SLAs, proven skills for the Ops personell, architectural review by SCS , .... This will need to be defined in the future. We would expect to charge for this.[\*]
 
 [\*] We might accept donations in terms of free access to infrastructure as compensation. Similarly, we might invent a system where contributions to our knowledge or code base might be counted and rewarded points that lower compensation for certification.

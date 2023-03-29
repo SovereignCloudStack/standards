@@ -1,0 +1,11 @@
+{
+  "httpHeaders": [
+    {
+      "urls": ["*"],
+      "headers": {
+        "Accept-Encoding": "zstd, br, gzip, deflate"
+      }
+    }
+  ],
+  "aliveStatusCodes": [200, 300]
+}

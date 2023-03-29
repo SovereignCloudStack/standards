@@ -1,17 +1,17 @@
 name: SCS Compatible
-url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Design-Docs/tools/scs-compatible.yaml
+url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible.yaml
 iaas:
   - version: v1
     stabilized_at: 2021-01-01
-    # obsoleted_at: 2023-10-03
+    obsoleted_at: 2023-10-31
     standards:
       - name: Flavor naming
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/SCS-0003-v1-flavor-naming.md
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Drafts/flavor-naming.md
         check_tools:
           - executable: ./iaas/flavor-naming/flavor-names-openstack.py
             args: "-1"
       - name: Image metadata
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/SCS-0004-v1-image-metadata.md
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Drafts/Image-Properties-Spec.md
         check_tools:
           - executable: ./iaas/image-metadata/image-md-check.py
             args: -v
@@ -19,4 +19,20 @@ iaas:
         url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2020.11.json
         condition: mandatory
         # Unfortunately, no wrapper to run refstack yet, needs to be added
-
+  - version: v2
+    stabilized_at: 2023-03-23
+    # obsoleted_at: 2024-04-30
+    standards:
+      - name: Flavor naming
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v2-flavor-naming.md
+        check_tools:
+          - executable: ./iaas/flavor-naming/flavor-names-openstack.py
+      - name: Image metadata
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Drafts/Image-Properties-Spec.md
+        check_tools:
+          - executable: ./iaas/image-metadata/image-md-check.py
+            args: -v
+      - name: OpenStack Powered Compute v2022.11
+        url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
+        condition: mandatory
+        # Unfortunately, no wrapper to run refstack yet, needs to be added

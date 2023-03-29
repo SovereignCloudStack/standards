@@ -1,16 +1,16 @@
 ---
 title: SSD Flavors
-type: Decision Record
+type: Standard
 status: Draft
 track: IaaS
 enhances: scs-0100-v2-flavor-naming.md
 ---
 
-# Introduction
+## Introduction
 
 SCS defines an IaaS Flavor Naming standard that mandates a number of standard flavors
 to be available in each SCS-compliant IaaS offering. While offering or exposing
-IaaS is not a requirement for SCS-compliant infrastructure offerings -- SCS allows
+IaaS is not a requirement for SCS-compliant infrastructure offerings — SCS allows
 for platforms only exposing the container layer (plus S3 compatible object storage)
 for wave 2 (container-based) cloud-native workloads --
 the SCS reference implementation does include a complete IaaS implementation that
@@ -19,10 +19,10 @@ for wave 1 (VM-based) cloud-native workloads or for the virtualization of more
 classical (not cloud-native) workloads. The IaaS implementation thus comes with
 standards.
 
-This Decision Record is about adding a few mandatory flavors on the IaaS level
+This standard is about requiring a few mandatory flavors on the IaaS level
 that include flavors with local SSD (or better) storage.
 
-# Motivation
+## Motivation
 
 The [currently defined standard flavors](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/flavor-naming.md)
 (as of v1.1 from 2022-09-08) do not include
@@ -52,14 +52,14 @@ change, preventing control plane changes on k8s for a few seconds. Too many
 leader changes can slow down cluster operation and even bring it to a halt.
 
 The etcd requirements [are well documented](https://etcd.io/docs/v3.5/op-guide/hardware/#example-hardware-configurations).
-In particular, over a hundred of *sequential* IOPS are recommended. This
+In particular, over a hundred of _sequential_ IOPS are recommended. This
 requires write latencies in the range of a single-digit ms (or better).
 
-# Design Considerations
+## Design Considerations
 
-## Options considered
+### Options considered
 
-### One-node etcd (backed by redundant storage)
+#### One-node etcd (backed by redundant storage)
 
 If k8s uses only one control plane node, there will only be only one etcd node,
 avoiding timed out heartbeats. Single node control planes are typically not
@@ -75,7 +75,7 @@ single-node outage.
 
 Neither scenario fulfills typical requirements for production workloads.
 
-### RAM (tmpfs) etcd storage
+#### RAM (tmpfs) etcd storage
 
 etcd could keep its database in volatile memory (e.g. on a tmpfs filesystem).
 For multi-node etcd clusters, this could actually be made work, as long as at
@@ -94,7 +94,7 @@ This option requires additional care and may not be suitable for all
 production scenarios, but would seem a possible fallback position for
 etcd. It does obviously not address the database scenario.
 
-### Heartbeat slowdown
+#### Heartbeat slowdown
 
 To avoid causing too many fail-overs by occasional high latencies, the
 frequency of heartbeats can be lowered from the default 1/100ms.
@@ -103,7 +103,7 @@ The reelection timeout should change along with it (typically set to
 
 This will cause etcd to take a bit more time to notice the loss of a node,
 which is not typically critical if done within reasonable limits.
-This change however does not fully address the issue -- occasional write latencies
+This change however does not fully address the issue — occasional write latencies
 above 100ms will still cause failed heartbeats, just less often.
 
 This change has been implemented in SCS's
@@ -121,10 +121,10 @@ The slower heartbeat and the priority tweaks do lower the amount of leader
 changes but are insufficient to completely address the issue on the tests
 performed against networked ceph-backed storage.
 
-### Filesystem tuning
+#### Filesystem tuning
 
 Databases must ensure that certain data has hit stable storage before acknowledging
-writes -- this is required in order to live up to the [ACID](https://en.wikipedia.org/wiki/ACID)
+writes — this is required in order to live up to the [ACID](https://en.wikipedia.org/wiki/ACID)
 guarantees in situations when disruptions might happen. Databases typically use
 `fsync()` calls to ensure that write buffers are written to real persistent storage
 unless they use raw/direct block devices circumventing Linux's page and buffer cache.
@@ -141,7 +141,7 @@ storage before returning from fsync() calls. This avoids the latency caused by
 not consistent, as the kernel has lied to the application about data having been
 written out. Recovery from such a scenario can range from smooth to impossible.
 
-In a multi-node cluster, this may not be as bad as it sounds -- if only one
+In a multi-node cluster, this may not be as bad as it sounds — if only one
 node is affected by a disruption, the crashed node can be recovered by resyncing
 the data from other nodes. In practice an inconsistent state would be considered
 too risky and it should be preferred to set up a fresh node to join the
@@ -151,11 +151,11 @@ less risky.
 The reference implementation has an option to use these unsafe filesystem settings.
 However, they are not enabled by default for good reasons.
 
-### Flavors with local storage
+#### Flavors with local storage
 
 Flavors with local storage will have their root filesystem on a local storage
 device. To fulfill the need for high IOPS that etcd and especially databases
-have, the local storage device should be a solid state device -- an SSD or
+have, the local storage device should be a solid state device — an SSD or
 NVMe device. While some use cases might even be fulfilled with local
 spinning disks (or raid arrays of local spinning disks).
 
@@ -165,7 +165,7 @@ or the complete hardware node will result in data loss. So it is meant to
 be used with applications such as database clusters, replicating filesystems
 or block devices or etcd which can handle this at the application layer.
 
-The flavor naming spec in SCS allows performance to be understated -- a
+The flavor naming spec in SCS allows performance to be understated — a
 flavor with NVMe storage can be advertised under the SSD storage name
 (and of course can be offered under both names).
 
@@ -176,7 +176,7 @@ low-latency networked or local storage are made available via cinder
 and attached for database storage are possible and viable options for
 some scenarios, but not covered here.
 
-# Decision
+## Decision
 
 Two new mandatory flavors: `SCS-2V-4-20s` and `SCS-4V-16-100s` are added
 to the SCS flavor naming standard. The first is meant to be a good fit for
@@ -188,8 +188,8 @@ Obviously providers MAY offer many more combinations and e.g. create
 flavors with large local SSDs.
 
 The local storage advertised this way MUST support more than
-1000 *sequential* IOPS per VM of both new mandatory types (which means a
-write latency lower than 1ms -- this typically means SSDs/NVMEs that
+1000 _sequential_ IOPS per VM of both new mandatory types (which means a
+write latency lower than 1ms — this typically means SSDs/NVMEs that
 support at least several 10ks of parallel IOPS, not a challenge for
 current hardware).
 
@@ -203,7 +203,7 @@ from previous users is not accessible (e.g. by securely erasing it
 or by using a different encryption key) when local storage gets
 allocated to a new VM.
 
-# Out of Scope
+## Out of Scope
 
 Hardware nodes (hypervisors in OpenStack language) that support flavors
 with local storage (are part of an appropriate OpenStack host aggregate)
@@ -223,11 +223,11 @@ networked storage: The contents of the local disks also need to be replicated
 over to the new host. Live-migration for these VMs may thus take significantly
 longer or not be possible at all, depending the configuration from the provider.
 Not supporting live-migration is OK for flavors with local disks according
-to the flavor naming spec -- a capability to indicate whether or not
+to the flavor naming spec — a capability to indicate whether or not
 live-migration is supported will be subject to a flavor-metadata discoverability
 spec that is planned for the future.
 
-# Implementation note
+## Implementation note
 
 Local storage in OpenStack can be provided directly via nova or via the
 cinder service. While the latter has the advantage of making volumes
@@ -236,7 +236,7 @@ has the disadvantage of creating an indirection via iSCSI. This
 results in higher latency. The requirements in the above spec are
 not meant to mandate or prevent the implementation via either route.
 
-# Related Documents
+## Related Documents
 
 The flavors will be added as mandatory flavors to the
 [flavor-naming standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0100-v2-flavor-naming.md),
@@ -256,7 +256,7 @@ these flavors can be live-migrated. A future VM metadata standard will allow
 users to request live-migration and/or cold migration or restart to be or to
 not be performed.
 
-# Conformance Tests
+## Conformance Tests
 
 The list of mandatory flavors that needs to be present should be added to the
 [SCS-Spec.MandatoryFlavors.yaml](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/SCS-Spec.MandatoryFlavors.yaml)
@@ -265,4 +265,3 @@ spec as soon as this ADR becomes part of the certification requirements.
 Checks for conforming with IOPS and purging requirements will require
 test instances to be launched and might become part of a monitoring
 solution.
-
