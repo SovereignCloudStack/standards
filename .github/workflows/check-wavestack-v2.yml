@@ -1,4 +1,4 @@
-name: "Compliance of gx-scs"
+name: "Compliance of wavestack"
 
 on:
   # Trigger compliance check every day at 4:30 UTC
@@ -13,9 +13,11 @@ on:
   workflow_dispatch:
   
 jobs:
-  check-gx-scs:
+  check-wavestack:
     uses: ./.github/workflows/scs-compliance-check.yml
     with:
-      cloud: "gx-scs"
-      secret_name: "OS_PASSWORD_GXSCS"
+      version: v2
+      layer: iaas
+      cloud: "wavestack"
+      secret_name: "OS_PASSWORD_WAVESTACK"
     secrets: inherit
