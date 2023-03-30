@@ -5,8 +5,8 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Sovereign Cloud Stack Documentation',
-  tagline: 'One platform - standardized, built and operated by many.',
+  title: 'One platform — standardized, built and operated by many.',
+  tagline: 'Documentation and Community Platform for the Sovereign Cloud Stack',
   url: 'https://docs.scs.community',
   baseUrl: '/',
   onBrokenLinks: 'throw',
@@ -24,7 +24,6 @@ const config = {
     defaultLocale: 'en',
     locales: ['en']
   },
-
   presets: [
     [
       'classic',
@@ -67,10 +66,19 @@ const config = {
   themeConfig:
         /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
         ({
+          metadata: [{ title: 'One platform — standardized, built and operated by many.', description: 'Documentation and Community Platform for the Sovereign Cloud Stack' }],
+          image: 'img/logo.svg',
+          announcementBar: {
+            id: 'scs_summit',
+            content: '<a target="_blank" rel="noopener noreferrer" href="https://scs.community/summit" style="text-decoration: none"><b>Join us for our first SCS Summit on 23rd and 24th of May 2023 in Berlin. </b></a>',
+            backgroundColor: '#ffb729',
+            textColor: '#000',
+            isCloseable: true
+          },
           navbar: {
             title: '',
             logo: {
-              alt: 'My Site Logo',
+              alt: 'SCS',
               src: 'img/logo.svg'
             },
             items: [
@@ -136,7 +144,7 @@ const config = {
             additionalLanguages: ['powershell', 'ruby']
           },
           matomoAnalytics: {
-            matomoUrl: 'matomo.scs.community',
+            matomoUrl: 'https://matomo.scs.community/',
             siteId: '2',
             phpLoader: 'matomo.php',
             jsLoader: 'matomo.js',
