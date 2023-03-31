@@ -3,6 +3,12 @@ name: Check compliance of SCS cloud
 on:
   workflow_call:
     inputs:
+      version:
+        required: true
+        type: string
+      layer:
+        required: true
+        type: string
       cloud:
         required: true
         type: string
@@ -27,7 +33,7 @@ jobs:
                 password: ${{ secrets[inputs.secret_name] }}
           EOF
       - name: "Run scs-compliance-check"
-        run: "cd /scs-compliance && ./scs-compliance-check.py scs-compatible.yaml --version v1 iaas -o result.yaml"
+        run: "cd /scs-compliance && ./scs-compliance-check.py scs-compatible.yaml --version ${{ inputs.version }} ${{ inputs.layer }} -o result.yaml"
         env:
           OS_CLOUD: ${{ inputs.cloud }}
       - name: "Upload results"
