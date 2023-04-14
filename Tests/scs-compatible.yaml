@@ -27,7 +27,6 @@ iaas:
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v2-flavor-naming.md
         check_tools:
           - executable: ./iaas/flavor-naming/flavor-names-openstack.py
-            args: "--accept-old-mand"
       - name: Image metadata
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Drafts/Image-Properties-Spec.md
         check_tools:
