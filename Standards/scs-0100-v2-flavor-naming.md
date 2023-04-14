@@ -460,6 +460,11 @@ the names for standards compliance and completeness w.r.t. the mandatory
 flavor list. It goes beyond the above example in checking that the discoverable
 features of flavors (vCPUs, RAM, Disk) match what the flavor names claim.
 
+## Operational tooling
+
+The [openstack-flavor-manager](https://github.com/osism/openstack-flavor-manager) is able to
+create all standard, mandatory SCS flavors for you.
+
 ## Previous standard versions
 
 [Version 1 of the standard](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/flavor-naming.md)
