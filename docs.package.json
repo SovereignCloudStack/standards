@@ -7,6 +7,12 @@
     },
     {
         "repo": "SovereignCloudStack/docs",
+        "source": "*.md",
+        "target": "docs",
+        "label": ""
+    },
+    {
+        "repo": "SovereignCloudStack/docs",
         "source": "operations",
         "target": "docs",
         "label": ""
