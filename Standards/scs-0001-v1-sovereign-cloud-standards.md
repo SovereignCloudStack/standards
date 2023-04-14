@@ -75,8 +75,18 @@ The file name of an SCS document is formed using the following pattern:
 `XXXX` is replaced with the zero-padded document number,
 `N` is replaced with the major version of the document, and
 `T` is replaced with the slugified title.
-For a document with the number 390, with a major version number 2 and a slugified title `flavor-naming`,
-the resulting file name would be `scs-0390-v2-flavor-naming.md`.
+For a document with the number 190, with a major version number 2 and a slugified title `flavor-naming`,
+the resulting file name would be `scs-0190-v2-flavor-naming.md`.
+
+The second digit in `XXXX` describes the track where the document belongs:
+
+| Track | Number |
+| --- | --- |
+| Global | 0 |
+| IaaS | 1 |
+| KaaS | 2 |
+| IAM | 3 |
+| Ops | 4 |
 
 In addition to the number, each document has the following metadata,
 embedded in the markdown header.
@@ -85,7 +95,7 @@ embedded in the markdown header.
 | --------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | `type`          | REQUIRED                                                                   | one of `Procedural`, `Standard`, or `Decision Record`                                 |
 | `status`        | REQUIRED                                                                   | one of `Proposal`, `Draft`, `Stable`, `Deprecated`, or `Rejected`                     |
-| `track`         | REQUIRED                                                                   | one of `Global`, `IaaS`, `Ops`, `KaaS`, `IAM`                                         |
+| `track`         | REQUIRED                                                                   | one of `Global`, `IaaS`, `KaaS`, `IAM`, `Ops`                                         |
 | `obsoleted_at`  | REQUIRED if `status` is `Deprecated`                                       | ISO formatted date indicating the date after which the deprecation is in effect       |
 | `stabilized_at` | REQUIRED if `status` was ever `Stable`                                     | ISO formatted date indicating the date after which the document was considered stable |
 | `rejected_at`   | REQUIRED if `status` is `Rejected`                                         | ISO formatted date indicating the date on which the document was rejected             |
