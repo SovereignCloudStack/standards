@@ -16,6 +16,8 @@ jobs:
   check-pco-prod2:
     uses: ./.github/workflows/scs-compliance-check.yml
     with:
+      version: v2
+      layer: iaas
       cloud: "pco-prod2"
       secret_name: "OS_PASSWORD_PCOPROD2"
     secrets: inherit
