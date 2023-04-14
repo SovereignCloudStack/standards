@@ -718,7 +718,6 @@ def main(argv):
                 scsMandatory.remove(name)
             elif accept_old_mand:
                 newnm = old_to_new(name)
-                # print(f"DEBUG: {name} -> {newnm} in list: {newnm in scsMandatory}")
                 if newnm in scsMandatory:
                     scsMandatory.remove(newnm)
         if debug:
