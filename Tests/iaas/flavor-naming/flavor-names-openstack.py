@@ -27,8 +27,14 @@ fnmck = importlib.import_module("flavor-name-check")
 
 def usage(rcode=1):
     "help output"
-    print("Usage: flavor-names-openstack.py [--os-cloud OS_CLOUD] [-C mand.yaml] [-v] [-q] [-2]", file=sys.stderr)
-    print(" This tool retrieves the list of flavors from the OpenStack cloud OS_CLOUD", file=sys.stderr)
+    print("Usage: flavor-names-openstack.py [options]", file=sys.stderr)
+    print("Options: [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)", file=sys.stderr)
+    print(" [-C/--mand mand.yaml] overrides the list of mandatory flavor names", file=sys.stderr)
+    print(" [-1/--v1prefer] prefer v1 flavor names (but still tolerates v2", file=sys.stderr)
+    print(" [-o/--accept-old-mandatory] prefer v2 flavor names, but v1 ones can fulfill mand list", file=sys.stderr)
+    print(" [-2/--v2plus] only accepts v2 flavor names, old ones result in errors", file=sys.stderr)
+    print(" [-v/--verbose] [-q/--quiet] control verbosity of output", file=sys.stderr)
+    print("This tool retrieves the list of flavors from the OpenStack cloud OS_CLOUD", file=sys.stderr)
     print(" and checks for the presence of the mandatory SCS flavors (read from mand.yaml)", file=sys.stderr)
     print(" and reports inconsistencies, errors etc. It returns 0 on success.", file=sys.stderr)
     sys.exit(rcode)
@@ -46,8 +52,9 @@ def main(argv):
     except KeyError:
         pass
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:C:vhq21",
-                                       ("os-cloud=", "mand=", "verbose", "help", "quiet", "v2plus", "v1prefer"))
+        opts, args = getopt.gnu_getopt(argv, "c:C:vhq21o",
+                                       ("os-cloud=", "mand=", "verbose", "help", "quiet", "v2plus",
+                                        "v1prefer", "accept-old-mandatory"))
     except getopt.GetoptError as exc:
         print(f"{exc}", file=sys.stderr)
         usage(1)
@@ -62,6 +69,8 @@ def main(argv):
             fnmck.disallow_old = True
         elif opt[0] == "-1" or opt[0] == "--v1prefer":
             fnmck.prefer_old = True
+        elif opt[0] == "-o" or opt[0] == "--accept-old-mandatory":
+            fnmck.accept_old_mand = True
         elif opt[0] == "-v" or opt[0] == "--verbose":
             verbose = True
             # fnmck.verbose = True
@@ -154,6 +163,9 @@ def main(argv):
                 if flv.name in scsMandatory:
                     scsMandatory.remove(flv.name)
                     MSCSFlv.append(flv.name)
+                elif fnmck.accept_old_mand and fnmck.old_to_new(flv.name) in scsMandatory:
+                    scsMandatory.remove(fnmck.old_to_new(flv.name))
+                    MSCSFlv.append(flv.name)   # fnmck.old_to_new(flv.name)
                 else:
                     SCSFlv.append(flv.name)
                 if warn:
