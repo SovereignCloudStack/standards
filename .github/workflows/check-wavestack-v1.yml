@@ -16,6 +16,8 @@ jobs:
   check-wavestack:
     uses: ./.github/workflows/scs-compliance-check.yml
     with:
+      version: v1
+      layer: iaas
       cloud: "wavestack"
       secret_name: "OS_PASSWORD_WAVESTACK"
     secrets: inherit
