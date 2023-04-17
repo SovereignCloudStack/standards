@@ -8,6 +8,7 @@
 /docs/k8s-cluster-api-provider
 /docs/status-page-openapi
 /standards/*
+/docs/*.md
 !/standards/index.md
 
 
