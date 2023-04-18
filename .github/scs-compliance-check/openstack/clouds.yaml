@@ -39,3 +39,11 @@ clouds:
     region_name: "MUC5"
     interface: "public"
     identity_api_version: 3
+  regio-a:
+    auth:
+      auth_url: https://keystone.services.a.regiocloud.tech
+      application_credential_id: "459b392c348d430f91c658f0f61cbb8e"
+    region_name: "RegionA"
+    interface: "public"
+    identity_api_version: 3
+    auth_type: "v3applicationcredential"
