@@ -38,3 +38,14 @@ Official SCS standards, see [Standards/scs-0001-v1-sovereign-cloud-standards.md]
 ### Tests
 
 Testsuite and tools for SCS standards, see [Tests/README.md](https://github.com/SovereignCloudStack/standards/blob/main/Tests/README.md).
+
+### Status
+#### IaaS
+
+|  What | Why | Status  | Tests | References |
+|  --- | --- | ---  | --- | --- |
+| Systematic Flavor-naming | Allow IaC to work across clouds (incl. k8s-capi-provider) | V1 done (mandatory) <br> V2 draft (mandatory ?) | [V1](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-check.py) <br> [V2](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-check.py) | [flavor-naming](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/flavor-naming.md) <br> [scs-0100-v2](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0100-v2-flavor-naming.md) |
+
+
+#### CaaS
+
