@@ -97,7 +97,7 @@ The following requirements for a time-series database exist:
 ### Using Gnocchi
 
 [Gnocchi](https://gnocchi.osci.io/) is a time-series database
-which has its origins the OpenStack ecosystem.
+which has its origins in the OpenStack ecosystem.
 
 It supports all requirements except truncation,
 which might have to be implemented.
