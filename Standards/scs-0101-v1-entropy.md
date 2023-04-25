@@ -31,7 +31,7 @@ operations that will not work.
 
 ```console
   $cat /proc/sys/kernel/random/entropy_avail
-  256
+  128
 ```
 
 #### 1.2.1 How to generate entropy "Out-Of-Nothing" ?
@@ -59,6 +59,24 @@ rng-utils.
      #cat /proc/sys/kernel/random/entropy_avail
      3843
 ```
+
+##### 1.2.3 Changes since Linux 5.17, 5.18
+
+Jason A. Donenfeld has rewritten the RNG Number generator for Linux, which is replacing the very old sha-1 with blake2 algorithm, "random use computational hash for entropy extraction"
+the full explanation will found here: https://www.zx2c4.com/projects/linux-rng-5.17-5.18/.
+This RNG improvements make some workarounds obsolete. For an example haveged should not use
+anymore. Rng-tools can continue to be used. Rng-tools bridge the hardware number generators that support RDRAND and RDSEED as they support HWRNG in modern Intel and AMD processors. 
+
+These patches are now also arrived the upstream LTS Kernels.
+
+This behavior will look as follows:
+
+```console
+ $cat /proc/sys/kernel/random/entropy_avail
+  256
+```
+because here is now working the blake2 algorithm the entropy count is sufficient.
+
 
 ### 1.3 Entropy in SCS Clouds
 
