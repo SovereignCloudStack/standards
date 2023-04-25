@@ -75,6 +75,7 @@ This behavior will look as follows:
  $cat /proc/sys/kernel/random/entropy_avail
   256
 ```
+
 because here is now working the blake2 algorithm the entropy count is sufficient.
 
 ### 1.3 Entropy in SCS Clouds
