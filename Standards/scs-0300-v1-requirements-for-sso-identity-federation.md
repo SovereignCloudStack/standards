@@ -141,6 +141,8 @@ Keycloak supports several SQL backends through JDBC. Thus
 it can be hooked up to a Postgres Database or to a
 MariaDB/Galera cluster e.g..
 
+As of April 11, 2023, Keycloak joined the CNCF as an incubating project.
+
 #### Zitadel
 
 Zitadel is a newer implementation of an SSO IdP.
@@ -212,6 +214,19 @@ this should allow customers to manage settings like these in their own IAM.
   - What's the benefit?
   - How would we allow SCS operators to choose?
 - Do we need some kind of SWOT analysis to come to a decision?
+
+## Decision
+
+SCS wants to make use of an IdP as part of the reference implementation.
+To move forward with topics of configuration and mapping of roles in a
+OAuth federated scenario as well as questions of token lifecycles etc across
+the federation stack it makes sense to fokus on one IdP implementation at a
+given time.
+
+Since Keycloak currently supports the OAuth 2.0 grants that SCS wants to make
+use of (e.g. Device Authorization Grant) and offers additional flexibility
+e.g. by allowing LDAP to be used as backend, the projects current choice
+is Keycloak.
 
 ## Related Documents
 
