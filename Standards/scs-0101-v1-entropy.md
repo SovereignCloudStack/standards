@@ -80,8 +80,10 @@ The behavior will be as follows:
  $cat /proc/sys/kernel/random/entropy_avail
   256
 ```
+
 Because the blake2 is used algorithm the entropy count is sufficient.
-The rng-tools brings up the software rngtest. With rngtest the entropy can be checked. 
+The rng-tools brings up the software rngtest. With rngtest the entropy
+can be checked.
 
 ```console
  $cat /dev/random | rngtest -c 1000
