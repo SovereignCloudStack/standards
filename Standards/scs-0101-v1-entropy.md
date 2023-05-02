@@ -68,20 +68,24 @@ hash for entropy extraction" the full explanation will found here:
 [linux-rng-5.17-18](https://www.zx2c4.com/projects/linux-rng-5.17-5.18/).
 
 This RNG improvements make some workarounds obsolete. For an example haveged
-should not use anymore. Rng-tools can continue to be used. Rng-tools bridge the
+should not be use anymore. Rng-tools can continue to be used. Rng-tools bridge the
 hardware number generators that support RDRAND and RDSEED as they support HWRNG
 in modern Intel and AMD processors.
 
-These patches are now also arrived the upstream LTS Kernels.
+These patches have now also arrived in the upstream LTS Kernels.
 
-This behavior will look as follows:
+The behavior will be as follows:
 
 ```console
  $cat /proc/sys/kernel/random/entropy_avail
   256
 ```
+Because the blake2 is used algorithm the entropy count is sufficient.
+The rng-tools brings up the software rngtest. With rngtest the entropy can be checked. 
 
-because here is now working the blake2 algorithm the entropy count is sufficient.
+```console
+ $cat /dev/random | rngtest -c 1000
+```
 
 ### 1.3 Entropy in SCS Clouds
 
