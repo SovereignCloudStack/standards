@@ -67,7 +67,7 @@ replacing the very old sha-1 with blake2 algorithm, "random use computational
 hash for entropy extraction" the full explanation can be found here:
 [linux-rng-5.17-18](https://web.archive.org/web/20230321040526/https://www.zx2c4.com/projects/linux-rng-5.17-5.18/).
 
-This RNG improvements make some workarounds obsolete. For an example haveged
+This RNG improvements make some workarounds obsolete. For example haveged
 should not be use anymore. Rng-tools can continue to be used. Rng-tools bridge the
 hardware number generators that support RDRAND and RDSEED as they support HWRNG
 in modern Intel and AMD processors.
