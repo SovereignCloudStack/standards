@@ -22,10 +22,10 @@ As suggested in [#155](https://github.com/SovereignCloudStack/standards/issues/1
 
 Example:
 
-| github handle | PlusServer login   |
+| github handle | PlusServer login    |
 | :-----------: | :-----------------: |
-| frosty-geek  | u500924-frosty-geek |
-|      fkr      |     u500924-fkr     |
+| frosty-geek   | u500924-frosty-geek |
+| fkr           | u500924-fkr         |
 |               |                     |
 
 > **Note**
@@ -35,31 +35,35 @@ Example:
 
 Service users will have their default_project_id set to a specific project and will NOT be granted full access to other projects by default.
 
-|        Unique Identifier         | Service User Name          | Full Access on            | Community Contact | Description                                   | Needed until |
+| Unique Identifier                | Service User Name          | Full Access on            | Community Contact | Description                                   | Needed until |
 | :------------------------------: | -------------------------- | ------------------------- | ----------------- | --------------------------------------------- | :----------: |
-| 9a1576af59644a2dbbace773ad17158d | u500924-svc-sig-monitoring | p500924-sig-monitoring1   | fkr               | Service User - SIG Monitoring                 | 31.12.2023  |
-| 4925967416894fd78be6701689059653 | u500924-svc-cloudmon       | p500924-cloudmon-target   | costelter         | Service User - CloudMon Test Project          | 31.12.2023  |
-| f89b3d64ddff4d9d8cadb5e06fa22299 | u500924-svc-healthmonitor  | p500924-scs-healthmonitor | garloff           | Service User - SCS Health Monitor             |      ∞       |
-| 49cc3d72fbdf41fe8dc407f57f026dbf | u500924-svc-standards      | p500924-scs-healthmonitor | itrich            | Service User - SCS Standards Compliance Check |      ∞       |
-|                                  |                            |                           |                   |                                               |
+| 9a1576af59644a2dbbace773ad17158d | u500924-svc-sig-monitoring | p500924-sig-monitoring1   | fkr               | Service User - SIG Monitoring                 | 31.12.2023   |
+| 4925967416894fd78be6701689059653 | u500924-svc-cloudmon       | p500924-cloudmon-target   | costelter         | Service User - CloudMon Test Project          | 31.12.2023   |
+| f89b3d64ddff4d9d8cadb5e06fa22299 | u500924-svc-healthmonitor  | p500924-scs-healthmonitor | garloff           | Service User - SCS Health Monitor             | ∞            |
+| 49cc3d72fbdf41fe8dc407f57f026dbf | u500924-svc-standards      | p500924-scs-healthmonitor | garloff           | Service User - SCS Standards Compliance Check | ∞            |
+| 5555a8a49c7d4d59b090937980b211fd | u500924-svc-gxhackathon6-1 | p500924-gxhackathon6-1    | garloff           | Service User - Gaia-X Hackathon 6 Projekt1    | 10.05.2023   |
+| ee8c2d10a4cd41e7a66199ff35cdfa61 | u500924-svc-gxhackathon6-2 | p500924-gxhackathon6-2    | garloff           | Service User - Gaia-X Hackathon 6 Projekt2    | 10.05.2023   |
+|                                  |                            |                           |                   |                                               |              |
 
 ### Projects
 
-|        Unique Identifier         | Project Name                | Community Contact | Description                       | Needed until |
+| Unique Identifier                | Project Name                | Community Contact | Description                       | Needed until |
 | :------------------------------: | --------------------------- | ----------------- | --------------------------------- | :----------: |
-| 2237c767cf5f456da19359ed31c1c16b | p500924-scs-community       | fkr               | SCS Community Project             |      ∞       |
-| e7ee61b62ecc417199b154ae4218f25f | p500924-beermann            | tibeer            | Project of Tim Beermann, OSISM    |      ∞       |
-| b43cfafbcf1f4eb08865b2886c29e09b | p500924-cluster-api-session | garloff           | cluster-api hands on session      |      ∞       |
-| 9b7a73e516be4cd1acbd63d543985c52 | p500924-gonicus-dev         | o-otte            | GONICUS GmbH                      |      ∞       |
-| 3829cc7c8f034fc985f5055a1df6f247 | p500924-scs-healthmonitor   | garloff           | SCS Health Monitor                |      ∞       |
-| b97d38bf128b4479981c4dbe2ef70cd5 | p500924-SIG-IAM             | fkr               | SIG IAM                           |      ∞       |
-| 9de7d8dc2d674e52be44904d6b338b0b | p500924-cloudmon            | costelter         | CloudMon Test Project             | 31.12.2023  |
-| 2c9e0e4ef8d44c36807df50b06b3c81d | p500924-cloudmon-target     | costelter         | Target project for CloudMon tests | 31.12.2023  |
-| 3501db829014406884990a1016f3e25d | p500924-sig-monitoring1     | fkr               | SIG Monitoring - cloudmon target  | 31.12.2023  |
-| 602778bad3d3470cbe58c4f7611e8eb7 | p500924-dnation             | chess-knight      | dNation Dev Project               |      ∞       |
-| 91091d4039a6457db27d48d58bb1b4e4 | p500924-jschoone            | jschoone          | KaaS dev and evaluation           |      ∞       |
-| 93956190702b4a7d8a8886806d57713f | p500924-metering            | cah-link          | Metering Dev Project              | 31.12.2023  |
-| abbe6561cf6248b6af395334aa09af85 | p500924-harbor              | chess-knight      | Project for Harbor deployment     |      ∞       |
+| 2237c767cf5f456da19359ed31c1c16b | p500924-scs-community       | fkr               | SCS Community Project             | ∞            |
+| e7ee61b62ecc417199b154ae4218f25f | p500924-beermann            | tibeer            | Project of Tim Beermann, OSISM    | ∞            |
+| b43cfafbcf1f4eb08865b2886c29e09b | p500924-cluster-api-session | garloff           | cluster-api hands on session      | ∞            |
+| 9b7a73e516be4cd1acbd63d543985c52 | p500924-gonicus-dev         | o-otte            | GONICUS GmbH                      | ∞            |
+| 3829cc7c8f034fc985f5055a1df6f247 | p500924-scs-healthmonitor   | garloff           | SCS Health Monitor                | ∞            |
+| b97d38bf128b4479981c4dbe2ef70cd5 | p500924-SIG-IAM             | fkr               | SIG IAM                           | ∞            |
+| 9de7d8dc2d674e52be44904d6b338b0b | p500924-cloudmon            | costelter         | CloudMon Test Project             | 31.12.2023   |
+| 2c9e0e4ef8d44c36807df50b06b3c81d | p500924-cloudmon-target     | costelter         | Target project for CloudMon tests | 31.12.2023   |
+| 3501db829014406884990a1016f3e25d | p500924-sig-monitoring1     | fkr               | SIG Monitoring - cloudmon target  | 31.12.2023   |
+| 602778bad3d3470cbe58c4f7611e8eb7 | p500924-dnation             | chess-knight      | dNation Dev Project               | ∞            |
+| 91091d4039a6457db27d48d58bb1b4e4 | p500924-jschoone            | jschoone          | KaaS dev and evaluation           | ∞            |
+| 93956190702b4a7d8a8886806d57713f | p500924-metering            | cah-link          | Metering Dev Project              | 31.12.2023   |
+| abbe6561cf6248b6af395334aa09af85 | p500924-harbor              | chess-knight      | Project for Harbor deployment     | ∞            |
+| 1846709967a744b69f9eb48cac89bb04 | p500924-gxhackathon6-1      | garloff           | Gaia-X Hackathon 6 Projekt1       | 10.05.2023   |
+| eadaa3e337644a489350e3751c99d5c0 | p500924-gxhackathon6-2      | garloff           | Gaia-X Hackathon 6 Projekt2       | 10.05.2023   |
 |                                  |                             |                   |                                   |              |
 
 ## Wavecon
