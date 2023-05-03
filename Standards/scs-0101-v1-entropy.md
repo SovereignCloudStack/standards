@@ -11,9 +11,9 @@ track: IaaS
 
 Entropy is a concept that is widely used in the scope of information
 technology. It is a measurement of the amount of disorder or randomness in
-a system. Entropy is used to measure the amount of information in a
-self contained systems, as well as the amount of incertitude that exists
-in this system. For cryptographic procedures and operations good entropy
+a system. Entropy is used to measure the amount of information in a self
+contained systems, as well as the amount of incertitude that exists in this
+system. For cryptographic procedures and operations good entropy
 is a must have!
 
 In traditional baremetal systems the amount of incertitude is generated
@@ -37,8 +37,8 @@ operations that will not work.
 #### 1.2.1 How to generate entropy "Out-Of-Nothing" ?
 
 One procedure that was used in the past in virtual machines or virtual appliances
-was the use of an entropy daemon to ensure that here is a sufficient
-amount of entropy. Today this is a common operation although for embedded devices.
+was the use of an entropy daemon to ensure that here is a sufficient amount of
+entropy. Today this is a common operation although for embedded devices.
 [HavegeD](http://www.issihosts.com/haveged/) is one of those daemons.
 
 ```console
@@ -48,12 +48,11 @@ amount of entropy. Today this is a common operation although for embedded device
 
 #### 1.2.2 CPU Hardware random number generator
 
-Modern server CPUs of ARM, AMD and Intel ship Hardware random
-number generator. This feature will be passed through to the virtualization
-layer. This will be addressed by virtio-rng.
+Modern server CPUs of ARM, AMD and Intel ship Hardware random number generator.
+This feature will be passed through to the virtualization layer. This will be
+addressed by virtio-rng.
 
-Baremetal systems and virtual instances will need the rng-tools or
-rng-utils.
+Baremetal systems and virtual instances will need the rng-tools or rng-utils.
 
 ```console
      #cat /proc/sys/kernel/random/entropy_avail
@@ -68,9 +67,9 @@ hash for entropy extraction" the full explanation can be found here:
 [linux-rng-5.17-18](https://web.archive.org/web/20230321040526/https://www.zx2c4.com/projects/linux-rng-5.17-5.18/).
 
 This RNG improvements make some workarounds obsolete. For example haveged
-should not be use anymore. Rng-tools can continue to be used. Rng-tools bridge the
-hardware number generators that support RDRAND and RDSEED as they support HWRNG
-in modern Intel and AMD processors.
+should not be use anymore. Rng-tools can continue to be used. Rng-tools bridge
+the hardware number generators that support RDRAND and RDSEED as they support
+HWRNG in modern Intel and AMD processors.
 
 These patches have now also arrived in the upstream LTS Kernels.
 
