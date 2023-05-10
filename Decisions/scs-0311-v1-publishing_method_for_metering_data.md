@@ -81,21 +81,21 @@ In the poll-based flow,
 whichever system the CSP runs would be responsible for polling the metering API
 in a frequency sufficient to capture all data with sufficient granularity.
 
-### pushing Daisies
-
-We will send all new data as fast as we can reconcile there origin and in a simple manner to a defined sink.
-A CSP only has to implement its own method for sending to a sink if it is not already supported.
-
 # Open questions
 
-What is necessary to extend the availability of sending to various sinks?
-How does the configuration look like that is needed to push to a sink from the same type that will be already implemented?
-
-
+- What is necessary to extend the availability of sending to various sinks?
+- How does the configuration look like that is needed to push to a sink from the same type that will be already implemented?
 
 # Decision
 
-We will go the pushing way.
+As we need to support very different time scales of data,
+the push-based flow is more suitable:
+it allows the producer of the data,
+which knows about the interval in which it changes,
+when to provide new data to the consumer.
+In contrast to that,
+a poll-based flow would need the consumer to know about change intervals,
+or alternatively poll in the highest change frequency ever expected.
 
 # Related Documents
 
