@@ -147,7 +147,7 @@ let alone rolling a custom implementation.
 
 ### Open questions
 
-* What will the granularity of the events meta information?
+* What will be the granularity of the events meta information?
 
   If we decide to use resource metadata
   as a place to store slow-changing information
