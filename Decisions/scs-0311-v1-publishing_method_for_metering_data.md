@@ -99,6 +99,9 @@ We will go the pushing way.
 
 # Related Documents
 
+- SCS-0310-v1
 
 # Conformance Tests
+
+None (this is a decision record).
 

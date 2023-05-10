@@ -156,7 +156,7 @@ let alone rolling a custom implementation.
 
 # Related Documents
 
-None yet.
+- SCS-0311-v1
 
 # Conformance Tests
 
