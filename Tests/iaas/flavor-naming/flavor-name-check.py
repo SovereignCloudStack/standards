@@ -34,6 +34,7 @@ debug = False
 completecheck = False
 disallow_old = False
 prefer_old = False
+accept_old_mand = False
 
 # search strings
 scsPre = re.compile(r'^SCS\-')
@@ -45,10 +46,10 @@ scsPre = re.compile(r'^SCS\-')
 
 def usage():
     "help"
-    print("Usage: flavor-name-check.py [-d] [-v] [-2] [-1] [-c] [-C mand.yaml] [-i | NAME [NAME [...]]]")
+    print("Usage: flavor-name-check.py [-d] [-v] [-2] [-1] [-o] [-c] [-C mand.yaml] [-i | NAME [NAME [...]]]")
     print("Flavor name checker returns 0 if no error, 1 for non SCS flavors and 10+ for wrong flavor names")
     print("-d enables debug mode, -v outputs a verbose description, -i enters interactive input mode")
-    print("-2 disallows old v1 flavor naming, -1 checks old names for completeness")
+    print("-2 disallows old v1 flavor naming, -1 checks old names for completeness, -o accepts them still")
     print("-c checks the SCS names AND checks the list for completeness w.r.t. SCS mandatory flavors.")
     print("-C mand.yaml reads the mandatory flavor list from mand.yaml instead of SCS-Spec.MandatoryFlavors.yaml")
     print("Example: flavor-name-check.py -c $(openstack flavor list -f value -c Name)")
@@ -599,9 +600,18 @@ else:
 
 
 def new_to_old(nm):
+    "v2 to v1 flavor name transformation"
     nm = nm.replace('-', ':')
     nm = nm.replace('_', '-')
     nm = nm.replace('SCS:', 'SCS-')
+    return nm
+
+
+def old_to_new(nm):
+    "v1 to v2 flavor name transformation"
+    nm = nm.replace('-', '_')
+    nm = nm.replace(':', '-')
+    nm = nm.replace('SCS_', 'SCS-')
     return nm
 
 
@@ -632,7 +642,7 @@ mandFlavorFile = "SCS-Spec.MandatoryFlavors.yaml"
 
 def main(argv):
     "Entry point when used as selfstanding tool"
-    global verbose, debug, disallow_old, completecheck, prefer_old
+    global verbose, debug, disallow_old, completecheck, prefer_old, accept_old_mand
     # Number of good SCS flavors
     scs = 0
     # Number of non-SCS flavors
@@ -654,6 +664,9 @@ def main(argv):
         argv = argv[1:]
     if argv[0] == "-1":
         prefer_old = True
+        argv = argv[1:]
+    if argv[0] == "-o":
+        accept_old_mand = True
         argv = argv[1:]
     if argv[0] == "-c":
         completecheck = True
@@ -700,9 +713,13 @@ def main(argv):
             continue
         scs += 1
         namecheck = outname(*ret)
-        if completecheck and name in scsMandatory:
-            scsMandatory.remove(name)
-
+        if completecheck:
+            if name in scsMandatory:
+                scsMandatory.remove(name)
+            elif accept_old_mand:
+                newnm = old_to_new(name)
+                if newnm in scsMandatory:
+                    scsMandatory.remove(newnm)
         if debug:
             print(f"In {name}, Out {namecheck}")
 

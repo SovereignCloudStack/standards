@@ -22,7 +22,7 @@ octopus+
 
 ### Networking (SDN): OvS/OVN
 
-## Identity & Trust -- Primary Owner is GXFS
+## Identity & Trust — Primary Owner is GXFS
 
 Must support federation of users
 
@@ -82,7 +82,7 @@ Project deletion: Cloud must revoke tokens. \
 Cloud may require customer to have cleaned out all resources for project deletion to succeed.\
 Cloud may do resource cleanup for customer when asked for deletion of project. Resource cleanup may be asynchronous. Resource cleanup must not take longer than 24hrs.
 
-Cloud must remove orphaned resources within 24hrs after project deletion. Billing for orphaned resources must stop within 24hrs after project deletion. 
+Cloud must remove orphaned resources within 24hrs after project deletion. Billing for orphaned resources must stop within 24hrs after project deletion.
 
 ##### Availability Zones
 
@@ -144,7 +144,7 @@ must support console log
 
 must (should?) support (no)vnc attachment
 
-##### Flavors -- see SCS Flavor Spec
+##### Flavors — see SCS Flavor Spec
 
 ##### Placement - recommended
 
@@ -194,7 +194,7 @@ may support BGP-VPN
 
 must support security groups
 
-must support port security (allowed address pair settings); port security must be enabled by default 
+must support port security (allowed address pair settings); port security must be enabled by default
 
 should support DNS integration
 
@@ -210,7 +210,7 @@ must support bare container format
 
 must not require properties outside of SCS image standard
 
-##### Images -- see SCS Image Standard Spec
+##### Images — see SCS Image Standard Spec
 
 ##### Octavia (load balancer) - required if Neutron LBaaSv2 is not deployed
 
@@ -298,7 +298,7 @@ Must provide K8s Cluster API version XX (beta1?)
 
 Must output kubectl config files
 
-Should provide multi-SCS-cloud cluster management 
+Should provide multi-SCS-cloud cluster management
 
 May provide multi-partially-non-SCS-cloud cluster management
 
@@ -364,7 +364,7 @@ Should expose relevant metrics from underlaying infra (CaaS/IaaS)
 
 ### Geolocations, Data Centers
 
-### Jurisdiction(s) of DCs, Operating Companies, Operator Personel, ...
+### Jurisdiction(s) of DCs, Operating Companies, Operator Personel
 
 ### Security
 
