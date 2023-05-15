@@ -219,13 +219,15 @@ this should allow customers to manage settings like these in their own IAM.
 
 SCS wants to make use of an IdP as part of the reference implementation.
 To move forward with topics of configuration and mapping of roles in a
-OAuth federated scenario as well as questions of token lifecycles etc across
-the federation stack it makes sense to fokus on one IdP implementation at a
-given time.
+OAuth2 federation scenario as well as questions of token lifecycles etc. across
+the federation stack it makes sense to focus on one IdP implementation at a
+given time. Both considered options seem to be potentially viable, but ultimately,
+a decision should be made, even if there are no strict/strong reasons for
+dismissing either option in particular.
 
 Since Keycloak currently supports the OAuth 2.0 grants that SCS wants to make
 use of (e.g. Device Authorization Grant) and offers additional flexibility
-e.g. by allowing LDAP to be used as backend, the projects current choice
+e.g. by allowing LDAP to be used as backend, the project's current choice
 is Keycloak.
 
 ## Related Documents
