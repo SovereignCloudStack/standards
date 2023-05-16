@@ -41,8 +41,6 @@ Service users will have their default_project_id set to a specific project and w
 | 4925967416894fd78be6701689059653 | u500924-svc-cloudmon       | p500924-cloudmon-target   | costelter         | Service User - CloudMon Test Project          | 31.12.2023   |
 | f89b3d64ddff4d9d8cadb5e06fa22299 | u500924-svc-healthmonitor  | p500924-scs-healthmonitor | garloff           | Service User - SCS Health Monitor             | ∞            |
 | 49cc3d72fbdf41fe8dc407f57f026dbf | u500924-svc-standards      | p500924-scs-healthmonitor | garloff           | Service User - SCS Standards Compliance Check | ∞            |
-| 5555a8a49c7d4d59b090937980b211fd | u500924-svc-gxhackathon6-1 | p500924-gxhackathon6-1    | garloff           | Service User - Gaia-X Hackathon 6 Projekt1    | 10.05.2023   |
-| ee8c2d10a4cd41e7a66199ff35cdfa61 | u500924-svc-gxhackathon6-2 | p500924-gxhackathon6-2    | garloff           | Service User - Gaia-X Hackathon 6 Projekt2    | 10.05.2023   |
 |                                  |                            |                           |                   |                                               |              |
 
 ### Projects
@@ -62,8 +60,6 @@ Service users will have their default_project_id set to a specific project and w
 | 91091d4039a6457db27d48d58bb1b4e4 | p500924-jschoone            | jschoone          | KaaS dev and evaluation           | ∞            |
 | 93956190702b4a7d8a8886806d57713f | p500924-metering            | cah-link          | Metering Dev Project              | 31.12.2023   |
 | abbe6561cf6248b6af395334aa09af85 | p500924-harbor              | chess-knight      | Project for Harbor deployment     | ∞            |
-| 1846709967a744b69f9eb48cac89bb04 | p500924-gxhackathon6-1      | garloff           | Gaia-X Hackathon 6 Projekt1       | 10.05.2023   |
-| eadaa3e337644a489350e3751c99d5c0 | p500924-gxhackathon6-2      | garloff           | Gaia-X Hackathon 6 Projekt2       | 10.05.2023   |
 |                                  |                             |                   |                                   |              |
 
 ## Wavecon
