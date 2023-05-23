@@ -179,11 +179,10 @@ Managers that receive granted Projects can assign users permissions to use the p
 [Zitadel is offering REST APIs](https://zitadel.com/docs/apis/introduction)
 for multiple areas of use and configuration.
 
-In comparison to Keycloak it currently lacks support for the
-[Device Authorization Grant](https://github.com/SovereignCloudStack/issues/issues/221),
+It recently also added support for the [Device Authorization Grant](https://github.com/zitadel/oidc/issues/141),
 which, at time of writing, is a feauture that is relevant
 for SCS to be able use OpenStack CLI and APIs with federated
-identities. Support for this is under active development ([Github issues](https://github.com/zitadel/oidc/issues/141)).
+identities ([Device Authorization Grant](https://github.com/SovereignCloudStack/issues/issues/221)).
 
 Support for consumption of LDAP backends is [currently in development](https://github.com/zitadel/zitadel/issues/4609).
 
@@ -225,10 +224,15 @@ given time. Both considered options seem to be potentially viable, but ultimatel
 a decision should be made, even if there are no strict/strong reasons for
 dismissing either option in particular.
 
-Since Keycloak currently supports the OAuth 2.0 grants that SCS wants to make
-use of (e.g. Device Authorization Grant) and offers additional flexibility
-e.g. by allowing LDAP to be used as backend, the project's current choice
-is Keycloak.
+The project's current choice is Keycloak for the following reasons:
+Keycloak currently supports the OAuth 2.0 grants that SCS wants to make
+use of (e.g. Device Authorization Grant). It is the implementation for
+which integration is currently documented in OpenStack and implemented
+in kolla-ansible. SCS currently deploys Keycloak and the IAM team has
+most hands on expecience with it, e.g. when it comes to colletaral questions
+like how to make TLS and signing certificates available to the IdP that shall
+be used in federation to external domains. Finally, it offers
+additional flexibility e.g. by allowing LDAP to be used as backend.
 
 ## Related Documents
 
