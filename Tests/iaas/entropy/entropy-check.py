@@ -1,12 +1,26 @@
 #!/usr/bin/env python3
-
+"""
+Check given cloud for conformance with SCS standard regarding
+entropy, to be found under /Standards/scs-0101-v1-entropy.md
+"""
 import errno
-import sys
+import getopt
 import os
+import sys
 import time
 
 import openstack
 import fabric
+
+
+def print_usage(file=sys.stderr):
+    """help output"""
+    print("""Usage: entropy-check.py [options]
+Options: [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)
+This tool retrieves the list of flavors from the OpenStack cloud OS_CLOUD
+ and checks for the presence of the mandatory SCS flavors (read from mand.yaml)
+ and reports inconsistencies, errors etc. It returns 0 on success.
+""", end='', file=file)
 
 
 def get_kernel_version(kernel):
@@ -92,26 +106,26 @@ def test_services(server_image):
         service_list['kernel'] = dict()
         try:
             service_list['kernel']['version'] = fconn.run('uname -smr', hide=True).stdout.replace("\n", "")
-        except:
+        except BaseException:
             service_list['kernel']['version'] = False
 
         service_list['haveged'] = dict()
         try:
             service_list['haveged']['status'] = fconn.run('sudo systemctl status haveged', hide=True).stdout
-        except:
+        except BaseException:
             service_list['haveged']['status'] = False
 
         service_list['rng-tools'] = dict()
         try:
             service_list['rng-tools']['status'] = fconn.run('sudo systemctl status rng-tools', hide=True).stdout
-        except:
+        except BaseException:
             service_list['rng-tools']['status'] = False
 
         service_list['hw-random'] = dict()
         try:
             hwr = fconn.run('cat /sys/devices/virtual/misc/hw_random/rng_available', hide=True).stdout.replace("\n", "")
             service_list['hw-random']['rng_available'] = hwr
-        except:
+        except BaseException:
             service_list['hw-random']['rng_available'] = False
     except Exception as e:
         raise e
@@ -192,48 +206,61 @@ def create_vm(conn):
 def delete_vm(conn):
     try:
         _ = conn.delete_server('test', wait=True)
-    except:
+    except BaseException:
         pass
     try:
         for sg in conn.network.security_groups():
             sg = sg.to_dict()
             if sg['name'] == "test-group":
                 _ = conn.network.delete_security_group(sg['id'])
-    except:
+    except BaseException:
         pass
     try:
         fips = conn.list_floating_ips()
         for fip in fips:
             if fip.status == 'DOWN':
                 _ = conn.delete_floating_ip(fip.id, retry=5)
-    except Exception as e:
+    except BaseException:
         pass
     try:
         os.remove("./key.priv")
-    except:
+    except BaseException:
         pass
     try:
         _ = conn.compute.delete_keypair('test')
-    except:
+    except BaseException:
         pass
 
 
 def main(argv):
-
-    cloud = 'f1a'
     try:
-        cloud = os.environ["OS_CLOUD"]
-    except KeyError:
-        pass
+        opts, args = getopt.gnu_getopt(argv, "c:h", ("os-cloud=", "help", ))
+    except getopt.GetoptError as exc:
+        print(f"{exc}", file=sys.stderr)
+        print_usage()
+        return 1
+
+    cloud = os.environ.get("OS_CLOUD")
+    for opt in opts:
+        if opt[0] == "-h" or opt[0] == "--help":
+            print_usage()
+            return 0
+        if opt[0] == "-c" or opt[0] == "--os-cloud":
+            cloud = opt[1]
+        else:
+            print_usage()
+            return 2
 
     if not cloud:
         print("ERROR: You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
-    conn = openstack.connect(cloud=cloud, timeout=32)
+        # optionally also: print_usage()
+        return 1
 
+    conn = openstack.connect(cloud=cloud, timeout=32)
     try:
         si = create_vm(conn)
         test_routine(conn, si)
-    except Exception as e:
+    except BaseException:
         pass
     finally:
         delete_vm(conn)
