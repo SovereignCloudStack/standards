@@ -140,8 +140,6 @@ def test_routine(conn, server_image):
     if (kernel_version['major'] == 5 and kernel_version['minor'] < 18) or \
        (kernel_version['major'] < 5):
         test_services(server_image)
-        test_images(conn)
-        test_flavors(conn)
 
 
 def create_vm(conn):
@@ -258,6 +256,11 @@ def main(argv):
 
     conn = openstack.connect(cloud=cloud, timeout=32)
     try:
+        # the standard prescribes certain properties for every flavor (Section 1.3.1) and every image (Section 1.3.2)
+        test_flavors(conn)
+        test_images(conn)
+        # next, the standard demands that rng-utils be present and active on compute nodes (Section 1.3.3)
+        # (FIXME the following does check something else?)
         si = create_vm(conn)
         test_routine(conn, si)
     except BaseException:
