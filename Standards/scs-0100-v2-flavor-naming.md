@@ -68,19 +68,27 @@ encoding all details) as well as very detailed longer names.
 
 ## Complete Proposal for systematic flavor naming
 
-| Prefix | CPU | Suffix       | RAM[GiB]   | optional: Disk[GB] | optional: Disk type | optional: extra features                            |
-| ------ | --- | ------------ | ---------- | ------------------ | ------------------- | --------------------------------------------------- |
-| `SCS-` | `N` | `L/V/T/C[i]` | `-N[u][o]` | `[-[Mx]N]`         | `[n/s/l/p]`         | `[_hyp][_hwv][_[arch[N][h][_[G/g]X[N][-M[h]]][_ib]` |
+| Prefix | CPUs & Suffix    | RAM[GiB]        | opt: Disk[GB]&type      | opt: extensions |
+| ------ | ---------------- | --------------- | ----------------------- | ----------------|
+| `SCS-` | N`L/V/T/C`[`i`]` | `-`N[`u`][`o`]` | [`-`[M`x`]N[`n/s/l/p`]] | [`_`EXT]        |
 
-(Note that `N` and `M` are placeholders for numbers here).
+
+Note that `N` and `M` are placeholders for numbers here.
+The optional fields are denoted in brackets (and have opt: in the header.
+See below for extensions.
 
 Note that all letters are case-sensitive.
 In case you wonder: Feature indicators are capitalized, modifiers are lower case.
 (An exception is the uppercase -G for a pass-through GPU vs. lowercase -g for vGPU.)
 
+Typical flavor names look like `SCS-4V-16-50` for a flavor with 4vCPUs (with limited
+oversubscription), 16GiB RAM and a 50GB disk (of unspecified type).
+
 ## Proposal Details
 
 ### [REQUIRED] CPU Suffixes
+
+Next to the number of vCPUs, these vCPUs need to be characterized ti describe their nature.
 
 | Suffix | Meaning                       |
 | ------ | ----------------------------- |
@@ -212,135 +220,6 @@ so users can expect some level of parallelism and independence.
 - SCS-2C-4-3x10 <- Cloud decides type and creates three 10GB volumes
 - ~~SCS-2C-4-**1.5n**~~ <- You must not specify disk sizes which are not in full GiBs
 
-### [OPTIONAL] Hypervisor
-
-The _default Hypervisor_ is assumed to be `KVM`. Clouds, that offer different hypervisors
-or Bare Metal Systems should indicate the Hypervisor according to the following table:
-
-| hyp | Meaning           |
-| --- | ----------------- |
-| kvm | KVM               |
-| xen | Xen               |
-| vmw | VMware            |
-| hyv | Hyper-V           |
-| bms | Bare Metal System |
-
-#### Examples
-
-- SCS-2C-4-10n
-- SCS-2C-4-10n\_**bms**
-- SCS-2C-4-10n\_**bms**\_z3h
-
-### [OPTIONAL] Hardware virtualization / Nested virtualization
-
-If the instances that are created with this flavor support hardware-accelerated
-virtualization, this can be reflected with the `_hwv` flag (after the optional
-Hypervisor flag). On x86, this means that in the instance, the CPU flag vmx (intel)
-or svm (AMD) is available. This will be the case on Bare Metal flavors on almost
-all non-ancient x86 CPUs or if your virtualization hypervisor is configured to
-support nested virtualization.
-Flavors without the `_hwv` flag may or may not support hardware virtualization (as we
-recommend enabling nesting, but don't require flavor names to reflect all
-capabilities. Flavors may over-deliver ...)
-
-#### Examples
-
-- SCS-2C-4-10 <- may or may not support HW virtualization in VMs
-- SCS-2C-4-10_kvm_**hwv**
-- SCS-2C-4-10\_**hwv** <- not recommended, but allowed
-- ~~SCS-2C-4-10\_**hwv**\_xen~~ <- illegal, wrong ordering
-
-### [OPTIONAL] CPU Architecture Details
-
-Arch details provide more details on the specific CPU:
-
-- Vendor
-- Generation
-- Frequency
-
-#### Generation and Vendor
-
-The generations are vendor specific and can be left out.
-Not specifying arch means that we have a generic CPU (**x86-64**).
-
-| Generation | i (Intel x86-64) | z (AMD x86-64) |  a (AArch64)       | r (RISC-V) |
-| ---------- | ---------------- | -------------- | ------------------ | ---------- |
-| 0          | pre Skylake      | pre Zen        | pre Cortex A76     | TBD        |
-| 1          | Skylake          | Zen-1 (Naples) | A76/NeoN1 class    | TBD        |
-| 2          | Cascade Lake     | Zen-2 (Rome)   | A78/x1/NeoV1 class | TBD        |
-| 3          | Ice Lake         | Zen-3 (Milan)  | A71x/NeoN2 (ARMv9) | TBD        |
-| 4          | Sapphire Rapids  | Zen-4 (Genoa)  |                    | TBD        |
-
-It is recommended to leave out the `0` when specifying the old generation; this will
-help the parser tool, which assumes 0 for an unspecified value and does leave it
-out when generating the name for comparison. In other words: 0 has a meaning of
-"rather old or unspecified".
-
-#### Frequency Suffixes
-
-| Suffix | Meaning           |
-| ------ | ----------------- |
-| h      | >2.75GHz all-core |
-| hh     | >3.25GHz all-core |
-| hhh    | >3.75GHz all-core |
-
-#### Examples
-
-- SCS-2C-4-10n
-- SCS-2C-4-10n\_**z**
-- SCS-2C-4-10n\_**z3**
-- SCS-2C-4-10n\_**z3h**
-- SCS-2C-4-10n\_**z3hh**
-- SCS-2C-4-10n_bms_**z**
-- SCS-2C-4-10n_bms_**z3**
-- SCS-2C-4-10n_bms_**z3**
-- SCS-2C-4-10n_bms_**z3h**
-- SCS-2C-4-10n_bms_**z3hh**
-
-### [OPTIONAL] Extra features
-
-Note that these are optional — it is recommended for providers to encode this information
-into the flavor name, so there is a systematic way of differentiating flavors.
-Providers could leave it out however, leaving it to `extra_specs` to make these flavor
-capabilities discoverable. Nothing prevents providers from registering the same flavor
-under a secondary (or tertiary) name.
-
-`_GX[N][-M[h]]` indicates a Pass-Through GPU from vendor X of gen N with M compute units / SMs / EUs exposed.
-`_gX[N][-M[h]]` indicates a vGPU from vendor X of gen N with M compute units / SMs / EUs assigned.
-
-Note that the vendor letter is mandatory, generation and compute units are optional.
-
-| GPU | Vendor |
-| --- | ------ |
-| N   | nVidia |
-| A   | AMD    |
-| I   | Intel  |
-
-Generations could be nVidia (f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=turing, a=Ampere, l=Ada Lovelace, ...),
-AMD (GCN-x=0.x, RDNA1=1, RDNA2=2, RDNA3=3), intel (Gen9=0.9, Xe(12.1)=1, ...), ...
-(Note: This may need further work to properly reflect what's out there.)
-
-The optional `h` suffix to the compute unit count indicates high-performance (e.g. high freq or special
-high bandwidth gfx memory such as HBM);
-`h` can be duplicated for even higher performance.
-
-`_ib` indicates Infiniband networking.
-
-More extensions will be forthcoming.
-
-Extensions need to be specified in the above mentioned order.
-
-## Proposal Examples
-
-| Example                   | Decoding                                                                                       |
-| ------------------------- | ---------------------------------------------------------------------------------------------- |
-| SCS-2C-4-10n              | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk                                        |
-| SCS-8Ti-32-50p_i1         | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe                       |
-| SCS-1L-1u-5               | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)                      |
-| SCS-16T-64-200s_GNa-64_ib | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Infiniband, 64 Passthrough nVidia Ampere SMs |
-| SCS-4C-16-2x200p_a1       | 4 dedicated Arm64 cores (A76 class), 16GiB RAM, 2x200GB local NVMe drives                      |
-| SCS-1V-0.5                | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)                                          |
-
 ## Standard SCS flavors
 
 These are flavors that must exist on standard SCS clouds (x86-64).
@@ -391,20 +270,21 @@ according to the previous section. (We may define a mechanism that allows except
 granted in a way that makes this very transparent and visible to clients.)
 
 You are allowed to understate your performance; you may implement a SCS-1V-1-5 flavor with
-a flavor that actually implements SCS-1T-1-5n (i.e. you dedicate a secured hyperthread instead
-of high oversubscription) or even SCS-1D-1.5-8s (1 dedicated core, 50% more RAM and a 8GiB SSD).
+a flavor that actually implements SCS-1T-1-5n (i.e. you dedicate a dedicated hyperthread instead
+of higher oversubscription) or even SCS-1D-1.5-8s (1 dedicated core, 50% more RAM and a 8GiB SSD).
 
-Flavor names indicating certain capabilities must _at least_ provide these.
+Flavor names indicating certain capabilities must _at least_ provide these, otherwise they
+are in violation of the SCS specification and prevent SCS compliance.
 
 We expect all cloud providers to offer the short, less specific flavor names (such as SCS-8V-32-100).
-Larger providers that offer more details are expected to still also offer the short variants
-for usability and easier portability, even beyond the mandated flavors.
+Larger providers that offer more details (using the extension below) are expected to still also
+offer the short variants for usability and easier portability, even beyond the mandated flavors.
 
 You must be very careful to expose low vCPU guarantees (`L` instead of `V`), insecure
 hyperthreading/microcode `i`, non-ECC-RAM `u`, memory oversubscription `o`. Note that omitting these qualifiers is
 overstating your security, reliability or performance properties and may be reason for
-clients to feel betrayed or claim damages. It might in extreme cases also cause SCS to withdraw certification
-along with public statements.
+clients to feel betrayed or claim damages. This would prevent SCS compliance and certification;
+in extreme cases, the SCS project might be forced to work with public statements.
 
 You may offer additional `SCS-` flavors, following the naming scheme and rules outlined here.
 
@@ -413,6 +293,175 @@ You may offer additional flavors, not following above scheme and not starting wi
 You must not offer flavors with the `SCS-` prefix which do not follow this naming scheme.
 You must not extend the SCS naming scheme with your own suffices; you are encouraged however
 to suggest extensions that we can discuss and add to the official scheme.
+
+## Validation
+
+There is a script in [`flavor_name_check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-check.py)
+which can be used to decode, validate and construct flavor names.
+This script must stay in sync with the specification text.
+
+Ensure you have your OpenStack tooling (`python3-openstackclient`, `OS_CLOUD`) setup and call
+`tools/flavor-name-check.py -c $(openstack flavor list -f value -c Name)` to get a report
+on the flavor list compliance of the cloud environment.
+
+The script `flavor-names-openstack.py` talks to the OpenStack API of the
+cloud specified by the `OS_CLOUD` environment and queries properties and checks
+the names for standards compliance and completeness w.r.t. the mandatory
+flavor list. It goes beyond the above example in checking that the discoverable
+features of flavors (vCPUs, RAM, Disk) match what the flavor names claim.
+
+## Operational tooling
+
+The [openstack-flavor-manager](https://github.com/osism/openstack-flavor-manager) is able to
+create all standard, mandatory SCS flavors for you.
+
+## Extensions
+
+Extensions provide a possibility for providers that offer a very differentiated set
+of flavors to indicate hypervisors, support for hardware/nested virtuatlization,
+CPU types and generations, high-frequency models, GPU support and GPU types as
+well as Inifiniband support. (More extensions may be appended in the future.)
+
+Using the systematic naming approach ensures that two providers that offer flavors
+with the same specific features will use the same name for them, thus simplifying
+life for their customers when consuming these flavors.
+
+Note that there is no need to indicate all details and extra features this way.
+Flavors may always perform better or have better performance than indicated in a name.
+Underperformance (CPU suffices `L` or `i` or memory suffices `o` and `u`) on the other
+hand MUST NOT be left out, but these are rare.
+
+For smaller providers, the ability to differentiate between an AMD Milan and an intel
+IceLake and exposed the slightly different feature set to customers and have slightly
+different price points is often not worth the extra effort and the additional
+fragmentation of the machines (host aggregates) that can offer these flavors and
+live a lower utilization when they want to do capacity management such that running
+out of capacity is very unlikely.
+
+Note that it possible for providers to register both the generic short names and the
+longer, more detailed names anda llow them to the same set of machines (host aggregates).
+Note that machines (hypervisors) can be part of more than one host aggregate.
+
+The extensions have the format:
+
+```[_hyp][_hwv][_[arch[`N`][h][_[G/g]X[`N`][-`M`[h]]][_ib]```
+
+### [OPTIONAL] Hypervisor
+
+The _default Hypervisor_ is assumed to be `KVM`. Clouds, that offer different hypervisors
+or Bare Metal Systems should indicate the Hypervisor according to the following table:
+
+| hyp | Meaning           |
+| --- | ----------------- |
+| kvm | KVM               |
+| xen | Xen               |
+| vmw | VMware            |
+| hyv | Hyper-V           |
+| bms | Bare Metal System |
+
+#### Examples
+
+- SCS-2C-4-10n
+- SCS-2C-4-10n\_**bms**
+- SCS-2C-4-10n\_**bms**\_z3h
+
+### [OPTIONAL] Hardware virtualization / Nested virtualization
+
+If the instances that are created with this flavor support hardware-accelerated
+virtualization, this can be reflected with the `_hwv` flag (after the optional
+Hypervisor flag). On x86, this means that in the instance, the CPU flag vmx (intel)
+or svm (AMD) is available. This will be the case on Bare Metal flavors on almost
+all non-ancient x86 CPUs or if your virtualization hypervisor is configured to
+support nested virtualization.
+Flavors without the `_hwv` flag may or may not support hardware virtualization (as we
+recommend enabling nesting, but don't require flavor names to reflect all
+capabilities. Flavors may over-deliver ...)
+
+#### Examples
+
+- SCS-2C-4-10 <- may or may not support HW virtualization in VMs
+- SCS-2C-4-10_kvm_**hwv** <- kvm with enabled nested virtualization
+- SCS-2C-4-10\_**hwv** <- not recommended, but allowed
+- SCS-2C-4-10\_bms\_**hwv** <- better: bare metal with HW virt support (VMX on intel, SVM on AMD, ...)
+- ~~SCS-2C-4-10\_**hwv**\_xen~~ <- illegal, wrong ordering
+
+### [OPTIONAL] CPU Architecture Details
+
+Arch details provide more details on the specific CPU:
+
+- Vendor
+- Generation
+- Frequency
+
+#### Generation and Vendor
+
+The generations are vendor specific and can be left out.
+Not specifying arch means that we have a generic CPU (**x86-64**).
+The letters `i`, `z`, `a` and `r` specify the vendors Intel,
+AMD (`z` like in Zen), ARM v8+, RISC-V.
+
+| Generation | i (Intel x86-64) | z (AMD x86-64) |  a (AArch64)       | r (RISC-V) |
+| ---------- | ---------------- | -------------- | ------------------ | ---------- |
+| 0          | pre Skylake      | pre Zen        | pre Cortex A76     | TBD        |
+| 1          | Skylake          | Zen-1 (Naples) | A76/NeoN1 class    | TBD        |
+| 2          | Cascade Lake     | Zen-2 (Rome)   | A78/x1/NeoV1 class | TBD        |
+| 3          | Ice Lake         | Zen-3 (Milan)  | A71x/NeoN2 (ARMv9) | TBD        |
+| 4          | Sapphire Rapids  | Zen-4 (Genoa)  |                    | TBD        |
+
+It is recommended to leave out the `0` when specifying the old generation; this will
+help the parser tool, which assumes 0 for an unspecified value and does leave it
+out when generating the name for comparison. In other words: 0 has a meaning of
+"rather old or unspecified".
+
+#### Frequency Suffixes
+
+| Suffix | Meaning           |
+| ------ | ----------------- |
+| h      | >2.75GHz all-core |
+| hh     | >3.25GHz all-core |
+| hhh    | >3.75GHz all-core |
+
+#### Examples
+
+- SCS-2C-4-10n
+- SCS-2C-4-10n\_**z**
+- SCS-2C-4-10n\_**z3**
+- SCS-2C-4-10n\_**z3h**
+- SCS-2C-4-10n\_**z3hh**
+- SCS-2C-4-10n_bms_**z**
+- SCS-2C-4-10n_bms_**z3**
+- SCS-2C-4-10n_bms_**z3**
+- SCS-2C-4-10n_bms_**z3h**
+- SCS-2C-4-10n_bms_**z3hh** <- Bare Metal, intel Ice Lake with > 3.25GHz all core freq
+
+### [OPTIONAL] GPU support
+
+`_G`X[N][`-`M[`h`]] indicates a Pass-Through GPU from vendor X of gen N with M compute units / SMs / EUs exposed.
+`_g`X[N][`-`M[`h`]] indicates a vGPU from vendor X of gen N with M compute units / SMs / EUs assigned.
+
+Note that the vendor letter X is mandatory, generation and compute units are optional.
+
+| GPU | Vendor |
+| --- | ------ |
+| N   | nVidia |
+| A   | AMD    |
+| I   | Intel  |
+
+For nVidia, the generation N can be f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=turing, a=Ampere, l=Ada Lovelace, ...,
+for AMD GCN-x=0.x, RDNA1=1, RDNA2=2, RDNA3=3, for intel Gen9=0.9, Xe(12.1)=1, ...
+(Note: This may need further work to properly reflect what's out there.)
+
+The optional `h` suffix to the compute unit count indicates high-performance (e.g. high freq or special
+high bandwidth gfx memory such as HBM);
+`h` can be duplicated for even higher performance.
+
+### [OPTIONAL] Extra features
+
+`_ib` indicates Infiniband networking.
+
+More extensions may be forthcoming and appended in a later revision of this spec.
+
+Extensions need to be specified in the above mentioned order.
 
 ### Naming options advice
 
@@ -444,26 +493,16 @@ may not be needed much. However, there must be a way to request flavor
 properties without encoding the need into an image — the indirection via
 an image is considered broken by the SCS team.
 
-## Validation
+## Proposal Examples
 
-There is a script in [`flavor_name_check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-check.py)
-which can be used to decode, validate and construct flavor names.
-This script must stay in sync with the specification text.
-
-Ensure you have your OpenStack tooling (`python3-openstackclient`, `OS_CLOUD`) setup and call
-`tools/flavor-name-check.py -c $(openstack flavor list -f value -c Name)` to get a report
-on the flavor list compliance of the cloud environment.
-
-The script `flavor-names-openstack.py` talks to the OpenStack API of the
-cloud specified by the `OS_CLOUD` environment and queries properties and checks
-the names for standards compliance and completeness w.r.t. the mandatory
-flavor list. It goes beyond the above example in checking that the discoverable
-features of flavors (vCPUs, RAM, Disk) match what the flavor names claim.
-
-## Operational tooling
-
-The [openstack-flavor-manager](https://github.com/osism/openstack-flavor-manager) is able to
-create all standard, mandatory SCS flavors for you.
+| Example                   | Decoding                                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------------------------- |
+| SCS-2C-4-10n              | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk                                        |
+| SCS-8Ti-32-50p_i1         | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe                       |
+| SCS-1L-1u-5               | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)                      |
+| SCS-16T-64-200s_GNa-64_ib | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Infiniband, 64 Passthrough nVidia Ampere SMs |
+| SCS-4C-16-2x200p_a1       | 4 dedicated Arm64 cores (A76 class), 16GiB RAM, 2x200GB local NVMe drives                      |
+| SCS-1V-0.5                | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)                                          |
 
 ## Previous standard versions
 
@@ -509,3 +548,7 @@ does no longer exist.
 
 However, we have been reaching out to the OpenStack Public Cloud SIG and the ALASCA
 members to seek further alignment.
+
+Getting upstream OpenStack support for flavor aliases would provide more flexibility
+and ease migrations between providers, also providers that don't offer the SCS-
+flavors.
