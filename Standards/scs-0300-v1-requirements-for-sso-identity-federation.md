@@ -184,7 +184,8 @@ which, at time of writing, is a feauture that is relevant
 for SCS to be able use OpenStack CLI and APIs with federated
 identities ([Device Authorization Grant](https://github.com/SovereignCloudStack/issues/issues/221)).
 
-Support for consumption of LDAP backends is [currently in development](https://github.com/zitadel/zitadel/issues/4609).
+Support for consumption of LDAP backends is available since [Zitadel v2.23.0](https://github.com/zitadel/zitadel/releases/tag/v2.23.0)
+(see [this guide](https://zitadel.com/docs/guides/integrate/identity-providers/ldap)).
 
 ZITADEL supported backend databases are CockroachDB and PostgreSQL.
 
@@ -231,8 +232,7 @@ which integration is currently documented in OpenStack and implemented
 in kolla-ansible. SCS currently deploys Keycloak and the IAM team has
 most hands on expecience with it, e.g. when it comes to colletaral questions
 like how to make TLS and signing certificates available to the IdP that shall
-be used in federation to external domains. Finally, it offers
-additional flexibility e.g. by allowing LDAP to be used as backend.
+be used in federation to external domains.
 
 ## Related Documents
 
