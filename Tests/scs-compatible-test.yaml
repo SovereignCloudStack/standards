@@ -16,7 +16,7 @@ iaas:
         check_tools:
           - executable: ./iaas/flavor-naming/flavor-names-openstack.py
       - name: Image metadata
-        url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/blob/main/Standards/scs-0102-v1-image-metadata.md
         condition: mandatory
         check_tools:
           - executable: ./iaas/image-metadata/image-md-check.py
@@ -36,7 +36,7 @@ iaas:
             args: SCS-1V:4:10
             condition: optional
       - name: Image metadata
-        url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/blob/main/Standards/scs-0102-v1-image-metadata.md
         check_tools:
           - executable: ./iaas/image-metadata/image-md-check.py
             args: -v
