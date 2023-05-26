@@ -96,7 +96,7 @@ def main(argv):
         for flv in scsMandatory:
             ret = fnmck.parsename(flv)
             disk = ret[1]
-            if not disk or not "disktype" in disk.__dict__ or disk.disktype != "s":
+            if not disk or "disktype" not in disk.__dict__ or disk.disktype != "s":
                 scsV2Mand.append(flv)
         scsMandatory = scsV2Mand
 
@@ -113,7 +113,6 @@ def main(argv):
     nonSCSFlv = []
     warnFlv = []
     errors = 0
-    warnings = 0
     for flv in flavors:
         # Skip non-SCS flavors
         if flv.name and flv.name[:4] != "SCS-":  # and flv.name[:4] != "SCSx"
@@ -237,7 +236,7 @@ def main(argv):
             "RecommendedFlavorsPresent": len(RSCSFlv),
             "RecommendedFlavorsMissing": len(scsRecommended)
         })
-    flvSCSRep.update({        
+    flvSCSRep.update({
         "OptionalFlavorsValid": len(SCSFlv),
         "OptionalFlavorsWrong": len(wrongFlv),
         "FlavorsWithWarnings": len(warnFlv)

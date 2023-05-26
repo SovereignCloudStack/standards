@@ -253,7 +253,7 @@ recommend implementing these for backwards compatibility reasons.
 Disks types are not specified (and expected to be n or h typically).
 
 However, two flavors with SSD+ root disks have been added in v3, as defined in
-(scs-0110-v1-ssd-flavors.md)[https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0110-v1-ssd-flavors.md]
+[scs-0110-v1-ssd-flavors.md](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0110-v1-ssd-flavors.md)
 
 Note: Compared to previous drafts, we have heavily reduced the variations
 on disk sizes — this reflects that for the standard networked cinder
