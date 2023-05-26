@@ -77,8 +77,6 @@ The optional fields are denoted in brackets (and have opt: in the header.
 See below for extensions.
 
 Note that all letters are case-sensitive.
-In case you wonder: Feature indicators are capitalized, modifiers are lower case.
-(An exception is the uppercase -G for a pass-through GPU vs. lowercase -g for vGPU.)
 
 Typical flavor names look like `SCS-4V-16-50` for a flavor with 4vCPUs (with limited
 oversubscription), 16GiB RAM and a 50GB disk (of unspecified type).
@@ -242,8 +240,8 @@ We expect a typical CPU:Mem[GiB] ratio of 1:4.
 | 4:32           | SCS-4V-32, SCS-4V-32-100   |
 | 1:1            | SCS-1L-1, SCS-1L-1-5       |
 
-Note that all vCPUs are oversubscribed — the smallest `1L-1` flavor allows
-for heavy oversubscription (note the `L`), and thus can be offered very
+Note that all vCPUs of SCS standard flavors are oversubscribed — the smallest `1L-1`
+flavor allows for heavy oversubscription (note the `L`), and thus can be offered very
 cheaply — imagine jump hosts ...
 Disks types are not specified (and expected to be n or h typically).
 
@@ -326,24 +324,29 @@ with the same specific features will use the same name for them, thus simplifyin
 life for their customers when consuming these flavors.
 
 Note that there is no need to indicate all details and extra features this way.
-Flavors may always perform better or have better performance than indicated in a name.
+Flavors may always perform better or have more features than indicated in a name.
 Underperformance (CPU suffices `L` or `i` or memory suffices `o` and `u`) on the other
-hand MUST NOT be left out, but these are rare.
+hand MUST be indicated in the name; this happens rarely in practice.
 
-For smaller providers, the ability to differentiate between an AMD Milan and an intel
+For smaller providers, the ability to e.g. differentiate between an AMD Milan and an intel
 IceLake and exposed the slightly different feature set to customers and have slightly
-different price points is often not worth the extra effort and the additional
-fragmentation of the machines (host aggregates) that can offer these flavors and
-live a lower utilization when they want to do capacity management such that running
-out of capacity is very unlikely.
+different price points is often not worth the extra effort. This is because having
+this extra differentiation causes fragmentation of the machines (host aggregates)
+that can offer these flavors, thus resulting in a lower utilization (as the capacity
+management will need to have a certain amount of headroom per machine pool to avoid
+running out of capacity).
 
 Note that it possible for providers to register both the generic short names and the
-longer, more detailed names anda llow them to the same set of machines (host aggregates).
+longer, more detailed names and allow them to use the same set of machines (host aggregates).
 Note that machines (hypervisors) can be part of more than one host aggregate.
 
 The extensions have the format:
 
-```[_hyp][_hwv][_[arch[`N`][h][_[G/g]X[`N`][-`M`[h]]][_ib]```
+\[`_`hyp\]\[`_hwv`\]\[`_`\[arch\[N\]\[`h`\]\[`_`\[`G/g`\]X\[N\]\[`-`M\[`h`\]\]\]\[`_ib`\]
+
+Remember that letters are case-sensitive.
+In case you wonder: Feature indicators are capitalized, modifiers are lower case.
+(An exception is the uppercase -G for a pass-through GPU vs. lowercase -g for vGPU.)
 
 ### [OPTIONAL] Hypervisor
 
