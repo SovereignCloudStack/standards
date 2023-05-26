@@ -554,3 +554,7 @@ members to seek further alignment.
 Getting upstream OpenStack support for flavor aliases would provide more flexibility
 and ease migrations between providers, also providers that don't offer the SCS-
 flavors.
+
+We also would like to see upstream `extra_specs` standardizing the discoverability of some
+properties exposed via the SCS names and work on IaC tooling (terraform ...)
+to make use of these when selecting a flavor.
