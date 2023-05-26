@@ -1,9 +1,10 @@
 ---
-title: SCS Image Metadata Proposal
-version: 2022-09-15-001
-authors: Kurt Garloff, Christian Berendt, Felix Kronlage-Dammers, Mathias Fechner, Ralf Heiringhoff
-effective-date: 2022-10-31
-state: Released (v1.0)
+title: SCS Image Metadata Standard
+type: Standard
+stabilized_at: 2022-10-31
+status: Stable
+track: IaaS
+replaces: Image-Metadata-Spec.md
 ---
 
 ## Motivation
@@ -140,7 +141,7 @@ etc., up to 3 days later is not considered a violation of this policy. So the a 
 from an image with `monthly` update frequency might be 2021-04-14, 2021-05-14, 2021-06-15,
 2021-07-14, 2021-07-27 (hotfix), 2021-08-13 ...
 
-Promises to update the registered public images tpyically depend on upstream image providers
+Promises to update the registered public images typically depend on upstream image providers
 (Linux distributors, OS vendors) keeping their promises to build and provide updated images.
 Failures from upstream are not a reason to claim the cloud provider to be in violation of his
 promises. However, if the provider observes massive upstream failures (which can e.g. cause
