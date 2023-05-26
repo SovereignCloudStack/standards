@@ -91,6 +91,14 @@ def main(argv):
     if not v3mode:
         scsMandatory = [*scsMandatory, *scsRecommended]
         scsRecommended = []
+        # HACK: Drop SSD flavors from list
+        scsV2Mand = []
+        for flv in scsMandatory:
+            ret = fnmck.parsename(flv)
+            disk = ret[1]
+            if not disk or not "disktype" in disk.__dict__ or disk.disktype != "s":
+                scsV2Mand.append(flv)
+        scsMandatory = scsV2Mand
 
     if not cloud:
         print("ERROR: You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
