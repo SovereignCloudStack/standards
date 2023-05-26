@@ -8,7 +8,7 @@ replaces: flavor-naming.md
 
 ## Introduction
 
-This is the standard v2.0 for SCS Release 4.
+This is the standard v2.1 for SCS Release 4.
 Note that we intend to only extend it (so it's always backwards compatible),
 but try to avoid changing in incompatible ways.
 (See at the end for the v1 to v2 transition where we have not met that
@@ -68,9 +68,9 @@ encoding all details) as well as very detailed longer names.
 
 ## Complete Proposal for systematic flavor naming
 
-| Prefix | CPUs & Suffix      | RAM[GiB]            | opt: Disk[GB]&type            | opt: extensions |
-| ------ | ------------------ | ------------------- | ----------------------------- | ----------------|
-| `SCS-` | N`L/V/T/C`\[`i`\]` | `-`N\[`u`\]\[`o`\]` | \[`-`\[M`x`\]N\[`n/s/l/p`\]\] | \[`_`EXT\]      |
+| Prefix | CPUs & Suffix     | RAM[GiB]           | optional: Disk[GB]&type       | opt: extensions |
+| ------ | ----------------- | ------------------ | ----------------------------- | ----------------|
+| `SCS-` | N`L/V/T/C`\[`i`\] | `-`N\[`u`\]\[`o`\] | \[`-`\[M`x`\]N\[`n/s/l/p`\]\] | \[`_`EXT\]      |
 
 Note that `N` and `M` are placeholders for numbers here.
 The optional fields are denoted in brackets (and have opt: in the header.
@@ -457,7 +457,7 @@ The optional `h` suffix to the compute unit count indicates high-performance (e.
 high bandwidth gfx memory such as HBM);
 `h` can be duplicated for even higher performance.
 
-### [OPTIONAL] Extra features
+### [OPTIONAL] Infiniband
 
 `_ib` indicates Infiniband networking.
 
@@ -482,10 +482,10 @@ So a cloud provider might well evolve from offering `SCS-8T-16-50` to offering
 `SCS-8T-16-50n`, `SCS-8T-16-50n_i2` and `SCS-8T-16-50n_a2` to specify that he
 is using network disks and offer a choice b/w intel Cascade-Lake and AMD Rome.
 We would expect the cloud provider to still offer the generic flavor
-`SCS-8C-16-50` and allow the scheduler (placement service) to pick both more
+`SCS-8T-16-50` and allow the scheduler (placement service) to pick both more
 specific types (or just one if e.g. capacity management considerations suggest
-so). We would expect providers in such cases to ensure that the price of a requested
-flavor does not depend on the scheduler decisions.
+so). Providers should in such cases make sure that the price does not depend
+on scheduler decisions.
 
 We are looking into the [metadefs](https://docs.openstack.org/image-guide/introduction.html#metadata-definition-metadefs-service)
 mechanism and [extra_specs](https://docs.openstack.org/api-guide/compute/extra_specs_and_properties.html)
