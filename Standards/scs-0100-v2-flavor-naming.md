@@ -68,10 +68,9 @@ encoding all details) as well as very detailed longer names.
 
 ## Complete Proposal for systematic flavor naming
 
-| Prefix | CPUs & Suffix    | RAM[GiB]        | opt: Disk[GB]&type      | opt: extensions |
-| ------ | ---------------- | --------------- | ----------------------- | ----------------|
-| `SCS-` | N`L/V/T/C`[`i`]` | `-`N[`u`][`o`]` | [`-`[M`x`]N[`n/s/l/p`]] | [`_`EXT]        |
-
+| Prefix | CPUs & Suffix      | RAM[GiB]            | opt: Disk[GB]&type            | opt: extensions |
+| ------ | ------------------ | ------------------- | ----------------------------- | ----------------|
+| `SCS-` | N`L/V/T/C`\[`i`\]` | `-`N\[`u`\]\[`o`\]` | \[`-`\[M`x`\]N\[`n/s/l/p`\]\] | \[`_`EXT\]      |
 
 Note that `N` and `M` are placeholders for numbers here.
 The optional fields are denoted in brackets (and have opt: in the header.
@@ -432,12 +431,12 @@ out when generating the name for comparison. In other words: 0 has a meaning of
 - SCS-2C-4-10n_bms_**z3**
 - SCS-2C-4-10n_bms_**z3**
 - SCS-2C-4-10n_bms_**z3h**
-- SCS-2C-4-10n_bms_**z3hh** <- Bare Metal, intel Ice Lake with > 3.25GHz all core freq
+- SCS-2C-4-10n_bms_**z3hh** <- Bare Metal, Intel Ice Lake with > 3.25GHz all core freq
 
 ### [OPTIONAL] GPU support
 
-`_G`X[N][`-`M[`h`]] indicates a Pass-Through GPU from vendor X of gen N with M compute units / SMs / EUs exposed.
-`_g`X[N][`-`M[`h`]] indicates a vGPU from vendor X of gen N with M compute units / SMs / EUs assigned.
+`_G`X\[N\]\[`-`M\[`h`\]\] indicates a Pass-Through GPU from vendor X of gen N with M compute units / SMs / EUs exposed.
+`_g`X\[N\]\[`-`M\[`h`\]\] indicates a vGPU from vendor X of gen N with M compute units / SMs / EUs assigned.
 
 Note that the vendor letter X is mandatory, generation and compute units are optional.
 
