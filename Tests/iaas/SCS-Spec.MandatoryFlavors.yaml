@@ -13,6 +13,8 @@ SCS-Spec:
   - SCS-2V-16
   - SCS-4V-32
   - SCS-1L-1
+  - SCS-2V-4-20s
+  - SCS-4V-16-100s
   RecommendedFlavors:
   - SCS-1V-4-10
   - SCS-2V-8-20
