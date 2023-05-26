@@ -616,7 +616,7 @@ def old_to_new(nm):
 
 
 def readmandflavors(fnm):
-    "Read mandatory flavors from passed YAML file, search in a few paths"
+    "Read mandatory (and recommended) flavors from passed YAML file, search in a few paths"
     import yaml
     searchpath = (".", "..", *_bindir, _bindir[0] + "/..", '/opt/share/SCS')
     if fnm.rfind('/') == -1:
@@ -629,11 +629,14 @@ def readmandflavors(fnm):
                 break
     with open(fnm, "r", encoding="UTF-8)") as fobj:
         yamldict = yaml.safe_load(fobj)
-    ydict = yamldict["SCS-Spec"]["MandatoryFlavors"]
+    man_ydict = yamldict["SCS-Spec"]["MandatoryFlavors"]
+    rec_ydict = yamldict["SCS-Spec"]["RecommendedFlavors"]
     if prefer_old:
-        for ix in range(0, len(ydict)):
-            ydict[ix] = new_to_old(ydict[ix])
-    return ydict
+        for ix in range(0, len(man_ydict)):
+            man_ydict[ix] = new_to_old(man_ydict[ix])
+        for ix in range(0, len(rec_ydict)):
+            rec_ydict[ix] = new_to_old(rec_ydict[ix])
+    return man_ydict, rec_ydict
 
 
 # Default file name for mandatpry flavors

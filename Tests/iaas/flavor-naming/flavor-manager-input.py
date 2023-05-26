@@ -73,13 +73,14 @@ class SpecSyntax:
 def main(argv):
     "main entry point"
     list_mode = False
+    v3mode = False
     outfile = sys.stdout
     scs_mand_file = fnmck.mandFlavorFile
     errors = 0
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "hlC:1o:",
-                                       ("help", "list", "mand=", "v1prefer", "outfile="))
+        opts, args = getopt.gnu_getopt(argv, "hlC:1o:3",
+                                       ("help", "list", "mand=", "v1prefer", "outfile=", "v3"))
     except getopt.GetoptError as exc:
         print(f"{exc}", file=sys.stderr)
         usage(1)
@@ -90,6 +91,8 @@ def main(argv):
             list_mode = True
         elif opt[0] == "-C" or opt[0] == "--mand":
             scs_mand_file = opt[1]
+        elif opt[0] == "-3" or opt[0] == "--v3":
+            v3mode = True
         elif opt[0] == "-1" or opt[0] == "--v1prefer":
             fnmck.prefer_old = True
             pass
@@ -102,22 +105,38 @@ def main(argv):
 
     outspec = SpecSyntax.spec_dict()
     if list_mode:
-        scs_mand_flavors = args
-        flavor_type = "optional"
+        scs_mand_flavors = []
+        scs_rec_flavors = args
+        # flavor_type = "optional"
     else:
-        scs_mand_flavors = fnmck.readmandflavors(scs_mand_file)
-        flavor_type = "mandatory"
+        scs_mand_flavors, scs_rec_flavors = fnmck.readmandflavors(scs_mand_file)
+        # flavor_type = "mandatory"
+        if not v3mode:
+            scs_mand_flavors = [*scs_mand_flavors, *scs_rec_flavors]
+            scs_rec_flavors = []
 
-    olist = []
+    mand_list = []
     for name in scs_mand_flavors:
         try:
             ret = fnmck.parsename(name)
             assert ret
-            olist.append(SpecSyntax.mand_dict(name, ret))
+            mand_list.append(SpecSyntax.mand_dict(name, ret))
         except NameError as exc:
             print(f"{exc}", file=sys.stderr)
             errors += 1
-    outspec[flavor_type] = olist
+    rec_list = []
+    for name in scs_rec_flavors:
+        try:
+            ret = fnmck.parsename(name)
+            assert ret
+            rec_list.append(SpecSyntax.mand_dict(name, ret))
+        except NameError as exc:
+            print(f"{exc}", file=sys.stderr)
+            errors += 1
+    if scs_mand_flavors:
+        outspec["mandatory"] = mand_list
+    if scs_rec_flavors:
+        outspec["recommended"] = rec_list
     # print(outspec, file=outfile)
     print(yaml.dump(outspec, default_flow_style=False, sort_keys=False), file=outfile)
     return errors
