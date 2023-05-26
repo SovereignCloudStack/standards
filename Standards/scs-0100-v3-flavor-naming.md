@@ -8,7 +8,7 @@ replaces: flavor-naming.md
 
 ## Introduction
 
-This is the standard v2.0 for SCS Release 4.
+This is the standard v3.0 for SCS Release 5.
 Note that we intend to only extend it (so it's always backwards compatible),
 but try to avoid changing in incompatible ways.
 (See at the end for the v1 to v2 transition where we have not met that
@@ -221,32 +221,37 @@ so users can expect some level of parallelism and independence.
 
 These are flavors that must exist on standard SCS clouds (x86-64).
 
-We expect disk sizes to be 5, 10, 20, 50, 100, 200, 500, 1000GB, 2000GB.
-We expect a typical CPU:Mem[GiB] ratio of 1:4.
+We recommend disk sizes to be 5, 10, 20, 50, 100, 200, 500, 1000GB, 2000GB.
+We expect the most used vCPU:Mem[GiB] ratio to be 1:4.
 
-| vCPU:RAM ratio | Mandatory Flavors          |
-| -------------- | -------------------------- |
-| 1:4            | SCS-1V-4, SCS-1V-4-10      |
-| 2:8            | SCS-2V-8, SCS-2V-8-20      |
-| 4:16           | SCS-4V-16, SCS-4V-16-50    |
-| 8:32           | SCS-8V-32, SCS-8V-32-100   |
-| 1:2            | SCS-1V-2, SCS-1V-2-5       |
-| 2:4            | SCS-2V-4, SCS-2V-4-10      |
-| 4:8            | SCS-4V-8, SCS-4V-8-20      |
-| 8:16           | SCS-8V-16, SCS-8V-16-50    |
-| 16:32          | SCS-16V-32, SCS-16V-32-100 |
-| 1:8            | SCS-1V-8, SCS-1V-8-20      |
-| 2:16           | SCS-2V-16, SCS-2V-16-50    |
-| 4:32           | SCS-4V-32, SCS-4V-32-100   |
-| 1:1            | SCS-1L-1, SCS-1L-1-5       |
+| vCPU:RAM ratio | Mandatory Flavors | Recommended Flavors |
+| -------------- | ----------------- | ------------------- |
+| 1:4            | SCS-1V-4          | SCS-1V-4-10         |
+| 2:8            | SCS-2V-8          | SCS-2V-8-20         |
+| 4:16           | SCS-4V-16         | SCS-4V-16-50        |
+| 8:32           | SCS-8V-32         | SCS-8V-32-100       |
+| 1:2            | SCS-1V-2          | SCS-1V-2-5          |
+| 2:4            | SCS-2V-4          | SCS-2V-4-10         |
+| 4:8            | SCS-4V-8          | SCS-4V-8-20         |
+| 8:16           | SCS-8V-16         | SCS-8V-16-50        |
+| 16:32          | SCS-16V-32        | SCS-16V-32-100      |
+| 1:8            | SCS-1V-8          | SCS-1V-8-20         |
+| 2:16           | SCS-2V-16         | SCS-2V-16-50        |
+| 4:32           | SCS-4V-32         | SCS-4V-32-100       |
+| 1:1            | SCS-1L-1          | SCS-1L-1-5          |
 
 Note that all vCPUs of SCS standard flavors are oversubscribed — the smallest `1L-1`
 flavor allows for heavy oversubscription (note the `L`), and thus can be offered very
 cheaply — imagine jump hosts ...
-Disks types are not specified (and expected to be n or h typically).
 
 The design allows for small clouds (with CPUs with 16 Threads, 64GiB RAM
 compute hosts) to offer all flavors.
+
+Note that we Flavors with fixed size root disks have all moved to Recommended
+in version 3 of the standard.
+This means that they are not a certification requirement any longer, but we still
+recommend implementing these for backwards compatibility reasons.
+Disks types are not specified (and expected to be n or h typically).
 
 Note: Compared to previous drafts, we have heavily reduced the variations
 on disk sizes — this reflects that for the standard networked cinder
