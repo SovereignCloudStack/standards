@@ -68,11 +68,11 @@ encoding all details) as well as very detailed longer names.
 
 ## Complete Proposal for systematic flavor naming
 
-| Prefix | CPUs & Suffix      | RAM[GiB]            | opt: Disk[GB]&type            | opt: extensions |
-| ------ | ------------------ | ------------------- | ----------------------------- | ----------------|
-| `SCS-` | N`L/V/T/C`\[`i`\]` | `-`N\[`u`\]\[`o`\]` | \[`-`\[M`x`\]N\[`n/s/l/p`\]\] | \[`_`EXT\]      |
+| Prefix | CPUs & Suffix     | RAM[GiB]           | optional: Disk[GB]&type       | opt: extensions |
+| ------ | ----------------- | ------------------ | ----------------------------- | ----------------|
+| `SCS-` | N`L/V/T/C`\[`i`\] | `-`N\[`u`\]\[`o`\] | \[`-`\[M`x`\]N\[`n/s/l/p`\]\] | \[`_`EXT\]      |
 
-Note that `N` and `M` are placeholders for numbers here.
+Note that N and M are placeholders for numbers here.
 The optional fields are denoted in brackets (and have opt: in the header.
 See below for extensions.
 
@@ -259,7 +259,7 @@ Note: Compared to previous drafts, we have heavily reduced the variations
 on disk sizes — this reflects that for the standard networked cinder
 disks, you can pass `block_device_mapping_v2` on server (VM) creation to
 allocate a boot disk of any size you desire. We have scaled the few
-mandatory disk sizes with the amount of RAM. For each flavor there is
+recommended disk sizes with the amount of RAM. For each flavor there is
 also one _without_ a pre-attached disk — these are meant to be used
 to boot from a volume (either created beforehand or allocated on-the-fly
 with `block_device_mapping_v2`, e.g.
@@ -275,7 +275,7 @@ granted in a way that makes this very transparent and visible to clients.)
 
 You are allowed to understate your performance; you may implement a SCS-1V-1-5 flavor with
 a flavor that actually implements SCS-1T-1-5n (i.e. you dedicate a dedicated hyperthread instead
-of higher oversubscription) or even SCS-1D-1.5-8s (1 dedicated core, 50% more RAM and a 8GiB SSD).
+of higher oversubscription) or even SCS-1C-1.5-8s (1 dedicated core, 50% more RAM and a 8GiB SSD).
 
 Flavor names indicating certain capabilities must _at least_ provide these, otherwise they
 are in violation of the SCS specification and prevent SCS compliance.
@@ -353,7 +353,7 @@ The extensions have the format:
 
 Remember that letters are case-sensitive.
 In case you wonder: Feature indicators are capitalized, modifiers are lower case.
-(An exception is the uppercase -G for a pass-through GPU vs. lowercase -g for vGPU.)
+(An exception is the uppercase `_G` for a pass-through GPU vs. lowercase `_g` for vGPU.)
 
 ### [OPTIONAL] Hypervisor
 
@@ -489,7 +489,7 @@ So a cloud provider might well evolve from offering `SCS-8T-16-50` to offering
 `SCS-8T-16-50n`, `SCS-8T-16-50n_i2` and `SCS-8T-16-50n_a2` to specify that he
 is using network disks and offer a choice b/w intel Cascade-Lake and AMD Rome.
 We would expect the cloud provider to still offer the generic flavor
-`SCS-8C-16-50` and allow the scheduler (placement service) to pick both more
+`SCS-8T-16-50` and allow the scheduler (placement service) to pick both more
 specific types (or just one if e.g. capacity management considerations suggest
 so). We would expect providers in such cases to ensure that the price of a requested
 flavor does not depend on the scheduler decisions.
