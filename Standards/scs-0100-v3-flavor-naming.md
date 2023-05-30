@@ -276,6 +276,8 @@ granted in a way that makes this very transparent and visible to clients.)
 You are allowed to understate your performance; you may implement a SCS-1V-1-5 flavor with
 a flavor that actually implements SCS-1T-1-5n (i.e. you dedicate a dedicated hyperthread instead
 of higher oversubscription) or even SCS-1C-1.5-8s (1 dedicated core, 50% more RAM and a 8GiB SSD).
+Or you may offer the (v3 mandatory) `SCS-2V-4-20s` with a `SCS-2V-4-20p` (using a local NVMe
+instead of an SSD).
 
 Flavor names indicating certain capabilities must _at least_ provide these, otherwise they
 are in violation of the SCS specification and prevent SCS compliance.
@@ -286,7 +288,7 @@ offer the short variants for usability and easier portability, even beyond the m
 
 You must be very careful to expose low vCPU guarantees (`L` instead of `V`), insecure
 hyperthreading/microcode `i`, non-ECC-RAM `u`, memory oversubscription `o`. Note that omitting these qualifiers
-is *overstating* your security, reliability or performance properties and may be reason for
+is _overstating_ your security, reliability or performance properties and may be reason for
 clients to feel betrayed or claim damages. This would prevent SCS compliance and certification;
 in extreme cases, the SCS project might be forced to work with public statements.
 
