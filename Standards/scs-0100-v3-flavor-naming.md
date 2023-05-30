@@ -247,9 +247,9 @@ cheaply — imagine jump hosts ...
 The design allows for small clouds (with CPUs with 16 Threads, 64GiB RAM
 compute hosts) to offer all flavors.
 
-Note that we Flavors with fixed size root disks have all moved to Recommended
-in version 3 of the standard. This means that they are not a certification requirement any longer, but we still
-recommend implementing these for backwards compatibility reasons.
+Note that the flavors with fixed size root disks have all moved to Recommended
+in version 3 of the standard. This means that they are not a certification requirement any longer,
+but we still recommend implementing these for backwards compatibility reasons.
 Disks types are not specified (and expected to be n or h typically).
 
 However, two flavors with SSD+ root disks have been added in v3, as defined in
@@ -269,8 +269,8 @@ instance life cycle.)
 
 ## Naming policy compliance
 
-To be certified as an SCS compliant x86-64 IaaS platform, you must offer all standard SCS flavors
-according to the previous section. (We may define a mechanism that allows exceptions to be
+To be certified as an SCS compliant x86-64 IaaS platform, you must offer all standard mandatory SCS
+flavors according to the previous section. (We may define a mechanism that allows exceptions to be
 granted in a way that makes this very transparent and visible to clients.)
 
 You are allowed to understate your performance; you may implement a SCS-1V-1-5 flavor with
@@ -285,8 +285,8 @@ Larger providers that offer more details (using the extension below) are expecte
 offer the short variants for usability and easier portability, even beyond the mandated flavors.
 
 You must be very careful to expose low vCPU guarantees (`L` instead of `V`), insecure
-hyperthreading/microcode `i`, non-ECC-RAM `u`, memory oversubscription `o`. Note that omitting these qualifiers is
-overstating your security, reliability or performance properties and may be reason for
+hyperthreading/microcode `i`, non-ECC-RAM `u`, memory oversubscription `o`. Note that omitting these qualifiers
+is *overstating* your security, reliability or performance properties and may be reason for
 clients to feel betrayed or claim damages. This would prevent SCS compliance and certification;
 in extreme cases, the SCS project might be forced to work with public statements.
 
@@ -295,7 +295,8 @@ You may offer additional `SCS-` flavors, following the naming scheme and rules o
 You may offer additional flavors, not following above scheme and not starting with `SCS-`
 
 You must not offer flavors with the `SCS-` prefix which do not follow this naming scheme.
-You must not extend the SCS naming scheme with your own suffices; you are encouraged however
+
+You must not extend the SCS naming scheme with your own extensions; you are encouraged however
 to suggest extensions that we can discuss and add to the official scheme.
 
 ## Validation
@@ -322,9 +323,9 @@ create all standard, mandatory SCS flavors for you.
 ## Extensions
 
 Extensions provide a possibility for providers that offer a very differentiated set
-of flavors to indicate hypervisors, support for hardware/nested virtuatlization,
+of flavors to indicate hypervisors, support for hardware/nested virtualization,
 CPU types and generations, high-frequency models, GPU support and GPU types as
-well as Inifiniband support. (More extensions may be appended in the future.)
+well as Infiniband support. (More extensions may be appended in the future.)
 
 Using the systematic naming approach ensures that two providers that offer flavors
 with the same specific features will use the same name for them, thus simplifying
@@ -343,7 +344,7 @@ that can offer these flavors, thus resulting in a lower utilization (as the capa
 management will need to have a certain amount of headroom per machine pool to avoid
 running out of capacity).
 
-Note that it possible for providers to register both the generic short names and the
+Note that it is possible for providers to register both the generic short names and the
 longer, more detailed names and allow them to use the same set of machines (host aggregates).
 Note that machines (hypervisors) can be part of more than one host aggregate.
 
@@ -491,7 +492,7 @@ is using network disks and offer a choice b/w intel Cascade-Lake and AMD Rome.
 We would expect the cloud provider to still offer the generic flavor
 `SCS-8T-16-50` and allow the scheduler (placement service) to pick both more
 specific types (or just one if e.g. capacity management considerations suggest
-so). We would expect providers in such cases to ensure that the price of a requested
+so). Providers in such cases should ensure that the price of a requested
 flavor does not depend on the scheduler decisions.
 
 We are looking into the [metadefs](https://docs.openstack.org/image-guide/introduction.html#metadata-definition-metadefs-service)
