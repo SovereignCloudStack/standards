@@ -107,7 +107,6 @@ def main(argv):
     if list_mode:
         scs_mand_flavors = []
         scs_rec_flavors = args
-        # flavor_type = "optional"
     else:
         scs_mand_flavors, scs_rec_flavors = fnmck.readmandflavors(scs_mand_file)
         # flavor_type = "mandatory"
