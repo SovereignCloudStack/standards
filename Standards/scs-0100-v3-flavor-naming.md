@@ -467,7 +467,7 @@ The optional `h` suffix to the compute unit count indicates high-performance (e.
 high bandwidth gfx memory such as HBM);
 `h` can be duplicated for even higher performance.
 
-### [OPTIONAL] Extra features
+### [OPTIONAL] Infiniband
 
 `_ib` indicates Infiniband networking.
 
