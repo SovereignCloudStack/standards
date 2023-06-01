@@ -70,6 +70,21 @@ class SpecSyntax:
         return dct
 
 
+def parsenames(flv_list):
+    "Return list of SpecSyntax mand_dict flavors, parsing flvlist and no of errors"
+    errors = 0
+    fdict_list = []
+    for name in flv_list:
+        try:
+            ret = fnmck.parsename(name)
+            assert ret
+            fdict_list.append(SpecSyntax.mand_dict(name, ret))
+        except NameError as exc:
+            print(f"{exc}", file=sys.stderr)
+            errors += 1
+    return fdict_list, errors
+
+
 def main(argv):
     "main entry point"
     list_mode = False
@@ -112,25 +127,13 @@ def main(argv):
         if not v3mode:
             scs_mand_flavors = [*scs_mand_flavors, *scs_rec_flavors]
             scs_rec_flavors = []
+            # TODO: Filter out SSD flavors
 
-    mand_list = []
-    for name in scs_mand_flavors:
-        try:
-            ret = fnmck.parsename(name)
-            assert ret
-            mand_list.append(SpecSyntax.mand_dict(name, ret))
-        except NameError as exc:
-            print(f"{exc}", file=sys.stderr)
-            errors += 1
-    rec_list = []
-    for name in scs_rec_flavors:
-        try:
-            ret = fnmck.parsename(name)
-            assert ret
-            rec_list.append(SpecSyntax.mand_dict(name, ret))
-        except NameError as exc:
-            print(f"{exc}", file=sys.stderr)
-            errors += 1
+    mand_list, err = parsenames(scs_mand_flavors)
+    errors += err
+    rec_list, err = parsenames(scs_rec_flavors)
+    errors += err
+
     if scs_mand_flavors:
         outspec["mandatory"] = mand_list
     if scs_rec_flavors:
