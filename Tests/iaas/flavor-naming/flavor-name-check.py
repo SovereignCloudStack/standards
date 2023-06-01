@@ -398,7 +398,7 @@ class Main(Prop):
               "ram", "raminsecure", "ramoversubscribed")
     pnames = ("#vCPUs", "CPU type", "?Insec SMT", "##GiB RAM", "?no ECC", "?RAM Over")
     outstr = "%i%s%?i-%.1f%?u%?o"
-    tbl_cputype = {"L": "LowPerf vCPU", "V": "vCPU", "T": "SMT Thread", "C": "Dedicated Core"}
+    tbl_cputype = {"L": "LowPerf vCPUs", "V": "vCPUs", "T": "SMT Threads", "C": "Dedicated Cores"}
 
 
 class Disk(Prop):
@@ -454,7 +454,7 @@ class CPUBrand(Prop):
     tbl_cpuvendor = {"i": "Intel", "z": "AMD", "a": "ARM", "r": "RISC-V"}
     tbl_perf = {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"}
     # Generation decoding
-    tbl_cpuvendor_i_cpugen = {0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake"}
+    tbl_cpuvendor_i_cpugen = {0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake", 4: "Sapphire Rapids"}
     tbl_cpuvendor_z_cpugen = {0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4"}
     tbl_cpuvendor_a_cpugen = {0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A710/NeoN2"}
     # tbl_cpuvendor_r_cpugen = {0: "SF U54", 1: "SF U74", 2: "SF U84"}
@@ -473,9 +473,9 @@ class GPU(Prop):
     tbl_perf = {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"}
     # Generation decoding
     tbl_brand_N_gen = {"f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal",
-                       "v": "Volta", "t": "Turing", "a": "Ampere"}
-    tbl_brand_A_gen = {"0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "RDNA2/Navi2x"}
-    tbl_brand_I_gen = {"0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1"}
+                       "v": "Volta", "t": "Turing", "a": "Ampere", "l": "AdaLovelace"}
+    tbl_brand_A_gen = {"0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "RDNA2/Navi2x", "3": "RDNA3/Navi3x"}
+    tbl_brand_I_gen = {"0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1", "2": "Xe2"}
 
 
 class IB(Prop):
@@ -680,6 +680,8 @@ mandFlavorFile = "SCS-Spec.MandatoryFlavors.yaml"
 def main(argv):
     "Entry point when used as selfstanding tool"
     global verbose, debug, disallow_old, completecheck, prefer_old, accept_old_mand, v3_flv
+    import importlib
+    pp = importlib.import_module("flavor-name-describe")
     # Number of good SCS flavors
     scs = 0
     # Number of non-SCS flavors
@@ -768,6 +770,8 @@ def main(argv):
                     scsRecommended.remove(newnm)
         if debug:
             print(f"In {name}, Out {namecheck}")
+        if verbose:
+            print(f'Pretty description: {pp.prettyname(ret, "")}')
 
         if prefer_old:
             namecheck = new_to_old(namecheck)
