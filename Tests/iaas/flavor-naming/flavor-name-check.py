@@ -615,9 +615,8 @@ def old_to_new(nm):
     return nm
 
 
-def readmandflavors(fnm):
-    "Read mandatory (and recommended) flavors from passed YAML file, search in a few paths"
-    import yaml
+def findflvfile(fnm):
+    "Search for flavor file and return found path"
     searchpath = (".", "..", *_bindir, _bindir[0] + "/..", '/opt/share/SCS')
     if fnm.rfind('/') == -1:
         for spath in searchpath:
@@ -627,6 +626,13 @@ def readmandflavors(fnm):
             if os.access(tnm, os.R_OK):
                 fnm = tnm
                 break
+    return fnm
+
+
+def readmandflavors(fnm):
+    "Read mandatory (and recommended) flavors from passed YAML file, search in a few paths"
+    import yaml
+    fnm = findflvfile(fnm)
     with open(fnm, "r", encoding="UTF-8)") as fobj:
         yamldict = yaml.safe_load(fobj)
     man_ydict = yamldict["SCS-Spec"]["MandatoryFlavors"]
@@ -673,21 +679,23 @@ def main(argv):
         argv = argv[1:]
     if argv[0] == "-c":
         completecheck = True
-        scsMandatory = readmandflavors(mandFlavorFile)
+        scsMandatory, scsRecommended = readmandflavors(mandFlavorFile)
         scsMandNum = len(scsMandatory)
+        scsRecNum = len(scsRecommended)
         if debug:
             print(f"Check for completeness ({scsMandNum}): {scsMandatory}")
         argv = argv[1:]
     if argv[0] == "-C":
         completecheck = True
-        scsMandatory = readmandflavors(argv[1])
+        scsMandatory, scsRecommended = readmandflavors(argv[1])
         scsMandNum = len(scsMandatory)
+        scsRecNum = len(scsRecommended)
         if debug:
             print(f"Check for completeness ({scsMandNum}): {scsMandatory}")
         argv = argv[2:]
 
     # Interactive input of flavor
-    if argv[0] == "-i":
+    if len(argv) and argv[0] == "-i":
         ret = inputflavor()
         print()
         nm1 = outname(*ret)
@@ -719,10 +727,14 @@ def main(argv):
         if completecheck:
             if name in scsMandatory:
                 scsMandatory.remove(name)
+            elif name in scsRecommended:
+                scsRecommended.remove(name)
             elif accept_old_mand:
                 newnm = old_to_new(name)
                 if newnm in scsMandatory:
                     scsMandatory.remove(newnm)
+                elif newnm in scsRecommended:
+                    scsRecommended.remove(newnm)
         if debug:
             print(f"In {name}, Out {namecheck}")
 
@@ -733,10 +745,12 @@ def main(argv):
             print(f"WARNING: {name} != {namecheck}")
 
     if completecheck:
-        print(f"Found {scs} SCS flavors ({scsMandNum} mandatory), {nonscs} non-SCS flavors")
+        print(f"Found {scs} SCS flavors ({scsMandNum} mandatory, {scsRecNum} recommended), {nonscs} non-SCS flavors")
         if scsMandatory:
             print(f"Missing {len(scsMandatory)} mandatory flavors: {scsMandatory}")
-            return len(scsMandatory)
+            error += len(scsMandatory)
+        if scsRecommended:
+            print(f"Missing {len(scsRecommended)} recommended flavors: {scsRecommended}")
         return error
     return nonscs+error
 
