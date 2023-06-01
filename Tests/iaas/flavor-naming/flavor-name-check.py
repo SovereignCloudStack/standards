@@ -31,6 +31,7 @@ import re
 # globals
 verbose = False
 debug = False
+quiet = False
 completecheck = False
 disallow_old = False
 prefer_old = False
@@ -552,9 +553,9 @@ def parsename(name):
     n = n[ibd.parsed:]
     if verbose:
         printflavor(name, (cpuram, disk, hype, hvirt, cpubrand, gpu, ibd))
-    if isold and not prefer_old:
+    if isold and not prefer_old and not quiet:
         print(f'WARNING: Old flavor name found: "{name}"')
-    elif prefer_old and not isold:
+    elif prefer_old and not isold and not quiet:
         print(f'WARNING: New flavor name found: "{name}"')
     if n:
         print(f"ERROR: Could not parse: {n}")
@@ -646,14 +647,13 @@ def readmandflavors(fnm):
     fnm = findflvfile(fnm)
     with open(fnm, "r", encoding="UTF-8)") as fobj:
         yamldict = yaml.safe_load(fobj)
-    man_ydict = yamldict["SCS-Spec"]["MandatoryFlavors"]
-    rec_ydict = yamldict["SCS-Spec"]["RecommendedFlavors"]
+    # Translate to old names in-place
     if prefer_old:
-        for ix in range(0, len(man_ydict)):
-            man_ydict[ix] = new_to_old(man_ydict[ix])
-        for ix in range(0, len(rec_ydict)):
-            rec_ydict[ix] = new_to_old(rec_ydict[ix])
-    return man_ydict, rec_ydict
+        for name_type in yamldict["SCS-Spec"].values():
+            for i, name in enumerate(name_type):
+                name_type[i] = new_to_old(name)
+    return yamldict["SCS-Spec"]["MandatoryFlavors"], \
+           yamldict["SCS-Spec"]["RecommendedFlavors"]
 
 
 # Default file name for mandatpry flavors

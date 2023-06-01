@@ -81,6 +81,7 @@ def main(argv):
             # fnmck.verbose = True
         elif opt[0] == "-q" or opt[0] == "--quiet":
             quiet = True
+            fnmck.quiet = True
         else:
             usage(2)
     if len(args) > 0:
