@@ -36,6 +36,7 @@ completecheck = False
 disallow_old = False
 prefer_old = False
 accept_old_mand = False
+v3_flv = False
 
 # search strings
 scsPre = re.compile(r'^SCS\-')
@@ -641,18 +642,35 @@ def findflvfile(fnm):
     return fnm
 
 
-def readmandflavors(fnm):
-    "Read mandatory (and recommended) flavors from passed YAML file, search in a few paths"
+def readflavors(fnm, v3=v3_flv, v1prefer=prefer_old):
+    "Read mandatory and recommended flavors from passed YAML file"
     import yaml
     fnm = findflvfile(fnm)
+    if debug:
+        print(f"DEBUG: Reading flavors from {fnm}")
     with open(fnm, "r", encoding="UTF-8)") as fobj:
         yamldict = yaml.safe_load(fobj)
     # Translate to old names in-place
-    if prefer_old:
+    if v1prefer:
         for name_type in yamldict["SCS-Spec"].values():
             for i, name in enumerate(name_type):
                 name_type[i] = new_to_old(name)
-    return yamldict["SCS-Spec"]["MandatoryFlavors"], yamldict["SCS-Spec"]["RecommendedFlavors"]
+    mand = yamldict["SCS-Spec"]["MandatoryFlavors"]
+    recd = yamldict["SCS-Spec"]["RecommendedFlavors"]
+    if v3:
+        try:
+            mandv3 = yamldict["SCS-Spec"]["MandatoryFlavorsV3"]
+            mand.extend(mandv3)
+        except KeyError:
+            pass
+        try:
+            recdv3 = yamldict["SCS-Spec"]["RecommendedFlavorsV3"]
+            recd.extend(recdv3)
+        except KeyError:
+            pass
+        return mand, recd
+    else:
+        return [*mand, *recd], []
 
 
 # Default file name for mandatpry flavors
@@ -661,7 +679,7 @@ mandFlavorFile = "SCS-Spec.MandatoryFlavors.yaml"
 
 def main(argv):
     "Entry point when used as selfstanding tool"
-    global verbose, debug, disallow_old, completecheck, prefer_old, accept_old_mand
+    global verbose, debug, disallow_old, completecheck, prefer_old, accept_old_mand, v3_flv
     # Number of good SCS flavors
     scs = 0
     # Number of non-SCS flavors
@@ -684,12 +702,15 @@ def main(argv):
     if argv[0] == "-1":
         prefer_old = True
         argv = argv[1:]
+    if argv[0] == "-3":
+        v3_flv = True
+        argv = argv[1:]
     if argv[0] == "-o":
         accept_old_mand = True
         argv = argv[1:]
     if argv[0] == "-c":
         completecheck = True
-        scsMandatory, scsRecommended = readmandflavors(mandFlavorFile)
+        scsMandatory, scsRecommended = readflavors(mandFlavorFile, v3_flv, prefer_old)
         scsMandNum = len(scsMandatory)
         scsRecNum = len(scsRecommended)
         if debug:
@@ -697,7 +718,7 @@ def main(argv):
         argv = argv[1:]
     if argv[0] == "-C":
         completecheck = True
-        scsMandatory, scsRecommended = readmandflavors(argv[1])
+        scsMandatory, scsRecommended = readflavors(argv[1], v3_flv, prefer_old)
         scsMandNum = len(scsMandatory)
         scsRecNum = len(scsRecommended)
         if debug:
