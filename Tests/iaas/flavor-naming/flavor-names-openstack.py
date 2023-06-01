@@ -88,12 +88,7 @@ def main(argv):
         print(f"Extra arguments {str(args)}", file=sys.stderr)
         usage(1)
 
-    scsMandatory, scsRecommended = fnmck.readmandflavors(scsMandFile)
-    if not v3mode:
-        scsMandatory = [*scsMandatory, *scsRecommended]
-        scsRecommended = []
-        # HACK: Drop SSD flavors from list
-        scsMandatory = [flv for flv in scsMandatory if not fnmck.is_ssd_flavor(flv)]
+    scsMandatory, scsRecommended = fnmck.readflavors(scsMandFile, v3mode, fnmck.prefer_old)
 
     if not cloud:
         print("ERROR: You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)

@@ -123,12 +123,8 @@ def main(argv):
         scs_mand_flavors = []
         scs_rec_flavors = args
     else:
-        scs_mand_flavors, scs_rec_flavors = fnmck.readmandflavors(scs_mand_file)
-        if not v3mode:
-            scs_mand_flavors = [*scs_mand_flavors, *scs_rec_flavors]
-            scs_rec_flavors = []
-            # Filter out SSD flavors
-            scs_mand_flavors = [flv for flv in scs_mand_flavors if not fnmck.is_ssd_flavor(flv)]
+        scs_mand_flavors, scs_rec_flavors = fnmck.readflavors(scs_mand_file,
+                                                              v3mode, fnmck.prefer_old)
 
     mand_list, err = parsenames(scs_mand_flavors)
     errors += err
