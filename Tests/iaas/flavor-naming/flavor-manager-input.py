@@ -22,6 +22,7 @@ import yaml
 fnmck = importlib.import_module("flavor-name-check")
 pp = importlib.import_module("flavor-name-describe")
 
+
 def usage(rcode=1):
     "help output"
     print("Usage: flavor-manager-input.py [options]")

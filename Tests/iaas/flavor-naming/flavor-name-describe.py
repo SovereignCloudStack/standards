@@ -10,7 +10,9 @@ Output a human readable flavor description from the SCS names
 License: CC-BY-SA 4.0
 """
 
+
 import sys
+
 
 def collectattrs(alist, new):
     "collect list of attitbutes"
@@ -28,7 +30,7 @@ def tbl_out(item, kind, check = False):
         return ""
     try:
         return item.__getattribute__("tbl_"+kind)[val] + " "
-    except:
+    except KeyError:
         return str(val) + " "
 
 
@@ -59,14 +61,14 @@ def prettyname(item_list, prefix=""):
     if hype.parsed:
         stg += f'on {tbl_out(hype, "hype")}'
     if hvirt.parsed:
-        stg += f'with HW virt '
+        stg += 'with HW virt '
     # Disk
     if disk.parsed:
         stg += "and "
         stg += tbl_out(disk, "disktype", True)
         if disk.nrdisks != 1:
             stg += f'{disk.nrdisks}x'
-        stg += f'{disk.disksize}GB root volume ' 
+        stg += f'{disk.disksize}GB root volume '
     # GPU
     if gpu.parsed:
         stg += "and " + tbl_out(gpu, "gputype")
@@ -74,7 +76,7 @@ def prettyname(item_list, prefix=""):
         stg += tbl_out(gpu, "perf", True)
         stg += gpu.__getattribute__(f"tbl_brand_{gpu.brand}_gen")[gpu.gen] + " "
         if gpu.cu:
-            stg += f"(w/ {gpu.cu} CU/EU/SM) "            
+            stg += f"(w/ {gpu.cu} CU/EU/SM) "
     # IB
     if ibd.parsed:
         stg += "and Infiniband "
