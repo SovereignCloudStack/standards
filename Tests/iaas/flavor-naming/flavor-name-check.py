@@ -652,8 +652,7 @@ def readmandflavors(fnm):
         for name_type in yamldict["SCS-Spec"].values():
             for i, name in enumerate(name_type):
                 name_type[i] = new_to_old(name)
-    return yamldict["SCS-Spec"]["MandatoryFlavors"], \
-           yamldict["SCS-Spec"]["RecommendedFlavors"]
+    return yamldict["SCS-Spec"]["MandatoryFlavors"], yamldict["SCS-Spec"]["RecommendedFlavors"]
 
 
 # Default file name for mandatpry flavors
