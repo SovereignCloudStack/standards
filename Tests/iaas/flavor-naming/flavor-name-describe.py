@@ -10,6 +10,7 @@ Output a human readable flavor description from the SCS names
 License: CC-BY-SA 4.0
 """
 
+import sys
 
 def collectattrs(alist, new):
     "collect list of attitbutes"
@@ -31,7 +32,7 @@ def tbl_out(item, kind, check = False):
         return str(val) + " "
 
 
-def prettyname(item_list, prefix):
+def prettyname(item_list, prefix=""):
     "Output a human-readable flavor description"
     cpu, disk, hype, hvirt, cpubrand, gpu, ibd = item_list
     # CPU (number, type, attributes)
@@ -80,3 +81,14 @@ def prettyname(item_list, prefix):
     return stg[:-1]
 
 
+def main(argv):
+    "Entry point for testing"
+    import importlib
+    fnmck = importlib.import_module("flavor-name-check")
+    for nm in argv:
+        ret = fnmck.parsename(nm)
+        print(f'{nm}: {prettyname(ret)}')
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
