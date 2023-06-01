@@ -206,17 +206,17 @@ def main(argv):
     # Produce dicts for YAML reporting
     flvSCSList = {
         "MandatoryFlavorsPresent": MSCSFlv,
-        "MandatoryFlavorsMissing": scsMandatory
+        "MandatoryFlavorsMissing": scsMandatory,
     }
     if v3mode:
         flvSCSList.update({
             "RecommendedFlavorsPresent": RSCSFlv,
-            "RecommendedFlavorsMissing": scsRecommended
+            "RecommendedFlavorsMissing": scsRecommended,
         })
     flvSCSList.update({
         "OptionalFlavorsValid": SCSFlv,
         "OptionalFlavorsWrong": wrongFlv,
-        "FlavorsWithWarnings": warnFlv
+        "FlavorsWithWarnings": warnFlv,
     })
     flvOthList = {
         "OtherFlavors": nonSCSFlv
@@ -224,24 +224,24 @@ def main(argv):
     flvSCSRep = {
         "TotalAmount": len(MSCSFlv) + len(SCSFlv) + len(wrongFlv),
         "MandatoryFlavorsPresent": len(MSCSFlv),
-        "MandatoryFlavorsMissing": len(scsMandatory)
+        "MandatoryFlavorsMissing": len(scsMandatory),
     }
     if v3mode:
         flvSCSRep.update({
             "RecommendedFlavorsPresent": len(RSCSFlv),
-            "RecommendedFlavorsMissing": len(scsRecommended)
+            "RecommendedFlavorsMissing": len(scsRecommended),
         })
     flvSCSRep.update({
         "OptionalFlavorsValid": len(SCSFlv),
         "OptionalFlavorsWrong": len(wrongFlv),
-        "FlavorsWithWarnings": len(warnFlv)
+        "FlavorsWithWarnings": len(warnFlv),
     })
     flvOthRep = {
-        "TotalAmount": len(nonSCSFlv)
+        "TotalAmount": len(nonSCSFlv),
     }
     totSummary = {
         "Errors": errors,
-        "Warnings": len(warnFlv)+len(scsRecommended)
+        "Warnings": len(warnFlv)+len(scsRecommended),
     }
     Report = {cloud: {"TotalSummary": totSummary}}
     if not quiet:
