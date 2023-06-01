@@ -20,7 +20,7 @@ import importlib
 import yaml
 
 fnmck = importlib.import_module("flavor-name-check")
-
+pp = importlib.import_module("flavor-name-describe")
 
 def usage(rcode=1):
     "help output"
@@ -47,7 +47,7 @@ class SpecSyntax:
                 ref.append({"field": key})
         return {"reference": ref}
 
-    def mand_dict(name, flv):
+    def mand_dict(name, flv, prefix=""):
         "return a dict for a single flavor, input is the name and the list of properties"
         dct = {}
         for key in SpecSyntax.vocabulary:
@@ -56,6 +56,7 @@ class SpecSyntax:
                 val = name
             elif valsel == "oldname":
                 val = "alias=" + fnmck.new_to_old(name)
+                val += " " + pp.prettyname(flv, prefix)
             else:
                 fno, attrcalc = valsel.split('.')
                 attrnm = attrcalc.split("*")[0]
@@ -70,7 +71,7 @@ class SpecSyntax:
         return dct
 
 
-def parsenames(flv_list):
+def parsenames(flv_list, prefix):
     "Return list of SpecSyntax mand_dict flavors, parsing flvlist and no of errors"
     errors = 0
     fdict_list = []
@@ -78,7 +79,7 @@ def parsenames(flv_list):
         try:
             ret = fnmck.parsename(name)
             assert ret
-            fdict_list.append(SpecSyntax.mand_dict(name, ret))
+            fdict_list.append(SpecSyntax.mand_dict(name, ret, prefix))
         except NameError as exc:
             print(f"{exc}", file=sys.stderr)
             errors += 1
@@ -126,9 +127,9 @@ def main(argv):
         scs_mand_flavors, scs_rec_flavors = fnmck.readflavors(scs_mand_file,
                                                               v3mode, fnmck.prefer_old)
 
-    mand_list, err = parsenames(scs_mand_flavors)
+    mand_list, err = parsenames(scs_mand_flavors, "Mandatory ")
     errors += err
-    rec_list, err = parsenames(scs_rec_flavors)
+    rec_list, err = parsenames(scs_rec_flavors, "Recommended ")
     errors += err
 
     if scs_mand_flavors:
