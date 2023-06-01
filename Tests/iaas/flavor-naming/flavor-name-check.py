@@ -659,11 +659,7 @@ def readflavors(fnm, v3=v3_flv, v1prefer=prefer_old):
     recd = yamldict["SCS-Spec"]["RecommendedFlavors"]
     if v3:
         mand.extend(yamldict["SCS-Spec"].get("MandatoryFlavorsV3", ()))
-        try:
-            recdv3 = yamldict["SCS-Spec"]["RecommendedFlavorsV3"]
-            recd.extend(recdv3)
-        except KeyError:
-            pass
+        recd.extend(yamldict["SCS-Spec"].get("RecommendedFlavorsV3", ()))
         return mand, recd
     else:
         return [*mand, *recd], []
