@@ -615,6 +615,17 @@ def old_to_new(nm):
     return nm
 
 
+def is_ssd_flavor(name):
+    """Look at the disk object of a parsed flavor name and return true
+       if it has an SSD root disk.
+       This can be used to filter out the new v3 SSD flavors"""
+    try:
+        disk = parsename(name)[1]
+        return disk and disk.parsed and disk.disktype == "s"
+    except NameError:
+        return False
+
+
 def findflvfile(fnm):
     "Search for flavor file and return found path"
     searchpath = (".", "..", *_bindir, _bindir[0] + "/..", '/opt/share/SCS')
