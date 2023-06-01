@@ -728,7 +728,7 @@ def main(argv):
         argv = argv[2:]
 
     # Interactive input of flavor
-    if len(argv) and argv[0] == "-i":
+    if argv and argv[0] == "-i":
         ret = inputflavor()
         print()
         nm1 = outname(*ret)
