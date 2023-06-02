@@ -37,8 +37,8 @@ ARM, AMD, and Intel, and even in the consumer-grade Raspberry Pi
 (1b onwards).
 
 Finally, a dedicated device can be utilized — if present — that is
-called _hardware random number generator_ or HW RNG for short. For instance,
-the [trusted platform module](https://en.wikipedia.org/wiki/Trusted_Platform_Module)
+called _hardware random number generator_ or HWRNG for short. For instance,
+the [Trusted Platform Module](https://en.wikipedia.org/wiki/Trusted_Platform_Module)
 includes a HW RNG. On Linux systems, the HW RNG appears as `/dev/hwrng`.
 Note that, while the RDRAND/RDSEED instruction set can be construed as
 a HW RNG, it is not treated as such by the kernel, i.e., it _does not_
