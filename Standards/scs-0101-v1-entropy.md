@@ -26,7 +26,7 @@ operations and applications such as load balancers.
 ### Sources of entropy
 
 In _traditional baremetal systems_ the amount of incertitude is sourced
-from the randomness of read/write cycle of the disk heads of a disk drive,
+from the randomness of the read/write cycles of the disk heads of a disk drive,
 bus timings as well as items such as keyboard timings.
 
 _More recent methods_ of generating entropy include measuring IRQ jitter
