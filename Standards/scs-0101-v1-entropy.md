@@ -106,12 +106,12 @@ hw_rng:rate_period - Sets the duration of a read period in seconds.
 
 ### Images
 
+Images must activate the attribute `hw_rng_model: virtio`.
+
 The daemon `rngd` must be installed (usually from `rng-tools`
 or `rng-utils`).
 
-Images may activate the attribute `hw_rng_model: virtio`.
-
-The user may then choose to use the `virtio-rng` device via `rngd`.
+The user may choose to use the `virtio-rng` device via `rngd`.
 
 ### Compute nodes
 
