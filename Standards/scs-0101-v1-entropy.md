@@ -36,7 +36,7 @@ instruction set (RDRAND/RDSEED), which is present in all modern CPUs from
 ARM, AMD, and Intel, and even in the consumer-grade Raspberry Pi
 (1b onwards).
 
-Finally, a dedicated device can be utilized -- if present -- that is
+Finally, a dedicated device can be utilized — if present — that is
 called _hardware random number generator_ or HW RNG for short. For instance,
 the [trusted platform module](https://en.wikipedia.org/wiki/Trusted_Platform_Module)
 includes a HW RNG. On Linux systems, the HW RNG appears as `/dev/hwrng`.
@@ -51,7 +51,7 @@ The kernel converts the entropy from the pool into cryptographically
 secure random numbers that appear under `/dev/random`.
 
 With kernel 5.18, the algorithm that accomplishes
-said conversion has been drastically improved (see 
+said conversion has been drastically improved (see
 [linux-rng-5.17-18](https://web.archive.org/web/20230321040526/https://www.zx2c4.com/projects/linux-rng-5.17-5.18/)),
 so much so that running out of entropy is virtually ruled out.
 These patches have now also arrived in the upstream LTS images.
