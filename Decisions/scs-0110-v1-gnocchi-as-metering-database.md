@@ -7,7 +7,7 @@ track: IaaS
 
 <!-- This file uses semantic linebreaks. See <https://sembr.org/> for more info. -->
 
-# Introduction
+## Introduction
 
 In the past we noticed missing events in the telemetry stack of OpenStack.
 This results in situations where the Cloud Service Provider (CSP)
@@ -24,7 +24,7 @@ it provides rationale for the choice of Gnocchi
 as time-series database for metering data
 within SCS.
 
-# Definitions
+## Definitions
 
 - TSDB, time-series database:
   Database which is specialised for storing data which is keyed by a timestamp.
@@ -51,7 +51,7 @@ within SCS.
   another metric indicating the amount of RAM allocated,
   etc.
 
-# Motivation
+## Motivation
 
 Being able to hold users accountable
 for the resources they use
@@ -67,7 +67,7 @@ as different databases come with different trade-offs.
 Not all databases are suitable for the kind of data
 which is collected in a metering context.
 
-# Design Considerations
+## Design Considerations
 
 The following requirements for a time-series database exist:
 
@@ -92,9 +92,9 @@ The following requirements for a time-series database exist:
 - MUST be available under an appropriate Open Source license,
   even for productive use cases.
 
-## Options
+### Options
 
-### Using Gnocchi
+#### Using Gnocchi
 
 [Gnocchi](https://gnocchi.osci.io/) is a time-series database
 which has its origins in the OpenStack ecosystem.
@@ -102,7 +102,7 @@ which has its origins in the OpenStack ecosystem.
 It supports all requirements except truncation,
 which might have to be implemented.
 
-### Using Prometheus
+#### Using Prometheus
 
 [Prometheus](https://prometheus.io) is a widely used time-series database
 with its focus on monitoring and incident response.
@@ -116,7 +116,7 @@ it has shortcomings which make it unsuitable for the metering use case:
 
 - Backfilling, [albeit possible](https://prometheus.io/docs/prometheus/latest/storage/#backfilling-from-openmetrics-format), is not well-supported.
 
-### Using InfluxDB
+#### Using InfluxDB
 
 [InfluxDB](https://www.influxdata.com/) is a widely used time-series database
 with its focus on monitoring.
@@ -128,7 +128,7 @@ it seems to run [into scalability issues in high-cardinality scenarios](https://
 In addition,
 clustering is only available in commercial licensing options.
 
-### Creating a custom TSDB implementation
+#### Creating a custom TSDB implementation
 
 A custom TSDB implementation
 is a non-trivial project to pursue.
@@ -145,19 +145,19 @@ than making Prometheus or Influx fit the bill
 (due to backfilling / cardinality scaling constraints),
 let alone rolling a custom implementation.
 
-### Open questions
+## Open questions
 
-* What will be the granularity of the events meta information?
+- What will be the granularity of the events meta information?
 
   If we decide to use resource metadata
   as a place to store slow-changing information
   (e.g. instance flavors, volume sizes),
   we need to know what the granularity of that is.
 
-# Related Documents
+## Related Documents
 
 - SCS-0311-v1
 
-# Conformance Tests
+## Conformance Tests
 
 None (this is a decision record).

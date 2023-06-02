@@ -7,7 +7,7 @@ track: IaaS
 
 <!-- This file uses semantic linebreaks. See <https://sembr.org/> for more info. -->
 
-# Introduction
+## Introduction
 
 In the past we noticed missing events in the telemetry stack of OpenStack.
 This results in situations where the Cloud Service Provider (CSP)
@@ -21,7 +21,7 @@ This document discusses how such metering data should be made available
 to the cloud service provider
 for forwarding into their own billing solution.
 
-# Definitions
+## Definitions
 
 - Push-based flow:
   In a push-based flow,
@@ -41,7 +41,7 @@ for forwarding into their own billing solution.
   The entire process of creation, management and sending of invoices
   generated from metering data.
 
-# Motivation
+## Motivation
 
 Being able to bill users
 for the resources they use
@@ -58,7 +58,7 @@ but provides a system which can easily interface with other systems.
 
 This is similar to how the SCS specified the monitoring stack.
 
-# Design Considerations
+## Design Considerations
 
 The following requirements exist for the process for providing metrics to the cloud service provider:
 
@@ -66,27 +66,27 @@ The following requirements exist for the process for providing metrics to the cl
   We expect to have metrics which change frequently (e.g. object store usage)
   and metrics which change rarely (e.g. cinder volume sizes).
 
-## Options
+### Options
 
-### Push-based flow
+#### Push-based flow
 
 In a push-based flow,
 the to-be-implemented metering system pushes events to the sink
 as soon as it is reasonably confident
 that the event can be used for billing purposes.
 
-### Poll-based flow
+#### Poll-based flow
 
 In the poll-based flow,
 whichever system the CSP runs would be responsible for polling the metering API
 in a frequency sufficient to capture all data with sufficient granularity.
 
-# Open questions
+## Open questions
 
 - What is necessary to extend the availability of sending to various sinks?
 - How does the configuration look like that is needed to push to a sink from the same type that will be already implemented?
 
-# Decision
+## Decision
 
 As we need to support very different time scales of data,
 the push-based flow is more suitable:
@@ -97,11 +97,10 @@ In contrast to that,
 a poll-based flow would need the consumer to know about change intervals,
 or alternatively poll in the highest change frequency ever expected.
 
-# Related Documents
+## Related Documents
 
 - SCS-0310-v1
 
-# Conformance Tests
+## Conformance Tests
 
 None (this is a decision record).
-
