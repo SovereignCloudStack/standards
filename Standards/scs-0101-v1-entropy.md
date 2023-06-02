@@ -81,7 +81,12 @@ important applications. Moreover, current technology makes it easy
 to provide these sources to virtual instances. Therefore, this standard
 mandates that these sources be made available on all conformant clouds.
 
-## Entropy in SCS Clouds
+## Entropy in SCS clouds
+
+This standard does not intend to make any guarantees for linux images
+that are not themselves included in the
+[SCS standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0102-v1-image-metadata.md), in particular
+images having a kernel below version 5.18.
 
 ### Flavors
 
@@ -107,3 +112,11 @@ or `rng-utils`).
 Images may activate the attribute `hw_rng_model: virtio`.
 
 The user may then choose to use the `virtio-rng` device via `rngd`.
+
+### Compute nodes
+
+Compute nodes must use CPUs that offer RDRAND/RDSEED. This requirement
+is both very hard to verify and almost impossible to violate, so it will
+not be tested for.
+
+Compute nodes may provide a true HW RNG via `rngd`.
