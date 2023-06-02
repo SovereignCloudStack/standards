@@ -33,8 +33,7 @@ _More recent methods_ of generating entropy include measuring IRQ jitter
 (available in Linux since kernel 5.4 or, before that, via a daemon such as
 [HavegeD](http://www.issihosts.com/haveged/)) as well as a special CPU
 instruction set (RDRAND/RDSEED), which is present in all modern CPUs from
-ARM, AMD, and Intel, and even in the consumer-grade Raspberry Pi
-(1b onwards).
+ARM, AMD, and Intel.
 
 Finally, a dedicated device can be utilized — if present — that is
 called _hardware random number generator_ or HWRNG for short. For instance,
