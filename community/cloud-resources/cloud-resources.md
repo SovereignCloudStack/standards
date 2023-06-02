@@ -6,15 +6,15 @@ This document gives an overview of the test and development cloud resources curr
 
 To request access to an existing project, please contact the responsible community member. To apply for a new project, please create a pull request against this document (leave `Unique Identifier` blank) and assign it to the particular CSP team (e.g. @SovereignCloudStack/plusserver, @SovereignCloudStack/wavecon, ...)
 
-## PlusServer
+## plusserver
 
 ### Usage
 
-A brief guide on how to use the resources provided by PlusServer can be found [here](plusserver-gx-scs.md)
+A brief guide on how to use the resources provided by plusserver GmbH can be found [here](plusserver-gx-scs.md)
 
 ### Users
 
-As suggested in [#155](https://github.com/SovereignCloudStack/standards/issues/155) the username for non-"service users" will contain the users github handle and are prefixed with a PlusServer default.
+As suggested in [#155](https://github.com/SovereignCloudStack/standards/issues/155) the username for non-"service users" will contain the users github handle and are prefixed with a plusserver default.
 `prefix-<github handle>`
 
 > **Note**
@@ -22,7 +22,7 @@ As suggested in [#155](https://github.com/SovereignCloudStack/standards/issues/1
 
 Example:
 
-| github handle | PlusServer login    |
+| github handle | plusserver login    |
 | :-----------: | :-----------------: |
 | frosty-geek   | u500924-frosty-geek |
 | fkr           | u500924-fkr         |
