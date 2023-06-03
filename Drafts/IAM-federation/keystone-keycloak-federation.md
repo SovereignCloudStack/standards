@@ -5,7 +5,7 @@
 The Keystone container can be configured via wsgi-keystone.conf
 to delegate authentication decisions to external identity providers
 like Keycloak. This can be done using OpenID Connect, OAUTH2, SAML
-and Shiboleth.  Currently the SCS testbed deploys a configuration
+and Shiboleth. Currently the SCS testbed deploys a configuration
 that uses OpenID Connect for WebSSO and oauth2 for openstack CLI.
 
 The idea is to use an IdP as switch hub for authentication
@@ -35,28 +35,31 @@ restrictions on the type of authentication flow that can be used.
 Keycloak supports `Identity Brokering` for the WebSSO case ("Authorization
 Code grant"), where the client specifies the desired IdP, either interactively
 or via `&kc_idp_hint` URL parameter. See the
-[Keycloak documantion](https://www.keycloak.org/docs/latest/server\_admin/#_identity_broker)
+[Keycloak documantion](https://www.keycloak.org/docs/latest/server_admin/#_identity_broker)
 for an overview.
 
 There are several different authentication flows possible with OAuth 2.0,
 each of which has its own specific use cases:
 
 For WebSSO the `Authorization Code Grant` is used frequently
-(see e.g. https://oauthlib.readthedocs.io/en/latest/oauth2/grants/authcode.html ).
+(see e.g. <https://oauthlib.readthedocs.io/en/latest/oauth2/grants/authcode.html> ).
 This also works for daisy chained federation setups (i.e. "Identity Brokering").
 
 For OpenStack CLI on the other hand this flow cannot be used (without ugly workarouds).
 Instead we will use a different OAuth 2.0 flow. See below for more.
 
 Currently the SCS testbed deploys a Keycloak wsgi configuration that uses OpenID Connect for WebSSO:
-```
+
+```conf
     <LocationMatch /v3/auth/OS-FEDERATION/identity_providers/keycloak/protocols/openid/websso>
       Require valid-user
       AuthType openid-connect
     </LocationMatch>
 ```
+
 And a second location for `oauth2` clients like openstack cli:
-```
+
+```conf
     <LocationMatch /v3/OS-FEDERATION/identity_providers/keycloak/protocols/mapped/auth>
       Require valid-user
       AuthType oauth2
@@ -94,4 +97,3 @@ in the first step and then, in a second step, passes that auth token
 to the Keystone container for authorization. This second step requires verification
 of the token, which is done by using the `mod_oauth2` module in apache2.
 See openstack-v3oidcpassword.drawio for a simple sequence diagram.
-

@@ -1,0 +1,55 @@
+{
+  "config": {
+    "default": true,
+    "MD013": false,
+    "MD033": true,
+    "MD024": false,
+    "search-replace": {
+      "rules": [
+        {
+          "name": "curly-double-quotes",
+          "message": "Don't use curly double quotes",
+          "searchPattern": "/“|”/g",
+          "replace": "\"",
+          "skipCode": true
+        },
+        {
+          "name": "curly-single-quotes",
+          "message": "Don't use curly single quotes",
+          "searchPattern": "/‘|’/g",
+          "replace": "'",
+          "skipCode": true
+        },
+        {
+          "name": "m-dash",
+          "message": "Don't use '--'. Use m-dash — instead",
+          "search": " -- ",
+          "replace": " — ",
+          "skipCode": true
+        },
+        {
+          "name": "relative-link-path",
+          "message": "Don't use relative paths",
+          "search": "](..",
+          "skipCode": true
+        },
+        {
+          "name": "trailing-spaces",
+          "message": "Avoid trailing spaces",
+          "searchPattern": "/  +$/gm",
+          "replace": "",
+          "skipCode": false
+        },
+        {
+          "name": "double-spaces",
+          "message": "Avoid double spaces",
+          "searchPattern": "/([^\\s>])  ([^\\s|])/g",
+          "replace": "$1 $2",
+          "skipCode": true
+        }
+      ]
+    }
+  },
+  "customRules": ["markdownlint-rule-search-replace"],
+  "ignores": ["node_modules", ".github"]
+}
