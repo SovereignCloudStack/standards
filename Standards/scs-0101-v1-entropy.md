@@ -45,7 +45,7 @@ appear as `/dev/hwrng`!
 
 The Linux kernel combines multiple sources of entropy into a pool. To this
 end, it will use all of the sources discussed so far with one exception:
-the HWNG must be fed into the pool (if so desired) via the daemon `rngd`.
+the HRNG must be fed into the pool (if so desired) via the daemon `rngd`.
 The kernel converts the entropy from the pool into cryptographically
 secure random numbers that appear under `/dev/random` and `/dev/urandom`.
 
