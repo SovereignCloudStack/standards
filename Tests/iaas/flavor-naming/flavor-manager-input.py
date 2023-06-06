@@ -20,6 +20,7 @@ import importlib
 import yaml
 
 fnmck = importlib.import_module("flavor-name-check")
+pp = importlib.import_module("flavor-name-describe")
 
 
 def usage(rcode=1):
@@ -47,7 +48,7 @@ class SpecSyntax:
                 ref.append({"field": key})
         return {"reference": ref}
 
-    def mand_dict(name, flv):
+    def mand_dict(name, flv, prefix=""):
         "return a dict for a single flavor, input is the name and the list of properties"
         dct = {}
         for key in SpecSyntax.vocabulary:
@@ -56,6 +57,7 @@ class SpecSyntax:
                 val = name
             elif valsel == "oldname":
                 val = "alias=" + fnmck.new_to_old(name)
+                val += " " + pp.prettyname(flv, prefix)
             else:
                 fno, attrcalc = valsel.split('.')
                 attrnm = attrcalc.split("*")[0]
@@ -70,16 +72,32 @@ class SpecSyntax:
         return dct
 
 
+def parsenames(flv_list, prefix):
+    "Return list of SpecSyntax mand_dict flavors, parsing flvlist and no of errors"
+    errors = 0
+    fdict_list = []
+    for name in flv_list:
+        try:
+            ret = fnmck.parsename(name)
+            assert ret
+            fdict_list.append(SpecSyntax.mand_dict(name, ret, prefix))
+        except NameError as exc:
+            print(f"{exc}", file=sys.stderr)
+            errors += 1
+    return fdict_list, errors
+
+
 def main(argv):
     "main entry point"
     list_mode = False
+    v3mode = False
     outfile = sys.stdout
     scs_mand_file = fnmck.mandFlavorFile
     errors = 0
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "hlC:1o:",
-                                       ("help", "list", "mand=", "v1prefer", "outfile="))
+        opts, args = getopt.gnu_getopt(argv, "hlC:1o:3",
+                                       ("help", "list", "mand=", "v1prefer", "outfile=", "v3"))
     except getopt.GetoptError as exc:
         print(f"{exc}", file=sys.stderr)
         usage(1)
@@ -90,6 +108,8 @@ def main(argv):
             list_mode = True
         elif opt[0] == "-C" or opt[0] == "--mand":
             scs_mand_file = opt[1]
+        elif opt[0] == "-3" or opt[0] == "--v3":
+            v3mode = True
         elif opt[0] == "-1" or opt[0] == "--v1prefer":
             fnmck.prefer_old = True
             pass
@@ -102,22 +122,21 @@ def main(argv):
 
     outspec = SpecSyntax.spec_dict()
     if list_mode:
-        scs_mand_flavors = args
-        flavor_type = "optional"
+        scs_mand_flavors = []
+        scs_rec_flavors = args
     else:
-        scs_mand_flavors = fnmck.readmandflavors(scs_mand_file)
-        flavor_type = "mandatory"
+        scs_mand_flavors, scs_rec_flavors = fnmck.readflavors(scs_mand_file,
+                                                              v3mode, fnmck.prefer_old)
 
-    olist = []
-    for name in scs_mand_flavors:
-        try:
-            ret = fnmck.parsename(name)
-            assert ret
-            olist.append(SpecSyntax.mand_dict(name, ret))
-        except NameError as exc:
-            print(f"{exc}", file=sys.stderr)
-            errors += 1
-    outspec[flavor_type] = olist
+    mand_list, err = parsenames(scs_mand_flavors, "Mandatory ")
+    errors += err
+    rec_list, err = parsenames(scs_rec_flavors, "Recommended ")
+    errors += err
+
+    if scs_mand_flavors:
+        outspec["mandatory"] = mand_list
+    if scs_rec_flavors:
+        outspec["recommended"] = rec_list
     # print(outspec, file=outfile)
     print(yaml.dump(outspec, default_flow_style=False, sort_keys=False), file=outfile)
     return errors

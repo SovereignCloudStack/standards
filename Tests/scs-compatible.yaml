@@ -36,3 +36,4 @@ iaas:
         url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
         condition: mandatory
         # Unfortunately, no wrapper to run refstack yet, needs to be added
+  # TBD: Version v3 would run flavor-names-openstack.py with --v3 --v2plus parameters.
