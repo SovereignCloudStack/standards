@@ -1,7 +1,8 @@
 ---
 title: Requirements for SSO identity federation
 type: Decision Record
-status: Draft
+status: Stable
+stabilized_at: 2023-06-21
 track: IAM
 ---
 
