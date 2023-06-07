@@ -1,5 +1,5 @@
 ---
-title: Naming convention in SCS
+title: Recommended naming for domains/groups/roles/project when onboarding new customers
 type: _Standard | Decision Record_
 status: Draft
 track: IAM
@@ -14,8 +14,8 @@ See https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-000
 
 ## Introduction
 
-When CSPs try to enroll a new customer they encounter themselfs in
-a situation where they have to choose namings for the openstack domain,
+When CSPs try to enroll a new customer they encounter themselves in
+a situation where they have to choose names for the openstack domain,
 project and user.
 
 There might also exists some group or roles from the customers point of
@@ -50,7 +50,7 @@ user: u<customer_id>-<user_name>
 ```
 
 For the customer also a domain admin group and a project admin group are
-created. This are not related in any way with openstack. This groups use
+created. These are not related in any way with OpenStack admin role. This groups use
 the prefix "gd" for domain group and "gp" for group project and are build
 like the following:
 
