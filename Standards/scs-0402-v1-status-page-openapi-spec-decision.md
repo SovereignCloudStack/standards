@@ -33,19 +33,17 @@ IDs are used for identification of resources, which can be retrieved by the API.
 
 UUIDs are used, to ensure uniqueness. Also, they can be visually recognized as identifier.
 
-#### IdList
-
-List of IDs are used to reference other resources in an API object.
-
 #### Incremental
 
 An `Incremental` is used in combination with other identifiers to identify a sub resource of any kind. `Incremental`s themselves are not globally unique, but unique for every sub resource of an unique resource.
 
+#### Generation and order
+
+`Generation` and `Order` are predefined objects which include a `Incremental` typed field for the common usages of the `Incremental` value.
+
 ### API objects
 
 All objects which are used as payload, either as request or response, are defined by schemas. This centralizes the maintanence of field names and types, for both requests and responses.
-
-The only exception are responses which return lists. The list of API objects is only used once and the definition of an array type is trivial.
 
 ### API object fields
 
@@ -70,6 +68,8 @@ Delete or update operations are FORBIDDEN.
 
 To "change" a phase list, a new one must be created. The old one must be kept. For this mechanic the lists are structured in generations. All references to phases MUST include their generation to ensure correct references.
 
+To reference a single phase a `PhaseReference` MUST include a generation and an order field. This MAY be used to reference a single generation too.
+
 ### Labels
 
 Labels are identifying metadata to components. They do not represent a resource or sub resource of any kind. They are designed as non system critical pieces of information, mainly intended for human consumption.
@@ -81,6 +81,10 @@ They represent a key value pair as structured data for a single component. Same 
 An impact defines the relation between an incident and a component. A component can be affected by multiple incidents and an incident can affect multiple components. Each of these impacts can have a different type depending on the incident and component, like for example connectivity or performance issues.
 
 To reflect this, each component and incident can have a list of impacts, stating the type of impact and a reference to the incident or component, it refers to.
+
+### Component impacts
+
+Components list their impacts, which they are affected by, as read only. Only an incident creates an impact on a component. Components MUST only list their currently active impacts.
 
 ### Return of `POST` requests
 
