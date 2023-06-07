@@ -72,7 +72,7 @@ To "change" a phase list, a new one must be created. The old one must be kept. F
 
 ### Labels
 
-Labes are identifying meta data to components. They do not represent a resource or sub resource of any kind. They are designed as non system critical pieces of information, mainly intented for humans.
+Labels are identifying metadata to components. They do not represent a resource or sub resource of any kind. They are designed as non system critical pieces of information, mainly intended for human consumption.
 
 They represent a key value pair as structured data for a single component. Same value keys and values do not reference each other necessarily.
 
