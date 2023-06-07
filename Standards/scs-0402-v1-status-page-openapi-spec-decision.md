@@ -74,7 +74,7 @@ To reference a single phase a `PhaseReference` MUST include a generation and an 
 
 Labels are identifying metadata to components. They do not represent a resource or sub resource of any kind. They are designed as non system critical pieces of information, mainly intended for human consumption.
 
-They represent a key value pair as structured data for a single component. Same value keys and values do not reference each other necessarily.
+Labels are simple key/value pairs attached to components, categorizing them dynamically.
 
 ### Impact
 
