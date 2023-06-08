@@ -81,20 +81,21 @@ to enable access to a HRNG.
 ## Motivation
 
 As stated above, good sources of entropy are paramount for many
-important applications. Moreover, current technology makes it easy
-to provide these sources to virtual instances. Therefore, this standard
-mandates that these sources be made available on all conformant clouds.
+important applications. This standard ensures that sufficient entropy
+will be available. In short, this goal is achieved by (a) requiring
+sufficiently recent CPUs in the hosts and kernels in the guests, and
+(b) recommending to provide the means to use `virtio-rng`.
 
 ## Entropy in SCS clouds
 
-This standard does not intend to make any guarantees for linux images
+This standard does not intend to make any guarantees for Linux images
 that are not themselves included in the
-[SCS standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0102-v1-image-metadata.md), in particular
-images having a kernel below version 5.18.
+[Image Metadata Standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0102-v1-image-metadata.md),
+in particular images having a kernel (patch level) below version 5.18.
 
 ### Flavors
 
-All flavors must have the following attribute activated:
+It is recommended that all flavors have the following attribute:
 
 ```console
 hw_rng:allowed=True
@@ -110,7 +111,7 @@ hw_rng:rate_period - Sets the duration of a read period in seconds.
 
 ### Images
 
-Images must activate the attribute `hw_rng_model: virtio`.
+It is recommended that images activate the attribute `hw_rng_model: virtio`.
 
 The daemon `rngd` must be installed (usually from `rng-tools`
 or `rng-utils`).
@@ -119,8 +120,15 @@ The user may choose to use the `virtio-rng` device via `rngd`.
 
 ### Compute nodes
 
-Compute nodes must use CPUs that offer RDRAND/RDSEED. This requirement
-is both very hard to verify and almost impossible to violate, so it will
-not be tested for.
+Compute nodes must use CPUs that offer RDRAND/RDSEED, and these
+instructions may not be filtered by the hypervisor. If this requirement
+cannot be verified directly, then at least the following two conditions
+must be satisfied:
+
+1. The special file `/proc/sys/kernel/random/entropy_avail` must contain
+the value 256 (pinned since kernel 5.18).
+
+2. The number of FIPS 140-2 failures must not exceed 3 out of 1000 blocks
+tested, as determined by `cat /dev/random | rngtest -c 1000` .
 
 Compute nodes may provide a HRNG via `rngd`.
