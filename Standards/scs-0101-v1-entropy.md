@@ -123,7 +123,7 @@ The user may choose to use the `virtio-rng` device via `rngd`.
 Compute nodes must use CPUs that offer RDRAND/RDSEED, and these
 instructions may not be filtered by the hypervisor. If this requirement
 cannot be verified directly, then at least the following two conditions
-must be satisfied:
+must be satisfied in a virtual instance:
 
 1. The special file `/proc/sys/kernel/random/entropy_avail` must contain
 the value 256 (pinned since kernel 5.18).
