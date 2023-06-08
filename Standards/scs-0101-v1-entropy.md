@@ -82,16 +82,9 @@ to enable access to a HRNG.
 
 As stated above, good sources of entropy are paramount for many
 important applications. This standard ensures that sufficient entropy
-will be available. In short, this goal is achieved by (a) requiring
-sufficiently recent CPUs in the hosts and kernels in the guests, and
-(b) recommending to provide the means to use `virtio-rng`.
+will be available in virtual instances.
 
 ## Entropy in SCS clouds
-
-This standard does not intend to make any guarantees for Linux images
-that are not themselves included in the
-[Image Metadata Standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0102-v1-image-metadata.md),
-in particular images having a kernel (patch level) below version 5.18.
 
 ### Flavors
 
@@ -110,6 +103,10 @@ hw_rng:rate_period - Sets the duration of a read period in seconds.
 ```
 
 ### Images
+
+It is recommended to use images having a kernel (patch level) version 5.18
+or up. This condition is already satisfied by every mandatory image defined
+in the [Image Metadata Standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0102-v1-image-metadata.md).
 
 It is recommended that images activate the attribute `hw_rng_model: virtio`.
 
