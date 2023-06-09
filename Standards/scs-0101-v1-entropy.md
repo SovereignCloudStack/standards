@@ -5,114 +5,128 @@ status: Draft
 track: IaaS
 ---
 
-## 1. Terminology of Entropy
+## Introduction
 
-### 1.1. Entropy in information Technology
+### Entropy in information technology
 
 Entropy is a concept that is widely used in the scope of information
 technology. It is a measurement of the amount of disorder or randomness in
-a system. Entropy is used to measure the amount of information in a self
-contained systems, as well as the amount of incertitude that exists in this
-system. For cryptographic procedures and operations good entropy
-is a must have!
+a system. Entropy is used to measure the amount of information in a
+self-contained system, as well as the amount of incertitude that exists in this
+system.
 
-In traditional baremetal systems the amount of incertitude is generated
-by the randomness of read/write cycle of the disk heads of a disk-drive,
-bus timings as well as items such as keyboard timings.
+### Real-world uses of entropy
 
-### 1.2 Entropy in Virtual Instances
+Cryptography is a very prominent, albeit not the only application that
+heavily relies on entropy for operations such as creating secure keys.
+When the available _entropy runs out_, said operations can stall and
+take an abnormally long amount of time, which in turn can lead to
+malfunctions, e.g., with OpenSSL or load balancers.
 
-Virtual instances or virtual machines do not have these sources
-for random numbers. An instance will operate normally, but as
-cryptographic operations happen, procedures will take an abnormal long time,
-because with a small entropy count cryptographic operation can not operate
-in realtime. Examples are malfunctioning applications and OpenSSL
-operations that will not work.
+### Sources of entropy
 
-```console
-  $cat /proc/sys/kernel/random/entropy_avail
-  128
-```
+In _traditional baremetal systems_ the amount of incertitude is sourced
+from the randomness of the read/write cycles of the disk heads of a disk drive,
+bus timings, or keyboard timings, to name a few.
 
-#### 1.2.1 How to generate entropy "Out-Of-Nothing" ?
+_More recent methods_ of generating entropy include measuring IRQ jitter
+(available in Linux since kernel 5.4 or, before that, via a daemon such as
+[HavegeD](http://www.issihosts.com/haveged/)) as well as dedicated CPU
+instructions (available in virtually all major CPUs: RDSEED or RDRAND
+on x86_64 and RNDR on arm64).
 
-One procedure that was used in the past in virtual machines or virtual appliances
-was the use of an entropy daemon to ensure that here is a sufficient amount of
-entropy. Today this is a common operation although for embedded devices.
-[HavegeD](http://www.issihosts.com/haveged/) is one of those daemons.
+Finally, a dedicated device can be utilized — if present — that is
+called _hardware random number generator_ or HRNG for short. For instance,
+the [Trusted Platform Module](https://en.wikipedia.org/wiki/Trusted_Platform_Module)
+includes a HRNG. On Linux systems, the HRNG appears as `/dev/hwrng`.
+Note that, while the dedicated CPU instructions can be construed as
+a HRNG, they are not treated as such by the kernel, i.e., they _do not_
+appear as `/dev/hwrng`!
 
-```console
-   $cat /proc/sys/kernel/random/entropy_avail
-   1956
-```
+The Linux kernel combines multiple sources of entropy into a pool. To this
+end, it will use all of the sources discussed so far with one exception:
+the HRNG must be fed into the pool (if so desired) via the daemon `rngd`.
+The kernel converts the entropy from the pool into cryptographically
+secure random numbers that appear under `/dev/random` and `/dev/urandom`.
 
-#### 1.2.2 CPU Hardware random number generator
+With kernel 5.18, the algorithm that accomplishes
+said conversion has been drastically improved (see
+[linux-rng-5.17-18](https://web.archive.org/web/20230321040526/https://www.zx2c4.com/projects/linux-rng-5.17-5.18/)),
+so much so that running out of entropy is virtually ruled out.
+These patches have now also arrived in the upstream LTS images.
 
-Modern server CPUs of ARM, AMD and Intel ship Hardware random number generator.
-This feature will be passed through to the virtualization layer. This will be
-addressed by virtio-rng.
+### Entropy in virtual instances
 
-Baremetal systems and virtual instances will need the rng-tools or rng-utils.
+Virtual instances or virtual machines do not have the traditional sources
+of entropy mentioned above. However, the more recent methods mentioned
+above do work just fine (the CPU instructions are not privileged).
 
-```console
-     #cat /proc/sys/kernel/random/entropy_avail
-     3843
-```
+Alternatively, a virtualized HRNG called `virtio-rng` can be established
+that injects entropy from the host into the instance, where this
+entropy can be sourced optionally from either the host's `/dev/random` or
+some HRNG in the host. This virtualized HRNG behaves just like a real
+one, that is, it appears as `/dev/hwrng`, and the daemon `rngd` must
+be used to feed it into the kernel's entropy pool.
 
-##### 1.2.3 Changes since Linux 5.17, 5.18
+On a side note, the kernel exposes available HRNGs via the special
+directory `/sys/devices/virtual/misc/hw_random`. In particular, the
+file `rng_available` lists availabe HRNGs while the file `rng_current`
+contains the HRNG currently used.
 
-Jason A. Donenfeld has rewritten the RNG Number generator for Linux, which is
-replacing the very old sha-1 with blake2 algorithm, "random use computational
-hash for entropy extraction" the full explanation can be found here:
-[linux-rng-5.17-18](https://web.archive.org/web/20230321040526/https://www.zx2c4.com/projects/linux-rng-5.17-5.18/).
+In summary, with current kernels and CPUs entropy in virtual instances
+is readily available to a sufficient degree. In addition, the host's
+entropy sources can be injected using `virtio-rng` if so desired, e.g.,
+to enable access to a HRNG.
 
-This RNG improvements make some workarounds obsolete. For example haveged
-should not be use anymore. Rng-tools can continue to be used. Rng-tools bridge
-the hardware number generators that support RDRAND and RDSEED as they support
-HWRNG in modern Intel and AMD processors.
+## Motivation
 
-These patches have now also arrived in the upstream LTS Kernels.
+As stated above, good sources of entropy are paramount for many
+important applications. This standard ensures that sufficient entropy
+will be available in virtual instances.
 
-The behavior will be as follows:
+## Entropy in SCS clouds
 
-```console
- $cat /proc/sys/kernel/random/entropy_avail
-  256
-```
+### Flavors
 
-Because the blake2 is used algorithm the entropy count is sufficient.
-The rng-tools brings up the software rngtest. With rngtest the entropy
-can be checked.
-
-```console
- $cat /dev/random | rngtest -c 1000
-```
-
-### 1.3 Entropy in SCS Clouds
-
-#### 1.3.1 Flavors
-
-All flavors need to have the relevant attributes activated:
+It is recommended that all flavors have the following attribute:
 
 ```console
 hw_rng:allowed=True
 ```
 
-optional:
+The following attributes are optional:
 
 ```console
 hw_rng:rate_bytes - The allowed amount of bytes for the the guest
-to read from the host’s entropy per period.
-
-hw_rng:rate_period
+    to read from the host's entropy per period.
+hw_rng:rate_period - Sets the duration of a read period in seconds.
 ```
 
-#### 1.3.2 Images
+### Images
 
-Images must activate the attribute `hw_rng_model: virtio`.
+It is recommended to use images having a kernel (patch level) version 5.18
+or up. This condition is already satisfied by every mandatory image defined
+in the [Image Metadata Standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0102-v1-image-metadata.md).
 
-#### 1.3.3 Compute Nodes
+It is recommended that images activate the attribute `hw_rng_model: virtio`.
 
-On compute nodes the rng-utils must be present and activate.
-This is a requirement to guarantee working confident cryptography
-in SCS Cloud Infrastructures.
+The daemon `rngd` must be installed (usually from `rng-tools`
+or `rng-utils`).
+
+The user may choose to use the `virtio-rng` device via `rngd`.
+
+### Compute nodes
+
+Compute nodes must use CPUs that offer instructions for accessing
+entropy (such as RDSEED or RDRAND on x86_64 or RNDR on arm64), and
+these instructions may not be filtered by the hypervisor.
+If this requirement cannot be verified directly, then at least the
+following two conditions must be satisfied in a virtual instance:
+
+1. The special file `/proc/sys/kernel/random/entropy_avail` must contain
+the value 256 (pinned since kernel 5.18).
+
+2. The number of FIPS 140-2 failures must not exceed 3 out of 1000 blocks
+tested, as determined by `cat /dev/random | rngtest -c 1000` .
+
+Compute nodes may provide a HRNG via `rngd`.
