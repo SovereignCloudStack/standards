@@ -18,10 +18,6 @@ When CSPs try to enroll a new customer they encounter themselves in
 a situation where they have to choose names for the openstack domain,
 project and user.
 
-There might also exists some group or roles from the customers point of
-view, like `domain admin` or `project admin` not related at all with
-openstack.
-
 ## Motivation
 
 Create a naming convention to use during the provisioning of the users and
