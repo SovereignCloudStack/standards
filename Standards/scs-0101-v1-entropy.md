@@ -31,15 +31,15 @@ bus timings, or keyboard timings, to name a few.
 
 _More recent methods_ of generating entropy include measuring IRQ jitter
 (available in Linux since kernel 5.4 or, before that, via a daemon such as
-[HavegeD](http://www.issihosts.com/haveged/)) as well as the special CPU
-instructions RDRAND and RDSEED, which are present in all modern CPUs from
-ARM, AMD, and Intel.
+[HavegeD](http://www.issihosts.com/haveged/)) as well as dedicated CPU
+instructions (available in virtually all major CPUs: RDSEED or RDRAND
+on x86_64 and RNDR on arm64).
 
 Finally, a dedicated device can be utilized — if present — that is
 called _hardware random number generator_ or HRNG for short. For instance,
 the [Trusted Platform Module](https://en.wikipedia.org/wiki/Trusted_Platform_Module)
 includes a HRNG. On Linux systems, the HRNG appears as `/dev/hwrng`.
-Note that, while the RDRAND and RDSEED instructions can be construed as
+Note that, while the dedicated CPU instructions can be construed as
 a HRNG, they are not treated as such by the kernel, i.e., they _do not_
 appear as `/dev/hwrng`!
 
@@ -59,7 +59,7 @@ These patches have now also arrived in the upstream LTS images.
 
 Virtual instances or virtual machines do not have the traditional sources
 of entropy mentioned above. However, the more recent methods mentioned
-above do work just fine (RDRAND and RDSEED are not privileged).
+above do work just fine (the CPU instructions are not privileged).
 
 Alternatively, a virtualized HRNG called `virtio-rng` can be established
 that injects entropy from the host into the instance, where this
@@ -117,10 +117,11 @@ The user may choose to use the `virtio-rng` device via `rngd`.
 
 ### Compute nodes
 
-Compute nodes must use CPUs that offer RDRAND/RDSEED, and these
-instructions may not be filtered by the hypervisor. If this requirement
-cannot be verified directly, then at least the following two conditions
-must be satisfied in a virtual instance:
+Compute nodes must use CPUs that offer instructions for accessing
+entropy (such as RDSEED or RDRAND on x86_64 or RNDR on arm64), and
+these instructions may not be filtered by the hypervisor.
+If this requirement cannot be verified directly, then at least the
+following two conditions must be satisfied in a virtual instance:
 
 1. The special file `/proc/sys/kernel/random/entropy_avail` must contain
 the value 256 (pinned since kernel 5.18).
