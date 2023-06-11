@@ -1,0 +1,23 @@
+name: "Compliance of regio-a"
+
+on:
+  # Trigger compliance check every day at 4:30 UTC
+  schedule:
+    - cron:  '30 4 * * *'
+  # Trigger compliance check after Docker image has been built
+  workflow_run:
+    workflows: [Build and publish scs-compliance-check Docker image]
+    types:
+      - completed
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  check-regio-a:
+    uses: ./.github/workflows/scs-compliance-check-with-application-credential.yml
+    with:
+      version: v3
+      layer: iaas
+      cloud: "regio-a"
+      secret_name: "OS_PASSWORD_REGIO_A"
+    secrets: inherit

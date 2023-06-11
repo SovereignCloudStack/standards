@@ -1,7 +1,8 @@
 ---
 title: SCS Flavor Naming Standard
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2023-06-14
 track: IaaS
 replaces: flavor-naming.md
 ---
