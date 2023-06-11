@@ -3,6 +3,7 @@ title: SCS Flavor Naming Standard
 version: 2022-09-08-002
 authors: Matthias Hamm, Kurt Garloff, Tim Beermann
 state: v1.1 (for R3)
+obsoleted_at: 2023-10-31
 ---
 
 Flavor Naming for SCS
