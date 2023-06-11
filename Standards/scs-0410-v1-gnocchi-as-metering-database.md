@@ -2,7 +2,7 @@
 title: Gnocchi as database for metering
 type: Decision Record
 status: Draft
-track: IaaS
+track: Ops
 ---
 
 <!-- This file uses semantic linebreaks. See <https://sembr.org/> for more info. -->
@@ -156,7 +156,7 @@ let alone rolling a custom implementation.
 
 ## Related Documents
 
-- SCS-0111-v1
+- SCS-0411-v1
 
 ## Conformance Tests
 
