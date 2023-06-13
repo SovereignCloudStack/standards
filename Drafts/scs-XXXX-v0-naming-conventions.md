@@ -40,17 +40,23 @@ So the onboaring tool will create the following structure for a new
 customer onboarded in the system.
 
 ```commandline
-domain: d<customer_id> 
+domain: d<customer_id>
 project: p<customer_id>-<project_name>
 user: u<customer_id>-<user_name>
 ```
 
 For the customer also a domain admin group and a project admin group are
-created. Please note that, at the time of writing, PCO is not making any use of OpenStack domains to isolate customers. So, for the scope of this document, the term "domain admin" is used in a conceptual way rather than referring to the specific OpenStack implementation. For the scope of this document "domain admins" can do things like creating projects, creating users and granting users access to some projects (within the domain of course). "Users" can create and view resources within the projects that they have been granted access to by the "domain admin"
-
-These groups use
-the prefix "gd" for domain group and "gp" for group project and are build
-like the following:
+For the customer also a domain admin group and a project admin group are
+created. Please note that, at the time of writing, PCO is not making any
+use of OpenStack domains to isolate customers. So, for the scope of this
+document, the term "domain admin" is used in a conceptual way rather than
+referring to the specific OpenStack implementation. For the scope of this
+document "domain admins" can do things like creating projects, creating
+users and granting users access to some projects (within the domain of
+course). "Users" can create and view resources within the projects that
+they have been granted access to by the "domain admin".
+These groups use the prefix "gd" for domain group and "gp" for group project
+and are build like the following:
 
 ```commandline
 domain admin group: gd<customer_id>-member
