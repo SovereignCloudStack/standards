@@ -2,7 +2,7 @@
 title: Push-based approach for providing usage data
 type: Decision Record
 status: Draft
-track: IaaS
+track: Ops
 ---
 
 <!-- This file uses semantic linebreaks. See <https://sembr.org/> for more info. -->
@@ -99,7 +99,7 @@ or alternatively poll in the highest change frequency ever expected.
 
 ## Related Documents
 
-- SCS-0110-v1
+- SCS-0410-v1
 
 ## Conformance Tests
 
