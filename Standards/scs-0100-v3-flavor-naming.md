@@ -181,6 +181,9 @@ also is more likely to fail), `s` and `p` are for applications that need low
 latency (high IOPS) and bandwidth disk I/O. `n` storage is expected to survive
 single-disk and single-node failure.
 
+For specific requirements on the SSD and NVMe disks regarding IOPS and
+power-loss protection, refer to Decision Record [scs-0110-ssd-flavors](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0110-v1-ssd-flavors.md).
+
 If the disk size is left out, the cloud is expected to allocate a disk (network or local)
 that is large enough to fit the root file system (`min_disk` in image). This automatic
 allocation is indicated with `-` without a disk size.
