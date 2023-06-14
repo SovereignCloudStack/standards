@@ -46,7 +46,6 @@ user: u<customer_id>-<user_name>
 ```
 
 For the customer also a domain admin group and a project admin group are
-For the customer also a domain admin group and a project admin group are
 created. Please note that, at the time of writing, PCO is not making any
 use of OpenStack domains to isolate customers. So, for the scope of this
 document, the term "domain admin" is used in a conceptual way rather than
