@@ -49,11 +49,11 @@ We believe the following characteristics are important in a flavour description:
 
 ### Complete Proposal
 
-| Prefix | CPU | Suffix     | RAM[GiB]  | optional: Disk[GB] | optional: Disk type | optional: extra features                            |
-| ------ | --- | ---------- | --------- | ------------------ | ------------------- | --------------------------------------------------- |
-| SCS-   | N   | L/V/T/C[i] | :N\[u][o] | [:[Mx]N]           | [n/s/l/p]           | \[-hyp][-hwv]-[arch\[N][h][-[G/g]X\[N][:M[h]]][-ib] |
+| Prefix | CPU | Suffix       | RAM[GiB]   | optional: Disk[GB] | optional: Disk type | optional: extra features                                       |
+| ------ | --- | ------------ | ---------- | ------------------ | ------------------- | -------------------------------------------------------------- |
+| `SCS-` | N   | `L/V/T/C[i]` | :N`[u][o]` | `[:[`M`x]`N`]`     | `[n/s/l/p]`         | `[-`hyp`][-hwv]-[`arch`[`N`][h][-[G/g]`X`[`N`][:`M`[h]]][-ib]` |
 
-(Note that `N` and `M` are placeholders for numbers here).
+(Note that N and M are placeholders for numbers here).
 
 ## Proposal Details
 

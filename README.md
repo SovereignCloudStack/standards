@@ -23,18 +23,14 @@ More certification levels will follow as the project progresses.
 
 This repository is organized according to [SCS-0002-v1](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0002-v1-standards-docs-org.md).
 
-### Decisions
-
-Decision Records, see [Standards/scs-0001-v1-sovereign-cloud-standards.md](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0001-v1-sovereign-cloud-standards.md#types-of-documents)
-
-### Drafts
-
-Old Design-Docs folder with existing Architectural Decision Records (ADRs). This directory is currently in the process of being consolidated and cleaned up. See [cleanup step-1](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0002-v1-standards-docs-org.md#suggested-cleanup-step-1) and [open questions](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0002-v1-standards-docs-org.md#open-questions).
-
 ### Standards
 
-Official SCS standards, see [Standards/scs-0001-v1-sovereign-cloud-standards.md](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0001-v1-sovereign-cloud-standards.md)).
+Official SCS standards and Decision Records, see [Standards/scs-0001-v1-sovereign-cloud-standards.md](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0001-v1-sovereign-cloud-standards.md)).
 
 ### Tests
 
 Testsuite and tools for SCS standards, see [Tests/README.md](https://github.com/SovereignCloudStack/standards/blob/main/Tests/README.md).
+
+### Drafts
+
+Old Design-Docs folder with existing Architectural Decision Records (ADRs). This directory is currently in the process of being consolidated and cleaned up. See [cleanup step-1](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0002-v1-standards-docs-org.md#suggested-cleanup-step-1) and [open questions](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0002-v1-standards-docs-org.md#open-questions).
