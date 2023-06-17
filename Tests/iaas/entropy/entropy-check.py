@@ -199,7 +199,7 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
     # the previously created keys and security group
     logger.debug(f"Creating instance of image '{image.name}' using flavor '{flavors[0].name}'")
     server = env.conn.create_server(
-        server_name, image=image, flavor=flavors[0], key_name=env.keypair.name,
+        server_name, image=image, flavor=flavor, key_name=env.keypair.name,
         security_groups=[env.sec_group.name], wait=True, timeout=300, auto_ip=True,
     )
     logger.debug(f"Server '{server_name}' ('{server.id}') has been created")
