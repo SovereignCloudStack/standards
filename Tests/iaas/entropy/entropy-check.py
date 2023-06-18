@@ -34,8 +34,16 @@ SERVER_NAME = "scs-0101-server"
 SECURITY_GROUP_NAME = "scs-0101-group"
 KEYPAIR_NAME = "scs-0101-keypair"
 
-IMAGE_ATTRIBUTES = {"hw_rng_model": "virtio"}
-FLAVOR_ATTRIBUTES = {"hw_rng:allowed": "true"}
+IMAGE_ATTRIBUTES = {
+    # https://docs.openstack.org/glance/latest/admin/useful-image-properties.html#image-property-keys-and-values
+    # type: str
+    "hw_rng_model": "virtio",
+}
+FLAVOR_ATTRIBUTES = {
+    # https://docs.openstack.org/nova/latest/configuration/extra-specs.html#hw-rng
+    # type: bool
+    "hw_rng:allowed": True,
+}
 
 
 def print_usage(file=sys.stderr):
@@ -58,7 +66,7 @@ def check_image_attributes(images, attributes=IMAGE_ATTRIBUTES):
 def check_flavor_attributes(flavors, attributes=FLAVOR_ATTRIBUTES):
     for flavor in flavors:
         extra_specs = flavor['extra_specs']
-        wrong = [f"{key}={value}" for key, value in attributes.items() if extra_specs.get(key, "").lower() != value]
+        wrong = [f"{key}={value}" for key, value in attributes.items() if extra_specs.get(key) != value]
         if wrong:
             logger.info(f"Flavor '{flavor.name}' missing recommended attributes: {', '.join(wrong)}")
 
@@ -106,7 +114,7 @@ def check_vm_recommends(fconn, image, flavor):
             logger.info(f"VM '{image.name}' doesn't provide the recommended service rngd")
         # Check the existence of the HRNG -- can actually be skipped if the flavor
         # or the image doesn't have the corresponding attributes anyway!
-        if image.hw_rng_model != "virtio" or flavor.extra_specs.get("hw_rng:allowed", "").lower() != "true":
+        if image.hw_rng_model != "virtio" or not flavor.extra_specs.get("hw_rng:allowed"):
             logger.debug("Not looking for virtio-rng because required attributes are missing")
         else:
             # `cat` can fail with return code 1 if special file does not exist
@@ -184,11 +192,11 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
     # Pick a flavor matching the image
     flavors = [flv for flv in all_flavors if flv.disk >= image.min_disk and flv.ram >= image.min_ram]
     # if at all possible, prefer a flavor that provides hw_rng:allowed!
-    flavors_hrng = [flv for flv in flavors if flv.extra_specs.get("hw_rng:allowed", "").lower() == "true"]
+    flavors_hrng = [flv for flv in flavors if flv.extra_specs.get("hw_rng:allowed")]
     if flavors_hrng:
         flavors = flavors_hrng
     elif flavors:
-        logger.debug(f"Unable to pick flavor with hw_rng:allowed=true for image '{image.name}'")
+        logger.debug(f"Unable to pick flavor with hw_rng:allowed=True for image '{image.name}'")
     else:
         logger.critical(f"No flavor could be found for the image '{image.name}'")
         return
