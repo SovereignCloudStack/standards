@@ -5,8 +5,8 @@ Check given cloud for conformance with SCS standard regarding
 entropy, to be found under /Standards/scs-0101-v1-entropy.md
 
 Return code is 0 precisely when it could be verified that the standard is satisfied.
-Otherwise the return code is the number of errors that occurred; for further information,
-see the log messages on various channels:
+Otherwise the return code is the number of errors that occurred (up to 127 due to OS
+restrictions); for further information, see the log messages on various channels:
     CRITICAL  for problems preventing the test to complete,
     ERROR     for violations of requirements,
     INFO      for violations of recommendations,
@@ -52,6 +52,7 @@ def print_usage(file=sys.stderr):
 This tool checks the requested images and flavors according to the SCS Standard 0101 "Entropy".
 Options:
  [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)
+ [-d/--debug] enables DEBUG logging channel
  [-i/--images IMAGE_LIST] sets images to be tested, separated by comma.
 """, end='', file=file)
 
@@ -250,7 +251,7 @@ class CountingHandler(logging.Handler):
 
 def main(argv):
     # configure logging, disable verbose library logging
-    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
     openstack.enable_logging(debug=False)
     logging.getLogger("fabric").propagate = False
     logging.getLogger("invoke").propagate = False
@@ -261,7 +262,7 @@ def main(argv):
     logger.addHandler(counting_handler)
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:i:h", ["os-cloud=", "images=", "help"])
+        opts, args = getopt.gnu_getopt(argv, "c:i:hd", ["os-cloud=", "images=", "help", "debug"])
     except getopt.GetoptError as exc:
         logger.critical(f"{exc}")
         print_usage()
@@ -277,6 +278,8 @@ def main(argv):
             image_names.update([img.strip() for img in opt[1].split(',')])
         if opt[0] == "-c" or opt[0] == "--os-cloud":
             cloud = opt[1]
+        if opt[0] == "-d" or opt[0] == "--debug":
+            logging.getLogger().setLevel(logging.DEBUG)
 
     if not cloud:
         logger.critical("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.")
@@ -331,7 +334,7 @@ def main(argv):
 
     c = counting_handler.bylevel
     logger.debug(f"Total critical / error / info: {c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.INFO]}")
-    return c[logging.CRITICAL] + c[logging.ERROR]
+    return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 
 if __name__ == "__main__":
