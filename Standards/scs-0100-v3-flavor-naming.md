@@ -496,7 +496,7 @@ incompletely standardized) `extra_specs`
 or worse a non-machine-readable service descriptions to find out the details.
 
 So a cloud provider might well evolve from offering `SCS-8T-16-50` to offering
-`SCS-8T-16-50n`, `SCS-8T-16-50n_i2` and `SCS-8T-16-50n_a2` to specify that he
+`SCS-8T-16-50n`, `SCS-8T-16-50n_i2` and `SCS-8T-16-50n_z2` to specify that he
 is using network disks and offer a choice b/w intel Cascade-Lake and AMD Rome.
 We would expect the cloud provider to still offer the generic flavor
 `SCS-8T-16-50` and allow the scheduler (placement service) to pick both more
