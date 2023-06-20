@@ -23,6 +23,7 @@ import time
 import warnings
 
 import fabric
+import invoke
 import openstack
 import openstack.cloud
 
@@ -44,6 +45,7 @@ FLAVOR_ATTRIBUTES = {
     # type: bool
     "hw_rng:allowed": True,
 }
+FLAVOR_OPTIONAL = ("hw_rng:rate_bytes", "hw_rng:rate_period")
 
 
 def print_usage(file=sys.stderr):
@@ -64,35 +66,56 @@ def check_image_attributes(images, attributes=IMAGE_ATTRIBUTES):
             logger.info(f"Image '{image.name}' missing recommended attributes: {', '.join(wrong)}")
 
 
-def check_flavor_attributes(flavors, attributes=FLAVOR_ATTRIBUTES):
+def check_flavor_attributes(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAVOR_OPTIONAL):
     for flavor in flavors:
         extra_specs = flavor['extra_specs']
         wrong = [f"{key}={value}" for key, value in attributes.items() if extra_specs.get(key) != value]
+        miss_opt = [key for key in optional if extra_specs.get(key) is None]
         if wrong:
-            logger.info(f"Flavor '{flavor.name}' missing recommended attributes: {', '.join(wrong)}")
+            message = f"Flavor '{flavor.name}' missing recommended attributes: {', '.join(wrong)}"
+            # only report missing optional attributes if recommended are missing as well
+            # reasoning here is that these optional attributes are merely a hint for implementers
+            # and if the recommended attributes are present, we assume that implementers have done their job already
+            if miss_opt:
+                message += f"; additionally, missing optional attributes: {', '.join(miss_opt)}"
+            logger.info(message)
+
+
+def install_test_requirements(fconn):
+    # the following commands seem to be necessary for CentOS 8, but let's not go there
+    # because, frankly, that image is ancient
+    # sudo sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
+    # sudo sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
+    # Try those commands first that have a high chance of success (Ubuntu seems very common)
+    commands = (
+        # use ; instead of && after update because an error in update is not fatal
+        # also, on newer systems, it seems we need to install rng-tools5...
+        ('aptitude', 'apt-get -v && (sudo apt-get update ; sudo apt-get install -y rng-tools5 || sudo apt-get install -y rng-tools)'),
+        ('dnf', 'sudo dnf install -y rng-tools'),
+        ('yum', 'sudo yum -y install rng-tools'),
+        ('pacman', 'sudo pacman -Syu rng-tools'),
+    )
+    for name, cmd in commands:
+        try:
+            fconn.run(cmd, hide=True)
+        except invoke.exceptions.UnexpectedExit as e:
+            logger.debug(f"Error running '{name}': {e.result.stderr.strip()}")
+        else:
+            return
+    logger.debug("No package manager worked; proceeding anyway as rng-utils might be present nonetheless.")
 
 
 def check_vm_requirements(fconn, image_name):
     try:
         entropy_avail = fconn.run('cat /proc/sys/kernel/random/entropy_avail', hide=True).stdout.strip()
-        # use ; instead of && to chain commands here because the installation via apt-get
-        # can fail for mysterious reasons (such as, and I kid you not,
-        #    Problem executing scripts APT::Update::Post-Invoke-Success
-        # ) without actually blocking us from running the command
-        # FIXME the following won't work with CentOS etc.
-        fips_data = fconn.run(
-            'sudo apt-get update > /dev/null ; '
-            'sudo apt-get install -y rng-tools > /dev/null ; '
-            'cat /dev/random | rngtest -c 1000',
-            hide=True, warn=True,
-        ).stderr
-
         if entropy_avail != "256":
             logger.error(
                 f"VM '{image_name}' didn't have a fixed amount of entropy available. "
                 f"Expected 256, got {entropy_avail}."
             )
 
+        install_test_requirements(fconn)
+        fips_data = fconn.run('cat /dev/random | rngtest -c 1000', hide=True, warn=True).stderr
         failure_re = re.search(r'failures:\s\d+', fips_data, flags=re.MULTILINE)
         if failure_re:
             fips_failures = failure_re.string[failure_re.regs[0][0]:failure_re.regs[0][1]].split(" ")[1]
@@ -135,46 +158,59 @@ class TestEnvironment:
         self.sec_group = None
 
     def prepare(self):
-        # Create a keypair and save both parts for later usage
-        self.keypair = self.conn.compute.create_keypair(name=KEYPAIR_NAME)
+        try:
+            # Create a keypair and save both parts for later usage
+            self.keypair = self.conn.compute.create_keypair(name=KEYPAIR_NAME)
 
-        self.keyfile = tempfile.NamedTemporaryFile()
-        self.keyfile.write(self.keypair.private_key.encode("ascii"))
-        self.keyfile.flush()
+            self.keyfile = tempfile.NamedTemporaryFile()
+            self.keyfile.write(self.keypair.private_key.encode("ascii"))
+            self.keyfile.flush()
 
-        # Create a new security group and give it some simple rules in order to access it via SSH
-        self.sec_group = self.conn.network.create_security_group(
-            name=SECURITY_GROUP_NAME
-        )
+            # Create a new security group and give it some simple rules in order to access it via SSH
+            self.sec_group = self.conn.network.create_security_group(
+                name=SECURITY_GROUP_NAME
+            )
 
-        _ = self.conn.network.create_security_group_rule(
-            security_group_id=self.sec_group.id,
-            direction='ingress',
-            remote_ip_prefix='0.0.0.0/0',
-            protocol='icmp',
-            port_range_max=None,
-            port_range_min=None,
-            ethertype='IPv4',
-        )
-        _ = self.conn.network.create_security_group_rule(
-            security_group_id=self.sec_group.id,
-            direction='ingress',
-            remote_ip_prefix='0.0.0.0/0',
-            protocol='tcp',
-            port_range_max=22,
-            port_range_min=22,
-            ethertype='IPv4',
-        )
+            _ = self.conn.network.create_security_group_rule(
+                security_group_id=self.sec_group.id,
+                direction='ingress',
+                remote_ip_prefix='0.0.0.0/0',
+                protocol='icmp',
+                port_range_max=None,
+                port_range_min=None,
+                ethertype='IPv4',
+            )
+            _ = self.conn.network.create_security_group_rule(
+                security_group_id=self.sec_group.id,
+                direction='ingress',
+                remote_ip_prefix='0.0.0.0/0',
+                protocol='tcp',
+                port_range_max=22,
+                port_range_min=22,
+                ethertype='IPv4',
+            )
+        except BaseException:
+            # if `prepare` doesn't go through, we want to revert to a clean state
+            # (in my opinion, the user should only need to call `clean` when `prepare` goes through)
+            self.clean()
+            raise
 
     def clean(self):
+        # do it in reverse order here so we can bail as soon as we encounter None
+        if self.sec_group is None:
+            return
         try:
             _ = self.conn.network.delete_security_group(self.sec_group)
         except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
             logger.debug(f"The security group {self.sec_group.name} couldn't be deleted.", exc_info=True)
 
+        if self.keyfile is None:
+            return
         self.keyfile.close()
         self.keyfile = None
 
+        if self.keypair is None:
+            return
         try:
             _ = self.conn.compute.delete_keypair(self.keypair)
         except openstack.cloud.OpenStackCloudException:
@@ -209,7 +245,7 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
     logger.debug(f"Creating instance of image '{image.name}' using flavor '{flavors[0].name}'")
     server = env.conn.create_server(
         server_name, image=image, flavor=flavor, key_name=env.keypair.name,
-        security_groups=[env.sec_group.name], wait=True, timeout=300, auto_ip=True,
+        security_groups=[env.sec_group.id], wait=True, timeout=360, auto_ip=True,
     )
     logger.debug(f"Server '{server_name}' ('{server.id}') has been created")
     return server
