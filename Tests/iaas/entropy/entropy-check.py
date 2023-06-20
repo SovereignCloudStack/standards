@@ -42,7 +42,7 @@ IMAGE_ATTRIBUTES = {
 FLAVOR_ATTRIBUTES = {
     # https://docs.openstack.org/nova/2023.1/configuration/extra-specs.html#hw-rng
     # type: bool
-    "hw_rng:allowed": True,
+    "hw_rng:allowed": "True",  # testing showed that it is indeed a string?
 }
 FLAVOR_OPTIONAL = ("hw_rng:rate_bytes", "hw_rng:rate_period")
 
@@ -89,7 +89,7 @@ def install_test_requirements(fconn):
     commands = (
         # use ; instead of && after update because an error in update is not fatal
         # also, on newer systems, it seems we need to install rng-tools5...
-        ('aptitude', 'apt-get -v && (sudo apt-get update ; sudo apt-get install -y rng-tools5 || sudo apt-get install -y rng-tools)'),
+        ('apt-get', 'apt-get -v && (sudo apt-get update ; sudo apt-get install -y rng-tools5 || sudo apt-get install -y rng-tools)'),
         ('dnf', 'sudo dnf install -y rng-tools'),
         ('yum', 'sudo yum -y install rng-tools'),
         ('pacman', 'sudo pacman -Syu rng-tools'),
@@ -137,7 +137,7 @@ def check_vm_recommends(fconn, image, flavor):
             logger.info(f"VM '{image.name}' doesn't provide the recommended service rngd")
         # Check the existence of the HRNG -- can actually be skipped if the flavor
         # or the image doesn't have the corresponding attributes anyway!
-        if image.hw_rng_model != "virtio" or not flavor.extra_specs.get("hw_rng:allowed"):
+        if image.hw_rng_model != "virtio" or flavor.extra_specs.get("hw_rng:allowed") != "True":
             logger.debug("Not looking for virtio-rng because required attributes are missing")
         else:
             # `cat` can fail with return code 1 if special file does not exist
@@ -228,11 +228,11 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
     # Pick a flavor matching the image
     flavors = [flv for flv in all_flavors if flv.disk >= image.min_disk and flv.ram >= image.min_ram]
     # if at all possible, prefer a flavor that provides hw_rng:allowed!
-    flavors_hrng = [flv for flv in flavors if flv.extra_specs.get("hw_rng:allowed")]
+    flavors_hrng = [flv for flv in flavors if flv.extra_specs.get("hw_rng:allowed") == "True"]
     if flavors_hrng:
         flavors = flavors_hrng
     elif flavors:
-        logger.debug(f"Unable to pick flavor with hw_rng:allowed=True for image '{image.name}'")
+        logger.debug(f"Unable to pick flavor with hw_rng:allowed=true for image '{image.name}'")
     else:
         logger.critical(f"No flavor could be found for the image '{image.name}'")
         return
@@ -241,7 +241,7 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
     flavor = min(flavors, key=lambda flv: flv.vcpus)
     # create a server with the image and the flavor as well as
     # the previously created keys and security group
-    logger.debug(f"Creating instance of image '{image.name}' using flavor '{flavors[0].name}'")
+    logger.debug(f"Creating instance of image '{image.name}' using flavor '{flavor.name}'")
     server = env.conn.create_server(
         server_name, image=image, flavor=flavor, key_name=env.keypair.name,
         security_groups=[env.sec_group.id], wait=True, timeout=360, auto_ip=True,
@@ -354,7 +354,7 @@ def main(argv):
                         server = create_vm(env, all_flavors, image)
                         with fabric.Connection(
                             host=server.public_v4,
-                            user=image.properties['standarduser'],
+                            user=image.properties.get('image_original_user') or image.properties.get('standarduser'),
                             connect_kwargs={"key_filename": env.keyfile.name},
                         ) as fconn:
                             # need to retry because it takes time for sshd to come up
