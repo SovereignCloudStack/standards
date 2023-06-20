@@ -1,7 +1,8 @@
 ---
 title: SSD Flavors
-type: Standard
-status: Draft
+type: Decision Record
+status: Stable
+stabilized_at: 2023-06-14
 track: IaaS
 enhances: scs-0100-v2-flavor-naming.md
 ---
@@ -19,13 +20,13 @@ for wave 1 (VM-based) cloud-native workloads or for the virtualization of more
 classical (not cloud-native) workloads. The IaaS implementation thus comes with
 standards.
 
-This standard is about requiring a few mandatory flavors on the IaaS level
+This Decision Record is about adding a few mandatory flavors on the IaaS level
 that include flavors with local SSD (or better) storage.
 
 ## Motivation
 
-The [currently defined standard flavors](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/flavor-naming.md)
-(as of v1.1 from 2022-09-08) do not include
+The [currently defined standard flavors](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0100-v2-flavor-naming.md)
+do not include
 flavors that use local storage. For certain workloads such as databases or big data
 filesystems, local storage is highly desirable as replication may be handled at
 the application layer, making replication/redundancy in a networked storage solution
@@ -240,9 +241,9 @@ not meant to mandate or prevent the implementation via either route.
 
 The flavors will be added as mandatory flavors to the
 [flavor-naming standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0100-v2-flavor-naming.md),
-which will thus have to be released in a v2.
+which will thus have to be released in a v3.
 
-The IOPS and Power-Loss requirements from this standard should become
+The IOPS and Power-Loss requirements from this decision should become
 part of the flavor-naming standard for disk type `s`.
 
 When we standardize storage types in the future, additional possibilities

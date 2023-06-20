@@ -33,6 +33,7 @@ def usage(rcode=1):
     print(" [-1/--v1prefer] prefer v1 flavor names (but still tolerates v2", file=sys.stderr)
     print(" [-o/--accept-old-mandatory] prefer v2 flavor names, but v1 ones can fulfill mand list", file=sys.stderr)
     print(" [-2/--v2plus] only accepts v2 flavor names, old ones result in errors", file=sys.stderr)
+    print(" [-3/--v3] differentiate b/w mand and recommended flavors", file=sys.stderr)
     print(" [-v/--verbose] [-q/--quiet] control verbosity of output", file=sys.stderr)
     print("This tool retrieves the list of flavors from the OpenStack cloud OS_CLOUD", file=sys.stderr)
     print(" and checks for the presence of the mandatory SCS flavors (read from mand.yaml)", file=sys.stderr)
@@ -45,6 +46,7 @@ def main(argv):
     cloud = None
     verbose = False
     quiet = False
+    v3mode = False
     scsMandFile = fnmck.mandFlavorFile
 
     try:
@@ -52,9 +54,9 @@ def main(argv):
     except KeyError:
         pass
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:C:vhq21o",
+        opts, args = getopt.gnu_getopt(argv, "c:C:vhq321o",
                                        ("os-cloud=", "mand=", "verbose", "help", "quiet", "v2plus",
-                                        "v1prefer", "accept-old-mandatory"))
+                                        "v3", "v1prefer", "accept-old-mandatory"))
     except getopt.GetoptError as exc:
         print(f"{exc}", file=sys.stderr)
         usage(1)
@@ -65,6 +67,9 @@ def main(argv):
             cloud = opt[1]
         elif opt[0] == "-C" or opt[0] == "--mand":
             scsMandFile = opt[1]
+        elif opt[0] == "-3" or opt[0] == "--v3":
+            # fnmck.disallow_old = True
+            v3mode = True
         elif opt[0] == "-2" or opt[0] == "--v2plus":
             fnmck.disallow_old = True
         elif opt[0] == "-1" or opt[0] == "--v1prefer":
@@ -76,13 +81,14 @@ def main(argv):
             # fnmck.verbose = True
         elif opt[0] == "-q" or opt[0] == "--quiet":
             quiet = True
+            fnmck.quiet = True
         else:
             usage(2)
     if len(args) > 0:
         print(f"Extra arguments {str(args)}", file=sys.stderr)
         usage(1)
 
-    scsMandatory = fnmck.readmandflavors(scsMandFile)
+    scsMandatory, scsRecommended = fnmck.readflavors(scsMandFile, v3mode, fnmck.prefer_old)
 
     if not cloud:
         print("ERROR: You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
@@ -91,6 +97,7 @@ def main(argv):
 
     # Lists of flavors: mandatory, good-SCS, bad-SCS, non-SCS, with-warnings
     MSCSFlv = []
+    RSCSFlv = []
     SCSFlv = []
     wrongFlv = []
     nonSCSFlv = []
@@ -163,9 +170,15 @@ def main(argv):
                 if flv.name in scsMandatory:
                     scsMandatory.remove(flv.name)
                     MSCSFlv.append(flv.name)
+                elif flv.name in scsRecommended:
+                    scsRecommended.remove(flv.name)
+                    RSCSFlv.append(flv.name)
                 elif fnmck.accept_old_mand and fnmck.old_to_new(flv.name) in scsMandatory:
                     scsMandatory.remove(fnmck.old_to_new(flv.name))
                     MSCSFlv.append(flv.name)   # fnmck.old_to_new(flv.name)
+                elif fnmck.accept_old_mand and fnmck.old_to_new(flv.name) in scsRecommended:
+                    scsRecommended.remove(fnmck.old_to_new(flv.name))
+                    RSCSFlv.append(flv.name)   # fnmck.old_to_new(flv.name)
                 else:
                     SCSFlv.append(flv.name)
                 if warn:
@@ -177,6 +190,7 @@ def main(argv):
             print(f"Wrong flavor \"{flv.name}\": {exc}", file=sys.stderr)
     # This makes the output more readable
     MSCSFlv.sort()
+    RSCSFlv.sort()
     SCSFlv.sort()
     nonSCSFlv.sort()
     wrongFlv.sort()
@@ -188,10 +202,17 @@ def main(argv):
     flvSCSList = {
         "MandatoryFlavorsPresent": MSCSFlv,
         "MandatoryFlavorsMissing": scsMandatory,
+    }
+    if v3mode:
+        flvSCSList.update({
+            "RecommendedFlavorsPresent": RSCSFlv,
+            "RecommendedFlavorsMissing": scsRecommended,
+        })
+    flvSCSList.update({
         "OptionalFlavorsValid": SCSFlv,
         "OptionalFlavorsWrong": wrongFlv,
         "FlavorsWithWarnings": warnFlv,
-    }
+    })
     flvOthList = {
         "OtherFlavors": nonSCSFlv
     }
@@ -199,16 +220,23 @@ def main(argv):
         "TotalAmount": len(MSCSFlv) + len(SCSFlv) + len(wrongFlv),
         "MandatoryFlavorsPresent": len(MSCSFlv),
         "MandatoryFlavorsMissing": len(scsMandatory),
+    }
+    if v3mode:
+        flvSCSRep.update({
+            "RecommendedFlavorsPresent": len(RSCSFlv),
+            "RecommendedFlavorsMissing": len(scsRecommended),
+        })
+    flvSCSRep.update({
         "OptionalFlavorsValid": len(SCSFlv),
         "OptionalFlavorsWrong": len(wrongFlv),
-        "FlavorsWithWarnings": len(warnFlv)
-    }
+        "FlavorsWithWarnings": len(warnFlv),
+    })
     flvOthRep = {
-        "TotalAmount": len(nonSCSFlv)
+        "TotalAmount": len(nonSCSFlv),
     }
     totSummary = {
         "Errors": errors,
-        "Warnings": len(warnFlv)
+        "Warnings": len(warnFlv)+len(scsRecommended),
     }
     Report = {cloud: {"TotalSummary": totSummary}}
     if not quiet:
