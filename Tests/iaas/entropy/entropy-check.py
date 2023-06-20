@@ -118,13 +118,44 @@ def check_flavor_attributes(conn):
     return return_code
 
 
+def install_test_requirements(fconn):
+    try:
+        _ = fconn.run('sudo apt-get update && sudo apt-get install -y rng-tools', hide=True).stdout
+        return
+    except invoke.exceptions.UnexpectedExit:
+        print("DEBUG: Aptitude package manager not found.")
+        pass
+
+    try:
+        _ = fconn.run('sudo dnf install -y rng-tools', hide=True).stdout
+        return
+    except invoke.exceptions.UnexpectedExit:
+        print("DEBUG: dnf package manager not found.")
+        pass
+
+    try:
+        _ = fconn.run('sudo yum -y install rng-tools', hide=True).stdout
+        return
+    except invoke.exceptions.UnexpectedExit:
+        print("DEBUG: yum package manager not found.")
+        pass
+
+    try:
+        _ = fconn.run('sudo pacman -Syu rng-tools', hide=True).stdout
+        return
+    except invoke.exceptions.UnexpectedExit:
+        print("DEBUG: Pacman package manager not found.")
+        pass
+    return
+
+
 def check_vm_requirements(host, user, image_name):
     try:
         fconn = fabric.Connection(host=host, user=user, connect_kwargs={"key_filename": "./key.priv"})
 
         entropy_avail = fconn.run('cat /proc/sys/kernel/random/entropy_avail', hide=True).stdout
 
-        _ = fconn.run('sudo apt-get update && sudo apt-get install -y rng-tools', hide=True).stdout
+        install_test_requirements(fconn)
         try:
             fips_data = fconn.run('cat /dev/random | rngtest -c 1000', hide=True).stderr
         except invoke.exceptions.UnexpectedExit as e:
