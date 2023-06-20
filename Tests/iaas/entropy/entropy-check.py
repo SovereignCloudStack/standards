@@ -30,18 +30,17 @@ import openstack.cloud
 
 logger = logging.getLogger(__name__)
 
-# use telling names here, maybe even reuse the security group in case of a leak?
 SERVER_NAME = "scs-0101-server"
 SECURITY_GROUP_NAME = "scs-0101-group"
 KEYPAIR_NAME = "scs-0101-keypair"
 
 IMAGE_ATTRIBUTES = {
-    # https://docs.openstack.org/glance/latest/admin/useful-image-properties.html#image-property-keys-and-values
+    # https://docs.openstack.org/glance/2023.1/admin/useful-image-properties.html#image-property-keys-and-values
     # type: str
     "hw_rng_model": "virtio",
 }
 FLAVOR_ATTRIBUTES = {
-    # https://docs.openstack.org/nova/latest/configuration/extra-specs.html#hw-rng
+    # https://docs.openstack.org/nova/2023.1/configuration/extra-specs.html#hw-rng
     # type: bool
     "hw_rng:allowed": True,
 }
