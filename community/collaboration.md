@@ -59,9 +59,9 @@ We are also using it for our taskboards currently, though we are looking at
 options to do this in the open.
 
 If you want to contribute, we'll do an onboarding call and add you to nextcloud.
-This will also add you to the scs-member@lists.scs.community mailing list.
+This will also add you to the `scs-member@lists.scs.community` mailing list.
 
-We have an announcements mailing list there announce@lists.scs.community and you
+We have an announcements mailing list there `announce@lists.scs.community` and you
 can subscribe via the [mailman3 frontend](https://scs.sovereignit.de/mailman3/postorius/lists/)
 
 ## Zuul CI/CD pipelines and project gating
