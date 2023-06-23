@@ -6,7 +6,7 @@ state: v1.1 (for R3)
 obsoleted_at: 2023-10-31
 ---
 
-Flavor Naming for SCS
+## Introduction
 
 This is the standard v1.0 for SCS Release 0.
 Note that we intend to only extend it (so it's always backwards compatible),
