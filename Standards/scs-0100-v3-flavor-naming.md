@@ -4,7 +4,7 @@ type: Standard
 status: Stable
 stabilized_at: 2023-06-14
 track: IaaS
-replaces: flavor-naming.md
+replaces: scs-0100-v2-flavor-naming.md
 ---
 
 ## Introduction
@@ -525,7 +525,7 @@ an image is considered broken by the SCS team.
 
 ## Previous standard versions
 
-[Version 1 of the standard](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/flavor-naming.md)
+[Version 1 of the standard](scs-0100-v1-flavor-naming.md)
 used a slightly different naming syntax while the logic was exactly the same.
 What is a `-` in v2 used to be a `:`; `_` used to be `-`. The reason for
 the change was certain Kubernetes tools using the flavor names as labels.
