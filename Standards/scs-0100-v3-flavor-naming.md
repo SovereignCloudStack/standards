@@ -1,9 +1,10 @@
 ---
 title: SCS Flavor Naming Standard
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2023-06-14
 track: IaaS
-replaces: flavor-naming.md
+replaces: scs-0100-v2-flavor-naming.md
 ---
 
 ## Introduction
@@ -180,6 +181,9 @@ It does make sense for `n` to be requested explicitly to allow for smooth live m
 also is more likely to fail), `s` and `p` are for applications that need low
 latency (high IOPS) and bandwidth disk I/O. `n` storage is expected to survive
 single-disk and single-node failure.
+
+For specific requirements on the SSD and NVMe disks regarding IOPS and
+power-loss protection, refer to Decision Record [scs-0110-ssd-flavors](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0110-v1-ssd-flavors.md).
 
 If the disk size is left out, the cloud is expected to allocate a disk (network or local)
 that is large enough to fit the root file system (`min_disk` in image). This automatic
@@ -492,7 +496,7 @@ incompletely standardized) `extra_specs`
 or worse a non-machine-readable service descriptions to find out the details.
 
 So a cloud provider might well evolve from offering `SCS-8T-16-50` to offering
-`SCS-8T-16-50n`, `SCS-8T-16-50n_i2` and `SCS-8T-16-50n_a2` to specify that he
+`SCS-8T-16-50n`, `SCS-8T-16-50n_i2` and `SCS-8T-16-50n_z2` to specify that he
 is using network disks and offer a choice b/w intel Cascade-Lake and AMD Rome.
 We would expect the cloud provider to still offer the generic flavor
 `SCS-8T-16-50` and allow the scheduler (placement service) to pick both more
@@ -521,7 +525,7 @@ an image is considered broken by the SCS team.
 
 ## Previous standard versions
 
-[Version 1 of the standard](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/flavor-naming.md)
+[Version 1 of the standard](scs-0100-v1-flavor-naming.md)
 used a slightly different naming syntax while the logic was exactly the same.
 What is a `-` in v2 used to be a `:`; `_` used to be `-`. The reason for
 the change was certain Kubernetes tools using the flavor names as labels.

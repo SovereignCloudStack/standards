@@ -21,7 +21,7 @@ iaas:
         # Unfortunately, no wrapper to run refstack yet, needs to be added
   - version: v2
     stabilized_at: 2023-03-23
-    # obsoleted_at: 2024-04-30
+    obsoleted_at: 2023-11-30
     standards:
       - name: Flavor naming
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v2-flavor-naming.md
@@ -36,4 +36,22 @@ iaas:
         url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
         condition: mandatory
         # Unfortunately, no wrapper to run refstack yet, needs to be added
-  # TBD: Version v3 would run flavor-names-openstack.py with --v3 --v2plus parameters.
+  - version: v3
+    stabilized_at: 2023-06-15
+    obsoleted_at: 2024-04-30
+    standards:
+      - name: Flavor naming
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v3-flavor-naming.md
+        check_tools:
+          - executable: ./iaas/flavor-naming/flavor-names-openstack.py
+            args: "--v3"
+            # Note: "--v3 --v2plus" would outlaw the v1 flavor names. Don't do this yet.
+      - name: Image metadata
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
+        check_tools:
+          - executable: ./iaas/image-metadata/image-md-check.py
+            args: -v
+      - name: OpenStack Powered Compute v2022.11
+        url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
+        condition: mandatory
+        # Unfortunately, no wrapper to run refstack yet, needs to be added
