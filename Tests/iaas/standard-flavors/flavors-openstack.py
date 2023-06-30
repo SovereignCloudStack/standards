@@ -19,11 +19,7 @@ from collections import Counter
 import getopt
 import logging
 import os
-import re
 import sys
-import tempfile
-import time
-import warnings
 
 import openstack
 import openstack.cloud
