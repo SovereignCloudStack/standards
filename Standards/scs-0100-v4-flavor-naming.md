@@ -21,10 +21,7 @@ The flavors are pre-defined by the operator, the customer can not change these.
 OpenStack providers thus typically offer a large selection of flavors.
 
 While flavors can be discovered (`openstack flavor list`), it is helpful for users (DevOps teams),
-to have
-
-- A naming scheme that is used across all SCS flavors, so flavor names have the same meaning everywhere.
-- Have a guaranteed set of flavors available on all SCS clouds, so these do not need to be discovered.
+to have a naming scheme that is used across all SCS flavors, so flavor names have the same meaning everywhere.
 
 While not all details will be encoded in the name, the key features should be obvious:
 Number of vCPUs, RAM, Root Disk.

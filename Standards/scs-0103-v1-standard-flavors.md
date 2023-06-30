@@ -27,11 +27,9 @@ These are flavors that must exist on standard SCS clouds (x86-64).
 | SCS-1V-4         |      1 | shared core   |          4 |                 |            |
 | SCS-2V-8         |      2 | shared core   |          8 |                 |            |
 | SCS-4V-16        |      4 | shared core   |         16 |                 |            |
-| SCS-4V-16-100s   |      4 | shared core   |         16 |             100 | ssd        |
 | SCS-8V-32        |      8 | shared core   |         32 |                 |            |
 | SCS-1V-2         |      1 | shared core   |          2 |                 |            |
 | SCS-2V-4         |      2 | shared core   |          4 |                 |            |
-| SCS-2V-4-20s     |      2 | shared core   |          4 |              20 | ssd        |
 | SCS-4V-8         |      4 | shared core   |          8 |                 |            |
 | SCS-8V-16        |      8 | shared core   |         16 |                 |            |
 | SCS-16V-32       |     16 | shared core   |         32 |                 |            |
@@ -47,9 +45,11 @@ These are flavors that must exist on standard SCS clouds (x86-64).
 | SCS-1V-4-10      |      1 | shared core   |          4 |              10 | (any)      |
 | SCS-2V-8-20      |      2 | shared core   |          8 |              20 | (any)      |
 | SCS-4V-16-50     |      4 | shared core   |         16 |              50 | (any)      |
+| SCS-4V-16-100s   |      4 | shared core   |         16 |             100 | ssd        |
 | SCS-8V-32-100    |      8 | shared core   |         32 |             100 | (any)      |
 | SCS-1V-2-5       |      1 | shared core   |          2 |               5 | (any)      |
 | SCS-2V-4-10      |      2 | shared core   |          4 |              10 | (any)      |
+| SCS-2V-4-20s     |      2 | shared core   |          4 |              20 | ssd        |
 | SCS-4V-8-20      |      4 | shared core   |          8 |              20 | (any)      |
 | SCS-8V-16-50     |      8 | shared core   |         16 |              50 | (any)      |
 | SCS-16V-32-100   |     16 | shared core   |         32 |             100 | (any)      |
@@ -118,10 +118,15 @@ create all standard, mandatory SCS flavors for you. It takes input that can be g
 ## Previous standard versions
 
 The list of standard flavors used to be part of the flavor naming standard up until
-[version 3](scs-0100-v3-flavor-naming.md).
+[version 3](scs-0100-v3-flavor-naming.md). The following changes have been made to
+the list in comparison with said standard:
+* two flavors with ssds have been relegated to recommended status,
+* the flavor names have been turned into recommendations, and
+* the properties have been introduced in order to help discoverability.
 
 Note that the flavors with fixed size root disks have all moved to Recommended
-with said version. This means that they are not a certification requirement any longer,
+with [scs-0100-v3](scs-0100-v3-flavor-naming.md).
+This means that they are not a certification requirement any longer,
 but we still recommend implementing these for backwards compatibility reasons.
-Also in that version, two flavors with SSD+ root disks have been added, as defined in
+Also in that standard, two flavors with SSD+ root disks have been added, as defined in
 [scs-0110-v1-ssd-flavors.md](scs-0110-v1-ssd-flavors.md)
