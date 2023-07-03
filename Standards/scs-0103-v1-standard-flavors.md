@@ -70,7 +70,7 @@ The following guarantees must be met:
 The following properties must be set (in the `extra_specs`):
 
 - `scs:name-v4` to the recommended name,
-- `scs:vCPU-type` to `shared-core` or `crowded-core`, reflecting the vCPU type,
+- `scs:cpu-type` to `shared-core` or `crowded-core`, reflecting the vCPU type,
 - `scs:disk0-type` not set if no disk is provided, otherwise set to `ssd` or some other
   value, reflecting the disk type.
 
@@ -120,9 +120,10 @@ create all standard, mandatory SCS flavors for you. It takes input that can be g
 The list of standard flavors used to be part of the flavor naming standard up until
 [version 3](scs-0100-v3-flavor-naming.md). The following changes have been made to
 the list in comparison with said standard:
-* two flavors with ssds have been relegated to recommended status,
-* the flavor names have been turned into recommendations, and
-* the properties have been introduced in order to help discoverability.
+
+- two flavors with ssds have been relegated to recommended status,
+- the flavor names have been turned into recommendations, and
+- the properties have been introduced in order to help discoverability.
 
 Note that the flavors with fixed size root disks have all moved to Recommended
 with [scs-0100-v3](scs-0100-v3-flavor-naming.md).
