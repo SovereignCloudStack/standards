@@ -1,8 +1,14 @@
 name: Build and Deploy to Github Pages
 
-on:
+"on":
   workflow_dispatch:
-
+  schedule:
+    - cron: "0 0 * * *"
+  push:
+    branches:
+      - main
+  pull_request:
+  
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
