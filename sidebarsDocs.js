@@ -45,7 +45,6 @@ const sidebarsDocs = {
         'testbed/doc/overview',
         'testbed/doc/requirements',
         'testbed/doc/preparations',
-        'testbed/doc/quickstart',
         'testbed/doc/getting_started',
         'testbed/doc/authentication',
         'testbed/doc/configuration',
