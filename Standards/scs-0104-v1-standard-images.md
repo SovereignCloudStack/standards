@@ -11,27 +11,31 @@ track: IaaS
 
 The following images are mandatory:
 
-- `Ubuntu <LATESTLTS>`
-- `Ubuntu <PREVLTS>`
-- `Debian <STABLE>`
+| image pattern         | notes                  | current image (as of July 2023)  |
+| :-------------------- | :--------------------- | :------------------------------- |
+| `Ubuntu <LATESTLTS>`  | latest LTS version     | `Ubuntu 22.04`                   |
+| `Ubuntu <PREVLTS>`    | previous LTS version   | `Ubuntu 20.04`                   |
+| `Debian <STABLE>`     | latest stable version  | `Debian 12`                      |
 
-Note that `<LATESTLTS>` refers to the latest LTS version, which at this point is `22.04`.
-The `<PREVLTS>` is the previous LTS version, at the time of this writing (7/2023) it's `20.04`.
 We don't carry the `.x` patch numbers in the standard image names. We switch to requiring the
 newest Ubuntu LTS version when the `.1` version comes out (around July/August). At this point
-the old `<PREVLTS>` version becomes optional ...
+the old `<PREVLTS>` version becomes optional.
 
-For Debian, we use the latest STABLE version, which is `12` at the time of this writing.
-Similar to Ubuntu, we would do the switch and require the latest STABLE to be made available within
-~3 months after release.
+For Debian, we require the latest STABLE to be made available within ~3 months after release.
 
 ### Recommended images
 
 The following images are recommended:
 
-- `Alma Linux 8`, `Alma Linux 9` (whichever versions are being supported upstream)
-- `Debian <PREVSTABLE>` (the one pre-latest `<STABLE>`, `11` at the time of writing)
-- `Fedora <LATEST>` (`38` currently, this will get replaced quickly as the next Fedora comes out)
+| image pattern             | notes                   | current image(s) as of July 2023  |
+| :------------------------ | :---------------------- | :-------------------------------- |
+| `Debian <PREVSTABLE>`     | previous stable version | `Debian 11`                       |
+| `Fedora <LATEST>`         | ./.                     | `Fedora 38`                       |
+| `Alma Linux <SUPPORTED>`  | any supported versions  | `Alma Linux 8`, `Alma Linux 9`    |
+
+For Fedora, the image will get replaced quickly as the next Fedora comes out.
+
+### Additional remarks
 
 We suggest the following supported images (with licensing/maintenance/support as intended from OS vendor)
 
