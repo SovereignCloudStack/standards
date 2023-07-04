@@ -11,14 +11,13 @@ The following images are mandatory:
 
 - `Ubuntu <LATESTLTS>`, `Ubuntu <PREVLTS>`, `Debian <STABLE>`
 - Note that `<LATESTLTS>` refers to the latest LTS version, which at this point is `22.04`.
-  The `<PREVLTS>` is the previous LTS version, at the time of this writing (9/2022) it's `20.04`.
+  The `<PREVLTS>` is the previous LTS version, at the time of this writing (7/2023) it's `20.04`.
   We don't carry the `.x` patch numbers in the standard image names. We switch to requiring the
   newest Ubuntu LTS version when the `.1` version comes out (around July/August). At this point
   the old `<PREVLTS>` version becomes optional ...
-- For Debian, we use the latest STABLE version, which is `11` at the time of this writing.
+- For Debian, we use the latest STABLE version, which is `12` at the time of this writing.
   Similar to Ubuntu, we would do the switch and require the latest STABLE to be made available within
   ~3 months after release.
-- When a CentOS successor emerges, we would have one in the mandatory list.
 
 The following images are recommended:
 
