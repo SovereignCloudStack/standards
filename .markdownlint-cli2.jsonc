@@ -2,7 +2,7 @@
   "config": {
     "default": true,
     "MD013": false,
-    "MD033": { "allowed_elements": ["input"] }, // only allowing input elements within md tables
+    "MD033": { "allowed_elements": ["li", "ul"] }, // only allowing ul, li elements for checkboxes within md tables
     "MD024": false,
     "search-replace": {
       "rules": [

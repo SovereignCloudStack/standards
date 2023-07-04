@@ -5,43 +5,43 @@ to the situation.
 
 ## Checklist 6 months before Hackathon
 
-|                                        | Date       | Task                                                                                                                                    |
-|----------------------------------------|------------|-----------------------------------------------------------------------------------------------------------------------------------------|
-| <input type="checkbox" id="checkbox1"> |            | Clarify sponsorship                                                                                                                     |
-| <input type="checkbox" id="checkbox1"> |            | Clarify who is responsible for planning. Contact persons of the companies involved. These should then also be present at the hackathon. |
-| <input type="checkbox" id="checkbox1"> |            | Set a specific date.                                                                                                                    |
-| <input type="checkbox" id="checkbox1"> |            | Clarify responsibilities.                                                                                                               |
-| <input type="checkbox" id="checkbox1"> |            | First advertising in form of advertising in meetings, LinkedIn post, mailing list or similar.                                           |
-| <input type="checkbox" id="checkbox1"> |            | Clarify which advertising measures are required (see checklist advertising).                                                            |
-| <input type="checkbox" id="checkbox1"> |            | Determine venue.                                                                                                                        |
-| <input type="checkbox" id="checkbox1"> |            | Set the theme for the hackathon and apply it to the design.                                                                             |
+|                          | Date | Task                                                                                                                                    |
+| ------------------------ | ---- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>- [ ] </li></ul> |      | Clarify sponsorship                                                                                                                     |
+| <ul><li>- [ ] </li></ul> |      | Clarify who is responsible for planning. Contact persons of the companies involved. These should then also be present at the hackathon. |
+| <ul><li>- [ ] </li></ul> |      | Set a specific date.                                                                                                                    |
+| <ul><li>- [ ] </li></ul> |      | Clarify responsibilities.                                                                                                               |
+| <ul><li>- [ ] </li></ul> |      | First advertising in form of advertising in meetings, LinkedIn post, mailing list or similar.                                           |
+| <ul><li>- [ ] </li></ul> |      | Clarify which advertising measures are required (see checklist advertising).                                                            |
+| <ul><li>- [ ] </li></ul> |      | Determine venue.                                                                                                                        |
+| <ul><li>- [ ] </li></ul> |      | Set the theme for the hackathon and apply it to the design.                                                                             |
 
 ## Checklist advertising
 
-|                                        | Topic             | Task                                                                                                                                  |
-|----------------------------------------|-------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| <input type="checkbox" id="checkbox1"> | Social Media      | Create content plan.                                                                                                                  |
-| <input type="checkbox" id="checkbox1"> |                   | Which accounts/people/companies have to be mentioned as well.                                                                         |
-| <input type="checkbox" id="checkbox1"> |                   | Which persons must agree to a publication.                                                                                            |
-| <input type="checkbox" id="checkbox1"> |                   | Should hashtags be used, if yes which ones.                                                                                           |
-| <input type="checkbox" id="checkbox1"> | Newsletter        | Create content plan with possible content and frequency.                                                                              |
-| <input type="checkbox" id="checkbox1"> | Website           | Content plan: Blogposts.                                                                                                              |
-| <input type="checkbox" id="checkbox1"> |                   | Info landing page.                                                                                                                    |
-| <input type="checkbox" id="checkbox1"> |                   | Registration page.                                                                                                                    |
-| <input type="checkbox" id="checkbox1"> |                   | Special newsletter or just regular.                                                                                                   |
-| <input type="checkbox" id="checkbox1"> | Other placements  | Spread the word in meetings or at other events.                                                                                       |
-| <input type="checkbox" id="checkbox1"> | Media             | Should be changeable, specify target audience, language, sources.                                                                     |
-| <input type="checkbox" id="checkbox1"> | Media suggestions | Video, images, PDF, texts, merch, graphics. Everything should be planned in advance precisely date, type, releases, scope, size, etc. |
-| <input type="checkbox" id="checkbox1"> | Graphics          | Set design motto.                                                                                                                     |
-| <input type="checkbox" id="checkbox1"> | Key metrics       | Should the success be tracked by key metrics, if so which ones.                                                                       |
+|                          | Topic             | Task                                                                                                                                  |
+| ------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>- [ ] </li></ul> | Social Media      | Create content plan.                                                                                                                  |
+| <ul><li>- [ ] </li></ul> |                   | Which accounts/people/companies have to be mentioned as well.                                                                         |
+| <ul><li>- [ ] </li></ul> |                   | Which persons must agree to a publication.                                                                                            |
+| <ul><li>- [ ] </li></ul> |                   | Should hashtags be used, if yes which ones.                                                                                           |
+| <ul><li>- [ ] </li></ul> | Newsletter        | Create content plan with possible content and frequency.                                                                              |
+| <ul><li>- [ ] </li></ul> | Website           | Content plan: Blogposts.                                                                                                              |
+| <ul><li>- [ ] </li></ul> |                   | Info landing page.                                                                                                                    |
+| <ul><li>- [ ] </li></ul> |                   | Registration page.                                                                                                                    |
+| <ul><li>- [ ] </li></ul> |                   | Special newsletter or just regular.                                                                                                   |
+| <ul><li>- [ ] </li></ul> | Other placements  | Spread the word in meetings or at other events.                                                                                       |
+| <ul><li>- [ ] </li></ul> | Media             | Should be changeable, specify target audience, language, sources.                                                                     |
+| <ul><li>- [ ] </li></ul> | Media suggestions | Video, images, PDF, texts, merch, graphics. Everything should be planned in advance precisely date, type, releases, scope, size, etc. |
+| <ul><li>- [ ] </li></ul> | Graphics          | Set design motto.                                                                                                                     |
+| <ul><li>- [ ] </li></ul> | Key metrics       | Should the success be tracked by key metrics, if so which ones.                                                                       |
 
 ## Checklist 5 months before Hackathon
 
-|                                        | Date       | Task                                                                            |
-|----------------------------------------|------------|---------------------------------------------------------------------------------|
-| <input type="checkbox" id="checkbox1"> |            | Clarify if extra merch is desired and start looking for vendors. Order samples. |
-| <input type="checkbox" id="checkbox1"> |            | Discuss concrete advertising measures.                                          |
-| <input type="checkbox" id="checkbox1"> |            | Check hotels (see checklist hotel).                                             |
+|                          | Date | Task                                                                            |
+| ------------------------ | ---- | ------------------------------------------------------------------------------- |
+| <ul><li>- [ ] </li></ul> |      | Clarify if extra merch is desired and start looking for vendors. Order samples. |
+| <ul><li>- [ ] </li></ul> |      | Discuss concrete advertising measures.                                          |
+| <ul><li>- [ ] </li></ul> |      | Check hotels (see checklist hotel).                                             |
 
 ## Checklist hotel
 
@@ -63,17 +63,17 @@ to the situation.
 
 ## Checklist 4 months before Hackathon
 
-|                                        | Date       | Task                                                                                                                                          |
-|----------------------------------------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
-| <input type="checkbox" id="checkbox1"> |            | Determine hotel final and make recommendation. Possibly reserve contingent if the hotel offers it.                                            |
-| <input type="checkbox" id="checkbox1"> |            | Find the location for the evening before (see checklist for evening before location).                                                         |
-| <input type="checkbox" id="checkbox1"> |            | Start organizing venue. (See checklist rooms 1).                                                                                              |
-| <input type="checkbox" id="checkbox1"> |            | Roughly plan evening event (consider volume level and space available).                                                                       |
-| <input type="checkbox" id="checkbox1"> |            | Promotional drumbeat. Social media, website, meetings, newsletter.                                                                            |
-| <input type="checkbox" id="checkbox1"> |            | Order special merch.                                                                                                                          |
-| <input type="checkbox" id="checkbox1"> |            | Organize merch in general (see merch checklist).                                                                                              |
-| <input type="checkbox" id="checkbox1"> |            | Start collecting statements that need to be sent around. (Privacy statements, photo statements, data center statements, security statements). |
-| <input type="checkbox" id="checkbox1"> |            | Rough sequence of events to be able to plan more precisely at a later date.                                                                   |
+|                          | Date | Task                                                                                                                                          |
+| ------------------------ | ---- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>- [ ] </li></ul> |      | Determine hotel final and make recommendation. Possibly reserve contingent if the hotel offers it.                                            |
+| <ul><li>- [ ] </li></ul> |      | Find the location for the evening before (see checklist for evening before location).                                                         |
+| <ul><li>- [ ] </li></ul> |      | Start organizing venue. (See checklist rooms 1).                                                                                              |
+| <ul><li>- [ ] </li></ul> |      | Roughly plan evening event (consider volume level and space available).                                                                       |
+| <ul><li>- [ ] </li></ul> |      | Promotional drumbeat. Social media, website, meetings, newsletter.                                                                            |
+| <ul><li>- [ ] </li></ul> |      | Order special merch.                                                                                                                          |
+| <ul><li>- [ ] </li></ul> |      | Organize merch in general (see merch checklist).                                                                                              |
+| <ul><li>- [ ] </li></ul> |      | Start collecting statements that need to be sent around. (Privacy statements, photo statements, data center statements, security statements). |
+| <ul><li>- [ ] </li></ul> |      | Rough sequence of events to be able to plan more precisely at a later date.                                                                   |
 
 ## Checklist for evening before location
 
@@ -110,22 +110,22 @@ to the situation.
 
 ## Checklist 3 months before Hackathon
 
-|                                        | Date       | Task                                                                                                                               |
-|----------------------------------------|------------|------------------------------------------------------------------------------------------------------------------------------------|
-| <input type="checkbox" id="checkbox1"> |            | Required declarations (photo/video usage rights, data center, premises, etc.) are available as a form. Have a look if you can have |
-|                                        |            | them confirmed with the registration. Otherwise as a circular email to all who register with the registration confirmation. Well   |
-|                                        |            | visible. For the photo/video declaration: Give the option of refusing and explain the variant with the no-photo dot.               |
-| <input type="checkbox" id="checkbox1"> |            | Promote again: Website, social media, newsletter, meetings, circular email, etc....                                                |
-| <input type="checkbox" id="checkbox1"> |            | Make reservations for pre-evening event.                                                                                           |
-| <input type="checkbox" id="checkbox1"> |            | Plan evening event and reserve location / tables (see checklist evening event).                                                    |
-| <input type="checkbox" id="checkbox1"> |            | Create a provisional schedule.                                                                                                     |
-| <input type="checkbox" id="checkbox1"> |            | Eventually invite people separately. (Special guests).                                                                             |
-| <input type="checkbox" id="checkbox1"> |            | Schedule start time and arrival time. Allow enough time for everyone to arrive.                                                    |
-| <input type="checkbox" id="checkbox1"> |            | Set presentation time and end time.                                                                                                |
-| <input type="checkbox" id="checkbox1"> |            | Define arrival time evening event. Leave enough time to change, but also do not define too long.                                   |
-| <input type="checkbox" id="checkbox1"> |            | Schedule a fixed cleanup time.                                                                                                     |
-| <input type="checkbox" id="checkbox1"> |            | Plan break time.                                                                                                                   |
-| <input type="checkbox" id="checkbox1"> |            | Activate login page.                                                                                                               |
+|                          | Date | Task                                                                                                                               |
+| ------------------------ | ---- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>- [ ] </li></ul> |      | Required declarations (photo/video usage rights, data center, premises, etc.) are available as a form. Have a look if you can have |
+|                          |      | them confirmed with the registration. Otherwise as a circular email to all who register with the registration confirmation. Well   |
+|                          |      | visible. For the photo/video declaration: Give the option of refusing and explain the variant with the no-photo dot.               |
+| <ul><li>- [ ] </li></ul> |      | Promote again: Website, social media, newsletter, meetings, circular email, etc....                                                |
+| <ul><li>- [ ] </li></ul> |      | Make reservations for pre-evening event.                                                                                           |
+| <ul><li>- [ ] </li></ul> |      | Plan evening event and reserve location / tables (see checklist evening event).                                                    |
+| <ul><li>- [ ] </li></ul> |      | Create a provisional schedule.                                                                                                     |
+| <ul><li>- [ ] </li></ul> |      | Eventually invite people separately. (Special guests).                                                                             |
+| <ul><li>- [ ] </li></ul> |      | Schedule start time and arrival time. Allow enough time for everyone to arrive.                                                    |
+| <ul><li>- [ ] </li></ul> |      | Set presentation time and end time.                                                                                                |
+| <ul><li>- [ ] </li></ul> |      | Define arrival time evening event. Leave enough time to change, but also do not define too long.                                   |
+| <ul><li>- [ ] </li></ul> |      | Schedule a fixed cleanup time.                                                                                                     |
+| <ul><li>- [ ] </li></ul> |      | Plan break time.                                                                                                                   |
+| <ul><li>- [ ] </li></ul> |      | Activate login page.                                                                                                               |
 
 ## Checklist evening event
 
@@ -140,16 +140,16 @@ to the situation.
 
 ## Checklist 2 months before Hackathon
 
-|                                        | Date       | Task                                                                                            |
-|----------------------------------------|------------|-------------------------------------------------------------------------------------------------|
-| <input type="checkbox" id="checkbox1"> |            | Start collecting goals and topics.                                                              |
-| <input type="checkbox" id="checkbox1"> |            | Work out goals and topics yourself.                                                             |
-| <input type="checkbox" id="checkbox1"> |            | Check results from the checklist rooms 1 again.                                                 |
-| <input type="checkbox" id="checkbox1"> |            | Go through checklist rooms 2.                                                                   |
-| <input type="checkbox" id="checkbox1"> |            | Advertising (social media, mailing list, website, blog post, newsletter, room plan video, etc). |
-| <input type="checkbox" id="checkbox1"> |            | Go through checklists again in general, was anything forgotten?                                 |
-| <input type="checkbox" id="checkbox1"> |            | Plan food for the break.                                                                        |
-| <input type="checkbox" id="checkbox1"> |            | Plan snacks / breakfast (See snacks checklist).                                                 |
+|                          | Date | Task                                                                                            |
+| ------------------------ | ---- | ----------------------------------------------------------------------------------------------- |
+| <ul><li>- [ ] </li></ul> |      | Start collecting goals and topics.                                                              |
+| <ul><li>- [ ] </li></ul> |      | Work out goals and topics yourself.                                                             |
+| <ul><li>- [ ] </li></ul> |      | Check results from the checklist rooms 1 again.                                                 |
+| <ul><li>- [ ] </li></ul> |      | Go through checklist rooms 2.                                                                   |
+| <ul><li>- [ ] </li></ul> |      | Advertising (social media, mailing list, website, blog post, newsletter, room plan video, etc). |
+| <ul><li>- [ ] </li></ul> |      | Go through checklists again in general, was anything forgotten?                                 |
+| <ul><li>- [ ] </li></ul> |      | Plan food for the break.                                                                        |
+| <ul><li>- [ ] </li></ul> |      | Plan snacks / breakfast (See snacks checklist).                                                 |
 
 ## Snacks checklist
 
@@ -193,71 +193,71 @@ to the situation.
 
 ## Checklist 1 month before Hackathon
 
-|                                        | Date       | Task                                                                                       |
-|----------------------------------------|------------|--------------------------------------------------------------------------------------------|
-| <input type="checkbox" id="checkbox1"> |            | Fix and publish the agenda.                                                                |
-| <input type="checkbox" id="checkbox1"> |            | Check the declarations once again, has every declaration been send, have any answered yet? |
-| <input type="checkbox" id="checkbox1"> |            | Check reservations, expand if necessary.                                                   |
-| <input type="checkbox" id="checkbox1"> |            | Check whether all possible special features have been observed (location etc).             |
-| <input type="checkbox" id="checkbox1"> |            | Pre-order food for in-between meals and for the lunch break.                               |
-| <input type="checkbox" id="checkbox1"> |            | Plan drinks, type and quantity (don't forget coffee, tea, milk, sugar).                    |
+|                          | Date | Task                                                                                       |
+| ------------------------ | ---- | ------------------------------------------------------------------------------------------ |
+| <ul><li>- [ ] </li></ul> |      | Fix and publish the agenda.                                                                |
+| <ul><li>- [ ] </li></ul> |      | Check the declarations once again, has every declaration been send, have any answered yet? |
+| <ul><li>- [ ] </li></ul> |      | Check reservations, expand if necessary.                                                   |
+| <ul><li>- [ ] </li></ul> |      | Check whether all possible special features have been observed (location etc).             |
+| <ul><li>- [ ] </li></ul> |      | Pre-order food for in-between meals and for the lunch break.                               |
+| <ul><li>- [ ] </li></ul> |      | Plan drinks, type and quantity (don't forget coffee, tea, milk, sugar).                    |
 
 ## Checklist 1 week before Hackathon
 
-|                                        | Date       | Task                                                                                            |
-|----------------------------------------|------------|-------------------------------------------------------------------------------------------------|
-| <input type="checkbox" id="checkbox1"> |            | Print statements and forms.                                                                     |
-| <input type="checkbox" id="checkbox1"> |            | Advertise again.                                                                                |
-| <input type="checkbox" id="checkbox1"> |            | Make a list for the snacks (See for inspiration checklist snacks).                              |
-| <input type="checkbox" id="checkbox1"> |            | Pre-order the food, if necessary, check whether the quantity still fits with the registrations. |
-|                                        |            | Depending on expand. Firmly plan transport / pickup / delivery.                                 |
-| <input type="checkbox" id="checkbox1"> |            | Create a room plan with the topics, where, when, what takes place.                              |
-| <input type="checkbox" id="checkbox1"> |            | Organize drinks.                                                                                |
-| <input type="checkbox" id="checkbox1"> |            | Determine the time when the helpers / organizers meet.                                          |
-| <input type="checkbox" id="checkbox1"> |            | If necessary create / organize lists and visitor cards.                                         |
+|                          | Date | Task                                                                                            |
+| ------------------------ | ---- | ----------------------------------------------------------------------------------------------- |
+| <ul><li>- [ ] </li></ul> |      | Print statements and forms.                                                                     |
+| <ul><li>- [ ] </li></ul> |      | Advertise again.                                                                                |
+| <ul><li>- [ ] </li></ul> |      | Make a list for the snacks (See for inspiration checklist snacks).                              |
+| <ul><li>- [ ] </li></ul> |      | Pre-order the food, if necessary, check whether the quantity still fits with the registrations. |
+|                          |      | Depending on expand. Firmly plan transport / pickup / delivery.                                 |
+| <ul><li>- [ ] </li></ul> |      | Create a room plan with the topics, where, when, what takes place.                              |
+| <ul><li>- [ ] </li></ul> |      | Organize drinks.                                                                                |
+| <ul><li>- [ ] </li></ul> |      | Determine the time when the helpers / organizers meet.                                          |
+| <ul><li>- [ ] </li></ul> |      | If necessary create / organize lists and visitor cards.                                         |
 
 ## Checklist one day before Hackathon
 
-|                                        | Date       | Task                                                          |
-|----------------------------------------|------------|---------------------------------------------------------------|
-| <input type="checkbox" id="checkbox1"> |            | Buy snacks.                                                   |
-| <input type="checkbox" id="checkbox1"> |            | Contact food supplier again if the delivery date is suitable. |
-| <input type="checkbox" id="checkbox1"> |            | Check technology for functionality.                           |
-| <input type="checkbox" id="checkbox1"> |            | Send around the room plan with the topics by email.           |
-| <input type="checkbox" id="checkbox1"> |            | Prepare rooms if necessary / possible.                        |
-| <input type="checkbox" id="checkbox1"> |            | Put drinks in the refrigerator.                               |
-| <input type="checkbox" id="checkbox1"> |            | Provide coffee machine.                                       |
-| <input type="checkbox" id="checkbox1"> |            | Provide dishes.                                               |
-| <input type="checkbox" id="checkbox1"> |            | Label rooms.                                                  |
-| <input type="checkbox" id="checkbox1"> |            | Check visitor cards and lists for completeness.               |
+|                          | Date | Task                                                          |
+| ------------------------ | ---- | ------------------------------------------------------------- |
+| <ul><li>- [ ] </li></ul> |      | Buy snacks.                                                   |
+| <ul><li>- [ ] </li></ul> |      | Contact food supplier again if the delivery date is suitable. |
+| <ul><li>- [ ] </li></ul> |      | Check technology for functionality.                           |
+| <ul><li>- [ ] </li></ul> |      | Send around the room plan with the topics by email.           |
+| <ul><li>- [ ] </li></ul> |      | Prepare rooms if necessary / possible.                        |
+| <ul><li>- [ ] </li></ul> |      | Put drinks in the refrigerator.                               |
+| <ul><li>- [ ] </li></ul> |      | Provide coffee machine.                                       |
+| <ul><li>- [ ] </li></ul> |      | Provide dishes.                                               |
+| <ul><li>- [ ] </li></ul> |      | Label rooms.                                                  |
+| <ul><li>- [ ] </li></ul> |      | Check visitor cards and lists for completeness.               |
 
 ## Checklist Hackathon Day X
 
-|                                        | Time       | Task                                                  |
-|----------------------------------------|------------|-------------------------------------------------------|
-| <input type="checkbox" id="checkbox1"> |            | Place snacks on the tables in small bowls or similar. |
-| <input type="checkbox" id="checkbox1"> |            | Distribute merchandise.                               |
-| <input type="checkbox" id="checkbox1"> |            | Have declarations and forms ready for late deciders.  |
-| <input type="checkbox" id="checkbox1"> |            | Have lists and visitor cards ready if necessary.      |
-| <input type="checkbox" id="checkbox1"> |            | Check drinks in an interval.                          |
-| <input type="checkbox" id="checkbox1"> |            | Make coffee if necessary.                             |
-| <input type="checkbox" id="checkbox1"> |            | Provide tea, coffee, milk, sugar.                     |
-| <input type="checkbox" id="checkbox1"> |            | Provide breakfast / snacks.                           |
-| <input type="checkbox" id="checkbox1"> |            | Pick up lunch.                                        |
-| <input type="checkbox" id="checkbox1"> |            | Lunch "build up"                                      |
-| <input type="checkbox" id="checkbox1"> |            | Cleanup                                               |
-| <input type="checkbox" id="checkbox1"> |            | Keep an eye on the process (keep times a little bit). |
-| <input type="checkbox" id="checkbox1"> |            | See if everyone feels picked up, no one is bored.     |
-| <input type="checkbox" id="checkbox1"> |            | Makes Photos.                                         |
+|                          | Time | Task                                                  |
+| ------------------------ | ---- | ----------------------------------------------------- |
+| <ul><li>- [ ] </li></ul> |      | Place snacks on the tables in small bowls or similar. |
+| <ul><li>- [ ] </li></ul> |      | Distribute merchandise.                               |
+| <ul><li>- [ ] </li></ul> |      | Have declarations and forms ready for late deciders.  |
+| <ul><li>- [ ] </li></ul> |      | Have lists and visitor cards ready if necessary.      |
+| <ul><li>- [ ] </li></ul> |      | Check drinks in an interval.                          |
+| <ul><li>- [ ] </li></ul> |      | Make coffee if necessary.                             |
+| <ul><li>- [ ] </li></ul> |      | Provide tea, coffee, milk, sugar.                     |
+| <ul><li>- [ ] </li></ul> |      | Provide breakfast / snacks.                           |
+| <ul><li>- [ ] </li></ul> |      | Pick up lunch.                                        |
+| <ul><li>- [ ] </li></ul> |      | Lunch "build up"                                      |
+| <ul><li>- [ ] </li></ul> |      | Cleanup                                               |
+| <ul><li>- [ ] </li></ul> |      | Keep an eye on the process (keep times a little bit). |
+| <ul><li>- [ ] </li></ul> |      | See if everyone feels picked up, no one is bored.     |
+| <ul><li>- [ ] </li></ul> |      | Makes Photos.                                         |
 
 ## Checklist after Hackathon
 
-|                                        | Date       | Task                                                               |
-|----------------------------------------|------------|--------------------------------------------------------------------|
-| <input type="checkbox" id="checkbox1"> |            | Collect photos and provide them in a link for review and approval. |
-| <input type="checkbox" id="checkbox1"> |            | Create and send feedback sheet.                                    |
-| <input type="checkbox" id="checkbox1"> |            | Create Blog Post Article.                                          |
-| <input type="checkbox" id="checkbox1"> |            | Eventually create retro video.                                     |
-| <input type="checkbox" id="checkbox1"> |            | Create social media posts. (After all approvals).                  |
-| <input type="checkbox" id="checkbox1"> |            | Prepare debriefing.                                                |
-| <input type="checkbox" id="checkbox1"> |            | Summarize and process feedback.                                    |
+|                          | Date | Task                                                               |
+| ------------------------ | ---- | ------------------------------------------------------------------ |
+| <ul><li>- [ ] </li></ul> |      | Collect photos and provide them in a link for review and approval. |
+| <ul><li>- [ ] </li></ul> |      | Create and send feedback sheet.                                    |
+| <ul><li>- [ ] </li></ul> |      | Create Blog Post Article.                                          |
+| <ul><li>- [ ] </li></ul> |      | Eventually create retro video.                                     |
+| <ul><li>- [ ] </li></ul> |      | Create social media posts. (After all approvals).                  |
+| <ul><li>- [ ] </li></ul> |      | Prepare debriefing.                                                |
+| <ul><li>- [ ] </li></ul> |      | Summarize and process feedback.                                    |
