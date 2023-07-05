@@ -11,11 +11,11 @@ track: IaaS
 
 The following images are mandatory:
 
-| image pattern         | notes                  | current image (as of July 2023)  |
-| :-------------------- | :--------------------- | :------------------------------- |
-| `Ubuntu <LATESTLTS>`  | latest LTS version     | `Ubuntu 22.04`                   |
-| `Ubuntu <PREVLTS>`    | previous LTS version   | `Ubuntu 20.04`                   |
-| `Debian <STABLE>`     | latest stable version  | `Debian 12`                      |
+| image pattern         | notes                  | current image as of July 2023  |
+| :-------------------- | :--------------------- | :----------------------------- |
+| `Ubuntu <LATESTLTS>`  | latest LTS version     | `Ubuntu 22.04`                 |
+| `Ubuntu <PREVLTS>`    | previous LTS version   | `Ubuntu 20.04`                 |
+| `Debian <STABLE>`     | latest stable version  | `Debian 12`                    |
 
 We don't carry the `.x` patch numbers in the standard image names. We switch to requiring the
 newest Ubuntu LTS version when the `.1` version comes out (around July/August). At this point
@@ -59,3 +59,8 @@ from a yaml file provided as command-line argument, connect to an OpenStack inst
 and check whether the images are present. Missing images will be reported on various
 logging channels: error for mandatory, info for recommended images. The return code
 will be non-zero if the test could not be performed or if any mandatory image is missing.
+
+## Operational tooling
+
+The [openstack-image-manager](https://github.com/osism/openstack-image-manager) is able to
+create all standard, mandatory SCS images for you given image definitions from a YAML file.
