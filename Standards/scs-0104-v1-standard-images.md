@@ -27,15 +27,14 @@ For Debian, we require the latest STABLE to be made available within ~3 months a
 
 The following images are recommended:
 
-| image pattern             | notes                   | current image(s) as of July 2023  |
-| :------------------------ | :---------------------- | :-------------------------------- |
-| `Debian <PREVSTABLE>`     | previous stable version | `Debian 11`                       |
-| `Fedora <LATEST>`         | ./.                     | `Fedora 38`                       |
-| `AlmaLinux <SUPPORTED>`   | any supported versions  | `AlmaLinux 8`, `AlmaLinux 9`      |
+| image pattern             | notes                   | current image as of July 2023  |
+| :------------------------ | :---------------------- | :----------------------------- |
+| `Debian <PREVSTABLE>`     | previous stable version | `Debian 11`                    |
+| `Fedora <LATEST>`         | ./.                     | `Fedora 38`                    |
 
 For Fedora, the image will get replaced quickly as the next Fedora comes out.
 
-### Additional remarks
+### Additional images
 
 We suggest the following supported images (with licensing/maintenance/support as intended from OS vendor)
 
@@ -47,6 +46,11 @@ The suggestions mainly serve to align image naming between providers.
 
 Note that additional images will be available on typical platforms, e.g. `ubuntu-capi-image-v1.24.4`
 for platforms that are prepared to support SCS k8s cluster management.
+
+## Image lifecycle
+
+**TODO**: Recommendations on how to deal with images that used to be mandatory or recommended, but
+aren't any longer (such as Debian 10)?
 
 ## Conformance Tests
 
