@@ -8,6 +8,11 @@ iaas:
         check_tools:
           - executable: ./iaas/standard-flavors/flavors-openstack.py
             args: "./iaas/scs-0103-v1-flavors.yaml"
+      - name: Standard images
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0104-v1-standard-images.md
+        check_tools:
+          - executable: ./iaas/standard-images/images-openstack.py
+            args: "./iaas/scs-0104-v1-flavors.yaml"
       - name: Flavor naming
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v3-flavor-naming.md
         check_tools:
@@ -17,7 +22,7 @@ iaas:
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
         check_tools:
           - executable: ./iaas/image-metadata/image-md-check.py
-            args: -v
+            args: -s -v
       - name: OpenStack Powered Compute v2022.11
         url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
         condition: mandatory

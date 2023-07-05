@@ -1,0 +1,12 @@
+image_groups:
+  - status: mandatory
+    list:
+    - "Ubuntu 22.04"
+    - "Ubuntu 20.04"
+    - "Debian 12"
+  - status: recommended
+    list:
+    - "Debian 11"
+    - "Fedora 38"
+    - "AlmaLinux 8"
+    - "AlmaLinux 9"

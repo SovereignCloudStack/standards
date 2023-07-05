@@ -31,7 +31,7 @@ The following images are recommended:
 | :------------------------ | :---------------------- | :-------------------------------- |
 | `Debian <PREVSTABLE>`     | previous stable version | `Debian 11`                       |
 | `Fedora <LATEST>`         | ./.                     | `Fedora 38`                       |
-| `Alma Linux <SUPPORTED>`  | any supported versions  | `Alma Linux 8`, `Alma Linux 9`    |
+| `AlmaLinux <SUPPORTED>`   | any supported versions  | `AlmaLinux 8`, `AlmaLinux 9`      |
 
 For Fedora, the image will get replaced quickly as the next Fedora comes out.
 
