@@ -106,18 +106,18 @@ In case of using federation, there are suggestions to the namings within Keycloa
 The realms in Keycloak for each customer would be the same as the customer. e.g. The Keycloak realm for "Customer A"
 will be called "Customer A".
 
-There should be an OIDC client in each customer realm to allow the federation to the Proxy realm. Currently called OSISM 
+There should be an OIDC client in each customer realm to allow the federation to the Proxy realm. Currently called OSISM
 on the testbed.
 
 On the proxy realm, it's needed to add this new customer realm as an idenity provider. During the creation of the identity
-provider for "Customer A", the field "Alias" should be set to "<customer-id>". This will make that the users federated from
+provider for "Customer A", the field "Alias" should be set to `<customer-id>`. This will make that the users federated from
 realm "Customer A" to the proxy realm to be prefixed to avoid naming colisions, e.g. `d${ALIAS}-${CLAIM.preferred_username}`.
 
 Also, on the identity federation there should be configured to store the <customer-id> from that realm into the users. So it
-can be send to Keystone mapping to use it as "gd<customer-id>-member" and "gp<customer-id>-<project_name>-member". There is
-also the necessity of a mapper to send the "openstack-default-project".
+can be send to Keystone mapping to use it as `gd<customer-id>-member` and `gp<customer-id>-<project_name>-member`. There is
+also the necessity of a mapper to send the `openstack-default-project`.
 
-Add the aditional mappings for roles and groups as necessary to get the attributes from the customer realm into the OIDC 
+Add the aditional mappings for roles and groups as necessary to get the attributes from the customer realm into the OIDC
 userinfo that is put into the OIDC to the proxy realm and from there to Keystone.
 
 
