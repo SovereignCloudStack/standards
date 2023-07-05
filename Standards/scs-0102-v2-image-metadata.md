@@ -225,11 +225,10 @@ A boolean property that is not present is considered to be `false`.
   service provider does provide support for this image included in the image/flavor
   pricing (but it might be provided by a contracted 3rd party, e.g. the OS vendor).
 
-### Conformance test tool
+### Conformance Tests
 
-The `tools/` subdirectory has a testing tool `image-md-check.py` that retrieves the
-image list from a configured cloud and checks them for completeness (with respect
-to the intended future list of mandatory images) and checks each image for the
+The script `image-md-check.py` retrieves the
+image list from a configured cloud and checks each image for the
 completeness and consistency of mandatory properties.
 
 ## Previous standard versions

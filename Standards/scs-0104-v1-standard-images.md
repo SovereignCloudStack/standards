@@ -47,3 +47,11 @@ The suggestions mainly serve to align image naming between providers.
 
 Note that additional images will be available on typical platforms, e.g. `ubuntu-capi-image-v1.24.4`
 for platforms that are prepared to support SCS k8s cluster management.
+
+## Conformance Tests
+
+The script `images-openstack.py` will read the lists of mandatory and recommended images
+from a yaml file provided as command-line argument, connect to an OpenStack installation,
+and check whether the images are present. Missing images will be reported on various
+logging channels: error for mandatory, info for recommended images. The return code
+will be non-zero if the test could not be performed or if any mandatory image is missing.
