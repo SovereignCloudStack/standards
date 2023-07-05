@@ -100,14 +100,15 @@ with `block_device_mapping_v2`, e.g.
 to create a bootable 12G cinder volume from image `IMGUUID` that gets tied to the VM
 instance life cycle.)
 
-## Validation
+## Conformance Tests
 
-The script `flavor-names-openstack.py` talks to the OpenStack API of the
-cloud specified by the `OS_CLOUD` environment and queries properties and checks
-the names for standards compliance and completeness w.r.t. the mandatory
-flavor list. It goes beyond the above example in checking that the discoverable
-features of flavors (vCPUs, RAM, Disk) match what the flavor names claim.
-This is used for SCS-compatible compliance testing.
+The script `flavors-openstack.py` will read the lists of mandatory and recommended flavors
+from a yaml file provided as command-line argument, connect to an OpenStack installation,
+and check whether the flavors are present and their extra specs are correct. Missing
+flavors will be reported on various logging channels: error for mandatory, info for
+recommended flavors. Incorrect extra specs will be reported as error in any case.
+The return code will be non-zero if the test could not be performed or if any error was
+reported.
 
 ## Operational tooling
 
