@@ -8,5 +8,3 @@ image_groups:
     list:
     - "Debian 11"
     - "Fedora 38"
-    - "AlmaLinux 8"
-    - "AlmaLinux 9"
