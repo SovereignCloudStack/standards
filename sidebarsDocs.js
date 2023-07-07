@@ -21,7 +21,7 @@ const sidebarsDocs = {
         'k8s-cluster-api-provider/doc/LoadBalancer-ExtTrafficLocal',
         'k8s-cluster-api-provider/doc/Upgrade-Guide',
         'k8s-cluster-api-provider/doc/roadmap',
-        'k8s-cluster-api-provider/doc/usage/teardown',
+        'k8s-cluster-api-provider/doc/teardown',
         {
           type: 'category',
           label: 'Usage',
