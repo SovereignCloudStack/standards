@@ -1,5 +1,5 @@
 ---
-title: Requirements for container network interface (CNI)
+title: Requirements for the Container Network Interface (CNI)
 type: Decision Record
 status: Draft
 track: KaaS
@@ -9,11 +9,11 @@ track: KaaS
 
 What is a CNI?
 
-Indipendent from Kubernetes.
+It's independent of Kubernetes.
 
 ## Motivation
 
-Users of SCS based Kubernetes should have basic features.
+Users of SCS-based Kubernetes should have basic features.
 
 
 ## Design considerations
@@ -21,45 +21,38 @@ Users of SCS based Kubernetes should have basic features.
 ...
 
 
-### Required and desirable features
+### Required and Desirable Features
 
 
-
-#### Required features
+#### Required Features
 
 
 * Kubernetes Network Policies
 
 
 
-#### Desirable features
+#### Desirable Features
 
 ##### HostFirewall for Nodes
 
-Kubernetes Nodes should not be exposed to the public internet by default.
+By default, Kubernetes Nodes should not be exposed to the public internet.
 
-How the provider of the Kubernetes service implements this is not part
-of this SCS standard.
+How the provider of the Kubernetes service implements this is not a part of this SCS standard.
 
 Here are some of several ways to achieve this:
 
 * Nodes don't have public IPs and are only reachable within a VPC (Virtual Private Cloud)
-* The CNI implements a HostFirewall. For example [Cilium HostFirewall (CiliumClusterwideNetworkPolicy)](https://docs.cilium.io/en/v1.13/security/host-firewall/)
+* The CNI implements a HostFirewall. For example, [Cilium HostFirewall (CiliumClusterwideNetworkPolicy)](https://docs.cilium.io/en/v1.13/security/host-firewall/)
 * A firewall on the node (iptables/nftables)
 * A firewall in front of the nodes.
 
 ### Rejected CNIs
 
-Since Flannel does not support Kubernetes Network Policies, we recommend against using Flannel.
+As Flannel does not support Kubernetes Network Policies, we recommend against using Flannel.
 
 ### Conclusion
 
-The SCS community decided to leave it up to the Kubernetes service provider which particular CNI to choose.
+The SCS community has decided to leave the choice of a specific CNI up to the Kubernetes service provider.
 
-At the current moment Cilium seems to be a good choice, if the service provider has not settled on
-a particular CNI yet.
+At the current moment, Cilium seems to be a good choice if the service provider has not yet settled on a particular CNI.
 
-## Decision
-
-Based on the research and conclusion above we've decided to use the **Harbor** project
-as a container registry implementation for the SCS ecosystem.
