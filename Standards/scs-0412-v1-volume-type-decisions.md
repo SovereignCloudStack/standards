@@ -76,15 +76,15 @@ Furthermore the indirection makes it harder to discover the qos for a volume typ
 ## Decision
 
 | Aspect | Standardize? | Discoverability | other Things |
-| ---- | ----  | ---- | ------ |
+| ---- | ---- | ---- | ------ |
 | encryption | **Recommended** | work needed | extra_spec: encrypted=True/False |
-| Backend name |  -  | - | - |
-| AZs |  -  | - | describe as optional and backend-dependend |
-| multiattach |  -  | yes | describe as optional |
-| Replication |  **Recommended**  | lot of work | either get from backend to OS or as extra_spec defined by deployer |
-| Number of Replicas, etc |  ?  | lot of work | optional, work on it after Replication is standardized |
-| Volume QoS |  ?  | admin only | needs further discussion, should be at least described as optional |
+| Backend name | - | - | - |
+| AZs | - | - | describe as optional and backend-dependend |
+| multiattach | - | yes | describe as optional |
+| Replication | **Recommended** | lot of work | either get from backend to OS or as extra_spec defined by deployer |
+| Number of Replicas, etc | ? | lot of work | optional, work on it after Replication is standardized |
+| Volume QoS | ? | admin only | needs further discussion, should be at least described as optional |
 
 ## Related Documents
 
-Etherpad with a further look into the Options: https://input.scs.community/JnaY5i70R_yc7JkSNVtlKQ
+[This is an etherpad](https://gnocchi.osci.io/https://input.scs.community/JnaY5i70R_yc7JkSNVtlKQ) with a further look into the Options and a few examples.
