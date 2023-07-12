@@ -87,4 +87,4 @@ Furthermore the indirection makes it harder to discover the qos for a volume typ
 
 ## Related Documents
 
-[This is an etherpad](https://gnocchi.osci.io/https://input.scs.community/JnaY5i70R_yc7JkSNVtlKQ) with a further look into the Options and a few examples.
+[This is an etherpad](https://input.scs.community/JnaY5i70R_yc7JkSNVtlKQ) with a further look into the Options and a few examples.
