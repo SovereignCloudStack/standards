@@ -1,6 +1,6 @@
 name: Build and Deploy to Github Pages
 
-"on":
+on:
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
@@ -16,7 +16,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ github.head_ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v3
