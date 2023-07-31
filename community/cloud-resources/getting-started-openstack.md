@@ -8,7 +8,7 @@ author: Ralf Heiringhoff, Eduard Itrich
 
 ## OpenStackClient (CLI)
 
-The OpenStackClient is installable via all major Linux Distibitions (`apt search openstackclient`)
+The OpenStackClient is installable via all major Linux Distributions (`apt search openstackclient`)
 or directly via [pypi](https://pypi.org/project/python-openstackclient). For
 further Information see the OpenStack Project upstream website
 [python-openstackclient](https://docs.openstack.org/python-openstackclient/latest/index.html).
