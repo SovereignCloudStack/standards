@@ -199,5 +199,3 @@ The Style Guide can be found [here](https://docs.scs.community/community/communi
 ### Reference
 
 --
-
-This draft provides a preliminary structure and content for the SCS documentation. Feedback from the community is essential for refining and improving this standard.
