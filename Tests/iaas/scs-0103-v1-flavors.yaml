@@ -15,6 +15,12 @@ flavor_groups:
       cpus: 4
       cpu-type: shared-core
       ram: 16
+    - name: SCS-4V-16-100s
+      cpus: 4
+      cpu-type: shared-core
+      ram: 16
+      disk: 100
+      disk0-type: ssd
     - name: SCS-8V-32
       cpus: 8
       cpu-type: shared-core
@@ -27,6 +33,12 @@ flavor_groups:
       cpus: 2
       cpu-type: shared-core
       ram: 4
+    - name: SCS-2V-4-20s
+      cpus: 2
+      cpu-type: shared-core
+      ram: 4
+      disk: 20
+      disk0-type: ssd
     - name: SCS-4V-8
       cpus: 4
       cpu-type: shared-core
@@ -72,12 +84,6 @@ flavor_groups:
       cpu-type: shared-core
       ram: 16
       disk: 50
-    - name: SCS-4V-16-100s
-      cpus: 4
-      cpu-type: shared-core
-      ram: 16
-      disk: 100
-      disk0-type: ssd
     - name: SCS-8V-32-100
       cpus: 8
       cpu-type: shared-core
@@ -93,12 +99,6 @@ flavor_groups:
       cpu-type: shared-core
       ram: 4
       disk: 10
-    - name: SCS-2V-4-20s
-      cpus: 2
-      cpu-type: shared-core
-      ram: 4
-      disk: 20
-      disk0-type: ssd
     - name: SCS-4V-8-20
       cpus: 4
       cpu-type: shared-core
