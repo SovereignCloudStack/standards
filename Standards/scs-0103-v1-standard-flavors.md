@@ -1,5 +1,5 @@
 ---
-title: SCS Standard Flavors
+title: SCS Standard Flavors and Properties
 type: Standard
 status: Draft
 track: IaaS
@@ -15,6 +15,18 @@ OpenStack providers thus typically offer a large selection of flavors.
 
 While flavors can be discovered (`openstack flavor list`), it is helpful for users (DevOps teams),
 to have a guaranteed set of flavors available on all SCS clouds, so these need not be discovered.
+
+## Properties (extra specs)
+
+The following extra specs are recognized, together with the respective semantics:
+
+- `scs:cpu-type=shared-core` means that _at least 20% of a core in >99% of the time_,
+  measured over the course of one month (1% is 7,2 h/month).
+- `scs:diskN-type=ssd` (where `N` is a nonnegative integer, usually `0`) means that the
+  root disk `N` must support 1000 _sequential_ IOPS per VM and it must be equipped with
+  power-loss protection; see [scs-0110-v1-ssd-flavors](./scs-0110-v1-ssd-flavors.md).
+
+Whenever ANY of these are present on ANY flavor, the corresponding semantics must be satisfied.
 
 ## Standard SCS flavors
 
@@ -59,13 +71,6 @@ These are flavors that must exist on standard SCS clouds (x86-64).
 | SCS-1L-1-5       |      1 | crowded core  |          1 |               5 | (any)      |
 
 ### Guarantees and properties
-
-The following guarantees must be met:
-
-- A "shared core" means _at least 20% of a core in >99% of the time_, measured over the
-  course of one month (1% is 7,2 h/month).
-- A disk of type "ssd" must support 1000 _sequential_ IOPS per VM and it must be equipped
-  with power-loss protection; see [scs-0110-v1-ssd-flavors](./scs-0110-v1-ssd-flavors.md).
 
 The following properties must be set (in the `extra_specs`):
 
