@@ -1,5 +1,5 @@
 meta:
-  name_key: scs:name-v4
+  name_key: scs:name-v2
 flavor_groups:
   - status: mandatory
     list:

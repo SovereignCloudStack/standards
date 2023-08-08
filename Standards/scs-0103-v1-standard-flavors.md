@@ -74,7 +74,7 @@ These are flavors that must exist on standard SCS clouds (x86-64).
 
 The following properties must be set (in the `extra_specs`):
 
-- `scs:name-v4` to the recommended name,
+- `scs:name-v2` to the recommended name,
 - `scs:cpu-type` to `shared-core` or `crowded-core`, reflecting the vCPU type,
 - `scs:disk0-type` not set if no disk is provided, otherwise set to `ssd` or some other
   value, reflecting the disk type.
