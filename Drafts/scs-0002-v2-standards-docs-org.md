@@ -94,6 +94,7 @@ The technical documentation and navigation should parallel the logical structure
 ├── Identity and Access Management (IAM)
 ├── Releases
 ├── Standards
+├── FAQ
 └── Glossary
 ```
 
