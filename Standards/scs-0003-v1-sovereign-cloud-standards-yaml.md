@@ -39,33 +39,33 @@ and so on (but usually, we aim to keep at most two versions in effect).
 
 This decision record describes two main points:
 
-1. How we denote our certification types by means of a YAML file.
-2. Our process for constructing and progressing the certification types.
+1. How we denote our certificate types by means of a YAML file.
+2. Our process for constructing and progressing the certificate types.
 
 ## Motivation
 
 This decision record establishes a mechanism (by means of the YAML file) with the following three main objectives:
 
-- to provide an overview of the mandatory standards for the different SCS certification levels
-- to make the lifecycle of certification levels traceable
+- to provide an overview of the mandatory standards for the different SCS certificate types
+- to make the lifecycle of certificate types traceable
 - to provide a machine-readable document for further processing (e.g. for a compliance tool suite or continuous integration).
 
 ### Overview of mandatory SCS standards
 
 Digging through a repository of draft, stable, replaced and rejected standards becomes increasingly challenging with a growing number
-documents and decision records. A central document that lists all mandatory standards to acquire a certain certification level can
+documents and decision records. A central document that lists all mandatory standards to acquire a certificate of a certain type can
 resolve this issue. It provides clarity for providers as well as users and helps to understand the value
 proposition of SCS.
 
-### Lifecycle of certification levels
+### Lifecycle of certificate types
 
-Standards and therefore certifications will evolve over time. To provide transparency and traceability for the lifecycle of SCS certification
-levels, the whole history of our certifications should be recorded. Pre-notification of changes to our certification levels allows
+Standards and therefore certifications will evolve over time. To provide transparency and traceability for the lifecycle of SCS certificate
+types, the whole history of our certifications should be recorded. Pre-notification of changes to our certificate types allows
 users to adapt their environments or deployment automation to the new standards in advance.
 
 ### Machine-readability for further processing
 
-By providing a machine-readable document, we can generate web-friendly overviews of our certification levels as well as create a tool suite
+By providing a machine-readable document, we can generate web-friendly overviews of our certificate types as well as create a tool suite
 that checks environments against all described standards.
 
 ## SCS Certification YAML
@@ -194,7 +194,7 @@ kaas:
 
 ## Process
 
-The lifecycle any version of any type of certification goes through the following phases:
+The lifecycle any version of any type of certificate goes through the following phases:
 Draft, Stable, and Deprecated.
 
 ```mermaid
