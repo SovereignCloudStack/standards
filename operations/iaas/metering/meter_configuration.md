@@ -706,6 +706,7 @@ sinks:
     - name: event_sink # 'sink name'
       publishers: # 'list of publishers'
           - notifier://
+          - http://localhost:8088/post_json
 
 ```
 
