@@ -86,7 +86,7 @@ oversubscription), 16GiB RAM and a 50GB disk (of unspecified type).
 
 ### [REQUIRED] CPU Suffixes
 
-Next to the number of vCPUs, these vCPUs need to be characterized ti describe their nature.
+Next to the number of vCPUs, these vCPUs need to be characterized to describe their nature.
 
 | Suffix | Meaning                       |
 | ------ | ----------------------------- |
@@ -342,7 +342,7 @@ life for their customers when consuming these flavors.
 
 Note that there is no need to indicate all details and extra features this way.
 Flavors may always perform better or have more features than indicated in a name.
-Underperformance (CPU suffices `L` or `i` or memory suffices `o` and `u`) on the other
+Underperformance (CPU suffixes `L` or `i` or memory suffixes `o` and `u`) on the other
 hand MUST be indicated in the name; this happens rarely in practice.
 
 For smaller providers, the ability to e.g. differentiate between an AMD Milan and an intel
