@@ -17,8 +17,6 @@ The specification is targeting images that are managed by the service provider,
 provided for public consumption. The spec or parts of it however might turn out
 to be useful whenever someone manages images for somebody else's consumption.
 
-We also suggest a standard set of images to be available.
-
 ## Overview
 
 We categorize the image properties into a few buckets
@@ -38,49 +36,6 @@ Special variants that include specific non-standard features should be named
 
 There are several policies possible to provide updated images to include the latest
 bug- and security fixes. This is outlined in update policy description below.
-
-## Standard images
-
-SCS does not at this point mandate the availability of certain images.
-We however intend to change this after a broader discussion.
-
-We intend to mandate the following images:
-
-- `Ubuntu <LATESTLTS>`, `Ubuntu <PREVLTS>`, `Debian <STABLE>`
-- Note that `<LATESTLTS>` refers to the latest LTS version, which at this point is `22.04`.
-  The `<PREVLTS>` is the previous LTS version, at the time of this writing (9/2022) it's `20.04`.
-  We don't carry the `.x` patch numbers in the standard image names. We switch to requiring the
-  newest Ubuntu LTS version when the `.1` version comes out (around July/August). At this point
-  the old `<PREVLTS>` version becomes optional ...
-- For Debian, we use the latest STABLE version, which is `11` at the time of this writing.
-  Similar to Ubuntu, we would do the switch and require the latest STABLE to be made available within
-  ~3 months after release.
-- When a CentOS successor emerges, we would have one in the mandatory list.
-
-We intend to recommend the following images:
-
-- `CentOS 8`
-- `Alma Linux 8`, `Rocky 8`
-- `Debian <PREVSTABLE>` (the one pre-latest `<STABLE>`, `10` at the time of writing)
-- `Fedora <LATEST>` (`36` currently, this will get replaced quickly as the next Fedora comes out)
-
-We want to suggest the following supported images (with licensing/maintenance/support as intended from OS vendor)
-
-- `SLES 15SP4`
-- `RHEL 9`, `RHEL 8`
-- `Windows Server 2022`, `Windows Server 2019`
-
-We are also looking into standard suggestions for
-
-- `openSUSE Leap 15.4`
-- `Cirros 0.5.2`
-- `Alpine`
-- `Arch`
-
-The suggestions mainly serve to align image naming between providers.
-
-Note that additional images will be available on typical platforms, e.g. `ubuntu-capi-image-v1.24.4`
-for platforms that are prepared to support SCS k8s cluster management.
 
 ## Technical requirements and features
 
@@ -267,9 +222,8 @@ A boolean property that is not present is considered to be `false`.
   service provider does provide support for this image included in the image/flavor
   pricing (but it might be provided by a contracted 3rd party, e.g. the OS vendor).
 
-### Conformance test tool
+### Conformance Tests
 
-The `tools/` subdirectory has a testing tool `image-md-check.py` that retrieves the
-image list from a configured cloud and checks them for completeness (with respect
-to the intended future list of mandatory images) and checks each image for the
+The script `image-md-check.py` retrieves the
+image list from a configured cloud and checks each image for the
 completeness and consistency of mandatory properties.
