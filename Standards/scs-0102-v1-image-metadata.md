@@ -232,10 +232,6 @@ upstream images, they should point to the place where they document and offer th
   for the image file. (This references the image file in the format it is stored in, we
   recommend raw over qcow2 for systems that use ceph.) Note that these values are
   typically generated automatically upon image registration.
-- Recommended: Digital image signature according to the [glance image
-  specification](https://docs.openstack.org/glance/wallaby/user/signature.html),
-  using `img_signature`, `img_signature_hash_method`, `img_signature_key_type`,
-  `img_signature_certificate_uuid`.
 
 - Recommended _tag_: `os:OPERATINGSYSTEM`
 
