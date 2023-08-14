@@ -35,7 +35,7 @@ For instance, we might have
 - SCS-compatible IaaS v1, effective 2021-01-01 through 2023-10-31
 - SCS-compatible IaaS v2, effective 2023-03-23 through 2023-11-30
 
-and so on (but usually, we aim to keep at most two versions in effect).
+and so on (but usually, we aim to keep at most two versions in effect, with an overlap of 4 to 6 weeks).
 
 This decision record describes two main points:
 
@@ -130,7 +130,7 @@ can be certified against, unless the version is already obsoleted (the point is 
 This means that more than one version may be allowable at a certain point in time. Tooling should default
 to use the newest allowable version (the one with the most recent `stabilized_at` date) then.
 
-Note: We intend to keep only one version in effect, except for a grace period, when two versions
+Note: We intend to keep only one version in effect, except for a grace period of 4 to 6 weeks, when two versions
 are effective at the same time.
 
 ### Standards
