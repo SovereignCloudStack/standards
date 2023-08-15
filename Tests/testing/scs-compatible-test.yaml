@@ -9,10 +9,10 @@ iaas:
           - executable: ./iaas/standard-flavors/flavors-openstack.py
             args: "./iaas/scs-0103-v1-flavors.yaml"
       - name: Flavor naming
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v4-flavor-naming.md
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v3-flavor-naming.md
         check_tools:
           - executable: ./iaas/flavor-naming/flavor-names-openstack.py
-            args: "--mand=./iaas/scs-0100-v4-flavors.yaml"
+            args: "--mand=./iaas/scs-0100-v3-flavors.yaml"
       - name: Image metadata
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
         check_tools:
