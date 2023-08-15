@@ -49,4 +49,6 @@ All important documents regarding versioning, releases, etc. for the official Ku
 
 ## Conformance Tests
 
-TBD
+The conformance test is written in the 'k8s-version-recency-check.py' script. The script requires the path to a valid
+kubeconfig file, which should describe the k8s cluster under test. This can either be done by creating a config from
+the also provided 'config.yaml.template' or by calling the test script with its cli arguments.
