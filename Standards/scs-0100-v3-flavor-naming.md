@@ -113,7 +113,7 @@ In particular,
 - CPUs that are susceptible to L1TF (intel x86 pre Cascade Lake) should have hyperthreading
   disabled OR (in the future) use core scheduling implementations that are deemed to be secure by the SCS security team.
 
-That is to say, except when the suffix `i` is used, the provider commits itself to implement the appropriate mitigations
+That is to say, except when the suffix `i` is used, the provider commits itself to implementing the appropriate mitigations
 if and when they become available, within the timeframes mentioned above.
 
 Alternatively, if this commitment is not opportune -- i.e.,
