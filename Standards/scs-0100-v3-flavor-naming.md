@@ -278,10 +278,6 @@ instance life cycle.)
 
 ## Naming policy compliance
 
-To be certified as an SCS compliant x86-64 IaaS platform, you must offer all standard mandatory SCS
-flavors according to the previous section. (We may define a mechanism that allows exceptions to be
-granted in a way that makes this very transparent and visible to clients.)
-
 You are allowed to understate your performance; you may implement a SCS-1V-1-5 flavor with
 a flavor that actually implements SCS-1T-1-5n (i.e. you dedicate a dedicated hyperthread instead
 of higher oversubscription) or even SCS-1C-1.5-8s (1 dedicated core, 50% more RAM and a 8GiB SSD).
