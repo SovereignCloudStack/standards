@@ -216,8 +216,6 @@ so users can expect some level of parallelism and independence.
 - SCS-2C-4-\_ib
 - SCS-2C-4 <- You need to specify a boot volume yourself (boot from volume, or use `block_device_mapping_v2`)
 - SCS-2C-4_bms_z3
-- SCS-2C-4-3x- <- Cloud decides disk type and size and creates three of them (FIXME: Is this useful?)
-- SCS-2C-4-3xs <- Cloud decides size and creates three local SSD volumes (FIXME: useful?)
 - SCS-2C-4-3x10 <- Cloud decides type and creates three 10GB volumes
 - ~~SCS-2C-4-**1.5n**~~ <- You must not specify disk sizes which are not in full GiBs
 
