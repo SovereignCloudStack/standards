@@ -543,9 +543,6 @@ and the way back can be done with
 NAMEV1=$(echo "$NAMEV2" | sed -e 's/\-/:/g' -e 's/_/-/g' -e 's/^SCS:/SCS-/')
 ```
 
-Considerations for how providers can ensure a smooth transition for their customers
-from v1 to v2 are written in a separate document.
-
 For the time being, the validation tools still accept the old names with a warning
 (despite the unchanged `SCS-` prefix) unless you pass option `-2` to them. They will
 however not count v1 flavors towards fulfilling the needs against the corresponding
