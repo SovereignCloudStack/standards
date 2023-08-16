@@ -71,7 +71,7 @@ encoding all details) as well as very detailed longer names.
 
 | Prefix | CPUs & Suffix     | RAM[GiB]           | optional: Disk[GB]&type       | opt: extensions |
 | ------ | ----------------- | ------------------ | ----------------------------- | ----------------|
-| `SCS-` | N`L/V/T/C`\[`i`\] | `-`N\[`u`\]\[`o`\] | \[`-`\[M`x`\]N\[`n/s/l/p`\]\] | \[`_`EXT\]      |
+| `SCS-` | N`L/V/T/C`\[`i`\] | `-`N\[`u`\]\[`o`\] | \[`-`\[M`x`\]N\[`n/h/s/p`\]\] | \[`_`EXT\]      |
 
 Note that N and M are placeholders for numbers here.
 The optional fields are denoted in brackets (and have opt: in the header.
