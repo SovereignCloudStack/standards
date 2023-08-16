@@ -104,15 +104,22 @@ or by more advanced workload management logic. Otherwise `L` (low performance) i
 of `V` must be used. The >99% is measured over a month (1% is 7.2h/month).
 
 Note that CPUs should use latest microcode to protect against CPU vulnerabilities (Spectre, Meltdown, L1TF, etc.).
-Microcode must be updated within less than a month of a new release; for CVSS scores above 8,
-providers should do it in less than a week.
-The provider should enable at least all mitigations that are enabled by default in the Linux kernel and the
-KVM hypervisor. CPUs that are susceptible to L1TF (intel x86 pre Cascade Lake) should switch off hyperthreading
-OR (in the future) use core scheduling implementations that are deemed to be secure by the SCS security team.
+In particular,
 
-If microcode updates needed for mitigation are lacking for longer than a month, default kernel/hypervisor
-mitigations are disabled or hyperthreading is enabled despite the CPU being susceptible to L1TF, the
-flavors must declare themselves insecure with the `i` suffix (see below).
+- microcode must be updated within less than a month of a new release; for CVSS scores above 8,
+  providers should do it in less than a week.
+- all mitigations that are enabled by default in the Linux kernel and the KVM hypervisor
+  should be enabled,
+- CPUs that are susceptible to L1TF (intel x86 pre Cascade Lake) should have hyperthreading
+  disabled OR (in the future) use core scheduling implementations that are deemed to be secure by the SCS security team.
+
+That is to say, except when the suffix `i` is used, the provider commits itself to implement the appropriate mitigations
+if and when they become available, within the timeframes mentioned above.
+
+Alternatively, if this commitment is not opportune -- i.e.,
+microcode updates needed for mitigation are lacking for longer than a month, default kernel/hypervisor
+mitigations are disabled, or hyperthreading is enabled despite the CPU being susceptible to L1TF --,
+the flavors must be declared insecure with the `i` suffix (see below).
 
 #### Higher oversubscription
 
