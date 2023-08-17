@@ -102,6 +102,7 @@ def main(argv):
         logger.critical("Flavor definition missing 'flavor_groups' field")
 
     name_key = flavor_spec_data['meta']['name_key']
+    es_name_key = f"scs:{name_key}"
     # compute union of all flavor groups, copying group info (mainly "status") to each flavor
     # check if the spec is complete while we are at it
     flavor_specs = []
@@ -124,21 +125,20 @@ def main(argv):
         with openstack.connect(cloud=cloud, timeout=32) as conn:
             present_flavors = conn.list_flavors(get_extra=True)
             by_name = {
-                flavor.extra_specs[name_key]: flavor
+                flavor.extra_specs[es_name_key]: flavor
                 for flavor in present_flavors
-                if name_key in flavor.extra_specs
+                if es_name_key in flavor.extra_specs
             }
 
         logger.debug(f"Checking {len(flavor_specs)} flavor specs against {len(present_flavors)} flavors")
         for flavor_spec in flavor_specs:
-            flavor = by_name.get(flavor_spec['name'])
+            flavor = by_name.get(flavor_spec[name_key])
             if not flavor:
                 status = flavor_spec['_group']['status']
                 level = {"mandatory": logging.ERROR}.get(status, logging.INFO)
                 logger.log(level, f"Missing {status} flavor '{flavor_spec['name']}'")
                 continue
             # check that flavor matches flavor_spec
-            # name and corresponding extra_spec do match, because that's how we found the flavor in the first place...
             # cpu, ram, and disk should match, and they should match precisely for discoverability
             if flavor.vcpus != flavor_spec['cpus']:
                 logger.error(f"Flavor '{flavor.name}' violating CPU constraint: {flavor.vcpus} != {flavor_spec['cpus']}")

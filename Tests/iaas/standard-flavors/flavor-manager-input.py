@@ -66,12 +66,11 @@ recommended: []
                 logging.critical(f"Flavor spec missing attributes: {', '.join(missing)}")
                 return 1
             flavor_spec = {**group_info, **flavor_spec}
-            extra_specs = {name_key: flavor_spec['name']}
-            extra_specs.update({
+            extra_specs = {
                 f"scs:{key}": value
                 for key, value in flavor_spec.items()
                 if key not in ('name', 'cpus', 'ram', 'disk')
-            })
+            }
             flavor_spec = {
                 key: value
                 for key, value in flavor_spec.items()
