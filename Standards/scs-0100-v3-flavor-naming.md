@@ -116,9 +116,9 @@ In particular,
 That is to say, except when the suffix `i` is used, the provider commits itself to implementing the appropriate mitigations
 if and when they become available, within the timeframes mentioned above.
 
-Alternatively, if this commitment is not opportune — i.e.,
-microcode updates needed for mitigation are lacking for longer than a month, default kernel/hypervisor
-mitigations are disabled, or hyperthreading is enabled despite the CPU being susceptible to L1TF —,
+If a provider does not want to commit to deploying available microcode fixes and upstream kernel/hypervisor updates within a month or
+if the provider wants to enable hyperthreading on compute hosts despite having CPUs susceptible to L1TF there
+(and no SCS-accepted core-scheduling mechanism is used for mitigation),
 the flavors must be declared insecure with the `i` suffix (see below).
 
 #### Higher oversubscription
