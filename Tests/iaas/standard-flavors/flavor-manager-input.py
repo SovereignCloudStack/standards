@@ -50,7 +50,6 @@ recommended: []
 """)
 
     # transfer the info into the result yaml, again checking for sanity
-    name_key = flavor_spec_data['meta']['name_key']
     for flavor_group in flavor_spec_data['flavor_groups']:
         group_info = dict(flavor_group)
         group_info.pop('list')
