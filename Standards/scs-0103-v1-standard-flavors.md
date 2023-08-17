@@ -20,7 +20,8 @@ to have a guaranteed set of flavors available on all SCS clouds, so these need n
 
 The following extra specs are recognized, together with the respective semantics:
 
-- `scs:name-v2=NAME` (where `NAME` is some string) means that the flavor is one of the
+- `scs:name-vN=NAME` (where `N` is `1` or `2`, and `NAME` is some string) means that the
+  flavor is one of the
   standard SCS flavors, and the requirements of Section "Standard SCS flavors" below apply.
 - `scs:cpu-type=shared-core` means that _at least 20% of a core in >99% of the time_,
   measured over the course of one month (1% is 7,2 h/month).
@@ -79,6 +80,7 @@ precisely the corresponding figures in the flavor.
 
 In addition, the following properties must be set (in the `extra_specs`):
 
+- `scs:name-v1` to the recommended name, but with each dash AFTER the first one replaced by a colon,
 - `scs:name-v2` to the recommended name,
 - `scs:cpu-type` to `shared-core` or `crowded-core`, reflecting the vCPU type,
 - `scs:disk0-type` not set if no disk is provided, otherwise set to `ssd` or some other
