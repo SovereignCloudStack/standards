@@ -71,7 +71,7 @@ encoding all details) as well as very detailed longer names.
 
 | Prefix | CPUs & Suffix     | RAM[GiB]           | optional: Disk[GB]&type       | opt: extensions |
 | ------ | ----------------- | ------------------ | ----------------------------- | ----------------|
-| `SCS-` | N`L/V/T/C`\[`i`\] | `-`N\[`u`\]\[`o`\] | \[`-`\[M`x`\]N\[`n/s/l/p`\]\] | \[`_`EXT\]      |
+| `SCS-` | N`L/V/T/C`\[`i`\] | `-`N\[`u`\]\[`o`\] | \[`-`\[M`x`\]N\[`n/h/s/p`\]\] | \[`_`EXT\]      |
 
 Note that N and M are placeholders for numbers here.
 The optional fields are denoted in brackets (and have opt: in the header.
@@ -104,15 +104,22 @@ or by more advanced workload management logic. Otherwise `L` (low performance) i
 of `V` must be used. The >99% is measured over a month (1% is 7.2h/month).
 
 Note that CPUs should use latest microcode to protect against CPU vulnerabilities (Spectre, Meltdown, L1TF, etc.).
-Microcode must be updated within less than a month of a new release; for CVSS scores above 8,
-providers should do it in less than a week.
-The provider should enable at least all mitigations that are enabled by default in the Linux kernel and the
-KVM hypervisor. CPUs that are susceptible to L1TF (intel x86 pre Cascade Lake) should switch off hyperthreading
-OR (in the future) use core scheduling implementations that are deemed to be secure by the SCS security team.
+In particular,
 
-If microcode updates needed for mitigation are lacking for longer than a month, default kernel/hypervisor
-mitigations are disabled or hyperthreading is enabled despite the CPU being susceptible to L1TF, the
-flavors must declare themselves insecure with the `i` suffix (see below).
+- microcode must be updated within less than a month of a new release; for CVSS scores above 8,
+  providers should do it in less than a week.
+- all mitigations that are enabled by default in the Linux kernel and the KVM hypervisor
+  should be enabled,
+- CPUs that are susceptible to L1TF (intel x86 pre Cascade Lake) should have hyperthreading
+  disabled OR (in the future) use core scheduling implementations that are deemed to be secure by the SCS security team.
+
+That is to say, except when the suffix `i` is used, the provider commits itself to implementing the appropriate mitigations
+if and when they become available, within the timeframes mentioned above.
+
+If a provider does not want to commit to deploying available microcode fixes and upstream kernel/hypervisor updates within a month or
+if the provider wants to enable hyperthreading on compute hosts despite having CPUs susceptible to L1TF there
+(and no SCS-accepted core-scheduling mechanism is used for mitigation),
+the flavors must be declared insecure with the `i` suffix (see below).
 
 #### Higher oversubscription
 
@@ -216,8 +223,6 @@ so users can expect some level of parallelism and independence.
 - SCS-2C-4-\_ib
 - SCS-2C-4 <- You need to specify a boot volume yourself (boot from volume, or use `block_device_mapping_v2`)
 - SCS-2C-4_bms_z3
-- SCS-2C-4-3x- <- Cloud decides disk type and size and creates three of them (FIXME: Is this useful?)
-- SCS-2C-4-3xs <- Cloud decides size and creates three local SSD volumes (FIXME: useful?)
 - SCS-2C-4-3x10 <- Cloud decides type and creates three 10GB volumes
 - ~~SCS-2C-4-**1.5n**~~ <- You must not specify disk sizes which are not in full GiBs
 
@@ -272,10 +277,6 @@ to create a bootable 12G cinder volume from image `IMGUUID` that gets tied to th
 instance life cycle.)
 
 ## Naming policy compliance
-
-To be certified as an SCS compliant x86-64 IaaS platform, you must offer all standard mandatory SCS
-flavors according to the previous section. (We may define a mechanism that allows exceptions to be
-granted in a way that makes this very transparent and visible to clients.)
 
 You are allowed to understate your performance; you may implement a SCS-1V-1-5 flavor with
 a flavor that actually implements SCS-1T-1-5n (i.e. you dedicate a dedicated hyperthread instead
@@ -544,9 +545,6 @@ and the way back can be done with
 ```shell
 NAMEV1=$(echo "$NAMEV2" | sed -e 's/\-/:/g' -e 's/_/-/g' -e 's/^SCS:/SCS-/')
 ```
-
-Considerations for how providers can ensure a smooth transition for their customers
-from v1 to v2 are written in a separate document.
 
 For the time being, the validation tools still accept the old names with a warning
 (despite the unchanged `SCS-` prefix) unless you pass option `-2` to them. They will
