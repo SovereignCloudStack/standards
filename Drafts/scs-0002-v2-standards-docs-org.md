@@ -23,11 +23,11 @@ SCS promotes a collaborative environment by actively contributing to upstream pr
 
 ## Distributed Documentation
 
-In line with the OpenStack documentation approach, most SCS Components and components maintain independent documentation. To keep this documentation up-to-date and eliminate manual duplication, we utilize a custom workflow that synchronizes individual documents during the static documentation page's build process.
+In line with the [OpenStack documentation approach](https://docs.openstack.org/doc-contrib-guide/), most SCS Components and components maintain independent documentation. To keep this documentation up-to-date and eliminate manual duplication, we utilize a custom workflow that synchronizes individual documents during the static documentation page's build process.
 
 ## Methodology and Taxonomy
 
-Addressing the complexity of SCS requires an effective documentation structure. Accordingly, we have adopted the Diataxis taxonomy, categorizing the documentation into four distinct sections: Tutorials, Guides, References, and Explanations.
+Addressing the complexity of SCS requires an effective documentation structure. Accordingly, we have adopted the [Diataxis taxonomy](https://diataxis.fr/), categorizing the documentation into four distinct sections: Tutorials, Guides, References, and Explanations.
 
 ## Structure Template
 
@@ -157,7 +157,7 @@ We have accomplished this by utilizing a Node.js post-install script found [here
 
 This script prompts the system to pull the latest docs every eight hours and build the static page. The workflow's specifications can be viewed here.
 
-The Components incorporated within the documentation are defined in the docs.package.json [here](https://github.com/SovereignCloudStack/docs-page/blob/main/docs.package.json).
+The [SCS documentation](https://docs.scs.community/) is built by the tooling from the [docs-page](https://github.com/SovereignCloudStack/docs-page/) repository, pulling content from [docs repository](https://github.com/SovereignCloudStack/docs/) as well as many other components as defined in the docs.package.json [here](https://github.com/SovereignCloudStack/docs-page/blob/main/docs.package.json).
 
 ### Writing Style and Format – Style Guide
 
