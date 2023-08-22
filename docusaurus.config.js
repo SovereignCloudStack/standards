@@ -106,10 +106,6 @@ const config = {
                     href: 'https://matrix.to/#/!TiDqlLmEUaXqTemaLc:matrix.org?via=matrix.org'
                   },
                   {
-                    label: 'Twitter',
-                    href: 'https://twitter.com/scs_osballiance'
-                  },
-                  {
                     label: 'Mastodon',
                     href: 'https://fosstodon.org/@sovereigncloudstack'
                   }
