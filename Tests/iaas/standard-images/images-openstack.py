@@ -94,26 +94,15 @@ def main(argv):
         logger.debug("Exception info", exc_info=True)
         return 1
 
-    if 'image_groups' not in image_data:
-        logger.critical("Image definition missing 'image_groups' field")
+    if 'images' not in image_data:
+        logger.critical("Image definition missing 'images' field")
         return 1
 
-    # compute union of all image groups, copying group info (mainly "status") to each image
-    image_specs = []
-    for image_group in image_data['image_groups']:
-        group_info = dict(image_group)
-        group_info.pop('list')
-        missing = {'status'} - set(group_info)
-        if missing:
-            logging.critical(f"Image group missing attributes: {', '.join(missing)}")
-            return 1
-        for image_name in image_group['list']:
-            image_specs.append({"_group": group_info, "name": image_name})
-
+    image_specs = image_data['images']
     try:
         logger.debug(f"Fetching image list from cloud '{cloud}'")
         with openstack.connect(cloud=cloud, timeout=32) as conn:
-            present_images = conn.list_images()
+            present_images = conn.list_images(show_all=True)
             by_name = {
                 image.name: image
                 for image in present_images
@@ -123,10 +112,13 @@ def main(argv):
         for image_spec in image_specs:
             image = by_name.get(image_spec['name'])
             if not image:
-                status = image_spec['_group']['status']
-                level = {"mandatory": logging.ERROR}.get(status, logging.INFO)
+                status = image_spec.get('status', 'optional')
+                level = {"mandatory": logging.ERROR, "recommended": logging.INFO}.get(status, logging.DEBUG)
                 logger.log(level, f"Missing {status} image '{image_spec['name']}'")
                 continue
+            img_source = image.properties['image_source']
+            if not img_source.startswith(image_spec['source']):
+                logger.error(f"Image '{image_spec['name']}' source mismatch: {image_spec['source']} != {img_source} {image.properties}")
     except BaseException as e:
         logger.critical(f"{e!r}")
         logger.debug("Exception info", exc_info=True)
