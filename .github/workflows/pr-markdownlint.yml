@@ -38,7 +38,7 @@ jobs:
 
 
       - name: Install all npm packages
-        run: npm ci
+        run: npm install
 
       - name: Lint markdown files
         run: |

@@ -51,5 +51,5 @@
     }
   },
   "customRules": ["markdownlint-rule-search-replace"],
-  "ignores": ["node_modules", ".github"]
+  "ignores": ["node_modules", ".github", "docs"]
 }
