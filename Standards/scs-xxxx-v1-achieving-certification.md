@@ -5,17 +5,17 @@ status: Draft
 track: Global
 ---
 
-# Introduction
+## Introduction
 
 The Sovereign Cloud Stack (SCS) issues certificates of various types, among them _SCS-compatible IaaS_ (infrastructure as a service) and _SCS-compatible KaaS_ (Kubernetes as a service).
 
 This document details how a cloud service provider (henceforth, CSP) can attain such a certificate for one of their clouds.
 
-# Motivation
+## Motivation
 
 As Operator, I want to achieve the Certificate SCS compatible.
 
-# Regulations
+## Regulations
 
 1. Each certificate issued pertains to a certain cloud, a certain type (here, SCS-compatible IaaS or SCS-compatible KaaS), and a certain version of that type with a fixed expiry date. The certificate is only valid for that cloud and for the time frame that ends on that expiry date.
 
@@ -33,10 +33,10 @@ As Operator, I want to achieve the Certificate SCS compatible.
 
 <!-- Make clear that we – the SCS project – are allowed to test a cloud enviroment on request or request docs that prove the fulfillment of certification requirements -->
 
-# Design Considerations
+## Design Considerations
 
-# Open Questions
+## Open Questions
 
-# Related Documents
+## Related Documents
 
 <!-- scs-0003 -->
