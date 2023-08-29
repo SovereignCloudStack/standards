@@ -1,62 +1,32 @@
 [
-    {
-        "repo": "SovereignCloudStack/docs",
-        "source": "community",
-        "target": "community",
-        "label": ""
-    },
-    {
-        "repo": "SovereignCloudStack/docs",
-        "source": "*.md",
-        "target": "docs",
-        "label": ""
-    },
-    {
-        "repo": "SovereignCloudStack/docs",
-        "source": "operations",
-        "target": "docs",
-        "label": ""
-    },
-    {
-        "repo": "SovereignCloudStack/release-notes",
-        "source": "*.md",
-        "target": "docs",
-        "label": "release-notes"
-    },
-    {
-        "repo": "osism/openstack-image-manager",
-        "source": "doc/*.md",
-        "target": "docs",
-        "label": "openstack-image-manager"
-    },
-    {
-        "repo": "osism/testbed",
-        "source": "doc",
-        "target": "docs",
-        "label": "testbed"
-    },
-    {
-        "repo": "osism/cloud-in-a-box",
-        "source": "doc",
-        "target": "docs",
-        "label": "testbed/cloud-in-a-box"
-    },
-    {
-        "repo": "SovereignCloudStack/k8s-cluster-api-provider",
-        "source": "doc",
-        "target": "docs",
-        "label": "k8s-cluster-api-provider"
-    },
-    {
-        "repo": "SovereignCloudStack/status-page-openapi",
-        "source": "docs",
-        "target": "docs",
-        "label": "status-page-openapi"
-    },
-    {
-        "repo": "SovereignCloudStack/standards",
-        "source": "Standards/*.md",
-        "target": "standards",
-        "label": ""
-    }
+  {
+    "repo": "SovereignCloudStack/release-notes",
+    "source": "*.md",
+    "target": "docs",
+    "label": "06-releases"
+  },
+  {
+    "repo": "osism/openstack-image-manager",
+    "source": "doc/*.md",
+    "target": "docs/02-iaas/components",
+    "label": "openstack-image-manager"
+  },
+  {
+    "repo": "SovereignCloudStack/k8s-cluster-api-provider",
+    "source": "doc",
+    "target": "docs/03-container/components",
+    "label": "k8s-cluster-api-provider"
+  },
+  {
+    "repo": "SovereignCloudStack/status-page-openapi",
+    "source": "docs",
+    "target": "docs/04-operating-scs",
+    "label": "status-page"
+  },
+  {
+    "repo": "SovereignCloudStack/standards",
+    "source": "Standards/*.md",
+    "target": "standards",
+    "label": "active"
+  }
 ]

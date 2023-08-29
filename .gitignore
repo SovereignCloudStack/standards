@@ -1,16 +1,9 @@
 # Content Dependencies from docs.package.json
 /repo_to_be_edited_
-/community/community
-/docs/openstack-image-manager
-/docs/operations
-/docs/release-notes
-/docs/testbed
-/docs/k8s-cluster-api-provider
-/docs/status-page-openapi
-/standards/*
-/docs/*.md
-!/standards/index.md
-
+/docs/02-iaas/components
+/docs/03-container/components
+/docs/06-releases
+/standards
 
 # Dependencies
 node_modules
