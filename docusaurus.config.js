@@ -16,7 +16,7 @@ const config = {
     mermaid: true,
   },
   organizationName: "SovereignCloudStack", // Usually your GitHub org/user name.
-  projectName: "docs-page", // Usually your repo name.
+  projectName: "docs", // Usually your repo name.
   // Even if you don't use internalization, you can use this field to set useful
   // metadata like html lang. For example, if your site is Chinese, you may want
   // to replace "en" with "zh-Hans".
@@ -32,12 +32,12 @@ const config = {
         docs: {
           sidebarPath: require.resolve("./sidebarsDocs.js"),
           editUrl:
-            "https://github.com/SovereignCloudStack/docs-page/tree/main/",
+            "https://github.com/SovereignCloudStack/docs/tree/main/",
         },
         blog: {
           showReadingTime: true,
           editUrl:
-            "https://github.com/SovereignCloudStack/docs-page/tree/main/",
+            "https://github.com/SovereignCloudStack/docs/tree/main/",
         },
         theme: {
           customCss: [require.resolve("./src/css/custom.css")],
@@ -116,7 +116,7 @@ const config = {
           { to: "/community", label: "Community", position: "left" },
           { to: "/docs/faq", label: "FAQ", position: "left" },
           {
-            href: "https://github.com/SovereignCloudStack/docs-page",
+            href: "https://github.com/SovereignCloudStack/docs",
             label: "GitHub",
             position: "right",
           },
@@ -156,7 +156,7 @@ const config = {
               // },
               {
                 label: "GitHub",
-                href: "https://github.com/SovereignCloudStack/docs-page",
+                href: "https://github.com/SovereignCloudStack/docs",
               },
             ],
           },
