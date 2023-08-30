@@ -7,7 +7,9 @@ track: IaaS
 
 ## Introduction
 
-Volume Types are used to classify volumes and provide a basic decision for what kind of volume should be created. These volume types can sometimes very be backend-specific and it might be hard for a user to choose the most suitable volume type, if there is more than one default type.
+Volumes in OpenStack are virtual drives. They are managed by the storage service Cinder, which abstracts creation and usage of many different storage backends. While it is possible to use a backend like lvm which can reside on the sam host as the hypervisor, the SCS wants to make a more clear differenciation between volumes and the ephemeral storage of a virtual machine. For all SCS deployments we want to assume that volumes are always residing in a storage backend that is NOT on the same host as a hypervisor - in short terms: Volumes are network storage. Ephemeral storage on the other hand is the only storage residing on a compute host. It is created by creating a VM directly from an Image and is automatically los as soon as the VM cease to exist. Volumes on the other hand have to be created from Images and only after that can be used for VMs. They are persistant and will remain in the last state a VM has written on them before they cease to exit. Being persistant and not relying on the host where the VM resides, Volumes can easily be attached to another VM in case of a node outage and VMs be migrated way more easily, because only metadata and data in RAM has to be shifted to another host, accelerating any migration or evacuation of a VM.
+
+Volume Types are used to classify volumes and provide a basic decision for what kind of volume should be created. These volume types can sometimes very be backend-specific and it might be hard for a user to choose the most suitable volume type, if there is more than one default type. Nevertheless the most of configuration is done in the backends themself, so volume types only work as a rough classification.
 
 ## Motivation
 
@@ -67,6 +69,10 @@ Quality of Service parameters can be stated in a volume qos object. These object
 Furthermore the indirection makes it harder to discover the qos for a volume type. Only admins will see the associated qos ID and will have to take a closer look at the qos after discovering the volume type. PLUS: there can only be one qos association for one volume type. But a qos can be used for multiple volumes.
 
 **Conclusion**: The benefit of displaying qos parameters is clear, thus this option should be noted. But are volume qos objects widely used? If not, standardization process would be too much work.
+
+#### Other Backend-specific Highlights
+
+While every option above described things, that can at least be partly or for admins only visible in volume types, there are many different configuration options in hardware and backend providers can make use of. It is sadly not possible to get them into the volume type directly, but we recommend, that notable configurations are written into the description of a volume type to achieve transparency for the users.
 
 ## Open questions
 
