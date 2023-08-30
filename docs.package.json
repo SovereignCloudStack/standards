@@ -27,6 +27,6 @@
     "repo": "SovereignCloudStack/standards",
     "source": "Standards/*.md",
     "target": "standards",
-    "label": "active"
+    "label": ""
   }
 ]
