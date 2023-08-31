@@ -31,13 +31,11 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve("./sidebarsDocs.js"),
-          editUrl:
-            "https://github.com/SovereignCloudStack/docs/tree/main/",
+          editUrl: "https://github.com/SovereignCloudStack/docs/tree/main/",
         },
         blog: {
           showReadingTime: true,
-          editUrl:
-            "https://github.com/SovereignCloudStack/docs/tree/main/",
+          editUrl: "https://github.com/SovereignCloudStack/docs/tree/main/",
         },
         theme: {
           customCss: [require.resolve("./src/css/custom.css")],
@@ -51,23 +49,12 @@ const config = {
       {
         fromExtensions: ["html", "htm"], // /myPage.html -> /myPage
         toExtensions: ["exe", "zip"], // /myAsset -> /myAsset.zip (if latter exists)
-        // redirects: [
-        //   // /docs/oldDoc -> /docs/newDoc
-        //   {
-        //     to: '/docs/newDoc',
-        //     from: '/docs/oldDoc'
-        //   }
-        // ],
-        // createRedirects (existingPath) {
-        //   if (existingPath.includes('/community')) {
-        //     // Redirect from /docs/team/X to /community/X and /docs/support/X to /community/X
-        //     return [
-        //       existingPath.replace('/community', '/docs/team'),
-        //       existingPath.replace('/community', '/docs/support')
-        //     ]
-        //   }
-        //   return undefined // Return a falsy value: no redirect created
-        // }
+        createRedirects(existingPath) {
+          if (existingPath.includes("/community")) {
+            return [existingPath.replace("/community", "/community/community")];
+          }
+          return undefined; // Return a falsy value: no redirect created
+        },
       },
     ],
     [
