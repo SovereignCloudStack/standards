@@ -19,6 +19,7 @@ from collections import Counter
 import getopt
 import logging
 import os
+import re
 import sys
 
 import openstack
@@ -107,18 +108,28 @@ def main(argv):
                 image.name: image
                 for image in present_images
             }
+        logger.debug(f"Images present: {', '.join(sorted(by_name))}")
 
         logger.debug(f"Checking {len(image_specs)} image specs against {len(present_images)} images")
         for image_spec in image_specs:
-            image = by_name.get(image_spec['name'])
-            if not image:
+            name_scheme = image_spec.get('name_scheme')
+            if name_scheme:
+                rex = re.compile(name_scheme)
+                matches = [img for name, img in by_name.items() if rex.match(name)]
+            else:
+                matches = [img for img in (by_name.get(image_spec['name']), ) if img is not None]
+            if not matches:
                 status = image_spec.get('status', 'optional')
                 level = {"mandatory": logging.ERROR, "recommended": logging.INFO}.get(status, logging.DEBUG)
                 logger.log(level, f"Missing {status} image '{image_spec['name']}'")
                 continue
-            img_source = image.properties['image_source']
-            if not img_source.startswith(image_spec['source']):
-                logger.error(f"Image '{image_spec['name']}' source mismatch: {image_spec['source']} != {img_source} {image.properties}")
+            for image in matches:
+                img_source = image.properties['image_source']
+                sources = image_spec['source']
+                if not isinstance(sources, (tuple, list)):
+                    sources = [sources]
+                if not any(img_source.startswith(src) for src in sources):
+                    logger.error(f"Image '{image.name}' source mismatch: {img_source} matches none of these prefixes: {', '.join(sources)}")
     except BaseException as e:
         logger.critical(f"{e!r}")
         logger.debug("Exception info", exc_info=True)
