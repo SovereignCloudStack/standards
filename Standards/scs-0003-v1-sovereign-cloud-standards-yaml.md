@@ -10,34 +10,62 @@ track: Global
 The [Sovereign Cloud Stack (SCS)](https://scs.community) provides standards for a range of cloud infrastructure types.
 It strives for interoperable and sovereign cloud offerings which can be deployed and used by a wide range of organizations and individuals.
 
-With a growing number of documents and certification levels for Sovereign Cloud Stack, it is becoming increasingly difficult to keep track
-of all stable, obsoleted as well as all upcoming standards. This decision record describes how we use technically describe
-certification levels and the mandatory standards therein.
+SCS plans to offer six types of certificates, which are sorted into two dimensions:
+
+1. _certification level_, of which there are three:
+   - SCS-compatible
+   - SCS-open
+   - SCS-sovereign
+2. _cloud layer_, of which there are two:
+   - infastructure as a service (IaaS)
+   - Kubernetes as a service (KaaS)
+
+So, for instance, a certificate can be of type _SCS-compatible IaaS_ or _SCS-sovereign KaaS_.
+
+Each type of certificate amounts to a set of standards that have to be fulfilled by the cloud service in question in order for a certificate to be issued.
+In addition, a certificate of a certain type may only be issued if some other certificate is already held.
+Case in point: the certification levels are meant to be seen as a progression, where the upper levels build on the lower ones, and
+the certificate for "SCS-open IaaS" will only be issued if a certificate for "SCS-compatible IaaS" is already held.
+We say that the latter certificate is a _prerequisite_ of the former.
+
+Naturally, as the state of the art progresses, so do our certificates. We keep track of the changes by means of versioning.
+That is to say that each certificate type can come in several versions, each one of them having its distinct timespan when it is in effect.
+For instance, we might have
+
+- SCS-compatible IaaS v1, effective 2021-01-01 through 2023-10-31
+- SCS-compatible IaaS v2, effective 2023-03-23 through 2023-11-30
+
+and so on (but usually, we aim to keep at most two versions in effect, with an overlap of 4 to 6 weeks).
+
+This decision record describes two main points:
+
+1. How we denote our certificate types by means of a YAML file.
+2. Our process for constructing and progressing the certificate types.
 
 ## Motivation
 
-This decision record has three main objectives:
+This decision record establishes a mechanism (by means of the YAML file) with the following three main objectives:
 
-- to provide an overview of the mandatory standards for the different SCS certification levels
-- to make the lifecycle of certification levels traceable
+- to provide an overview of the mandatory standards for the different SCS certificate types
+- to make the lifecycle of certificate types traceable
 - to provide a machine-readable document for further processing (e.g. for a compliance tool suite or continuous integration).
 
-## Overview of mandatory SCS standards
+### Overview of mandatory SCS standards
 
 Digging through a repository of draft, stable, replaced and rejected standards becomes increasingly challenging with a growing number
-documents and decision records. A central document that lists all mandatory standards to acquire a certain certification level can
+documents and decision records. A central document that lists all mandatory standards to acquire a certificate of a certain type can
 resolve this issue. It provides clarity for providers as well as users and helps to understand the value
 proposition of SCS.
 
-### Lifecycle of certification levels
+### Lifecycle of certificate types
 
-Standards and therefore certifications will evolve over time. To provide transparency and traceability for the lifecycle of SCS certification
-levels, the whole history of our certifications should be recorded. Pre-notification of changes to our certification levels allows
+Standards and therefore certifications will evolve over time. To provide transparency and traceability for the lifecycle of SCS certificate
+types, the whole history of our certifications should be recorded. Pre-notification of changes to our certificate types allows
 users to adapt their environments or deployment automation to the new standards in advance.
 
 ### Machine-readability for further processing
 
-By providing a machine-readable document, we can generate web-friendly overviews of our certification levels as well as create a tool suite
+By providing a machine-readable document, we can generate web-friendly overviews of our certificate types as well as create a tool suite
 that checks environments against all described standards.
 
 ## SCS Certification YAML
@@ -102,6 +130,9 @@ can be certified against, unless the version is already obsoleted (the point is 
 This means that more than one version may be allowable at a certain point in time. Tooling should default
 to use the newest allowable version (the one with the most recent `stabilized_at` date) then.
 
+Note: We intend to keep only one version in effect, except for a grace period of 4 to 6 weeks, when two versions
+are effective at the same time.
+
 ### Standards
 
 Every list of standards consists of several standards that – altogether – define the particular layer standard in the given version.
@@ -141,7 +172,7 @@ iaas:
             args: -v
           - executable: image-md-check2.py
             condition: optional
-  - version: v4 # This is the upcoming standard with a given target date. No further changes should be done to this set of standards
+  - version: v4 # This is the upcoming version with a given target date. No further changes should be done to this set of standards
     stabilized_at: 2022-04-01
     standards:
       - name: ....
@@ -160,6 +191,23 @@ iaas:
 kaas:
   - ...
 ```
+
+## Process
+
+The lifecycle any version of any type of certificate goes through the following phases:
+Draft, Stable, and Deprecated.
+
+```mermaid
+graph TD
+    B[Draft] -->|Pull Request| D[Stable]
+    D -->|Pull Request| F[Deprecated]
+```
+
+Note that one pull request can affect multiple versions, but each pull request has to affect
+at most one layer.
+
+Each pull request is to be voted upon in the corresponding team meeting. The vote has to be
+on the pull request only, i.e., it may not affect any other pull request or issue.
 
 ## Design Considerations
 
