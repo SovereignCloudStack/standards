@@ -20,7 +20,7 @@
   {
     "repo": "SovereignCloudStack/status-page-openapi",
     "source": "docs",
-    "target": "docs/04-operating-scs",
+    "target": "docs/04-operating-scs/components",
     "label": "status-page"
   },
   {

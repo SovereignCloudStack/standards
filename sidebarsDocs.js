@@ -192,6 +192,28 @@ const sidebarsDocs = {
       },
       items: [
         // 'operating-scs/overview',
+        {
+          type: "category",
+          label: "Components",
+          link: {
+            type: "generated-index",
+          },
+          items: [
+            {
+              type: "category",
+              label: "Status Page API",
+              link: {
+                type: "generated-index",
+              },
+              items: [
+                "operating-scs/components/status-page/docs/overview",
+                "operating-scs/components/status-page/docs/component_overview",
+                "operating-scs/components/status-page/docs/components",
+                "operating-scs/components/status-page/docs/levels_of_consensus",
+              ],
+            },
+          ],
+        },
         // {
         //   type: 'category',
         //   label: 'Guides',
@@ -258,20 +280,20 @@ const sidebarsDocs = {
           link: {
             type: "generated-index",
           },
-          items: ["operating-scs/metering/meter-configuration"],
+          items: ["operating-scs/metering/meter_configuration"],
         },
       ],
     },
-    // {
-    //   type: 'category',
-    //   label: 'Identity and Access Management (IAM)',
-    //   link: {
-    //     type: 'generated-index'
-    //   },
-    //   items: [
-    //     'iam/index'
-    //   ]
-    // },
+    {
+      type: "category",
+      label: "Identity and Access Management (IAM)",
+      link: {
+        type: "generated-index",
+      },
+      items: [
+        "iam/intra-SCS-federation-setup-description-for-osism-doc-operations",
+      ],
+    },
     {
       type: "category",
       label: "Releases",
