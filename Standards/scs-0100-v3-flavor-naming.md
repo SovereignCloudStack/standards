@@ -9,7 +9,7 @@ replaces: scs-0100-v2-flavor-naming.md
 
 ## Introduction
 
-This is the standard v3.0 for SCS Release 5.
+This is the standard v3.1 for SCS Release 5.
 Note that we intend to only extend it (so it's always backwards compatible),
 but try to avoid changing in incompatible ways.
 (See at the end for the v1 to v2 transition where we have not met that
@@ -22,10 +22,7 @@ The flavors are pre-defined by the operator, the customer can not change these.
 OpenStack providers thus typically offer a large selection of flavors.
 
 While flavors can be discovered (`openstack flavor list`), it is helpful for users (DevOps teams),
-to have
-
-- A naming scheme that is used across all SCS flavors, so flavor names have the same meaning everywhere.
-- Have a guaranteed set of flavors available on all SCS clouds, so these do not need to be discovered.
+to have a naming scheme that is used across all SCS flavors, so flavor names have the same meaning everywhere.
 
 While not all details will be encoded in the name, the key features should be obvious:
 Number of vCPUs, RAM, Root Disk.
@@ -226,56 +223,6 @@ so users can expect some level of parallelism and independence.
 - SCS-2C-4-3x10 <- Cloud decides type and creates three 10GB volumes
 - ~~SCS-2C-4-**1.5n**~~ <- You must not specify disk sizes which are not in full GiBs
 
-## Standard SCS flavors
-
-These are flavors that must exist on standard SCS clouds (x86-64).
-
-We recommend disk sizes to be 5, 10, 20, 50, 100, 200, 500, 1000GB, 2000GB.
-We expect the most used vCPU:Mem[GiB] ratio to be 1:4.
-
-| vCPU:RAM ratio | Mandatory Flavors         | Recommended Flavors |
-| -------------- | ------------------------- | ------------------- |
-| 1:4            | SCS-1V-4                  | SCS-1V-4-10         |
-| 2:8            | SCS-2V-8                  | SCS-2V-8-20         |
-| 4:16           | SCS-4V-16, SCS-4V-16-100s | SCS-4V-16-50        |
-| 8:32           | SCS-8V-32                 | SCS-8V-32-100       |
-| 1:2            | SCS-1V-2                  | SCS-1V-2-5          |
-| 2:4            | SCS-2V-4, SCS-2V-4-20s    | SCS-2V-4-10         |
-| 4:8            | SCS-4V-8                  | SCS-4V-8-20         |
-| 8:16           | SCS-8V-16                 | SCS-8V-16-50        |
-| 16:32          | SCS-16V-32                | SCS-16V-32-100      |
-| 1:8            | SCS-1V-8                  | SCS-1V-8-20         |
-| 2:16           | SCS-2V-16                 | SCS-2V-16-50        |
-| 4:32           | SCS-4V-32                 | SCS-4V-32-100       |
-| 1:1            | SCS-1L-1                  | SCS-1L-1-5          |
-
-Note that all vCPUs of SCS standard flavors are oversubscribed — the smallest `1L-1`
-flavor allows for heavy oversubscription (note the `L`), and thus can be offered very
-cheaply — imagine jump hosts ...
-
-The design allows for small clouds (with CPUs with 16 Threads, 64GiB RAM
-compute hosts) to offer all flavors.
-
-Note that the flavors with fixed size root disks have all moved to Recommended
-in version 3 of the standard. This means that they are not a certification requirement any longer,
-but we still recommend implementing these for backwards compatibility reasons.
-Disks types are not specified (and expected to be n or h typically).
-
-However, two flavors with SSD+ root disks have been added in v3, as defined in
-[scs-0110-v1-ssd-flavors.md](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0110-v1-ssd-flavors.md)
-
-Note: Compared to previous drafts, we have heavily reduced the variations
-on disk sizes — this reflects that for the standard networked cinder
-disks, you can pass `block_device_mapping_v2` on server (VM) creation to
-allocate a boot disk of any size you desire. We have scaled the few
-recommended disk sizes with the amount of RAM. For each flavor there is
-also one _without_ a pre-attached disk — these are meant to be used
-to boot from a volume (either created beforehand or allocated on-the-fly
-with `block_device_mapping_v2`, e.g.
-`openstack server create --flavor SCS-1V:2 --block-device-mapping sda=IMGUUID:image:12:true`
-to create a bootable 12G cinder volume from image `IMGUUID` that gets tied to the VM
-instance life cycle.)
-
 ## Naming policy compliance
 
 You are allowed to understate your performance; you may implement a SCS-1V-1-5 flavor with
@@ -306,7 +253,7 @@ You must not offer flavors with the `SCS-` prefix which do not follow this namin
 You must not extend the SCS naming scheme with your own extensions; you are encouraged however
 to suggest extensions that we can discuss and add to the official scheme.
 
-## Validation
+## Conformance Tests
 
 There is a script in [`flavor-name-check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-check.py)
 which can be used to decode, validate and construct flavor names.
@@ -319,16 +266,10 @@ on the flavor list compliance of the cloud environment.
 
 The script `flavor-names-openstack.py` talks to the OpenStack API of the
 cloud specified by the `OS_CLOUD` environment and queries properties and checks
-the names for standards compliance and completeness w.r.t. the mandatory
-flavor list. It goes beyond the above example in checking that the discoverable
+the names for standards compliance.
+It goes beyond the above example in checking that the discoverable
 features of flavors (vCPUs, RAM, Disk) match what the flavor names claim.
 This is used for SCS-compatible compliance testing.
-
-## Operational tooling
-
-The [openstack-flavor-manager](https://github.com/osism/openstack-flavor-manager) is able to
-create all standard, mandatory SCS flavors for you. It takes input that can be generated by
-`flavor-manager-input.py`.
 
 ## Extensions
 
@@ -525,6 +466,10 @@ an image is considered broken by the SCS team.
 | SCS-1V-0.5                | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)                                          |
 
 ## Previous standard versions
+
+Previous versions up to version 3.0 contained the list of
+mandatory/recommended flavors, which has been moved to
+[a standard of its own](scs-0103-v1-standard-flavors.md).
 
 [Version 1 of the standard](scs-0100-v1-flavor-naming.md)
 used a slightly different naming syntax while the logic was exactly the same.
