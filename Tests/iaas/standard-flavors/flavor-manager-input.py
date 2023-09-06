@@ -65,6 +65,7 @@ recommended: []
                 logging.critical(f"Flavor spec missing attributes: {', '.join(missing)}")
                 return 1
             flavor_spec = {**group_info, **flavor_spec}
+            flavor_spec['ram'] = flavor_spec['ram'] * 1024
             extra_specs = {
                 f"scs:{key}": value
                 for key, value in flavor_spec.items()
