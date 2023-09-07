@@ -27,7 +27,7 @@ import json
 import logging
 
 from kubernetes import client, config
-from kubernetes.client.rest import ApiException
+from helper import gen_sonobuoy_result_file
 
 import logging.config
 
@@ -40,7 +40,7 @@ def setup_k8s_client(kubeconfigfile=None):
         logger.debug(f"using kubeconfig file '{kubeconfigfile}'")
         config.load_kube_config(kubeconfigfile)
     else:
-        logger.debug(f" useing system kubeconfig")
+        logger.debug(" useing system kubeconfig")
         config.load_kube_config()
 
     k8s_api_client = client.CoreV1Api()
@@ -54,12 +54,16 @@ def setup_k8s_client(kubeconfigfile=None):
 
 def print_usage(file=sys.stderr):
     """Help output"""
-    print("""Usage: k8s_storageclass_check.py [options]
+    print(
+        """Usage: k8s_storageclass_check.py [options]
 This tool checks the requested k8s default storage class according to the SCS Standard 0211 "kaas-default-storage-class".
 Options:
  [-k/--kubeconfig PATH_TO_KUBECONFIG] sets kubeconfig file to access kubernetes api
  [-d/--debug] enables DEBUG logging channel
-""", end='', file=file)
+""",
+        end="",
+        file=file,
+    )
 
 
 def initialize_logging():
@@ -79,7 +83,6 @@ def check_default_storageclass(k8s_client_storage):
     storageclasses = api_response.read().decode("utf-8")
     storageclasses_dict = json.loads(storageclasses)
 
-    default_class = {}
     ndefault_class = 0
 
     for item in storageclasses_dict["items"]:
@@ -94,19 +97,20 @@ def check_default_storageclass(k8s_client_storage):
     if provisioner == "kubernetes.io/no-provisioner":
         raise SCSTestException(
             f"Provisioner is set to: {provisioner}.",
-            f"This means the default storage class has no provisioner.",
+            "This means the default storage class has no provisioner.",
             return_code=31,
         )
 
     if ndefault_class != 1:
         raise SCSTestException(
-            f"More then one or none default StorageClass is defined! ",
+            "More then one or none default StorageClass is defined! ",
             f"Number of defined default StorageClasses = {ndefault_class} ",
             return_code=32,
         )
 
     logger.info(f"One default Storage Class found:'{default_storage_class}'")
     return default_storage_class
+
 
 def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_class):
     """
@@ -183,23 +187,22 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
         time.sleep(1)
         retries += 1
 
-
-    #assert pod_status == "Running"
+    # assert pod_status == "Running"
     if pod_status != "Running":
         raise SCSTestException(
-            f"pod is not Running not able to setup test Enviornment",
+            "pod is not Running not able to setup test Enviornment",
             return_code=13,
         )
 
     # 3. Check if PV got succesfully created using ReadWriteOnce
-    logger.debug(f"check if the created PV supports ReadWriteOnce")
+    logger.debug("check if the created PV supports ReadWriteOnce")
 
     api_response = k8s_api_instance.list_persistent_volume(_preload_content=False)
 
     pv_info = json.loads(api_response.read().decode("utf-8"))
     pv_list = pv_info["items"]
 
-    logger.debug(f"searching for corresponding pv")
+    logger.debug("searching for corresponding pv")
     for pv in pv_list:
         logger.debug(f"parsing pv: {pv['metadata']['name']}")
         if pv["spec"]["claimRef"]["name"] == pvc_name:
@@ -207,16 +210,15 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
 
             if pv["status"]["phase"] != "Bound":
                 raise SCSTestException(
-                    f"Not able to bind pv to pvc",
+                    "Not able to bind pv to pvc",
                     return_code=41,
                 )
 
             if "ReadWriteOnce" not in pv["spec"]["accessModes"]:
                 raise SCSTestException(
-                    f"access mode 'ReadWriteOnce' is not supported",
+                    "access mode 'ReadWriteOnce' is not supported",
                     return_code=42,
                 )
-
 
     # 4. Delete resources used for testing
     logger.debug(f"delete pod:{pod_name}")
@@ -226,12 +228,14 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
         pvc_name, namespace
     )
 
+    return 0
+
 
 def main(argv):
 
     initialize_logging()
-    error_count = 0
     return_code = 0
+    return_message = "return_message: FAILED"
 
     try:
         opts, args = getopt.gnu_getopt(argv, "k:h", ["kubeconfig=", "help"])
@@ -252,12 +256,18 @@ def main(argv):
             print_usage(kubeconfig)
             return 2
 
+    print(return_code, return_message, __file__)
+
     # Setup kubernetes client
     try:
         logger.debug("setup_k8s_client(kubeconfig)")
         k8s_core_api, k8s_storage_api = setup_k8s_client(kubeconfig)
-    except Exception:
+    except Exception as exception_message:
+        logger.info(f"{exception_message}")
+        return_message = f"{exception_message}"
         return_code = 1
+
+    print(return_code, return_message, __file__)
 
     # Check if default storage class is defined (MENTETORY)
     try:
@@ -265,23 +275,35 @@ def main(argv):
         default_class_name = check_default_storageclass(k8s_storage_api)
     except SCSTestException as test_exception:
         logger.info(f"{test_exception}")
+        return_message = f"{test_exception}"
         return_code = test_exception.return_code
     except Exception as exception_message:
         logger.info(f"{exception_message}")
+        return_message = f"{exception_message}"
         return_code = 1
 
     # Check if default_persistent volume has ReadWriteOnce defined (MENTETORY)
     try:
-        logger.info(f"check_default_persistentvolume_readwriteonce()")
-        return_code = check_default_persistentvolumeclaim_readwriteonce(k8s_core_api, default_class_name)
+        logger.info("check_default_persistentvolume_readwriteonce()")
+        return_code = check_default_persistentvolumeclaim_readwriteonce(
+            k8s_core_api, default_class_name
+        )
     except SCSTestException as test_exception:
         logger.info(f"{test_exception}")
+        return_message = f"{test_exception}"
         return_code = test_exception.return_code
     except Exception as exception_message:
         logger.info(f"{exception_message}")
+        return_message = f"{exception_message}"
         return_code = 1
 
     logger.debug(f"return_code:{return_code}")
+
+    if return_code == 0:
+        return_message = "all tests passed"
+
+    gen_sonobuoy_result_file(return_code, return_message, __file__)
+
     return return_code
 
 
