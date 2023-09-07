@@ -38,13 +38,13 @@ reference:
   - field: name
     mandatory_prefix: SCS-
     optional_prefix: SCSX-
-  - field: cpus
-  - field: ram
-  - field: disk
   - field: public
     default: true
   - field: disabled
     default: false
+  - field: cpus
+  - field: ram
+  - field: disk
 mandatory: []
 recommended: []
 """)
