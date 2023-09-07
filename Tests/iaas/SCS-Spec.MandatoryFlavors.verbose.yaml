@@ -28,14 +28,6 @@ mandatory:
   scs:cpu-type: shared-core
   scs:name-v1: SCS-4V:16
   scs:name-v2: SCS-4V-16
-- name: SCS-4V-16-100s
-  cpus: 4
-  ram: 16384
-  disk: 100
-  scs:cpu-type: shared-core
-  scs:disk0-type: ssd
-  scs:name-v1: SCS-4V:16:100s
-  scs:name-v2: SCS-4V-16-100s
 - name: SCS-8V-32
   cpus: 8
   ram: 32768
@@ -54,14 +46,6 @@ mandatory:
   scs:cpu-type: shared-core
   scs:name-v1: SCS-2V:4
   scs:name-v2: SCS-2V-4
-- name: SCS-2V-4-20s
-  cpus: 2
-  ram: 4096
-  disk: 20
-  scs:cpu-type: shared-core
-  scs:disk0-type: ssd
-  scs:name-v1: SCS-2V:4:20s
-  scs:name-v2: SCS-2V-4-20s
 - name: SCS-4V-8
   cpus: 4
   ram: 8192
@@ -104,6 +88,22 @@ mandatory:
   scs:cpu-type: crowded-core
   scs:name-v1: SCS-1L:1
   scs:name-v2: SCS-1L-1
+- name: SCS-4V-16-100s
+  cpus: 4
+  ram: 16384
+  disk: 100
+  scs:cpu-type: shared-core
+  scs:disk0-type: ssd
+  scs:name-v1: SCS-4V:16:100s
+  scs:name-v2: SCS-4V-16-100s
+- name: SCS-2V-4-20s
+  cpus: 2
+  ram: 4096
+  disk: 20
+  scs:cpu-type: shared-core
+  scs:disk0-type: ssd
+  scs:name-v1: SCS-2V:4:20s
+  scs:name-v2: SCS-2V-4-20s
 recommended:
 - name: SCS-1V-4-10
   cpus: 1
