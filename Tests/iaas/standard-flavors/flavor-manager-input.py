@@ -37,7 +37,6 @@ def main(argv):
 reference:
   - field: name
     mandatory_prefix: SCS-
-    optional_prefix: SCSX-
   - field: public
     default: true
   - field: disabled
