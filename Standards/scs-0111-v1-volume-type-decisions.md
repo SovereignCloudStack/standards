@@ -35,7 +35,7 @@ Encryption for volumes is an option which has to be configured within the volume
 
 #### Backend Name
 
-OpenStack Cinder works with a lot of different backends. They all have some kind of special features, which might be attractive for a user. But showing the nam eof the backend to users is also considered a security risk by Cinder developers. Overall it is always an option to make users aware of special features through the name and description of a volume type and sometimes even through extra_specs.
+OpenStack Cinder works with a lot of different backends. They all have some kind of special features, which might be attractive for a user. But showing the name of the backend to users is also considered a security risk by Cinder developers. Overall it is always an option to make users aware of special features through the name and description of a volume type and sometimes even through extra_specs.
 
 **Conclusion**: This should not be standardized.
 
@@ -53,7 +53,7 @@ Another question is how many providers use one of these options or both.
 
 #### Multiattach
 
-It is possible in a few backends to attach a volume to multiple VMs. This hat to be configured in the Volume Type and this information is also accessable for users. Nevertheless this option also needs a lot of work from users, as those types of volumes have to have a file system, that is capable of multiattach. Many providers don't provide multiattach.
+It is possible in a few backends to attach a volume to multiple VMs. This has to be configured in the Volume Type and this information is also accessable for users. Nevertheless this option also needs a lot of work from users, as those types of volumes have to have a file system, that is capable of multiattach. Many providers don't provide multiattach.
 
 **Conclusion**: It might be noteable, that this already is a discoverable option.
 
