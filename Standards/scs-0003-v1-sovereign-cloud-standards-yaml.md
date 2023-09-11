@@ -207,7 +207,8 @@ Note that one pull request can affect multiple versions, but each pull request h
 at most one layer.
 
 Each pull request is to be voted upon in the corresponding team meeting. The vote has to be
-on the pull request only, i.e., it may not affect any other pull request or issue.
+on the pull request only, i.e., it may not affect any other pull request or issue, and it
+must be announced 14 days in advance via the corresponding mailing list.
 
 ## Design Considerations
 
