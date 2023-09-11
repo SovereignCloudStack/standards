@@ -85,16 +85,18 @@ The certification YAML _MUST_ contain the following keys:
 
 The certification YAML _MAY_ contain the following keys:
 
-### Dependency
+### Prerequisite
 
-Standards that are required by lower certification levels shouldn't be included in higher tier certification levels again. We thus need to note
-on which certification this level is depending on.
+A certificate within a certain level (above SCS-compatible) can only be granted if a valid corresponding certificate of the level below is presented,
+where corresponding means: of the same layer. The latter certificate is said to be a prerequisite for the former.
 
-| Key               | Type   | Description                                                               | Example                                                                                                       |
-| ----------------- | ------ | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `depends_on`      | Map    | Preliminary certification level on which this certification level depends |                                                                                                               |
-| `depends_on.name` | String | Full name of the depending certification level                            | _SCS Compatible_                                                                                              |
-| `depends_on.url`  | String | Valid URL to the latest raw version of the depending certificate type  | _[scs-compatible.yaml](https://github.com/SovereignCloudStack/standards/blob/main/Tests/scs-compatible-iaas.yaml)_ |
+We implement this logic by allowing for the specification of a type of certificate that has to be presented before the certificate in question can be granted.
+
+| Key                 | Type   | Description                                                        | Example                                                                                                                 |
+| ------------------- | ------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `prerequisite`      | Map    | Descriptor for the prerequisite type of certificate, if any        |                                                                                                                         |
+| `prerequisite.name` | String | Full name of the type of certificate                               | _SCS Compatible IaaS_                                                                                                   |
+| `prerequisite.url`  | String | Valid URL to the latest raw version of the type of certificate     | _[scs-compatible-iaas.yaml](https://github.com/SovereignCloudStack/standards/blob/main/Tests/scs-compatible-iaas.yaml)_ |
 
 ### Version descriptor
 
@@ -134,9 +136,9 @@ Every list of standards consists of several standards that – altogether – de
 ```yaml
 name: SCS Open
 url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Certification/scs-open.yaml
-depends_on:
-  name: SCS Compatible
-  url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible.yaml
+prerequisite:
+  name: SCS Compatible IaaS
+  url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml
 versions:
   - version: v5 # This version is in a draft state and work in progress
     # No stabilized_at: date set yet
@@ -208,7 +210,7 @@ certification for now.
 
 ## Tooling
 
-The SCS repository Docs has a tool `scs-compliance-check.py` in the `Design-Docs/tools` directory
+The SCS repository Docs has a tool `scs-compliance-check.py` in the `Tests` directory
 which parses the SCS Certification YAML and then runs the tests referenced there, returning the results
 of the tests.
 

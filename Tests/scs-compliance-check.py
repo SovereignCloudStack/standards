@@ -212,8 +212,8 @@ def main(argv):
         report["os_cloud"] = os.environ["OS_CLOUD"]
         # TODO: Add kubeconfig context as well
         report["checked_at"] = checkdate
-    if "depends_on" in specdict:
-        print("WARNING: depends_on not yet implemented!", file=sys.stderr)
+    if "prerequisite" in specdict:
+        print("WARNING: prerequisite not yet implemented!", file=sys.stderr)
     bestversion = search_version(specdict["versions"], checkdate, version)
     if not bestversion:
         print(f"No valid standard found for {checkdate}", file=sys.stderr)
