@@ -21,6 +21,9 @@ SCS plans to offer six types of certificates, which are sorted into two dimensio
    - Kubernetes as a service (KaaS)
 
 So, for instance, a certificate can be of type _SCS-compatible IaaS_ or _SCS-sovereign KaaS_.
+Note that we don't currently have separate certification layers for Operations and IAM.
+We expect that tests for these aspects will exist, but be incorporated into the IaaS
+and KaaS layers.
 
 Each type of certificate amounts to a set of standards that have to be fulfilled by the cloud service in question in order for a certificate to be issued.
 In addition, a certificate of a certain type may only be issued if some other certificate is already held.
@@ -70,14 +73,15 @@ that checks environments against all described standards.
 
 ## SCS Certification YAML
 
-Every certification level is recorded in a dedicated YAML file, e.g. `scs-open.yaml`.
+Every type of certificate is recorded in a dedicated YAML file, e.g. `scs-open-kaas.yaml`.
 
 The certification YAML _MUST_ contain the following keys:
 
-| Key    | Type   | Description                                          | Example                                                                                  |
-| ------ | ------ | ---------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `name` | String | Full name of this certification level                | _SCS Open_                                                                               |
-| `url`  | String | Valid URL to the latest raw version of this document | _<https://github.com/SovereignCloudStack/standards/blob/main/Tests/scs-compatible.yaml>_ |
+| Key        | Type          | Description                                          | Example                                                                                  |
+| ---------- | ------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `name`     | String        | Full name of this type of certificate                | _SCS Open KaaS_                                                                          |
+| `url`      | String        | Valid URL to the latest raw version of this document | _<https://github.com/SovereignCloudStack/standards/blob/main/Tests/scs-open-kaas.yaml>_  |
+| `versions` | Array of maps | List of version descriptors (described below)        | (see below)                                                                              |
 
 The certification YAML _MAY_ contain the following keys:
 
@@ -90,40 +94,18 @@ on which certification this level is depending on.
 | ----------------- | ------ | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | `depends_on`      | Map    | Preliminary certification level on which this certification level depends |                                                                                                               |
 | `depends_on.name` | String | Full name of the depending certification level                            | _SCS Compatible_                                                                                              |
-| `depends_on.url`  | String | Valid URL to the latest raw version of the depending certification level  | _[scs-compatible.yaml](https://github.com/SovereignCloudStack/standards/blob/main/Tests/scs-compatible.yaml)_ |
+| `depends_on.url`  | String | Valid URL to the latest raw version of the depending certificate type  | _[scs-compatible.yaml](https://github.com/SovereignCloudStack/standards/blob/main/Tests/scs-compatible-iaas.yaml)_ |
 
-### Layers
+### Version descriptor
 
-The Sovereign Cloud Stack project is compiled of several layers: Infrastructure and Container. Every layer may include different
-mandatory or optional standards. Every layer is noted as a dedicated map in the certification YAML.
+| Key             | Type          | Description                                                                     | Example      |
+| --------------- | ------------- | ------------------------------------------------------------------------------- | ------------ |
+| `version`       | String        | Mandatory: Version of the particular list of standards                          | _v3_         |
+| `standards`     | Array of maps | Mandatory: List of standard descriptors for this particular layer               |              |
+| `stabilized_at` | Date          | ISO formatted date indicating the date after this version is considered stable. | _2022-11-09_ |
+| `obsoleted_at`  | Date          | ISO formatted date indicating the date on which this version is expired.        | _2023-04-09_ |
 
-| Key    | Type  | Description                                                | Example |
-| ------ | ----- | ---------------------------------------------------------- | ------- |
-| `iaas` | Array | List of versioned sets of SCS standards for the IaaS layer |         |
-| `kaas` | Array | List of versioned sets of SCS standards for the KaaS layer |         |
-
-Note that we don't currently have separate certification layers for Operations and IAM.
-We expect that tests for these aspects will exist, but be incorporated into the IaaS
-and KaaS layers.
-
-### Set of standards
-
-Every layer keeps record of the whole history of defined standards in a `version` map item.
-
-| Key                 | Type          | Description                                 | Example |
-| ------------------- | ------------- | ------------------------------------------- | ------- |
-| `{layer}.version`   | String        | Version of the particular list of standards | _v3_    |
-| `{layer}.standards` | Array of maps | List of standards for this particular layer |         |
-
-### Time evolution
-
-Every version of the standard has a date at which it is effective (`stabilized_at`)
-and may have an expiration date (`obsoleted_at`).
-
-| Key                     | Type | Description                                                                                                                                                           | Example      |
-| ----------------------- | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| `{layer}.stabilized_at` | Date | ISO formatted date indicating the date after which the set of standards of this version was considered stable. Mandatory for standards that have ever been in effect. | _2022-11-09_ |
-| `{layer}.obsoleted_at`  | Date | ISO formatted date indicating the date on which this version of the standard can no longer be used for certification                                                  | _2023-04-09_ |
+Once a version has a `stabilized_at` field, this field may not be changed. The same holds true for the `obsoleted_at` field.
 
 Note that at any point in time, all versions that are older (`stabilized_at` is at or before this point)
 can be certified against, unless the version is already obsoleted (the point is after `obsoleted_at`).
@@ -133,19 +115,19 @@ to use the newest allowable version (the one with the most recent `stabilized_at
 Note: We intend to keep only one version in effect, except for a grace period of 4 to 6 weeks, when two versions
 are effective at the same time.
 
-### Standards
+### Standard descriptor
 
 Every list of standards consists of several standards that – altogether – define the particular layer standard in the given version.
 
-| Key                                        | Type   | Description                                                                                                                                                                                                              | Example                                                                                                              |
+| Key                      | Type   | Description                                                                                                                                                                                                              | Example                                                                                                              |
 | ------------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `{layer}.standards.name`                   | String | Full name of the particular standard                                                                                                                                                                                     | _Flavor naming_                                                                                                      |
-| `{layer}.standards.url`                    | String | Valid URL to the latest raw version of the particular standard                                                                                                                                                           | _[Flavor naming](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0100-v2-flavor-naming.md)_ |
-| `{layer}.standards.condition`              | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory`                                                                                                                     | _mandatory_                                                                                                          |
-| `{layer}.standards.check_tools`            | Array  | List of `url`, `args` maps that list all tools that must pass                                                                                                                                                            |                                                                                                                      |
-| `{layer}.standards.check_tools.executable` | String | Valid local filename (relative to the path of scs-compliance-check.py) or URL to the latest check tool that verifies compliance with the particular standard. (URL is not yet supported due to security considerations.) | _image-md-check.py_                                                                                                  |
-| `{layer}.standards.check_tools.args`       | String | _Optional_ list of arguments to be passed to the `check_tool`. Preferably none needed.                                                                                                                                   | `-v`                                                                                                                 |
-| `{layer}.standards.check_tools.condition`  | String | _Optionally_ overrides the per-standard condition (`mandatory` or `optional`)                                                                                                                                            | _optional_                                                                                                           |
+| `name`                   | String | Full name of the particular standard                                                                                                                                                                                     | _Flavor naming_                                                                                                      |
+| `url`                    | String | Valid URL to the latest raw version of the particular standard                                                                                                                                                           | _[Flavor naming](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0100-v2-flavor-naming.md)_ |
+| `condition`              | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory`                                                                                                                     | _mandatory_                                                                                                          |
+| `check_tools`            | Array  | List of `url`, `args` maps that list all tools that must pass                                                                                                                                                            |                                                                                                                      |
+| `check_tools.executable` | String | Valid local filename (relative to the path of scs-compliance-check.py) or URL to the latest check tool that verifies compliance with the particular standard. (URL is not yet supported due to security considerations.) | _image-md-check.py_                                                                                                  |
+| `check_tools.args`       | String | _Optional_ list of arguments to be passed to the `check_tool`. Preferably none needed.                                                                                                                                   | `-v`                                                                                                                 |
+| `check_tools.condition`  | String | _Optionally_ overrides the per-standard condition (`mandatory` or `optional`)                                                                                                                                            | _optional_                                                                                                           |
 
 ### Basic Example
 
@@ -155,7 +137,7 @@ url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Certificati
 depends_on:
   name: SCS Compatible
   url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible.yaml
-iaas:
+versions:
   - version: v5 # This version is in a draft state and work in progress
     # No stabilized_at: date set yet
     standards:

@@ -137,17 +137,16 @@ def search_version(layerdict, checkdate, forceversion=None):
 
 
 def optparse(argv):
-    "Parse options. Return (args, verbose, quiet, checkdate, version, singlelayer, output)."
+    "Parse options. Return (args, verbose, quiet, checkdate, version, output)."
     verbose = False
     quiet = False
     checkdate = datetime.date.today()
     version = None
-    single_layer = False
     output = None
     try:
         opts, args = getopt.gnu_getopt(argv, "hvqd:V:sc:o:",
                                        ("help", "verbose", "quiet", "date=", "version=",
-                                        "single-layer", "os-cloud=", "output="))
+                                        "os-cloud=", "output="))
     except getopt.GetoptError as exc:
         print(f"Option error: {exc}", file=sys.stderr)
         usage()
@@ -164,18 +163,16 @@ def optparse(argv):
             checkdate = datetime.date.fromisoformat(opt[1])
         elif opt[0] == "-V" or opt[0] == "--version":
             version = opt[1]
-        elif opt[0] == "-s" or opt[0] == "--single-layer":
-            single_layer = True
         elif opt[0] == "-c" or opt[0] == "--os-cloud":
             os.environ["OS_CLOUD"] = opt[1]
         elif opt[0] == "-o" or opt[0] == "--output":
             output = opt[1]
         else:
             print(f"Error: Unknown argument {opt[0]}", file=sys.stderr)
-    if len(args) < 2:
+    if len(args) < 1:
         usage()
         sys.exit(1)
-    return (args, verbose, quiet, checkdate, version, single_layer, output)
+    return (args, verbose, quiet, checkdate, version, output)
 
 
 def condition_optional(cond, default=False):
@@ -204,7 +201,7 @@ def optstr(optional):
 
 def main(argv):
     """Entry point for the checker"""
-    args, verbose, quiet, checkdate, version, single_layer, output = optparse(argv)
+    args, verbose, quiet, checkdate, version, output = optparse(argv)
     with open(args[0], "r", encoding="UTF-8") as specfile:
         specdict = yaml.load(specfile, Loader=yaml.SafeLoader)
     allerrors = 0
@@ -217,59 +214,57 @@ def main(argv):
         report["checked_at"] = checkdate
     if "depends_on" in specdict and not single_layer:
         print("WARNING: depends_on not yet implemented!", file=sys.stderr)
-    # Iterate over layers
-    for layer in args[1:]:
-        bestversion = search_version(specdict[layer], checkdate, version)
-        if not bestversion:
-            print(f"No valid standard found for {checkdate}", file=sys.stderr)
-            return 2
-        errors = 0
-        if not quiet:
-            print(f"Testing {layer} standard version {bestversion['version']}")
-        if "standards" not in bestversion:
-            print(f"WARNING: No standards defined yet for {layer} version {bestversion['version']}",
-                  file=sys.stderr)
-        if output:
-            report[layer] = [copy.deepcopy(bestversion)]
-        for standard in bestversion["standards"]:
-            optional = condition_optional(standard)
-            if not quiet:
-                print("*******************************************************")
-                print(f"Testing {optstr(optional)}standard {standard['name']} ...")
-                print(f"Reference: {standard['url']} ...")
-            if "check_tools" not in standard:
-                print(f"WARNING: No compliance check tool implemented yet for {standard['name']}")
-                error = 0
-            else:
-                chkidx = 0
-                for check in standard["check_tools"]:
-                    args = dictval(check, 'args')
-                    error = run_check_tool(check["executable"], args, verbose, quiet)
-                    if output:
-                        version_index = 0  # report[layer].index(bestversion)
-                        standard_index = bestversion["standards"].index(standard)
-                        report[layer][version_index]["standards"][standard_index]["check_tools"][chkidx]["errors"] = error
-                    if not condition_optional(check, optional):
-                        errors += error
-                    if not quiet:
-                        print(f"... returned {error} errors")
-                    chkidx += 1
-                    for kwd in check:
-                        if kwd not in ('executable', 'args', 'condition'):
-                            print(f"ERROR in spec: check_tools.{kwd} is an unknown keyword",
-                                  file=sys.stderr)
-            for kwd in standard:
-                if kwd not in ('check_tools', 'url', 'name', 'condition'):
-                    print(f"ERROR in spec: standard.{kwd} is an unknown keyword", file=sys.stderr)
-        if output:
-            report[layer][version_index]["errors"] = errors
-            with open(output, 'w', encoding='UTF-8') as file:
-                output = yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)
+    bestversion = search_version(specdict["versions"], checkdate, version)
+    if not bestversion:
+        print(f"No valid standard found for {checkdate}", file=sys.stderr)
+        return 2
+    errors = 0
+    if not quiet:
+        print(f"Testing {specdict['name']} version {bestversion['version']}")
+    if "standards" not in bestversion:
+        print(f"WARNING: No standards defined yet for {layer} version {bestversion['version']}",
+              file=sys.stderr)
+    if output:
+        report[layer] = [copy.deepcopy(bestversion)]
+    for standard in bestversion["standards"]:
+        optional = condition_optional(standard)
         if not quiet:
             print("*******************************************************")
-            print(f"Verdict for os_cloud {os.environ['OS_CLOUD']}, layer {layer}, "
-                  f"version {bestversion['version']}: {errcode_to_text(errors)}")
-        allerrors += errors
+            print(f"Testing {optstr(optional)}standard {standard['name']} ...")
+            print(f"Reference: {standard['url']} ...")
+        if "check_tools" not in standard:
+            print(f"WARNING: No compliance check tool implemented yet for {standard['name']}")
+            error = 0
+        else:
+            chkidx = 0
+            for check in standard["check_tools"]:
+                args = dictval(check, 'args')
+                error = run_check_tool(check["executable"], args, verbose, quiet)
+                if output:
+                    version_index = 0  # report[layer].index(bestversion)
+                    standard_index = bestversion["standards"].index(standard)
+                    report[layer][version_index]["standards"][standard_index]["check_tools"][chkidx]["errors"] = error
+                if not condition_optional(check, optional):
+                    errors += error
+                if not quiet:
+                    print(f"... returned {error} errors")
+                chkidx += 1
+                for kwd in check:
+                    if kwd not in ('executable', 'args', 'condition'):
+                        print(f"ERROR in spec: check_tools.{kwd} is an unknown keyword",
+                              file=sys.stderr)
+        for kwd in standard:
+            if kwd not in ('check_tools', 'url', 'name', 'condition'):
+                print(f"ERROR in spec: standard.{kwd} is an unknown keyword", file=sys.stderr)
+    if output:
+        report[layer][version_index]["errors"] = errors
+        with open(output, 'w', encoding='UTF-8') as file:
+            output = yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)
+    if not quiet:
+        print("*******************************************************")
+        print(f"Verdict for os_cloud {os.environ['OS_CLOUD']}, {specdict['name']}, "
+              f"version {bestversion['version']}: {errcode_to_text(errors)}")
+    allerrors += errors
     return allerrors
 
 
