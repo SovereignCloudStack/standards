@@ -212,7 +212,7 @@ def main(argv):
         report["os_cloud"] = os.environ["OS_CLOUD"]
         # TODO: Add kubeconfig context as well
         report["checked_at"] = checkdate
-    if "depends_on" in specdict and not single_layer:
+    if "depends_on" in specdict:
         print("WARNING: depends_on not yet implemented!", file=sys.stderr)
     bestversion = search_version(specdict["versions"], checkdate, version)
     if not bestversion:
@@ -222,10 +222,10 @@ def main(argv):
     if not quiet:
         print(f"Testing {specdict['name']} version {bestversion['version']}")
     if "standards" not in bestversion:
-        print(f"WARNING: No standards defined yet for {layer} version {bestversion['version']}",
+        print(f"WARNING: No standards defined yet for {specdict['name']} version {bestversion['version']}",
               file=sys.stderr)
     if output:
-        report[layer] = [copy.deepcopy(bestversion)]
+        report[specdict['name']] = [copy.deepcopy(bestversion)]
     for standard in bestversion["standards"]:
         optional = condition_optional(standard)
         if not quiet:
@@ -243,7 +243,7 @@ def main(argv):
                 if output:
                     version_index = 0  # report[layer].index(bestversion)
                     standard_index = bestversion["standards"].index(standard)
-                    report[layer][version_index]["standards"][standard_index]["check_tools"][chkidx]["errors"] = error
+                    report[specdict['name']][version_index]["standards"][standard_index]["check_tools"][chkidx]["errors"] = error
                 if not condition_optional(check, optional):
                     errors += error
                 if not quiet:
@@ -257,7 +257,7 @@ def main(argv):
             if kwd not in ('check_tools', 'url', 'name', 'condition'):
                 print(f"ERROR in spec: standard.{kwd} is an unknown keyword", file=sys.stderr)
     if output:
-        report[layer][version_index]["errors"] = errors
+        report[specdict['name']][version_index]["errors"] = errors
         with open(output, 'w', encoding='UTF-8') as file:
             output = yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)
     if not quiet:
