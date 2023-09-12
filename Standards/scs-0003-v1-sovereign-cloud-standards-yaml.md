@@ -134,8 +134,8 @@ Every list of standards consists of several standards that – altogether – de
 ### Basic Example
 
 ```yaml
-name: SCS Open
-url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Certification/scs-open.yaml
+name: SCS Open IaaS
+url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Certification/scs-open-iaas.yaml
 prerequisite:
   name: SCS Compatible IaaS
   url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml
