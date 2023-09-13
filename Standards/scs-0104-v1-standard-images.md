@@ -71,8 +71,8 @@ images:
   - https://cloud-images.ubuntu.com/releases/jammy/
   - https://cloud-images.ubuntu.com/jammy/
   status: mandatory
-- name: "ubuntu-2204-kube"
-  name_scheme: "ubuntu-2204-kube-v[0-9].[0-9]+(.[0-9]+)?"
+- name: "ubuntu-capi-image"
+  name_scheme: "ubuntu-capi-image-v[0-9].[0-9]+(.[0-9]+)?"
   source: https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube
   status: recommended
 - name: "Ubuntu 20.04"
