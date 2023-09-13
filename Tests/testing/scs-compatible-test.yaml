@@ -1,6 +1,6 @@
 name: SCS Compatible
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible.yaml
-iaas:
+versions:
   - version: v4
     standards:
       - name: Standard flavors
