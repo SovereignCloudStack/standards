@@ -21,14 +21,6 @@ flavor_groups:
       ram: 16
       name-v1: SCS-4V:16
       name-v2: SCS-4V-16
-    - name: SCS-4V-16-100s
-      cpus: 4
-      cpu-type: shared-core
-      ram: 16
-      disk: 100
-      disk0-type: ssd
-      name-v1: SCS-4V:16:100s
-      name-v2: SCS-4V-16-100s
     - name: SCS-8V-32
       cpus: 8
       cpu-type: shared-core
@@ -47,14 +39,6 @@ flavor_groups:
       ram: 4
       name-v1: SCS-2V:4
       name-v2: SCS-2V-4
-    - name: SCS-2V-4-20s
-      cpus: 2
-      cpu-type: shared-core
-      ram: 4
-      disk: 20
-      disk0-type: ssd
-      name-v1: SCS-2V:4:20s
-      name-v2: SCS-2V-4-20s
     - name: SCS-4V-8
       cpus: 4
       cpu-type: shared-core
@@ -97,6 +81,24 @@ flavor_groups:
       ram: 1
       name-v1: SCS-1L:1
       name-v2: SCS-1L-1
+  - status: mandatory
+    list:
+    - name: SCS-2V-4-20s
+      cpus: 2
+      cpu-type: shared-core
+      ram: 4
+      disk: 20
+      disk0-type: ssd
+      name-v1: SCS-2V:4:20s
+      name-v2: SCS-2V-4-20s
+    - name: SCS-4V-16-100s
+      cpus: 4
+      cpu-type: shared-core
+      ram: 16
+      disk: 100
+      disk0-type: ssd
+      name-v1: SCS-4V:16:100s
+      name-v2: SCS-4V-16-100s
   - status: recommended
     list:
     - name: SCS-1V-4-10

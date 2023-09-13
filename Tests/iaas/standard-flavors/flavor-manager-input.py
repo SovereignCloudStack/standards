@@ -37,14 +37,13 @@ def main(argv):
 reference:
   - field: name
     mandatory_prefix: SCS-
-    optional_prefix: SCSX-
-  - field: cpus
-  - field: ram
-  - field: disk
   - field: public
     default: true
   - field: disabled
     default: false
+  - field: cpus
+  - field: ram
+  - field: disk
 mandatory: []
 recommended: []
 """)
@@ -65,6 +64,7 @@ recommended: []
                 logging.critical(f"Flavor spec missing attributes: {', '.join(missing)}")
                 return 1
             flavor_spec = {**group_info, **flavor_spec}
+            flavor_spec['ram'] = flavor_spec['ram'] * 1024
             extra_specs = {
                 f"scs:{key}": value
                 for key, value in flavor_spec.items()
