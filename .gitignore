@@ -1,6 +1,8 @@
 # Content Dependencies from docs.package.json
 /repo_to_be_edited_
 /docs/02-iaas/components
+/docs/02-iaas/deployment-examples/cloud-in-a-box
+/docs/02-iaas/deployment-examples/testbed
 /docs/03-container/components
 /docs/04-operating-scs/components
 /docs/06-releases

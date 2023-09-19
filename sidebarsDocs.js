@@ -46,14 +46,35 @@ const sidebarsDocs = {
           items: [
             {
               type: "category",
-              label: "Deployment A",
+              label: "Testbed",
               link: {
+                slug: "iaas/deployment-examples/testbed",
                 type: "generated-index",
               },
               items: [
-                // 'iaas/deployment-examples/a/index',
-                // 'iaas/deployment-examples/a/hardware',
-                // 'iaas/deployment-examples/a/software'
+                "iaas/deployment-examples/testbed/doc/overview",
+                "iaas/deployment-examples/testbed/doc/requirements",
+                "iaas/deployment-examples/testbed/doc/preparations",
+                "iaas/deployment-examples/testbed/doc/getting_started",
+                "iaas/deployment-examples/testbed/doc/usage",
+                "iaas/deployment-examples/testbed/doc/networking",
+                "iaas/deployment-examples/testbed/doc/important_notes",
+                "iaas/deployment-examples/testbed/doc/configuration",
+                "iaas/deployment-examples/testbed/doc/authentication",
+                "iaas/deployment-examples/testbed/doc/federation",
+                "iaas/deployment-examples/testbed/doc/contribute",
+                "iaas/deployment-examples/testbed/doc/license",
+              ],
+            },
+            {
+              type: "category",
+              label: "Cloud in a Box",
+              link: {
+                slug: "iaas/deployment-examples/cloud-in-a-box",
+                type: "generated-index",
+              },
+              items: [
+                "iaas/deployment-examples/cloud-in-a-box/advanced-guides/cloud-in-a-box",
               ],
             },
           ],

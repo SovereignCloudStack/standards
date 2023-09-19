@@ -1,3 +1,0 @@
-# Hardware Requirements
-
-TODO

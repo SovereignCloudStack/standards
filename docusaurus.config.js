@@ -47,8 +47,12 @@ const config = {
     [
       "@docusaurus/plugin-client-redirects",
       {
-        fromExtensions: ["html", "htm"], // /myPage.html -> /myPage
-        toExtensions: ["exe", "zip"], // /myAsset -> /myAsset.zip (if latter exists)
+        redirects: [
+          {
+            to: "/docs/iaas/deployment-examples/testbed",
+            from: "/docs/category/osism-testbed/",
+          },
+        ],
         createRedirects(existingPath) {
           if (existingPath.includes("/community")) {
             return [existingPath.replace("/community", "/community/community")];
