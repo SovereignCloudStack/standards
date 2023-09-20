@@ -27,7 +27,7 @@ The following special terms are used throughout this standard document:
 | IAM resources | projects, users, groups, roles, domains as managed by OpenStack Keystone |
 | cloud admin | OpenStack user belonging to the cloud provider that possesses the `admin` role |
 
-[^1]: https://static.opendev.org/docs/patrole/latest/rbac-overview.html
+[^1]: [OpenStack Documentation: Role-Based Access Control Overview](https://static.opendev.org/docs/patrole/latest/rbac-overview.html)
 
 ### Impact
 
@@ -69,7 +69,7 @@ This results in special permissions being granted to users possessing the role w
 This poses severe security risks as the proper scoping of the `admin` role is impossible.
 **Due to this, this approach was discarded early.**
 
-[^2]: https://bugs.launchpad.net/keystone/+bug/968696
+[^2]: [Launchpad bug: "admin"-ness not properly scoped](https://bugs.launchpad.net/keystone/+bug/968696)
 
 #### Introducing a new role and API policy changes
 
@@ -79,7 +79,7 @@ The possibility of managing users, projects, role assignments and so on is regul
 
 This means that by creating a new role and extending Keystone's API policy configuration a new Domain Manager role can be established that is limited to a specific subset of the Keystone API to be used to manage users, projects and role assignments within a domain.
 
-[^3]: https://docs.openstack.org/oslo.policy/latest/admin/index.html
+[^3]: [OpenStack Documentation: Administering Applications that use oslo.policy](https://docs.openstack.org/oslo.policy/latest/admin/index.html)
 
 ## Open questions
 
@@ -165,14 +165,14 @@ A role named "`domain-manager`" is to be created via the Keystone API and the po
 **Description:** Upstream bug report about the underlying architectural issue of the `admin` role not being properly scoped and giving system-level admin permissions regardless of whether the `admin` role assignment was scoped to project or domain level.
 This is the main reason for the `admin` role being inappropriate to implement Domain Managers.
 
-**Link:** https://bugs.launchpad.net/keystone/+bug/968696
+**Link:** [Launchpad bug: "admin"-ness not properly scoped](https://bugs.launchpad.net/keystone/+bug/968696)
 
 ### Consistent and Secure Default RBAC
 
 **Description:** Upstream rework of the default role definitions and hierarchy across all OpenStack services.
 Aims to introduce support for a scoped `manager` role by 2024 but only focuses on project-level scoping for this role so far, not domain-level.
 
-**Link:** https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html
+**Link:** [OpenStack Technical Committee Governance Documents: Consistent and Secure Default RBAC](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html)
 
 ## Conformance Tests
 
