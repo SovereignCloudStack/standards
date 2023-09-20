@@ -327,6 +327,7 @@ const sidebarsDocs = {
         "releases/Release2",
         "releases/Release3",
         "releases/Release4",
+        "releases/Release5",
       ],
     },
     // {
