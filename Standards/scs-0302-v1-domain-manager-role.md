@@ -160,7 +160,19 @@ A role named "`domain-manager`" is to be created via the Keystone API and the po
 
 ## Related Documents
 
-Related Documents, OPTIONAL
+### "admin"-ness not properly scoped
+
+**Description:** Upstream bug report about the underlying architectural issue of the `admin` role not being properly scoped and giving system-level admin permissions regardless of whether the `admin` role assignment was scoped to project or domain level.
+This is the main reason for the `admin` role being inappropriate to implement Domain Managers.
+
+**Link:** https://bugs.launchpad.net/keystone/+bug/968696
+
+### Consistent and Secure Default RBAC
+
+**Description:** Upstream rework of the default role definitions and hierarchy across all OpenStack services.
+Aims to introduce support for a scoped `manager` role by 2024 but only focuses on project-level scoping for this role so far, not domain-level.
+
+**Link:** https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html
 
 ## Conformance Tests
 
