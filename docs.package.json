@@ -30,12 +30,6 @@
     "label": ""
   },
   {
-    "repo": "osism/testbed",
-    "source": "doc",
-    "target": "docs/02-iaas/deployment-examples",
-    "label": "testbed"
-  },
-  {
     "repo": "osism/osism.github.io",
     "source": "docs/advanced-guides",
     "target": "docs/02-iaas/deployment-examples",
