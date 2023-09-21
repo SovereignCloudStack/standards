@@ -3,7 +3,9 @@ domains:
     manager:
       username: "scs-test-domain-a-manager"
       password: "foobar123"
+    member_role: "member"
   - name: "scs-test-domain-b"
     manager:
       username: "scs-test-domain-b-manager"
       password: "foobar123"
+    member_role: "member"
