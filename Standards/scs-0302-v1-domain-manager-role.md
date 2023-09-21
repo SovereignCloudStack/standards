@@ -104,7 +104,7 @@ A role named "`domain-manager`" is to be created via the Keystone API and the po
 
 # specify a rule that whitelists roles which domain admins are permitted
 # to assign and revoke within their domain
-"is_domain_managed_role": "%(target.role.name)s:member"
+"is_domain_managed_role": "'member':%(target.role.name)s"
 
 # allow domain admins to retrieve their own domain
 "identity:get_domain": "(rule:is_domain_manager and token.domain.id:%(target.domain.id)s) or rule:admin_required"
