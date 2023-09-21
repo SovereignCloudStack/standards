@@ -120,6 +120,11 @@ A role named "`domain-manager`" is to be created via the Keystone API and the po
 # discover roles by name
 "identity:list_roles": "rule:is_domain_manager or rule:admin_required"
 
+# get_role is needed for GET /v3/roles/{role_id} requests
+# this is mandatory for the OpenStack SDK to properly process role assignments
+# which are issued by role id instead of name
+"identity:get_role": "(rule:is_domain_manager and rule:is_domain_managed_role) or rule:admin_required"
+
 # allow domain admins to manage users within their domain
 "identity:list_users": "(rule:is_domain_manager and token.domain.id:%(target.domain_id)s) or rule:admin_required"
 "identity:get_user": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or rule:admin_required"
