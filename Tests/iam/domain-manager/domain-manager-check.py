@@ -10,7 +10,7 @@ This script uses the OpenStack SDK to validate the proper implementation
 of the Domain Manager standard via the OpenStack Keystone API.
 
 Please make sure to run this script with the "--cleanup" flag before and after
-each execution. This will remove all IAM resources (projects, users, groups - 
+each execution. This will remove all IAM resources (projects, users, groups -
 except for the domain managers themselves) within the configured test domains
 that have the TEST_RESOURCES_PREFIX in front of their name.
 The script expects the configured test domains to be empty!
@@ -170,10 +170,10 @@ def cleanup(cloud_name: str, domains: list[dict]):
 def _raisesException(exception, func, *args, **kwargs):
     try:
         func(*args, **kwargs)
-    except exception as _:
+    except exception:
         return True
     except Exception as e:
-        raise(e)
+        raise e
     else:
         return False
 
@@ -202,11 +202,6 @@ def test_groups(cloud_name: str, domains: list[dict]):
         name=f"{TEST_RESOURCES_PREFIX}domain-b-user-1",
         domain_id=domain_b_id
     )
-    domain_b_project = conn_b.identity.create_project(
-        name=f"{TEST_RESOURCES_PREFIX}domain-b-project-1",
-        domain_id=domain_b_id
-    )
-    domain_b_role = conn_b.identity.find_role(domains[1].get("member_role"))
 
     # [D1] group creation without specifying domain (negative test)
     assert _raisesException(
