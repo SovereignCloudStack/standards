@@ -4,6 +4,20 @@ import yaml
 import argparse
 import keystoneauth1
 
+"""Domain Manager policy configuration validation script
+
+This script uses the OpenStack SDK to validate the proper implementation
+of the Domain Manager standard via the OpenStack Keystone API.
+
+Please make sure to run this script with the "--cleanup" flag before and after
+each execution. This will remove all IAM resources (projects, users, groups - 
+except for the domain managers themselves) within the configured test domains
+that have the TEST_RESOURCES_PREFIX in front of their name.
+The script expects the configured test domains to be empty!
+"""
+
+# prefix to be included in the names of any Keystone resources created
+# used by the "--cleanup" flag do identify resources that can be safely deleted
 TEST_RESOURCES_PREFIX = "scs-test-"
 
 
@@ -171,11 +185,11 @@ def test_groups(cloud_name: str, domains: list[dict]):
     conn_a = connect_to_domain(cloud_name, domain_a, domains)
     domain_a_id = conn_a.identity.find_domain(domain_a).id
     domain_a_user = conn_a.identity.create_user(
-        name="scs-test-domain-a-user-1",
+        name=f"{TEST_RESOURCES_PREFIX}domain-a-user-1",
         domain_id=domain_a_id
     )
     domain_a_project = conn_a.identity.create_project(
-        name="scs-test-domain-a-project-1",
+        name=f"{TEST_RESOURCES_PREFIX}domain-a-project-1",
         domain_id=domain_a_id
     )
     domain_a_role = conn_a.identity.find_role(domains[0].get("member_role"))
@@ -185,11 +199,11 @@ def test_groups(cloud_name: str, domains: list[dict]):
     conn_b = connect_to_domain(cloud_name, domain_b, domains)
     domain_b_id = conn_b.identity.find_domain(domain_b).id
     domain_b_user = conn_b.identity.create_user(
-        name="scs-test-domain-b-user-1",
+        name=f"{TEST_RESOURCES_PREFIX}domain-b-user-1",
         domain_id=domain_b_id
     )
     domain_b_project = conn_b.identity.create_project(
-        name="scs-test-domain-b-project-1",
+        name=f"{TEST_RESOURCES_PREFIX}domain-b-project-1",
         domain_id=domain_b_id
     )
     domain_b_role = conn_b.identity.find_role(domains[1].get("member_role"))
@@ -198,7 +212,7 @@ def test_groups(cloud_name: str, domains: list[dict]):
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.create_group,
-        name="scs-test-group-outside-domain-a"
+        name=f"{TEST_RESOURCES_PREFIX}group-outside-domain-a"
     ), (
         f"Policy error: domain manager can create group without "
         f"specifying domain '{domain_a}'"
@@ -209,7 +223,7 @@ def test_groups(cloud_name: str, domains: list[dict]):
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.create_group,
-        name="scs-test-group-in-wrong-domain",
+        name=f"{TEST_RESOURCES_PREFIX}group-in-wrong-domain",
         domain_id=domain_b_id
     ), (
         f"Policy error: domain manager of '{domain_a}' can create group "
@@ -219,7 +233,7 @@ def test_groups(cloud_name: str, domains: list[dict]):
 
     # [D1] group creation within domain
     domain_a_group = conn_a.identity.create_group(
-        name="scs-test-group-inside-domain-a",
+        name=f"{TEST_RESOURCES_PREFIX}group-inside-domain-a",
         domain_id=domain_a_id
     )
     assert domain_a_group, (
@@ -240,7 +254,7 @@ def test_groups(cloud_name: str, domains: list[dict]):
         openstack.exceptions.ForbiddenException,
         conn_b.identity.update_group,
         domain_a_group.id,
-        name="scs-test-group-RENAMED"
+        name=f"{TEST_RESOURCES_PREFIX}group-RENAMED"
     ), (
         f"Policy error: domain manager of '{domain_b}' can update group in "
         f"foreign domain '{domain_a}'"
@@ -260,7 +274,7 @@ def test_groups(cloud_name: str, domains: list[dict]):
 
     # [D2] group creation within domain (prerequisite for subsequent tests)
     domain_b_group = conn_b.identity.create_group(
-        name="scs-test-group-inside-domain-b",
+        name=f"{TEST_RESOURCES_PREFIX}group-inside-domain-b",
         domain_id=domain_b_id
     )
     assert domain_b_group, (
@@ -379,21 +393,66 @@ def test_groups(cloud_name: str, domains: list[dict]):
     )
     print("Domain manager can list users for group in domain: PASS")
 
+    # [D1] domain manager cannot assign admin role to groups
+    # (do these tests before any other role assignment tests that might succeed
+    # because we expect assignment lists to be empty for the negative tests)
+    domain_a_project_2 = conn_a.identity.create_project(
+        name=f"{TEST_RESOURCES_PREFIX}domain-a-project-2",
+        domain_id=domain_a_id
+    )
+    admin_role = conn_a.identity.find_role("admin")
+    assert admin_role is not None, (
+        f"Domain Manager of domain '{domain_a}' cannot discover the 'admin' "
+        f"role (which is used for negative testing)"
+    )
+    conn_a.identity.assign_project_role_to_group(
+        domain_a_project_2.id, domain_a_group.id, admin_role.id
+    )
+    # the assign_project_role_to_group() does not raise an exception but should
+    # not result in an active role assignment for the admin role
+    assigns = list(conn_a.identity.role_assignments(
+        scope_project_id=domain_a_project_2.id,
+        group_id=domain_a_group.id
+    ))
+    assert len(assigns) == 0, (
+        f"Domain Manager of domain '{domain_a}' is able to assign 'admin' "
+        f"role to group '{domain_a_group.name}' in project "
+        f"'{domain_a_project_2.name}'"
+    )
+    print("Domain manager cannot assign admin role to group on project level: "
+          "PASS")
+    conn_a.identity.assign_domain_role_to_group(
+        domain_a_id, domain_a_group.id, admin_role.id
+    )
+    # the assign_domain_role_to_group() does not raise an exception but should
+    # not result in an active role assignment for the admin role
+    assigns = list(conn_a.identity.role_assignments(
+        scope_domain_id=domain_a_id,
+        group_id=domain_a_group.id
+    ))
+    assert len(assigns) == 0, (
+        f"Domain Manager of domain '{domain_a}' is able to assign 'admin' "
+        f"role to group '{domain_a_group.name}' in domain"
+    )
+    print("Domain manager cannot assign admin role to group on domain level in "
+          "domain: PASS")
+
     # [D1] domain manager can assign role to group within domain
     # note that assign_domain_role_to_group() does not raise any exception if
     # it fails; the result must be checked by querying resulting assignments
-    # conn_a.identity.assign_domain_role_to_group(
-    #     domain_a_id, domain_a_group.id, domain_a_role.id
-    # )
-    # assigns = list(conn_a.identity.role_assignments(
-    #     scope_domain_id=domain_a_id,
-    #     group_id=domain_a_group.id,
-    # ))
-    # assert len(assigns) == 1 and assigns[0].role["id"] == domain_a_role.id, (
-    #     f"The domain role assignment for role '{domain_a_role.name}', domain "
-    #     f"'{domain_a}' and group '{domain_a_group.name}' was not successful"
-    # )
-    # print("Domain manager can assign domain role to group in domain: PASS")
+    conn_a.identity.assign_domain_role_to_group(
+        domain_a_id, domain_a_group.id, domain_a_role.id
+    )
+    assigns = list(conn_a.identity.role_assignments(
+        scope_domain_id=domain_a_id,
+        group_id=domain_a_group.id,
+    ))
+    assert len(assigns) == 1 and assigns[0].role["id"] == domain_a_role.id, (
+        f"The domain role assignment for role '{domain_a_role.name}', domain "
+        f"'{domain_a}' and group '{domain_a_group.name}' was not successful"
+    )
+    print("Domain manager can assign domain-level role to group in domain: "
+          "PASS")
 
     conn_a.identity.assign_project_role_to_group(
         domain_a_project.id, domain_a_group.id, domain_a_role.id
@@ -407,45 +466,177 @@ def test_groups(cloud_name: str, domains: list[dict]):
         f"project '{domain_a_project.name}' and group '{domain_a_group.name}' "
         f"in domain '{domain_a}' was not successful"
     )
-    print("Domain manager can assign project role to group in domain: PASS")
+    print("Domain manager can assign project-level role to group in domain: "
+          "PASS")
 
-    # [D2] domain cannot unassign role to group in foreign domain
-    # TODO: unassign_project_role_to_group(), unassign_domain_role_to_group()
-    # assert _raisesException(
-    #     openstack.exceptions.ForbiddenException,
-    #     conn_b.identity.unassign_project_role_from_group,
-    #     domain_a_project.id, domain_a_group.id, domain_a_role
-    # ), (
-    #     f"Policy error: domain manager of domain '{domain_b}' can unassign "
-    #     f"project role from group within foreign domain '{domain_a}'"
-    # )
-    # print("Domain manager cannot unassign project role from group in foreign "
-    #       "domain: PASS")
+    # [D2] domain manager cannot unassign project-level role from group in
+    # foreign domain
+    # note that unassign_project_role_from_group() does not raise exceptions
+    # upon request failure, thus the result has to be verified through active
+    # role assignment checking
+    conn_b.identity.unassign_project_role_from_group(
+        domain_a_project.id, domain_a_group.id, domain_a_role
+    )
+    # use connection for D1 to check that the role assignment was not removed
+    assigns = list(conn_a.identity.role_assignments(
+        scope_project_id=domain_a_project.id,
+        group_id=domain_a_group.id
+    ))
+    assert len(assigns) == 1 and assigns[0].role["id"] == domain_a_role.id, (
+        f"Policy error: domain manager of domain '{domain_b}' can unassign "
+        f"project-level role from group within foreign domain '{domain_a}'"
+    )
+    print("Domain manager cannot unassign project-level role from group in "
+          "foreign domain: PASS")
 
+    # [D2] domain manager cannot unassign domain-level role from group in
+    # foreign domain
+    # note that unassign_domain_role_from_group() does not raise exceptions
+    # upon request failure, thus the result has to be verified through active
+    # role assignment checking
+    conn_b.identity.unassign_domain_role_from_group(
+        domain_a_id, domain_a_group.id, domain_a_role
+    )
+    # use connection for D1 to check that the role assignment was not removed
+    assigns = list(conn_a.identity.role_assignments(
+        scope_domain_id=domain_a_id,
+        group_id=domain_a_group.id
+    ))
+    assert len(assigns) == 1 and assigns[0].role["id"] == domain_a_role.id, (
+        f"Policy error: domain manager of domain '{domain_b}' can unassign "
+        f"domain-level role from group within foreign domain '{domain_a}'"
+    )
+    print("Domain manager cannot unassign domain-level role from group in "
+          "foreign domain: PASS")
 
-    # TODO: cannot assign admin role (discover admin role ID via role_list
-    #       then attempt to use it)
+    # [D1] domain manager can revoke domain-level role from group within domain
+    conn_a.identity.unassign_domain_role_from_group(
+        domain_a_id, domain_a_group.id, domain_a_role
+    )
+    assigns = list(conn_a.identity.role_assignments(
+        scope_domain_id=domain_a_id,
+        group_id=domain_a_group.id
+    ))
+    assert len(assigns) == 0, (
+        f"Policy error: domain manager of domain '{domain_a}' cannot unassign "
+        f"domain-level role from group '{domain_a_group.name}' within domain"
+    )
+    print("Domain manager can unassign domain-level role from group in "
+          "domain: PASS")
 
-    # [D1] domain manager can revoke role from group within domain
-    # TODO: unassign_project_role_from_group(), unassign_domain_role_from_group
+    # [D1] domain manager can revoke project-level role from group within domain
+    conn_a.identity.unassign_project_role_from_group(
+        domain_a_project.id, domain_a_group.id, domain_a_role
+    )
+    assigns = list(conn_a.identity.role_assignments(
+        scope_project_id=domain_a_project.id,
+        group_id=domain_a_group.id
+    ))
+    assert len(assigns) == 0, (
+        f"Policy error: domain manager of domain '{domain_a}' cannot unassign "
+        f"project-level role from group '{domain_a_group.name}' within domain"
+    )
+    print("Domain manager can unassign project-level role from group in "
+          "domain: PASS")
+
+    # [D2] domain manager cannot query user lists of groups of foreign domains
+    users_seen_by_a = list(conn_a.identity.group_users(domain_a_group.id))
+    assert len(users_seen_by_a) > 0, (
+        f"Test setup error: group '{domain_a_group.name}' of domain "
+        f"'{domain_a}' should have at least one user assigned, please check "
+        f"the test implementation order and domain configuration"
+    )
+    # quirk: group_users() returns a generator and only raises a
+    # ForbiddenException once the generator is iterated over the first time,
+    # hence calling next() on the return value of group_users() will trigger
+    # the exception, not the group_users() call itself
+    assert _raisesException(
+        openstack.exceptions.ForbiddenException,
+        next,  # the function to be called
+        conn_b.identity.group_users(domain_a_group.id)  # the argument
+    ), (
+        f"Policy error: domain manager of '{domain_b}' can list "
+        f"users for group '{domain_a_group.name}' of foreign domain "
+        f"'{domain_a}'"
+    )
+    print("Domain manager cannot list users for group in foreign domain: PASS")
+
+    # [D2] domain manager cannot remove user from group in foreign domain
+    assert _raisesException(
+        openstack.exceptions.ForbiddenException,
+        conn_b.identity.remove_user_from_group,
+        domain_a_user.id, domain_a_group.id
+    ), (
+        f"Policy error: domain manager of '{domain_b}' can remove "
+        f"user '{domain_a_user.name}' from group '{domain_a_group.name}' "
+        f"within foreign domain '{domain_a}'"
+    )
+    print("Domain manager cannot remove user from group in foreign domain: "
+          "PASS")
+
+    # [D2] domain manager cannot delete group in foreign domain
+    assert _raisesException(
+        openstack.exceptions.ForbiddenException,
+        conn_b.identity.delete_group,
+        domain_a_group.id
+    ), (
+        f"Policy error: domain manager of '{domain_b}' can delete "
+        f"group '{domain_a_group.name}' of foreign domain '{domain_a}'"
+    )
+    print("Domain manager cannot delete group in foreign domain: PASS")
+
+    # [D2] domain manager cannot assign role to group in foreign domain D1
+    #
+    # as conn_a create a dedicated group in D1 for this test without any roles
+    domain_a_group_2 = conn_a.identity.create_group(
+        name=f"{TEST_RESOURCES_PREFIX}secondary-group-inside-domain-a",
+        domain_id=domain_a_id
+    )
+    # as conn_b attempt to add project-level role
+    conn_b.identity.assign_project_role_to_group(
+        domain_a_project.id, domain_a_group_2.id, domain_a_role.id
+    )
+    # as conn_a verify that no role assignment was added
+    assigns = list(conn_a.identity.role_assignments(
+        scope_project_id=domain_a_project.id,
+        group_id=domain_a_group_2.id
+    ))
+    assert len(assigns) == 0, (
+        f"Domain Manager of domain '{domain_b}' is able to assign "
+        f"project-level role to group '{domain_a_group_2.name}' in project "
+        f"'{domain_a_project.name}' of foreign domain '{domain_a}'"
+    )
+    print("Domain manager cannot assign project-level role to group in "
+          "foreign domain: PASS")
+    # as conn_b attempt to add domain-level role
+    conn_b.identity.assign_domain_role_to_group(
+        domain_a_id, domain_a_group_2.id, domain_a_role.id
+    )
+    # as conn_a verify that no role assignment was added
+    assigns = list(conn_a.identity.role_assignments(
+        scope_domain_id=domain_a_id,
+        group_id=domain_a_group_2.id
+    ))
+    assert len(assigns) == 0, (
+        f"Domain Manager of domain '{domain_b}' is able to assign "
+        f"domain-level role to group '{domain_a_group_2.name}' within foreign "
+        f"domain '{domain_a}'"
+    )
+    print("Domain manager cannot assign domain-level role to group in "
+          "foreign domain: PASS")
 
     # [D1] domain manager can delete group within domain
-    # TODO
-
-    # [D1] domain manager cannot query user lists of groups of foreign domains
-    # TODO: group_users(domain_b_group.id)
-
-    # [D1] domain manager cannot remove user from group in foreign domain
-    # TODO: remove_user_from_group(domain_b_user.id, domain_b_group.id)
-
-    # [D1] domain manager cannot delete group in foreign domain
-    # TODO: delete_group(domain_b_group.id)
-
-    # [D1] domain cannot assign role to group in foreign domain
-    # TODO: assign_project_role_to_group(), assign_domain_role_to_group()
-
-
-    # TODO: system role assignments?
+    assert conn_a.identity.find_group(domain_a_group.id), (
+        f"Test setup error: group '{domain_a_group.name}' of domain "
+        f"'{domain_a}' should exist at this point, please check "
+        f"the test implementation order and domain configuration"
+    )
+    conn_a.identity.delete_group(domain_a_group.id)
+    assert conn_a.identity.find_group(domain_a_group.id) is None, (
+        f"Policy error: domain manager of '{domain_a}' cannot successfully "
+        f"delete group '{domain_a_group.name}' within domain"
+    )
+    print("Domain manager can delete group within domain: PASS")
 
 
 def main():
