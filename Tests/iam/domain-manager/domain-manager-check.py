@@ -188,10 +188,12 @@ def test_users(cloud_name: str, domains: list[dict]):
     # - domain manager can find user in domain
     # - domain manager can update user in domain
     # - domain manager can delete user in domain
+    # - domain manager can assign domain-level role to user
     # - domain manager cannot create user in foreign domain
     # - domain manager cannot find user in foreign domain
     # - domain manager cannot update user in foreign domain
     # - domain manager cannot delete user in foreign domain
+    # - domain manager cannot assign domain-level role to user in foreign domain
 
 
 def test_projects(cloud_name: str, domains: list[dict]):
@@ -204,13 +206,13 @@ def test_projects(cloud_name: str, domains: list[dict]):
     # - domain manager can find project in domain
     # - domain manager can update project in domain
     # - domain manager can delete project in domain
-    # - domain manager can assign role to user for project in domain
+    # - domain manager can assign project-level role to user for project within domain
     # - domain manager can list projects of users in domain (user_projects())
     # - domain manager cannot create project in foreign domain
     # - domain manager cannot find project in foreign domain
     # - domain manager cannot update project in foreign domain
     # - domain manager cannot delete project in foreign domain
-    # - domain manager cannot assign role to user for project in foreign domain
+    # - domain manager cannot assign project-level role to user for project within foreign domain
     #   - as D1: user_a + project_b, user_b + project_a, user_b + project_b
     # - domain manager cannot list projects of users in foreign domain (user_projects())
 
