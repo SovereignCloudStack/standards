@@ -86,18 +86,9 @@ const sidebarsDocs = {
           },
           items: [
             {
-              type: "category",
+              type: "doc",
               label: "Openstack Image Manager",
-              link: {
-                type: "generated-index",
-              },
-              items: [
-                "iaas/components/openstack-image-manager/overview",
-                "iaas/components/openstack-image-manager/requirements",
-                "iaas/components/openstack-image-manager/quickstart",
-                "iaas/components/openstack-image-manager/configuration",
-                "iaas/components/openstack-image-manager/contribute",
-              ],
+              id: "iaas/components/image-manager",
             },
           ],
         },
