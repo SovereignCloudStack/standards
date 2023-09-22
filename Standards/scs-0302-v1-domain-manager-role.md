@@ -141,9 +141,14 @@ A role named "`domain-manager`" is to be created via the Keystone API and the po
 
 # allow domain managers to manage role assignments within their domain
 # (restricted to specific roles by the 'is_domain_managed_role' rule)
+#
+# project-level role assignment to user within domain
 "is_domain_user_project_grant": "token.domain.id:%(target.user.domain_id)s and token.domain.id:%(target.project.domain_id)s and rule:is_domain_managed_role"
+# project-level role assignment to group within domain
 "is_domain_group_project_grant": "token.domain.id:%(target.group.domain_id)s and token.domain.id:%(target.project.domain_id)s and rule:is_domain_managed_role"
-"domain_manager_grant": "rule:is_domain_manager and (rule:is_domain_user_project_grant or rule:is_domain_group_project_grant)"
+# domain-level role assignment to group
+"is_domain_level_group_grant": "token.domain.id:%(target.group.domain_id)s and token.domain.id:%(target.domain.id)s and rule:is_domain_managed_role"
+"domain_manager_grant": "rule:is_domain_manager and (rule:is_domain_user_project_grant or rule:is_domain_group_project_grant or rule:is_domain_level_group_grant)"
 "identity:check_grant": "rule:domain_manager_grant or rule:admin_required"
 "identity:list_grants": "rule:domain_manager_grant or rule:admin_required"
 "identity:create_grant": "rule:domain_manager_grant or rule:admin_required"
