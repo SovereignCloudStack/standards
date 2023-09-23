@@ -253,8 +253,9 @@ def test_users(cloud_name: str, domains: list[dict]):
     print("Domain manager can update user metadata within domain: PASS")
 
     # prepare a user in D2 for all subsequent tests
-    conn_b.identity.create_user(name=domain_b_user_name, domain_id=domain_b.id)
-    domain_b_user = conn_b.identity.find_user(domain_b_user_name)
+    domain_b_user = conn_b.identity.create_user(
+        name=domain_b_user_name, domain_id=domain_b.id
+    )
 
     # [D1] domain manager can only find users within domain
     assert not _raisesException(
@@ -266,7 +267,6 @@ def test_users(cloud_name: str, domains: list[dict]):
     )
     # the user of D2 should not appear in the list
     for found_user in list(conn_a.identity.users()):
-        print(found_user)
         assert found_user.domain_id == domain_a.id, (
             f"Policy error: domain manager of domain '{domain_a.name}' can "
             f"list users outside of domain"
@@ -418,13 +418,135 @@ def test_projects(cloud_name: str, domains: list[dict]):
     Test correct domain scoping for domain managers relating to the projects
     feature of Keystone.
     """
+    cleanup(cloud_name, domains)
+
+    # 1st domain = D1
+    domain_a_name = domains[0].get("name")
+    conn_a = connect_to_domain(cloud_name, domain_a_name, domains)
+    domain_a = conn_a.identity.find_domain(domain_a_name)
+    domain_a_role = conn_a.identity.find_role(domains[0].get("member_role"))
+    domain_a_user = conn_a.identity.create_user(
+        name=f"{TEST_RESOURCES_PREFIX}domain-a-user", domain_id=domain_a.id
+    )
+
+    # 2nd domain = D2
+    domain_b_name = domains[1].get("name")
+    conn_b = connect_to_domain(cloud_name, domain_b_name, domains)
+    domain_b = conn_b.identity.find_domain(domain_b_name)
+    domain_b_role = conn_b.identity.find_role(domains[1].get("member_role"))
+    domain_b_user = conn_b.identity.create_user(
+        name=f"{TEST_RESOURCES_PREFIX}domain-b-user", domain_id=domain_b.id
+    )
+
+    domain_a_project_name = f"{TEST_RESOURCES_PREFIX}domain-a-project"
+    domain_b_project_name = f"{TEST_RESOURCES_PREFIX}domain-b-project"
+
+    # [D1] domain manager can project user within domain
+    assert not _raisesException(
+        openstack.exceptions.ForbiddenException,
+        conn_a.identity.create_project,
+        name=domain_a_project_name,
+        domain_id=domain_a.id
+    ), (
+        f"Policy error: domain manager of domain '{domain_a.name}' cannot "
+        f"create project within domain"
+    )
+    print("Domain manager can create project within domain: PASS")
+
+    # [D1] domain manager can find project by id or name within domain
+    domain_a_project = conn_a.identity.find_project(domain_a_project_name)
+    assert domain_a_project is not None, (
+        f"Policy error: domain manager of '{domain_a.name}' cannot find project "
+        f"project '{domain_a_project_name}' by name within domain"
+    )
+    assert conn_a.identity.find_project(domain_a_project.id) is not None, (
+        f"Policy error: domain manager of '{domain_a.name}' cannot find "
+        f"project '{domain_a_project_name}' by id within domain"
+    )
+    print("Domain manager can find project within domain: PASS")
+
+    # D1 domain manager can update project within domain
+    assert not _raisesException(
+        openstack.exceptions.ForbiddenException,
+        conn_a.identity.update_project,
+        domain_a_project.id, description="CHANGED-DESCRIPTION"
+    ), (
+        f"Policy error: domain manager of domain '{domain_a.name}' cannot "
+        f"update project '{domain_a_project.name}' within domain"
+    )
+    # refresh the project object
+    domain_a_project = conn_a.identity.find_project(domain_a_project_name)
+    assert domain_a_project is not None and \
+        domain_a_project.description == "CHANGED-DESCRIPTION", (
+        f"Policy error: domain manager of domain '{domain_a.name}' cannot "
+        f"successfully update project '{domain_a_project.name}'s description "
+        f"within domain"
+    )
+    print("Domain manager can update project metadata within domain: PASS")
+
+    # [D1] domain manager can assign project-level role to user within domain
+    # note that assign_domain_role_to_user() does not raise exceptions; results
+    # have to be checked explicitly
+    conn_a.identity.assign_project_role_to_user(
+        domain_a_project.id, domain_a_user.id, domain_b_role.id
+    )
+    assert conn_a.identity.validate_user_has_project_role(
+        domain_a_project.id, domain_a_user.id, domain_b_role.id
+    ), (
+        f"Policy error: domain manager of domain '{domain_a.name}' cannot "
+        f"assign project-level role to user '{domain_a_user.name}' for "
+        f"project '{domain_a_project.name}' within domain"
+    )
+    print("Domain manager can assign project-level role to user within domain: "
+          "PASS")
+
+    # [D1] domain manager can list projects for user in domain
+    assert not _raisesException(
+        openstack.exceptions.ForbiddenException,
+        conn_a.identity.user_projects,
+        domain_a_user.id
+    ), (
+        f"Policy error: domain manager of domain '{domain_a.name}' cannot "
+        f"list projects for user '{domain_a_user.name}' within domain"
+    )
+    projects = list(conn_a.identity.user_projects(domain_a_user.id))
+    assert len(projects) == 1 and projects[0].id == domain_a_project.id, (
+        f"Policy error: domain manager of domain '{domain_a.name}' cannot "
+        f"successfully list projects for user '{domain_a_user.name}' within "
+        f"domain"
+    )
+    print("Domain manager can list projects for user within domain: PASS")
+
+    # [D1] domain manager can unassign project-level role from user within
+    # domain
+    # note that unassign_project_role_from_user() does not raise exceptions;
+    # results have to be checked explicitly
+    conn_a.identity.unassign_project_role_from_user(
+        domain_a_project.id, domain_a_user.id, domain_b_role.id
+    )
+    assert not conn_a.identity.validate_user_has_project_role(
+        domain_a_project.id, domain_a_user.id, domain_b_role.id
+    ), (
+        f"Policy error: domain manager of domain '{domain_a.name}' cannot "
+        f"successfully unassign project-level role from user "
+        f"'{domain_a_user.name}' for project '{domain_a_project.name}' within "
+        f"domain"
+    )
+    print("Domain manager can unassign project-level role from user within "
+          "domain: PASS")
+
+    # [D1] domain manager can list projects for user in domain
+    assert not _raisesException(
+        openstack.exceptions.ForbiddenException,
+        conn_a.identity.delete_project,
+        domain_a_project.id
+    ), (
+        f"Policy error: domain manager of domain '{domain_a.name}' cannot "
+        f"delete project '{domain_a_project.name}' within domain"
+    )
+    print("Domain manager can delete project within domain: PASS")
+
     # TODO:
-    # - domain manager can create project in domain
-    # - domain manager can find project in domain
-    # - domain manager can update project in domain
-    # - domain manager can delete project in domain
-    # - domain manager can assign project-level role to user for project within domain
-    # - domain manager can list projects of users in domain (user_projects())
     # - domain manager cannot create project in foreign domain
     # - domain manager cannot find project in foreign domain
     # - domain manager cannot update project in foreign domain
