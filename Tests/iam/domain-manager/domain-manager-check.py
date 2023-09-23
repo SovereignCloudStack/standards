@@ -237,7 +237,7 @@ def test_users(cloud_name: str, domains: list[dict]):
     assert not _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.update_user,
-        domain_a_user, email="CHANGED-MAIL"
+        domain_a_user.id, email="CHANGED-MAIL"
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' cannot "
         f"update user '{domain_a_user.name}' within domain"
@@ -252,7 +252,28 @@ def test_users(cloud_name: str, domains: list[dict]):
     )
     print("Domain manager can update user metadata within domain: PASS")
 
-    # D1 domain manager can assign domain-level role to user within domain
+    # prepare a user in D2 for all subsequent tests
+    conn_b.identity.create_user(name=domain_b_user_name, domain_id=domain_b.id)
+    domain_b_user = conn_b.identity.find_user(domain_b_user_name)
+
+    # [D1] domain manager can only find users within domain
+    assert not _raisesException(
+        openstack.exceptions.ForbiddenException,
+        conn_a.identity.users
+    ), (
+        f"Policy error: domain manager of domain '{domain_a.name}' cannot "
+        f"list users"
+    )
+    # the user of D2 should not appear in the list
+    for found_user in list(conn_a.identity.users()):
+        print(found_user)
+        assert found_user.domain_id == domain_a.id, (
+            f"Policy error: domain manager of domain '{domain_a.name}' can "
+            f"list users outside of domain"
+        )
+    print("Domain manager can only list users within domain: PASS")
+
+    # [D1] domain manager can assign domain-level role to user within domain
     # note that assign_domain_role_to_user() and
     # unassign_domain_role_from_user() do not raise any exception if they fail
     # the result must be checked by querying resulting assignments
@@ -303,10 +324,6 @@ def test_users(cloud_name: str, domains: list[dict]):
         f"create user in foreign domain '{domain_b.name}'"
     )
     print("Domain manager cannot create user in foreign domain: PASS")
-
-    # prepare a user in D2 for all subsequent tests
-    conn_b.identity.create_user(name=domain_b_user_name, domain_id=domain_b.id)
-    domain_b_user = conn_b.identity.find_user(domain_b_user_name)
 
     # [D1] cannot find user in D2 (negative test)
     user = conn_a.identity.find_user(domain_b_user.id)
