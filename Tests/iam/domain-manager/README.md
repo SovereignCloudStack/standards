@@ -68,7 +68,7 @@ The content of the file is structured as follows:
 
 To execute the test suite, the "`domain-manager-test.yaml`" configuration file as created above is required as input.
 Furthermore, a valid cloud configuration for the OpenStack SDK in the shape of "`clouds.yaml`" is mandatory[^1].
-**Both files are expected to be located in the current working directory where the test script is executed unless configured otherwise.
+**Both files are expected to be located in the current working directory where the test script is executed unless configured otherwise.**
 
 [^1]: [OpenStack Documentation: Configuring OpenStack SDK Applications](https://docs.openstack.org/openstacksdk/latest/user/config/configuration.html)
 
