@@ -1,24 +1,28 @@
+"""Domain Manager policy configuration checker
+
+This script uses the OpenStack SDK to validate the proper implementation
+of the Domain Manager standard via the OpenStack Keystone API.
+It verifies that domain managers are able to manage users, projects and groups
+within their respective domain while being unable to manage such resources in
+domains other than their own.
+
+You may run this script with the "--cleanup-only" flag to remove any leftovers
+from previous executions of this test suite.
+This will remove all IAM resources (projects, users, groups - except for the
+domain managers themselves) within the configured test domains that have the
+TEST_RESOURCES_PREFIX in front of their name. The script expects the configured
+test domains to be empty!
+"""
+
 import openstack
 import os
 import yaml
 import argparse
 import keystoneauth1
 
-"""Domain Manager policy configuration validation script
-
-This script uses the OpenStack SDK to validate the proper implementation
-of the Domain Manager standard via the OpenStack Keystone API.
-
-Please make sure to run this script with the "--cleanup" flag before and after
-each execution. This will remove all IAM resources (projects, users, groups -
-except for the domain managers themselves) within the configured test domains
-that have the TEST_RESOURCES_PREFIX in front of their name.
-The script expects the configured test domains to be empty!
-"""
-
 # prefix to be included in the names of any Keystone resources created
-# used by the "--cleanup" flag do identify resources that can be safely deleted
-TEST_RESOURCES_PREFIX = "scs-test-"
+# used by the cleanup routine to identify resources that can be safely deleted
+DEFAULT_PREFIX = "scs-test-"
 
 
 def connect(cloud_name: str,
@@ -131,7 +135,7 @@ def test_logins(cloud_name: str, domains: list[dict]):
         print(f"Domain manager login for domain '{domain_name}' works: PASS")
 
 
-def cleanup(cloud_name: str, domains: list[dict]):
+def cleanup(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     """
     Uses the configured domain manager users to cleanup any Keystone resources
     that this test suite might have created in the corresponding domains
@@ -141,7 +145,7 @@ def cleanup(cloud_name: str, domains: list[dict]):
     have to avoid accidental deletion of non-test resources.
     """
     print(f"\nPerforming cleanup for resources with the "
-          f"'{TEST_RESOURCES_PREFIX}' prefix ...")
+          f"'{prefix}' prefix ...")
     for domain in domains:
         domain_name = domain.get("name")
         print(f"Cleanup starting for domain {domain_name} ...")
@@ -150,13 +154,13 @@ def cleanup(cloud_name: str, domains: list[dict]):
 
         groups = conn.identity.groups(domain_id=domain_id)
         for group in groups:
-            if group.name.startswith(TEST_RESOURCES_PREFIX):
+            if group.name.startswith(prefix):
                 print(f"↳ deleting group '{group.name}' ...")
                 conn.identity.delete_group(group.id)
 
         projects = conn.identity.projects(domain_id=domain_id)
         for project in projects:
-            if project.name.startswith(TEST_RESOURCES_PREFIX):
+            if project.name.startswith(prefix):
                 print(f"↳ deleting project '{project.name}' ...")
                 conn.identity.delete_project(project.id)
 
@@ -166,7 +170,7 @@ def cleanup(cloud_name: str, domains: list[dict]):
                 # manager should not delete themselves
                 print(f"↳ skipping user '{user.name}' (is domain manager) ...")
                 continue
-            if user.name.startswith(TEST_RESOURCES_PREFIX):
+            if user.name.startswith(prefix):
                 print(f"↳ deleting user '{user.name}' ...")
                 conn.identity.delete_user(user.id)
 
@@ -191,7 +195,7 @@ def _raisesException(exception, func, *args, **kwargs):
         return False
 
 
-def test_users(cloud_name: str, domains: list[dict]):
+def test_users(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     """
     Test correct domain scoping for domain managers relating to the users
     feature of Keystone.
@@ -210,8 +214,8 @@ def test_users(cloud_name: str, domains: list[dict]):
     domain_b = conn_b.identity.find_domain(domain_b_name)
     domain_b_role = conn_b.identity.find_role(domains[1].get("member_role"))
 
-    domain_a_user_name = f"{TEST_RESOURCES_PREFIX}domain-a-user"
-    domain_b_user_name = f"{TEST_RESOURCES_PREFIX}domain-b-user"
+    domain_a_user_name = f"{prefix}domain-a-user"
+    domain_b_user_name = f"{prefix}domain-b-user"
 
     # [D1] domain manager can create user within domain
     assert not _raisesException(
@@ -428,7 +432,7 @@ def test_users(cloud_name: str, domains: list[dict]):
           "foreign domain: PASS")
 
 
-def test_projects(cloud_name: str, domains: list[dict]):
+def test_projects(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     """
     Test correct domain scoping for domain managers relating to the projects
     feature of Keystone.
@@ -441,7 +445,7 @@ def test_projects(cloud_name: str, domains: list[dict]):
     domain_a = conn_a.identity.find_domain(domain_a_name)
     domain_a_role = conn_a.identity.find_role(domains[0].get("member_role"))
     domain_a_user = conn_a.identity.create_user(
-        name=f"{TEST_RESOURCES_PREFIX}domain-a-user", domain_id=domain_a.id
+        name=f"{prefix}domain-a-user", domain_id=domain_a.id
     )
 
     # 2nd domain = D2
@@ -450,11 +454,11 @@ def test_projects(cloud_name: str, domains: list[dict]):
     domain_b = conn_b.identity.find_domain(domain_b_name)
     domain_b_role = conn_b.identity.find_role(domains[1].get("member_role"))
     domain_b_user = conn_b.identity.create_user(
-        name=f"{TEST_RESOURCES_PREFIX}domain-b-user", domain_id=domain_b.id
+        name=f"{prefix}domain-b-user", domain_id=domain_b.id
     )
 
-    domain_a_project_name = f"{TEST_RESOURCES_PREFIX}domain-a-project"
-    domain_b_project_name = f"{TEST_RESOURCES_PREFIX}domain-b-project"
+    domain_a_project_name = f"{prefix}domain-a-project"
+    domain_b_project_name = f"{prefix}domain-b-project"
 
     # [D1] domain manager can project user within domain
     assert not _raisesException(
@@ -727,7 +731,7 @@ def test_projects(cloud_name: str, domains: list[dict]):
           "PASS")
 
 
-def test_groups(cloud_name: str, domains: list[dict]):
+def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     """
     Test correct domain scoping for domain managers relating to the groups
     feature of Keystone.
@@ -739,11 +743,11 @@ def test_groups(cloud_name: str, domains: list[dict]):
     conn_a = connect_to_domain(cloud_name, domain_a_name, domains)
     domain_a = conn_a.identity.find_domain(domain_a_name)
     domain_a_user = conn_a.identity.create_user(
-        name=f"{TEST_RESOURCES_PREFIX}domain-a-user-1",
+        name=f"{prefix}domain-a-user-1",
         domain_id=domain_a.id
     )
     domain_a_project = conn_a.identity.create_project(
-        name=f"{TEST_RESOURCES_PREFIX}domain-a-project-1",
+        name=f"{prefix}domain-a-project-1",
         domain_id=domain_a.id
     )
     domain_a_role = conn_a.identity.find_role(domains[0].get("member_role"))
@@ -753,7 +757,7 @@ def test_groups(cloud_name: str, domains: list[dict]):
     conn_b = connect_to_domain(cloud_name, domain_b_name, domains)
     domain_b = conn_b.identity.find_domain(domain_b_name)
     domain_b_user = conn_b.identity.create_user(
-        name=f"{TEST_RESOURCES_PREFIX}domain-b-user-1",
+        name=f"{prefix}domain-b-user-1",
         domain_id=domain_b.id
     )
 
@@ -761,7 +765,7 @@ def test_groups(cloud_name: str, domains: list[dict]):
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.create_group,
-        name=f"{TEST_RESOURCES_PREFIX}group-outside-domain-a"
+        name=f"{prefix}group-outside-domain-a"
     ), (
         f"Policy error: domain manager is able to create group without "
         f"specifying domain '{domain_a.name}'"
@@ -772,7 +776,7 @@ def test_groups(cloud_name: str, domains: list[dict]):
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.create_group,
-        name=f"{TEST_RESOURCES_PREFIX}group-in-wrong-domain",
+        name=f"{prefix}group-in-wrong-domain",
         domain_id=domain_b.id
     ), (
         f"Policy error: domain manager of '{domain_a.name}' is able to create "
@@ -782,7 +786,7 @@ def test_groups(cloud_name: str, domains: list[dict]):
 
     # [D1] group creation within domain
     domain_a_group = conn_a.identity.create_group(
-        name=f"{TEST_RESOURCES_PREFIX}group-inside-domain-a",
+        name=f"{prefix}group-inside-domain-a",
         domain_id=domain_a.id
     )
     assert domain_a_group, (
@@ -803,7 +807,7 @@ def test_groups(cloud_name: str, domains: list[dict]):
         openstack.exceptions.ForbiddenException,
         conn_b.identity.update_group,
         domain_a_group.id,
-        name=f"{TEST_RESOURCES_PREFIX}group-RENAMED"
+        name=f"{prefix}group-RENAMED"
     ), (
         f"Policy error: domain manager of '{domain_b.name}' is able to update "
         f"group in foreign domain '{domain_a.name}'"
@@ -823,7 +827,7 @@ def test_groups(cloud_name: str, domains: list[dict]):
 
     # [D2] group creation within domain (prerequisite for subsequent tests)
     domain_b_group = conn_b.identity.create_group(
-        name=f"{TEST_RESOURCES_PREFIX}group-inside-domain-b",
+        name=f"{prefix}group-inside-domain-b",
         domain_id=domain_b.id
     )
     assert domain_b_group, (
@@ -946,7 +950,7 @@ def test_groups(cloud_name: str, domains: list[dict]):
     # (do these tests before any other role assignment tests that might succeed
     # because we expect assignment lists to be empty for the negative tests)
     domain_a_project_2 = conn_a.identity.create_project(
-        name=f"{TEST_RESOURCES_PREFIX}domain-a-project-2",
+        name=f"{prefix}domain-a-project-2",
         domain_id=domain_a.id
     )
     admin_role = conn_a.identity.find_role("admin")
@@ -1140,7 +1144,7 @@ def test_groups(cloud_name: str, domains: list[dict]):
     #
     # as conn_a create a dedicated group in D1 for this test without any roles
     domain_a_group_2 = conn_a.identity.create_group(
-        name=f"{TEST_RESOURCES_PREFIX}secondary-group-inside-domain-a",
+        name=f"{prefix}secondary-group-inside-domain-a",
         domain_id=domain_a.id
     )
     # as conn_b attempt to add project-level role
@@ -1205,9 +1209,17 @@ def main():
         f"domain manager credentials for testing (default: {domain_yaml_path})"
     )
     parser.add_argument(
+        "--prefix", type=str,
+        default=DEFAULT_PREFIX,
+        help=f"OpenStack resource name prefix for all resources to be created "
+        f"and/or cleaned up by this script within the configured domains "
+        f"(default: '{DEFAULT_PREFIX}')"
+    )
+    parser.add_argument(
         "--cleanup-only", action="store_true",
-        help=f"Instead of executing tests, cleanup all resources within the "
-        f"defined domains with the '{TEST_RESOURCES_PREFIX}' prefix"
+        help="Instead of executing tests, cleanup all resources "
+        "with the prefix specified via '--prefix' (or its default) "
+        "within the defined domains"
     )
     parser.add_argument(
         "--debug", action="store_true",
@@ -1215,6 +1227,9 @@ def main():
     )
     args = parser.parse_args()
     openstack.enable_logging(debug=args.debug)
+    prefix = args.prefix
+    if not prefix.endswith('-'):
+        prefix += '-'
     if args.domain_config:
         domain_yaml_path = args.domain_config
 
@@ -1231,16 +1246,16 @@ def main():
     domains = load_domain_definitions(domain_yaml_path).get("domains")
 
     if args.cleanup_only:
-        cleanup(cloud, domains)
+        cleanup(cloud, domains, prefix=prefix)
     else:
         test_logins(cloud, domains)
-        cleanup(cloud, domains)
-        test_users(cloud, domains)
-        cleanup(cloud, domains)
-        test_projects(cloud, domains)
-        cleanup(cloud, domains)
-        test_groups(cloud, domains)
-        cleanup(cloud, domains)
+        cleanup(cloud, domains, prefix=prefix)
+        test_users(cloud, domains, prefix=prefix)
+        cleanup(cloud, domains, prefix=prefix)
+        test_projects(cloud, domains, prefix=prefix)
+        cleanup(cloud, domains, prefix=prefix)
+        test_groups(cloud, domains, prefix=prefix)
+        cleanup(cloud, domains, prefix=prefix)
 
 
 if __name__ == "__main__":
