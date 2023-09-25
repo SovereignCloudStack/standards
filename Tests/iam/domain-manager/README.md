@@ -10,6 +10,9 @@ The following things are required:
 
 - two domains for testing
 - a user in each domain with the `domain-manager` role assigned on domain-level
+- a properly configured "`domain-manager-test.yaml`"
+
+The creation of these resources is described below.
 
 > **NOTE:** The following steps require cloud admin rights.
 
