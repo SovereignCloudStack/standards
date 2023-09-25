@@ -6,6 +6,11 @@ It verifies that domain managers are able to manage users, projects and groups
 within their respective domain while being unable to manage such resources in
 domains other than their own.
 
+This script requires a domain-manager-test.yaml that defines the domains
+and domain manager login credentials to be used for test execution.
+Furthermore, a properly configured clouds.yaml for the OpenStack SDK is
+required.
+
 You may run this script with the "--cleanup-only" flag to remove any leftovers
 from previous executions of this test suite.
 This will remove all IAM resources (projects, users, groups - except for the
