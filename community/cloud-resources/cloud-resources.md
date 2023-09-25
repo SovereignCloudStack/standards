@@ -57,12 +57,13 @@ Service users will have their default_project_id set to a specific project and w
 | 3501db829014406884990a1016f3e25d | p500924-sig-monitoring1     | fkr               | SIG Monitoring - cloudmon target  | 31.12.2023   |
 | 602778bad3d3470cbe58c4f7611e8eb7 | p500924-dnation             | chess-knight      | dNation Dev Project               | ∞            |
 | 91091d4039a6457db27d48d58bb1b4e4 | p500924-jschoone            | jschoone          | KaaS dev and evaluation           | ∞            |
-| 93956190702b4a7d8a8886806d57713f | p500924-metering            | cah-link          | Metering Dev Project              | 31.12.2023   |
+| 93956190702b4a7d8a8886806d57713f | p500924-metering            | cah-link          | Dev Environment for VP13          | 31.12.2023   |
 | abbe6561cf6248b6af395334aa09af85 | p500924-harbor              | chess-knight      | Project for Harbor deployment     | ∞            |
 | 4ff97734574146ccb4c7e7568bc1e36f | p500924-XPanse              | swaroopar         | Eclipse XPanse Projekt POC        | 31.11.2023   |
 | e7622c1048ac4520a2d050ae141e826b | p500924-tender-6a           | jschoone          | Dev Environment for VP06a         | ∞            |
 | eeed7e0ad33f42f189fb4165116f5a1b | p500924-dnation-k8s         | matofeder         | dNation K8s Dev Project           | ∞            |
 | b342f37804f14459bdf703573169bf79 | p500924-minery              | 90n20             | Testbed env for Pentesting        | 30.11.2024   |
+| 0fa3c3559f0d4f39ba7aa70c7f7188ca | p500924-tender-10-3         | tonifinger        | Dev Environment for VP10-3        | ∞            |
 |                                  |                             |                   |                                   |              |
 
 ## Wavecon
