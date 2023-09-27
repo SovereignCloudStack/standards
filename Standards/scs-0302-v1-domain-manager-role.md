@@ -193,3 +193,37 @@ There is a test suite in [`domain-manager-check.py`](../Tests/iam/domain-manager
 The test suite connects to the OpenStack API using two sample domains and corresponding Domain Manager accounts.
 It verifies the compliance to the standard and the proper domain-scoping as defined by the Keystone policy.
 Please consult the associated [README.md](../Tests/iam/domain-manager/README.md) for detailed setup and testing instructions.
+
+## Appendix
+
+### Decision Record
+
+#### Extend domain management functionality to Keystone groups
+
+Decision Date: 2023-08-04
+
+Decision Maker: SIG IAM
+
+Decision: The Domain Manager Standard configuration should cover the groups functionality of Keystone, allowing domain manager to manage groups in domains.
+
+Rationale: The groups functionality is a desired IAM feature for customers.
+
+Links / Comments / References:
+
+- [SIG IAM meeting protocol entry](https://input.scs.community/2023-scs-sig-iam#Domain-Admin-rights-for-SCS-IaaS-Customers-184)
+- [action item issue](https://github.com/SovereignCloudStack/issues/issues/383)
+
+#### Change the naming of the Domain Manager role
+
+Decision Date: 2023-08-04
+
+Decision Maker: SIG IAM
+
+Decision: Role should be named "domain-manager" not "domain-admin".
+
+Rationale: To avoid confusion with the unscoped admin role and to be inline with the upstream plan https://specs.openstack.org/openstack/keystone-specs/specs/keystone/2023.1/default-service-role.html
+
+Links / Comments / References:
+
+- [SIG IAM meeting protocol entry](https://input.scs.community/2023-scs-sig-iam#Domain-Admin-rights-for-SCS-IaaS-Customers-184)
+- [issue commment about decision](https://github.com/SovereignCloudStack/issues/issues/184#issuecomment-1670985934)
