@@ -189,4 +189,7 @@ Aims to introduce support for a scoped `manager` role by 2024 but only focuses o
 
 ## Conformance Tests
 
-Conformance Tests, OPTIONAL
+There is a test suite in [`domain-manager-check.py`](../Tests/iam/domain-manager/domain-manager-check.py).
+The test suite connects to the OpenStack API using two sample domains and corresponding Domain Manager accounts.
+It verifies the compliance to the standard and the proper domain-scoping as defined by the Keystone policy.
+Please consult the associated [README.md](../Tests/iam/domain-manager/README.md) for detailed setup and testing instructions.
