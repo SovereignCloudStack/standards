@@ -25,7 +25,8 @@ The following special terms are used throughout this standard document:
 | domain | OpenStack domain as per Keystone RBAC |
 | IAM | identity and access management |
 | IAM resources | projects, users, groups, roles, domains as managed by OpenStack Keystone |
-| cloud admin | OpenStack user belonging to the cloud provider that possesses the `admin` role |
+| CSP | Cloud Service Provider, provider managing the OpenStack infrastructure |
+| cloud admin | OpenStack user belonging to the CSP that possesses the `admin` role |
 
 [^1]: [OpenStack Documentation: Role-Based Access Control Overview](https://static.opendev.org/docs/patrole/latest/rbac-overview.html)
 
@@ -34,7 +35,7 @@ The following special terms are used throughout this standard document:
 Applying this standard modifies the API policy configuration of Keystone and introduces a new global role to Keystone to enable IAM self-service for customers within a domain.
 This IAM self-service allows special Domain Manager users within a domain to manage users, project, groups and role assignments.
 
-The provisioning of such self-service capabilities using the new role works on a per-tenant (customer domain) basis and is up to the cloud provider, thus entirely optional.
+The provisioning of such self-service capabilities using the new role works on a per-tenant (customer domain) basis and is up to the CSP, thus entirely optional.
 Omitting the provisioning of Domain Manager users for customers will result in an OpenStack cloud that behaves identically to a configuration without the standard applied.
 
 ## Motivation
@@ -97,6 +98,9 @@ The approach described in this standard imposes the following limitations:
 A role named "`domain-manager`" is to be created via the Keystone API and the policy adjustments quoted below are to be applied.
 
 ### Policy adjustments
+
+The following policy has to be applied to Keystone in a verbatim fashion.
+The "`is_domain_managed_role`" rule definition is the only exception to this (see below).
 
 ```yaml
 # classify domain managers with a special role
@@ -171,6 +175,29 @@ A role named "`domain-manager`" is to be created via the Keystone API and the po
 "identity:add_user_to_group": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s and token.domain.id:%(target.user.domain_id)s) or rule:admin_required"
 ```
 
+#### Specifying manageable roles via "`is_domain_managed_role`"
+
+The "`is_domain_managed_role`" rule of the above policy template may be adjusted according to the requirements of the CSP and infrastructure architecture to specify different or multiple roles as manageable by Domain Managers as long as the policy rule adheres to the following:
+
+- the "`is_domain_managed_role`" rule MUST NOT contain the "`admin`" role, neither directly nor transitively
+- the "`is_domain_managed_role`" rule MUST define all applicable roles directly, it MUST NOT contain a "`rule:`" reference within itself
+
+**Example: permitting multiple roles**
+
+The following example permits both the "`member`" and "`reader`" role to be assigned/revoked by a Domain Manager.
+Further roles can be appended using the logical `or` directive.
+
+```yaml
+"is_domain_managed_role": "'member':%(target.role.name)s or 'reader':%(target.role.name)s"
+```
+
+**Note regarding the `domain-manager` role**
+
+When adjusting the "`is_domain_managed_role`" rule a CSP might opt to also include the "`domain-manager`" role itself in the manageable roles, resulting in Domain Managers being able to propagate the Domain Manager role to other users within their domain.
+This increases the self-service capabilities of the customer but introduces risks of Domain Managers also being able to revoke this role from themselves or each other (within their domain) in an unintended fashion.
+
+CSPs have to carefully evaluate whether Domain Manager designation authority should reside solely on their side or be part of the customer self-service scope and decide about adding "`'domain-manager':%(target.role.name)s`" to the rule accordingly.
+
 ## Related Documents
 
 ### "admin"-ness not properly scoped
@@ -198,15 +225,42 @@ Please consult the associated [README.md](../Tests/iam/domain-manager/README.md)
 
 ### Decision Record
 
+#### Allow flexibility for the roles a Domain Manager can assign/revoke within domain
+
+Decision Date: 2023-09-27
+
+Decision Maker: Team IaaS, Team IAM
+
+Decision:
+
+- the standard should not strictly limit the roles a Domain Manager can assign/revoke to/from other users within a domain to the "member" role
+- the standard should allow CSPs to define one or more roles for Domain Managers to manage
+- whether or not this includes the Domain Manager role itself is not to be predefined by the standard and should be up to the CSP to decide instead
+- the standard should only strictly prohibit adding the "admin" role to the list of roles manageable by Domain Managers
+
+Rationale:
+
+- the available and configured roles might differ between CSPs and infrastructures
+- the Domain Manager standard should be flexible enough to adapt to different environments while still offering the intended functionality
+- there might be a tradeoff between self-service flexibility desired by customers and the security regulation a CSP wants to impose, thus allowing or prohibiting the designation of Domain Managers by customers themselves should be up to the CSP to decide
+
+Links / Comments / References:
+
+- [Team IaaS meeting protocol entry](https://input.scs.community/2023-scs-team-iaas?view#Domain-Manager-Standard-markus-hentsch)
+
 #### Extend domain management functionality to Keystone groups
 
 Decision Date: 2023-08-04
 
 Decision Maker: SIG IAM
 
-Decision: The Domain Manager Standard configuration should cover the groups functionality of Keystone, allowing domain manager to manage groups in domains.
+Decision:
 
-Rationale: The groups functionality is a desired IAM feature for customers.
+- the Domain Manager Standard configuration should cover the groups functionality of Keystone, allowing domain manager to manage groups in domains
+
+Rationale:
+
+- the groups functionality is a desired IAM feature for customers
 
 Links / Comments / References:
 
@@ -219,9 +273,13 @@ Decision Date: 2023-08-04
 
 Decision Maker: SIG IAM
 
-Decision: Role should be named "domain-manager" not "domain-admin".
+Decision:
 
-Rationale: To avoid confusion with the unscoped admin role and to be inline with the upstream plan https://specs.openstack.org/openstack/keystone-specs/specs/keystone/2023.1/default-service-role.html
+- the Domain Manager role should be named "domain-manager" not "domain-admin".
+
+Rationale:
+
+- avoid confusion with the unscoped admin role and to be inline with the upstream plan: https://specs.openstack.org/openstack/keystone-specs/specs/keystone/2023.1/default-service-role.html
 
 Links / Comments / References:
 
