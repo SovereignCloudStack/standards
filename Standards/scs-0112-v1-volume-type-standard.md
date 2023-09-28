@@ -9,6 +9,14 @@ track:  IaaS
 
 Volume Types are used to classify volumes and provide a basic decision for what kind of volume should be created. These volume types can sometimes very be backend-specific and it might be hard for a user to choose the most suitable volume type, if there is more than one default type.
 
+### Glossary
+The following special terms are used throughout this standard document:
+| Term | Meaning |
+|---|---|
+| volume | OpenStack object, virtual drive which usually resides in a network stoarage backend |
+| AZ | Availability Zone |
+| Volume QoS | Quality of Service object for Volumes |
+
 ## Motivation
 
 We want to standardize a few varieties of volume types. While a user can choose simple things like size when creating a volume, Volume Types define a few broader aspects of volume. Encryption of volumes for example is solely decided by the volume type. And whether the volume will be replicated is a mix between definiton in the volume type and backend specific configuration, but it's visiblity can only be reached in the volume type. In the following part, we want to state, which varieties of volume types are
@@ -17,15 +25,20 @@ We want to standardize a few varieties of volume types. While a user can choose 
 
 All Considerations can be looked up in detail in the Decision Record for the Volume Type Standard.
 
-| Aspect | Standardize? | Discoverability | other Things |
+To test whether a deployment has volume types with certain aspects, the discoverability of the parameters in the volume type has to be given. The following table shows, which aspects are considered in this standard and whether it is discoverable, and who can discover this. The comments state what can be done to help with the discoverability and other important restrictions.
+
+| Aspect | Standardize? | Discoverability | comments |
 | ---- | ---- | ---- | ------ |
-| encryption | **Recommended** | work needed | extra_spec: encrypted=True/False |
+| encryption | **Recommended** | admin only | Upstream work for extra_spec: encrypted=True/False needed |
 | Backend name | - | - | - |
-| AZs | - | - | describe as optional and backend-dependend |
-| multiattach | - | yes | describe as optional |
-| Replication | **Recommended** | lot of work | either get from backend to OS or as extra_spec defined by deployer |
-| Number of Replicas, etc | ? | lot of work | optional, work on it after Replication is standardized |
-| Volume QoS | ? | admin only | needs further discussion, should be at least described as optional |
+| AZs | **Optional** | - | Upstream: setable extra_spec would help |
+| multiattach | **Optional** | yes | - |
+| Replication | **Recommended** | backend-dependend | Upstream: setable extra_spec would help |
+| Number of Replicas, etc | **Optional** | backend-dependend | Upstream: setable extra_spec would help |
+| Volume QoS | **Optional** | admin only | depends on the admin only volume qos object |
+
+In addition it is possible to use multiple of those aspects within one volume type. SCS will only ever look, if there is a volume type that has an aspect, but they don't have to be different volume types.
+Example: one volume type that uses LUKS-encryption with a ceph storage with inherent replication would fulfill all recommendations of this standard.
 
 ## DEFAULT volume types
 
@@ -73,6 +86,8 @@ openstack volume type show LUKS
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
 
+Until this change happend, it will be necessary that deployer state that the volume type is encrypted either in the name or in the description of the volume type.
+
 ### Replication
 
 Replication states, whether or not there are multiple replicas of a volume. Thus answers the question, whether the data could survive a node outage. Unfortunately there are two ways replication can be achieved:
@@ -80,7 +95,7 @@ Replication states, whether or not there are multiple replicas of a volume. Thus
 1. In the configuration of a volume type. It then is visible as extra_spec in the properties of a volume type.
 2. Via the used backend. Ceph for example provides automatic replication, that does not need to be specified in the volume type. This is currently not visible for users.
 
-We recommend for now to state the replication in the description or name of a volume type, so users are aware of it
+We recommend for now to state the replication in the description or name of a volume type, so users are aware of it.
 
 **TODO:**
 We want to find a way to also use the internal extra_spec for replication, when the replication is automatically done by the backend. If this is not possible, we would like to introduce another property, which has to be set by the admin, when setting the volume type. Only after that we will have the possibility to automatically check for a volume type with replication.
@@ -162,8 +177,12 @@ To make users aware that a volume type includes specific qos options, we reccome
 
 ## Related Documents
 
-TODO: Link Decision Doc here
+[Here is the decision record document.](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0111-v1-volume-type-decisions.md) 
 
 ## Conformance Tests
 
-BIG TODO, after Upstream work 
+As there are currently no REQUIRED volume types, we can only look for the RECOMMENDED aspects and a conformance test is not a must.
+Furthermore those aspects either are only discoverable by an admin or have to be described in either name or description by the deployer.
+And it is also possible that a single volume type can currently fulfill all RECOMMENDED aspects.
+
+TODO: create meaningful test
