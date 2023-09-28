@@ -57,7 +57,11 @@ To address this, this standard defines a new Domain Manager role in conjunction 
 - the Domain Manager role MUST support managing projects, groups and users within a specific domain
 - the Domain Manager role MUST be properly scoped to a domain, it MUST NOT gain access to resources outside of its owning domain
 - the Domain Manager role MUST NOT be able to manipulate existing roles or create new roles
-- the Domain Manager role MUST only be allowed to assign specific non-administrative roles to their managed users, Domain Managers MUST NOT be able to abuse the role assignment functionalities to escalate their own privileges or those of other users
+- the Domain Manager role MUST only be able to assign specific non-administrative\* roles to their managed users where the applicable roles are defined by the CSP
+- Domain Managers MUST NOT be able to abuse the role assignment functionalities to escalate their own privileges or those of other users beyond the roles defined by the CSP
+
+\* "non-administrative" in this context means this excludes the role "`admin`" and any comparable role that grants permissions beyond domain and tenant scope.
+Since the Domain Manager role as defined in this standard is domain-scoped, it does not count as administrative.
 
 ### Options considered
 
