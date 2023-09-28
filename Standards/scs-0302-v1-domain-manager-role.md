@@ -32,11 +32,13 @@ The following special terms are used throughout this standard document:
 
 ### Impact
 
-Applying this standard modifies the API policy configuration of Keystone and introduces a new global role to Keystone to enable IAM self-service for customers within a domain.
-This IAM self-service allows special Domain Manager users within a domain to manage users, project, groups and role assignments.
+Applying this standard modifies the API policy configuration of Keystone and introduces a new global role definition to Keystone to enable IAM self-service for customers within a domain.
+Once assigned, the role allows special Domain Manager users within a domain to manage users, project, groups and role assignments as part of the IAM self-service.
 
-The provisioning of such self-service capabilities using the new role works on a per-tenant (customer domain) basis and is up to the CSP, thus entirely optional.
-Omitting the provisioning of Domain Manager users for customers will result in an OpenStack cloud that behaves identically to a configuration without the standard applied.
+However, the configuration change introduced by this standard does not automatically assign the Domain Manager role to any users per default.
+Assigning the new role and granting customers the resulting self-service capabilities is a deliberate action to be taken by the CSP on a per-tenant (i.e. per domain) basis.
+
+Omitting the provisioning of any Domain Manager users (i.e. not assigning the new role to any user) will result in an OpenStack cloud that behaves identically to a configuration without the standard applied, making the actual usage of the functionality a CSP's choice and entirely optional.
 
 ## Motivation
 
@@ -48,9 +50,10 @@ To address this, this standard defines a new Domain Manager role in conjunction 
 
 ### Desired Workflow
 
-1. The cloud admin creates the desired domains for the customers for which IAM self-service capabilities are desired.
-2. The cloud admin creates one or more users within each of the applicable domains and assigns the Domain Manager role to them. These users represent the Domain Managers of the corresponding domain.
-3. The customer uses the Domain Manager users to manage (create, update, delete) users, projects, groups and corresponding role assignments within their domain.
+1. The cloud admin deploys the Domain Manager policy configuration for Keystone as per this standard if it is not already applied.
+2. The cloud admin creates the desired domains for the customers for which IAM self-service capabilities are desired.
+3. The cloud admin creates one or more users within each of the applicable domains and assigns the Domain Manager role to them. These users represent the Domain Managers of the corresponding domain.
+4. The customer uses the Domain Manager users to manage (create, update, delete) users, projects, groups and corresponding role assignments within their domain.
 
 ## Design Considerations
 
@@ -74,17 +77,21 @@ This results in special permissions being granted to users possessing the role w
 This poses severe security risks as the proper scoping of the `admin` role is impossible.
 **Due to this, this approach was discarded early.**
 
+Upstream is in the process of addressing this across the services but it has not been fully implemented yet, especially for domains[^3].
+
 [^2]: [Launchpad bug: "admin"-ness not properly scoped](https://bugs.launchpad.net/keystone/+bug/968696)
+
+[^3]: [OpenStack Documentation: Keystone for Other Services - Domain Scope](https://docs.openstack.org/keystone/latest/contributor/services.html#domain-scope)
 
 #### Introducing a new role and API policy changes
 
 OpenStack Keystone allows for new roles to be created via its API by administrative users.
-Additionally, each OpenStack API's RBAC can be adjusted through an API policy file (`policy.yaml`) through olso-policy[^3], Keystone included.
+Additionally, each OpenStack API's RBAC can be adjusted through an API policy file (`policy.yaml`) through olso-policy[^4], Keystone included.
 The possibility of managing users, projects, role assignments and so on is regulated through Keystone's RBAC configured by its API policy file.
 
 This means that by creating a new role and extending Keystone's API policy configuration a new Domain Manager role can be established that is limited to a specific subset of the Keystone API to be used to manage users, projects and role assignments within a domain.
 
-[^3]: [OpenStack Documentation: Administering Applications that use oslo.policy](https://docs.openstack.org/oslo.policy/latest/admin/index.html)
+[^4]: [OpenStack Documentation: Administering Applications that use oslo.policy](https://docs.openstack.org/oslo.policy/latest/admin/index.html)
 
 ## Open questions
 
@@ -95,7 +102,9 @@ The approach described in this standard imposes the following limitations:
 1. as a result of the "`identity:list_domains`" rule (see below), Domain Managers are able to see all domains via "`openstack domain list`" and can inspect the metadata of other domains with "`openstack domain show`"
 2. as a result of the "`identity:list_roles`" rule (see below), Domain Managers are able to see all roles via "`openstack role list`" and can inspect the metadata of other roles with "`openstack role show`"
 
-**The result of points 1 and 2 is that the metadata of all domains and roles will be exposed to all Domain Managers!**
+**As a result of points 1 and 2, metadata of all domains and roles will be exposed to all Domain Managers!**
+
+If a CSP deems either of these points critical, they may abstain from granting the Domain Manager role to users, effectively disabling the functionality. See [Impact](#impact).
 
 ## Decision
 
