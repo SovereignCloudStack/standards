@@ -77,7 +77,7 @@ This results in special permissions being granted to users possessing the role w
 This poses severe security risks as the proper scoping of the `admin` role is impossible.
 **Due to this, this approach was discarded early.**
 
-Upstream is in the process of addressing this across the services but it has not been fully implemented yet, especially for domains[^3].
+Upstream (OpenStack) is in the process of addressing this across the services but it has not been fully implemented yet, especially for domains[^3].
 
 [^2]: [Launchpad bug: "admin"-ness not properly scoped](https://bugs.launchpad.net/keystone/+bug/968696)
 
@@ -195,7 +195,7 @@ The "`is_domain_managed_role`" rule of the above policy template may be adjusted
 - the "`is_domain_managed_role`" rule MUST NOT contain the "`admin`" role, neither directly nor transitively
 - the "`is_domain_managed_role`" rule MUST define all applicable roles directly, it MUST NOT contain a "`rule:`" reference within itself
 
-**Example: permitting multiple roles**
+##### Example: permitting multiple roles
 
 The following example permits both the "`member`" and "`reader`" role to be assigned/revoked by a Domain Manager.
 Further roles can be appended using the logical `or` directive.
@@ -229,10 +229,10 @@ Aims to introduce support for a scoped `manager` role by 2024 but only focuses o
 
 ## Conformance Tests
 
-There is a test suite in [`domain-manager-check.py`](../Tests/iam/domain-manager/domain-manager-check.py).
+There is a test suite in [`domain-manager-check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iam/domain-manager/domain-manager-check.py).
 The test suite connects to the OpenStack API using two sample domains and corresponding Domain Manager accounts.
 It verifies the compliance to the standard and the proper domain-scoping as defined by the Keystone policy.
-Please consult the associated [README.md](../Tests/iam/domain-manager/README.md) for detailed setup and testing instructions.
+Please consult the associated [README.md](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iam/domain-manager/README.md) for detailed setup and testing instructions.
 
 ## Appendix
 
@@ -292,7 +292,7 @@ Decision:
 
 Rationale:
 
-- avoid confusion with the unscoped admin role and to be inline with the upstream plan: https://specs.openstack.org/openstack/keystone-specs/specs/keystone/2023.1/default-service-role.html
+- avoid confusion with the unscoped admin role and to be inline with the upstream plan: [Default Service Role - Identity Specs](https://specs.openstack.org/openstack/keystone-specs/specs/keystone/2023.1/default-service-role.html)
 
 Links / Comments / References:
 

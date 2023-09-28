@@ -14,9 +14,9 @@ The following things are required:
 
 The creation of these resources is described below.
 
-> **NOTE:** The following steps require cloud admin rights.
+**NOTE:** The following steps require cloud admin rights.
 
-> **WARNING:** Replace the `<REPLACEME>` password placeholders by securely generated passwords in the code blocks below.
+**WARNING:** Replace the `<REPLACEME>` password placeholders by securely generated passwords in the code blocks below.
 
 First, create two testing domains and a domain manager for each domain:
 
@@ -61,7 +61,6 @@ The content of the file is structured as follows:
 | `domains.*.manager` | Login credentials for a user with the `domain-manager` role within the respective domain |
 | `domains.*.member_role` | Role that a domain manager is permitted to assign users within the respective domain (default: `member`) |
 
-
 ### Test Execution Environment
 
 > **NOTE:** The test execution procedure does not require cloud admin rights.
@@ -87,12 +86,11 @@ Within this environment execute the test suite.
 
 [^2]: [Python 3 Documentation: Virtual Environments and Packages](https://docs.python.org/3/tutorial/venv.html)
 
-
 ## Test Execution
 
 The test suite is executed as follows:
 
-```
+```bash
 python3 domain-manager-check.py --os-cloud mycloud
 ```
 
@@ -112,12 +110,11 @@ clouds:
 
 If the test suite fails and leaves test resources behind, the "`--cleanup-only`" flag may be used to delete those resources from the domains:
 
-```
+```bash
 python3 domain-manager-check.py --os-cloud mycloud --cleanup-only
 ```
 
 For any further options consult the output of "`python3 domain-manager-check.py --help`".
-
 
 ### Script Behavior & Test Results
 
