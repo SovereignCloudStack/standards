@@ -20,9 +20,9 @@ The following sections describe the setup.
 To allow SCS to consume identities managed in external IAM solutions,
 federation protocols like OpenID Connect or SAML can be used.
 Keystone currently makes use of third party apache modules like
-[mod\_auth\_openidc](https://github.com/OpenIDC/mod_auth_openidc),
-[mod\_oauth2](https://github.com/OpenIDC/mod_oauth2) and
-[mod\_auth\_mellon](https://github.com/UNINETT/mod_auth_mellon) to delegate
+[mod_auth_openidc](https://github.com/OpenIDC/mod_auth_openidc),
+[mod_oauth2](https://github.com/OpenIDC/mod_oauth2) and
+[mod_auth_mellon](https://github.com/UNINETT/mod_auth_mellon) to delegate
 authentication to a SSO IdP (i.e. SAML IdP or OpenID Connect provider).
 
 In OpenStack the apache modules are configured using the

@@ -115,56 +115,56 @@ Pipelines available in SCS Zuul:
 
 #### 1. check
 
-* event driven pipeline
-* runs if a pull request is created, changed or reopened
-* re-runs if a comment contains `recheck`
+- event driven pipeline
+- runs if a pull request is created, changed or reopened
+- re-runs if a comment contains `recheck`
 
 #### 2. gate
 
-* event driven pipeline
-* trigger events: pull_request_review, pull_request, check_run
+- event driven pipeline
+- trigger events: pull_request_review, pull_request, check_run
 
 #### 3. post
 
-* event driven pipeline
-* trigger event: post
+- event driven pipeline
+- trigger event: post
 
 #### 4. tag
 
-* event driven pipeline
-* trigger event: push
+- event driven pipeline
+- trigger event: push
 
 #### 5. e2e-test
 
-* event driven pipeline
-* trigger event: pull_request
+- event driven pipeline
+- trigger event: pull_request
 
 #### 6. e2e-quick-test
 
-* event driven pipeline
-* trigger event: pull_request
+- event driven pipeline
+- trigger event: pull_request
 
 #### 7. unlabel-on-update-e2e-test
 
-* event driven pipeline
-* trigger event: pull_request
+- event driven pipeline
+- trigger event: pull_request
 
 #### 8. unlabel-on-update-e2e-quick-test
 
-* event driven pipeline
-* trigger event: pull_request
+- event driven pipeline
+- trigger event: pull_request
 
 #### 9. periodic-hourly
 
-* time based pipeline that runs every hour
+- time based pipeline that runs every hour
 
 #### 10. periodic-daily
 
-* time based pipeline that runs every day at 3 o'clock am.
+- time based pipeline that runs every day at 3 o'clock am.
 
 #### 11. compliance_check
 
-* time based pipeline that runs every 15 minutes
+- time based pipeline that runs every 15 minutes
 
 If you want to know more about pipelines: [See official documentation](https://zuul-ci.org/docs/zuul/latest/config/pipeline.html)
 
@@ -200,7 +200,6 @@ First have a look on a basic job example:
       nodes:
         - name: ubuntu-jammy
           label: ubuntu-jammy
-
 ```
 
 Each job needs a name that has to be unique within the whole tenant.
@@ -319,7 +318,6 @@ For a basic but working example the following content may be written into a `zuu
 
 ```yaml
 # zuul.yaml content
-
 ---
 - secret:
     name: mySecret
@@ -331,8 +329,8 @@ For a basic but working example the following content may be written into a `zuu
     name: myFirstTestJob
     parent: base
     secrets:
-     - name: secretName # The name of the secret that is used within "playbooks/testPlaybook.yaml"
-       secret: mySecret
+      - name: secretName # The name of the secret that is used within "playbooks/testPlaybook.yaml"
+        secret: mySecret
     run: playbooks/testPlaybook.yaml
 
 - project:
@@ -352,7 +350,6 @@ Example playbook:
 
 ```yaml
 # playbooks/testPlaybook.yaml content
-
 ---
 - hosts: all
   tasks:

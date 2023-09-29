@@ -74,6 +74,16 @@ const config = {
     [
       "@docusaurus/plugin-content-docs",
       {
+        id: "dev-docs",
+        path: "dev-docs",
+        routeBasePath: "dev-docs",
+        sidebarPath: require.resolve("./sidebarsDevDocs.js"),
+        // ... other options
+      },
+    ],
+    [
+      "@docusaurus/plugin-content-docs",
+      {
         id: "standards",
         path: "standards",
         routeBasePath: "standards",
@@ -102,8 +112,9 @@ const config = {
         },
         items: [
           //   { to: '/blog', label: 'Blog', position: 'left' },
-          { to: "/docs", label: "Docs", position: "left" },
           { to: "/standards", label: "Standards", position: "left" },
+          { to: "/docs", label: "For Operators", position: "left" },
+          { to: "/dev-docs", label: "For Developers", position: "left" },
           { to: "/community", label: "Community", position: "left" },
           { to: "/docs/faq", label: "FAQ", position: "left" },
           {
@@ -178,8 +189,8 @@ const config = {
       // @ts-ignore
       ({
         hashed: true,
-        docsDir: ["docs", "community", "standards"],
-        docsRouteBasePath: ["docs", "community", "standards"],
+        docsDir: ["docs", "community", "standards", "dev-docs"],
+        docsRouteBasePath: ["docs", "community", "standards", "dev-docs"],
       }),
     ],
   ],
