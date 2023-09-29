@@ -10,6 +10,7 @@ track:  IaaS
 Volume Types are used to classify volumes and provide a basic decision for what kind of volume should be created. These volume types can sometimes very be backend-specific and it might be hard for a user to choose the most suitable volume type, if there is more than one default type.
 
 ### Glossary
+
 The following special terms are used throughout this standard document:
 | Term | Meaning |
 |---|---|
@@ -58,7 +59,7 @@ The SCS recommends to have one or more volume types, which have the following sp
 
 Encryption for volumes is an option which has to be configured within the volume type. As an admin it is possible to set encryption-provider, key size, cipher and control location. And for admins it is also currently possible to see these configurations in a volume type with both list and show commands.
 
-```
+```text
 openstack volume type list --encryption-type
 +--------------------------------------+-------------+-----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | ID                                   | Name        | Is Public | Encryption                                                                                                                                                                         |
@@ -70,7 +71,7 @@ openstack volume type list --encryption-type
 **TODO**:
 Users that don't have admin rights currently cannot see these encryption parameters. We want and need to change this in the OpenStack workflow through adding a property (e.g. "encryption"="true") that is also visible for users. This way we will be able to automatically check whether a volume type with encyrption is present. It should look like this:
 
-```
+```text
 openstack volume type show LUKS
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Field              | Value                                                                                                                                                        |
@@ -80,8 +81,7 @@ openstack volume type show LUKS
 | id                 | d63307fb-167a-4aa0-9066-66595ea9fb21                                                                                                                         |
 | is_public          | True                                                                                                                                                         |
 | name               | LUKS                                                                                                                                                         |
-| properties         | encrypted='true'
-                                  |
+| properties         | encrypted='true'                                                                                                                                             |
 | qos_specs_id       | None                                                                                                                                                         |
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
@@ -89,7 +89,7 @@ openstack volume type show LUKS
 Until this change happened, it will be necessary that deployer state that the volume type is encrypted in the description of the volume type in the following way:
 The description needs to begin with `[encrypted]`, after that any further description is allowed. It should look like this example:
 
-```
+```text
 openstack volume type show LUKS
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Field              | Value                                                                                                                                                        |
@@ -125,7 +125,8 @@ Additionally to the fact, that a volume type is replicated, it OPTIONALLY can be
 One volume type that is configured as an encrypted volume type in a ceph backend, with automated replication would fit both recommendations and will be enough to comply to this part of the volume type standard.
 
 It should look like the following part:
-```
+
+```text
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Field              | Value                                                                                                                                                        |
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -140,7 +141,8 @@ It should look like the following part:
 ```
 
 It is OPTIONAL to give more information to users like this:
-```
+
+```text
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Field              | Value                                                                                                                                                        |
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -165,7 +167,8 @@ Availability Zones are not necessarily used by every deployer of a cloud. The SC
 While there can be multiple Compute AZs, there can also be multiple Storage AZs for Volumes. And it might be not quite confusing for users, which volumes can be used in which AZs. To make it even further complicated, there are backends like ceph, which can provide volumes for multiple compute AZs just with some Nova configuration. Therefore we would encourage to use either the property of volume types OR the description of the volume types to describe, in which AZs the volumes based on this type can be used.
 
 A description for a ceph volume type might look like this:
-```
+
+```text
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Field              | Value                                                                                                                                                        |
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -174,22 +177,22 @@ A description for a ceph volume type might look like this:
 | id                 | d63307fb-167a-4aa0-9066-66595ea9fb21                                                                                                                         |
 | is_public          | True                                                                                                                                                         |
 | name               | hdd-three-replicas-AZ134                                                                                                                                     |
-| properties         |
-                                  |
+| properties         |                                                                                                                                                              |
 | qos_specs_id       | None                                                                                                                                                         |
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
 
 ### Multiattach
 
-A few backends enable providers to allow volumes to be attached to mulitple VMs simultaneously. The OpenStack API can be used to enable the usage of multiattach through the volume type. The property is also automatically shown to users. If a deployer want to use this feature they have to do it in this way. So users will always see whether a volume type can be used for mulitattach volumes or not. Nevertheless due to other problems, that might occur when using the multiattach feature, the SCS will only have this as OPTIONAL. 
+A few backends enable providers to allow volumes to be attached to mulitple VMs simultaneously. The OpenStack API can be used to enable the usage of multiattach through the volume type. The property is also automatically shown to users. If a deployer want to use this feature they have to do it in this way. So users will always see whether a volume type can be used for mulitattach volumes or not. Nevertheless due to other problems, that might occur when using the multiattach feature, the SCS will only have this as OPTIONAL.
 
 ### Volume QoS
 
 Quality of Service for volumes can be defined in volume qos objects. While admins can use these directly on volumes, a user is not able to see these object. Instead there can be ONE volume qos object associated to a volume type, which is then be used on all volumes created from that volume type. Through this indirection, functioning volume types without these associated qos objects and this feature not being heavily used, the SCS will currently only state this as an OPTIONAL volume type feature.
 
 To make users aware that a volume type includes specific qos options, we reccomend to write it into the description of a volume type, as any association to a volume qos object cannot be seen by normal users:
-```
+
+```text
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Field              | Value                                                                                                                                                        |
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -206,7 +209,7 @@ To make users aware that a volume type includes specific qos options, we reccome
 
 ## Related Documents
 
-[Here is the decision record document.](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0111-v1-volume-type-decisions.md) 
+[Here is the decision record document.](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0111-v1-volume-type-decisions.md)
 
 ## Conformance Tests
 
