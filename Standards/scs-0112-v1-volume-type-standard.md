@@ -86,7 +86,22 @@ openstack volume type show LUKS
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
 
-Until this change happend, it will be necessary that deployer state that the volume type is encrypted either in the name or in the description of the volume type.
+Until this change happened, it will be necessary that deployer state that the volume type is encrypted in the description of the volume type in the following way:
+The description needs to begin with `[encrypted]`, after that any further description is allowed. It should look like this example:
+
+```
+openstack volume type show LUKS
++--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Field              | Value                                                                                                                                                        |
++--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| access_project_ids | None                                                                                                                                                         |
+| description        | [encrypted] This volume uses LUKS-encryption                                                                                                                 |
+| id                 | d63307fb-167a-4aa0-9066-66595ea9fb21                                                                                                                         |
+| is_public          | True                                                                                                                                                         |
+| name               | LUKS                                                                                                                                                         |
+| qos_specs_id       | None                                                                                                                                                         |
++--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+```
 
 ### Replication
 
@@ -95,7 +110,8 @@ Replication states, whether or not there are multiple replicas of a volume. Thus
 1. In the configuration of a volume type. It then is visible as extra_spec in the properties of a volume type.
 2. Via the used backend. Ceph for example provides automatic replication, that does not need to be specified in the volume type. This is currently not visible for users.
 
-We recommend for now to state the replication in the description or name of a volume type, so users are aware of it.
+To fulfill this recommentation for now, the deployer needs to state the replication in the description of a volume type in the following way:
+The description needs to begin with `[replicated]`, after that any further description is allowed.
 
 **TODO:**
 We want to find a way to also use the internal extra_spec for replication, when the replication is automatically done by the backend. If this is not possible, we would like to introduce another property, which has to be set by the admin, when setting the volume type. Only after that we will have the possibility to automatically check for a volume type with replication.
@@ -108,19 +124,32 @@ Additionally to the fact, that a volume type is replicated, it OPTIONALLY can be
 
 One volume type that is configured as an encrypted volume type in a ceph backend, with automated replication would fit both recommendations and will be enough to comply to this part of the volume type standard.
 
-It might look like the following part for administrators:
+It should look like the following part:
 ```
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Field              | Value                                                                                                                                                        |
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | access_project_ids | None                                                                                                                                                         |
-| description        | Content will be replicated three times on spinning disks to ensure consistency and availability for your data. LUKS encryption is used.              |
-| encryption         | cipher='aes-xts-plain64', control_location='front-end', created_at='2023-05-05T13:50:34.000000', deleted='False', deleted_at=, encryption_id='217....6c', key_size='256', provider='nova.volume.encryptors.luks.LuksEncryptor', updated_at= |
+| description        | [encrypted][replicated] Content will be replicated three times to ensure consistency and availability for your data. LUKS encryption is used.                |
 | id                 | d63307fb-167a-4aa0-9066-66595ea9fb21                                                                                                                         |
 | is_public          | True                                                                                                                                                         |
 | name               | hdd-three-replicas-LUKS                                                                                                                                      |
-| properties         |
-                                  |
+| properties         |                                                                                                                                                              |
+| qos_specs_id       | None                                                                                                                                                         |
++--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+```
+
+It is OPTIONAL to give more information to users like this:
+```
++--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Field              | Value                                                                                                                                                        |
++--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| access_project_ids | None                                                                                                                                                         |
+| description        | [encrypted:cipher=aes,key_size=256][replicated] Content will be replicated three times and LUKS encryption is used.                                          |
+| id                 | d63307fb-167a-4aa0-9066-66595ea9fb21                                                                                                                         |
+| is_public          | True                                                                                                                                                         |
+| name               | hdd-three-replicas-LUKS                                                                                                                                      |
+| properties         |                                                                                                                                                              |
 | qos_specs_id       | None                                                                                                                                                         |
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
@@ -181,8 +210,8 @@ To make users aware that a volume type includes specific qos options, we reccome
 
 ## Conformance Tests
 
-As there are currently no REQUIRED volume types, we can only look for the RECOMMENDED aspects and a conformance test is not a must.
-Furthermore those aspects either are only discoverable by an admin or have to be described in either name or description by the deployer.
+As there are currently no REQUIRED volume types, we can only look for the RECOMMENDED aspects and thus executing a conformance test is not a must.
+Furthermore the recommended aspects currently have to be described in the description by the deployer. In future versions we aim to integrate some extra_specs for them in upstream OpenStack
 And it is also possible that a single volume type can currently fulfill all RECOMMENDED aspects.
 
-TODO: create meaningful test
+**TODO:** The current test will check for the presence of `[encrypted]` and `[replicated]` in the description of at least one volume type.
