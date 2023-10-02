@@ -51,7 +51,7 @@ Service users will have their default_project_id set to a specific project and w
 | b43cfafbcf1f4eb08865b2886c29e09b | p500924-cluster-api-session | garloff           | cluster-api hands on session      | ∞            |
 | 9b7a73e516be4cd1acbd63d543985c52 | p500924-gonicus-dev         | o-otte            | GONICUS GmbH                      | ∞            |
 | 3829cc7c8f034fc985f5055a1df6f247 | p500924-scs-healthmonitor   | garloff           | SCS Health Monitor                | ∞            |
-| b97d38bf128b4479981c4dbe2ef70cd5 | p500924-SIG-IAM             | fkr               | SIG IAM                           | ∞            |
+| b97d38bf128b4479981c4dbe2ef70cd5 | p500924-SIG-IAM             | fkr               | SIG IAM and VP08                  | ∞            |
 | 9de7d8dc2d674e52be44904d6b338b0b | p500924-cloudmon            | costelter         | CloudMon Test Project             | 31.12.2023   |
 | 2c9e0e4ef8d44c36807df50b06b3c81d | p500924-cloudmon-target     | costelter         | Target project for CloudMon tests | 31.12.2023   |
 | 3501db829014406884990a1016f3e25d | p500924-sig-monitoring1     | fkr               | SIG Monitoring - cloudmon target  | 31.12.2023   |
