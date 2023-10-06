@@ -132,7 +132,7 @@ With those requirements in mind the projects that initially were found, were eva
 | small dependency tree     | ❌ Composer | ✅          | ❌ ruby gems | ✅     | ⁇ helm chart | ❌ npm/github/zapier | ❌ npm dependencies very huge |
 | easy themable             | ✅          | ❌          | ❌           | ❌     | ❌           | ❌                   | ✅                            |
 | grouping (by location...) | ✅          | ❌          | ❌           | ❌     | ✅           | ⁇                    | ✅                            |
-| components definition ...
+| components definition ... |             |             |              |        |              |                      |                               |
 | ... local or global | ✅ | ❌ | ❌ | ✅ | ⁇ | ✅ | ❌ |
 | ... easy flagging with new status | ✅ | ✅ | ❌ | ✅ | ⁇ | ✅ | ❌ |
 | ... push notification on update | ✅ | ❌ | ✅ | ❌ | ✅ | ⁇ | ✅ |
