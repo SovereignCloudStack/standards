@@ -20,11 +20,11 @@ The following special terms are used throughout this standard document:
 
 ## Motivation
 
-We want to standardize a few varieties of volume types. While a user can choose simple things like size when creating a volume, Volume Types define a few broader aspects of volume. Encryption of volumes for example is solely decided by the volume type. And whether the volume will be replicated is a mix between definiton in the volume type and backend specific configuration, but it's visiblity can only be reached in the volume type. In the following part, we want to state, which varieties of volume types are
+We want to standardize a few varieties of volume types. While a user can choose simple things like size when creating a volume, Volume Types define a few broader aspects of volume. Encryption of volumes for example is solely decided by the volume type. While the option with which the volume will be replicated is a mix between definition in the volume type and backend specific configuration, but it's visibility can only be reached in the volume type. In the following part, we want to state, which varieties of volume types are REQUIRED, RECOMMENDED or only OPTIONAL within an SCS-compatible deployment.
 
 ## Design Considerations
 
-All Considerations can be looked up in detail in the Decision Record for the Volume Type Standard.
+All Considerations can be looked up in detail in the [Decision Record for the Volume Type Standard.](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0111-v1-volume-type-decisions.md)
 
 To test whether a deployment has volume types with certain aspects, the discoverability of the parameters in the volume type has to be given. The following table shows, which aspects are considered in this standard and whether it is discoverable, and who can discover this. The comments state what can be done to help with the discoverability and other important restrictions.
 
@@ -184,11 +184,11 @@ A description for a ceph volume type might look like this:
 
 ### Multiattach
 
-A few backends enable providers to allow volumes to be attached to mulitple VMs simultaneously. The OpenStack API can be used to enable the usage of multiattach through the volume type. The property is also automatically shown to users. If a deployer want to use this feature they have to do it in this way. So users will always see whether a volume type can be used for mulitattach volumes or not. Nevertheless due to other problems, that might occur when using the multiattach feature, the SCS will only have this as OPTIONAL.
+A few backends enable providers to allow volumes to be attached to mulitple VMs simultaneously. The OpenStack API can be used to enable the usage of multiattach through the volume type. The property is also automatically shown to users. If a deployer wants to use this feature they have to do it in this way. So users will always see whether a volume type can be used for mulitattach volumes or not. Nevertheless due to other problems, that might occur when using the multiattach feature such as the requirement of special file systems and suitable backends, the SCS standard will only view this as OPTIONAL.
 
 ### Volume QoS
 
-Quality of Service for volumes can be defined in volume qos objects. While admins can use these directly on volumes, a user is not able to see these object. Instead there can be ONE volume qos object associated to a volume type, which is then be used on all volumes created from that volume type. Through this indirection, functioning volume types without these associated qos objects and this feature not being heavily used, the SCS will currently only state this as an OPTIONAL volume type feature.
+Quality of Service parameters for volumes can be defined in a volume qos object. While admins can use these qos objects directly on volumes, a user is not able to see such an object. Instead there can be ONE volume qos object associated to a volume type, which is then be used on all volumes created from that volume type. Through this indirection, volume types also working without these associated qos objects and this feature not being heavily used, the SCS standard will currently only view this as an OPTIONAL volume type feature.
 
 To make users aware that a volume type includes specific qos options, we recommend to write it into the description of a volume type, as any association to a volume qos object cannot be seen by normal users:
 
