@@ -7,14 +7,14 @@ track:  IaaS
 
 ## Introduction
 
-Volume Types are used to classify volumes and provide a basic decision for what kind of volume should be created. These volume types can sometimes very be backend-specific and it might be hard for a user to choose the most suitable volume type, if there is more than one default type.
+Volume Types are used to classify volumes and provide a basic decision for what kind of volume should be created. These volume types can sometimes be very backend-specific and it might be hard for a user to choose the most suitable volume type, if there is more than one default type.
 
 ### Glossary
 
 The following special terms are used throughout this standard document:
 | Term | Meaning |
 |---|---|
-| volume | OpenStack object, virtual drive which usually resides in a network stoarage backend |
+| volume | OpenStack object, virtual drive which usually resides in a network storage backend |
 | AZ | Availability Zone |
 | Volume QoS | Quality of Service object for Volumes |
 
@@ -43,7 +43,7 @@ Example: one volume type that uses LUKS-encryption with a ceph storage with inhe
 
 ## DEFAULT volume types
 
-There is always a default volume type defined in an OpenStack deployment. The SCS will does not have any requirements about this volume type at this moment, instead deployers are free to choose what fits best in their environment.
+There is always a default volume type defined in an OpenStack deployment. The SCS does not have any requirements about this volume type at this moment, instead deployers are free to choose what fits best in their environment.
 
 The parameters of volume types described in this standard do not have to be applied to the chosen default volume type. And the SCS will not make any assumptions about parameters being present in the default volume type.
 
@@ -164,7 +164,7 @@ In this section volume types are described, that we do not want to explicitly re
 
 Availability Zones are not necessarily used by every deployer of a cloud. The SCS does not want do make it necessary to have AZs for a compatible deployment. But we want to encourage deployer who use multiple AZs to read the following:
 
-While there can be multiple Compute AZs, there can also be multiple Storage AZs for Volumes. And it might be not quite confusing for users, which volumes can be used in which AZs. To make it even further complicated, there are backends like ceph, which can provide volumes for multiple compute AZs just with some Nova configuration. Therefore we would encourage to use either the property of volume types OR the description of the volume types to describe, in which AZs the volumes based on this type can be used.
+While there can be multiple Compute AZs, there can also be multiple Storage AZs for Volumes. And it might be quite confusing for users, which volumes can be used in which AZs. To make it even further complicated, there are backends like ceph, which can provide volumes for multiple compute AZs just with some Nova configuration. Therefore we would encourage to use either the property of volume types OR the description of the volume types to describe, in which AZs the volumes based on this type can be used.
 
 A description for a ceph volume type might look like this:
 
@@ -190,7 +190,7 @@ A few backends enable providers to allow volumes to be attached to mulitple VMs 
 
 Quality of Service for volumes can be defined in volume qos objects. While admins can use these directly on volumes, a user is not able to see these object. Instead there can be ONE volume qos object associated to a volume type, which is then be used on all volumes created from that volume type. Through this indirection, functioning volume types without these associated qos objects and this feature not being heavily used, the SCS will currently only state this as an OPTIONAL volume type feature.
 
-To make users aware that a volume type includes specific qos options, we reccomend to write it into the description of a volume type, as any association to a volume qos object cannot be seen by normal users:
+To make users aware that a volume type includes specific qos options, we recommend to write it into the description of a volume type, as any association to a volume qos object cannot be seen by normal users:
 
 ```text
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
