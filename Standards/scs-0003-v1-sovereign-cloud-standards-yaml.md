@@ -10,7 +10,7 @@ track: Global
 The [Sovereign Cloud Stack (SCS)](https://scs.community) provides standards for a range of cloud infrastructure types.
 It strives for interoperable and sovereign cloud offerings which can be deployed and used by a wide range of organizations and individuals.
 
-SCS plans to offer six types of certificates, which are sorted into two dimensions:
+SCS plans to offer six kinds of certificates with varying scope. These scopes can be sorted into two dimensions:
 
 1. _certification level_, of which there are three:
    - SCS-compatible
@@ -20,19 +20,19 @@ SCS plans to offer six types of certificates, which are sorted into two dimensio
    - infastructure as a service (IaaS)
    - Kubernetes as a service (KaaS)
 
-So, for instance, a certificate can be of type _SCS-compatible IaaS_ or _SCS-sovereign KaaS_.
+So, for instance, a certificate can have the scope _SCS-compatible IaaS_ or _SCS-sovereign KaaS_.
 Note that we don't currently have separate certification layers for Operations and IAM.
 We expect that tests for these aspects will exist, but be incorporated into the IaaS
 and KaaS layers.
 
-Each type of certificate amounts to a set of standards that have to be fulfilled by the cloud service in question in order for a certificate to be issued.
-In addition, a certificate of a certain type may only be issued if some other certificate is already held.
+Each certificate scope amounts to a set of standards that have to be fulfilled by the cloud service in question in order for a certificate to be issued.
+In addition, a certificate with a certain scope may only be issued if some other certificate is already held.
 Case in point: the certification levels are meant to be seen as a progression, where the upper levels build on the lower ones, and
 the certificate for "SCS-open IaaS" will only be issued if a certificate for "SCS-compatible IaaS" is already held.
 We say that the latter certificate is a _prerequisite_ of the former.
 
 Naturally, as the state of the art progresses, so do our certificates. We keep track of the changes by means of versioning.
-That is to say that each certificate type can come in several versions, each one of them having its distinct timespan when it is in effect.
+That is to say that each certificate scope can come in several versions, each one of them having its distinct timespan when it is in effect.
 For instance, we might have
 
 - SCS-compatible IaaS v1, effective 2021-01-01 through 2023-10-31
@@ -42,44 +42,44 @@ and so on (but usually, we aim to keep at most two versions in effect, with an o
 
 This decision record describes two main points:
 
-1. How we denote our certificate types by means of a YAML file.
-2. Our process for constructing and progressing the certificate types.
+1. How we denote our certificate scopes by means of a YAML file.
+2. Our process for constructing and progressing the certificate scopes.
 
 ## Motivation
 
 This decision record establishes a mechanism (by means of the YAML file) with the following three main objectives:
 
-- to provide an overview of the mandatory standards for the different SCS certificate types
-- to make the lifecycle of certificate types traceable
+- to provide an overview of the mandatory standards for the different SCS certificate scopes
+- to make the lifecycle of certificate scopes traceable
 - to provide a machine-readable document for further processing (e.g. for a compliance tool suite or continuous integration).
 
 ### Overview of mandatory SCS standards
 
 Digging through a repository of draft, stable, replaced and rejected standards becomes increasingly challenging with a growing number
-documents and decision records. A central document that lists all mandatory standards to acquire a certificate of a certain type can
+documents and decision records. A central document that lists all mandatory standards to acquire a certificate with a certain scope can
 resolve this issue. It provides clarity for providers as well as users and helps to understand the value
 proposition of SCS.
 
-### Lifecycle of certificate types
+### Lifecycle of certificate scopes
 
 Standards and therefore certifications will evolve over time. To provide transparency and traceability for the lifecycle of SCS certificate
-types, the whole history of our certifications should be recorded. Pre-notification of changes to our certificate types allows
+scopes, the whole history of our certifications should be recorded. Pre-notification of changes to our certificate scopes allows
 users to adapt their environments or deployment automation to the new standards in advance.
 
 ### Machine-readability for further processing
 
-By providing a machine-readable document, we can generate web-friendly overviews of our certificate types as well as create a tool suite
+By providing a machine-readable document, we can generate web-friendly overviews of our certificate scopes as well as create a tool suite
 that checks environments against all described standards.
 
 ## SCS Certification YAML
 
-Every type of certificate is recorded in a dedicated YAML file, e.g. `scs-open-kaas.yaml`.
+Each certificate scope is recorded in a dedicated YAML file, e.g. `scs-open-kaas.yaml`.
 
 The certification YAML _MUST_ contain the following keys:
 
 | Key        | Type          | Description                                          | Example                                                                                  |
 | ---------- | ------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `name`     | String        | Full name of this type of certificate                | _SCS Open KaaS_                                                                          |
+| `name`     | String        | Full name of this certificate scope                  | _SCS Open KaaS_                                                                          |
 | `url`      | String        | Valid URL to the latest raw version of this document | _<https://github.com/SovereignCloudStack/standards/blob/main/Tests/scs-open-kaas.yaml>_  |
 | `versions` | Array of maps | List of version descriptors (described below)        | (see below)                                                                              |
 
@@ -90,13 +90,14 @@ The certification YAML _MAY_ contain the following keys:
 A certificate within a certain level (above SCS-compatible) can only be granted if a valid corresponding certificate of the level below is presented,
 where corresponding means: of the same layer. The latter certificate is said to be a prerequisite for the former.
 
-We implement this logic by allowing for the specification of a type of certificate that has to be presented before the certificate in question can be granted.
+We implement this logic by allowing for the designation of a certificate scope as a prerequisite;
+then a certificate of that prerequisite scope has to be presented before the certificate of the scope in question can be granted.
 
-| Key                 | Type   | Description                                                        | Example                                                                                                                 |
-| ------------------- | ------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `prerequisite`      | Map    | Descriptor for the prerequisite type of certificate, if any        |                                                                                                                         |
-| `prerequisite.name` | String | Full name of the type of certificate                               | _SCS Compatible IaaS_                                                                                                   |
-| `prerequisite.url`  | String | Valid URL to the latest raw version of the type of certificate     | _[scs-compatible-iaas.yaml](https://github.com/SovereignCloudStack/standards/blob/main/Tests/scs-compatible-iaas.yaml)_ |
+| Key                 | Type   | Description                                                   | Example                                                                                                                 |
+| ------------------- | ------ | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `prerequisite`      | Map    | Descriptor for the prerequisite certificate scope, if any     |                                                                                                                         |
+| `prerequisite.name` | String | Full name of the certificate scope                            | _SCS Compatible IaaS_                                                                                                   |
+| `prerequisite.url`  | String | Valid URL to the latest raw version of the certificate scope  | _[scs-compatible-iaas.yaml](https://github.com/SovereignCloudStack/standards/blob/main/Tests/scs-compatible-iaas.yaml)_ |
 
 ### Version descriptor
 
@@ -178,7 +179,7 @@ kaas:
 
 ## Process
 
-The lifecycle any version of any type of certificate goes through the following phases:
+The lifecycle any version of any certificate scope goes through the following phases:
 Draft, Stable, and Deprecated.
 
 ```mermaid
