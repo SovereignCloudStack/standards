@@ -56,14 +56,14 @@ To address this, this standard defines a new Domain Manager role in conjunction 
 
 - the Domain Manager role MUST support managing projects, groups and users within a specific domain
 - the Domain Manager role MUST be properly scoped to a domain, it MUST NOT gain access to resources outside of its owning domain
-- the Domain Manager role MUST NOT enable customers to manipulate existing roles or create new roles
-- the Domain Manager role MUST only allow customers to assign specific non-administrative roles to their managed users, Domain Managers MUST NOT be able to abuse the role assignment functionalities to escalate their own privileges or those of other users
+- the Domain Manager role MUST NOT be able to manipulate existing roles or create new roles
+- the Domain Manager role MUST only be allowed to assign specific non-administrative roles to their managed users, Domain Managers MUST NOT be able to abuse the role assignment functionalities to escalate their own privileges or those of other users
 
 ### Options considered
 
 #### Re-using the existing `admin` role
 
-As role assigments can be scoped to project, groups and domains the most obvious option would be to assign the existing `admin` role to users representing Domain Managers in a scoped fashion.
+As role assignments can be scoped to project, groups and domains the most obvious option would be to assign the existing `admin` role to users representing Domain Managers in a scoped fashion.
 
 However, due to architectural limitations[^2] of the existing OpenStack implementation of roles, the `admin` role has a special meaning reaching beyond the RBAC checks done by Keystone and other OpenStack components.
 This results in special permissions being granted to users possessing the role which ignore the project or domain scope of the role assignment.
