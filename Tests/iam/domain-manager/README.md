@@ -18,6 +18,12 @@ The creation of these resources is described below.
 
 **WARNING:** Replace the `<REPLACEME>` password placeholders by securely generated passwords in the code blocks below.
 
+As a preliminary step, create the "`domain-manager`" role if it does not exist:
+
+```bash
+openstack role create domain-manager
+```
+
 First, create two testing domains and a domain manager for each domain:
 
 ```bash
