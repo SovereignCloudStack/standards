@@ -42,7 +42,7 @@ clouds:
   regio-a:
     auth:
       auth_url: https://keystone.services.a.regiocloud.tech
-      application_credential_id: "459b392c348d430f91c658f0f61cbb8e"
+      application_credential_id: "54e55bf72cea4545b0d1c528e863b3c0"
     region_name: "RegionA"
     interface: "public"
     identity_api_version: 3
