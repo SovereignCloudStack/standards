@@ -1,0 +1,10 @@
+clouds:
+  gx-scs:
+    auth:
+      auth_url: https://api.gx-scs.sovereignit.cloud:5000
+      application_credential_id: "{{ clouds_conf.gx_scs_ac_id }}"
+      application_credential_secret: {{ clouds_conf.gx_scs_ac_secret }}"
+    region_name: "RegionOne"
+    interface: "public"
+    identity_api_version: 3
+    auth_type: "v3applicationcredential"

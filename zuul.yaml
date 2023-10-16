@@ -1,0 +1,39 @@
+- project:
+    name: SovereignCloudStack/standards
+    default-branch: main
+    merge-mode: "squash-merge"
+    periodic-daily:
+      jobs:
+        - openstack-scs-compliance-check
+- secret:
+    name: app_credential_cloud_conf
+    data:
+      gx_scs_ac_id: !encrypted/pkcs1-oaep
+        - kNFCoW4I/Dvg5ZAwnNm1fyKVco/URpqIaQL1zMOtB7O85d2P/gK5MaGNf3W9L+F2VV6T8
+          U5DSiZ9vrS8B7J5s5qSHh0XUhMaaW+iE5lrVG1uW4T8XNAHTsw864RxZ6NFbNiIFEZx3z
+          zEPbFgFfrs/M0EYtnBsPUpPRgmx/sqgZqU8MED+jG5YcDGbpRU4As0aXtndQO9kz0kN2L
+          X0zk3X8+2knNULGCcPQa+oTQUC3tKQyK/rgMKnHr3llamuF6jB3ugGOOl5GAm7AzSE1By
+          4j30+oEuRPxpJit+lfRrofWIrYNCbq7+Ol1q8ioa2qsCCYBP0z3oBz6S1mL7q3cg0HgjD
+          X4bjVVgwCnKBmhEq/iMih6M+308HRw6pKUbRP8qWQ24f64zRnHLcHbGNVGItLGwXvNUl8
+          h93yw9uL9VdDlMoVNHYlZq28rjYp+j/OQEcuxyhRiKJAEQujelq5PU+OhrYSjFge9Q2Ap
+          /IBNsdB1yYT6Ff65aPuCumsd9qeHcar0EAmHtCzZz0qthYNMXNasZGYgpDDhonDpOU37R
+          EPf5aielJHdlspluZoDcHB1/CL6y7HgJ9kLswsdfW/1hsEuAegvUFJJNRHGAirUu/eC8C
+          6tsz5l4SxqbkKOe3Cifi+3W1HXpaFwJ2+Z8hFCLPqJpxyAFkgrGqljg8M74Op4=
+      gx_scs_ac_secret: !encrypted/pkcs1-oaep
+        - gcpfKeA7sB/OqB7XRmjDwSsL66Y/Gv4BecS+HPHFNKUelE+QeVQysPGipLzq0LTvbTeBT
+          rFJVHS1LHebc8cXRY/sNe98ljWIsncOjI1hiRMLS4au9XrtzzFwU0NeNLfF1H5WKP8kes
+          eP44+OZTiBBuIZMsUo6s+qbMYd7++I6JMkDVfvpHVlKGy39JO6Ajro1c1nJpc797MV3pl
+          TC7AfGbc7WV2KXEKtb4LGBWMVZS4xafYdijE0nd0uJ+3l/38T93DxsSkAHB9/QZMGtMPq
+          xvwt9Dd4tGSbxBwFJZD+voGuf8SjCPzyfM0nNJyUYKG3dlB+tIz1GRy/+9PLOPzKUMVl4
+          J51Mf9gqVRSn7tA4qW/R8CIhJXbB0t4kHGLaeWbZbMNP44P3kK9j2jOY3Vsgih2GhTTdO
+          ExM1M7GO6IIuaTA/hAKWxut+intWFANOcxmaIRHnaQoRm82p2OqXADlj7/2CKp50SB5fN
+          V75mtULNkNaVwBR8swkUNLht5VtgFBvXApDZxY3fPcoXeZyN2XzgWhk4zMfU2K3QENx/r
+          5TpPJ8rcJ+j6XlXD8nk8maCGZ2bsuuqk0km0QRXKsVjYmyyt6hVtybCQE8vLxiGihJ7Gq
+          MM7K4PIu2+2+EueiW+VAj8laeIfCkr/jBWtEkLfePMjYKtJyPsn3kg/MjbDBLs=
+- job:
+   name: openstack-scs-compliance-check
+   parent: base
+   secrets:
+     - name: clouds_conf
+       secret: app_credential_cloud_conf
+   run: playbooks/compliance-check/compliance-check.yaml
