@@ -1,0 +1,14 @@
+- project:
+    name: SovereignCloudStack/standards
+    default-branch: main
+    merge-mode: "squash-merge"
+    periodic-daily:
+      jobs:
+        - openstack-scs-compliance-check
+- job:
+    name: openstack-scs-compliance-check
+    parent: base
+    secrets:
+     - name: clouds_conf
+       secret: app_credential_cloud_conf
+    run: playbooks/compliance-check/compliance-check.yaml

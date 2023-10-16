@@ -1,10 +1,3 @@
-- project:
-    name: SovereignCloudStack/standards
-    default-branch: main
-    merge-mode: "squash-merge"
-    periodic-daily:
-      jobs:
-        - openstack-scs-compliance-check
 - secret:
     name: app_credential_cloud_conf
     data:
@@ -30,10 +23,3 @@
           V75mtULNkNaVwBR8swkUNLht5VtgFBvXApDZxY3fPcoXeZyN2XzgWhk4zMfU2K3QENx/r
           5TpPJ8rcJ+j6XlXD8nk8maCGZ2bsuuqk0km0QRXKsVjYmyyt6hVtybCQE8vLxiGihJ7Gq
           MM7K4PIu2+2+EueiW+VAj8laeIfCkr/jBWtEkLfePMjYKtJyPsn3kg/MjbDBLs=
-- job:
-   name: openstack-scs-compliance-check
-   parent: base
-   secrets:
-     - name: clouds_conf
-       secret: app_credential_cloud_conf
-   run: playbooks/compliance-check/compliance-check.yaml
