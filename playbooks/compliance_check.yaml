@@ -25,12 +25,15 @@
     - name: Install dependencies
       ansible.builtin.pip:
         requirements: /home/ubuntu/Tests/requirements.txt
-    
+
     - name: Run compliance script
-      ansible.builtin.shell:
+      ansible.builtin.command:
         cmd: python3 scs-compliance-check.py scs-compatible-iaas.yaml --os-cloud gx-scs
         chdir: /home/ubuntu/Tests
       register: result
+      changed_when: result.rc != 0
+      failed_when: result.rc != 0
 
-    - debug:
+    - name: Print debug output
+      debug:
         msg: "{{ result.stdout }}"

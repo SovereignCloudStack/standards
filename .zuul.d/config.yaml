@@ -11,4 +11,4 @@
     secrets:
      - name: clouds_conf
        secret: app_credential_cloud_conf
-    run: playbooks/compliance-check/compliance-check.yaml
+    run: playbooks/compliance_check.yaml
