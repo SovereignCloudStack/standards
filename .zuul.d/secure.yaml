@@ -1,5 +1,5 @@
 - secret:
-    name: app_credential_cloud_conf
+    name: compliance_check_app_credentials
     data:
       gx_scs_ac_id: !encrypted/pkcs1-oaep
         - kNFCoW4I/Dvg5ZAwnNm1fyKVco/URpqIaQL1zMOtB7O85d2P/gK5MaGNf3W9L+F2VV6T8

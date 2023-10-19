@@ -13,5 +13,5 @@
     parent: base
     secrets:
      - name: clouds_conf
-       secret: app_credential_cloud_conf
+       secret: compliance_check_app_credentials
     run: playbooks/compliance_check.yaml
