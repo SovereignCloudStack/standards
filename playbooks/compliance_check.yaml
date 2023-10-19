@@ -1,5 +1,8 @@
 ---
-- hosts: all
+- name: Run compliance check tool
+  hosts: all
+  roles:
+    - role: ensure-pip  # https://zuul-ci.org/docs/zuul-jobs/latest/python-roles.html#role-ensure-pip
   tasks:
     - name: Create cloud config dir
       ansible.builtin.file:

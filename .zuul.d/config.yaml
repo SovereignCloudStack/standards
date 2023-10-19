@@ -5,6 +5,9 @@
     periodic-daily:
       jobs:
         - openstack-scs-compliance-check
+    check:
+      jobs:
+        - openstack-scs-compliance-check
 - job:
     name: openstack-scs-compliance-check
     parent: base
