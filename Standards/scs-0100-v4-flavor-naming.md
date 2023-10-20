@@ -375,7 +375,6 @@ help the parser tool, which assumes 0 for an unspecified value and does leave it
 out when generating the name for comparison. In other words: 0 has a meaning of
 "rather old or unspecified".
 
-
 #### Frequency Suffixes
 
 | Suffix | Meaning           |
