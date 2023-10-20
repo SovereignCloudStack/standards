@@ -122,15 +122,23 @@ are effective at the same time.
 
 Every list of standards consists of several standards that – altogether – define the particular layer standard in the given version.
 
-| Key                      | Type   | Description                                                                                                                                                                                                              | Example                                                                                                              |
-| ------------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `name`                   | String | Full name of the particular standard                                                                                                                                                                                     | _Flavor naming_                                                                                                      |
-| `url`                    | String | Valid URL to the latest raw version of the particular standard                                                                                                                                                           | _[Flavor naming](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0100-v2-flavor-naming.md)_ |
-| `condition`              | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory`                                                                                                                     | _mandatory_                                                                                                          |
-| `check_tools`            | Array  | List of `url`, `args` maps that list all tools that must pass                                                                                                                                                            |                                                                                                                      |
-| `check_tools.executable` | String | Valid local filename (relative to the path of scs-compliance-check.py) or URL to the latest check tool that verifies compliance with the particular standard. (URL is not yet supported due to security considerations.) | _image-md-check.py_                                                                                                  |
-| `check_tools.args`       | String | _Optional_ list of arguments to be passed to the `check_tool`. Preferably none needed.                                                                                                                                   | `-v`                                                                                                                 |
-| `check_tools.condition`  | String | _Optionally_ overrides the per-standard condition (`mandatory` or `optional`)                                                                                                                                            | _optional_                                                                                                           |
+| Key                      | Type   | Description                                                                                            | Example                                                                                                              |
+| ------------------------ | ------ | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `name`                   | String | Full name of the particular standard                                                                   | _Flavor naming_                                                                                                      |
+| `url`                    | String | Valid URL to the latest raw version of the particular standard                                         | _[Flavor naming](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0100-v2-flavor-naming.md)_ |
+| `condition`              | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory`   | _mandatory_                                                                                                          |
+| `check_tools`            | Array  | List of check tool descriptors: listing all tools that must pass                                       |                                                                                                                      |
+
+### Check tool descriptor
+
+| Key               | Type   | Description                                                                                                                              | Example                |
+| ----------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `executable`      | String | Valid local filename (relative to the path of scs-compliance-check.py) of a script that verifies compliance with the particular standard | _image-md-check.py_    |
+| `args`            | String | _Optional_ list of arguments to be passed to the `check_tool`. Preferably none needed.                                                   | `-v`                   |
+| `condition`       | String | _Optionally_ overrides the per-standard condition (`mandatory` or `optional`)                                                            | _optional_             |
+| `classification`  | String | One of: `light` (_default_), `medium`, `heavy`; describes the resource usage of the script; used to select an appropiate test interval   | _heavy_                |
+
+_Note_: the `executable` could in principle also be given via a URL; however, this is not yet supported due to security considerations.
 
 ### Basic Example
 
