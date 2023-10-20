@@ -19,7 +19,15 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
 
 1. Each certificate issued pertains to a given cloud, a given scope, and a given version of that scope with a fixed expiry date. The certificate is only valid for that cloud and for the time frame that ends on that expiry date.
 
-2. The operator MUST include the official SCS compliance test suite (which does not require admin privileges) in their continuous test infrastructure (e.g., Zuul). The tests MUST be run at least nightly. For public clouds, it is recommended to offer the SCS project access to the infrastructure (ideally, including a Zuul nodepool) so the test suite runs can be triggered continuously by the SCS team. Alternatively, and for non-public clouds, the results (log files) MUST be submitted to SCS by a mechanism of SCS' choice and need to be reproduced again on request by SCS.
+2. The operator MUST include the official SCS compliance test suite (which does not require admin privileges) in their continuous test infrastructure (e.g., Zuul). The tests MUST be run at given intervals, depending on their classification:
+
+    - _light_: at least nightly,
+    - _medium_: at least weekly,
+    - _heavy_: at least monthly.
+
+   For public clouds, it is recommended to offer the SCS project access to the infrastructure (ideally, including a Zuul nodepool) so the test suite runs can be triggered continuously by the SCS team.
+
+   Alternatively, and for non-public clouds, the results (log files) MUST be submitted to SCS by a mechanism of SCS' choice and need to be reproduced again on request by SCS.
 
    <!-- Initially this will probably be eMail -->
 
@@ -42,4 +50,6 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
 
 ## Related Documents
 
-<!-- scs-0003 -->
+As of now, this document pertains to the certificate scopes on the certification level _SCS-compatible_ only. It will be extended to cover the remaining levels as they become relevant, either directly or by way of referring to additional documents.
+
+For details on our mechanisms for developing, denoting, and versioning the certificate scopes, we refer to the document [scs-0003-v1](scs-0003-v1-sovereign-cloud-standards-yaml.md).
