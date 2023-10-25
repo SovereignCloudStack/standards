@@ -40,7 +40,7 @@ def setup_k8s_client(kubeconfigfile=None):
         logger.debug(f"using kubeconfig file '{kubeconfigfile}'")
         config.load_kube_config(kubeconfigfile)
     else:
-        logger.debug(" useing system kubeconfig")
+        logger.debug(" using system kubeconfig")
         config.load_kube_config()
 
     k8s_api_client = client.CoreV1Api()
