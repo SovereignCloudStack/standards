@@ -200,7 +200,7 @@ might not use any of these properties, except maybe `maintained_until`. Note tha
 Windows images would typically require `license_included`, `subscription_included`.
 A boolean property that is not present is considered to be `false`.
 
-- Optional: `license_included` (boolean) indicates whether ot not the flavor fee
+- Optional: `license_included` (boolean) indicates whether or not the flavor fee
   includes the licenses required to use this image. This field is mandatory for
   images that contain software that requires commercial licenses.
 - Optional: `license_required` (boolean) indicates whether or not a customer must bring
