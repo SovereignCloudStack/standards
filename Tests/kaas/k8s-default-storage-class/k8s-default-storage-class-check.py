@@ -26,55 +26,16 @@ import time
 import json
 import logging
 
-from kubernetes import client, config
+from kubernetes import client
 from helper import gen_sonobuoy_result_file
+from helper import SCSTestException
+from helper import initialize_logging
+from helper import print_usage
+from helper import setup_k8s_client
 
 import logging.config
 
 logger = logging.getLogger("k8s-default-storage-class-check")
-
-
-def setup_k8s_client(kubeconfigfile=None):
-
-    if kubeconfigfile:
-        logger.debug(f"using kubeconfig file '{kubeconfigfile}'")
-        config.load_kube_config(kubeconfigfile)
-    else:
-        logger.debug(" using system kubeconfig")
-        config.load_kube_config()
-
-    k8s_api_client = client.CoreV1Api()
-    k8s_storage_client = client.StorageV1Api()
-
-    return (
-        k8s_api_client,
-        k8s_storage_client,
-    )
-
-
-def print_usage(file=sys.stderr):
-    """Help output"""
-    print(
-        """Usage: k8s_storageclass_check.py [options]
-This tool checks the requested k8s default storage class according to the SCS Standard 0211 "kaas-default-storage-class".
-Options:
- [-k/--kubeconfig PATH_TO_KUBECONFIG] sets kubeconfig file to access kubernetes api
- [-d/--debug] enables DEBUG logging channel
-""",
-        end="",
-        file=file,
-    )
-
-
-def initialize_logging():
-    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
-
-
-class SCSTestException(Exception):
-    """Raised when an Specific test did not pass"""
-
-    def __init__(self, *args, return_code: int):
-        self.return_code = return_code
 
 
 def check_default_storageclass(k8s_client_storage):
@@ -256,8 +217,6 @@ def main(argv):
             print_usage(kubeconfig)
             return 2
 
-    print(return_code, return_message, __file__)
-
     # Setup kubernetes client
     try:
         logger.debug("setup_k8s_client(kubeconfig)")
@@ -266,8 +225,6 @@ def main(argv):
         logger.info(f"{exception_message}")
         return_message = f"{exception_message}"
         return_code = 1
-
-    print(return_code, return_message, __file__)
 
     # Check if default storage class is defined (MENTETORY)
     try:

@@ -9,5 +9,5 @@ spec:
   - k8s-default-storage-class-check
   command:
   - ./run_checks.sh
-  image: ghcr.io/sovereigncloudstack/standars/k8s-default-storage-class:v0.1.2
+  image: ghcr.io/sovereigncloudstack/standards/k8s-default-storage-class:latest
   name: k8s-default-storage-class
