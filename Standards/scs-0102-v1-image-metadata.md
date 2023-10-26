@@ -92,7 +92,7 @@ as referenced by its name.
 Note the _at least_ wording: Providers can replace images more often.
 The frequency is starting from the first release; so an image published on 2021-04-14 with an
 update frequency of `monthly`, should be replaced no later than 2021-05-14. Due to weekends
-etc., up to 3 days later is not considered as a violation of this policy. So a valid sequence
+etc., up to 3 days later is not considered a violation of this policy. So a valid sequence
 from an image with `monthly` update frequency might be 2021-04-14, 2021-05-14, 2021-06-15,
 2021-07-14, 2021-07-27 (hotfix), 2021-08-13 ...
 
