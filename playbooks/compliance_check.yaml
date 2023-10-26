@@ -31,7 +31,7 @@
 
     - name: Run compliance script
       ansible.builtin.command:
-        cmd: python3 scs-compliance-check.py scs-compatible-iaas.yaml --os-cloud gx-scs
+        cmd: python3 ./scs-compliance-check.py scs-compatible-iaas.yaml --os-cloud gx-scs
         chdir: /home/ubuntu/Tests
       register: result
       changed_when: result.rc != 0
