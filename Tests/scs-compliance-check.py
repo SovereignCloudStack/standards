@@ -24,6 +24,7 @@ would split these tests out.)
 
 import os
 import sys
+import shlex
 import getopt
 # import time
 import datetime
@@ -64,7 +65,10 @@ def add_search_path(arg0):
     """
     global MYPATH
     arg0_pidx = arg0.rfind('/')
-    assert arg0_pidx != -1
+    if arg0_pidx == -1:
+        # this can happen when you call this script via "python3 scs-compliance-check.py"
+        # then the search path is already fine
+        return
     MYPATH = arg0[:arg0_pidx]
     # os.environ['PATH'] += ":" + MYPATH
 
@@ -86,7 +90,7 @@ def run_check_tool(executable, args, verbose=False, quiet=False):
     else:
         exe = [MYPATH + "/" + executable, ]
     if args:
-        exe.extend(args.split(" "))
+        exe.extend(shlex.split(args))
     # print(f"{exe}")
     # compl = subprocess.run(exe, capture_output=True, text=True, check=False)
     compl = subprocess.run(exe, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
