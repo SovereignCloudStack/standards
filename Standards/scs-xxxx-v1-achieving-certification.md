@@ -19,7 +19,7 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
 
 1. Each certificate issued pertains to a given cloud, a given scope, and a given version of that scope with a fixed expiry date. The certificate is only valid for that cloud and for the time frame that ends on that expiry date.
 
-2. The operator MUST include the official SCS compliance test suite (which does not require admin privileges) in their continuous test infrastructure (e.g., Zuul). The tests MUST be run at given intervals, depending on their resource-usage classification:
+2. The operator MUST include the official [SCS compliance test suite](../Tests/) (which does not require admin privileges) in their continuous test infrastructure (e.g., Zuul). The tests MUST be run at given intervals, depending on their resource-usage classification:
 
     - _light_: at least nightly,
     - _medium_: at least weekly,
