@@ -301,7 +301,7 @@ Note that machines (hypervisors) can be part of more than one host aggregate.
 
 The extensions have the format:
 
-\[`_`hyp\]\[`_hwv`\]\[`_`\[arch\[N\]\[`h`\]\[`_`\[`G/g`\]X\[N\]\[`-`M\[`h`\]\]\]\[`_ib`\]
+\[`_`hyp\]\[`_hwv`\]\[`_`arch\[N\]\[`h`\]\]\[`_`\[`G/g`\]X\[N\]\[`-`M\]\[`h`\]\]\[`_ib`\]
 
 Remember that letters are case-sensitive.
 In case you wonder: Feature indicators are capitalized, modifiers are lower case.
@@ -309,7 +309,9 @@ In case you wonder: Feature indicators are capitalized, modifiers are lower case
 
 ### [OPTIONAL] Hypervisor
 
-The _default Hypervisor_ is assumed to be `KVM`. Clouds, that offer different hypervisors
+Format: `_`hyp
+
+The _default Hypervisor_ is assumed to be `KVM`. Clouds that offer different hypervisors
 or Bare Metal Systems should indicate the Hypervisor according to the following table:
 
 | hyp | Meaning           |
@@ -327,6 +329,8 @@ or Bare Metal Systems should indicate the Hypervisor according to the following 
 - SCS-2C-4-10n\_**bms**\_z3h
 
 ### [OPTIONAL] Hardware virtualization / Nested virtualization
+
+Format: `_hwv`
 
 If the instances that are created with this flavor support hardware-accelerated
 virtualization, this can be reflected with the `_hwv` flag (after the optional
@@ -348,11 +352,13 @@ capabilities. Flavors may over-deliver ...)
 
 ### [OPTIONAL] CPU Architecture Details
 
-Arch details provide more details on the specific CPU:
+Format: `_`arch\[N\]\[`h`\]
 
-- Vendor
-- Generation
-- Frequency
+This extension provides more details on the specific CPU:
+
+- Vendor (arch)
+- Generation (N)
+- Frequency (h)
 
 #### Generation and Vendor
 
@@ -397,8 +403,15 @@ out when generating the name for comparison. In other words: 0 has a meaning of
 
 ### [OPTIONAL] GPU support
 
-`_G`X\[N\]\[`-`M\[`h`\]\] indicates a Pass-Through GPU from vendor X of gen N with M compute units / SMs / EUs exposed.
-`_g`X\[N\]\[`-`M\[`h`\]\] indicates a vGPU from vendor X of gen N with M compute units / SMs / EUs assigned.
+Format: `_`\[`G/g`\]X\[N\]\[`-`M\]\[`h`\]
+
+This extension provides more details on the specific GPU:
+
+- pass-through (`G`) vs. virtual GPU (`g`)
+- vendor (X)
+- generation (N)
+- no. of compute units (M)
+- high-performance indicator (`h`)
 
 Note that the vendor letter X is mandatory, generation and compute units are optional.
 
@@ -409,7 +422,8 @@ Note that the vendor letter X is mandatory, generation and compute units are opt
 | I   | Intel  |
 
 For nVidia, the generation N can be f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=turing, a=Ampere, l=Ada Lovelace, ...,
-for AMD GCN-x=0.x, RDNA1=1, RDNA2=2, RDNA3=3, for intel Gen9=0.9, Xe(12.1)=1, ...
+for AMD GCN-x=0.x, RDNA1=1, RDNA2=2, RDNA3=3,
+for Intel Gen9=0.9, Xe(12.1)=1, ...
 (Note: This may need further work to properly reflect what's out there.)
 
 The optional `h` suffix to the compute unit count indicates high-performance (e.g. high freq or special
@@ -418,11 +432,13 @@ high bandwidth gfx memory such as HBM);
 
 ### [OPTIONAL] Infiniband
 
-`_ib` indicates Infiniband networking.
+Format: `_ib`
+
+This extension indicates Infiniband networking.
 
 More extensions may be forthcoming and appended in a later revision of this spec.
 
-Extensions need to be specified in the above mentioned order.
+Extensions need to be specified in the above-mentioned order.
 
 ### Naming options advice
 
