@@ -77,11 +77,11 @@ Each certificate scope is recorded in a dedicated YAML file, e.g. `scs-open-kaas
 
 The certification YAML _MUST_ contain the following keys:
 
-| Key        | Type          | Description                                          | Example                                                                                  |
-| ---------- | ------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `name`     | String        | Full name of this certificate scope                  | _SCS Open KaaS_                                                                          |
-| `url`      | String        | Valid URL to the latest raw version of this document | _<https://github.com/SovereignCloudStack/standards/blob/main/Tests/scs-open-kaas.yaml>_  |
-| `versions` | Array of maps | List of version descriptors (described below)        | (see below)                                                                              |
+| Key        | Type          | Description                                          | Example                                                                                         |
+| ---------- | ------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `name`     | String        | Full name of this certificate scope                  | _SCS Open KaaS_                                                                                 |
+| `url`      | String        | Valid URL to the latest raw version of this document | `https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-open-kaas.yaml` |
+| `versions` | Array of maps | List of version descriptors (described below)        | (see below)                                                                                     |
 
 The certification YAML _MAY_ contain the following keys:
 
@@ -93,11 +93,11 @@ where corresponding means: of the same layer. The latter certificate is said to 
 We implement this logic by allowing for the designation of a certificate scope as a prerequisite;
 then a certificate of that prerequisite scope has to be presented before the certificate of the scope in question can be granted.
 
-| Key                 | Type   | Description                                                   | Example                                                                                                                 |
-| ------------------- | ------ | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `prerequisite`      | Map    | Descriptor for the prerequisite certificate scope, if any     |                                                                                                                         |
-| `prerequisite.name` | String | Full name of the certificate scope                            | _SCS Compatible IaaS_                                                                                                   |
-| `prerequisite.url`  | String | Valid URL to the latest raw version of the certificate scope  | _[scs-compatible-iaas.yaml](https://github.com/SovereignCloudStack/standards/blob/main/Tests/scs-compatible-iaas.yaml)_ |
+| Key                 | Type   | Description                                                   | Example                                                                                                                           |
+| ------------------- | ------ | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `prerequisite`      | Map    | Descriptor for the prerequisite certificate scope, if any     |                                                                                                                                   |
+| `prerequisite.name` | String | Full name of the certificate scope                            | _SCS Compatible IaaS_                                                                                                             |
+| `prerequisite.url`  | String | Valid URL to the latest raw version of the certificate scope  | _[scs-compatible-iaas.yaml](https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml)_ |
 
 ### Version descriptor
 
@@ -122,15 +122,23 @@ are effective at the same time.
 
 Every list of standards consists of several standards that – altogether – define the particular layer standard in the given version.
 
-| Key                      | Type   | Description                                                                                                                                                                                                              | Example                                                                                                              |
-| ------------------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `name`                   | String | Full name of the particular standard                                                                                                                                                                                     | _Flavor naming_                                                                                                      |
-| `url`                    | String | Valid URL to the latest raw version of the particular standard                                                                                                                                                           | _[Flavor naming](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0100-v2-flavor-naming.md)_ |
-| `condition`              | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory`                                                                                                                     | _mandatory_                                                                                                          |
-| `check_tools`            | Array  | List of `url`, `args` maps that list all tools that must pass                                                                                                                                                            |                                                                                                                      |
-| `check_tools.executable` | String | Valid local filename (relative to the path of scs-compliance-check.py) or URL to the latest check tool that verifies compliance with the particular standard. (URL is not yet supported due to security considerations.) | _image-md-check.py_                                                                                                  |
-| `check_tools.args`       | String | _Optional_ list of arguments to be passed to the `check_tool`. Preferably none needed.                                                                                                                                   | `-v`                                                                                                                 |
-| `check_tools.condition`  | String | _Optionally_ overrides the per-standard condition (`mandatory` or `optional`)                                                                                                                                            | _optional_                                                                                                           |
+| Key                      | Type   | Description                                                                                            | Example                                                                                                                        |
+| ------------------------ | ------ | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `name`                   | String | Full name of the particular standard                                                                   | _Flavor naming_                                                                                                                |
+| `url`                    | String | Valid URL to the latest raw version of the particular standard                                         | _[Flavor naming](https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v2-flavor-naming.md)_ |
+| `condition`              | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory`   | _mandatory_                                                                                                                    |
+| `check_tools`            | Array  | List of check tool descriptors: listing all tools that must pass                                       |                                                                                                                                |
+
+### Check tool descriptor
+
+| Key               | Type   | Description                                                                                                                              | Example                |
+| ----------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `executable`      | String | Valid local filename (relative to the path of scs-compliance-check.py) of a script that verifies compliance with the particular standard | _image-md-check.py_    |
+| `args`            | String | _Optional_ list of arguments to be passed to the `check_tool`. Preferably none needed.                                                   | `-v`                   |
+| `condition`       | String | _Optionally_ overrides the per-standard condition (`mandatory` or `optional`)                                                            | _optional_             |
+| `classification`  | String | One of: `light` (_default_), `medium`, `heavy`; describes the resource usage of the script; used to select an appropiate test interval   | _heavy_                |
+
+_Note_: the `executable` could in principle also be given via a URL; however, this is not yet supported due to security considerations.
 
 ### Basic Example
 
