@@ -8,19 +8,16 @@ RUN wget https://storage.googleapis.com/kubernetes-release/release/v1.21.3/bin/l
     apt-get update && \
     apt-get install -y jq
 
-COPY ./ /src
+COPY ./scs_k8s_tests /src/scs_k8s_tests
 WORKDIR /src
-#COPY go.* /src
-COPY *.go /src
+COPY go.* /src
 ENV CGO_ENABLED=0
 RUN go mod download
 
 #see: https://docs.docker.com/build/guide/mounts/
 RUN --mount=type=cache,target=/root/.cache/go-build \
-    go test -c -o custom_1.test ./k8s_scs_test_example_1/
-RUN --mount=type=cache,target=/root/.cache/go-build \
-    go test -c -o custom_2.test ./k8s_scs_test_example_2/
+    go test -c -o custom.test ./...
 
-CMD ["bash", "-c", "go tool test2json ./custom.test_2 -test.v"]
+CMD ["bash", "-c", "go tool test2json ./custom.test -test.v"]
 
 
