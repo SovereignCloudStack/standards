@@ -388,11 +388,15 @@ help the parser tool, which assumes 0 for an unspecified value and does leave it
 out when generating the name for comparison. In other words: 0 has a meaning of
 "rather old or unspecified".
 
-Note: We don't differentiate between Zen-4 (Genoa) and Zen-4c (Bergamo); L3 cache per
+:::note
+
+We don't differentiate between Zen-4 (Genoa) and Zen-4c (Bergamo); L3 cache per
 Siena core is smaller on Bergamo and the frequency lower but the cores are otherwise
 identical. As we already have a qualifier `h` that allows to specify higher frequencies
 (which Genoa thus may use more and Bergamo less or not), we have enough distinction
 capabilities.
+
+:::
 
 #### Frequency Suffixes
 
