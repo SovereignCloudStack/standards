@@ -356,16 +356,24 @@ Format: `_`arch\[N\]\[`h`\]
 
 This extension provides more details on the specific CPU:
 
-- Vendor (arch)
-- Generation (N)
-- Frequency (h)
+- vendor/architecture (arch)
+- generation (N)
+- frequency (h)
 
 #### Generation and Vendor
 
-The generations are vendor specific and can be left out.
-Not specifying arch means that we have a generic CPU (**x86-64**).
-The letters `i`, `z`, `a` and `r` specify the vendors Intel,
-AMD (`z` like in Zen), ARM v8+, RISC-V.
+The options for arch are as follows:
+
+| Letter  | vendor/architecture  | Corresponding image architecture  |
+| ------- | -------------------- | --------------------------------- |
+| (none)  | Generic x86-64       | `x86_64`                          |
+| `i`     | Intel x86-64         | `x86_64`                          |
+| `z`     | AMD/Zen x86-64       | `x86_64`                          |
+| `a`     | ARM v8+              | `aarch64`                         |
+| `r`     | RISC-V               | (not yet listed in Glance)        |
+
+The generation is vendor specific and can be left out, but it can only be specified in
+conjunction with a vendor. At present, these values are possible:
 
 | Generation | i (Intel x86-64) | z (AMD x86-64) |  a (AArch64)       | r (RISC-V) |
 | ---------- | ---------------- | -------------- | ------------------ | ---------- |
