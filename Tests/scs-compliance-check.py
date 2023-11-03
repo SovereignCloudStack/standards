@@ -250,7 +250,7 @@ def main(argv):
                     print(f"... returned {error} errors")
                 chkidx += 1
                 for kwd in check:
-                    if kwd not in ('executable', 'args', 'condition'):
+                    if kwd not in ('executable', 'args', 'condition', 'classification'):
                         print(f"ERROR in spec: check_tools.{kwd} is an unknown keyword",
                               file=sys.stderr)
         for kwd in standard:
