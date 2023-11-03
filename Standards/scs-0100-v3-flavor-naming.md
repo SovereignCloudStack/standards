@@ -407,7 +407,7 @@ out when generating the name for comparison. In other words: 0 has a meaning of
 - SCS-2C-4-10n_bms_**z3**
 - SCS-2C-4-10n_bms_**z3**
 - SCS-2C-4-10n_bms_**z3h**
-- SCS-2C-4-10n_bms_**z3hh** <- Bare Metal, Intel Ice Lake with > 3.25GHz all core freq
+- SCS-2C-4-10n_bms_**z3hh** <- Bare Metal, AMD Milan with > 3.25GHz all core freq
 
 ### [OPTIONAL] GPU support
 
