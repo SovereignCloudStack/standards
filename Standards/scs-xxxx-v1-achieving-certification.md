@@ -25,20 +25,20 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
     - _medium_: at least weekly,
     - _heavy_: at least monthly.
 
-   For public clouds, it is recommended to offer the SCS project access to the infrastructure (ideally, including a Zuul nodepool) so the test suite runs can be triggered continuously by the SCS team.
+   For public clouds, it is recommended to offer the SCS project access to the infrastructure so the test suite runs can be triggered continuously by the SCS team.
 
    Alternatively, and for non-public clouds, the results (log files) MUST be submitted to SCS by a mechanism of SCS' choice and need to be reproduced again on request by SCS.
 
    <!-- Initially this will probably be eMail -->
 
-3. If the desired certificate requires manual checks, then the operator MUST offer the SCS project suitable access. Manual checks SHOULD be repeated once every 3 months.
+3. If the desired certificate requires manual checks, then the operator MUST offer the SCS project suitable access. Manual checks MUST be repeated once every 3 months.
 
 4. Details on the standards achieved, as well as the current state and the history of all test and check results will be displayed on a public webpage (henceforth, _certificate status page_) owned by SCS.
 
 5. The SCS certification assessment body (or entities empowered to do so) WILL review the certification application and either grant the certification, reject it or ask for further measures or information.
    <!-- body might as well just be a machine, at least on the scs compatible level -->
 
-6. Once the certificate is granted by the SCS certification assessment body, the operator MAY use the corresponding logo and publicly state the certified "SCS compatibility" on the respective layer for the time of the validity of the certification. The logo MUST be accompanied by a hyperlink (a QR code for printed assets) to the respective certificate status page.
+6. Once the certificate is granted by the SCS certification assessment body, the operator SHOULD use the corresponding logo and publicly state the certified "SCS compatibility" on the respective layer for the time of the validity of the certification. In case of a public cloud, this public display is even REQUIRED. In any case, the logo MUST be accompanied by a hyperlink (a QR code for printed assets) to the respective certificate status page.
 
 7. If the certificate is to be revoked for any reason, it will be included in a publicly available Certificate Revokation List (CRL). This fact will also be reflected in the certificate status page.
 
