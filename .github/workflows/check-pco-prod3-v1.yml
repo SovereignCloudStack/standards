@@ -1,4 +1,4 @@
-name: "Compliance of PCO Prod3"
+name: "Compliance of pco-prod3"
 
 on:
   # Trigger compliance check every day at 4:30 UTC
@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  check-regio-a:
+  check-pco-prod3:
     uses: ./.github/workflows/scs-compliance-check-with-application-credential.yml
     with:
       version: v1
