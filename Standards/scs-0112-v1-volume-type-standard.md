@@ -69,7 +69,7 @@ openstack volume type list --encryption-type
 ```
 
 **TODO**:
-Users that don't have admin rights currently cannot see these encryption parameters. We want and need to change this in the OpenStack workflow through adding a property (e.g. "encryption"="true") that is also visible for users. This way we will be able to automatically check whether a volume type with encyrption is present. It should look like this:
+Users that don't have admin rights currently cannot see these encryption parameters. We want and need to change this in the OpenStack workflow through adding a property (e.g. "encrypted"="true") that is also visible for users. This way we will be able to automatically check whether a volume type with encyrption is present. It should look like this:
 
 ```text
 openstack volume type show LUKS
