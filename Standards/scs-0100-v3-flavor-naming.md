@@ -388,6 +388,16 @@ help the parser tool, which assumes 0 for an unspecified value and does leave it
 out when generating the name for comparison. In other words: 0 has a meaning of
 "rather old or unspecified".
 
+:::note
+
+We don't differentiate between Zen-4 (Genoa) and Zen-4c (Bergamo); L3 cache per
+Siena core is smaller on Bergamo and the frequency lower but the cores are otherwise
+identical. As we already have a qualifier `h` that allows to specify higher frequencies
+(which Genoa thus may use more and Bergamo less or not), we have enough distinction
+capabilities.
+
+:::
+
 #### Frequency Suffixes
 
 | Suffix | Meaning           |
@@ -407,7 +417,7 @@ out when generating the name for comparison. In other words: 0 has a meaning of
 - SCS-2C-4-10n_bms_**z3**
 - SCS-2C-4-10n_bms_**z3**
 - SCS-2C-4-10n_bms_**z3h**
-- SCS-2C-4-10n_bms_**z3hh** <- Bare Metal, Intel Ice Lake with > 3.25GHz all core freq
+- SCS-2C-4-10n_bms_**z3hh** <- Bare Metal, AMD Milan with > 3.25GHz all core freq
 
 ### [OPTIONAL] GPU support
 
