@@ -451,6 +451,10 @@ The optional `h` suffix to the compute unit count indicates high-performance (e.
 high bandwidth gfx memory such as HBM);
 `h` can be duplicated for even higher performance.
 
+Example: `SCS-16V-64-500s_GNa-14h`
+This flavor has a pass-though GPU nVidia Ampere with 14 SMs and either high-bandwidth memory or specially high frequencies.
+Looking through GPU specs you could guess it's 1/6 A40.
+
 ### [OPTIONAL] Infiniband
 
 Format: `_ib`
