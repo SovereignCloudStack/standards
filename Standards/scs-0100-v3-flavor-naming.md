@@ -453,7 +453,7 @@ high bandwidth gfx memory such as HBM);
 
 Example: `SCS-16V-64-500s_GNa-14h`
 This flavor has a pass-though GPU nVidia Ampere with 14 SMs and either high-bandwidth memory or specially high frequencies.
-Looking through GPU specs you could guess it's 1/6 A40.
+Looking through GPU specs you could guess it's 1/4 A30.
 
 ### [OPTIONAL] Infiniband
 
