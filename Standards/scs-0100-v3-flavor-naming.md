@@ -303,6 +303,9 @@ The extensions have the format:
 
 \[`_`hyp\]\[`_hwv`\]\[`_`arch\[N\]\[`h`\]\]\[`_`\[`G/g`\]X\[N\]\[`-`M\]\[`h`\]\]\[`_ib`\]
 
+Extensions are individually optional, but the ones that are used must appear in the order
+given in the above line.
+
 Remember that letters are case-sensitive.
 In case you wonder: Feature indicators are capitalized, modifiers are lower case.
 (An exception is the uppercase `_G` for a pass-through GPU vs. lowercase `_g` for vGPU.)
@@ -368,7 +371,7 @@ The options for arch are as follows:
 | ------- | -------------------- | --------------------------------- |
 | (none)  | Generic x86-64       | `x86_64`                          |
 | `i`     | Intel x86-64         | `x86_64`                          |
-| `z`     | AMD/Zen x86-64       | `x86_64`                          |
+| `z`     | AMD (Zen) x86-64     | `x86_64`                          |
 | `a`     | ARM v8+              | `aarch64`                         |
 | `r`     | RISC-V               | (not yet listed in Glance)        |
 
@@ -433,11 +436,11 @@ This extension provides more details on the specific GPU:
 
 Note that the vendor letter X is mandatory, generation and compute units are optional.
 
-| GPU | Vendor |
-| --- | ------ |
-| N   | nVidia |
-| A   | AMD    |
-| I   | Intel  |
+| GPU | Vendor | Count M |
+| --- | ------ | ------- |
+| N   | nVidia |  SMs    |
+| A   | AMD    |  CUs    |
+| I   | Intel  |  EUs    |
 
 For nVidia, the generation N can be f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=turing, a=Ampere, l=Ada Lovelace, ...,
 for AMD GCN-x=0.x, RDNA1=1, RDNA2=2, RDNA3=3,
