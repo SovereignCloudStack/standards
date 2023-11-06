@@ -431,7 +431,7 @@ This extension provides more details on the specific GPU:
 - pass-through (`G`) vs. virtual GPU (`g`)
 - vendor (X)
 - generation (N)
-- no. of compute units / SMs / EUs (M) that are exposed (for pass-through) or assigned
+- no. (M) of compute units (CUs) / streaming multiprocessors (SMs) / execution units (EUs) - that are exposed (for pass-through) or assigned
 - high-performance indicator (`h`)
 
 Note that the vendor letter X is mandatory, generation and compute units are optional.
