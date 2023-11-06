@@ -20,7 +20,7 @@ The following special terms are used throughout this standard document:
 
 ## Motivation
 
-We want to standardize a few varieties of volume types. While a user can choose simple things like size when creating a volume, Volume Types define a few broader aspects of volume. Encryption of volumes for example is solely decided by the volume type. While the option with which the volume will be replicated is a mix between definition in the volume type and backend specific configuration, but it's visibility can only be reached in the volume type. In the following part, we want to state, which varieties of volume types are REQUIRED, RECOMMENDED or only OPTIONAL within an SCS-compatible deployment.
+We want to standardize a few varieties of volume types. While a user can choose simple things like size when creating a volume, Volume Types define a few broader aspects of a volume. Encryption of volumes for example is solely decided by the volume type. While the option with which the volume will be replicated is a mix between definition in the volume type and backend specific configuration, but it's visibility can only be reached in the volume type. In the following part, we want to state, which varieties of volume types are REQUIRED, RECOMMENDED or only OPTIONAL within an SCS-compatible deployment.
 
 ## Design Considerations
 
