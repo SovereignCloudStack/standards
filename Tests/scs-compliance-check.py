@@ -141,16 +141,18 @@ def search_version(layerdict, checkdate, forceversion=None):
 
 
 def optparse(argv):
-    "Parse options. Return (args, verbose, quiet, checkdate, version, output)."
+    "Parse options. Return (args, verbose, quiet, checkdate, version, output, classes)."
     verbose = False
     quiet = False
     checkdate = datetime.date.today()
     version = None
     output = None
+    classes = ["light", "medium", "heavy"]
     try:
-        opts, args = getopt.gnu_getopt(argv, "hvqd:V:sc:o:",
-                                       ("help", "verbose", "quiet", "date=", "version=",
-                                        "os-cloud=", "output="))
+        opts, args = getopt.gnu_getopt(argv, "hvqd:V:sc:o:r:", (
+            "help", "verbose", "quiet", "date=", "version=",
+            "os-cloud=", "output=", "resource-usage=",
+        ))
     except getopt.GetoptError as exc:
         print(f"Option error: {exc}", file=sys.stderr)
         usage()
@@ -171,12 +173,14 @@ def optparse(argv):
             os.environ["OS_CLOUD"] = opt[1]
         elif opt[0] == "-o" or opt[0] == "--output":
             output = opt[1]
+        elif opt[0] == "-r" or opt[0] == "--resource-usage":
+            classes = [x.strip() for x in opt[1].split(",")]
         else:
             print(f"Error: Unknown argument {opt[0]}", file=sys.stderr)
     if len(args) < 1:
         usage()
         sys.exit(1)
-    return (args, verbose, quiet, checkdate, version, output)
+    return (args, verbose, quiet, checkdate, version, output, classes)
 
 
 def condition_optional(cond, default=False):
@@ -205,7 +209,7 @@ def optstr(optional):
 
 def main(argv):
     """Entry point for the checker"""
-    args, verbose, quiet, checkdate, version, output = optparse(argv)
+    args, verbose, quiet, checkdate, version, output, classes = optparse(argv)
     with open(args[0], "r", encoding="UTF-8") as specfile:
         specdict = yaml.load(specfile, Loader=yaml.SafeLoader)
     allerrors = 0
@@ -242,6 +246,9 @@ def main(argv):
         else:
             chkidx = 0
             for check in standard["check_tools"]:
+                if check.get("classification", "light") not in classes:
+                    print(f"skipping check tool '{check['executable']}' because of resource classification")
+                    continue
                 args = dictval(check, 'args')
                 error = run_check_tool(check["executable"], args, verbose, quiet)
                 if output:
