@@ -207,19 +207,19 @@ so users can expect some level of parallelism and independence.
 
 - SCS-2C-4-**10n**
 - SCS-2C-4-**10s**
-- SCS-2C-4-**10s**\_bms_z3
+- SCS-2C-4-**10s**\_bms\_z3
 - SCS-2C-4-**3x10s** <- Cloud creates three 10GB SSDs
-- SCS-2C-4-**3x10s**\_bms_z3
+- SCS-2C-4-**3x10s**\_bms\_z3
 - SCS-2C-4-**10** <- Cloud decides disk type
-- SCS-2C-4-**10**\_bms_z3
-- SCS-2C-4-**n** <- Cloud decides disk size (min_disk from image or larger)
-- SCS-2C-4-**n**\_bms_3
+- SCS-2C-4-**10**\_bms\_z3
+- SCS-2C-4-**n** <- Cloud decides disk size (min\_disk from image or larger)
+- SCS-2C-4-**n**\_bms\_3
 - SCS-2C-4- <- Cloud decides disk type and size
-- SCS-2C-4-\_bms_z3
-- SCS-2C-4-\_bms_z3h_GNa-64_ib
+- SCS-2C-4-\_bms\_z3
+- SCS-2C-4-\_bms\_z3h\_GNa-64\_ib
 - SCS-2C-4-\_ib
 - SCS-2C-4 <- You need to specify a boot volume yourself (boot from volume, or use `block_device_mapping_v2`)
-- SCS-2C-4_bms_z3
+- SCS-2C-4\_bms\_z3
 - SCS-2C-4-3x10 <- Cloud decides type and creates three 10GB volumes
 - ~~SCS-2C-4-**1.5n**~~ <- You must not specify disk sizes which are not in full GiBs
 
@@ -416,11 +416,11 @@ capabilities.
 - SCS-2C-4-10n\_**z3**
 - SCS-2C-4-10n\_**z3h**
 - SCS-2C-4-10n\_**z3hh**
-- SCS-2C-4-10n_bms_**z**
-- SCS-2C-4-10n_bms_**z3**
-- SCS-2C-4-10n_bms_**z3**
-- SCS-2C-4-10n_bms_**z3h**
-- SCS-2C-4-10n_bms_**z3hh** <- Bare Metal, AMD Milan with > 3.25GHz all core freq
+- SCS-2C-4-10n\_bms\_**z**
+- SCS-2C-4-10n\_bms\_**z3**
+- SCS-2C-4-10n\_bms\_**z3**
+- SCS-2C-4-10n\_bms\_**z3h**
+- SCS-2C-4-10n\_bms\_**z3hh** <- Bare Metal, AMD Milan with > 3.25GHz all core freq
 
 ### [OPTIONAL] GPU support
 
