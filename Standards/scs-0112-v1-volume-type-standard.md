@@ -26,7 +26,7 @@ We want to standardize a few varieties of volume types. While a user can choose 
 
 All Considerations can be looked up in detail in the [Decision Record for the Volume Type Standard.](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0111-v1-volume-type-decisions.md)
 
-To test whether a deployment has volume types with certain aspects, the discoverability of the parameters in the volume type has to be given. The following table shows, which aspects are considered in this standard and whether it is discoverable, and who can discover this. The comments state what can be done to help with the discoverability and other important restrictions.
+To test whether a deployment has volume types with certain aspects, the discoverability of the parameters in the volume type has to be given. The following table shows, which aspects are considered in this standard. Furthermore the table shows, according to the current upstream implementation, whether the feature is discoverable, and who can discover this. The comments state what can be done to help with the discoverability and other important restrictions.
 
 | Aspect | Standardize? | Discoverability | comments |
 | ---- | ---- | ---- | ------ |
@@ -43,7 +43,7 @@ Example: one volume type that uses LUKS-encryption with a ceph storage with inhe
 
 ## DEFAULT volume types
 
-There is always a default volume type defined in an OpenStack deployment. The SCS does not have any requirements about this volume type at this moment, instead deployers are free to choose what fits best in their environment.
+There is always a default volume type defined in an OpenStack deployment. The SCS does not have any requirements about this volume type at this moment, instead deployers are free to choose what fits best in their environment. Conversely, a cloud user can not expect any specific behavior or properties from default volume types.  
 
 The parameters of volume types described in this standard do not have to be applied to the chosen default volume type. And the SCS will not make any assumptions about parameters being present in the default volume type.
 
