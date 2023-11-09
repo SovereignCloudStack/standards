@@ -73,7 +73,7 @@ def add_search_path(arg0):
     # os.environ['PATH'] += ":" + MYPATH
 
 
-def run_check_tool(executable, args, verbose=False, quiet=False):
+def run_check_tool(executable, args, os_cloud, verbose=False, quiet=False):
     "Run executable and return exit code"
     if executable.startswith("http://") or executable.startswith("https://"):
         print(f"ERROR: remote check_tool {executable} not yet supported", file=sys.stderr)
@@ -93,8 +93,11 @@ def run_check_tool(executable, args, verbose=False, quiet=False):
         exe.extend(shlex.split(args))
     # print(f"{exe}")
     # compl = subprocess.run(exe, capture_output=True, text=True, check=False)
-    compl = subprocess.run(exe, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                           encoding='UTF-8', check=False)
+    env = {'OS_CLOUD': os_cloud, **os.environ}
+    compl = subprocess.run(
+        exe, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        encoding='UTF-8', check=False, env=env,
+    )
     if verbose:
         print(compl.stdout)
     if not quiet:
@@ -109,13 +112,6 @@ def errcode_to_text(err):
     return f"{err} ERRORS"
 
 
-def dictval(dct, key):
-    "Helper: Return dct[key] if it exists, None otherwise"
-    if key in dct:
-        return dct[key]
-    return None
-
-
 def search_version(layerdict, checkdate, forceversion=None):
     "Return dict with latest matching version, None if not found"
     bestdays = datetime.timedelta(999999999)    # Infinity
@@ -127,8 +123,8 @@ def search_version(layerdict, checkdate, forceversion=None):
                 print(f"WARNING: Forced version {forceversion} not stable",
                       file=sys.stderr)
             return versdict
-        stabilized = dictval(versdict, "stabilized_at")
-        if is_valid_standard(checkdate, stabilized, dictval(versdict, "obsoleted_at")):
+        stabilized = versdict.get("stabilized_at")
+        if is_valid_standard(checkdate, stabilized, versdict.get("obsoleted_at")):
             diffdays = checkdate - stabilized
             if diffdays < bestdays:
                 bestdays = diffdays
@@ -141,9 +137,13 @@ def search_version(layerdict, checkdate, forceversion=None):
 
 
 def optparse(argv):
-    "Parse options. Return (args, verbose, quiet, checkdate, version, output, classes)."
+    """
+    Parse options.
+    Return (args, verbose, quiet, os_cloud, checkdate, version, output, classes).
+    """
     verbose = False
     quiet = False
+    os_cloud = os.environ.get("OS_CLOUD")
     checkdate = datetime.date.today()
     version = None
     output = None
@@ -170,7 +170,7 @@ def optparse(argv):
         elif opt[0] == "-V" or opt[0] == "--version":
             version = opt[1]
         elif opt[0] == "-c" or opt[0] == "--os-cloud":
-            os.environ["OS_CLOUD"] = opt[1]
+            os_cloud = opt[1]
         elif opt[0] == "-o" or opt[0] == "--output":
             output = opt[1]
         elif opt[0] == "-r" or opt[0] == "--resource-usage":
@@ -180,7 +180,7 @@ def optparse(argv):
     if len(args) < 1:
         usage()
         sys.exit(1)
-    return (args, verbose, quiet, checkdate, version, output, classes)
+    return (args, verbose, quiet, os_cloud, checkdate, version, output, classes)
 
 
 def condition_optional(cond, default=False):
@@ -209,15 +209,18 @@ def optstr(optional):
 
 def main(argv):
     """Entry point for the checker"""
-    args, verbose, quiet, checkdate, version, output, classes = optparse(argv)
+    args, verbose, quiet, os_cloud, checkdate, version, output, classes = optparse(argv)
+    if not os_cloud:
+        print("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
+        return 1
     with open(args[0], "r", encoding="UTF-8") as specfile:
         specdict = yaml.load(specfile, Loader=yaml.SafeLoader)
     allerrors = 0
     report = {}
     if output:
-        for key in "name", "url":
-            report[key] = dictval(specdict, key)
-        report["os_cloud"] = os.environ["OS_CLOUD"]
+        for key in ("name", "url"):
+            report[key] = specdict.get(key)
+        report["os_cloud"] = os_cloud
         # TODO: Add kubeconfig context as well
         report["checked_at"] = checkdate
     if "prerequisite" in specdict:
@@ -249,8 +252,8 @@ def main(argv):
                 if check.get("classification", "light") not in classes:
                     print(f"skipping check tool '{check['executable']}' because of resource classification")
                     continue
-                args = dictval(check, 'args')
-                error = run_check_tool(check["executable"], args, verbose, quiet)
+                args = check.get('args')
+                error = run_check_tool(check["executable"], args, os_cloud, verbose, quiet)
                 if output:
                     version_index = 0  # report[layer].index(bestversion)
                     standard_index = bestversion["standards"].index(standard)
@@ -273,7 +276,7 @@ def main(argv):
             output = yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)
     if not quiet:
         print("*******************************************************")
-        print(f"Verdict for os_cloud {os.environ['OS_CLOUD']}, {specdict['name']}, "
+        print(f"Verdict for os_cloud {os_cloud}, {specdict['name']}, "
               f"version {bestversion['version']}: {errcode_to_text(errors)}")
     allerrors += errors
     return allerrors
