@@ -14,7 +14,7 @@ Volume Types are used to classify volumes and provide a basic decision for what 
 The following special terms are used throughout this standard document:
 | Term | Meaning |
 |---|---|
-| volume | OpenStack object, virtual drive which usually resides in a network storage backend |
+| volume | OpenStack ressource, virtual drive which usually resides in a network storage backend |
 | AZ | Availability Zone |
 | Volume QoS | Quality of Service object for Volumes |
 
