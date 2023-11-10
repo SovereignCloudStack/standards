@@ -33,6 +33,12 @@ import copy
 import yaml
 
 
+KEYWORDS_SPEC = ('name', 'url', 'versions', 'prerequisite')
+KEYWORDS_VERSION = ('version', 'standards', 'stabilized_at', 'obsoleted_at')
+KEYWORDS_STANDARD = ('check_tools', 'url', 'name', 'condition')
+KEYWORDS_CHECKTOOL = ('executable', 'args', 'condition', 'classification')
+
+
 def usage():
     "Output usage information"
     print("Usage: scs-compliance-check.py [options] compliance-spec.yaml layer [layer [layer]]")
@@ -139,7 +145,7 @@ def search_version(layerdict, checkdate, forceversion=None):
 def optparse(argv):
     """
     Parse options.
-    Return (args, verbose, quiet, os_cloud, checkdate, version, output, classes).
+    Return (args0, verbose, quiet, os_cloud, checkdate, version, output, classes).
     """
     verbose = False
     quiet = False
@@ -180,7 +186,7 @@ def optparse(argv):
     if len(args) < 1:
         usage()
         sys.exit(1)
-    return (args, verbose, quiet, os_cloud, checkdate, version, output, classes)
+    return (args[0], verbose, quiet, os_cloud, checkdate, version, output, classes)
 
 
 def condition_optional(cond, default=False):
@@ -190,94 +196,108 @@ def condition_optional(cond, default=False):
        - If set to something else, error out
        - If unset, return default
     """
-    if "condition" not in cond:
-        return default
-    if cond["condition"] == "optional":
-        return True
-    if cond["condition"] == "mandatory":
-        return False
-    print(f"ERROR in spec parsing condition: {cond['condition']}", file=sys.stderr)
-    return default
+    value = cond.get("condition")
+    value = {None: default, "optional": True, "mandatory": False}.get(value)
+    if value is None:
+        print(f"ERROR in spec parsing condition: {cond['condition']}", file=sys.stderr)
+        value = default
+    return value
 
 
-def optstr(optional):
-    "return 'optional ' if True, otherwise ''"
-    if optional:
-        return 'optional '
-    return ''
+def check_keywords(d, ctx, valid=()):
+    invalid = [k for k in d if k not in valid]
+    if invalid:
+        print(f"ERROR in spec: {ctx} uses unknown keywords: {','.join(invalid)}", file=sys.stderr)
 
 
 def main(argv):
     """Entry point for the checker"""
-    args, verbose, quiet, os_cloud, checkdate, version, output, classes = optparse(argv)
+    args0, verbose, quiet, os_cloud, checkdate, version, output, classes = optparse(argv)
     if not os_cloud:
         print("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
         return 1
-    with open(args[0], "r", encoding="UTF-8") as specfile:
+    with open(args0, "r", encoding="UTF-8") as specfile:
         specdict = yaml.load(specfile, Loader=yaml.SafeLoader)
     allerrors = 0
-    report = {}
-    if output:
-        for key in ("name", "url"):
-            report[key] = specdict.get(key)
-        report["os_cloud"] = os_cloud
-        # TODO: Add kubeconfig context as well
-        report["checked_at"] = checkdate
+    report = copy.deepcopy(specdict)
+    check_keywords(report, 'spec', KEYWORDS_SPEC)
+    report["os_cloud"] = os_cloud
+    # TODO: Add kubeconfig context as well
+    report["checked_at"] = checkdate
+    if version:
+        report["forced_version"] = version
+        report["versions"] = [vd for vd in report["versions"] if vd["version"] == version]
     if "prerequisite" in specdict:
         print("WARNING: prerequisite not yet implemented!", file=sys.stderr)
-    bestversion = search_version(specdict["versions"], checkdate, version)
-    if not bestversion:
-        print(f"No valid standard found for {checkdate}", file=sys.stderr)
-        return 2
-    errors = 0
-    if not quiet:
-        print(f"Testing {specdict['name']} version {bestversion['version']}")
-    if "standards" not in bestversion:
-        print(f"WARNING: No standards defined yet for {specdict['name']} version {bestversion['version']}",
-              file=sys.stderr)
-    if output:
-        report[specdict['name']] = [copy.deepcopy(bestversion)]
-    for standard in bestversion["standards"]:
-        optional = condition_optional(standard)
-        if not quiet:
-            print("*******************************************************")
-            print(f"Testing {optstr(optional)}standard {standard['name']} ...")
-            print(f"Reference: {standard['url']} ...")
-        if "check_tools" not in standard:
-            print(f"WARNING: No compliance check tool implemented yet for {standard['name']}")
-            error = 0
+    memo = {}  # memoize check tool results
+    matches = 0
+    for vd in report["versions"]:
+        check_keywords(vd, 'version', KEYWORDS_VERSION)
+        stb_date = vd.get("stabilized_at")
+        obs_date = vd.get("obsoleted_at")
+        futuristic = not stb_date or checkdate < stb_date
+        outdated = obs_date and obs_date < checkdate
+        vd.update({
+            "status": "n/a",
+            "passed": False,
+        })
+        if outdated:
+            vd["status"] = "outdated"
+        elif futuristic:
+            vd["status"] = "preview"
         else:
-            chkidx = 0
+            vd["status"] = "valid"
+        if outdated and not version:
+            continue
+        matches += 1
+        if version and outdated:
+            print(f"WARNING: Forced version {version} outdated", file=sys.stderr)
+        if version and futuristic:
+            print(f"INFO: Forced version {version} not (yet) stable", file=sys.stderr)
+        if not quiet:
+            print(f"Testing {specdict['name']} version {vd['version']}")
+        if "standards" not in vd:
+            print(f"WARNING: No standards defined yet for {specdict['name']} version {vd['version']}",
+                  file=sys.stderr)
+        errors = 0
+        for standard in vd["standards"]:
+            check_keywords(standard, 'standard', KEYWORDS_STANDARD)
+            optional = condition_optional(standard)
+            if not quiet:
+                print("*******************************************************")
+                print(f"Testing {'optional ' * optional}standard {standard['name']} ...")
+                print(f"Reference: {standard['url']} ...")
+            if "check_tools" not in standard:
+                print(f"WARNING: No compliance check tool implemented yet for {standard['name']}")
+                continue
             for check in standard["check_tools"]:
+                check_keywords(check, 'checktool', KEYWORDS_CHECKTOOL)
                 if check.get("classification", "light") not in classes:
                     print(f"skipping check tool '{check['executable']}' because of resource classification")
                     continue
-                args = check.get('args')
-                error = run_check_tool(check["executable"], args, os_cloud, verbose, quiet)
-                if output:
-                    version_index = 0  # report[layer].index(bestversion)
-                    standard_index = bestversion["standards"].index(standard)
-                    report[specdict['name']][version_index]["standards"][standard_index]["check_tools"][chkidx]["errors"] = error
+                args = check.get('args', '')
+                memo_key = f"{check['executable']} {args}"
+                error = memo.get(memo_key)
+                if error is None:
+                    error = run_check_tool(check["executable"], args, os_cloud, verbose, quiet)
+                    memo[memo_key] = error
+                check["errors"] = error
                 if not condition_optional(check, optional):
                     errors += error
                 if not quiet:
                     print(f"... returned {error} errors")
-                chkidx += 1
-                for kwd in check:
-                    if kwd not in ('executable', 'args', 'condition', 'classification'):
-                        print(f"ERROR in spec: check_tools.{kwd} is an unknown keyword",
-                              file=sys.stderr)
-        for kwd in standard:
-            if kwd not in ('check_tools', 'url', 'name', 'condition'):
-                print(f"ERROR in spec: standard.{kwd} is an unknown keyword", file=sys.stderr)
+        vd["errors"] = errors
+        vd["passed"] = not errors
+        if not quiet:
+            print("*******************************************************")
+            print(f"Verdict for os_cloud {os_cloud}, {specdict['name']}, "
+                  f"version {vd['version']}: {errcode_to_text(errors)}")
+    if not matches:
+        print(f"No valid standard found for {checkdate}", file=sys.stderr)
+        return 2
     if output:
-        report[specdict['name']][version_index]["errors"] = errors
         with open(output, 'w', encoding='UTF-8') as file:
             output = yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)
-    if not quiet:
-        print("*******************************************************")
-        print(f"Verdict for os_cloud {os_cloud}, {specdict['name']}, "
-              f"version {bestversion['version']}: {errcode_to_text(errors)}")
     allerrors += errors
     return allerrors
 
