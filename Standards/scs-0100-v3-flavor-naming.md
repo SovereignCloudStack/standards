@@ -431,16 +431,16 @@ This extension provides more details on the specific GPU:
 - pass-through (`G`) vs. virtual GPU (`g`)
 - vendor (X)
 - generation (N)
-- no. (M) of compute units (CUs) / streaming multiprocessors (SMs) / execution units (EUs) - that are exposed (for pass-through) or assigned
+- number (M) of processing units that are exposed (for pass-through) or assigned; see table below for vendor-specific terminology
 - high-performance indicator (`h`)
 
-Note that the vendor letter X is mandatory, generation and compute units are optional.
+Note that the vendor letter X is mandatory, generation and processing units are optional.
 
-| GPU | Vendor | Count M |
-| --- | ------ | ------- |
-| N   | nVidia |  SMs    |
-| A   | AMD    |  CUs    |
-| I   | Intel  |  EUs    |
+| letter X | vendor | processing units                |
+| -------- | ------ | ------------------------------- |
+| `N`      | nVidia | streaming multiprocessors (SMs) |
+| `A`      | AMD    | compute units (CUs)             |
+| `I`      | Intel  | execution units (EUs)           |
 
 For nVidia, the generation N can be f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=turing, a=Ampere, l=Ada Lovelace, ...,
 for AMD GCN-x=0.x, RDNA1=1, RDNA2=2, RDNA3=3,
