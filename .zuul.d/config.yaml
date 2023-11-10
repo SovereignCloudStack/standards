@@ -14,4 +14,6 @@
     secrets:
      - name: clouds_conf
        secret: compliance_check_app_credentials
+    vars:
+      cloud: gx-scs
     run: playbooks/compliance_check.yaml

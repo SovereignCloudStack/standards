@@ -31,12 +31,15 @@
 
     - name: Run compliance script
       ansible.builtin.command:
-        cmd: python3 ./scs-compliance-check.py scs-compatible-iaas.yaml -c gx-scs -q -o gx-scs-iaas.yaml -C
+        cmd: python3 ./scs-compliance-check.py scs-compatible-iaas.yaml -c {{cloud}} -q -o {{cloud}}-iaas.yaml -C
         chdir: /home/ubuntu/Tests
       register: result
       changed_when: result.rc != 0
       failed_when: result.rc != 0
 
-    - name: Print debug output
-      debug:
-        msg: "{{ result.stdout }}"
+    - zuul_return:
+        data:
+          zuul:
+            artifacts:
+              - name: result
+                url: {{cloud}}-iaas.yaml
