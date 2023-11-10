@@ -58,7 +58,7 @@ def main(argv):
                                        ("os-cloud=", "mand=", "verbose", "help", "quiet", "v2plus",
                                         "v3", "v1prefer", "accept-old-mandatory"))
     except getopt.GetoptError as exc:
-        print(f"{exc}", file=sys.stderr)
+        print(f"CRITICAL: {exc!r}", file=sys.stderr)
         usage(1)
     for opt in opts:
         if opt[0] == "-h" or opt[0] == "--help":
@@ -85,13 +85,14 @@ def main(argv):
         else:
             usage(2)
     if len(args) > 0:
-        print(f"Extra arguments {str(args)}", file=sys.stderr)
+        print(f"CRITICAL: Extra arguments {str(args)}", file=sys.stderr)
         usage(1)
 
     scsMandatory, scsRecommended = fnmck.readflavors(scsMandFile, v3mode, fnmck.prefer_old)
 
     if not cloud:
-        print("ERROR: You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
+        print("CRITICAL: You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
+        sys.exit(1)
     conn = openstack.connect(cloud=cloud, timeout=32)
     flavors = conn.compute.flavors()
 
@@ -187,7 +188,7 @@ def main(argv):
         except NameError as exc:
             errors += 1
             wrongFlv.append(flv.name)
-            print(f"Wrong flavor \"{flv.name}\": {exc}", file=sys.stderr)
+            print(f"ERROR: Wrong flavor \"{flv.name}\": {exc}", file=sys.stderr)
     # This makes the output more readable
     MSCSFlv.sort()
     RSCSFlv.sort()
@@ -198,6 +199,7 @@ def main(argv):
     # We have counted errors on the fly, add missing flavors to the final result
     if scsMandatory:
         errors += len(scsMandatory)
+        print(f"ERROR: Missing mandatory flavors: {', '.join(scsMandatory)}", file=sys.stderr)
     # Produce dicts for YAML reporting
     flvSCSList = {
         "MandatoryFlavorsPresent": MSCSFlv,
