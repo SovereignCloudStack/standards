@@ -43,7 +43,7 @@ Example: one volume type that uses LUKS-encryption with a ceph storage with inhe
 
 ## DEFAULT volume types
 
-There is always a default volume type defined in an OpenStack deployment. The SCS does not have any requirements about this volume type at this moment, instead deployers are free to choose what fits best in their environment. Conversely, a cloud user can not expect any specific behavior or properties from default volume types.  
+There is always a default volume type defined in an OpenStack deployment. The SCS does not have any requirements about this volume type at this moment, instead deployers are free to choose what fits best in their environment. Conversely, a cloud user can not expect any specific behavior or properties from default volume types.
 
 The parameters of volume types described in this standard do not have to be applied to the chosen default volume type. And the SCS will not make any assumptions about parameters being present in the default volume type.
 
