@@ -51,17 +51,6 @@ def usage():
     print(" -o/--output path: Generate yaml report of compliance check under given path")
 
 
-def is_valid_standard(now, stable, obsolete):
-    "Check if now is after stable and not after obsolete"
-    if not stable:
-        return False
-    if now < stable:
-        return False
-    if obsolete and now > obsolete:
-        return False
-    return True
-
-
 MYPATH = "."
 
 
@@ -113,33 +102,7 @@ def run_check_tool(executable, args, os_cloud, verbose=False, quiet=False):
 
 def errcode_to_text(err):
     "translate error code to text"
-    if err == 0:
-        return "PASSED"
-    return f"{err} ERRORS"
-
-
-def search_version(layerdict, checkdate, forceversion=None):
-    "Return dict with latest matching version, None if not found"
-    bestdays = datetime.timedelta(999999999)    # Infinity
-    bestversion = None
-    for versdict in layerdict:
-        # print(f'Version {versdict["version"]}')
-        if forceversion and forceversion == versdict["version"]:
-            if "stabilized_at" not in versdict:
-                print(f"WARNING: Forced version {forceversion} not stable",
-                      file=sys.stderr)
-            return versdict
-        stabilized = versdict.get("stabilized_at")
-        if is_valid_standard(checkdate, stabilized, versdict.get("obsoleted_at")):
-            diffdays = checkdate - stabilized
-            if diffdays < bestdays:
-                bestdays = diffdays
-                bestversion = versdict
-    # print(f"Identified best version {bestversion}")
-    if forceversion and bestversion and not bestversion["version"] == forceversion:
-        print(f"Wanted version {forceversion} which was not found")
-        sys.exit(3)
-    return bestversion
+    return f"{err} ERRORS" if err else "PASSED"
 
 
 def optparse(argv):
@@ -221,11 +184,13 @@ def main(argv):
     allerrors = 0
     report = copy.deepcopy(specdict)
     check_keywords(report, 'spec', KEYWORDS_SPEC)
-    report["os_cloud"] = os_cloud
+    run_report = report["run"] = {}
+    run_report["os_cloud"] = os_cloud
     # TODO: Add kubeconfig context as well
-    report["checked_at"] = checkdate
+    run_report["checked_at"] = checkdate
+    run_report["classes"] = classes
     if version:
-        report["forced_version"] = version
+        run_report["forced_version"] = version
         report["versions"] = [vd for vd in report["versions"] if vd["version"] == version]
     if "prerequisite" in specdict:
         print("WARNING: prerequisite not yet implemented!", file=sys.stderr)
