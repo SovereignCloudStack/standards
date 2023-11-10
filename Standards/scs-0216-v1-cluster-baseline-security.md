@@ -15,7 +15,7 @@ Nevertheless, a provider (or even a customer) needs to take action in order to a
 hardened, secure cluster due to the myriad of configurations possible. This is especially
 the case since Kubernetes ships with insecure features and configurations out of the box,
 which will need to be mitigated by an administrator with the proper knowledge.
-Hardened Kubernetes clusters are desirable regardless of the possible thread model, since
+Hardened Kubernetes clusters are desirable regardless of the possible threat model, since
 higher security doesn't necessarily mean higher complexity in this case.
 
 ## Motivation
@@ -60,7 +60,7 @@ To do this, different approaches can be taken.
 
 #### TLS for all internal/API traffic
 
-It is already expected by Kubernetes, that all API communication internally is encrypted with TLS.
+It is already expected by Kubernetes that all API communication internally is encrypted with TLS.
 Nevertheless, some endpoints of internal components could be/will be exposed without the necessary
 encryption, which could lead to weak points in the system.
 A list of the default service endpoints can be seen in the following table
@@ -92,7 +92,7 @@ the cluster provider.
 
 Authorization is (normally) done by he Role-Based Access Control (RBAC), which matches a request
 by a user with a set of permissions, also called a role. Kubernetes deploys some roles out-of-the-box;
-additional roles needs to be carefully checked, since some permissions for specific resources allow
+additional roles need to be carefully checked, since some permissions for specific resources allow
 modification of other resources.
 
 This whole process is especially important for the Kubelet, which allows anonymous requests in its
