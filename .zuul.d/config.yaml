@@ -2,7 +2,7 @@
     name: SovereignCloudStack/standards
     default-branch: main
     merge-mode: "squash-merge"
-    periodic-daily:
+    compliance_check:
       jobs:
         - openstack-scs-compliance-check
     check:
