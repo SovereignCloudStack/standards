@@ -42,4 +42,4 @@
           zuul:
             artifacts:
               - name: result
-                url: {{cloud}}-iaas.yaml
+                url: "{{cloud}}-iaas.yaml"
