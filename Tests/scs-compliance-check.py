@@ -23,6 +23,7 @@ would split these tests out.)
 """
 
 import os
+import os.path
 import sys
 import shlex
 import getopt
@@ -57,24 +58,7 @@ With -C, the return code will be nonzero precisely when the tests couldn't be ru
 """.strip(), file=file)
 
 
-MYPATH = "."
-
-
-def add_search_path(arg0):
-    """Store path of scs-compliance-check.py to search path, as check tools
-       referenced in compliance.spec might be relative to it.
-    """
-    global MYPATH
-    arg0_pidx = arg0.rfind('/')
-    if arg0_pidx == -1:
-        # this can happen when you call this script via "python3 scs-compliance-check.py"
-        # then the search path is already fine
-        return
-    MYPATH = arg0[:arg0_pidx]
-    # os.environ['PATH'] += ":" + MYPATH
-
-
-def run_check_tool(executable, args, env):
+def run_check_tool(executable, args, env=None, cwd=None):
     "Run executable and return exit code"
     if executable.startswith("http://") or executable.startswith("https://"):
         print(f"ERROR: remote check_tool {executable} not yet supported", file=sys.stderr)
@@ -86,17 +70,10 @@ def run_check_tool(executable, args, env):
         return 999999
     if executable.startswith("file://"):
         executable = executable[7:]
-    if executable[0] == "/":
-        exe = [executable, ]
-    else:
-        exe = [MYPATH + "/" + executable, ]
-    if args:
-        exe.extend(shlex.split(args))
-    # print(f"{exe}")
-    # compl = subprocess.run(exe, capture_output=True, text=True, check=False)
+    exe = [os.path.abspath(os.path.join(cwd or ".", executable)), *shlex.split(args)]
     return subprocess.run(
         exe, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        encoding='UTF-8', check=False, env=env,
+        encoding='UTF-8', check=False, env=env, cwd=cwd,
     )
 
 
@@ -190,11 +167,12 @@ def main(argv):
     if not config.os_cloud:
         print("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
         return 1
-    check_env = {'OS_CLOUD': config.os_cloud, **os.environ}
     printv = suppress if not config.verbose else partial(print, file=sys.stderr)
     printnq = suppress if config.quiet else partial(print, file=sys.stderr)
     with open(config.arg0, "r", encoding="UTF-8") as specfile:
         specdict = yaml.load(specfile, Loader=yaml.SafeLoader)
+    check_env = {'OS_CLOUD': config.os_cloud, **os.environ}
+    check_cwd = os.path.dirname(config.arg0) or os.getcwd()
     allaborts = 0
     allerrors = 0
     report = copy.deepcopy(specdict)
@@ -251,7 +229,7 @@ def main(argv):
                 memo_key = f"{check['executable']} {args}".strip()
                 invokation = memo.get(memo_key)
                 if invokation is None:
-                    compl = run_check_tool(check["executable"], args, check_env)
+                    compl = run_check_tool(check["executable"], args, env=check_env, cwd=check_cwd)
                     printv(compl.stdout)
                     printnq(compl.stderr)
                     invokation = {
@@ -292,5 +270,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    add_search_path(sys.argv[0])
     sys.exit(main(sys.argv[1:]))
