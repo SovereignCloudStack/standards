@@ -252,4 +252,8 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except BaseException as exc:
+        print(f"CRITICAL: {exc!r}", file=sys.stderr)
+        sys.exit(1)
