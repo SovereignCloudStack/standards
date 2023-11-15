@@ -8,3 +8,34 @@ clouds:
     interface: "public"
     identity_api_version: 3
     auth_type: "v3applicationcredential"
+  pco-prod1:
+    region_name: "prod1"
+    interface: "public"
+    identity_api_version: 3
+    auth:
+      auth_url: https://prod1.api.pco.get-cloud.io:5000
+      application_credential_id: "{{ clouds_conf.pco_prod1_ac_id }}"
+      application_credential_secret: {{ clouds_conf.pco_prod1_ac_secret }}"
+  pco-prod2:
+    region_name: "prod2"
+    interface: "public"
+    identity_api_version: 3
+    auth:
+      auth_url: https://prod2.api.pco.get-cloud.io:5000
+      application_credential_id: "{{ clouds_conf.pco_prod2_ac_id }}"
+      application_credential_secret: {{ clouds_conf.pco_prod2_ac_secret }}"
+  pco-prod3:
+    region_name: "prod3"
+    interface: "public"
+    identity_api_version: 3
+    auth:
+      auth_url: https://prod3.api.pco.get-cloud.io:5000
+      application_credential_id: "{{ clouds_conf.pco_prod3_ac_id }}"
+      application_credential_secret: {{ clouds_conf.pco_prod3_ac_secret }}"
+  wavestack:
+    interface: "public"
+    identity_api_version: 3
+    auth:
+      auth_url: https://api.wavestack.de:5000
+      application_credential_id: "{{ clouds_conf.wavestack_ac_id }}"
+      application_credential_secret: {{ clouds_conf.wavestack_ac_secret }}"

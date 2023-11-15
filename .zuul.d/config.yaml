@@ -4,12 +4,16 @@
     merge-mode: "squash-merge"
     periodic-hourly:
       jobs:
-        - openstack-scs-compliance-check
+        - scs-check-gx-scs
+        - scs-check-pco-prod3
+        - scs-check-pco-prod2
+        - scs-check-pco-prod1
+        - scs-check-wavestack
     check:
       jobs:
-        - openstack-scs-compliance-check
+        - scs-check-gx-scs
 - job:
-    name: openstack-scs-compliance-check
+    name: scs-check-gx-scs
     parent: base
     secrets:
      - name: clouds_conf
@@ -17,3 +21,23 @@
     vars:
       cloud: gx-scs
     run: playbooks/compliance_check.yaml
+- job:
+    name: scs-check-pco-prod3
+    parent: scs-check-gx-scs
+    vars:
+      cloud: pco-prod3
+- job:
+    name: scs-check-pco-prod2
+    parent: scs-check-gx-scs
+    vars:
+      cloud: pco-prod2
+- job:
+    name: scs-check-pco-prod1
+    parent: scs-check-gx-scs
+    vars:
+      cloud: pco-prod1
+- job:
+    name: scs-check-wavestack
+    parent: scs-check-gx-scs
+    vars:
+      cloud: wavestack
