@@ -8,22 +8,20 @@ track: KaaS
 ## Introduction
 
 A Kubernetes instance is provided as a cluster, which consists of a set of machines,
-so called nodes. These clusters are configured depending on the needs of its users, which
+so-called nodes. These clusters are configured depending on the needs of its users, which
 is possible due to the flexibility of Kubernetes.
 Due to the regular changes, there are always new security features to deploy and use in Kubernetes.
 Nevertheless, a provider (or even a customer) needs to take action in order to achieve a
 hardened, secure cluster due to the myriad of configurations possible. This is especially
 the case since Kubernetes ships with insecure features and configurations out of the box,
 which will need to be mitigated by an administrator with the proper knowledge.
-Hardened Kubernetes clusters are desirable regardless of the possible threat model, since
-higher security doesn't necessarily mean higher complexity in this case.
+Hardened, secure Kubernetes clusters are desirable regardless of the possible threat model,
+since higher security doesn't necessarily mean higher complexity in this case.
 
 ## Motivation
 
-Kubernetes clusters are highly configurable to fit a wide array of use-cases and setups.
-This makes them flexible and scalable to a certain extent, which is probably also why they
-found such a wide adoption. But its also obvious, that security problems can arise if a
-cluster isn't configured properly to mitigate them.
+Kubernetes clusters are highly configurable, which also gives rise to different security
+problems, if the configuration isn't done properly.
 These security risks can potentially be exposed in many different parts of a cluster, e.g.
 different APIs, authorization and authentication procedures or even Pod privilege mechanisms.
 In order to mitigate these problems, different hardening and prevention steps and mechanisms
@@ -65,20 +63,15 @@ Nevertheless, some endpoints of internal components could be/will be exposed wit
 encryption, which could lead to weak points in the system.
 A list of the default service endpoints can be seen in the following table
 
-Protocol | Port Range | Purpose
-— | — | —
-TCP | 6443- | Kubernetes API Server
-TCP | 2379-2380 | etcd server client API
-TCP | 10250 | Kubelet API
-TCP | 10251 | kube-scheduler
-TCP | 10252 | kube-controller-manager
-TCP | 10255 | Read-Only Kubelet API
-
-Protocol | Port Range | Purpose
-— | — | —
-TCP | 10250 | Kubelet API
-TCP | 10255 | Read-Only Kubelet API
-TCP | 30000-32767 | NodePort Services
+| Protocol | Port Range  | Purpose                 | Notes                                                                                   |
+|----------|-------------|-------------------------|-----------------------------------------------------------------------------------------|
+| TCP      | 6443*       | Kubernetes API Server   | -                                                                                       |
+| TCP      | 2379-2380   | etcd server client API  | -                                                                                       |
+| TCP      | 10250       | Kubelet API             | -                                                                                       |
+| TCP      | 10251/10259 | kube-scheduler          | 10251 could be insecure before 1.13, after that only the secure port 10259 is available |
+| TCP      | 10252/10257 | kube-controller-manager | 10252 could be insecure before 1.13, after that only the secure port 10257 is available |
+| TCP      | 10255       | Read-Only Kubelet API   | HTTP port for GET requests                                                              |
+| TCP      | 30000-32767 | NodePort Services       | Service endpoints, could be HTTP                                                        |
 
 #### Authentication and Authorization
 
@@ -101,7 +94,7 @@ could manipulate resources that are managed with the Kubelet.
 
 To disable anonymous requests, the Kubelet should be started with `--anonymous-auth=false`.
 Authentication can be provided either through x509 client certificates or API bearer tokens.
-How to setup both approaches can be found in the [Kubelet Authentication and Authorization](https://kubernetes.io/docs/reference/access-authn-authz/kubelet-authn-authz/).
+How to set up both approaches can be found in the [Kubelet Authentication and Authorization](https://kubernetes.io/docs/reference/access-authn-authz/kubelet-authn-authz/).
 
 Kubelet authorization is set to `AlwaysAllow` as a default mode. This can be quite problematic,
 since all authenticated users can do all actions. To mitigate this, it is possible to delegate
