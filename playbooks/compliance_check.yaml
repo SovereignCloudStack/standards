@@ -31,8 +31,7 @@
 
     - name: Run compliance script
       ansible.builtin.command:
-        cmd: python3 ./scs-compliance-check.py scs-compatible-iaas.yaml -c {{cloud}} -q -o {{cloud}}-iaas.yaml -C
-        chdir: /home/ubuntu/Tests
+        cmd: python3 Tests/scs-compliance-check.py Tests/scs-compatible-iaas.yaml -c {{cloud}} -q -o {{cloud}}-iaas.yaml -C
       register: result
       changed_when: result.rc != 0
       failed_when: result.rc != 0
@@ -42,4 +41,4 @@
           zuul:
             artifacts:
               - name: "{{cloud}}-iaas.yaml"
-                url: "/home/ubuntu/Tests/{{cloud}}-iaas.yaml"
+                url: "{{cloud}}-iaas.yaml"
