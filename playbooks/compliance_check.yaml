@@ -41,5 +41,5 @@
         data:
           zuul:
             artifacts:
-              - name: result
-                url: "{{cloud}}-iaas.yaml"
+              - name: "{{cloud}}-iaas.yaml"
+                url: "/home/ubuntu/Tests/{{cloud}}-iaas.yaml"
