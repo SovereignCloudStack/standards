@@ -40,11 +40,18 @@
         msg: "{{ result.stdout }} {{ result.stderr }}"
 
     - name: Copy result YAML
-      ansible.builtin.copy:
-        dest: "{{ ansible_user_dir }}/zuul-output/logs/{{cloud}}-iaas.yaml"
+      # ansible.builtin.copy:
+      #   dest: "{{ ansible_user_dir }}/zuul-output/logs/{{cloud}}-iaas.yaml"
+      #   src: "{{cloud}}-iaas.yaml"
+      #   mode: 0644
+      #   remote_src: true
+      synchronize:
+        dest: "{{ zuul.executor.log_root }}/{{cloud}}-iaas.yaml"
+        mode: pull
         src: "{{cloud}}-iaas.yaml"
-        mode: 0644
-        remote_src: true
+        verify_host: true
+        owner: no
+        group: no
 
     - zuul_return:
         data:
