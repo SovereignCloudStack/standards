@@ -39,6 +39,13 @@
     - debug:
         msg: "{{ result.stdout }} {{ result.stderr }}"
 
+    - name: Copy result YAML
+      ansible.builtin.copy:
+        dest: "{{ ansible_user_dir }}/zuul-output/logs/{{cloud}}-iaas.yaml"
+        src: "{{cloud}}-iaas.yaml"
+        mode: 0644
+        remote_src: true
+
     - zuul_return:
         data:
           zuul:
