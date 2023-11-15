@@ -252,7 +252,7 @@ def main(argv):
                 if not condition_optional(check, optional):
                     aborts += abort
                     errors += error
-        vd["aborts"] = errors
+        vd["aborts"] = aborts
         vd["errors"] = errors
         vd["passed"] = not (aborts + errors)
         printnq("*******************************************************")
