@@ -207,19 +207,19 @@ so users can expect some level of parallelism and independence.
 
 - SCS-2C-4-**10n**
 - SCS-2C-4-**10s**
-- SCS-2C-4-**10s**\_bms_z3
+- SCS-2C-4-**10s**\_bms\_z3
 - SCS-2C-4-**3x10s** <- Cloud creates three 10GB SSDs
-- SCS-2C-4-**3x10s**\_bms_z3
+- SCS-2C-4-**3x10s**\_bms\_z3
 - SCS-2C-4-**10** <- Cloud decides disk type
-- SCS-2C-4-**10**\_bms_z3
-- SCS-2C-4-**n** <- Cloud decides disk size (min_disk from image or larger)
-- SCS-2C-4-**n**\_bms_3
+- SCS-2C-4-**10**\_bms\_z3
+- SCS-2C-4-**n** <- Cloud decides disk size (min\_disk from image or larger)
+- SCS-2C-4-**n**\_bms\_3
 - SCS-2C-4- <- Cloud decides disk type and size
-- SCS-2C-4-\_bms_z3
-- SCS-2C-4-\_bms_z3h_GNa-64_ib
+- SCS-2C-4-\_bms\_z3
+- SCS-2C-4-\_bms\_z3h\_GNa-64\_ib
 - SCS-2C-4-\_ib
 - SCS-2C-4 <- You need to specify a boot volume yourself (boot from volume, or use `block_device_mapping_v2`)
-- SCS-2C-4_bms_z3
+- SCS-2C-4\_bms\_z3
 - SCS-2C-4-3x10 <- Cloud decides type and creates three 10GB volumes
 - ~~SCS-2C-4-**1.5n**~~ <- You must not specify disk sizes which are not in full GiBs
 
@@ -301,7 +301,10 @@ Note that machines (hypervisors) can be part of more than one host aggregate.
 
 The extensions have the format:
 
-\[`_`hyp\]\[`_hwv`\]\[`_`\[arch\[N\]\[`h`\]\[`_`\[`G/g`\]X\[N\]\[`-`M\[`h`\]\]\]\[`_ib`\]
+\[`_`hyp\]\[`_hwv`\]\[`_`arch\[N\]\[`h`\]\]\[`_`\[`G/g`\]X\[N\]\[`-`M\]\[`h`\]\]\[`_ib`\]
+
+Extensions are individually optional, but the ones that are used must appear in the order
+given in the above line.
 
 Remember that letters are case-sensitive.
 In case you wonder: Feature indicators are capitalized, modifiers are lower case.
@@ -309,7 +312,9 @@ In case you wonder: Feature indicators are capitalized, modifiers are lower case
 
 ### [OPTIONAL] Hypervisor
 
-The _default Hypervisor_ is assumed to be `KVM`. Clouds, that offer different hypervisors
+Format: `_`hyp
+
+The _default Hypervisor_ is assumed to be `KVM`. Clouds that offer different hypervisors
 or Bare Metal Systems should indicate the Hypervisor according to the following table:
 
 | hyp | Meaning           |
@@ -327,6 +332,8 @@ or Bare Metal Systems should indicate the Hypervisor according to the following 
 - SCS-2C-4-10n\_**bms**\_z3h
 
 ### [OPTIONAL] Hardware virtualization / Nested virtualization
+
+Format: `_hwv`
 
 If the instances that are created with this flavor support hardware-accelerated
 virtualization, this can be reflected with the `_hwv` flag (after the optional
@@ -348,18 +355,28 @@ capabilities. Flavors may over-deliver ...)
 
 ### [OPTIONAL] CPU Architecture Details
 
-Arch details provide more details on the specific CPU:
+Format: `_`arch\[N\]\[`h`\]
 
-- Vendor
-- Generation
-- Frequency
+This extension provides more details on the specific CPU:
+
+- vendor/architecture (arch)
+- generation (N)
+- frequency (h)
 
 #### Generation and Vendor
 
-The generations are vendor specific and can be left out.
-Not specifying arch means that we have a generic CPU (**x86-64**).
-The letters `i`, `z`, `a` and `r` specify the vendors Intel,
-AMD (`z` like in Zen), ARM v8+, RISC-V.
+The options for arch are as follows:
+
+| Letter  | vendor/architecture  | Corresponding image architecture  |
+| ------- | -------------------- | --------------------------------- |
+| (none)  | Generic x86-64       | `x86_64`                          |
+| `i`     | Intel x86-64         | `x86_64`                          |
+| `z`     | AMD (Zen) x86-64     | `x86_64`                          |
+| `a`     | ARM v8+              | `aarch64`                         |
+| `r`     | RISC-V               | (not yet listed in Glance)        |
+
+The generation is vendor specific and can be left out, but it can only be specified in
+conjunction with a vendor. At present, these values are possible:
 
 | Generation | i (Intel x86-64) | z (AMD x86-64) |  a (AArch64)       | r (RISC-V) |
 | ---------- | ---------------- | -------------- | ------------------ | ---------- |
@@ -373,6 +390,16 @@ It is recommended to leave out the `0` when specifying the old generation; this 
 help the parser tool, which assumes 0 for an unspecified value and does leave it
 out when generating the name for comparison. In other words: 0 has a meaning of
 "rather old or unspecified".
+
+:::note
+
+We don't differentiate between Zen-4 (Genoa) and Zen-4c (Bergamo); L3 cache per
+Siena core is smaller on Bergamo and the frequency lower but the cores are otherwise
+identical. As we already have a qualifier `h` that allows to specify higher frequencies
+(which Genoa thus may use more and Bergamo less or not), we have enough distinction
+capabilities.
+
+:::
 
 #### Frequency Suffixes
 
@@ -389,40 +416,54 @@ out when generating the name for comparison. In other words: 0 has a meaning of
 - SCS-2C-4-10n\_**z3**
 - SCS-2C-4-10n\_**z3h**
 - SCS-2C-4-10n\_**z3hh**
-- SCS-2C-4-10n_bms_**z**
-- SCS-2C-4-10n_bms_**z3**
-- SCS-2C-4-10n_bms_**z3**
-- SCS-2C-4-10n_bms_**z3h**
-- SCS-2C-4-10n_bms_**z3hh** <- Bare Metal, Intel Ice Lake with > 3.25GHz all core freq
+- SCS-2C-4-10n\_bms\_**z**
+- SCS-2C-4-10n\_bms\_**z3**
+- SCS-2C-4-10n\_bms\_**z3**
+- SCS-2C-4-10n\_bms\_**z3h**
+- SCS-2C-4-10n\_bms\_**z3hh** <- Bare Metal, AMD Milan with > 3.25GHz all core freq
 
 ### [OPTIONAL] GPU support
 
-`_G`X\[N\]\[`-`M\[`h`\]\] indicates a Pass-Through GPU from vendor X of gen N with M compute units / SMs / EUs exposed.
-`_g`X\[N\]\[`-`M\[`h`\]\] indicates a vGPU from vendor X of gen N with M compute units / SMs / EUs assigned.
+Format: `_`\[`G/g`\]X\[N\]\[`-`M\]\[`h`\]
 
-Note that the vendor letter X is mandatory, generation and compute units are optional.
+This extension provides more details on the specific GPU:
 
-| GPU | Vendor |
-| --- | ------ |
-| N   | nVidia |
-| A   | AMD    |
-| I   | Intel  |
+- pass-through (`G`) vs. virtual GPU (`g`)
+- vendor (X)
+- generation (N)
+- number (M) of processing units that are exposed (for pass-through) or assigned; see table below for vendor-specific terminology
+- high-performance indicator (`h`)
+
+Note that the vendor letter X is mandatory, generation and processing units are optional.
+
+| letter X | vendor | processing units                |
+| -------- | ------ | ------------------------------- |
+| `N`      | nVidia | streaming multiprocessors (SMs) |
+| `A`      | AMD    | compute units (CUs)             |
+| `I`      | Intel  | execution units (EUs)           |
 
 For nVidia, the generation N can be f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=turing, a=Ampere, l=Ada Lovelace, ...,
-for AMD GCN-x=0.x, RDNA1=1, RDNA2=2, RDNA3=3, for intel Gen9=0.9, Xe(12.1)=1, ...
+for AMD GCN-x=0.x, RDNA1=1, RDNA2=2, RDNA3=3,
+for Intel Gen9=0.9, Xe(12.1)=1, ...
 (Note: This may need further work to properly reflect what's out there.)
 
 The optional `h` suffix to the compute unit count indicates high-performance (e.g. high freq or special
 high bandwidth gfx memory such as HBM);
 `h` can be duplicated for even higher performance.
 
+Example: `SCS-16V-64-500s_GNa-14h`
+This flavor has a pass-through GPU nVidia Ampere with 14 SMs and either high-bandwidth memory or specially high frequencies.
+Looking through GPU specs you could guess it's 1/4 of an A30.
+
 ### [OPTIONAL] Infiniband
 
-`_ib` indicates Infiniband networking.
+Format: `_ib`
+
+This extension indicates Infiniband networking.
 
 More extensions may be forthcoming and appended in a later revision of this spec.
 
-Extensions need to be specified in the above mentioned order.
+Extensions need to be specified in the above-mentioned order.
 
 ### Naming options advice
 

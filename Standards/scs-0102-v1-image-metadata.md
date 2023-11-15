@@ -47,9 +47,11 @@ in the [OpenStack Image documentation](https://docs.openstack.org/glance/latest/
 The following properties are considered mandatory:
 
 - `architecture`, `hypervisor_type`
-- `min_disk_size`, `min_ram`
+- `min_disk_size` (in GiB), `min_ram` (in MiB)
 - `os_version`, `os_distro`
 - `hw_rng_model`, `hw_disk_bus` (`scsi` recommended, and then setting `hw_scsi_model` is also recommended)
+
+**Note**: Disk sizes tend to be measured in GB = 10^9 and not GiB = 2^30 in the disk industry, but OpenStack uses GiB.
 
 The following properties are recommended (if the features are supported):
 
@@ -92,7 +94,7 @@ as referenced by its name.
 Note the _at least_ wording: Providers can replace images more often.
 The frequency is starting from the first release; so an image published on 2021-04-14 with an
 update frequency of `monthly`, should be replaced no later than 2021-05-14. Due to weekends
-etc., up to 3 days later is not considered a violation of this policy. So the a valid sequence
+etc., up to 3 days later is not considered a violation of this policy. So a valid sequence
 from an image with `monthly` update frequency might be 2021-04-14, 2021-05-14, 2021-06-15,
 2021-07-14, 2021-07-27 (hotfix), 2021-08-13 ...
 
@@ -200,7 +202,7 @@ might not use any of these properties, except maybe `maintained_until`. Note tha
 Windows images would typically require `license_included`, `subscription_included`.
 A boolean property that is not present is considered to be `false`.
 
-- Optional: `license_included` (boolean) indicates whether ot not the flavor fee
+- Optional: `license_included` (boolean) indicates whether or not the flavor fee
   includes the licenses required to use this image. This field is mandatory for
   images that contain software that requires commercial licenses.
 - Optional: `license_required` (boolean) indicates whether or not a customer must bring
