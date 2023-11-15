@@ -36,6 +36,9 @@
       changed_when: result.rc != 0
       failed_when: result.rc != 0
 
+    - debug:
+        msg: "{{ result.stdout }} {{ result.stderr }}"
+
     - zuul_return:
         data:
           zuul:
