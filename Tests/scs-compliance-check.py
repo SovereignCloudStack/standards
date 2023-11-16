@@ -154,6 +154,7 @@ def check_keywords(d, ctx, valid=()):
     invalid = [k for k in d if k not in valid]
     if invalid:
         print(f"ERROR in spec: {ctx} uses unknown keywords: {','.join(invalid)}", file=sys.stderr)
+    return len(invalid)
 
 
 def suppress(*args, **kwargs):
@@ -170,35 +171,47 @@ def main(argv):
     printv = suppress if not config.verbose else partial(print, file=sys.stderr)
     printnq = suppress if config.quiet else partial(print, file=sys.stderr)
     with open(config.arg0, "r", encoding="UTF-8") as specfile:
-        specdict = yaml.load(specfile, Loader=yaml.SafeLoader)
+        spec = yaml.load(specfile, Loader=yaml.SafeLoader)
     check_env = {'OS_CLOUD': config.os_cloud, **os.environ}
     check_cwd = os.path.dirname(config.arg0) or os.getcwd()
     allaborts = 0
     allerrors = 0
-    report = copy.deepcopy(specdict)
-    check_keywords(report, 'spec', KEYWORDS_SPEC)
-    run_report = report["run"] = {}
-    run_report["os_cloud"] = config.os_cloud
-    # TODO: Add kubeconfig context as well
-    run_report["checked_at"] = config.checkdate
-    run_report["classes"] = config.classes
+    report = {
+        "spec": copy.deepcopy(spec),
+        "run": {
+            "argv": argv,
+            "os_cloud": config.os_cloud,
+            # TODO: Add kubeconfig context as well
+            "checked_at": config.checkdate,
+            "classes": config.classes,
+            "forced_version": config.version or None,
+            "aborts": 0,
+            "errors": 0,
+            "versions": {},
+            "invokations": {},
+        },
+    }
+    check_keywords(spec, 'spec', KEYWORDS_SPEC)
     if config.version:
-        run_report["forced_version"] = config.version
-        report["versions"] = [vd for vd in report["versions"] if vd["version"] == config.version]
-    if "prerequisite" in specdict:
+        spec["versions"] = [vd for vd in spec["versions"] if vd["version"] == config.version]
+    if "prerequisite" in spec:
         print("WARNING: prerequisite not yet implemented!", file=sys.stderr)
-    memo = run_report["invokations"] = {}  # memoize check tool results
+    vrs = report["run"]["versions"]
+    memo = report["run"]["invokations"]  # memoize check tool results
     matches = 0
-    for vd in report["versions"]:
+    for vd in spec["versions"]:
         check_keywords(vd, 'version', KEYWORDS_VERSION)
         stb_date = vd.get("stabilized_at")
         obs_date = vd.get("obsoleted_at")
         futuristic = not stb_date or config.checkdate < stb_date
         outdated = obs_date and obs_date < config.checkdate
-        vd.update({
+        vr = vrs[vd["version"]] = {
             "status": outdated and "outdated" or futuristic and "preview" or "valid",
             "passed": False,
-        })
+            "invokations": [],
+            "aborts": 0,
+            "errors": 0,
+        }
         if outdated and not config.version:
             continue
         matches += 1
@@ -206,12 +219,13 @@ def main(argv):
             print(f"WARNING: Forced version {config.version} outdated", file=sys.stderr)
         if config.version and futuristic:
             print(f"INFO: Forced version {config.version} not (yet) stable", file=sys.stderr)
-        printnq(f"Testing {specdict['name']} version {vd['version']}")
+        printnq(f"Testing {spec['name']} version {vd['version']}")
         if "standards" not in vd:
-            print(f"WARNING: No standards defined yet for {specdict['name']} version {vd['version']}",
+            print(f"WARNING: No standards defined yet for {spec['name']} version {vd['version']}",
                   file=sys.stderr)
         errors = 0
         aborts = 0
+        invokations = vr["invokations"]
         for standard in vd.get("standards", ()):
             check_keywords(standard, 'standard', KEYWORDS_STANDARD)
             optional = condition_optional(standard)
@@ -244,29 +258,30 @@ def main(argv):
                             if line.lower().startswith(signal)
                         ])
                     memo[memo_key] = invokation
+                invokations.append(memo_key)
                 abort = invokation["critical"]
                 error = invokation["error"]
                 printnq(f"... returned {error} errors, {abort} aborts")
-                check["aborts"] = abort
-                check["errors"] = error
                 if not condition_optional(check, optional):
                     aborts += abort
                     errors += error
-        vd["aborts"] = aborts
-        vd["errors"] = errors
-        vd["passed"] = not (aborts + errors)
+        vr["aborts"] = aborts
+        vr["errors"] = errors
+        vr["passed"] = not (aborts + errors)
         printnq("*******************************************************")
-        printnq(f"Verdict for os_cloud {config.os_cloud}, {specdict['name']}, "
+        printnq(f"Verdict for os_cloud {config.os_cloud}, {spec['name']}, "
                 f"version {vd['version']}: {errcode_to_text(aborts + errors)}")
         allaborts += aborts
         allerrors += errors
+    report["run"]["aborts"] = allaborts
+    report["run"]["errors"] = allerrors
     if not matches:
-        print(f"No valid standard found for {config.checkdate}", file=sys.stderr)
-        return 2
+        print(f"CRITICAL: No valid scope found for {config.checkdate}", file=sys.stderr)
+        allaborts += 1  # note: this is after we put the number into the report, so only for return code
     if config.output:
         with open(config.output, 'w', encoding='UTF-8') as file:
             yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)
-    return allaborts + (0 if config.critical_only else allerrors)
+    return min(127, allaborts + (0 if config.critical_only else allerrors))
 
 
 if __name__ == "__main__":
