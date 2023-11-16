@@ -197,9 +197,9 @@ def main(argv):
     wrongFlv.sort()
     warnFlv.sort()
     # We have counted errors on the fly, add missing flavors to the final result
-    if scsMandatory:
-        errors += len(scsMandatory)
-        print(f"ERROR: Missing mandatory flavors: {', '.join(scsMandatory)}", file=sys.stderr)
+    for fn in scsMandatory:
+        errors += 1
+        print(f"ERROR: Missing mandatory flavor: {fn}", file=sys.stderr)
     # Produce dicts for YAML reporting
     flvSCSList = {
         "MandatoryFlavorsPresent": MSCSFlv,
