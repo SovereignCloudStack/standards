@@ -208,9 +208,9 @@ def main(argv):
         vr = vrs[vd["version"]] = {
             "status": outdated and "outdated" or futuristic and "preview" or "valid",
             "passed": False,
-            "invokations": [],
             "aborts": 0,
             "errors": 0,
+            "invokations": [],
         }
         if outdated and not config.version:
             continue
