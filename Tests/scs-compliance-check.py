@@ -36,10 +36,13 @@ from itertools import chain
 import yaml
 
 
-KEYWORDS_SPEC = ('name', 'url', 'versions', 'prerequisite')
-KEYWORDS_VERSION = ('version', 'standards', 'stabilized_at', 'obsoleted_at')
-KEYWORDS_STANDARD = ('check_tools', 'url', 'name', 'condition')
-KEYWORDS_CHECKTOOL = ('executable', 'args', 'condition', 'classification')
+# valid keywords for various parts of the spec, to be checked using `check_keywords`
+KEYWORDS = {
+    'spec': ('name', 'url', 'versions', 'prerequisite'),
+    'version': ('version', 'standards', 'stabilized_at', 'obsoleted_at'),
+    'standard': ('check_tools', 'url', 'name', 'condition'),
+    'checktool': ('executable', 'args', 'condition', 'classification'),
+}
 
 
 def usage(file=sys.stdout):
@@ -150,7 +153,8 @@ def condition_optional(cond, default=False):
     return value
 
 
-def check_keywords(d, ctx, valid=()):
+def check_keywords(ctx, d):
+    valid = KEYWORDS[ctx]
     invalid = [k for k in d if k not in valid]
     if invalid:
         print(f"ERROR in spec: {ctx} uses unknown keywords: {','.join(invalid)}", file=sys.stderr)
@@ -191,7 +195,7 @@ def main(argv):
             "invokations": {},
         },
     }
-    check_keywords(spec, 'spec', KEYWORDS_SPEC)
+    check_keywords('spec', spec)
     if config.version:
         spec["versions"] = [vd for vd in spec["versions"] if vd["version"] == config.version]
     if "prerequisite" in spec:
@@ -200,7 +204,7 @@ def main(argv):
     memo = report["run"]["invokations"]  # memoize check tool results
     matches = 0
     for vd in spec["versions"]:
-        check_keywords(vd, 'version', KEYWORDS_VERSION)
+        check_keywords('version', vd)
         stb_date = vd.get("stabilized_at")
         obs_date = vd.get("obsoleted_at")
         futuristic = not stb_date or config.checkdate < stb_date
@@ -227,7 +231,7 @@ def main(argv):
         aborts = 0
         invokations = vr["invokations"]
         for standard in vd.get("standards", ()):
-            check_keywords(standard, 'standard', KEYWORDS_STANDARD)
+            check_keywords('standard', standard)
             optional = condition_optional(standard)
             printnq("*******************************************************")
             printnq(f"Testing {'optional ' * optional}standard {standard['name']} ...")
@@ -235,7 +239,7 @@ def main(argv):
             if "check_tools" not in standard:
                 printnq(f"WARNING: No check tool specified for {standard['name']}", file=sys.stderr)
             for check in standard.get("check_tools", ()):
-                check_keywords(check, 'checktool', KEYWORDS_CHECKTOOL)
+                check_keywords('checktool', check)
                 if check.get("classification", "light") not in config.classes:
                     print(f"skipping check tool '{check['executable']}' because of resource classification")
                     continue
