@@ -62,15 +62,14 @@ With -C, the return code will be nonzero precisely when the tests couldn't be ru
 
 
 def run_check_tool(executable, args, env=None, cwd=None):
-    "Run executable and return exit code"
+    """Run executable and return `CompletedProcess` instance"""
     if executable.startswith("http://") or executable.startswith("https://"):
-        print(f"ERROR: remote check_tool {executable} not yet supported", file=sys.stderr)
         # TODO: When we start supporting this, consider security concerns
         # Running downloaded code is always risky
         # - Certificate pinning for https downloads
         # - Refuse http
         # - Check sha256/512 or gpg signature
-        return 999999
+        raise NotImplementedError(f"remote check_tool {executable} not yet supported")
     if executable.startswith("file://"):
         executable = executable[7:]
     exe = [os.path.abspath(os.path.join(cwd or ".", executable)), *shlex.split(args)]
@@ -98,9 +97,7 @@ class Config:
         self.critical_only = False
 
     def apply_argv(self, argv):
-        """
-        Parse options. May exit the program.
-        """
+        """Parse options. May exit the program."""
         try:
             opts, args = getopt.gnu_getopt(argv, "hvqd:V:sc:o:r:C", (
                 "help", "verbose", "quiet", "date=", "version=",
@@ -139,7 +136,8 @@ class Config:
 
 
 def condition_optional(cond, default=False):
-    """check whether condition is in dict cond
+    """
+    check whether condition is in dict cond
        - If set to mandatory, return False
        - If set to optional, return True
        - If set to something else, error out
@@ -163,6 +161,31 @@ def check_keywords(ctx, d):
 
 def suppress(*args, **kwargs):
     return
+
+
+def invoke_check_tool(check, check_env, check_cwd):
+    """run check tool and return invokation dict to use in the report"""
+    try:
+        compl = run_check_tool(check["executable"], check.get("args", ''), env=check_env, cwd=check_cwd)
+    except Exception as e:
+        invokation = {
+            "rc": 127,
+            "stdout": [],
+            "stderr": [f"CRITICAL: {e!s}"],
+        }
+    else:
+        invokation = {
+            "rc": compl.returncode,
+            "stdout": compl.stdout.splitlines(),
+            "stderr": compl.stderr.splitlines(),
+        }
+    for signal in ('info', 'warning', 'error', 'critical'):
+        invokation[signal] = len([
+            line
+            for line in chain(invokation["stderr"], invokation["stdout"])
+            if line.lower().startswith(signal)
+        ])
+    return invokation
 
 
 def main(argv):
@@ -247,20 +270,9 @@ def main(argv):
                 memo_key = f"{check['executable']} {args}".strip()
                 invokation = memo.get(memo_key)
                 if invokation is None:
-                    compl = run_check_tool(check["executable"], args, env=check_env, cwd=check_cwd)
-                    printv(compl.stdout)
-                    printnq(compl.stderr)
-                    invokation = {
-                        "rc": compl.returncode,
-                        "stdout": compl.stdout.splitlines(),
-                        "stderr": compl.stderr.splitlines(),
-                    }
-                    for signal in ('info', 'warning', 'error', 'critical'):
-                        invokation[signal] = len([
-                            line
-                            for line in chain(compl.stderr.splitlines(), compl.stdout.splitlines())
-                            if line.lower().startswith(signal)
-                        ])
+                    invokation = invoke_check_tool(check, check_env, check_cwd)
+                    printv("\n".join(invokation["stdout"]))
+                    printnq("\n".join(invokation["stderr"]))
                     memo[memo_key] = invokation
                 invokations.append(memo_key)
                 abort = invokation["critical"]
