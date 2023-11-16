@@ -91,7 +91,7 @@ CONS:
    - Compared to _option 1_, the [goals][e2e-frame-goals] of the [e2e-framework][e2e-frame] can be seen as the disadvantages of using [Kubernetes' own e2e-tests][k8s-e2e-tests].
 
 
-> TODO: proof of work: [kaas-sonobuoy-go-example-k8s-e2e](../Tests/kaas/kaas-sonobuoy-go-example-k8s-e2e/)
+> TODO: provide proof of work: _kaas-sonobuoy-go-example-k8s-e2e_
 
 
 #### _Option 3_ Write Python scripts for tests
@@ -109,8 +109,7 @@ This approach also leaves the decision open as to which test framework should be
 used for Python. Hence, if we follow this approach, we need to create a
 framework of our own.
 
-> TODO: link to "default storage class" test after [PR 360](https://github.com/SovereignCloudStack/standards/pull/360) got merged
-> proof of work: [kaas-sonobuoy-python-example](../Tests/kaas/)
+> proof of work: [k8s-default-storage-class](../Tests/kaas/k8s-default-storage-class)
 
 
 PROS:
