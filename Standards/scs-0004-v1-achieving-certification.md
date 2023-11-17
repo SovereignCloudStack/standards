@@ -35,7 +35,7 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
 
 4. Details on the standards achieved, as well as the current state and the history of all test and check results will be displayed on a public webpage (henceforth, _certificate status page_) owned by SCS.
 
-5. The SCS certification assessment body (or entities empowered to do so) WILL review the certification application and either grant the certification, reject it or ask for further measures or information.
+5. The SCS certification assessment body (initially the SCS project in the OSB Allliance e.V., possibly further entities empowered to do so by the SCS trademark owner, currently the OSB Alliance e.V.) WILL review the certification application and either grant the certification, reject it or ask for further measures or information.
    <!-- body might as well just be a machine, at least on the scs compatible level -->
 
 6. Once the certificate is granted by the SCS certification assessment body, the operator SHOULD use the corresponding logo and publicly state the certified "SCS compatibility" on the respective layer for the time of the validity of the certification. In case of a public cloud, this public display is even REQUIRED. In any case, the logo MUST be accompanied by a hyperlink (a QR code for printed assets) to the respective certificate status page.
