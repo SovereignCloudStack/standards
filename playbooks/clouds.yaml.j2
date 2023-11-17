@@ -35,6 +35,15 @@ clouds:
       application_credential_id: "{{ clouds_conf.pco_prod3_ac_id }}"
       application_credential_secret: {{ clouds_conf.pco_prod3_ac_secret }}"
     auth_type: "v3applicationcredential"
+  regio-a:
+    region_name: "RegionA"
+    interface: "public"
+    identity_api_version: 3
+    auth:
+      auth_url: https://keystone.services.a.regiocloud.tech/v3/
+      application_credential_id: "{{ clouds_conf.regio_a_ac_id }}"
+      application_credential_secret: {{ clouds_conf.regio_a_ac_secret }}"
+    auth_type: "v3applicationcredential"
   wavestack:
     interface: "public"
     identity_api_version: 3
