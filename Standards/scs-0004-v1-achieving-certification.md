@@ -31,7 +31,7 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
 
    <!-- Initially this will probably be eMail -->
 
-3. If the desired certificate requires manual checks, then the operator MUST offer the SCS project suitable access. Manual checks MUST be repeated once every 3 months.
+3. If the desired certificate requires manual checks, then the operator MUST offer the SCS project suitable access. Manual checks MUST be repeated once every quarter.
 
 4. Details on the standards achieved, as well as the current state and the history of all test and check results will be displayed on a public webpage (henceforth, _certificate status page_) owned by SCS.
 
