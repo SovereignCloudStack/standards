@@ -12,7 +12,7 @@
     periodic-hourly:
       jobs:
         - scs-check-gx-scs
-    check:
+    post:
       jobs:
         - scs-check-gx-scs
 - job:
