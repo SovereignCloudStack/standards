@@ -144,18 +144,18 @@ The "`is_domain_managed_role`" rule definition is the only exception to this (se
 
 # allow domain admins to manage users within their domain
 "identity:list_users": "(rule:is_domain_manager and token.domain.id:%(target.domain_id)s) or rule:admin_required"
-"identity:get_user": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or rule:admin_required"
+"identity:get_user": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or rule:admin_or_owner"
 "identity:create_user": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or rule:admin_required"
 "identity:update_user": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or rule:admin_required"
 "identity:delete_user": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or rule:admin_required"
 
 # allow domain admins to manage projects within their domain
 "identity:list_projects": "(rule:is_domain_manager and token.domain.id:%(target.domain_id)s) or rule:admin_required"
-"identity:get_project": "(rule:is_domain_manager and token.domain.id:%(target.project.domain_id)s) or rule:admin_required"
+"identity:get_project": "(rule:is_domain_manager and token.domain.id:%(target.project.domain_id)s) or rule:admin_required or project_id:%(target.project.id)s"
 "identity:create_project": "(rule:is_domain_manager and token.domain.id:%(target.project.domain_id)s) or rule:admin_required"
 "identity:update_project": "(rule:is_domain_manager and token.domain.id:%(target.project.domain_id)s) or rule:admin_required"
 "identity:delete_project": "(rule:is_domain_manager and token.domain.id:%(target.project.domain_id)s) or rule:admin_required"
-"identity:list_user_projects": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or user_id:%(user_id)s or rule:admin_required"
+"identity:list_user_projects": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or rule:admin_or_owner"
 
 # allow domain managers to manage role assignments within their domain
 # (restricted to specific roles by the 'is_domain_managed_role' rule)
@@ -181,7 +181,7 @@ The "`is_domain_managed_role`" rule definition is the only exception to this (se
 "identity:create_group": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s) or rule:admin_required"
 "identity:update_group": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s) or rule:admin_required"
 "identity:delete_group": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s) or rule:admin_required"
-"identity:list_groups_for_user": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or rule:admin_required"
+"identity:list_groups_for_user": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or rule:admin_or_owner"
 "identity:list_users_in_group": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s) or rule:admin_required"
 "identity:remove_user_from_group": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s and token.domain.id:%(target.user.domain_id)s) or rule:admin_required"
 "identity:check_user_in_group": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s and token.domain.id:%(target.user.domain_id)s) or rule:admin_required"
