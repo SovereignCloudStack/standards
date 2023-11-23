@@ -77,19 +77,6 @@ Once the RBAC rework concludes, anything not already included in this standard c
 
 ## Open questions
 
-### Q1: Do we need a restricted "auditor" role?
-
-The role "reader" has read-only access to resources within projects and some general API endpoints.
-With this read-only access, users possessing this role can still see potentially sensitive data such as IP addresses, open ports.
-It may be desired by SCS to additionally offer a dedicated "auditor" role which permits similar read-only access but resembles a limited subset of a reader's access permissions to exclude sensitive data from being visible.
-Such auditor users could be used to enable compliance checks by independent third parties or similar use cases that require allowing inspections of OpenStack projects or domains without exposing sensitive data.
-This standard does not propose such auditor role yet, because the following questions need to be answered before an auditor role can be defined and implemented:
-
-- which information returned by the OpenStack APIs is considered sensitive data and how does this map to the RBAC policy permission set?
-- is the RBAC policy granularity sufficient to distinct between sensitive and non-sensitive data while not restricting access to basic information?
-    - for example, specific content of API responses cannot be restricted using policies, only API actions as a whole can, such as "os_compute_api:servers:index", "os_compute_api:servers:create" and so on; this means that the distinction could only be made based on resource classes
-
-
 ## Decision
 
 TODO
@@ -129,6 +116,27 @@ Conformance Tests, OPTIONAL
 ## Appendix
 
 ### Decision Record
+
+#### An auditor role will not be included
+
+Decision Date: 2023-11-22
+
+Decision Maker: Team IaaS
+
+Decision:
+
+- we will not introduce a SCS-specific "auditor" role that diverges from OpenStack and resembles a subset of the "reader" role
+
+Rationale:
+
+- the auditor role was intended to be a restricted reader role that has read-only access but does not see everything a reader does to hide potentially sensitive information
+- RBAC granularity is not fine enough to properly differentiate between sensitive and non-sensitive information on API endpoints (mostly individual properties of response body contents)
+- there is no one-size-fits-all classification of sensitive API response contents as requirements vary between use cases and environments; "what counts as sensitive information?" is hard to answer in a standardized fashion
+
+Links / Comments / References:
+
+- [Team IAM meeting protocol entry](https://github.com/SovereignCloudStack/minutes/blob/main/iaas/20231122.md#role-standard) 
+
 
 #### Introduction of "auditor" role should be considered
 
