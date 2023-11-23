@@ -37,7 +37,7 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
 
    The page will be kept online for the duration of the certificate's validity, plus at least 3 months; afterwards, it can be taken offline, either upon request or in the course of maintenance cleanup. However, the page's content won't be deleted until 12 months after the certificate's expiration, for the page will be reanimated and reused if, within this timeframe, a new certificate is issued for the same scope and the same cloud.
 
-5. The SCS certification assessment body (initially the SCS project in the OSB Allliance e.V., possibly further entities empowered to do so by the SCS trademark owner, currently the OSB Alliance e.V.) WILL review the certification application and either grant the certification, reject it or ask for further measures or information.
+5. The SCS certification assessment body (initially the SCS project in the OSB Alliance e.V., possibly further entities empowered to do so by the SCS trademark owner, currently the OSB Alliance e.V.) WILL review the certification application and either grant the certification, reject it or ask for further measures or information.
 
 6. Once the certificate is granted by the SCS certification assessment body, the operator SHOULD use the corresponding logo and publicly state the certified "SCS compatibility" on the respective layer for the time of the validity of the certification. In case of a public cloud, this public display is even REQUIRED. In any case, the logo MUST be accompanied by a hyperlink (a QR code for printed assets) to the respective certificate status page.
 
