@@ -77,9 +77,24 @@ Once the RBAC rework concludes, anything not already included in this standard c
 
 ## Open questions
 
+### Limited scope of OpenStack services covered by this standard
+
+Currently, SCS does not enforce a list of OpenStack components/services it covers and/or supports exactly.
+This poses a challenge to this standard since each OpenStack service API has their own policy configuration where the role model of this standard must be applied to properly to be effective.
+This means that services which SCS and this standard in particular do not cover (i.e. for which it does not provide templates or guidelines for) are up to the CSP to align to the role model accordingly, which limits the scope and reliability of the standard.
+How this can be addressed in future iterations of the standard is still uncertain.
+
+### Aligning the standard with future upstream changes
+
+Due to the ongoing RBAC rework in upstream OpenStack[^1], not all changes which are to be introduced by it will be included in the first iteration of this standard to avoid prematurely adopting role and policy definitions which might still change before being stabilized.
+This results in a need of keeping this standard in sync once the upstream rework finishes.
+It is currently unknown when the upstream rework will conclude exactly and how this standard will need to be adjusted as a result.
+
 ## Decision
 
-TODO
+This standard establishes a set of roles consisting of current OpenStack defaults and the stable parts of the ongoing OpenStack RBAC rework[^1].
+
+TODO: detailed description
 
 Furthermore, the project-scoped "manager" role defined by OpenStack's RBAC rework will not be incorporated into the SCS standard as long as its integration is not finalized in upstream OpenStack.
 
