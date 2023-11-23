@@ -4,6 +4,12 @@ type: Standard
 status: Stable
 stabilized_at: 2023-02-07
 track: KaaS
+description: |
+  The SCS-0210 standard outlines the expected pace at which providers should adopt new Kubernetes versions, aiming
+  for alignment with the rapid development cycle of Kubernetes. Providers must offer the latest minor version within
+  four months of its release and the newest patch version within a week, ensuring users have timely access to security
+  updates, bug fixes, and features. The standard emphasizes the need for expedited updates for critical CVEs and
+  expects providers to thoroughly test new versions before deployment.
 ---
 
 ## Introduction
