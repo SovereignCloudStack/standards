@@ -4,13 +4,22 @@
 #
 # (c) Kurt Garloff <kurt@garloff.de>, 11/2023
 # SPDX-License-Identifier: CC-BY-SA-4.0
-import os
+"""
+flavor-form.py
+CGI script to get passed flavor from a html form (GET)
+and parses it according to SCS flavor naming.
+It returns an error (sometimes with a useful error message)
+or a human-readable description of the flavor.
+"""
+
+# import os
 import sys
-import traceback
+# import traceback
 import cgi
 
+
 def main(argv):
-    "Entry point for for cgi"
+    "Entry point for cgi flavor parsing"
     import importlib
     fnmd = importlib.import_module("flavor-name-describe")
     print("Content-Type: text/html\n")
@@ -18,8 +27,8 @@ def main(argv):
     try:
         fnm = form["flavor"].value
         print(f"<h1>SCS flavor name {fnm}</h1>")
-        pnm = fnmd.main((fnm,))
-    except (TypeError,NameError,KeyError) as exc:
+        fnmd.main((fnm,))
+    except (TypeError, NameError, KeyError) as exc:
         print("ERROR<br/>")
         print(exc)
     print('<br/><br/><FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
@@ -28,6 +37,7 @@ def main(argv):
     # print('  <INPUT TYPE="reset"  VALUE="Clear"/>\n</FORM>')
     print('</FORM>')
     print("\n<br/><br/><a href=\"/\">Back to main page</a>")
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
