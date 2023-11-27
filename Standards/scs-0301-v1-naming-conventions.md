@@ -1,6 +1,6 @@
 ---
-title: Recommended naming for domains/groups/roles/project when onboarding new customers
-type: _Standard | Decision Record_
+title: Naming for domains/groups/roles/project when onboarding new customers
+type: Decision Record
 status: Draft
 track: IAM
 ---
