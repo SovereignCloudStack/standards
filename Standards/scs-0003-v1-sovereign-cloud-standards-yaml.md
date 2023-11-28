@@ -1,7 +1,8 @@
 ---
 title: Sovereign Cloud Standards YAML
 type: Procedural
-status: Draft
+status: Stable
+stabilized_at: 2023-12-01
 track: Global
 ---
 
