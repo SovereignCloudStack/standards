@@ -26,50 +26,22 @@ We want to standardize a few varieties of volume types. While a user can choose 
 
 All Considerations can be looked up in detail in the [Decision Record for the Volume Type Standard.](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0111-v1-volume-type-decisions.md)
 
-To test whether a deployment has volume types with certain aspects, the discoverability of the parameters in the volume type has to be given. The following table shows, which aspects are considered in this standard. Furthermore the table shows, according to the current upstream implementation, whether the feature is discoverable, and who can discover this. The comments state what can be done to help with the discoverability and other important restrictions.
+To test whether a deployment has volume types with certain aspects, the discoverability of the parameters in the volume type has to be given. The following table shows, which aspects are considered in this standard. Furthermore the table shows, according to the current upstream implementation, whether the feature is discoverable, and who can discover this. The comments state what can be done to help with the discoverability and other important restrictions. The last column says how the standard is handled, which is currently through the addition of a stadardized phrase at the beginning of the description of a volume type.
 
-| Aspect | Standardize? | Discoverability | comments |
-| ---- | ---- | ---- | ------ |
-| encryption | **Recommended** | admin only | Upstream work for extra_spec: encrypted=True/False needed |
-| Backend name | - | - | - |
-| AZs | **Optional** | - | Upstream: setable extra_spec would help |
-| multiattach | **Optional** | yes | - |
-| Replication | **Recommended** | backend-dependend | Upstream: setable extra_spec would help |
-| Number of Replicas, etc | **Optional** | backend-dependend | Upstream: setable extra_spec would help |
-| Volume QoS | **Optional** | admin only | depends on the admin only volume qos object |
+| Aspect | Part of Standard | Discoverability | comments | concluded standardized description |
+| ---- | ---- | ---- | ---- | ------ |
+| encryption | **Recommended** | admin only | Upstream work for extra_spec: encrypted=True/False needed | **"[encrypted]"** |
+| Replication | **Recommended** | backend-dependend | Upstream: setable extra_spec would help | **"[replicated]"** |
+| AZs | **Optional** | - | Upstream: setable extra_spec would help | - |
+| multiattach | **Optional** | yes | - | - |
+| Number of Replicas, etc | **Optional** | backend-dependend | Upstream: setable extra_spec would help | - |
+| Volume QoS | **Optional** | admin only | depends on the admin only volume qos object | - |
+| Backend name | no | - | - | - |
 
 In addition it is possible to use multiple of those aspects within one volume type. SCS will only ever look, if there is a volume type that has an aspect, but they don't have to be different volume types.
 Example: one volume type that uses LUKS-encryption with a ceph storage with inherent replication would fulfill all recommendations of this standard.
 
-## DEFAULT volume types
-
-There is always a default volume type defined in an OpenStack deployment. The SCS does not have any requirements about this volume type at this moment, instead deployers are free to choose what fits best in their environment. Conversely, a cloud user can not expect any specific behavior or properties from default volume types.
-
-The parameters of volume types described in this standard do not have to be applied to the chosen default volume type. And the SCS will not make any assumptions about parameters being present in the default volume type.
-
-## REQUIRED volume types
-
-Currently the SCS will not require volume types with certain specification. This might change in the future.
-
-## RECOMMENDED volume types
-
-The SCS recommends to have one or more volume types, which have the following specifications:
-
-### Encryption
-
-Encryption for volumes is an option which has to be configured within the volume type. As an admin it is possible to set encryption-provider, key size, cipher and control location. And for admins it is also currently possible to see these configurations in a volume type with both list and show commands.
-
-```text
-openstack volume type list --encryption-type
-+--------------------------------------+-------------+-----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ID                                   | Name        | Is Public | Encryption                                                                                                                                                                         |
-+--------------------------------------+-------------+-----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| d34b5de0-d7bf-43cf-8a74-3827169d6616 | LUKS        | True      | cipher='aes-xts-plain64', control_location='front-end', encryption_id='217386bc-1e9b-46a3-9e0e-3ad62c07826c', key_size='256', provider='nova.volume.encryptors.luks.LuksEncryptor' |
-+--------------------------------------+-------------+-----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-```
-
-**TODO**:
-Users that don't have admin rights currently cannot see these encryption parameters. We want and need to change this in the OpenStack workflow through adding a property (e.g. "encrypted"="true") that is also visible for users. This way we will be able to automatically check whether a volume type with encyrption is present. It should look like this:
+The current downside is that users without admin rights currently cannot see the recommended aspects. We want and need to change this in the OpenStack workflow through adding discoverable properties (e.g. "encrypted"="true" and "replicated"="true") that are also visible for users. This way we will be able to automatically check whether a volume type with encyrption and or replication is present. It should look like this example for encryption:
 
 ```text
 openstack volume type show LUKS
@@ -86,7 +58,44 @@ openstack volume type show LUKS
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
 
-Until this change happened, it will be necessary that deployer state that the volume type is encrypted in the description of the volume type in the following way:
+We want to find a way to also use the internal extra_spec for replication, when the replication is automatically done by the backend. If this is not possible, we would like to introduce another property, which has to be set by the admin, when setting the volume type. Only after that we will have the possibility to automatically check for a volume type with replication.
+
+## DEFAULT volume types
+
+There is always a default volume type defined in an OpenStack deployment. The SCS does not have any requirements about this volume type at this moment, instead deployers are free to choose what fits best in their environment. Conversely, a cloud user can not expect any specific behavior or properties from default volume types.
+
+The parameters of volume types described in this standard do not have to be applied to the chosen default volume type. And the SCS will not make any assumptions about parameters being present in the default volume type.
+
+## REQUIRED volume types
+
+Currently the SCS will not require volume types with certain specification. This might change in the future.
+
+## RECOMMENDED volume types
+
+The SCS recommends to have one or more volume types, which have the following specifications:
+
+| Volume Type Nr | Type Name | Volume Type Description |
+| ---- | ---- | ---- |
+| 1 | LUKS | [encrypted] This volume type creates LUKS encryped volumes | 
+| 2 | replicated | [replicated] Volumes will be three times replicated | 
+| 3 | enc-repli| [encrypted][replicated] Volumes will be encrypted and three times replicated | 
+
+The standardized phrases MUST be ordered alphabetically. Having only volume type number 3 would be enough to fulfill all recommandations.
+
+### Encryption
+
+Encryption for volumes is an option which has to be configured within the volume type. As an admin it is possible to set encryption-provider, key size, cipher and control location. And for admins it is also currently possible to see these configurations in a volume type with both list and show commands.
+
+```text
+openstack volume type list --encryption-type
++--------------------------------------+-------------+-----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| ID                                   | Name        | Is Public | Encryption                                                                                                                                                                         |
++--------------------------------------+-------------+-----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| d34b5de0-d7bf-43cf-8a74-3827169d6616 | LUKS        | True      | cipher='aes-xts-plain64', control_location='front-end', encryption_id='217386bc-1e9b-46a3-9e0e-3ad62c07826c', key_size='256', provider='nova.volume.encryptors.luks.LuksEncryptor' |
++--------------------------------------+-------------+-----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+```
+
+As this is not visible for users, it will be necessary that deployers state that the volume type is encrypted in the description of the volume type in the following way:
 The description needs to begin with `[encrypted]`, after that any further description is allowed. It should look like this example:
 
 ```text
@@ -112,9 +121,6 @@ Replication states, whether or not there are multiple replicas of a volume. Thus
 
 To fulfill this recommentation for now, the deployer needs to state the replication in the description of a volume type in the following way:
 The description needs to begin with `[replicated]`, after that any further description is allowed.
-
-**TODO:**
-We want to find a way to also use the internal extra_spec for replication, when the replication is automatically done by the backend. If this is not possible, we would like to introduce another property, which has to be set by the admin, when setting the volume type. Only after that we will have the possibility to automatically check for a volume type with replication.
 
 #### OPTIONAL addition: Number of Replicas
 
@@ -147,7 +153,7 @@ It is OPTIONAL to give more information to users like this:
 | Field              | Value                                                                                                                                                        |
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | access_project_ids | None                                                                                                                                                         |
-| description        | [encrypted:cipher=aes,key_size=256][replicated] Content will be replicated three times and LUKS encryption is used.                                          |
+| description        | [encrypted:cipher=aes,key_size=256][replicated: 3 times] Content will be replicated three times and LUKS encryption is used.                                 |
 | id                 | d63307fb-167a-4aa0-9066-66595ea9fb21                                                                                                                         |
 | is_public          | True                                                                                                                                                         |
 | name               | hdd-three-replicas-LUKS                                                                                                                                      |
@@ -217,4 +223,4 @@ As there are currently no REQUIRED volume types, we can only look for the RECOMM
 Furthermore the recommended aspects currently have to be described in the description by the deployer. In future versions we aim to integrate some extra_specs for them in upstream OpenStack
 And it is also possible that a single volume type can currently fulfill all RECOMMENDED aspects.
 
-**TODO:** The current test will check for the presence of `[encrypted]` and `[replicated]` in the description of at least one volume type.
+The current test will check for the presence of `[encrypted]` and `[replicated]` in the description of at least one volume type.
