@@ -3,7 +3,7 @@ title: SCS Documentation structure
 type: Procedural
 version: 2023-08-03-001
 authors: Max Wolfs
-state: Draft
+status: Draft
 track: Global
 replaces: scs-0002-v1-standards-docs-org.md
 ---
