@@ -76,9 +76,9 @@ The SCS recommends to have one or more volume types, which have the following sp
 
 | Volume Type Nr | Type Name | Volume Type Description |
 | ---- | ---- | ---- |
-| 1 | LUKS | [encrypted] This volume type creates LUKS encryped volumes | 
-| 2 | replicated | [replicated] Volumes will be three times replicated | 
-| 3 | enc-repli| [encrypted][replicated] Volumes will be encrypted and three times replicated | 
+| 1 | LUKS | "[encrypted] This volume type creates LUKS encryped volumes" |
+| 2 | replicated | "[replicated] Volumes will be three times replicated" |
+| 3 | enc-repli| "[encrypted][replicated] Volumes will be encrypted and three times replicated" |
 
 The standardized phrases MUST be ordered alphabetically. Having only volume type number 3 would be enough to fulfill all recommandations.
 
