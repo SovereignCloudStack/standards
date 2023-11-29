@@ -20,7 +20,7 @@
     parent: base
     secrets:
      - name: clouds_conf
-       secret: compliance_check_app_credentials
+       secret: SECRET_STANDARDS
     vars:
       cloud: gx-scs
     run: playbooks/compliance_check.yaml

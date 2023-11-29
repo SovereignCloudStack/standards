@@ -1,5 +1,5 @@
 - secret:
-    name: compliance_check_app_credentials
+    name: SECRET_STANDARDS
     data:
       gx_scs_ac_id: !encrypted/pkcs1-oaep
         - b/SnLk91ZRXkFj22EjOZk+vqqJIDySsGL9WzaR8nZntJOYfhkqVbp5AV9KDuqP/bj9MrR
