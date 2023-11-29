@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/features"
 )
 
-func TestListPods(t *testing.T) {
+func TestListPodsB(t *testing.T) {
 	f := features.New("pod list").
 		Assess("pods from kube-system", func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 			var pods corev1.PodList
@@ -42,7 +42,7 @@ func TestListPods(t *testing.T) {
 	testenv.Test(t, f.Feature())
 }
 
-func TestLongTest(t *testing.T) {
+func TestLongTestB(t *testing.T) {
 	f := features.New("pod list").
 		Assess("pods from kube-system", func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 			var pods corev1.PodList

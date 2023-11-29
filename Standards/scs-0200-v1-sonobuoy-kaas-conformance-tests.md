@@ -1,5 +1,5 @@
 ---
-title: Sonobuoy kaas conformance tests framework
+title: Sonobuoy - KaaS conformance test framework
 type: Decision Record
 status: Draft
 track: KaaS
@@ -7,123 +7,115 @@ track: KaaS
 
 ## Introduction - Motivation
 
-With the [k8s-cluster-api-provider][k8s-api] the SCS provides a tooling to generate and manage k8s cluster on top of it's OpenStack IAAS infrastructure.
-Part of this tool is the usage of [Sonobuoy][sonobuoy] as a test suit tool to execute the official [kubernetes e2e tests][k8s-e2e-tests].
-Future conformance tests derived from standards could already be part of the Kubernetes e2e tests and could be provided by running the integrated Sonobuoy [e2e test plugin][e2e test plugin].
+With the [k8s-cluster-api-provider][k8s-api], the SCS provides a tool to generate and manage k8s clusters on top of its OpenStack IAAS infrastructure.
+As part of the application, [Sonobuoy][sonobuoy] is used as a test suite to execute the official [Kubernetes e2e tests][k8s-e2e-tests].
+Future and existing conformance tests derived from SCS standards are perhaps part of these tests and could therefore be provided by running the integrated [Sonobuoy e2e test plugin][e2e test plugin].
 
-But apart from running the Kubernetes e2e tests Sonobuoy also allows to write your own tests and apply it as a self created [plugin][sonobuoy-plugin-docu].
-So for all tests not already provided by the [e2e test plugin][e2e test plugin] we should first write our own tests and second make them executable with Sonobuoy.
-Hence it would be useful to also use Sonobuoy as a test suit combined with a framework for writing SCS conformance tests.
+Apart from running the Kubernetes e2e tests, Sonobuoy also allows users to write their own tests and apply them as a self-managed [plugin][sonobuoy-plugin-docu].
+All tests not provided by the [e2e test plugin][e2e test plugin] could therefore be written by the respective SCS teams responsible for the standards or tests and then be made executable with Sonobuoy.
+Hence, Sonobuoy could provide both a pre-done test suite and a framework to write additional conformance tests required for SCS.
 
 ### Short Sonobuoy Introduction
 
-The main objective of [Sonobuoy plugins][sonobuoy-plugin-docu] is to present test results and their status in a consolidated way.
-This is essentially done by applying the test to a pod that is applied to the k8s cluster under test.
-A Sonobuoy worker then supervises this pod and forwards all test results to the aggregator.
-It does this by waiting for a "done file" to be created. Once this file is created, it forwards the results to the aggregator, using a predefined location of the results file within the done folder, as seen in following image:
+The main objective of [Sonobuoy plugins][sonobuoy-plugin-docu] is to present test results in a consolidated way.
+To do this, Sonobuoy integrates the test into a pod, which is then applied to the K8s cluster under test.
+A Sonobuoy worker supervises this pod and forwards all test results to the aggregator module.
+It does this by waiting for a specific "Done" file to be created. Once this file is recognized, the worker forwards the results to the aggregator, using a predefined location for the results file within a folder, as seen in following image:
 ![image search api](https://sonobuoy.io/img/plugin-contract.png)
 
-Therefore, in order to apply the conformance tests as a plugin, we need a tooling/wrapper/framework around the individual test scripts that:
+In order to use the existing conformance tests as a Sonobuoy plugin, a wrapper around the individual test scripts would be required. This wrapper would need to have the following effects:
 
-* Gathers all test results and provides them in the results file.
-* Run tests in sequence and signal the worker when it is finished by writing the "done file".
+* Gathers all test results and provides them in the results file
+* Run tests in sequence and signal the worker when it is finished by generating a "done" file
 
-Apart from providing the test results, a plugin container must also pass on the status of each test by setting the status flag in the results file.
-In addition, to run the tests as a Sonobuoy plugin, we need to create an image that can be run inside the k8s cluster under test.
+Apart from providing the test results, a plugin container must also forward the status of each test by setting a status flag in the results file.
+Additionally, the tests would need to be able to run inside a pod in the K8s cluster under test.
 
 ## Design Considerations
 
-Among the different ways to create a Sonobuoy plugin, there are three potential approaches that might work best for us.
-These are described in more detail below, where we discuss the pros and cons of each approach.
-One of these three approaches must be chosen for implementation.
-For the purposes of the investigation and the preparation of this decision record, there are examples(proof of work) for each different approach.
+There are different approaches to create a Sonobuoy plugin, which are discussed below in order to find a best practice for the SCS project.
+The documented approaches show one example each in order to give a better representation to the reader.
 
-#### _Option 1_ go approach [1]: Pick framework from the Sonobuoy plugin examples
+Sonobuoy provides plugin examples in the repository <https://github.com/vmware-tanzu/sonobuoy-plugins>, which are referenced throughout this section.
 
-Sonobuoy provides plugin examples in the following repository: [https://github.com/vmware-tanzu/sonobuoy-plugins][sonobuoy-plugins-repo].
-The most suitable plugin for us is the [e2e-skeleton][e2e-skel], which uses the [kubernetes-sigs/e2e-framework][e2e-frame].
-The [kubernetes-sigs/e2e-framework][e2e-frame] is a stand-alone project that is separate from the official [kubernetes e2e tests][k8s-e2e-tests].
-It is suitable for us to make us of it, as it provides a properly documented framework.
-In addition, it contains helper functions that abstract client go functions similar to those in the kubernetes/kubernetes/test/e2e/framework repository
-As mentioned in the [motivation][e2e-frame-motivation] of the [e2e-framework][e2e-frame], it was created to circumvent the disadvantages of
+### _Option 1_ GO [1]: Pick framework from the Sonobuoy plugin examples
+
+The seemingly most interesting plugin is the [e2e-skeleton][e2e-skel], which uses the [kubernetes-sigs/e2e-framework][e2e-frame].
+The [kubernetes-sigs/e2e-framework][e2e-frame] is a stand-alone project that is separate from the official [Kubernetes e2e tests][k8s-e2e-tests].
+The framework provides proper documentation as well as helper functions that abstract client functionalities, similar to those found in "kubernetes/kubernetes/test/e2e/framework" repository.
+
+As mentioned in the [motivation][e2e-frame-motivation] of the [e2e-framework][e2e-frame], the project was created to circumvent the disadvantages of
 [kubernetes' own e2e-tests][k8s-e2e-tests], which are described in more detail in the [goals][e2e-frame-goals].
 
 PROS:
-- Arguments in favor of this framework can also be found under the [goals description][e2e-frame-goals] of the documentation
-- [e2e-framework][e2e-frame] is a well defined framework who allows the handling of resources creation and deletion
-- official framework provided by Kubernetes-sigs
+
+* arguments in favor of this framework can also be found under the [goals description][e2e-frame-goals] of the documentation
+* [e2e-framework][e2e-frame] is a well defined framework, that allows the handling of resource creation and deletion
+* official framework provided by "Kubernetes-sigs"
 
 CONS:
-- compared to Python, Go is a less common programming language
-- arguments not in favor of this framework can also be derived from the [Non-Goals][e2e-frame-nongoals] description of the documentation:
-  - However, the point "No responsibility for bootstrapping or the execution of the tests themselves" can be ignored, as this is partly taken over by Sonobuoy.
-  - Also the point "no mock or fake cluster components" can be ignored as we want to use the e2e tests to test the Kubernetes cluster environment itself and not the functionality of the Kubernetes source code.
-    - For this test procedure we should run the Sonobuoy e2e plugin in addition to the SCS kaas conformance tests.
 
+* compared to Python, Go is a less common programming language
+* arguments not in favor of this framework can also be derived from the [Non-Goals][e2e-frame-nongoals] description of the documentation:
+  * "no responsibility for bootstrapping or the execution of the tests themselves" can be ignored, as this is partly taken over by Sonobuoy
+  * "no mock or fake cluster components" can be ignored, since the e2e tests of SCS should be used to test real clusters and their functionality
+  * for this test procedure, the Sonobuoy e2e plugin should be run in addition to the SCS kaas conformance tests
 
 > proof of work: [kaas-sonobuoy-go-example-e2e-framework](../Tests/kaas/kaas-sonobuoy-go-example-e2e-framework/)
 
+### _Option 2_ go approach [2]: Reuse the kubernetes own e2e test infrastructure and framework
 
-#### _Option 2_ go approach [2]: Reuse the kubernetes own e2e test infrastructure and framework
+The existing Sonobuoy e2e plugin already provides a vast number of tests that could be adapted or reused for the SCS project.
 
-As mentioned above, Sonobuoy already provides [Kubernetes own e2e tests][k8s-e2e-tests] as a plugin.
-These tests contain a vast number of examples that we could reuse and adapt to our needs.
-For the implementation, we could reuse the e2e tests and the framework in an adapted structure.
-More precisely this would lead us to make use of the test framework [ginkgo][ginkgo].
-The entry point for the implementation would be the build process of the Dockerimage which contains
-the e2e tests. Therefore we could copy the setup of the build process from
-[kubernetes/test/conformance/image][conformance-image] and adapt it to our requirements.
-The build process requires some files from the kubernetes repository.
-More precisely from:
-  - [kubernetes/cluster](https://github.com/kubernetes/kubernetes/tree/master/cluster)
-  - [kubernetes/test/e2e/framework](https://github.com/kubernetes/kubernetes/tree/master/test/e2e)
-  - [kubernetes/test/conformance/image/go-runner](https://github.com/kubernetes/kubernetes/tree/master/test/conformance/image/go-runner)
+If these e2e tests are to be reused in a customized structure, a framework like [ginkgo][ginkgo] must be used as it is provided by the Kubernetes e2e test infrastructure.
+This could use the implementation of the build process responsible for the Docker image containing the e2e tests. The setup could be copied from [kubernetes/test/conformance/image][conformance-image] and adapted to the projects requirements.
+The mentioned build process would use the following files from the Kubernetes repository:
 
+* [kubernetes/cluster](https://github.com/kubernetes/kubernetes/tree/master/cluster)
+* [kubernetes/test/e2e/framework](https://github.com/kubernetes/kubernetes/tree/master/test/e2e)
+* [kubernetes/test/conformance/image/go-runner](https://github.com/kubernetes/kubernetes/tree/master/test/conformance/image/go-runner)
 
 PROS:
-   - The [Kubernetes' own e2e tests][k8s-e2e-tests] already provide a vast amount of examples from which we can develop our own tests
-   - Compared to _option 1_, the [non-goals][e2e-frame-nongoals] of the [e2e-framework][e2e-frame] can be seen as the advantages of using [Kubernetes' own e2e-tests][k8s-e2e-tests].
 
+* [Kubernetes' own e2e tests][k8s-e2e-tests] already provide a vast amount of examples, which could be reused to develop specific SCS tests
+* compared to _option 1_, the [non-goals][e2e-frame-nongoals] of the [e2e-framework][e2e-frame] can be seen as the advantages of using [Kubernetes' own e2e-tests][k8s-e2e-tests].
 
 CONS:
-  - not easy to implement, as we would have to copy part of the Kubernetes repository and track the changes there as well.
-  - According to [README.md](https://github.com/kubernetes/kubernetes/tree/master/cluster#readme), part of it seems to be outdated and might change in the future.
-   - Compared to _option 1_, the [goals][e2e-frame-goals] of the [e2e-framework][e2e-frame] can be seen as the disadvantages of using [Kubernetes' own e2e-tests][k8s-e2e-tests].
 
+* not easy to implement, as we would have to copy part of the Kubernetes repository and track the changes from the upstream
+* according to [README.md](https://github.com/kubernetes/kubernetes/tree/master/cluster#readme), part of it seems to be outdated and might change with a future version
+  * compared to _option 1_, the [goals][e2e-frame-goals] of the [e2e-framework][e2e-frame] can be seen as the disadvantages of using [Kubernetes' own e2e-tests][k8s-e2e-tests].
 
 > TODO: provide proof of work: _kaas-sonobuoy-go-example-k8s-e2e_
 
-
 #### _Option 3_ Write Python scripts for tests
 
-Apply the already implemented conformance test python scripts and also continue
-writing future tests in python. Therefore, we would need to write a wrapper
-around the conformance tests scripts in order to make them executable as a
-Sonobuoy plug in. This includes  the collection of the test results and the
-Generation of the "done" file at the end. Furthermore, we could do this with a
-simple handler that executes each test script in a sequential order. All of
-this can then be stored in a container image and uploaded to a container
-registry that Sonobuoy can use within the k8s-cluster-api-provider.
+Sonobuoy makes it possible to write tests in Python and execute like other tests in a pod on the K8s cluster.
+It would therefore be possible to keep on writing conformance tests in Python.
+
+This option would require a wrapper in order to make the tests scripts executable as Sonobuoy plugins.
+This wrapper, as mentioned earlier, would need to capture the collection of test results as well as the generation of the "Done" file after the test execution is finished. This could be managed by executing each test script in a sequential order.
+
+The wrapper as well as the python tests and test framework could then be stored in a container image and uploaded to a registry in order to be usable by Sonobuoy within the k8s-cluster-api-provider.
 
 This approach also leaves the decision open as to which test framework should be
-used for Python. Hence, if we follow this approach, we need to create a
-framework of our own.
+used for Python, which should be decided in a secondary Decision Record.
 
 > proof of work: [k8s-default-storage-class](../Tests/kaas/k8s-default-storage-class)
 
-
 PROS:
-    - We can continue to use the current Python scripts
-        - However, only 2 scripts have been implemented so far. Rewriting them in Go should be a feasible task.
+
+* continue using the already available Python tests
+  * only a small number of tests is implemented thus far
 
 CONS:
-    - We would need to write our own test framework
 
+* no "native" support in Sonobuoy, a wrapper is needed
+* decision for a framework is still not done
 
 ## Pros and Cons of Different Approaches
 
-
-### Provide Sonobuoy plug in image
+### Providing Sonobuoy plug in image
 
 There are two potential approaches for building the Sonobuoy images.
 They are completely independent of which of the above-mentioned frameworks is selected.
@@ -134,28 +126,35 @@ Here we discuss the pros and cons of these two approaches.
 Make the image available via the container registry on GitHub.
 Hence we would need to apply a CI/CD job to build the images.
 
-
 PROS
-  - The tests do not have to be created each time before usage.
+
+* The tests do not have to be created each time before usage.
 
 CONS
-  - _None_
+
+* _None_
 
 #### _Option 2_ local image upload
 
 Create the image locally on the "clusterctl admin control node" and then upload it manually to the Kubernetes cluster under test.
 
 PROS
-  - _None_
+
+* _?_
 
 CONS
-  - To be able to use the tests, you always have to build them first
 
+* To be able to use the tests, you always have to build them first
+
+## Decision
+
+> TODO: describe decision
+
+## Documents
 
 [k8s-e2e-tests]: https://github.com/kubernetes/kubernetes/tree/master/test/e2e
 [sonobuoy]: https://sonobuoy.io/
-[sonobuoy-plugins-repo]: https://github.com/vmware-tanzu/sonobuoy-plugins
-[sonobuoy-plugin-docu]: https://sonobuoy.io/docs/v0.57.0/plugins/)
+[sonobuoy-plugin-docu]: https://sonobuoy.io/docs/v0.57.0/plugins/
 [e2e test plugin]: https://sonobuoy.io/docs/main/e2eplugin/
 [k8s-api]: https://github.com/SovereignCloudStack/k8s-cluster-api-provider
 [e2e-skel]: https://github.com/vmware-tanzu/sonobuoy-plugins/tree/main/examples/e2e-skeleton
@@ -163,6 +162,5 @@ CONS
 [e2e-frame-motivation]: https://github.com/kubernetes-sigs/e2e-framework/blob/main/docs/design/README.md#motivations
 [e2e-frame-goals]: https://github.com/kubernetes-sigs/e2e-framework/blob/main/docs/design/README.md#goals
 [e2e-frame-nongoals]: https://github.com/kubernetes-sigs/e2e-framework/blob/main/docs/design/README.md#non-goals
-[ginkgo]:https://onsi.github.io/ginkgo/
-[conformance-image]:https://github.com/kubernetes/kubernetes/tree/master/test/conformance/image
-
+[ginkgo]: https://onsi.github.io/ginkgo/
+[conformance-image]: https://github.com/kubernetes/kubernetes/tree/master/test/conformance/image
