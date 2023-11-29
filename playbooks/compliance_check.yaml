@@ -33,7 +33,7 @@
       ansible.builtin.command:
         cmd: python3 /home/ubuntu/Tests/scs-compliance-check.py /home/ubuntu/Tests/scs-compatible-iaas.yaml -c {{cloud}} -o {{cloud}}-iaas.yaml -C
       register: result
-      changed_when: result.rc != 0
+      changed_when: true
       failed_when: result.rc != 0
 
     - debug:
