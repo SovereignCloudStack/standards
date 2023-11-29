@@ -1,3 +1,4 @@
+---
 - project:
     name: SovereignCloudStack/standards
     default-branch: main

@@ -1,3 +1,4 @@
+---
 - secret:
     name: SECRET_STANDARDS
     data:
