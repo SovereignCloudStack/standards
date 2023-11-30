@@ -6,7 +6,7 @@ versions:
     obsoleted_at: 2023-10-31
     standards:
       - name: Flavor naming
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Drafts/flavor-naming.md
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v1-flavor-naming.md
         check_tools:
           - executable: ./iaas/flavor-naming/flavor-names-openstack.py
             args: "--v1prefer"
