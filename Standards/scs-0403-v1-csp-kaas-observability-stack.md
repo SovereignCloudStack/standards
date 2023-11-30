@@ -5,7 +5,7 @@ status: Draft
 track: Ops
 ---
 
-# Introduction
+## Introduction
 
 Cloud Service Providers offer a variaty of products to a customer. Those can include compute resources like virtual machines, networking and identity and access management. As customers of those services build their applications upon those offered services the service provider need to ensure a certain quality level of their offerings. This is done by observing the infrastructure. Observability systems are leverage different type of telemetry data which include:
 
@@ -15,11 +15,11 @@ Cloud Service Providers offer a variaty of products to a customer. Those can inc
 
 Based on those data, an alerting system can be used to to send out notifications to an Operations Team if a system behaves abnormally. Base on the telemetry data the Operations Team can find the issue, work on it and mitigate future incidents.
 
-# Motivation
+## Motivation
 
 Currently, only the IaaS Layer of the SCS Reference Implementation has a an Observability Stack consisting of tools like Prometheus, Grafana, and Alertmanager as well as several Exporters toextract monitoring data from the several OpenStack components and additional software that is involved in the Reference Implementation. As the Kubernetes as a Service Layer becomes more and more important and the work on the Cluster API approach to create customer clusters progresses further, an observability solution for this layer is also needed. CSP should be able to watch over customer clusters and intervene if cluster get in a malfunctioning state. For this, a toolset and architecture is need which is proposed in this ADR.
 
-# Requirements
+## Requirements
 
 A survey was conducted to gather the needs and requirements of a CSP when providing Kubernetes as a Service. The results of the Survey (Questions with answers) were the following:
 
@@ -62,7 +62,7 @@ A survey was conducted to gather the needs and requirements of a CSP when provid
 9. Special Constraints
     - HA Setup in different Clusters on Different Sites
 
-# Design Considerations
+## Design Considerations
 
 As the software components involved for the Observability solution were clear as Prometheus, Thanos, Loki, Promtail, Grafana, and Alertmanager are the industry standard tools to implement a observability solution in a Cloud-Native fashion on Kubernetes.
 
@@ -70,25 +70,25 @@ The important question is how those tools are utilize and combined to an archite
 
 For use of a CSP that provides Kubernetes as a Service the provisioning of the observability tools and the onboarding of a customer cluster need to be fully automated. For a customer, all the tools on their Kubernetes cluster needs to be installed at creation time and the observability data of that cluster needs to present in the Observer Cluster immediately.
 
-## Options considered
+### Options considered
 
-### Short Term Query Architecture
+#### Short Term Query Architecture
 
 In this setup, each customer cluster have Thanos and Prometheus installed in addition to Thanos and Prometheus on the Observer Cluster. The customer clusters Thanos installation is used for short term queries, as for long term queries the data of all Thanos instances are stored in an external Object Store of the CSP.
 
-### Hybrid Approach (query for short term metrics & remote write of metrics for KaaS)
+#### Hybrid Approach (query for short term metrics & remote write of metrics for KaaS)
 
 Here, Thanos and Prometheus are only used on the CSP side to store and manage all observability data. For the customer clusters only the Prometheus Agent will be used. This introduces less complexity and resource consumption on the customer workload clusters.
 
-### Scope of the Observability Architecture
+#### Scope of the Observability Architecture
 
 The Observability Cluster and Archtiecture should be defined such that it can be used to not only observe the Kubernetes Layer of an SCS Stack, but also the IaaS and other Layers.
 
-### Observing the Observability Infrastructure
+#### Observing the Observability Infrastructure
 
 For a productive usage, it needs to be possible to observe the Observability Cluster itself.
 
-# Decisions
+## Decisions
 
 1. The **Hybrid Approach** was chosen over Short Term Query Architecture
 2. The Observability Stack will be created based on the dNation observability stack
