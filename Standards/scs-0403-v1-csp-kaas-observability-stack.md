@@ -90,10 +90,10 @@ For a productive usage, it needs to be possible to observe the Observability Clu
 
 ## Decisions
 
-1. The Hybrid approach was chosen over Short Term Query Architecture
-2. The Observability stack will be created based on the dNation observability stack
-3. The observability stack can be used as a standalone component to use with the Kubernetes Layer. It should be possible to observe other parts of an SCS Stack like the status of the OpenStack components, but this will not be mandatory.
-4. The observability Stack should be designed that it is possible to provision to observer clusters side by side, observing each other. To do this is only a recommendation for productive usage.
+1. The **Hybrid Approach** was chosen over Short Term Query Architecture
+2. The Observability Stack will be created based on the dNation observability stack
+3. The Observability Stack can be used as a standalone component to use with the Kubernetes Layer. It should be possible to observe other parts of an SCS Stack like the status of the OpenStack components, but this will not be mandatory.
+4. The Observability Stack should be designed that it is possible to provision to observer clusters side by side, observing each other. To do this is only a recommendation for productive usage.
 5. The MVP-0 will consist of the following features:
     - Observability data from KaaS Clusters is scraped
         - K8s cluster that hosts observer deployment is deployed
