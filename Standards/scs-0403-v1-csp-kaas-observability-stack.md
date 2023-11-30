@@ -74,17 +74,27 @@ For use of a CSP that provides Kubernetes as a Service the provisioning of the o
 
 #### Short Term Query Architecture
 
-In this setup, each customer cluster have Thanos and Prometheus installed in addition to Thanos and Prometheus on the Obvserver Cluster. The customer clusters Thanos installation is used for short term queries, as for long term queries the data of all Thanos instances are stored in an external Object Store of the CSP.
+In this setup, each customer cluster have Thanos and Prometheus installed in addition to Thanos and Prometheus on the Observer Cluster. The customer clusters Thanos installation is used for short term queries, as for long term queries the data of all Thanos instances are stored in an external Object Store of the CSP.
 
 #### Hybrid Approach (query for short term metrics & remote write of metrics for KaaS)
 
 Here, Thanos and Prometheus are only used on the CSP side to store and manage all observability data. For the customer clusters only the Prometheus Agent will be used. This introduces less complexity and resource consumption on the customer workload clusters.
 
+#### Scope of the Observability Architecture
+
+The Observability Cluster and Archtiecture should be defined such that it can be used to not only observe the Kubernetes Layer of an SCS Stack, but also the IaaS and other Layers.
+
+#### Observing the Observability Infrastructure
+
+For a productive usage, it needs to be possible to observe the Observability Cluster itself.
+
 ## Decisions
 
-1. The Hybrid approach was chosen
+1. The Hybrid approach was chosen over Short Term Query Architecture
 2. The Observability stack will be created based on the dNation observability stack
-3. The MVP-0 will consist of the following features:
+3. The observability stack can be used as a standalone component to use with the Kubernetes Layer. It should be possible to observe other parts of an SCS Stack like the status of the OpenStack components, but this will not be mandatory.
+4. The observability Stack should be designed that it is possible to provision to observer clusters side by side, observing each other. To do this is only a recommendation for productive usage.
+5. The MVP-0 will consist of the following features:
     - Observability data from KaaS Clusters is scraped
         - K8s cluster that hosts observer deployment is deployed
         - S3 compatible bucket as a storage for long term metrics is configured
