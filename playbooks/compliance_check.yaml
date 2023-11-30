@@ -31,26 +31,27 @@
 
     - name: Run compliance script
       ansible.builtin.command:
-        cmd: python3 /home/ubuntu/Tests/scs-compliance-check.py /home/ubuntu/Tests/scs-compatible-iaas.yaml -c {{cloud}} -o {{cloud}}-iaas.yaml -C
+        cmd: python3 /home/ubuntu/Tests/scs-compliance-check.py /home/ubuntu/Tests/scs-compatible-iaas.yaml -c {{ cloud }} -o {{ cloud }}-iaas.yaml -C
       register: result
       changed_when: true
       failed_when: result.rc != 0
 
-    - debug:
+    - ansible.builtin.debug:
         msg: "{{ result.stdout }} {{ result.stderr }}"
 
     - name: Copy result YAML
-      synchronize:
-        dest: "{{ zuul.executor.log_root }}/{{cloud}}-iaas.yaml"
+      ansible.builtin.synchronize:
+        dest: "{{ zuul.executor.log_root }}/{{ cloud }}-iaas.yaml"
         mode: pull
-        src: "{{cloud}}-iaas.yaml"
+        src: "{{ cloud }}-iaas.yaml"
         verify_host: true
         owner: no
         group: no
 
-    - zuul_return:
+    - name: Return artifact URL
+      zuul_return:
         data:
           zuul:
             artifacts:
-              - name: "{{cloud}}-iaas.yaml"
-                url: "{{cloud}}-iaas.yaml"
+              - name: "{{ cloud }}-iaas.yaml"
+                url: "{{ cloud }}-iaas.yaml"
