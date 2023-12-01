@@ -1,3 +1,4 @@
+fabric
+kubernetes_asyncio
 PyYAML==6.0
 openstacksdk==0.103.0
-fabric

@@ -41,8 +41,8 @@ class SpecSyntax:
     def spec_dict():
         "return dict with syntax specification"
         ref = [{"field": "name", "mandatory_prefix": "SCS-"},
-               {"field": "public", "default": "true"},
-               {"field": "disabled", "default": "false"}]
+               {"field": "public", "default": True},
+               {"field": "disabled", "default": False}]
         for key in SpecSyntax.vocabulary:
             if not fnmck.prefer_old:
                 ref.append({"field": key})

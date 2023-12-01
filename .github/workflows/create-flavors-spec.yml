@@ -5,9 +5,8 @@ on:
     branches:
     - main
     paths:
-      - 'Tests/iaas/flavor-naming/flavor-manager-input.py'
-      - 'Tests/iaas/SCS-Spec.MandatoryFlavors.yaml'
-      - 'Tests/iaas/SCS-Spec.MandatoryFlavors.verbose.yaml'
+      - 'Tests/iaas/standard-flavors/flavor-manager-input.py'
+      - 'Tests/iaas/scs-0103-v1-flavors.yaml'
   workflow_dispatch:
 
 jobs:
@@ -28,7 +27,7 @@ jobs:
         pip install PyYAML==6.0
     - name: Run flavor-manager-input.py
       run: |
-        python Tests/iaas/flavor-naming/flavor-manager-input.py -o Tests/iaas/SCS-Spec.MandatoryFlavors.verbose.yaml
+        python Tests/iaas/standard-flavors/flavor-manager-input.py < Tests/iaas/scs-0103-v1-flavors.yaml > Tests/iaas/SCS-Spec.MandatoryFlavors.verbose.yaml
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v4
       with:

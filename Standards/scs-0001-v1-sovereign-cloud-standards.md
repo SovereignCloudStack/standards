@@ -223,8 +223,6 @@ Changes to the documents are gated through pull requests.
 
 Once the document is deemed ready for production use,
 its `status` is changed to `Stable`.
-Once the next SCS release happens,
-the document is officially part of the SCS standard.
 
 After stabilization,
 changes to the document which may render existing implementations non-conformant

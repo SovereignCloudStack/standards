@@ -1,0 +1,5 @@
+SCS-Spec:
+  # Empty lists so flavor-names-openstack.py only checks the names for scs-0100.
+  # The list of flavors will be checked with flavors-openstack.py for scs-0103.
+  MandatoryFlavors: []
+  RecommendedFlavors: []
