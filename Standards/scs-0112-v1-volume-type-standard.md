@@ -26,7 +26,7 @@ We want to standardize a few varieties of volume types. While a user can choose 
 
 All Considerations can be looked up in detail in the [Decision Record for the Volume Type Standard.](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0111-v1-volume-type-decisions.md)
 
-To test whether a deployment has volume types with certain aspects, the discoverability of the parameters in the volume type has to be given. The following table shows, which aspects are considered in this standard. Furthermore the table shows, according to the current upstream implementation, whether the feature is discoverable, and who can discover this. The comments state what can be done to help with the discoverability and other important restrictions. The last column says how the standard is handled, which is currently through the addition of a stadardized phrase at the beginning of the description of a volume type.
+To test whether a deployment has volume types with certain aspects, the discoverability of the parameters in the volume type has to be given. The following table shows, which aspects are considered in this standard. Furthermore the table shows, according to the current upstream implementation, whether the feature is discoverable, and who can discover this. The comments state what can be done to help with the discoverability and other important restrictions. The last column says how the standard is handled, which is currently through the addition of a standardized phrase at the beginning of the description of a volume type.
 
 | Aspect | Part of Standard | Discoverability | comments | concluded standardized description |
 | ---- | ---- | ---- | ---- | ------ |
@@ -68,7 +68,7 @@ The parameters of volume types described in this standard do not have to be appl
 
 ## REQUIRED volume types
 
-Currently the SCS will not require volume types with certain specification. This might change in the future.
+Currently the SCS will not require volume types with certain specification. This will change in the future.
 
 ## RECOMMENDED volume types
 
