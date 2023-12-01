@@ -120,7 +120,7 @@ Replication states, whether or not there are multiple replicas of a volume. Thus
 2. Via the used backend. Ceph for example provides automatic replication, that does not need to be specified in the volume type. This is currently not visible for users.
 
 To fulfill this recommentation for now, the deployer needs to state the replication in the description of a volume type in the following way:
-If the volume type is not encrypted the description needs to begin with `[replicated]`, after that any further description is allowed. 
+If the volume type is not encrypted the description needs to begin with `[replicated]`, after that any further description is allowed.
 Otherwise the description needs to begin with `[encrypted][replicated]`.
 
 #### OPTIONAL addition: Number of Replicas
