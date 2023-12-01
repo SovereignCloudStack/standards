@@ -72,15 +72,15 @@ Currently the SCS will not require volume types with certain specification. This
 
 ## RECOMMENDED volume types
 
-The SCS recommends to have one or more volume types, which have the following specifications:
+The SCS recommends to have one or more volume types, that satisfy the need for encrpytion and replication. These are all allowed possibilites for those recommended volume types:
 
 | Volume Type Nr | Type Name | Volume Type Description |
 | ---- | ---- | ---- |
-| 1 | LUKS | "[encrypted] This volume type creates LUKS encryped volumes" |
-| 2 | replicated | "[replicated] Volumes will be three times replicated" |
-| 3 | enc-repli| "[encrypted] [replicated] Volumes will be encrypted and three times replicated" |
+| 1 | `__DEFAULT__` | `[encrypted][replicated] Volumes will be encrypted and three times replicated` |
+| 2 | `LUKS` | `[encrypted] This volume type creates LUKS encryped volumes` |
+| 3 | `replicated` | `[replicated] Volumes will be three times replicated` |
 
-The standardized phrases MUST be ordered alphabetically. Having only volume type number 3 would be enough to fulfill all recommandations.
+The standardized phrases are `[encrypted]` and `[replicated]`. They MUST appear at the beginning of the description of the volume type and they MUST be ordered alphabetically. Having only volume type number 1 would be enough to fulfill all recommendations. Having only volume types 2 and 3 together would also satisfy all recommendations
 
 ### Encryption
 
@@ -120,7 +120,8 @@ Replication states, whether or not there are multiple replicas of a volume. Thus
 2. Via the used backend. Ceph for example provides automatic replication, that does not need to be specified in the volume type. This is currently not visible for users.
 
 To fulfill this recommentation for now, the deployer needs to state the replication in the description of a volume type in the following way:
-The description needs to begin with `[replicated]`, after that any further description is allowed.
+If the volume type is not encrypted the description needs to begin with `[replicated]`, after that any further description is allowed. 
+Otherwise the description needs to begin with `[encrypted][replicated]`.
 
 #### OPTIONAL addition: Number of Replicas
 
