@@ -271,6 +271,9 @@ It goes beyond the above example in checking that the discoverable
 features of flavors (vCPUs, RAM, Disk) match what the flavor names claim.
 This is used for SCS-compatible compliance testing.
 
+The web page <a href="https://flavors.scs.community/">https://flavors.scs.community"</a>
+has a flavor name parser and (soon) generator.
+
 ## Extensions
 
 Extensions provide a possibility for providers that offer a very differentiated set
