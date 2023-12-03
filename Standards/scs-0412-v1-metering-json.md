@@ -2,7 +2,7 @@
 title: Exposition of IaaS metering data as JSON
 type: Standard
 status: Draft
-track: IaaS
+track: Ops
 ---
 
 ## Introduction

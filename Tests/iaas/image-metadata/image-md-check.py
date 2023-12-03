@@ -216,6 +216,7 @@ def main(argv):
         opts, args = getopt.gnu_getopt(argv[1:], "phvc:s",
                                        ("private", "help", "os-cloud=", "verbose", "skip-completeness"))
     except getopt.GetoptError:  # as exc:
+        print("CRITICAL: Command-line syntax error", file=sys.stderr)
         usage(1)
     for opt in opts:
         if opt[0] == "-h" or opt[0] == "--help":
@@ -230,18 +231,21 @@ def main(argv):
             cloud = opt[1]
     images = args
     if not cloud:
-        print("ERROR: Need to specify --os-cloud or set OS_CLOUD environment.", file=sys.stderr)
+        print("CRITICAL: Need to specify --os-cloud or set OS_CLOUD environment.", file=sys.stderr)
         usage(1)
-    conn = openstack.connect(cloud=cloud, timeout=24)
-    # Do work
-    if not images:
-        images = get_imagelist(private)
-    err = 0
-    # Analyse image metadata
-    for image in images:
-        err += validate_imageMD(image)
-    if not skip:
-        err += report_stdimage_coverage(images)
+    try:
+        conn = openstack.connect(cloud=cloud, timeout=24)
+        # Do work
+        if not images:
+            images = get_imagelist(private)
+        err = 0
+        # Analyse image metadata
+        for image in images:
+            err += validate_imageMD(image)
+        if not skip:
+            err += report_stdimage_coverage(images)
+    except BaseException as e:
+        print(f"CRITICAL: {e!r}")
     return err
 
 
