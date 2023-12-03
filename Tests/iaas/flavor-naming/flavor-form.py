@@ -31,7 +31,7 @@ def parse_form(form):
     fnm = ""
     try:
         fnm = form["flavor"].value
-    except:
+    except KeyError:
         pass
     print('\t<br/>\n\t<FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
     print(f'\t  Flavor name: <INPUT TYPE="text" NAME="flavor" SIZE=24 VALUE="{fnm}"/>')
@@ -58,8 +58,8 @@ def main(argv):
     # For testing
     if (len(argv) > 0):
         form = {"flavor": testform(argv[0])}
-    find_parse    = re.compile('^[ \t]*<!\-\-FLAVOR\-FORM: PARSE\-\->[ \t]*$')
-    find_generate = re.compile('^[ \t]*<!\-\-FLAVOR\-FORM: GENERATE\-\->[ \t]*$')
+    find_parse    = re.compile(r'^[ \t]*<!\-\-FLAVOR\-FORM: PARSE\-\->[ \t]*$')
+    find_generate = re.compile(r'^[ \t]*<!\-\-FLAVOR\-FORM: GENERATE\-\->[ \t]*$')
     with open("page/index.html") as f:
         for ln in f:
             print(ln, end='')
@@ -71,3 +71,4 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+
