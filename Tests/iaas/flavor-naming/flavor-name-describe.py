@@ -94,5 +94,6 @@ def main(argv):
         else:
             print(f'{nm}: Not an SCS flavor')
 
+
 if __name__ == "__main__":
     main(sys.argv[1:])
