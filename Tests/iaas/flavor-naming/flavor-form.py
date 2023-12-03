@@ -14,29 +14,59 @@ or a human-readable description of the flavor.
 
 # import os
 import sys
+import re
 # import traceback
+# TODO: Replace cgi by urllib, cgi is deprecated
 import cgi
+
+
+class testform:
+    def __init__(self, nm):
+        self.value = nm
+
+
+def parse_form(form):
+    import importlib
+    fnmd = importlib.import_module("flavor-name-describe")
+    fnm = ""
+    try:
+        fnm = form["flavor"].value
+    except:
+        pass
+    print('\t<br/>\n\t<FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
+    print(f'\t  Flavor name: <INPUT TYPE="text" NAME="flavor" SIZE=24 VALUE="{fnm}"/>')
+    print('\t  <INPUT TYPE="submit" VALUE="Submit"/>')
+    # print('  <INPUT TYPE="reset"  VALUE="Clear"/>\n</FORM>')
+    print('\t</FORM>')
+    if fnm:
+        print("\t<br/><b>Flavor</b>")
+        try:
+            fnmd.main((fnm,))
+        except (TypeError, NameError, KeyError) as exc:
+            print(f"\tERROR<br/>\n\t{exc}")
+
+
+def parse_generate(form):
+    print("\tNot implemented yet as webform, use")
+    print('\t<tt><a href="https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-check.py">flavor-name-check.py</a> -i</tt>')
 
 
 def main(argv):
     "Entry point for cgi flavor parsing"
-    import importlib
-    fnmd = importlib.import_module("flavor-name-describe")
     print("Content-Type: text/html\n")
     form = cgi.FieldStorage()
-    try:
-        fnm = form["flavor"].value
-        print(f"<h1>SCS flavor name {fnm}</h1>")
-        fnmd.main((fnm,))
-    except (TypeError, NameError, KeyError) as exc:
-        print("ERROR<br/>")
-        print(exc)
-    print('<br/><br/><FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
-    print(f' New Flavor name: <INPUT TYPE="text" NAME="flavor" SIZE=20 VALUE="{fnm}"/>')
-    print('  <INPUT TYPE="submit" VALUE="Submit"/>')
-    # print('  <INPUT TYPE="reset"  VALUE="Clear"/>\n</FORM>')
-    print('</FORM>')
-    print("\n<br/><br/><a href=\"/\">Back to main page</a>")
+    # For testing
+    if (len(argv) > 0):
+        form = {"flavor": testform(argv[0])}
+    find_parse    = re.compile('^[ \t]*<!\-\-FLAVOR\-FORM: PARSE\-\->[ \t]*$')
+    find_generate = re.compile('^[ \t]*<!\-\-FLAVOR\-FORM: GENERATE\-\->[ \t]*$')
+    with open("page/index.html") as f:
+        for ln in f:
+            print(ln, end='')
+            if find_parse.match(ln):
+                parse_form(form)
+            elif find_generate.match(ln):
+                parse_generate(form)
 
 
 if __name__ == "__main__":

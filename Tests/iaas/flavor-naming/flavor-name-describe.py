@@ -89,8 +89,10 @@ def main(argv):
     fnmck = importlib.import_module("flavor-name-check")
     for nm in argv:
         ret = fnmck.parsename(nm)
-        print(f'{nm}: {prettyname(ret)}')
-
+        if ret:
+            print(f'{nm}: {prettyname(ret)}')
+        else:
+            print(f'{nm}: Not an SCS flavor')
 
 if __name__ == "__main__":
     main(sys.argv[1:])
