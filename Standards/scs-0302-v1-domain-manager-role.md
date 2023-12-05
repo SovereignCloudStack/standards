@@ -121,7 +121,7 @@ The "`is_domain_managed_role`" rule definition is the only exception to this (se
 
 # specify a rule that whitelists roles which domain admins are permitted
 # to assign and revoke within their domain
-"is_domain_managed_role": "'member':%(target.role.name)s"
+"is_domain_managed_role": "'member':%(target.role.name)s or 'load-balancer_member':%(target.role.name)s"
 
 # allow domain admins to retrieve their own domain
 "identity:get_domain": "(rule:is_domain_manager and token.domain.id:%(target.domain.id)s) or rule:admin_required"
@@ -197,11 +197,11 @@ The "`is_domain_managed_role`" rule of the above policy template may be adjusted
 
 ##### Example: permitting multiple roles
 
-The following example permits both the "`member`" and "`reader`" role to be assigned/revoked by a Domain Manager.
+The following example permits the "`reader`" role to be assigned/revoked by a Domain Manager in addition to the default "`member`" and "`load-balancer_member`" roles.
 Further roles can be appended using the logical `or` directive.
 
 ```yaml
-"is_domain_managed_role": "'member':%(target.role.name)s or 'reader':%(target.role.name)s"
+"is_domain_managed_role": "'member':%(target.role.name)s or 'load-balancer_member':%(target.role.name)s or 'reader':%(target.role.name)s"
 ```
 
 **Note regarding the `domain-manager` role**
