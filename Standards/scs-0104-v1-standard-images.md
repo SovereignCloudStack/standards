@@ -3,6 +3,12 @@ title: SCS Standard Images
 type: Standard
 status: Draft
 track: IaaS
+description: |
+  The SCS-0104 standard establishes guidelines for virtual machine images in Sovereign Cloud Stack (SCS) environments,
+  specifying mandatory, recommended, and optional images via a YAML file, ensuring interoperability and streamlined
+  deployments. It mandates that image upload via Glance must be allowed, ensuring flexibility for users. The standard's
+  machine-readable document facilitates automated processing for compliance and integration purposes, promoting
+  consistency and reliability in cloud environments.
 ---
 
 ## Introduction
