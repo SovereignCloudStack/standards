@@ -1,5 +1,16 @@
-on: [pull_request]
 name: Check links for modified files
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+  push:
+    branches:
+      - main
+  pull_request:   # Add this section
+    branches:
+      - main
+
 jobs:
   markdown-link-check:
     runs-on: ubuntu-latest
