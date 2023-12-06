@@ -28,6 +28,7 @@ ERROR = ""
 def parse_name(fnm):
     "return tuple with flavor description"
     global FLAVOR_SPEC, FLAVOR_NAME, ERROR
+    fnm = re.sub(r"<( *script)", r"<!--\1", fnm, flags=re.I)
     FLAVOR_NAME = fnm
     try:
         FLAVOR_SPEC = fnmck.parsename(fnm)
