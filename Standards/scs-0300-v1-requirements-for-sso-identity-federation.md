@@ -140,7 +140,7 @@ a short span of time and increasing risk connected with service restarts.
 Since version 17, Keycloak claims that it's capability for
 "cloud native" deployments on Kubernetes has improved.
 
-[Keycloak is offering a REST API](https://www.keycloak.org/docs-api/20.0.1/rest-api/index.html)
+Keycloak is offering a [documented REST API](https://www.keycloak.org/documentation)
 for all aspects of its administration interface.
 
 For storage of Keycloak configuration and local user metadata
