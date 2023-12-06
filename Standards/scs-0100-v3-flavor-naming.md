@@ -276,6 +276,9 @@ It goes beyond the above example in checking that the discoverable
 features of flavors (vCPUs, RAM, Disk) match what the flavor names claim.
 This is used for SCS-compatible compliance testing.
 
+The functionality of the `flavor-name-check.py` script is also
+(partially) exposed via the web page <https://flavors.scs.community/>.
+
 ## Extensions
 
 Extensions provide a possibility for providers that offer a very differentiated set
