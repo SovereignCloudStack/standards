@@ -6,6 +6,9 @@ authors: Max Wolfs
 status: Draft
 track: Global
 replaces: scs-0002-v1-standards-docs-org.md
+description: |
+  SCS-0002 outlines the standardized structure and maintenance processes for easily accessible and
+  comprehensible content of the SCS project.
 ---
 
 ## Introduction

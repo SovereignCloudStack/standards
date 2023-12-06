@@ -3,6 +3,12 @@ title: Exposition of IaaS metering data as JSON
 type: Standard
 status: Draft
 track: Ops
+description: |
+  The SCS-0412 standard addresses the need for a standardized interface to expose IaaS metering data in JSON format
+  within the Sovereign Cloud Stack (SCS). This is to aid cloud operators in integrating SCS IaaS layer data with
+  their existing billing and customer relationship systems. The standard adopts the Ceilometer HTTP hook format
+  provided by the OpenStack Ceilometer project for telemetry and metering, avoiding the need for additional translation
+  layers and implementation components.
 ---
 
 ## Introduction

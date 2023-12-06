@@ -5,6 +5,12 @@ stabilized_at: 2022-10-31
 status: Stable
 track: IaaS
 replaces: Image-Metadata-Spec.md
+description: |
+  The SCS-0102 Image Metadata Standard outlines how to categorize and manage metadata for cloud-based operating
+  system images to ensure usability and clarity. The standard encompasses naming conventions, technical requirements,
+  image handling protocols including updating and origin, and licensing/support details. These guidelines ensure
+  that users can understand, access, and utilize OS images effectively, with clear information on features, updates,
+  and licensing provided through well-defined metadata properties.
 ---
 
 ## Motivation
