@@ -29,7 +29,7 @@ def parse_name(fnm):
     "return tuple with flavor description"
     global FLAVOR_SPEC, FLAVOR_NAME, ERROR
     # Sanitize
-    #fnm = re.sub(r"<( *script)", r"<!--\1", fnm, flags=re.I)
+    # fnm = re.sub(r"<( *script)", r"<!--\1", fnm, flags=re.I)
     fnm = re.sub(r"<", r"&lt;", fnm)
     fnm = re.sub(r">", r"&gt;", fnm)
     FLAVOR_NAME = fnm
