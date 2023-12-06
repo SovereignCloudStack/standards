@@ -16,6 +16,7 @@ import os
 import sys
 import re
 import urllib.parse
+import html
 import importlib
 fnmck = importlib.import_module("flavor-name-check")
 
@@ -28,10 +29,6 @@ ERROR = ""
 def parse_name(fnm):
     "return tuple with flavor description"
     global FLAVOR_SPEC, FLAVOR_NAME, ERROR
-    # Sanitize
-    # fnm = re.sub(r"<( *script)", r"<!--\1", fnm, flags=re.I)
-    fnm = re.sub(r"<", r"&lt;", fnm)
-    fnm = re.sub(r">", r"&gt;", fnm)
     FLAVOR_NAME = fnm
     try:
         FLAVOR_SPEC = fnmck.parsename(fnm)
@@ -46,18 +43,18 @@ def output_parse():
     "output pretty description from SCS flavor name"
     fnmd = importlib.import_module("flavor-name-describe")
     print('\t<br/>\n\t<FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
-    print(f'\t  Flavor name: <INPUT TYPE="text" NAME="flavor" SIZE=24 VALUE="{FLAVOR_NAME}"/>')
+    print(f'\t  Flavor name: <INPUT TYPE="text" NAME="flavor" SIZE=24 VALUE="{html.escape(FLAVOR_NAME, quote=True)}"/>')
     print('\t  <INPUT TYPE="submit" VALUE="Submit"/>')
     # print('  <INPUT TYPE="reset"  VALUE="Clear"/>\n</FORM>')
     print('\t</FORM>')
     if FLAVOR_NAME:
-        print(f"\t<br/><b>Flavor {FLAVOR_NAME}:</b>")
+        print(f"\t<br/><b>Flavor {html.escape(FLAVOR_NAME, quote=True)}:</b>")
         if FLAVOR_SPEC:
-            print(f"\t{fnmd.prettyname(FLAVOR_SPEC)}")
+            print(f"\t{html.escape(fnmd.prettyname(FLAVOR_SPEC), quote=True)}")
         else:
             print("\tNot an SCS flavor")
             if ERROR:
-                print(f"\t<br/>{ERROR})")
+                print(f"\t<br/>{html.escape(ERROR, quote=True)})")
 
 
 def output_generate():
