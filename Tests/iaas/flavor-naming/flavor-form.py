@@ -20,12 +20,14 @@ import re
 import cgi
 
 
-class testform:
-    def __init__(self, nm):
-        self.value = nm
+class TestForm:
+    "Class for testing via cmd line"
+    def __init__(self, fnm):
+        self.value = fnm
 
 
 def parse_form(form):
+    "output pretty description from SCS flavor name"
     import importlib
     fnmd = importlib.import_module("flavor-name-describe")
     fnm = ""
@@ -47,6 +49,7 @@ def parse_form(form):
 
 
 def parse_generate(form):
+    "input details to generate SCS flavor name"
     print("\tNot implemented yet as webform, use")
     print('\t<tt><a href="https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-check.py">flavor-name-check.py</a> -i</tt>')
 
@@ -56,16 +59,16 @@ def main(argv):
     print("Content-Type: text/html\n")
     form = cgi.FieldStorage()
     # For testing
-    if (len(argv) > 0):
-        form = {"flavor": testform(argv[0])}
+    if len(argv > 0):
+        form = {"flavor": TestForm(argv[0])}
     find_parse    = re.compile(r'^[ \t]*<!\-\-FLAVOR\-FORM: PARSE\-\->[ \t]*$')
     find_generate = re.compile(r'^[ \t]*<!\-\-FLAVOR\-FORM: GENERATE\-\->[ \t]*$')
-    with open("page/index.html") as f:
-        for ln in f:
-            print(ln, end='')
-            if find_parse.match(ln):
+    with open("page/index.html", "r", encoding='utf-8') as infile:
+        for line in infile:
+            print(line, end='')
+            if find_parse.match(line):
                 parse_form(form)
-            elif find_generate.match(ln):
+            elif find_generate.match(line):
                 parse_generate(form)
 
 
