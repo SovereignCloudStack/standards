@@ -59,7 +59,7 @@ def main(argv):
     print("Content-Type: text/html\n")
     form = cgi.FieldStorage()
     # For testing
-    if len(argv > 0):
+    if len(argv) > 0:
         form = {"flavor": TestForm(argv[0])}
     find_parse    = re.compile(r'^[ \t]*<!\-\-FLAVOR\-FORM: PARSE\-\->[ \t]*$')
     find_generate = re.compile(r'^[ \t]*<!\-\-FLAVOR\-FORM: GENERATE\-\->[ \t]*$')
