@@ -45,7 +45,7 @@ def output_parse():
     print('\t<br/>\n\t<FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
     print('\t  <label for="flavor"?Flavor name:</label>')
     print(f'\t  <INPUT TYPE="text" ID="flavor" NAME="flavor" SIZE=24 VALUE="{html.escape(FLAVOR_NAME, quote=True)}"/>')
-    print('\t  <INPUT TYPE="submit" VALUE="Submit"/>')
+    print('\t  <INPUT TYPE="submit" VALUE="Parse"/>')
     # print('  <INPUT TYPE="reset"  VALUE="Clear"/>\n</FORM>')
     print('\t</FORM>')
     if FLAVOR_NAME:
@@ -126,7 +126,10 @@ def is_checked(flag):
 
 
 def form_attr(attr, tblopt = True):
-    "This mirrors flavor-name-check.py input()"
+    """This mirrors flavor-name-check.py input(), but instead generates a web form.
+       Defaults come from attr, the form is constructed from the attr's class
+       attributes (like the mentioned input function). tblopt indicates whether
+       chosing a value in a table is optional."""
     spec = type(attr)
     # pct = min(20, int(100/len(spec.pnames)))
     pct = 20
@@ -155,23 +158,29 @@ def form_attr(attr, tblopt = True):
             for key in tbl.keys():
                 ischk = value == key
                 value_set = value_set or ischk
-                print(f'\t   <input type="radio" id="{key}" name="{fname}" value="{key}" {is_checked(ischk)}/>')
-                print(f'\t   <label for="{key}">{tbl[key]}</label><br/>')
+                print(f'\t   <input type="radio" id="{fname}:{key}" name="{spec.type}:{fname}" value="{key}" {is_checked(ischk)}/>')
+                print(f'\t   <label for="{fname}:{key}">{tbl[key]}</label><br/>')
             if tblopt:
-                print(f'\t   <input type="radio" id="{fname}_NN" name="{fname}" value="{fname}_NN" {is_checked(not value_set)}/>')
-                print(f'\t   <label for="{fname}_NN">NN</label><br/>')
+                print(f'\t   <input type="radio" id="{fname}:NN" name="{spec.type}:{fname}" value="NN" {is_checked(not value_set)}/>')
+                print(f'\t   <label for="{fname}:NN">NN</label><br/>')
         elif fdesc[0:2] == "##":
             # Float number => NUMBER
             print(f'\t  <label for="{fname}">{fdesc[2:]}</label><br/>')
-            print(f'\t  <input type="number" name="{fname}" id="{fname}" min=0 value={value} size=5/>')
+            print(f'\t  <input type="number" name="{spec.type}:{fname}" id="{fname}" min=0 value={value} size=5/>')
         elif fdesc[0] == "#":
             # Float number => NUMBER
-            # FIXME: Handle : and .
+            # Handle : and .
+            if fdesc[1] == ":":
+                if not value:
+                    value = 1
+                fdesc = fdesc[1:]
+            elif fdesc[1] == '.':
+                fdesc = fdesc[1:]
             print(f'\t  <label for="{fname}">{fdesc[1:]}</label><br/>')
-            print(f'\t  <input type="number" name="{fname}" id="{fname}" min=0 step=1 value={value} size=4/>')
+            print(f'\t  <input type="number" name="{spec.type}:{fname}" id="{fname}" min=0 step=1 value={value} size=4/>')
         elif fdesc[0] == "?":
             # Bool => Checkbox
-            print(f'\t  <input type="checkbox" name="{fname}" id="{fname}" {is_checked(value)}/>')
+            print(f'\t  <input type="checkbox" name="{spec.type}:{fname}" id="{fname}" {is_checked(value)}/>')
             print(f'\t  <label for="{fname}">{fdesc[1:]}</label>')
         if fdesc[0] != "?" or i == len(spec.pnames)-1 or spec.pnames[i+1][0] != "?":
             print('\t  </div>')
@@ -190,7 +199,7 @@ def output_generate():
         return
     # print("\tNot implemented yet as webform, use")
     # print('\t<tt><a href="https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-check.py">flavor-name-check.py</a> -i</tt>')
-    print('\t<br/>\n\t<FORM ACTION=/cgi-bin/flavor-form.py" METHOD="GET">')
+    print('\t<br/>\n\t<FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
     form_attr(cpu, False)
     print('\t<br/>The following settings are all optional and meant for highly specialized / differentiated offerings.<br/>')
     print('\t<font size=-1>')
@@ -200,9 +209,11 @@ def output_generate():
     form_attr(cpubrand)
     form_attr(gpu)
     form_attr(ibd)
-    print('\t</font>')
+    print('\t</font><br/>')
+    print('\t  <INPUT TYPE="submit" VALUE="Generate"/><br/>')
     print('\t</FORM>')
     # TODO: Submission
+    print('\tRemember that you are allowed to understate performance.')
 
 
 def main(argv):
@@ -211,6 +222,7 @@ def main(argv):
     form = {"flavor": [""]}
     if 'QUERY_STRING' in os.environ:
         form = urllib.parse.parse_qs(os.environ['QUERY_STRING'])
+        print(f'QUERY_STRING: {os.environ["QUERY_STRING"]}', file=sys.stderr)
     # For testing
     if len(argv) > 0:
         form = {"flavor": [argv[0],]}
