@@ -58,8 +58,39 @@ def output_parse():
                 print(f"\t<br/>{html.escape(ERROR, quote=True)})")
 
 
-def collect_input(self):
-    "This is just for reference"
+def find_spec(lst, key):
+    for i in range(0, len(lst)):
+        if type(lst[i].type) == key:
+            return i
+    return -1
+
+
+def find_attr(cls, key):
+    for i in range(0, len(cls.pattrs)):
+        if cls.pattrs[i] == key:
+            return i
+    return -1
+
+def generate_name(form):
+    "Parse submitted form with flavor properties"
+    global ERROR
+    flavor_spec = (fnmck.Main(), fnmck.Disk(), fnmck.Hype(), fnmck.HWVirt(),
+                   fnmck.CPUBrand(), fnmck.GPU(), fnmck.IB())
+    for (key, val) in enumerate(form):
+        keypair = key.split(':')
+        idx = find_spec(flavor_spec, keypair[0])
+        if idx < 0:
+            ERROR = f"Unknown key {keypair[0]}"
+            return None
+        idx2 = find_attr(flavor_spec[idx], keypair[1])
+        if idx2 < 0:
+            ERROR = f"Can not find attribute {keypair[1]} in {keypair[1]}"
+        fdesc = flavor_spec[idx].pnames[idx2]
+        # Now parse fdesc to get the right value
+        ## FIXME
+        flavor_spec[idx].__setattribute(keypair[1], val)
+
+def input_mthod(self):
     print(self.type)
     for i in range(0, len(self.pnames)):
         tbl = None
@@ -230,6 +261,8 @@ def main(argv):
     find_generate = re.compile(r'^[ \t]*<!\-\-FLAVOR\-FORM: GENERATE\-\->[ \t]*$')
     if "flavor" in form:
         parse_name(form["flavor"][0])
+    if "CPU-RAM:cpus" in form:
+        generate_name(form)
     with open("page/index.html", "r", encoding='utf-8') as infile:
         for line in infile:
             print(line, end='')
