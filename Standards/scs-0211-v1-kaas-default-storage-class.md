@@ -13,7 +13,7 @@ description: |
 
 ## Introduction
 
-Cluster consumers can request persistent storage via [`PersistentVolumeClaims`](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#persistentvolumeclaim-v1-core) which is provisioned automatically by cloud-provided automation.
+Cluster consumers can request persistent storage via [`PersistentVolumeClaims`](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims) which is provisioned automatically by cloud-provided automation.
 Storage requirements may vary across use cases, so there is the concept of `StorageClasses`. `StorageClasses` define some set of storage properties. So, consumers can choose one of these depending on the use case.
 
 [Kubernetes documentation](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
