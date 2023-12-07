@@ -125,18 +125,20 @@ def is_checked(flag):
         return ""
 
 
-def form_attr(attr):
+def form_attr(attr, tblopt = True):
     "This mirrors flavor-name-check.py input()"
     spec = type(attr)
-    pct = min(20, int(100/len(spec.pnames)))
+    # pct = min(20, int(100/len(spec.pnames)))
+    pct = 20
     # print(attr, spec)
     print(f'\t <fieldset><legend>{spec.type}</legend><br/>')
     print('\t <div id="the-whole-thing" style="position: relative; overflow: hidden;">')
     for i in range(0, len(spec.pnames)):
-        print(f'\t  <div id="column" style="position: relative; width: {pct}%; float: left;">')
         tbl = None
         fname = spec.pattrs[i]
         fdesc = spec.pnames[i]
+        if fdesc[0] != "?" or i == 0 or spec.pnames[i-1][0] != "?":
+            print(f'\t  <div id="column" style="position: relative; width: {pct}%; float: left;">')
         # print(fname, fdesc)
         value = None
         try:
@@ -148,25 +150,33 @@ def form_attr(attr):
         if hasattr(spec, f"tbl_{fname}"):
             tbl = attr.__getattribute__(f"tbl_{fname}")
         if tbl:
-            print(f'\t  <label for="{fname}">{fname[0].upper()+fname[1:]}</label><br/>')
+            print(f'\t  <label for="{fname}">{fname[0].upper()+fname[1:]}:</label><br/>')
+            value_set = False
             for key in tbl.keys():
                 ischk = value == key
+                value_set = value_set or ischk
                 print(f'\t   <input type="radio" id="{key}" name="{fname}" value="{key}" {is_checked(ischk)}/>')
                 print(f'\t   <label for="{key}">{tbl[key]}</label><br/>')
+            if tblopt:
+                print(f'\t   <input type="radio" id="{fname}_NN" name="{fname}" value="{fname}_NN" {is_checked(not value_set)}/>')
+                print(f'\t   <label for="{fname}_NN">NN</label><br/>')
         elif fdesc[0:2] == "##":
             # Float number => NUMBER
-            print(f'\t  <label for="{fname}">{fdesc}</label><br/>')
+            print(f'\t  <label for="{fname}">{fdesc[2:]}</label><br/>')
             print(f'\t  <input type="number" name="{fname}" id="{fname}" min=0 value={value} size=5/>')
         elif fdesc[0] == "#":
             # Float number => NUMBER
             # FIXME: Handle : and .
-            print(f'\t  <label for="{fname}">{fdesc}</label><br/>')
+            print(f'\t  <label for="{fname}">{fdesc[1:]}</label><br/>')
             print(f'\t  <input type="number" name="{fname}" id="{fname}" min=0 step=1 value={value} size=4/>')
         elif fdesc[0] == "?":
             # Bool => Checkbox
             print(f'\t  <input type="checkbox" name="{fname}" id="{fname}" {is_checked(value)}/>')
-            print(f'\t  <label for="{fname}">{fdesc}</label>')
-        print('\t  </div>')
+            print(f'\t  <label for="{fname}">{fdesc[1:]}</label>')
+        if fdesc[0] != "?" or i == len(spec.pnames)-1 or spec.pnames[i+1][0] != "?":
+            print('\t  </div>')
+        else:
+            print('\t  <br/>')
 
     print('\t </div>')
     print('\t </fieldset>')
@@ -181,13 +191,16 @@ def output_generate():
     # print("\tNot implemented yet as webform, use")
     # print('\t<tt><a href="https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-check.py">flavor-name-check.py</a> -i</tt>')
     print('\t<br/>\n\t<FORM ACTION=/cgi-bin/flavor-form.py" METHOD="GET">')
-    form_attr(cpu)
+    form_attr(cpu, False)
+    print('\t<br/>The following settings are all optional and meant for highly specialized / differentiated offerings.<br/>')
+    print('\t<font size=-1>')
     form_attr(disk)
     form_attr(hype)
     form_attr(hvirt)
     form_attr(cpubrand)
     form_attr(gpu)
     form_attr(ibd)
+    print('\t</font>')
     print('\t</FORM>')
     # TODO: Submission
 
