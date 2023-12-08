@@ -95,7 +95,9 @@ def generate_name(form):
             ERROR = f"Can not find attribute {keypair[1]} in {keypair[1]}"
             return None
         fdesc = FLAVOR_SPEC[idx].pnames[idx2]
-        if val and val != "" and val != "NN" and val != "0" and not (val == "1" and fdesc[0:2] == "#:"):
+        if val == "NN":
+            val = ""
+        if val and val != "" and val != "0" and not (val == "1" and fdesc[0:2] == "#:"):
             FLAVOR_SPEC[idx].parsed += 1
         # Now parse fdesc to get the right value
         if fdesc[0:2] == '##':
@@ -108,6 +110,16 @@ def generate_name(form):
                 val = '1'
             setattr(FLAVOR_SPEC[idx], keypair[1], int(val))
         # TODO: Handle boolean and tables
+        elif fdesc[0] == '?':
+            setattr(FLAVOR_SPEC[idx], keypair[1], bool(val))
+        elif hasattr(FLAVOR_SPEC[idx], f"tbl_{keypair[1]}"):
+            tbl = getattr(FLAVOR_SPEC[idx], f"tbl_{keypair[1]}")
+            if not val and fdesc[0] == '.':
+                setattr(FLAVOR_SPEC[idx], keypair[1], val)
+            if not val in tbl and (val or fdesc[0] != '.'):
+                ERROR = f'Invalid key {val} for tbl_{keypair[1]}'
+                return None
+            setattr(FLAVOR_SPEC[idx], keypair[1], val)
         else:
             if val == "NN":
                 val = ""
