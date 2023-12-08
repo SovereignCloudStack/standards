@@ -492,17 +492,17 @@ def outname(cpuram, disk, hype, hvirt, cpubrand, gpu, ibd):
     "Return name constructed from tuple"
     # TODO SCSx: Differentiate b/w SCS- and SCSx-
     out = "SCS-" + cpuram.out()
-    if disk.parsed:
+    if disk and disk.parsed:
         out += "-" + disk.out()
-    if hype.parsed:
+    if hype and hype.parsed:
         out += "_" + hype.out()
-    if hvirt.parsed:
+    if hvirt and hvirt.parsed:
         out += "_" + hvirt.out()
-    if cpubrand.parsed:
+    if cpubrand and cpubrand.parsed:
         out += "_" + cpubrand.out()
-    if gpu.parsed:
+    if gpu and gpu.parsed:
         out += "_" + gpu.out()
-    if ibd.parsed:
+    if ibd and ibd.parsed:
         out += "_" + ibd.out()
     return out
 

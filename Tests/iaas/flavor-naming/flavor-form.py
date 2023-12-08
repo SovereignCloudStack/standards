@@ -91,8 +91,9 @@ def generate_name(form):
         if idx2 < 0:
             ERROR = f"Can not find attribute {keypair[1]} in {keypair[1]}"
             return None
-        FLAVOR_SPEC[idx].parsed += 1
         fdesc = FLAVOR_SPEC[idx].pnames[idx2]
+        if val and val != "" and val != "NN" and val != "0" and not (val == "1" and fdesc[0:2] == "#:"):
+            FLAVOR_SPEC[idx].parsed += 1
         # Now parse fdesc to get the right value
         if fdesc[0:2] == '##':
             setattr(FLAVOR_SPEC[idx], keypair[1], float(val))
@@ -108,7 +109,12 @@ def generate_name(form):
             if val == "NN":
                 val = ""
             setattr(FLAVOR_SPEC[idx], keypair[1], val)
+    # Eliminate empty features
+    for spec in FLAVOR_SPEC:
+        if spec.pnames[0][0] == '.' and not getattr(spec, spec.pattrs[0]):
+            spec.parsed = 0
     FLAVOR_NAME = fnmck.outname(*FLAVOR_SPEC)
+    print(*FLAVOR_SPEC, file=sys.stderr, sep='\n')
     return FLAVOR_SPEC
 
 
@@ -178,7 +184,14 @@ def is_checked(flag):
         return ""
 
 
-def form_attr(attr, tblopt = True):
+def keystr(key):
+    if key == "":
+        return "NN"
+    else:
+        return key
+
+
+def form_attr(attr):
     """This mirrors flavor-name-check.py input(), but instead generates a web form.
        Defaults come from attr, the form is constructed from the attr's class
        attributes (like the mentioned input function). tblopt indicates whether
@@ -206,19 +219,24 @@ def form_attr(attr, tblopt = True):
         if hasattr(spec, f"tbl_{fname}"):
             tbl = getattr(attr, f"tbl_{fname}")
         if tbl:
-            print(f'\t  <label for="{fname}">{fname[0].upper()+fname[1:]}:</label><br/>')
+            tblopt = False
+            if fdesc[0] == '.':
+                tblopt = True
+                fdesc = fdesc[1:]
+            # print(f'\t  <label for="{fname}">{fname[0].upper()+fname[1:]}:</label><br/>')
+            print(f'\t  <label for="{fname}">{fdesc}:</label><br/>')
             value_set = False
             for key in tbl.keys():
                 ischk = value == key
                 value_set = value_set or ischk
-                print(f'\t   <input type="radio" id="{fname}:{key}" name="{spec.type}:{fname}" value="{key}" {is_checked(ischk)}/>')
+                print(f'\t   <input type="radio" id="{fname}:{key}" name="{spec.type}:{fname}" value="{keystr(key)}" {is_checked(ischk)}/>')
                 print(f'\t   <label for="{fname}:{key}">{tbl[key]}</label><br/>')
             if tblopt:
                 print(f'\t   <input type="radio" id="{fname}:NN" name="{spec.type}:{fname}" value="NN" {is_checked(not value_set)}/>')
                 print(f'\t   <label for="{fname}:NN">NN</label><br/>')
         elif fdesc[0:2] == "##":
             # Float number => NUMBER
-            print(f'\t  <label for="{fname}">{fdesc[2:]}</label><br/>')
+            print(f'\t  <label for="{fname}">{fdesc[2:]}:</label><br/>')
             print(f'\t  <input type="number" name="{spec.type}:{fname}" id="{fname}" min=0 value={value} size=5/>')
         elif fdesc[0] == "#":
             # Float number => NUMBER
@@ -229,12 +247,18 @@ def form_attr(attr, tblopt = True):
                 fdesc = fdesc[1:]
             elif fdesc[1] == '.':
                 fdesc = fdesc[1:]
-            print(f'\t  <label for="{fname}">{fdesc[1:]}</label><br/>')
+            print(f'\t  <label for="{fname}">{fdesc[1:]}:</label><br/>')
             print(f'\t  <input type="number" name="{spec.type}:{fname}" id="{fname}" min=0 step=1 value={value} size=4/>')
         elif fdesc[0] == "?":
             # Bool => Checkbox
             print(f'\t  <input type="checkbox" name="{spec.type}:{fname}" id="{fname}" {is_checked(value)}/>')
             print(f'\t  <label for="{fname}">{fdesc[1:]}</label>')
+        else:
+            # FIXME: Handle dependent tables
+            if fdesc[0] == '.':
+                fdesc = fdesc[1:]
+            print(f'\t  <label for="{fname}">{fdesc}:</label><br/>')
+            print(f'\t  <input type="text" name="{spec.type}:{fname}" id="{fname}" value={value} size=4/>')
         if fdesc[0] != "?" or i == len(spec.pnames)-1 or spec.pnames[i+1][0] != "?":
             print('\t  </div>')
         else:
@@ -252,7 +276,7 @@ def output_generate():
         print(f'\tERROR: {html.escape(ERROR, quote=True)}')
         return
     print('\t<br/>\n\t<FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
-    form_attr(cpu, False)
+    form_attr(cpu)
     print('\t<br/>The following settings are all optional and (except for disk) meant for highly specialized / differentiated offerings.<br/>')
     print('\t<font size=-1>')
     form_attr(disk)
@@ -267,6 +291,8 @@ def output_generate():
     print('\t</FORM>')
     if FLAVOR_NAME:
         print(f"\t<br/><b>Flavor {html.escape(FLAVOR_NAME, quote=True)}</b>")
+        altname = fnmck.outname(cpu, disk, None, None, None, gpu, ibd)
+        print(f"\t<br/><b>Short Flavor name {html.escape(altname, quote=True)}</b>")
     else:
         print(f'\tERROR: {html.escape(ERROR, quote=True)}')
 
