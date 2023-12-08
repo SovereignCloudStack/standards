@@ -76,6 +76,7 @@ def generate_name(form):
     "Parse submitted form with flavor properties"
     global ERROR, FLAVOR_SPEC, FLAVOR_NAME
     ERROR = ""
+    FLAVOR_NAME = ""
     FLAVOR_SPEC = (fnmck.Main("0L-0"), fnmck.Disk(""), fnmck.Hype(""), fnmck.HWVirt(""),
                    fnmck.CPUBrand(""), fnmck.GPU(""), fnmck.IB(""))
     for key, val in form.items():
@@ -89,16 +90,24 @@ def generate_name(form):
         idx2 = find_attr(FLAVOR_SPEC[idx], keypair[1])
         if idx2 < 0:
             ERROR = f"Can not find attribute {keypair[1]} in {keypair[1]}"
+            return None
+        FLAVOR_SPEC[idx].parsed += 1
         fdesc = FLAVOR_SPEC[idx].pnames[idx2]
         # Now parse fdesc to get the right value
-        if val != "NN":
-            if fdesc[0:2] == '##':
-                setattr(FLAVOR_SPEC[idx], keypair[1], float(val))
-            elif fdesc[0] == '#':
-                setattr(FLAVOR_SPEC[idx], keypair[1], int(val))
-            # TODO: Handle boolean
-            else:
-                setattr(FLAVOR_SPEC[idx], keypair[1], val)
+        if fdesc[0:2] == '##':
+            setattr(FLAVOR_SPEC[idx], keypair[1], float(val))
+        elif fdesc[0] == '#':
+            if fdesc[1] != '.' and not int(val) > 0:
+                ERROR = f"{key} must be > 0, found {val}"
+                return None
+            if fdesc[1] == ':' and not int(val):
+                val = '1'
+            setattr(FLAVOR_SPEC[idx], keypair[1], int(val))
+        # TODO: Handle boolean and tables
+        else:
+            if val == "NN":
+                val = ""
+            setattr(FLAVOR_SPEC[idx], keypair[1], val)
     FLAVOR_NAME = fnmck.outname(*FLAVOR_SPEC)
     return FLAVOR_SPEC
 
@@ -242,8 +251,6 @@ def output_generate():
     else:
         print(f'\tERROR: {html.escape(ERROR, quote=True)}')
         return
-    # print("\tNot implemented yet as webform, use")
-    # print('\t<tt><a href="https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-check.py">flavor-name-check.py</a> -i</tt>')
     print('\t<br/>\n\t<FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
     form_attr(cpu, False)
     print('\t<br/>The following settings are all optional and (except for disk) meant for highly specialized / differentiated offerings.<br/>')
@@ -255,10 +262,13 @@ def output_generate():
     form_attr(gpu)
     form_attr(ibd)
     print('\t</font><br/>')
+    print('\tRemember that you are allowed to understate performance.')
     print('\t<INPUT TYPE="submit" VALUE="Generate"/><br/>')
     print('\t</FORM>')
-    # TODO: Submission
-    print('\tRemember that you are allowed to understate performance.')
+    if FLAVOR_NAME:
+        print(f"\t<br/><b>Flavor {html.escape(FLAVOR_NAME, quote=True)}</b>")
+    else:
+        print(f'\tERROR: {html.escape(ERROR, quote=True)}')
 
 
 def main(argv):
