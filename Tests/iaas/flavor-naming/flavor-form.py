@@ -60,7 +60,7 @@ def output_parse():
 
 def find_spec(lst, key):
     for i in range(0, len(lst)):
-        if type(lst[i].type) == key:
+        if type(lst[i]).type == key:
             return i
     return -1
 
@@ -71,26 +71,39 @@ def find_attr(cls, key):
             return i
     return -1
 
+
 def generate_name(form):
     "Parse submitted form with flavor properties"
-    global ERROR
-    flavor_spec = (fnmck.Main(), fnmck.Disk(), fnmck.Hype(), fnmck.HWVirt(),
-                   fnmck.CPUBrand(), fnmck.GPU(), fnmck.IB())
-    for (key, val) in enumerate(form):
+    global ERROR, FLAVOR_SPEC, FLAVOR_NAME
+    ERROR = ""
+    FLAVOR_SPEC = (fnmck.Main("0L-0"), fnmck.Disk(""), fnmck.Hype(""), fnmck.HWVirt(""),
+                   fnmck.CPUBrand(""), fnmck.GPU(""), fnmck.IB(""))
+    for key, val in form.items():
+        val = val[0]
+        print(f'{key}={val}', file=sys.stderr)
         keypair = key.split(':')
-        idx = find_spec(flavor_spec, keypair[0])
+        idx = find_spec(FLAVOR_SPEC, keypair[0])
         if idx < 0:
             ERROR = f"Unknown key {keypair[0]}"
             return None
-        idx2 = find_attr(flavor_spec[idx], keypair[1])
+        idx2 = find_attr(FLAVOR_SPEC[idx], keypair[1])
         if idx2 < 0:
             ERROR = f"Can not find attribute {keypair[1]} in {keypair[1]}"
-        fdesc = flavor_spec[idx].pnames[idx2]
+        fdesc = FLAVOR_SPEC[idx].pnames[idx2]
         # Now parse fdesc to get the right value
-        ## FIXME
-        flavor_spec[idx].__setattribute(keypair[1], val)
+        if val != "NN":
+            if fdesc[0:2] == '##':
+                setattr(FLAVOR_SPEC[idx], keypair[1], float(val))
+            elif fdesc[0] == '#':
+                setattr(FLAVOR_SPEC[idx], keypair[1], int(val))
+            # TODO: Handle boolean
+            else:
+                setattr(FLAVOR_SPEC[idx], keypair[1], val)
+    FLAVOR_NAME = fnmck.outname(*FLAVOR_SPEC)
+    return FLAVOR_SPEC
 
-def input_mthod(self):
+
+def input_method(self):
     print(self.type)
     for i in range(0, len(self.pnames)):
         tbl = None
@@ -176,13 +189,13 @@ def form_attr(attr, tblopt = True):
         # print(fname, fdesc)
         value = None
         try:
-            value = attr.__getattribute__(fname)
+            value = getattr(attr, fname)
         except AttributeError:
             pass
         # FIXME: Handle leading . qualifier
         # Table => READIO
         if hasattr(spec, f"tbl_{fname}"):
-            tbl = attr.__getattribute__(f"tbl_{fname}")
+            tbl = getattr(attr, f"tbl_{fname}")
         if tbl:
             print(f'\t  <label for="{fname}">{fname[0].upper()+fname[1:]}:</label><br/>')
             value_set = False
@@ -227,12 +240,13 @@ def output_generate():
     if FLAVOR_SPEC:
         cpu, disk, hype, hvirt, cpubrand, gpu, ibd = FLAVOR_SPEC
     else:
+        print(f'\tERROR: {html.escape(ERROR, quote=True)}')
         return
     # print("\tNot implemented yet as webform, use")
     # print('\t<tt><a href="https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-check.py">flavor-name-check.py</a> -i</tt>')
     print('\t<br/>\n\t<FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
     form_attr(cpu, False)
-    print('\t<br/>The following settings are all optional and meant for highly specialized / differentiated offerings.<br/>')
+    print('\t<br/>The following settings are all optional and (except for disk) meant for highly specialized / differentiated offerings.<br/>')
     print('\t<font size=-1>')
     form_attr(disk)
     form_attr(hype)
@@ -241,7 +255,7 @@ def output_generate():
     form_attr(gpu)
     form_attr(ibd)
     print('\t</font><br/>')
-    print('\t  <INPUT TYPE="submit" VALUE="Generate"/><br/>')
+    print('\t<INPUT TYPE="submit" VALUE="Generate"/><br/>')
     print('\t</FORM>')
     # TODO: Submission
     print('\tRemember that you are allowed to understate performance.')
