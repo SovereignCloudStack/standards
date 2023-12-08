@@ -42,6 +42,7 @@ def parse_name(fnm):
 def output_parse():
     "output pretty description from SCS flavor name"
     fnmd = importlib.import_module("flavor-name-describe")
+    print('\tInput an SCS flavor name such as e.g. SCS-2V-8 ...')
     print('\t<br/>\n\t<FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
     print('\t  <label for="flavor"?Flavor name:</label>')
     print(f'\t  <INPUT TYPE="text" ID="flavor" NAME="flavor" SIZE=24 VALUE="{html.escape(FLAVOR_NAME, quote=True)}"/>')
@@ -115,6 +116,10 @@ def generate_name(form):
     for spec in FLAVOR_SPEC:
         if spec.pnames[0][0] == '.' and not getattr(spec, spec.pattrs[0]):
             spec.parsed = 0
+            if "perf" in spec.pnames:
+                setattr(spec, "perf", "")
+            if "gen" in spec.pnames:
+                setattr(spec, "gen", "")
     FLAVOR_NAME = fnmck.outname(*FLAVOR_SPEC)
     print(*FLAVOR_SPEC, file=sys.stderr, sep='\n')
     return FLAVOR_SPEC
@@ -205,6 +210,8 @@ def form_attr(attr):
     # pct = min(20, int(100/len(spec.pnames)))
     pct = 20
     # print(attr, spec)
+    if ERROR:
+        print(f'\tERROR: {html.escape(ERROR, quote=True)}<br/>')
     print(f'\t <fieldset><legend>{spec.type}</legend><br/>')
     print('\t <div id="the-whole-thing" style="position: relative; overflow: hidden;">')
     for i in range(0, len(spec.pnames)):
@@ -232,7 +239,7 @@ def form_attr(attr):
             print(f'\t  <label for="{fname}">{fdesc}:</label><br/>')
             value_set = False
             for key in tbl.keys():
-                ischk = value == key
+                ischk = value == key or (not key and not value)
                 value_set = value_set or ischk
                 print(f'\t   <input type="radio" id="{fname}:{key}" name="{spec.type}:{fname}" value="{keystr(key)}" {is_checked(ischk)}/>')
                 print(f'\t   <label for="{fname}:{key}">{tbl[key]}</label><br/>')
@@ -275,13 +282,17 @@ def form_attr(attr):
 
 def output_generate():
     "input details to generate SCS flavor name"
-    if FLAVOR_SPEC:
-        cpu, disk, hype, hvirt, cpubrand, gpu, ibd = FLAVOR_SPEC
-    else:
+    global FLAVOR_SPEC
+    if not FLAVOR_SPEC:
         print(f'\tERROR: {html.escape(ERROR, quote=True)}')
-        return
+        print('\t<br/>Starting with empty template ...')
+        # return
+        FLAVOR_SPEC = (fnmck.Main("0L-0"), fnmck.Disk(""), fnmck.Hype(""), fnmck.HWVirt(""),
+                       fnmck.CPUBrand(""), fnmck.GPU(""), fnmck.IB(""))
+    cpu, disk, hype, hvirt, cpubrand, gpu, ibd = FLAVOR_SPEC
     print('\t<br/>\n\t<FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
     form_attr(cpu)
+    print('\t<INPUT TYPE="submit" VALUE="Generate"/><br/>')
     print('\t<br/>The following settings are all optional and (except for disk) meant for highly specialized / differentiated offerings.<br/>')
     print('\t<font size=-1>')
     form_attr(disk)
@@ -291,7 +302,7 @@ def output_generate():
     form_attr(gpu)
     form_attr(ibd)
     print('\t</font><br/>')
-    print('\tRemember that you are allowed to understate performance.')
+    print('\tRemember that you are allowed to understate performance.<br/>')
     print('\t<INPUT TYPE="submit" VALUE="Generate"/><br/>')
     print('\t</FORM>')
     if FLAVOR_NAME:
