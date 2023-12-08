@@ -109,20 +109,16 @@ def generate_name(form):
             if fdesc[1] == ':' and not int(val):
                 val = '1'
             setattr(FLAVOR_SPEC[idx], keypair[1], int(val))
-        # TODO: Handle boolean and tables
         elif fdesc[0] == '?':
             setattr(FLAVOR_SPEC[idx], keypair[1], bool(val))
         elif hasattr(FLAVOR_SPEC[idx], f"tbl_{keypair[1]}"):
             tbl = getattr(FLAVOR_SPEC[idx], f"tbl_{keypair[1]}")
-            if not val and fdesc[0] == '.':
-                setattr(FLAVOR_SPEC[idx], keypair[1], val)
+            # print(f'tbl_{keypair[1]}: {tbl}: Search for {val}', file=sys.stderr)
             if not val in tbl and (val or fdesc[0] != '.'):
                 ERROR = f'Invalid key {val} for tbl_{keypair[1]}'
                 return None
             setattr(FLAVOR_SPEC[idx], keypair[1], val)
         else:
-            if val == "NN":
-                val = ""
             setattr(FLAVOR_SPEC[idx], keypair[1], val)
     # Eliminate empty features
     for spec in FLAVOR_SPEC:
