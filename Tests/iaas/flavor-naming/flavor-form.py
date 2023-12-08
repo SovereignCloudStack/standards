@@ -90,34 +90,38 @@ def generate_name(form):
         if idx < 0:
             ERROR = f"Unknown key {keypair[0]}"
             return None
-        idx2 = find_attr(FLAVOR_SPEC[idx], keypair[1])
+        spec = FLAVOR_SPEC[idx]
+        idx2 = find_attr(spec, keypair[1])
         if idx2 < 0:
             ERROR = f"Can not find attribute {keypair[1]} in {keypair[1]}"
             return None
-        fdesc = FLAVOR_SPEC[idx].pnames[idx2]
+        fdesc = spec.pnames[idx2]
         if val == "NN":
             val = ""
         if val and val != "" and val != "0" and not (val == "1" and fdesc[0:2] == "#:"):
-            FLAVOR_SPEC[idx].parsed += 1
+            spec.parsed += 1
         # Now parse fdesc to get the right value
         if fdesc[0:2] == '##':
-            setattr(FLAVOR_SPEC[idx], keypair[1], float(val))
+            setattr(spec, keypair[1], float(val))
         elif fdesc[0] == '#':
             if fdesc[1] != '.' and not int(val) > 0:
                 ERROR = f"{key} must be > 0, found {val}"
                 return None
             if fdesc[1] == ':' and not int(val):
                 val = '1'
-            setattr(FLAVOR_SPEC[idx], keypair[1], int(val))
+            setattr(spec, keypair[1], int(val))
         elif fdesc[0] == '?':
-            setattr(FLAVOR_SPEC[idx], keypair[1], bool(val))
-        elif hasattr(FLAVOR_SPEC[idx], f"tbl_{keypair[1]}"):
-            tbl = getattr(FLAVOR_SPEC[idx], f"tbl_{keypair[1]}")
+            setattr(spec, keypair[1], bool(val))
+        elif hasattr(spec, f"tbl_{keypair[1]}"):
+            tbl = getattr(spec, f"tbl_{keypair[1]}")
             # print(f'tbl_{keypair[1]}: {tbl}: Search for {val}', file=sys.stderr)
             if not val in tbl and (val or fdesc[0] != '.'):
                 ERROR = f'Invalid key {val} for tbl_{keypair[1]}'
                 return None
-            setattr(FLAVOR_SPEC[idx], keypair[1], val)
+            setattr(spec, keypair[1], val)
+            spec.create_dep_tbl(idx2, val)
+            # if idx2 < len(spec.pattrs)-1 and hasattr(spec, f"tbl_{spec.pattrs[idx2+1]}"):
+            #     print(f"Dynamically set tbl_{spec.pattrs[idx2+1]} to tbl_{spec.pattrs[idx2]}_{val}_{spec.pattrs[idx2+1]}", file=sys.stderr)
         else:
             setattr(FLAVOR_SPEC[idx], keypair[1], val)
     # Eliminate empty features
@@ -131,66 +135,6 @@ def generate_name(form):
     FLAVOR_NAME = fnmck.outname(*FLAVOR_SPEC)
     print(*FLAVOR_SPEC, file=sys.stderr, sep='\n')
     return FLAVOR_SPEC
-
-
-def input_method(self):
-    "Interactive input method for reference"
-    print(self.type)
-    for i in range(0, len(self.pnames)):
-        tbl = None
-        fname = self.pattrs[i]
-        fdesc = self.pnames[i]
-        if hasattr(self, f"tbl_{fname}"):
-            tbl = self.__getattribute__(f"tbl_{fname}")
-        if tbl:
-            print(f" {fdesc} Options:")
-            for key in tbl.keys():
-                print(f"  {key}: {tbl[key]}")
-        while True:
-            print(f" {fdesc}: ", end="")
-            val = input()
-            try:
-                if fdesc[0] == "." and not val and i == 0:
-                    return
-                if fdesc[0] == "?":
-                    val = fnmck.to_bool(val)
-                    if not val:
-                        break
-                elif fdesc[0:2] == "##":
-                    val = float(val)
-                elif fdesc[0] == "#":
-                    if fdesc[1] == ":" and not val:     # change?
-                        val = 1
-                        break
-                    if fdesc[1] == "." and not val:
-                        break
-                    oval = val
-                    val = int(val)
-                    if str(val) != oval:
-                        print(" INVALID!")
-                        continue
-                elif tbl:
-                    if fdesc[0] == "." and not val:
-                        break
-                    if val in tbl:
-                        pass
-                    elif val.upper() in tbl:
-                        val = val.upper()
-                    elif val.lower() in tbl:
-                        val = val.lower()
-                    if val in tbl:
-                        self.parsed += 1
-                        self.create_dep_tbl(i, val)
-                        break
-                    print(" INVALID!")
-                    continue
-            except BaseException as exc:
-                print(exc)
-                print(" INVALID!")
-                continue
-            self.parsed += 1
-            break
-        self.__setattr__(fname, val)
 
 
 def is_checked(flag):
@@ -236,7 +180,7 @@ def form_attr(attr):
             pass
         # FIXME: Handle leading . qualifier
         # Table => READIO
-        if hasattr(spec, f"tbl_{fname}"):
+        if hasattr(attr, f"tbl_{fname}"):
             tbl = getattr(attr, f"tbl_{fname}")
         if tbl:
             tblopt = False
@@ -254,6 +198,9 @@ def form_attr(attr):
             if tblopt:
                 print(f'\t   <input type="radio" id="{fname}:NN" name="{spec.type}:{fname}" value="NN" {is_checked(not value_set)}/>')
                 print(f'\t   <label for="{fname}:NN">NN</label><br/>')
+            attr.create_dep_tbl(i, value)
+            # if i < len(attr.pattrs)-1 and hasattr(attr, f"tbl_{spec.pattrs[i+1]}"):
+            #     print(f" Dynamically set tbl_{attr.pattrs[i+1]} to tbl_{attr.pattrs[i]}_{value}_{attr.pattrs[i+1]}", file=sys.stderr)
         elif fdesc[0:2] == "##":
             # Float number => NUMBER
             print(f'\t  <label for="{fname}">{fdesc[2:]}:</label><br/>')
