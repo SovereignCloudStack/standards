@@ -61,7 +61,7 @@ CONS:
   * "no mock or fake cluster components" can be ignored, since the e2e tests of SCS should be used to test real clusters and their functionality
   * for this test procedure, the Sonobuoy e2e plugin should be run in addition to the SCS kaas conformance tests
 
-> proof of work: [kaas-sonobuoy-go-example-e2e-framework](../Tests/kaas/kaas-sonobuoy-go-example-e2e-framework/)
+> proof of work: `../Tests/kaas/kaas-sonobuoy-go-example-e2e-framework/`
 
 ### _Option 2_ go approach [2]: Reuse the kubernetes own e2e test infrastructure and framework
 
@@ -101,7 +101,7 @@ The wrapper as well as the python tests and test framework could then be stored 
 This approach also leaves the decision open as to which test framework should be
 used for Python, which should be decided in a secondary Decision Record.
 
-> proof of work: [k8s-default-storage-class](../Tests/kaas/k8s-default-storage-class)
+> proof of work: `../Tests/kaas/k8s-default-storage-class`
 
 PROS:
 
