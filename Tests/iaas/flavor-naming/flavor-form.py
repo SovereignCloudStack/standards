@@ -173,7 +173,7 @@ def form_attr(attr):
         if fdesc[0] != "?" or i == 0 or spec.pnames[i-1][0] != "?":
             print(f'\t  <div id="column" style="position: relative; width: {pct}%; float: left;">')
         # print(fname, fdesc)
-        value = None
+        value = ""
         try:
             value = getattr(attr, fname)
         except AttributeError:
