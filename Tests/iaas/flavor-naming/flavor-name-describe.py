@@ -75,7 +75,7 @@ def prettyname(item_list, prefix=""):
         stg += tbl_out(gpu, "brand")
         stg += tbl_out(gpu, "perf", True)
         stg += gpu.__getattribute__(f"tbl_brand_{gpu.brand}_gen")[gpu.gen] + " "
-        if gpu.cu:
+        if hasattr(gpu, "cu") and gpu.cu:
             stg += f"(w/ {gpu.cu} CU/EU/SM) "
     # IB
     if ibd.parsed:

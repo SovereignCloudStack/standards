@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 # vim: set ts=4 sw=4 et:
 #
 """Flavor naming checker
@@ -216,7 +216,9 @@ class Prop:
                 ostr += self.outstr[i]
                 i += 1
                 continue
-            att = self.__getattribute__(self.pattrs[par])
+            att = None
+            if hasattr(self, self.pattrs[par]):
+                att = self.__getattribute__(self.pattrs[par])
             if self.outstr[i+1] == ".":
                 ostr += self.outstr[i:i+2]
                 if int(att) == att:
@@ -283,11 +285,13 @@ class Prop:
             dtbl = f"tbl_{fname}_{val}_{self.pattrs[idx+1]}"
         else:
             return False
-        if hasattr(self, ntbl):
-            return True
+        # if hasattr(self, ntbl):
+        #    return True
         if hasattr(self, dtbl):
             self.__setattr__(ntbl, self.__getattribute__(dtbl))
             return True
+        elif hasattr(self, ntbl) and not hasattr(type(self), ntbl):
+            delattr(self, ntbl)
         return False
 
     def std_validator(self):
