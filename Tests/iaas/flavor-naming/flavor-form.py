@@ -59,6 +59,7 @@ def output_parse():
 
 
 def find_spec(lst, key):
+    "Find index of class name key in lst, -1 means not found"
     for i in range(0, len(lst)):
         if type(lst[i]).type == key:
             return i
@@ -66,6 +67,7 @@ def find_spec(lst, key):
 
 
 def find_attr(cls, key):
+    "Find index of attribute in object cls, -1 means not found"
     for i in range(0, len(cls.pattrs)):
         if cls.pattrs[i] == key:
             return i
@@ -119,6 +121,7 @@ def generate_name(form):
 
 
 def input_method(self):
+    "Interactive input method for reference"
     print(self.type)
     for i in range(0, len(self.pnames)):
         tbl = None
@@ -178,6 +181,7 @@ def input_method(self):
 
 
 def is_checked(flag):
+    "Checked attribute string"
     if flag:
         return "checked"
     else:
@@ -185,6 +189,7 @@ def is_checked(flag):
 
 
 def keystr(key):
+    "Empty string gets converted to NN"
     if key == "":
         return "NN"
     else:
