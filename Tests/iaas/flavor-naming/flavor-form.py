@@ -50,7 +50,7 @@ def output_parse():
     # print('  <INPUT TYPE="reset"  VALUE="Clear"/>\n</FORM>')
     print('\t</FORM>')
     if FLAVOR_NAME:
-        print(f"\t<br/><b>Flavor {html.escape(FLAVOR_NAME, quote=True)}:</b>")
+        print(f"\t<br/><b>Flavor <tt>{html.escape(FLAVOR_NAME, quote=True)}</tt>:</b>")
         if FLAVOR_SPEC:
             print(f"\t{html.escape(fnmd.prettyname(FLAVOR_SPEC), quote=True)}")
         else:
@@ -306,9 +306,9 @@ def output_generate():
     print('\t<INPUT TYPE="submit" VALUE="Generate"/><br/>')
     print('\t</FORM>')
     if FLAVOR_NAME:
-        print(f"\t<br/><b>Flavor {html.escape(FLAVOR_NAME, quote=True)}</b>")
+        print(f"\t<br/><b>SCS flavor name: <tt>{html.escape(FLAVOR_NAME, quote=True)}</tt></b>")
         altname = fnmck.outname(cpu, disk, None, None, None, gpu, ibd)
-        print(f"\t<br/><b>Short Flavor name {html.escape(altname, quote=True)}</b>")
+        print(f"\t<br/><b>Short SCS flavor name: <tt>{html.escape(altname, quote=True)}</tt></b>")
     else:
         print(f'\tERROR: {html.escape(ERROR, quote=True)}')
 
