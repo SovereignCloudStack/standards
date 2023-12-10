@@ -33,7 +33,7 @@ def parse_name(fnm):
     try:
         FLAVOR_SPEC = fnmck.parsename(fnm)
     except (TypeError, NameError, KeyError) as exc:
-        ERROR = f"\tERROR<br/>\n\t{exc}"
+        ERROR = f"\tERROR:\n\t{exc}"
         return ()
     ERROR = ""
     return FLAVOR_SPEC
@@ -88,12 +88,12 @@ def generate_name(form):
         keypair = key.split(':')
         idx = find_spec(FLAVOR_SPEC, keypair[0])
         if idx < 0:
-            ERROR = f"Unknown key {keypair[0]}"
+            ERROR = f"ERROR: Unknown key {keypair[0]}"
             return None
         spec = FLAVOR_SPEC[idx]
         idx2 = find_attr(spec, keypair[1])
         if idx2 < 0:
-            ERROR = f"Can not find attribute {keypair[1]} in {keypair[1]}"
+            ERROR = f"ERROR: Can not find attribute {keypair[1]} in {keypair[1]}"
             return None
         fdesc = spec.pnames[idx2]
         if val == "NN":
@@ -105,7 +105,7 @@ def generate_name(form):
             setattr(spec, keypair[1], float(val))
         elif fdesc[0] == '#':
             if fdesc[1] != '.' and not int(val) > 0:
-                ERROR = f"{key} must be > 0, found {val}"
+                ERROR = f"ERROR: {key} must be > 0, found {val}"
                 return None
             if fdesc[1] == ':' and not int(val):
                 val = '1'
@@ -116,7 +116,7 @@ def generate_name(form):
             tbl = getattr(spec, f"tbl_{keypair[1]}")
             # print(f'tbl_{keypair[1]}: {tbl}: Search for {val}', file=sys.stderr)
             if not val in tbl and (val or fdesc[0] != '.'):
-                ERROR = f'Invalid key {val} for tbl_{keypair[1]}'
+                ERROR = f'ERROR: Invalid key {val} for tbl_{keypair[1]}'
                 return None
             setattr(spec, keypair[1], val)
             spec.create_dep_tbl(idx2, val)
@@ -132,8 +132,13 @@ def generate_name(form):
                 setattr(spec, "perf", "")
             if "gen" in spec.pnames:
                 setattr(spec, "gen", "")
-    FLAVOR_NAME = fnmck.outname(*FLAVOR_SPEC)
+    # Debugging
     print(*FLAVOR_SPEC, file=sys.stderr, sep='\n')
+    try:
+        FLAVOR_NAME = fnmck.outname(*FLAVOR_SPEC)
+    except (TypeError, NameError, KeyError) as exc:
+        ERROR = f"\tERROR:\n\t{exc}"
+        # return None
     return FLAVOR_SPEC
 
 
