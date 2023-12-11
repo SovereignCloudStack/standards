@@ -169,7 +169,6 @@ Applying the standard will result in the following roles being available:
 \* Roles that are currently specific to an SCS standard and diverge from the default set of OpenStack or its RBAC rework are marked with an asterisk.
 Their existence in the infrastructure may depend on the application of the respective standard.
 
-
 ## Related Documents
 
 ### SCS Domain Manager standard
@@ -189,7 +188,6 @@ Their existence in the infrastructure may depend on the application of the respe
 This standard does not yet define conformance tests of its own due to the alignment with OpenStack defaults and the undefined scope of supported services.
 
 OpenStack Keystone and its default roles can be tested using the RBAC tests of the [keystone-tempest-plugin](https://pypi.org/project/keystone-tempest-plugin/) for the [Tempest Integration Test Suite](https://opendev.org/openstack/tempest/).
-
 
 ## Appendix
 
@@ -213,8 +211,7 @@ Rationale:
 
 Links / Comments / References:
 
-- [Team IAM meeting protocol entry](https://github.com/SovereignCloudStack/minutes/blob/main/iaas/20231122.md#role-standard) 
-
+- [Team IAM meeting protocol entry](https://github.com/SovereignCloudStack/minutes/blob/main/iaas/20231122.md#role-standard)
 
 #### Introduction of "auditor" role should be considered
 
