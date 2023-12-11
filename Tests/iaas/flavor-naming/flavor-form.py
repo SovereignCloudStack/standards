@@ -48,15 +48,15 @@ def output_parse():
     print(f'\t  <INPUT TYPE="text" ID="flavor" NAME="flavor" SIZE=24 VALUE="{html.escape(FLAVOR_NAME, quote=True)}"/>')
     print('\t  <INPUT TYPE="submit" VALUE="Parse"/>')
     # print('  <INPUT TYPE="reset"  VALUE="Clear"/>\n</FORM>')
-    print('\t</FORM>')
+    print('\t</FORM><br/>')
     if FLAVOR_NAME:
-        print(f"\t<br/><b>Flavor <tt>{html.escape(FLAVOR_NAME, quote=True)}</tt>:</b>")
+        print(f"\t<br/><font size=+1 color=blue><b>Flavor <tt>{html.escape(FLAVOR_NAME, quote=True)}</tt>:</b></font>")
         if FLAVOR_SPEC:
-            print(f"\t{html.escape(fnmd.prettyname(FLAVOR_SPEC), quote=True)}")
+            print(f"\t<font color=green>{html.escape(fnmd.prettyname(FLAVOR_SPEC), quote=True)}</font>")
         else:
-            print("\tNot an SCS flavor")
+            print("\t<font color=brown>Not an SCS flavor</font>")
             if ERROR:
-                print(f"\t<br/>{html.escape(ERROR, quote=True)})")
+                print(f"\t<br/><font color=red>{html.escape(ERROR, quote=True)}</font>")
 
 
 def find_spec(lst, key):
@@ -169,9 +169,8 @@ def form_attr(attr):
         print(f'\tERROR: {html.escape(ERROR, quote=True)}<br/>')
     print(f'\t <fieldset><legend>{spec.type}</legend><br/>')
     print('\t <div id="the-whole-thing" style="position: relative; overflow: hidden;">')
-    for i in range(0, len(spec.pnames)):
+    for i, fname in enumerate(spec.pattrs):
         tbl = None
-        fname = spec.pattrs[i]
         fdesc = spec.pnames[i]
         if fdesc[0] != "?" or i == 0 or spec.pnames[i-1][0] != "?":
             print(f'\t  <div id="column" style="position: relative; width: {pct}%; float: left;">')
@@ -181,7 +180,6 @@ def form_attr(attr):
             value = getattr(attr, fname)
         except AttributeError:
             pass
-        # FIXME: Handle leading . qualifier
         # Table => READIO
         if hasattr(attr, f"tbl_{fname}"):
             tbl = getattr(attr, f"tbl_{fname}")
@@ -207,7 +205,7 @@ def form_attr(attr):
         elif fdesc[0:2] == "##":
             # Float number => NUMBER
             print(f'\t  <label for="{fname}">{fdesc[2:]}:</label><br/>')
-            print(f'\t  <input type="number" name="{spec.type}:{fname}" id="{fname}" min=0 value={value} size=5/>')
+            print(f'\t  <input type="number" name="{spec.type}:{fname}" id="{fname}" min=0 value="{value}" size=5/>')
         elif fdesc[0] == "#":
             # Float number => NUMBER
             # Handle : and .
@@ -218,17 +216,16 @@ def form_attr(attr):
             elif fdesc[1] == '.':
                 fdesc = fdesc[1:]
             print(f'\t  <label for="{fname}">{fdesc[1:]}:</label><br/>')
-            print(f'\t  <input type="number" name="{spec.type}:{fname}" id="{fname}" min=0 step=1 value={value} size=4/>')
+            print(f'\t  <input type="number" name="{spec.type}:{fname}" id="{fname}" min=0 step=1 value="{value}" size=4/>')
         elif fdesc[0] == "?":
             # Bool => Checkbox
             print(f'\t  <input type="checkbox" name="{spec.type}:{fname}" id="{fname}" {is_checked(value)}/>')
             print(f'\t  <label for="{fname}">{fdesc[1:]}</label>')
         else:
-            # FIXME: Handle dependent tables
             if fdesc[0] == '.':
                 fdesc = fdesc[1:]
             print(f'\t  <label for="{fname}">{fdesc}:</label><br/>')
-            print(f'\t  <input type="text" name="{spec.type}:{fname}" id="{fname}" value={value} size=4/>')
+            print(f'\t  <input type="text" name="{spec.type}:{fname}" id="{fname}" value="{value}" size=4/>')
         if fdesc[0] != "?" or i == len(spec.pnames)-1 or spec.pnames[i+1][0] != "?":
             print('\t  </div>')
         else:
@@ -264,11 +261,11 @@ def output_generate():
     print('\t<INPUT TYPE="submit" VALUE="Generate"/><br/>')
     print('\t</FORM>')
     if FLAVOR_NAME:
-        print(f"\t<br/><b>SCS flavor name: <tt>{html.escape(FLAVOR_NAME, quote=True)}</tt></b>")
+        print(f"\t<br/><font size=+1 color=blue><b>SCS flavor name: <tt>{html.escape(FLAVOR_NAME, quote=True)}</tt></b>")
         altname = fnmck.outname(cpu, disk, None, None, None, gpu, ibd)
-        print(f"\t<br/><b>Short SCS flavor name: <tt>{html.escape(altname, quote=True)}</tt></b>")
+        print(f"\t<br/><b>Short SCS flavor name: <tt>{html.escape(altname, quote=True)}</tt></b></font>")
     else:
-        print(f'\tERROR: {html.escape(ERROR, quote=True)}')
+        print(f'\t<font color=red>ERROR: {html.escape(ERROR, quote=True)}</font>')
 
 
 def main(argv):
