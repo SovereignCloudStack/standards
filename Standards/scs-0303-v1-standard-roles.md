@@ -81,24 +81,83 @@ Once the RBAC rework concludes, anything not already included in this standard c
 
 Currently, SCS does not enforce a list of OpenStack components/services it covers and/or supports exactly.
 This poses a challenge to this standard since each OpenStack service API has their own policy configuration where the role model of this standard must be applied to properly to be effective.
-This means that services which SCS and this standard in particular do not cover (i.e. for which it does not provide templates or guidelines for) are up to the CSP to align to the role model accordingly, which limits the scope and reliability of the standard.
+Due to this reason, this standard is limited to a generic approach and defining guidelines without addressing each applicable OpenStack service individually with detailed policy templates.
+
+This leaves a bit of vagueness in the actual implementation of the standard by the CSP, who is left responsible for aligning the role model correctly for all deployed services. This limits the scope and reliability of the standard.
 How this can be addressed in future iterations of the standard is still uncertain.
 
-### Aligning the standard with future upstream changes
+### Incorporating the new upstream defaults into this standard
 
 Due to the ongoing RBAC rework in upstream OpenStack[^1], not all changes which are to be introduced by it will be included in the first iteration of this standard to avoid prematurely adopting role and policy definitions which might still change before being stabilized.
 This results in a need of keeping this standard in sync once the upstream rework finishes.
 It is currently unknown when the upstream rework will conclude exactly and how this standard will need to be adjusted as a result.
 
+This primarily concerns the new scoping and defaults in `oslo.policy`:
+
+```ini
+[oslo_policy]
+enforce_new_defaults = True|False
+enforce_scope = True|False
+```
+
+As of the time of writing this standard, these options currently default to `False`[^4].
+Once these options default to `True`, the standard should be updated.
+
+[^4]: [Current parameter defaults in `oslo_policy/opts.py` (2023-12-11)](https://github.com/openstack/oslo.policy/blob/a1e76258180002b288e64532676ba2bc2d1ec800/oslo_policy/opts.py#L26-L51)
+
 ## Decision
 
 This standard establishes a set of roles consisting of current OpenStack defaults and the stable parts of the ongoing OpenStack RBAC rework[^1].
+Since the stable parts of the rework are already included in recent OpenStack releases, they can be used as-is.
 
-TODO: detailed description
+On a per-service basis, a CSP applying this standard MUST either
+**a)** not configure a `policy.yaml` or `policy.json` file for the OpenStack service at all (i.e. using its defaults) or
+**b)** use a custom `policy.yaml` file that adheres to the rules specified below.
 
-Furthermore, the project-scoped "manager" role defined by OpenStack's RBAC rework will not be incorporated into the SCS standard as long as its integration is not finalized in upstream OpenStack.
+If deploying custom `policy.yaml` files for individual OpenStack services, the CSP must adhere to the following rules:
+
+- the default OpenStack roles (`admin`, `member`, `reader`) MUST NOT be changed regarding their permissions
+- for custom permission sets a new role MUST be added and the name of the role MUST NOT match with any of the existing default role defined by OpenStack (`admin`, `member`, `reader` etc.) or the name `domain-manager`
+- in case of Keystone, a `domain-manager` role MAY be added; in this case its definition MUST adhere to the Domain Manager SCS standard
+- if at any point in time the OpenStack release is upgraded, the CSP MUST make sure that all custom policy overrides which affect the default roles (`admin`, `member`, `reader` etc.) in the `policy.yaml` files are up-to-date and do not deviate from the defaults of the target OpenStack release
+
+Adhering to these rules ensures a consistent and secure set of roles and permission sets a customer can expect across SCS-compliant infrastructures.
+
+Furthermore, the CSP MUST ensure that the new defaults and scoping behavior of `oslo.policy` are disabled.
+For this, the following entries in each OpenStack service configuration file (e.g. `keystone.conf` for Keystone) must be set to `False`:
+
+```ini
+[oslo_policy]
+enforce_new_defaults = False
+enforce_scope = False
+```
+
+### Policy default reference
+
+To help with aligning custom policy overrides with an OpenStack release's defaults and avoiding any deviations when creating or updating policy adjustments, a CSP can use the following process to generate OpenStack policy templates using the `oslo.policy` library:
+
+```bash
+VIRTUALENV_PATH="/tmp/oslo_policy.venv"
+OPENSTACK_RELEASE="2023.2"
+OPENSTACK_SERVICE="keystone"
+
+virtualenv --clear "${VIRTUALENV_PATH}"
+source "${VIRTUALENV_PATH}/bin/activate"
+pip3 install oslo.policy
+GIT_URL="https://opendev.org/openstack/${OPENSTACK_SERVICE}.git"
+pip3 install git+${GIT_URL}@stable/${OPENSTACK_RELEASE}
+
+oslopolicy-policy-generator --namespace "${OPENSTACK_SERVICE}" \
+    --output-file "${OPENSTACK_SERVICE}-policy.yaml"
+```
+
+(The variables `OPENSTACK_RELEASE` and `OPENSTACK_SERVICE` need to be adjusted according to the target OpenStack release and service the policy template is to be generated for. The directory specified by `VIRTUALENV_PATH` may be removed after using the generator.)
+
+CSPs MAY take the entirety or a subset of the rules from these templates as a basis for custom policies as long as they adhere to the guideline specified by this standard.
 
 ### Roles
+
+Applying the standard will result in the following roles being available:
 
 | Role | Purpose |
 |---|---|
@@ -107,7 +166,8 @@ Furthermore, the project-scoped "manager" role defined by OpenStack's RBAC rewor
 | member | Read/write access to resources within projects. |
 | reader | Non-administrative read-only access to resources within projects. |
 
-\* Roles that are currently specific to the SCS standard and diverge from the default set of OpenStack or its RBAC rework are marked with an asterisk.
+\* Roles that are currently specific to an SCS standard and diverge from the default set of OpenStack or its RBAC rework are marked with an asterisk.
+Their existence in the infrastructure may depend on the application of the respective standard.
 
 
 ## Related Documents
@@ -126,7 +186,10 @@ Furthermore, the project-scoped "manager" role defined by OpenStack's RBAC rewor
 
 ## Conformance Tests
 
-Conformance Tests, OPTIONAL
+This standard does not yet define conformance tests of its own due to the alignment with OpenStack defaults and the undefined scope of supported services.
+
+OpenStack Keystone and its default roles can be tested using the RBAC tests of the [keystone-tempest-plugin](https://pypi.org/project/keystone-tempest-plugin/) for the [Tempest Integration Test Suite](https://opendev.org/openstack/tempest/).
+
 
 ## Appendix
 
