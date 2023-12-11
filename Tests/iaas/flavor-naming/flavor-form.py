@@ -61,16 +61,16 @@ def output_parse():
 
 def find_spec(lst, key):
     "Find index of class name key in lst, -1 means not found"
-    for i in range(0, len(lst)):
-        if type(lst[i]).type == key:
+    for i, val in enumerate(lst):
+        if type(val).type == key:
             return i
     return -1
 
 
 def find_attr(cls, key):
     "Find index of attribute in object cls, -1 means not found"
-    for i in range(0, len(cls.pattrs)):
-        if cls.pattrs[i] == key:
+    for i, val in enumerate(cls.pattrs):
+        if val == key:
             return i
     return -1
 
@@ -104,7 +104,7 @@ def generate_name(form):
         if fdesc[0:2] == '##':
             setattr(spec, keypair[1], float(val))
         elif fdesc[0] == '#':
-            if fdesc[1] != '.' and not int(val) > 0:
+            if fdesc[1] != '.' and int(val) <= 0:
                 ERROR = f"ERROR: {key} must be > 0, found {val}"
                 return None
             if fdesc[1] == ':' and not int(val):
@@ -115,7 +115,7 @@ def generate_name(form):
         elif hasattr(spec, f"tbl_{keypair[1]}"):
             tbl = getattr(spec, f"tbl_{keypair[1]}")
             # print(f'tbl_{keypair[1]}: {tbl}: Search for {val}', file=sys.stderr)
-            if not val in tbl and (val or fdesc[0] != '.'):
+            if val not in tbl and (val or fdesc[0] != '.'):
                 ERROR = f'ERROR: Invalid key {val} for tbl_{keypair[1]}'
                 return None
             setattr(spec, keypair[1], val)
@@ -146,16 +146,14 @@ def is_checked(flag):
     "Checked attribute string"
     if flag:
         return "checked"
-    else:
-        return ""
+    return ""
 
 
 def keystr(key):
     "Empty string gets converted to NN"
     if key == "":
         return "NN"
-    else:
-        return key
+    return key
 
 
 def form_attr(attr):
@@ -282,7 +280,7 @@ def main(argv):
         print(f'QUERY_STRING: {os.environ["QUERY_STRING"]}', file=sys.stderr)
     # For testing
     if len(argv) > 0:
-        form = {"flavor": [argv[0],]}
+        form = {"flavor": [argv[0], ]}
     find_parse    = re.compile(r'^[ \t]*<!\-\-FLAVOR\-FORM: PARSE\-\->[ \t]*$')
     find_generate = re.compile(r'^[ \t]*<!\-\-FLAVOR\-FORM: GENERATE\-\->[ \t]*$')
     if "flavor" in form:
