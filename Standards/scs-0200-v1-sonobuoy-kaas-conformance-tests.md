@@ -77,7 +77,7 @@ CONS:
   * "no mock or fake cluster components" can be ignored, since the e2e tests of SCS should be used to test real clusters and their functionality
   * for this test procedure, the Sonobuoy e2e plugin should be run in addition to the SCS kaas conformance tests
 
-> proof of work: `../Tests/kaas/kaas-sonobuoy-go-example-e2e-framework/`
+> proof of concept: `../Tests/kaas/kaas-sonobuoy-go-example-e2e-framework/`
 
 ### _Option 2_ Go approach 2: Reuse the kubernetes own e2e test infrastructure and framework
 
@@ -108,7 +108,7 @@ CONS:
 * according to [README.md](https://github.com/kubernetes/kubernetes/tree/master/cluster#readme), part of it seems to be outdated and might change with a future version
   * compared to _option 1_, the [goals][e2e-frame-goals] of the [e2e-framework][e2e-frame] can be seen as the disadvantages of using [Kubernetes' own e2e-tests][k8s-e2e-tests].
 
-> TODO: provide proof of work: _kaas-sonobuoy-go-example-k8s-e2e_
+> TODO: provide proof of concept: _kaas-sonobuoy-go-example-k8s-e2e_
 
 #### _Option 3_ Write Python scripts for tests
 
@@ -188,17 +188,17 @@ Furthermore, the test cases themselves MUST be wrapped by a test framework to:
 
 As with the [k8s-cluster-api-provider][k8s-api] the SCS provides a tooling to generate
 its KaaS infrastructure. Part of the [k8s-cluster-api-provider][k8s-api] is the usage
-of Sonobuoy as an test suite to execute the [Kubernetes own e2e tests][k8s-e2e-tests].
-Investigating those e2e test lead to the conclution that they are not allways reusable.
-The main purpose of the Kubernetes own e2e tests is to test the functionality of
+of Sonobuoy as a test suite to execute the [Kubernetes own e2e tests][k8s-e2e-tests].
+Investigating those e2e test lead to the conclusion that they are not always reusable.
+The main purpose of Kubernetes own e2e tests is to test the functionality of
 the Kubernetes code itself and not the resources and setup of a specific KaaS infrastrcture
-as it is the aim of the SCS KaaS confromance test.
+as it is the aim of the SCS KaaS conformance test.
 
 However considering that the SCS has an ongoing process of defining standards and
 implementing test cases to check their compliance. In some cases future standards
-might allready be covored by the e2e test inside the Kubernetes repository.
+might already be covored by the e2e test inside the Kubernetes repository.
 Hence before writing tests, a developer SHOULD check the kubernetes e2e tests for
-excisting test cases that might cover conformance of a standard he is currently
+existing test cases that might cover conformance of a standard he is currently
 working on.
 
 As described above, Sonobuoy offers the possibility to generate custom plugins
