@@ -203,18 +203,18 @@ The only parts of the policy definitions that may be changed are:
 # (restricted to specific roles by the 'is_domain_managed_role' rule)
 #
 # project-level role assignment to user within domain
-"is_domain_user_project_grant": "token.domain.id:%(target.user.domain_id)s and token.domain.id:%(target.project.domain_id)s and rule:is_domain_managed_role"
+"is_domain_user_project_grant": "token.domain.id:%(target.user.domain_id)s and token.domain.id:%(target.project.domain_id)s"
 # project-level role assignment to group within domain
-"is_domain_group_project_grant": "token.domain.id:%(target.group.domain_id)s and token.domain.id:%(target.project.domain_id)s and rule:is_domain_managed_role"
+"is_domain_group_project_grant": "token.domain.id:%(target.group.domain_id)s and token.domain.id:%(target.project.domain_id)s"
 # domain-level role assignment to group
-"is_domain_level_group_grant": "token.domain.id:%(target.group.domain_id)s and token.domain.id:%(target.domain.id)s and rule:is_domain_managed_role"
+"is_domain_level_group_grant": "token.domain.id:%(target.group.domain_id)s and token.domain.id:%(target.domain.id)s"
 # domain-level role assignment to user
-"is_domain_level_user_grant": "token.domain.id:%(target.user.domain_id)s and token.domain.id:%(target.domain.id)s and rule:is_domain_managed_role"
+"is_domain_level_user_grant": "token.domain.id:%(target.user.domain_id)s and token.domain.id:%(target.domain.id)s"
 "domain_manager_grant": "rule:is_domain_manager and (rule:is_domain_user_project_grant or rule:is_domain_group_project_grant or rule:is_domain_level_group_grant or rule:is_domain_level_user_grant)"
 "identity:check_grant": "rule:domain_manager_grant or rule:base_check_grant or rule:admin_required"
 "identity:list_grants": "rule:domain_manager_grant or rule:base_list_grants or rule:admin_required"
-"identity:create_grant": "rule:domain_manager_grant or rule:base_create_grant or rule:admin_required"
-"identity:revoke_grant": "rule:domain_manager_grant or rule:base_revoke_grant or rule:admin_required"
+"identity:create_grant": "(rule:domain_manager_grant and rule:is_domain_managed_role) or rule:base_create_grant or rule:admin_required"
+"identity:revoke_grant": "(rule:domain_manager_grant and rule:is_domain_managed_role) or rule:base_revoke_grant or rule:admin_required"
 "identity:list_role_assignments": "(rule:is_domain_manager and token.domain.id:%(target.domain_id)s) or rule:base_list_role_assignments or rule:admin_required"
 
 
