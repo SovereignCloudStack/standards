@@ -5,6 +5,11 @@ status: Stable
 stabilized_at: 2023-06-14
 track: IaaS
 replaces: scs-0100-v2-flavor-naming.md
+description: |
+  The SCS Flavor Naming Standard provides a systematic approach for naming instance flavors in OpenStack
+  environments, ensuring backward compatibility and clarity on key features like the number of vCPUs, RAM,
+  and Root Disk, as well as extra features like GPU support and CPU generation. The standard aims for
+  usability and portability across all SCS flavors.
 ---
 
 ## Introduction
@@ -270,6 +275,9 @@ the names for standards compliance.
 It goes beyond the above example in checking that the discoverable
 features of flavors (vCPUs, RAM, Disk) match what the flavor names claim.
 This is used for SCS-compatible compliance testing.
+
+The functionality of the `flavor-name-check.py` script is also
+(partially) exposed via the web page <https://flavors.scs.community/>.
 
 ## Extensions
 

@@ -99,12 +99,14 @@ This means that by creating a new role and extending Keystone's API policy confi
 
 The approach described in this standard imposes the following limitations:
 
-1. as a result of the "`identity:list_domains`" rule (see below), Domain Managers are able to see all domains via "`openstack domain list`" and can inspect the metadata of other domains with "`openstack domain show`"
+1. as a result of the "`identity:list_domains`" rule (see below), Domain Managers are able to see all domains[^5] via "`openstack domain list`" and can inspect the metadata of other domains with "`openstack domain show`"
 2. as a result of the "`identity:list_roles`" rule (see below), Domain Managers are able to see all roles via "`openstack role list`" and can inspect the metadata of other roles with "`openstack role show`"
 
 **As a result of points 1 and 2, metadata of all domains and roles will be exposed to all Domain Managers!**
 
 If a CSP deems either of these points critical, they may abstain from granting the Domain Manager role to users, effectively disabling the functionality. See [Impact](#impact).
+
+[^5]: see the [corresponding Launchpad bug at Keystone](https://bugs.launchpad.net/keystone/+bug/2041611)
 
 ## Decision
 
@@ -121,7 +123,7 @@ The "`is_domain_managed_role`" rule definition is the only exception to this (se
 
 # specify a rule that whitelists roles which domain admins are permitted
 # to assign and revoke within their domain
-"is_domain_managed_role": "'member':%(target.role.name)s"
+"is_domain_managed_role": "'member':%(target.role.name)s or 'load-balancer_member':%(target.role.name)s"
 
 # allow domain admins to retrieve their own domain
 "identity:get_domain": "(rule:is_domain_manager and token.domain.id:%(target.domain.id)s) or rule:admin_required"
@@ -197,11 +199,11 @@ The "`is_domain_managed_role`" rule of the above policy template may be adjusted
 
 ##### Example: permitting multiple roles
 
-The following example permits both the "`member`" and "`reader`" role to be assigned/revoked by a Domain Manager.
+The following example permits the "`reader`" role to be assigned/revoked by a Domain Manager in addition to the default "`member`" and "`load-balancer_member`" roles.
 Further roles can be appended using the logical `or` directive.
 
 ```yaml
-"is_domain_managed_role": "'member':%(target.role.name)s or 'reader':%(target.role.name)s"
+"is_domain_managed_role": "'member':%(target.role.name)s or 'load-balancer_member':%(target.role.name)s or 'reader':%(target.role.name)s"
 ```
 
 **Note regarding the `domain-manager` role**
