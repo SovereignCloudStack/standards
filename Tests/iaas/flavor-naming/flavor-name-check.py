@@ -1,8 +1,8 @@
-# !/usr/bin/env python3
+#!/usr/bin/env python3
 # vim: set ts=4 sw=4 et:
 #
 """Flavor naming checker
-https://github.com/SovereignCloudStack/Operational-Docs/
+https://github.com/SovereignCloudStack/standards/Test/iaas/flavor-naming/
 
 Return codes:
 0: Matching
@@ -423,6 +423,11 @@ class Disk(Prop):
                 self.nrdisks = 1
         except AttributeError:
             self.nrdisks = 1
+
+    def input(self):
+        super().input()
+        if not self.nrdisks or not self.disksize:
+            self.parsed = 0
 
 
 class Hype(Prop):
