@@ -135,6 +135,9 @@ def generate_name(form):
         elif "gen" in spec.pattrs and not hasattr(spec, "gen"):
             setattr(spec, "gen", "")
             print(f'{spec.type}:gen=""', file=sys.stderr)
+        elif "cpugen" in spec.pattrs and not hasattr(spec, "cpugen"):
+            setattr(spec, "cpugen", 0)
+            print(f'{spec.type}:cpugen=0', file=sys.stderr)
 
     # Debugging
     print(*FLAVOR_SPEC, file=sys.stderr, sep='\n')
