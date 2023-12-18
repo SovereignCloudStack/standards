@@ -163,6 +163,20 @@ def keystr(key):
     return key
 
 
+def find_letter(idx, outstr):
+    "Find letter in output template outstr with idx i that indicates a flag"
+    found = 0
+    for ltri in range(0, len(outstr)):
+        ltr = outstr[ltri]
+        if ltr == '%':
+            if idx == found:
+                if outstr[ltri+1] == '?':
+                    return outstr[ltri+2]
+            else:
+                found += 1
+    return ""
+
+
 def form_attr(attr):
     """This mirrors flavor-name-check.py input(), but instead generates a web form.
        Defaults come from attr, the form is constructed from the attr's class
@@ -202,10 +216,10 @@ def form_attr(attr):
                 ischk = value == key or (not key and not value)
                 value_set = value_set or ischk
                 print(f'\t   <input type="radio" id="{fname}:{key}" name="{spec.type}:{fname}" value="{keystr(key)}" {is_checked(ischk)}/>')
-                print(f'\t   <label for="{fname}:{key}">{tbl[key]}</label><br/>')
+                print(f'\t   <label for="{fname}:{key}">{tbl[key]} (<tt>{key}</tt>)</label><br/>')
             if tblopt:
                 print(f'\t   <input type="radio" id="{fname}:NN" name="{spec.type}:{fname}" value="NN" {is_checked(not value_set)}/>')
-                print(f'\t   <label for="{fname}:NN">NN</label><br/>')
+                print(f'\t   <label for="{fname}:NN">NN ()</label><br/>')
             attr.create_dep_tbl(i, value)
             # if i < len(attr.pattrs)-1 and hasattr(attr, f"tbl_{spec.pattrs[i+1]}"):
             #     print(f" Dynamically set tbl_{attr.pattrs[i+1]} to tbl_{attr.pattrs[i]}_{value}_{attr.pattrs[i+1]}", file=sys.stderr)
@@ -226,8 +240,9 @@ def form_attr(attr):
             print(f'\t  <input type="number" name="{spec.type}:{fname}" id="{fname}" min=0 step=1 value="{value}" size=4/>')
         elif fdesc[0] == "?":
             # Bool => Checkbox
+            letter = find_letter(i, spec.outstr)
             print(f'\t  <input type="checkbox" name="{spec.type}:{fname}" id="{fname}" {is_checked(value)}/>')
-            print(f'\t  <label for="{fname}">{fdesc[1:]}</label>')
+            print(f'\t  <label for="{fname}">{fdesc[1:]} (<tt>{letter}</tt>)</label>')
         else:
             if fdesc[0] == '.':
                 fdesc = fdesc[1:]
