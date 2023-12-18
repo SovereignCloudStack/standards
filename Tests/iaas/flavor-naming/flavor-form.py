@@ -163,6 +163,14 @@ def keystr(key):
     return key
 
 
+def flagstr(fstr):
+    "Return string fstr till next delimiter %_-"
+    for i in range(0, len(fstr)):
+        if fstr[i] == "_" or fstr[i] == "-" or fstr[i] == "%":
+            return fstr[:i]
+    return fstr
+
+
 def find_letter(idx, outstr):
     "Find letter in output template outstr with idx i that indicates a flag"
     found = 0
@@ -171,7 +179,7 @@ def find_letter(idx, outstr):
         if ltr == '%':
             if idx == found:
                 if outstr[ltri+1] == '?':
-                    return outstr[ltri+2]
+                    return flagstr(outstr[ltri+2:])
             else:
                 found += 1
     return ""
