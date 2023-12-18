@@ -121,7 +121,7 @@ maint_props = (Property("replace_frequency", True, ("yearly", "quarterly", "mont
 
 
 def is_url(stg):
-    "Is string stg an URL?"
+    "Is string stg a URL?"
     idx = stg.find("://")
     if idx < 0:
         return False
@@ -172,13 +172,18 @@ def validate_imageMD(imgnm):
             print(f'Error: Image "{imgnm}": no valid image_build_date '
                   f'{img.properties["image_build_date"]}', file=sys.stderr)
             errors += 1
-    # - image_source should be an URL
+    # - image_source should be a URL
     if "image_source" in img.properties:
         if not is_url(img.properties["image_source"]):
-            print(f'Error: Image "{imgnm}": image_source should be an URL', file=sys.stderr)
+            if img.properties["image_source"] == "private":
+                if verbose:
+                    print(f'Info: Image {imgnm} has image_source set to private', file=sys.stderr)
+            else:
+                print(f'Error: Image "{imgnm}": image_source should be a URL or "private"', file=sys.stderr)
+                errors += 1
     #  - uuid_validity has a distinct set of options (none, last-X, DATE, notice, forever)
     #  - hotfix hours (if set!) should be numeric
-    # (5a) Sanity: Are we actually in violation of update_frquency?
+    # (5a) Sanity: Are we actually in violation of update_frequency?
     #  This is a bit tricky: We need to disregard images that have been rotated out
     #  - os_hidden = True is a safe sign for this
     #  - A name with a date stamp or old or prev (and a newer exists)
