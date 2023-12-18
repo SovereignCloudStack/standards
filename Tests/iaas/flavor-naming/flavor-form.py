@@ -128,10 +128,14 @@ def generate_name(form):
     for spec in FLAVOR_SPEC:
         if spec.pnames[0][0] == '.' and not getattr(spec, spec.pattrs[0]):
             spec.parsed = 0
-            if "perf" in spec.pnames:
+            if "perf" in spec.pattrs:
                 setattr(spec, "perf", "")
-            if "gen" in spec.pnames:
+            if "gen" in spec.pattrs:
                 setattr(spec, "gen", "")
+        elif "gen" in spec.pattrs and not hasattr(spec, "gen"):
+            setattr(spec, "gen", "")
+            print(f'{spec.type}:gen=""', file=sys.stderr)
+
     # Debugging
     print(*FLAVOR_SPEC, file=sys.stderr, sep='\n')
     try:
