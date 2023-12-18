@@ -142,6 +142,7 @@ def validate_imageMD(imgnm):
         return 1
     # Now the hard work: Look at properties ....
     errors = 0
+    warnings = 0
     # (1) recommended os_* and hw_*
     for prop in (*os_props, *arch_props, *hw_props):
         if not prop.is_ok(img, imgnm):
@@ -149,8 +150,9 @@ def validate_imageMD(imgnm):
     constr_name = f"{img.os_distro} {img.os_version}"
     # (3) os_hash
     if img.hash_algo not in ('sha256', 'sha512'):
-        print(f'Error: Image "{imgnm}": no valid hash algorithm {img.hash_algo}', file=sys.stderr)
-        errors += 1
+        print(f'Warning: Image "{imgnm}": no valid hash algorithm {img.hash_algo}', file=sys.stderr)
+        # errors += 1
+        warnings += 1
 
     # (4) image_build_date, image_original_user, image_source (opt image_description)
     # (5) maintained_until, provided_until, uuid_validity, update_frequency
@@ -189,12 +191,15 @@ def validate_imageMD(imgnm):
     # (6) tags os:*, managed_by_*
     #
     # (7) Recommended naming
-    if verbose and imgnm[:len(constr_name)].casefold() != constr_name.casefold():
-        print(f'Warning: Image "{imgnm}" does not start with recommended name "{constr_name}"',
+    if imgnm[:len(constr_name)].casefold() != constr_name.casefold():  # and verbose
+        # FIXME: There could be a more clever heuristic for displayed recommended names
+        rec_name = constr_name[0].upper()+constr_name[1:]
+        print(f'Warning: Image "{imgnm}" does not start with recommended name "{rec_name}"',
               file=sys.stderr)
+        warnings += 1
 
     if not errors and verbose:
-        print(f'Image "{imgnm}": All good')
+        print(f'Image "{imgnm}": All good ({warnings} warnings)')
     return errors
 
 
