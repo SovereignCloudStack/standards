@@ -187,7 +187,8 @@ OUTDATED_IMAGES = []
 
 
 def is_outdated(img, bdate):
-    "return 1 if img (with build/regdate bdate) is outdated, 2 if it's not hidden or marked"
+    """return 1 if img (with build/regdate bdate) is outdated,
+       2 if it's not hidden or marked, 3 if error"""
     max_age = 0
     if "replace_frequency" in img.properties:
         max_age = 1.1 * (freq2secs(img.properties["replace_frequency"]))
@@ -198,7 +199,8 @@ def is_outdated(img, bdate):
     until_str = img.properties["provided_until"]
     until = is_date(img.properties["provided_until"])
     if not until and not until_str == "none" and not until_str == "notice":
-        print(f'Error: Image "{img.name}" does not provide a valid provided until date')
+        print(f'Error: Image "{img.name}" does not provide a valid provided until date',
+                file=sys.stderr)
         return 3
     if time.time() > until:
         return 0
@@ -206,7 +208,8 @@ def is_outdated(img, bdate):
         return 1
     if is_date(img.name[-10:]):
         return 1
-    print(f'Warning: Image "{img.name}" seems outdated (acc. to its repl freq) but is not hidden or otherwise marked')
+    print(f'Warning: Image "{img.name}" seems outdated (acc. to its repl freq) but is not hidden or otherwise marked',
+            file=sys.stderr)
     return 2
 
 
@@ -247,7 +250,8 @@ def validate_imageMD(imgnm):
     if "image_build_date" in img.properties:
         bdate = is_date(img.properties["image_build_date"])
         if bdate > rdate:
-            print(f'Error: Image "{imgnm}" with build date {img.properties["image_build_date"]} after registration date {img.created_at}')
+            print(f'Error: Image "{imgnm}" with build date {img.properties["image_build_date"]} after registration date {img.created_at}',
+                    file=sys.stderr)
             errors += 1
         if not bdate:
             print(f'Error: Image "{imgnm}": no valid image_build_date '
@@ -273,12 +277,12 @@ def validate_imageMD(imgnm):
         elif is_date(img_uuid_val):
             pass
         else:
-            print(f'Error: Image "{imgnm}": invalid uuid_validity {img_uuid_val}')
+            print(f'Error: Image "{imgnm}": invalid uuid_validity {img_uuid_val}', file=sys.stderr)
             errors += 1
     #  - hotfix hours (if set!) should be numeric
     if "hotfix_hours" in img.properties:
         if not img.properties["hotfix_hours"].isdecimal():
-            print(f'Error: Image "{imgnm}" has non-numeric hotfix_hours set')
+            print(f'Error: Image "{imgnm}" has non-numeric hotfix_hours set', file=sys.stderr)
             errors += 1
     # (5a) Sanity: Are we actually in violation of replace_frequency?
     #  This is a bit tricky: We need to disregard images that have been rotated out
@@ -292,11 +296,12 @@ def validate_imageMD(imgnm):
         warnings += (outd-1)
     # (2) sanity min_ram (>=64), min_disk (>= size)
     if img.min_ram < 64:
-        print(f'Warning: Image "{imgnm}": min_ram == {img.min_ram} MB')
+        print(f'Warning: Image "{imgnm}": min_ram == {img.min_ram} MB', file=sys.stderr)
         warnings += 1
         # errors += 1
     if img.min_disk < img.size/1073741824:
-        print(f'Warning: Image "{imgnm}" has img size of {img.size/1048576}MiB, but min_disk {img.min_disk*1024}MiB')
+        print(f'Warning: Image "{imgnm}" has img size of {img.size/1048576}MiB, but min_disk {img.min_disk*1024}MiB',
+                file=sys.stderr)
         warnings += 1
         # errors += 1 
     # (6) tags os:*, managed_by_*
@@ -331,9 +336,28 @@ def report_stdimage_coverage(imgs):
 
 def miss_replacement_images(images, outd_list):
     "Go over list of images to find replacement imgs for outd_list, return the ones that are left missing"
+    rem_list = []
+    for outd in outd_list:
+        last_spc = outd.rfind(" ")
+        shortnm = outd
+        if last_spc != -1:
+            shortnm = outd[:last_spc]
+        for img in images:
+            # Skip over other images
+            if img != outd and img != shortnm:
+                continue
+            # Skip over itself
+            if img == outd:
+                continue
+            if verbose:
+                print(f'Info: Check wheter Image "{img}" can serve as replacement for "{outd}"', file=sys.stderr)
+
+
+
+    # FIXME: To be implemented
     return outd_list
 
-        
+
 def main(argv):
     "Main entry point"
     # Option parsing
@@ -376,10 +400,11 @@ def main(argv):
             # TODO: Check whether we have replacements for outdated images with the same names
             # except maybe stripped last word (which could be old, prev, datestamp)
             if verbose:
-                print(f'Info: The following outdated images have been detected: {OUTDATED_IMAGES}')
+                print(f'Info: The following outdated images have been detected: {OUTDATED_IMAGES}',
+                        file=sys.stderr)
             rem_list = miss_replacement_images(images, OUTDATED_IMAGES)
             if rem_list:
-                print(f'Error: Outdated images without replacement: {rem_list}')
+                print(f'Error: Outdated images without replacement: {rem_list}', file=sys.stderr)
                 err += len(rem_list)
     except BaseException as e:
         print(f"CRITICAL: {e!r}")
