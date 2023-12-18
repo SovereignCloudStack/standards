@@ -155,13 +155,13 @@ def is_date(stg, strict = False):
     if strict:
         fmts = ("%Y-%m-%dT%H:%M:%SZ", )
     else:
-        fmts = ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d") 
+        fmts = ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d")
     for fmt in fmts:
         try:
             tmdate = time.strptime(stg, fmt)
             bdate = calendar.timegm(tmdate)
             break
-        except ValueError as exc:
+        except ValueError:  # as exc:
             # print(f'date {stg} does not match {fmt}\n{exc}', file=sys.stderr)
             pass
     return bdate
@@ -169,7 +169,7 @@ def is_date(stg, strict = False):
 
 def freq2secs(stg):
     "Convert frequency to seconds (round up a bit), return 0 if not applicable"
-    if stg == "never" or stg == "critical_bug":
+    if stg in ("never", "critical_bug"):
         return 0
     if stg == "yearly":
         return 365*24*3600
@@ -181,6 +181,8 @@ def freq2secs(stg):
         return 7*25*3600
     if stg == "daily":
         return 25*3600
+    print(f'ERROR: replace frequency {stg}?', file=sys.stderr)
+    return 0
 
 
 OUTDATED_IMAGES = []
@@ -200,7 +202,7 @@ def is_outdated(img, bdate):
     until = is_date(img.properties["provided_until"])
     if not until and not until_str == "none" and not until_str == "notice":
         print(f'ERROR: Image "{img.name}" does not provide a valid provided until date',
-                file=sys.stderr)
+              file=sys.stderr)
         return 3
     if time.time() > until:
         return 0
@@ -209,7 +211,7 @@ def is_outdated(img, bdate):
     if is_date(img.name[-10:]):
         return 1
     print(f'WARNING: Image "{img.name}" seems outdated (acc. to its repl freq) but is not hidden or otherwise marked',
-            file=sys.stderr)
+          file=sys.stderr)
     return 2
 
 
@@ -251,7 +253,7 @@ def validate_imageMD(imgnm):
         bdate = is_date(img.properties["image_build_date"])
         if bdate > rdate:
             print(f'ERROR: Image "{imgnm}" with build date {img.properties["image_build_date"]} after registration date {img.created_at}',
-                    file=sys.stderr)
+                  file=sys.stderr)
             errors += 1
         if not bdate:
             print(f'ERROR: Image "{imgnm}": no valid image_build_date '
@@ -270,7 +272,7 @@ def validate_imageMD(imgnm):
     #  - uuid_validity has a distinct set of options (none, last-X, DATE, notice, forever)
     if "uuid_validity" in img.properties:
         img_uuid_val = img.properties["uuid_validity"]
-        if img_uuid_val == "none" or img_uuid_val == "notice" or img_uuid_val == "forever":
+        if img_uuid_val in ("none", "notice", "forever"):
             pass
         elif img_uuid_val[:5] == "last-" and img_uuid_val[5:].isdecimal():
             pass
@@ -301,12 +303,12 @@ def validate_imageMD(imgnm):
         # errors += 1
     if img.min_disk < img.size/1073741824:
         print(f'WARNING: Image "{imgnm}" has img size of {img.size/1048576}MiB, but min_disk {img.min_disk*1024}MiB',
-                file=sys.stderr)
+              file=sys.stderr)
         warnings += 1
-        # errors += 1 
+        # errors += 1
     # (6) tags os:*, managed_by_*
     # Nothing to do here ... we could do a warning if those are missing ...
-    
+
     # (7) Recommended naming
     if imgnm[:len(constr_name)].casefold() != constr_name.casefold():  # and verbose
         # FIXME: There could be a more clever heuristic for displayed recommended names
@@ -338,24 +340,34 @@ def miss_replacement_images(images, outd_list):
     "Go over list of images to find replacement imgs for outd_list, return the ones that are left missing"
     rem_list = []
     for outd in outd_list:
+        success = False
         last_spc = outd.rfind(" ")
         shortnm = outd
         if last_spc != -1:
             shortnm = outd[:last_spc]
-        for img in images:
+        for imgnm in images:
             # Skip over other images
-            if img != outd and img != shortnm:
+            if imgnm != outd and imgnm != shortnm:
                 continue
             # Skip over itself
-            if img == outd:
+            if imgnm == outd:  # or success:
+                continue
+            img = conn.image.find_image(imgnm)
+            bdate = 0
+            if "build_date" in img.properties:
+                bdate = is_date(img.properties["build_date"])
+            if not bdate:
+                bdate = is_date(img.created_at, True)
+            if is_outdated(img, bdate):
                 continue
             if verbose:
-                print(f'INFO: Check wheter Image "{img}" can serve as replacement for "{outd}"', file=sys.stderr)
-
-
-
+                print(f'INFO: Image "{imgnm}" is a valid replacement for "{outd}"', file=sys.stderr)
+            success = True
+            break
+        if not success:
+            rem_list.append(outd)
     # FIXME: To be implemented
-    return outd_list
+    return rem_list
 
 
 def main(argv):
@@ -363,7 +375,6 @@ def main(argv):
     # Option parsing
     global verbose, private, skip
     global cloud, conn
-    global OUTDATED_IMAGES
     err = 0
     try:
         opts, args = getopt.gnu_getopt(argv[1:], "phvc:s",
@@ -401,13 +412,13 @@ def main(argv):
             # except maybe stripped last word (which could be old, prev, datestamp)
             if verbose:
                 print(f'INFO: The following outdated images have been detected: {OUTDATED_IMAGES}',
-                        file=sys.stderr)
+                      file=sys.stderr)
             rem_list = miss_replacement_images(images, OUTDATED_IMAGES)
             if rem_list:
                 print(f'ERROR: Outdated images without replacement: {rem_list}', file=sys.stderr)
                 err += len(rem_list)
-    except BaseException as e:
-        print(f"CRITICAL: {e!r}")
+    except BaseException as exc:
+        print(f"CRITICAL: {exc!r}")
         return 1 + err
     return err
 
