@@ -93,15 +93,15 @@ class Property:
         if self.name in props:
             if self.values and not props[self.name] in self.values:
                 if warn:
-                    print(f'Error: Image "{warn}": value "{props[self.name]}" for property '
+                    print(f'ERROR: Image "{warn}": value "{props[self.name]}" for property '
                           f'"{self.name}" not allowed', file=sys.stderr)
                 return False
             else:
                 if not props[self.name] and not self.values:
-                    err = "Error"
+                    err = "ERROR"
                     ret = False
                 else:
-                    err = "Warning"
+                    err = "WARNING"
                     ret = True
                 if not props[self.name] and (verbose or not self.values) and warn:
                     print(f'{err}: Image "{warn}": empty value for property "{self.name}" not recommended',
@@ -109,11 +109,11 @@ class Property:
                 return ret
         elif self.ismand:
             if warn:
-                print(f'Error: Image "{warn}": Mandatory property "{self.name}" is missing',
+                print(f'ERROR: Image "{warn}": Mandatory property "{self.name}" is missing',
                       file=sys.stderr)
             return False
         elif warn and verbose:
-            print(f'Info: Image "{warn}": Optional property "{self.name}" is missing')  # , file=sys.stderr)
+            print(f'INFO: Image "{warn}": Optional property "{self.name}" is missing')  # , file=sys.stderr)
         return True
 
 
@@ -199,7 +199,7 @@ def is_outdated(img, bdate):
     until_str = img.properties["provided_until"]
     until = is_date(img.properties["provided_until"])
     if not until and not until_str == "none" and not until_str == "notice":
-        print(f'Error: Image "{img.name}" does not provide a valid provided until date',
+        print(f'ERROR: Image "{img.name}" does not provide a valid provided until date',
                 file=sys.stderr)
         return 3
     if time.time() > until:
@@ -208,7 +208,7 @@ def is_outdated(img, bdate):
         return 1
     if is_date(img.name[-10:]):
         return 1
-    print(f'Warning: Image "{img.name}" seems outdated (acc. to its repl freq) but is not hidden or otherwise marked',
+    print(f'WARNING: Image "{img.name}" seems outdated (acc. to its repl freq) but is not hidden or otherwise marked',
             file=sys.stderr)
     return 2
 
@@ -234,7 +234,7 @@ def validate_imageMD(imgnm):
     constr_name = f"{img.os_distro} {img.os_version}"
     # (3) os_hash
     if img.hash_algo not in ('sha256', 'sha512'):
-        print(f'Warning: Image "{imgnm}": no valid hash algorithm {img.hash_algo}', file=sys.stderr)
+        print(f'WARNING: Image "{imgnm}": no valid hash algorithm {img.hash_algo}', file=sys.stderr)
         # errors += 1
         warnings += 1
 
@@ -250,11 +250,11 @@ def validate_imageMD(imgnm):
     if "image_build_date" in img.properties:
         bdate = is_date(img.properties["image_build_date"])
         if bdate > rdate:
-            print(f'Error: Image "{imgnm}" with build date {img.properties["image_build_date"]} after registration date {img.created_at}',
+            print(f'ERROR: Image "{imgnm}" with build date {img.properties["image_build_date"]} after registration date {img.created_at}',
                     file=sys.stderr)
             errors += 1
         if not bdate:
-            print(f'Error: Image "{imgnm}": no valid image_build_date '
+            print(f'ERROR: Image "{imgnm}": no valid image_build_date '
                   f'{img.properties["image_build_date"]}', file=sys.stderr)
             errors += 1
             bdate = rdate
@@ -263,9 +263,9 @@ def validate_imageMD(imgnm):
         pass  # we have already noted this as error, no need to do it again
     elif img.properties["image_source"] == "private":
         if verbose:
-            print(f'Info: Image {imgnm} has image_source set to private', file=sys.stderr)
+            print(f'INFO: Image {imgnm} has image_source set to private', file=sys.stderr)
     elif not is_url(img.properties["image_source"]):
-        print(f'Error: Image "{imgnm}": image_source should be a URL or "private"', file=sys.stderr)
+        print(f'ERROR: Image "{imgnm}": image_source should be a URL or "private"', file=sys.stderr)
         errors += 1
     #  - uuid_validity has a distinct set of options (none, last-X, DATE, notice, forever)
     if "uuid_validity" in img.properties:
@@ -277,12 +277,12 @@ def validate_imageMD(imgnm):
         elif is_date(img_uuid_val):
             pass
         else:
-            print(f'Error: Image "{imgnm}": invalid uuid_validity {img_uuid_val}', file=sys.stderr)
+            print(f'ERROR: Image "{imgnm}": invalid uuid_validity {img_uuid_val}', file=sys.stderr)
             errors += 1
     #  - hotfix hours (if set!) should be numeric
     if "hotfix_hours" in img.properties:
         if not img.properties["hotfix_hours"].isdecimal():
-            print(f'Error: Image "{imgnm}" has non-numeric hotfix_hours set', file=sys.stderr)
+            print(f'ERROR: Image "{imgnm}" has non-numeric hotfix_hours set', file=sys.stderr)
             errors += 1
     # (5a) Sanity: Are we actually in violation of replace_frequency?
     #  This is a bit tricky: We need to disregard images that have been rotated out
@@ -296,11 +296,11 @@ def validate_imageMD(imgnm):
         warnings += (outd-1)
     # (2) sanity min_ram (>=64), min_disk (>= size)
     if img.min_ram < 64:
-        print(f'Warning: Image "{imgnm}": min_ram == {img.min_ram} MB', file=sys.stderr)
+        print(f'WARNING: Image "{imgnm}": min_ram == {img.min_ram} MB', file=sys.stderr)
         warnings += 1
         # errors += 1
     if img.min_disk < img.size/1073741824:
-        print(f'Warning: Image "{imgnm}" has img size of {img.size/1048576}MiB, but min_disk {img.min_disk*1024}MiB',
+        print(f'WARNING: Image "{imgnm}" has img size of {img.size/1048576}MiB, but min_disk {img.min_disk*1024}MiB',
                 file=sys.stderr)
         warnings += 1
         # errors += 1 
@@ -311,7 +311,7 @@ def validate_imageMD(imgnm):
     if imgnm[:len(constr_name)].casefold() != constr_name.casefold():  # and verbose
         # FIXME: There could be a more clever heuristic for displayed recommended names
         rec_name = recommended_name(constr_name)
-        print(f'Warning: Image "{imgnm}" does not start with recommended name "{rec_name}"',
+        print(f'WARNING: Image "{imgnm}" does not start with recommended name "{rec_name}"',
               file=sys.stderr)
         warnings += 1
 
@@ -350,7 +350,7 @@ def miss_replacement_images(images, outd_list):
             if img == outd:
                 continue
             if verbose:
-                print(f'Info: Check wheter Image "{img}" can serve as replacement for "{outd}"', file=sys.stderr)
+                print(f'INFO: Check wheter Image "{img}" can serve as replacement for "{outd}"', file=sys.stderr)
 
 
 
@@ -400,11 +400,11 @@ def main(argv):
             # TODO: Check whether we have replacements for outdated images with the same names
             # except maybe stripped last word (which could be old, prev, datestamp)
             if verbose:
-                print(f'Info: The following outdated images have been detected: {OUTDATED_IMAGES}',
+                print(f'INFO: The following outdated images have been detected: {OUTDATED_IMAGES}',
                         file=sys.stderr)
             rem_list = miss_replacement_images(images, OUTDATED_IMAGES)
             if rem_list:
-                print(f'Error: Outdated images without replacement: {rem_list}', file=sys.stderr)
+                print(f'ERROR: Outdated images without replacement: {rem_list}', file=sys.stderr)
                 err += len(rem_list)
     except BaseException as e:
         print(f"CRITICAL: {e!r}")
