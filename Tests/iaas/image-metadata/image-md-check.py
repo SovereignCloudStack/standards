@@ -366,7 +366,6 @@ def miss_replacement_images(images, outd_list):
             break
         if not success:
             rem_list.append(outd)
-    # FIXME: To be implemented
     return rem_list
 
 
