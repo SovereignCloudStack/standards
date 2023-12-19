@@ -96,23 +96,22 @@ class Property:
                     print(f'ERROR: Image "{warn}": value "{props[self.name]}" for property '
                           f'"{self.name}" not allowed', file=sys.stderr)
                 return False
+            if not props[self.name] and not self.values:
+                err = "ERROR"
+                ret = False
             else:
-                if not props[self.name] and not self.values:
-                    err = "ERROR"
-                    ret = False
-                else:
-                    err = "WARNING"
-                    ret = True
-                if not props[self.name] and (verbose or not self.values) and warn:
-                    print(f'{err}: Image "{warn}": empty value for property "{self.name}" not recommended',
-                          file=sys.stderr)
-                return ret
-        elif self.ismand:
+                err = "WARNING"
+                ret = True
+            if not props[self.name] and (verbose or not self.values) and warn:
+                print(f'{err}: Image "{warn}": empty value for property "{self.name}" not recommended',
+                      file=sys.stderr)
+            return ret
+        if self.ismand:
             if warn:
                 print(f'ERROR: Image "{warn}": Mandatory property "{self.name}" is missing',
                       file=sys.stderr)
             return False
-        elif warn and verbose:
+        if warn and verbose:
             print(f'INFO: Image "{warn}": Optional property "{self.name}" is missing')  # , file=sys.stderr)
         return True
 
@@ -217,7 +216,7 @@ def is_outdated(img, bdate):
 
 def validate_imageMD(imgnm):
     "Retrieve image properties and test for compliance with spec"
-    global OUTDATED_IMAGES
+    # global OUTDATED_IMAGES
     try:
         img = conn.image.find_image(imgnm)
     except openstack.exceptions.DuplicateResource as exc:
@@ -245,7 +244,7 @@ def validate_imageMD(imgnm):
     for prop in (*build_props, *maint_props):
         if not prop.is_ok(img.properties, imgnm):
             errors += 1
-    # TODO: Some more sanity checks:
+    # Some more sanity checks:
     #  - Dateformat for image_build_date
     rdate = is_date(img.created_at, True)
     bdate = rdate
@@ -260,6 +259,9 @@ def validate_imageMD(imgnm):
                   f'{img.properties["image_build_date"]}', file=sys.stderr)
             errors += 1
             bdate = rdate
+    if bdate > time.time():
+        print(f'ERROR: Image "{imgnm}" has build time in the future: {bdate}')
+        errors += 1
     # - image_source should be a URL
     if "image_source" not in img.properties:
         pass  # we have already noted this as error, no need to do it again
@@ -311,7 +313,6 @@ def validate_imageMD(imgnm):
 
     # (7) Recommended naming
     if imgnm[:len(constr_name)].casefold() != constr_name.casefold():  # and verbose
-        # FIXME: There could be a more clever heuristic for displayed recommended names
         rec_name = recommended_name(constr_name)
         print(f'WARNING: Image "{imgnm}" does not start with recommended name "{rec_name}"',
               file=sys.stderr)
@@ -361,7 +362,7 @@ def miss_replacement_images(images, outd_list):
             if is_outdated(img, bdate):
                 continue
             if verbose:
-                print(f'INFO: Image "{imgnm}" is a valid replacement for "{outd}"', file=sys.stderr)
+                print(f'INFO: Image "{imgnm}" is a valid replacement for outdated "{outd}"', file=sys.stderr)
             success = True
             break
         if not success:
@@ -408,8 +409,6 @@ def main(argv):
         if not skip:
             err += report_stdimage_coverage(images)
         if OUTDATED_IMAGES:
-            # TODO: Check whether we have replacements for outdated images with the same names
-            # except maybe stripped last word (which could be old, prev, datestamp)
             if verbose:
                 print(f'INFO: The following outdated images have been detected: {OUTDATED_IMAGES}',
                       file=sys.stderr)
