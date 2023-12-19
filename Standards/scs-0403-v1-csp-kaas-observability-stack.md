@@ -24,21 +24,21 @@ Currently, only the IaaS Layer of the SCS Reference Implementation has an Observ
 A survey was conducted to gather the needs and requirements of a CSP when providing Kubernetes as a Service. The feedback of the survey led to the following requirement on a Kubernetes as a Service Observability System:
 
 - Telemetry Data that MUST be fetched:
-    - CPU, RAM, Disk, Network
-    - HTTP Connectivity Metrics
-    - Control Plane and Pod metrics (States, Ready, etc.)
-    - K8s certs metrics
-    - Metrics of underlying node
-    - Logs of control plane, kubelet and containerd
+  - CPU, RAM, Disk, Network
+  - HTTP Connectivity Metrics
+  - Control Plane and Pod metrics (States, Ready, etc.)
+  - K8s certs metrics
+  - Metrics of underlying node
+  - Logs of control plane, kubelet and containerd
 - Telemetry Data that MAY be fetched:
-    - K8s resources (exporters, kubestate metrics, cadvisor, parts of the kubelet)
-    - Ingress controller exporter (http error rate, cert metrics like expiration date)
+  - K8s resources (exporters, kubestate metrics, cadvisor, parts of the kubelet)
+  - Ingress controller exporter (http error rate, cert metrics like expiration date)
 - Telemetry Data that SHOULD NOT BE fetched:
-    - Any metrics or logs a CSP does not need to provide support with respect to their SLA with a Customer.
+  - Any metrics or logs a CSP does not need to provide support with respect to their SLA with a Customer.
 - Telemetry Data that MUST NOT be fetched:
-    - Secrets
-    - Customer Specific Workload Metrics
-- The Alerting Mechanism MUST include a default ruleset 
+  - Secrets
+  - Customer Specific Workload Metrics
+- The Alerting Mechanism MUST include a default ruleset
 - The Observability Stack MUST run on the CSP Infrastructure
 - The Observability Stack MUST be High Available
 - The Observability Stack MUST be able to observe itself
