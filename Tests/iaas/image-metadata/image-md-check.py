@@ -304,7 +304,6 @@ def validate_imageMD(imgnm):
     
     # (7) Recommended naming
     if imgnm[:len(constr_name)].casefold() != constr_name.casefold():  # and verbose
-        # FIXME: There could be a more clever heuristic for displayed recommended names
         rec_name = recommended_name(constr_name)
         print(f'Warning: Image "{imgnm}" does not start with recommended name "{rec_name}"',
               file=sys.stderr)
@@ -373,8 +372,6 @@ def main(argv):
         if not skip:
             err += report_stdimage_coverage(images)
         if OUTDATED_IMAGES:
-            # TODO: Check whether we have replacements for outdated images with the same names
-            # except maybe stripped last word (which could be old, prev, datestamp)
             if verbose:
                 print(f'Info: The following outdated images have been detected: {OUTDATED_IMAGES}')
             rem_list = miss_replacement_images(images, OUTDATED_IMAGES)
