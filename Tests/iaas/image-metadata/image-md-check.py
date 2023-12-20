@@ -52,24 +52,30 @@ rec2_images = ["SLES 15SP4", "RHEL 9", "RHEL 8", "Windows Server 2022", "Windows
 sugg_images = ["openSUSE Leap 15.4", "Cirros 0.5.2", "Alpine", "Arch"]
 
 # Just for nice formatting of image naming hints -- otherwise we capitalize the 1st letter
-os_list = ("CentOS", "AlmaLinux", "Windows Server", "RHEL", "SLES", "openSUSE")
+OS_LIST = ("CentOS", "AlmaLinux", "Windows Server", "RHEL", "SLES", "openSUSE")
+# Auxiliary mapping for `freq2secs` (note that values are rounded up a bit on purpose)
+FREQ_TO_SEC = {
+    "never": 0,
+    "critical_bug": 0,
+    "yearly": 365 * 24 * 3600,
+    "quarterly": 92 * 24 * 3600,
+    "monthly": 31 * 24 * 3600,
+    "weekly": 7 * 25 * 3600,
+    "daily": 25 * 3600,
+}
 
 
-def recommended_name(nm):
-    "Return capitalized name"
-    ln = len(nm)
+def recommended_name(nm, os_list=OS_LIST):
+    """Return capitalized name"""
     for osnm in os_list:
         osln = len(osnm)
-        if ln >= osln and nm[:osln].casefold() == osnm.casefold():
-            rest = ""
-            if ln > osln:
-                rest = nm[osln:]
-            return osnm + rest
+        if nm[:osln].casefold() == osnm.casefold():
+            return osnm + nm[osln:]
     return nm[0].upper() + nm[1:]
 
 
 def get_imagelist(priv):
-    "Retrieve list of public images (optionally also private images)"
+    """Retrieve list of public images (optionally also private images)"""
     if priv:
         imgs = conn.image.images()
     else:
@@ -78,7 +84,7 @@ def get_imagelist(priv):
 
 
 class Property:
-    "Class to specify properties, allowed values, ..."
+    """Class to specify properties, allowed values, ..."""
     def __init__(self, name, mand, values, desc = ""):
         self.name = name
         self.ismand = mand
@@ -89,7 +95,7 @@ class Property:
             self.desc = name
 
     def is_ok(self, props, warn = ""):
-        "Check validity of properties"
+        """Check validity of properties"""
         if self.name in props:
             if self.values and not props[self.name] in self.values:
                 if warn:
@@ -137,24 +143,20 @@ maint_props = (Property("replace_frequency", True, ("yearly", "quarterly", "mont
 
 
 def is_url(stg):
-    "Is string stg a URL?"
+    """Is string stg a URL?"""
     idx = stg.find("://")
-    if idx < 0:
-        return False
-    if stg[:idx] in ("http", "https", "ftp", "ftps"):
-        return True
-    return False
+    return idx >= 0 and stg[:idx] in ("http", "https", "ftp", "ftps")
 
 
-def is_date(stg, strict = False):
-    """Return time in Unix seconds or 0 if stg is not a valid date.
-       We recognize: %Y-%m-%dT%H:%M:%SZ, %Y-%m-%d %H:%M[:%S], and %Y-%m-%d
+def is_date(stg, strict=False):
+    """
+    Return time in Unix seconds or 0 if stg is not a valid date.
+    We recognize: %Y-%m-%dT%H:%M:%SZ, %Y-%m-%d %H:%M[:%S], and %Y-%m-%d
     """
     bdate = 0
-    if strict:
-        fmts = ("%Y-%m-%dT%H:%M:%SZ", )
-    else:
-        fmts = ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d")
+    fmts = ("%Y-%m-%dT%H:%M:%SZ", )
+    if not strict:
+        fmts += ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d")
     for fmt in fmts:
         try:
             tmdate = time.strptime(stg, fmt)
@@ -167,21 +169,12 @@ def is_date(stg, strict = False):
 
 
 def freq2secs(stg):
-    "Convert frequency to seconds (round up a bit), return 0 if not applicable"
-    if stg in ("never", "critical_bug"):
-        return 0
-    if stg == "yearly":
-        return 365*24*3600
-    if stg == "quarterly":
-        return 92*24*3600
-    if stg == "monthly":
-        return 31*24*3600
-    if stg == "weekly":
-        return 7*25*3600
-    if stg == "daily":
-        return 25*3600
-    print(f'ERROR: replace frequency {stg}?', file=sys.stderr)
-    return 0
+    """Convert frequency to seconds (round up a bit), return 0 if not applicable"""
+    secs = FREQ_TO_SEC.get(stg)
+    if secs is None:
+        print(f'ERROR: replace frequency {stg}?', file=sys.stderr)
+        secs = 0
+    return secs
 
 
 OUTDATED_IMAGES = []
@@ -215,7 +208,7 @@ def is_outdated(img, bdate):
 
 
 def validate_imageMD(imgnm):
-    "Retrieve image properties and test for compliance with spec"
+    """Retrieve image properties and test for compliance with spec"""
     # global OUTDATED_IMAGES
     try:
         img = conn.image.find_image(imgnm)
@@ -324,7 +317,7 @@ def validate_imageMD(imgnm):
 
 
 def report_stdimage_coverage(imgs):
-    "Have we covered all standard images?"
+    """Have we covered all standard images?"""
     err = 0
     for inm in mand_images:
         if inm not in imgs:
@@ -338,7 +331,7 @@ def report_stdimage_coverage(imgs):
 
 
 def miss_replacement_images(images, outd_list):
-    "Go over list of images to find replacement imgs for outd_list, return the ones that are left missing"
+    """Go over list of images to find replacement imgs for outd_list, return the ones that are left missing"""
     rem_list = []
     for outd in outd_list:
         success = False
@@ -372,7 +365,6 @@ def miss_replacement_images(images, outd_list):
 
 
 def main(argv):
-    "Main entry point"
     # Option parsing
     global verbose, private, skip
     global cloud, conn
