@@ -75,7 +75,7 @@ def recommended_name(nm, os_list=OS_LIST):
 
 
 def get_imagelist(priv):
-    """Retrieve list of public images (optionally also private images)"""
+    "Retrieve list of public images (optionally also private images)"
     if priv:
         imgs = conn.image.images()
     else:
@@ -84,7 +84,7 @@ def get_imagelist(priv):
 
 
 class Property:
-    """Class to specify properties, allowed values, ..."""
+    "Class to specify properties, allowed values, ..."
     def __init__(self, name, mand, values, desc = ""):
         self.name = name
         self.ismand = mand
@@ -95,7 +95,7 @@ class Property:
             self.desc = name
 
     def is_ok(self, props, warn = ""):
-        """Check validity of properties"""
+        "Check validity of properties"
         if self.name in props:
             if self.values and not props[self.name] in self.values:
                 if warn:
@@ -317,7 +317,7 @@ def validate_imageMD(imgnm):
 
 
 def report_stdimage_coverage(imgs):
-    """Have we covered all standard images?"""
+    "Have we covered all standard images?"
     err = 0
     for inm in mand_images:
         if inm not in imgs:
@@ -365,6 +365,7 @@ def miss_replacement_images(images, outd_list):
 
 
 def main(argv):
+    "Main entry point"
     # Option parsing
     global verbose, private, skip
     global cloud, conn
