@@ -173,14 +173,14 @@ def validate_imageMD(imgnm):
                   f'{img.properties["image_build_date"]}', file=sys.stderr)
             errors += 1
     # - image_source should be a URL
-    if "image_source" in img.properties:
-        if not is_url(img.properties["image_source"]):
-            if img.properties["image_source"] == "private":
-                if verbose:
-                    print(f'Info: Image {imgnm} has image_source set to private', file=sys.stderr)
-            else:
-                print(f'Error: Image "{imgnm}": image_source should be a URL or "private"', file=sys.stderr)
-                errors += 1
+    if "image_source" not in img.properties:
+        pass  # this is acceptable
+    elif img.properties["image_source"] == "private":
+        if verbose:
+            print(f'Info: Image {imgnm} has image_source set to private', file=sys.stderr)
+    elif not is_url(img.properties["image_source"]):
+        print(f'Error: Image "{imgnm}": image_source should be a URL or "private"', file=sys.stderr)
+        errors += 1
     #  - uuid_validity has a distinct set of options (none, last-X, DATE, notice, forever)
     #  - hotfix hours (if set!) should be numeric
     # (5a) Sanity: Are we actually in violation of update_frequency?
