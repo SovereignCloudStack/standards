@@ -88,9 +88,9 @@ class Checker:
         ]
         if errors:
             self.emit(f"in {fn}: syntax errors with key(s) {', '.join(errors)}")
-        replaced_by = front.get("replaced_by")
+        # now do cross-field checks
         status = front.get("status")
-        if replaced_by and status not in ("Deprecated", "Rejected"):
+        if "replaced_by" in front and status not in ("Deprecated", "Rejected"):
             self.emit(f"in {fn}: replaced_by is set, but status does not match")
         if status == "Deprecated" and "obsoleted_at" not in front:
             self.emit(f"in {fn}: status is Deprecated, but deprecated_at date is missing")
