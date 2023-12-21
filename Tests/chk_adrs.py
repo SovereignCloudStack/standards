@@ -73,13 +73,16 @@ class Checker:
         """Check the list `mds` of md file names for name collisions"""
         # count the occurrences of the prefixes of length 12, e.g., scs-0001-v1-
         # no duplicates allowed
-        codes = collections.Counter([fn[:12] for fn in mds])
-        duplicates = [item for item in codes.items() if item[1] > 1]
+        counts = collections.Counter([fn[:12] for fn in mds])
+        duplicates = sorted([fn for fn in mds if counts[fn[:12]] > 1])
         if duplicates:
-            self.emit(f"duplicates found: {duplicates}")
+            self.emit(f"duplicates found: {', '.join(duplicates)}")
 
     def check_front_matter(self, fn, front):
         """Check the dict `front` of front matter; `fn` is for context in error messages"""
+        if front is None:
+            self.emit(f"in {fn}: is missing front matter altogether")
+            return
         # check each field in isolation
         errors = [
             key
