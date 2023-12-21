@@ -36,7 +36,7 @@
       ansible.builtin.pip:
         requirements: /home/ubuntu/Tests/requirements.txt
 
-    - name: Run compliance script
+    - name: Run check script
       ansible.builtin.command:
         cmd: python3 /home/ubuntu/Tests/chk_adrs.py /home/ubuntu/Standards
       register: result
