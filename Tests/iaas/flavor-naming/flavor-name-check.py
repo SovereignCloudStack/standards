@@ -2,7 +2,7 @@
 # vim: set ts=4 sw=4 et:
 #
 """Flavor naming checker
-https://github.com/SovereignCloudStack/Operational-Docs/
+https://github.com/SovereignCloudStack/standards/Test/iaas/flavor-naming/
 
 Return codes:
 0: Matching
@@ -216,7 +216,9 @@ class Prop:
                 ostr += self.outstr[i]
                 i += 1
                 continue
-            att = self.__getattribute__(self.pattrs[par])
+            att = None
+            if hasattr(self, self.pattrs[par]):
+                att = self.__getattribute__(self.pattrs[par])
             if self.outstr[i+1] == ".":
                 ostr += self.outstr[i:i+2]
                 if int(att) == att:
@@ -283,11 +285,13 @@ class Prop:
             dtbl = f"tbl_{fname}_{val}_{self.pattrs[idx+1]}"
         else:
             return False
-        if hasattr(self, ntbl):
-            return True
+        # if hasattr(self, ntbl):
+        #    return True
         if hasattr(self, dtbl):
             self.__setattr__(ntbl, self.__getattribute__(dtbl))
             return True
+        elif hasattr(self, ntbl) and not hasattr(type(self), ntbl):
+            delattr(self, ntbl)
         return False
 
     def std_validator(self):
@@ -420,6 +424,11 @@ class Disk(Prop):
         except AttributeError:
             self.nrdisks = 1
 
+    def input(self):
+        super().input()
+        if not self.nrdisks or not self.disksize:
+            self.parsed = 0
+
 
 class Hype(Prop):
     "Class repesenting Hypervisor"
@@ -492,17 +501,17 @@ def outname(cpuram, disk, hype, hvirt, cpubrand, gpu, ibd):
     "Return name constructed from tuple"
     # TODO SCSx: Differentiate b/w SCS- and SCSx-
     out = "SCS-" + cpuram.out()
-    if disk.parsed:
+    if disk and disk.parsed:
         out += "-" + disk.out()
-    if hype.parsed:
+    if hype and hype.parsed:
         out += "_" + hype.out()
-    if hvirt.parsed:
+    if hvirt and hvirt.parsed:
         out += "_" + hvirt.out()
-    if cpubrand.parsed:
+    if cpubrand and cpubrand.parsed:
         out += "_" + cpubrand.out()
-    if gpu.parsed:
+    if gpu and gpu.parsed:
         out += "_" + gpu.out()
-    if ibd.parsed:
+    if ibd and ibd.parsed:
         out += "_" + ibd.out()
     return out
 
