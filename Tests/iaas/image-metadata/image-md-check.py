@@ -150,7 +150,7 @@ def is_url(stg):
     return idx >= 0 and stg[:idx] in ("http", "https", "ftp", "ftps")
 
 
-def is_date(stg, formats=DATE_FORMATS):
+def parse_date(stg, formats=DATE_FORMATS):
     """
     Return time in Unix seconds or 0 if stg is not a valid date.
     We recognize: %Y-%m-%dT%H:%M:%SZ, %Y-%m-%d %H:%M[:%S], and %Y-%m-%d
@@ -190,7 +190,7 @@ def is_outdated(img, bdate):
     # So we found an outdated image that should have been updated
     # (5a1) Check whether we are past the provided_until date
     until_str = img.properties["provided_until"]
-    until = is_date(img.properties["provided_until"])
+    until = parse_date(img.properties["provided_until"])
     if not until and not until_str == "none" and not until_str == "notice":
         print(f'ERROR: Image "{img.name}" does not provide a valid provided until date',
               file=sys.stderr)
@@ -199,7 +199,7 @@ def is_outdated(img, bdate):
         return 0
     if img.is_hidden or img.name[-3:] == "old" or img.name[-4:] == "prev" or img.name[-8:].isdecimal():
         return 1
-    if is_date(img.name[-10:]):
+    if parse_date(img.name[-10:]):
         return 1
     print(f'WARNING: Image "{img.name}" seems outdated (acc. to its repl freq) but is not hidden or otherwise marked',
           file=sys.stderr)
@@ -238,10 +238,10 @@ def validate_imageMD(imgnm):
             errors += 1
     # Some more sanity checks:
     #  - Dateformat for image_build_date
-    rdate = is_date(img.created_at, formats=STRICT_FORMATS)
+    rdate = parse_date(img.created_at, formats=STRICT_FORMATS)
     bdate = rdate
     if "image_build_date" in img.properties:
-        bdate = is_date(img.properties["image_build_date"])
+        bdate = parse_date(img.properties["image_build_date"])
         if bdate > rdate:
             print(f'ERROR: Image "{imgnm}" with build date {img.properties["image_build_date"]} after registration date {img.created_at}',
                   file=sys.stderr)
@@ -270,7 +270,7 @@ def validate_imageMD(imgnm):
             pass
         elif img_uuid_val[:5] == "last-" and img_uuid_val[5:].isdecimal():
             pass
-        elif is_date(img_uuid_val):
+        elif parse_date(img_uuid_val):
             pass
         else:
             print(f'ERROR: Image "{imgnm}": invalid uuid_validity {img_uuid_val}', file=sys.stderr)
@@ -348,9 +348,9 @@ def miss_replacement_images(images, outd_list):
             img = conn.image.find_image(imgnm)
             bdate = 0
             if "build_date" in img.properties:
-                bdate = is_date(img.properties["build_date"])
+                bdate = parse_date(img.properties["build_date"])
             if not bdate:
-                bdate = is_date(img.created_at, True)
+                bdate = parse_date(img.created_at, formats=STRICT_FORMATS)
             if is_outdated(img, bdate):
                 continue
             if verbose:
