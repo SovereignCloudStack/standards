@@ -130,7 +130,7 @@ will be provided until a deprecation notice is published. (The values are the sa
 for below `uuid_validity`, except that `forever` and `last-N` don't make any sense.)
 
 The `uuid_validity` field indicates how long the public image will be referencable
-by it's UUID.
+by its UUID.
 
 | `uuid_validity` | meaning                                                                 |
 | --------------- | ----------------------------------------------------------------------- |
@@ -141,7 +141,7 @@ by it's UUID.
 | `forever`       | UUID will remain valid for as long as the cloud operates                |
 
 Note that the old images must be hidden from the image catalogue or renamed (or both)
-to avoid failing referencing by name. Note that `last-N` may be limited by the `provided_till`
+to avoid failing referencing by name. Note that `last-N` may be limited by the `provided_until`
 date.
 
 The three properties `uuid_validity`, `provided_until` and `replace_frequency` are mandatory;
