@@ -198,7 +198,7 @@ def is_outdated(img, bdate):
         return 3
     if time.time() > until:
         return 0
-    if img.is_hidden or img.name[-3:] == "old" or img.name[-4] == "prev" or img.name[-8:].isdecimal():
+    if img.is_hidden or img.name[-3:] == "old" or img.name[-4:] == "prev" or img.name[-8:].isdecimal():
         return 1
     if is_date(img.name[-10:]):
         return 1
