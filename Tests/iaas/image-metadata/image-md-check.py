@@ -63,6 +63,8 @@ FREQ_TO_SEC = {
     "weekly": 7 * 25 * 3600,
     "daily": 25 * 3600,
 }
+STRICT_FORMATS = ("%Y-%m-%dT%H:%M:%SZ", )
+DATE_FORMATS = STRICT_FORMATS + ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d")
 
 
 def recommended_name(nm, os_list=OS_LIST):
@@ -148,16 +150,13 @@ def is_url(stg):
     return idx >= 0 and stg[:idx] in ("http", "https", "ftp", "ftps")
 
 
-def is_date(stg, strict=False):
+def is_date(stg, formats=DATE_FORMATS):
     """
     Return time in Unix seconds or 0 if stg is not a valid date.
     We recognize: %Y-%m-%dT%H:%M:%SZ, %Y-%m-%d %H:%M[:%S], and %Y-%m-%d
     """
     bdate = 0
-    fmts = ("%Y-%m-%dT%H:%M:%SZ", )
-    if not strict:
-        fmts += ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d")
-    for fmt in fmts:
+    for fmt in formats:
         try:
             tmdate = time.strptime(stg, fmt)
             bdate = calendar.timegm(tmdate)
@@ -239,7 +238,7 @@ def validate_imageMD(imgnm):
             errors += 1
     # Some more sanity checks:
     #  - Dateformat for image_build_date
-    rdate = is_date(img.created_at, True)
+    rdate = is_date(img.created_at, formats=STRICT_FORMATS)
     bdate = rdate
     if "image_build_date" in img.properties:
         bdate = is_date(img.properties["image_build_date"])
