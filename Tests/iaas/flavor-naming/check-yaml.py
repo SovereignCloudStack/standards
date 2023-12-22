@@ -42,7 +42,8 @@ class Checker:
         name_v2 = flavor_spec['name-v2']
         parsed = fnmck.parsename(name_v2)
         if not parsed:
-            self.emit(f"{name}: name-v2 '{name_v2}' could not be parsed")
+            self.emit(f"flavor {name}: name-v2 '{name_v2}' could not be parsed")
+            return
         cpu, disk, hype, hvirt, cpubrand, gpu, ibd = parsed
         undefined = Undefined()
         expected = {
@@ -81,6 +82,9 @@ def main(argv):
     for fn in yaml_files:
         with open(os.path.join(yaml_path, fn), "rb") as fileobj:
             flavor_spec_data = yaml.safe_load(fileobj)
+        if 'flavor_groups' not in flavor_spec_data:
+            main_checker.emit(f"file '{fn}': missing field 'flavor_groups'")
+            continue
         checker = Checker()
         for group in flavor_spec_data['flavor_groups']:
             for flavor_spec in group['list']:
