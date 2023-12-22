@@ -15,8 +15,8 @@ KIND_CLUSTER ="testcluster"
 PLUGIN_NAME="plugin"
 PLUGIN_FILE="${PLUGIN_NAME}.yaml"
 
-SONO_WAIT    = 2
-SONO_TIMEOUT = 10
+#~ SONO_WAIT    = 1
+#~ SONO_TIMEOUT = 60
 
 KUBERNETES_SERVICE_HOST=127.0.0.1
 KUBERNETES_SERVICE_PORT=34743	
@@ -72,16 +72,18 @@ dev-build: container-init
 dev-go:
 	@echo "[go]"
 	@echo "[KubernetesService]   ${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}"
-	mkdir ./build
+	@rm -rf ./build || true
+	@mkdir ./build
 	go test -c -o ./build ./...
-	#go test -c -o ./build ./... --args --skip-labels="type=pod-list"
-	go tool test2json ./build -test.v
+#	go test -c -o ./build ./... --args --skip-labels="type=pod-list"
+#	go tool test2json ./build -test.v
 
 
 dev-run:
 	@echo "[run-test]"
 	@echo "sonobuoy run --plugin ${PLUGIN_FILE} --wait=${SONO_WAIT} --timeout=${SONO_TIMEOUT}"
-	@sonobuoy run --plugin ${PLUGIN_FILE} --wait=${SONO_WAIT} --timeout=${SONO_TIMEOUT}
+#~ 	@sonobuoy run --plugin ${PLUGIN_FILE} --wait=${SONO_WAIT} --timeout=${SONO_TIMEOUT}
+	@sonobuoy run --plugin ${PLUGIN_FILE} 
 	@sonobuoy status
 
 

@@ -17,14 +17,27 @@ import (
 	"context"
 	"testing"
 	"time"
-
+	"fmt" 
 	plugin_helper "github.com/vmware-tanzu/sonobuoy-plugins/plugin-helper"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 	"sigs.k8s.io/e2e-framework/pkg/features"
 )
 
-func TestListPodsB(t *testing.T) {
+
+func Test_scs_0201_TestDummyIn(t *testing.T) {
+  fmt.Println("DEBUG: dummy test")
+  testvar := 5
+  if testvar != 3 {
+
+    t.Errorf("testvar = %d; want 3", testvar)
+
+  }
+}
+
+
+
+func Test_scs_0201_TestListPods(t *testing.T) {
 	f := features.New("pod list").
 		Assess("pods from kube-system", func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 			var pods corev1.PodList
@@ -42,7 +55,29 @@ func TestListPodsB(t *testing.T) {
 	testenv.Test(t, f.Feature())
 }
 
-func TestLongTestB(t *testing.T) {
+
+
+func scs_0201_TestListPodsFailing(t *testing.T) {
+	f := features.New("pod list").
+    //~ WithLabel("type","pod-list")
+		Assess("pods from kube-test-a", func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+			var pods corev1.PodList
+			err := cfg.Client().Resources("kube-test-a").List(context.TODO(), &pods)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Logf("found %d pods", len(pods.Items))
+			if len(pods.Items) == 0 {
+				t.Fatal("no pods in namespace kube-test-a")
+			}
+			return ctx
+		})
+
+	testenv.Test(t, f.Feature())
+}
+
+
+func scs_0201_TestLongTest(t *testing.T) {
 	f := features.New("pod list").
 		Assess("pods from kube-system", func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
 			var pods corev1.PodList
