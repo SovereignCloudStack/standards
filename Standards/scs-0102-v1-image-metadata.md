@@ -78,7 +78,7 @@ level).
 
 Technically, the thus updated image is a new image and will thus carry a new UUID.
 It is recommended that the old image gets renamed (e.g. build date or patch level attached)
-and hidden (`os_hidden=true`), but remains accessible via its (unchanged) UUID for some
+and hidden (`os_hidden=True`), but remains accessible via its (unchanged) UUID for some
 time.
 
 The update handling by the provider is described via the properties `replace_frequency`,
@@ -119,7 +119,7 @@ the issue becomes public and a tested fix is available as maintenance update fro
 distribution_. A value of 0 indicates a best-effort approach without firm SLAs; the field not
 being present indicates no commitment. A value of 48 would indicate that the provider
 commits to a new image within 48hrs. A critical issue is defined as a security vulnerability
-with a CVSS score of 9.0 or higher that affects a package that is included in the image.
+with a CVSS score of 9.0 or higher that affects software that is included in the image.
 
 The `provided_until` field is supposed to contain a date in `YYYY-MM-DD` format that
 indicates until when an image under this name will be provided and (according to the
@@ -142,7 +142,10 @@ by its UUID.
 
 Note that the old images must be hidden from the image catalogue or renamed (or both)
 to avoid failing referencing by name. Note that `last-N` may be limited by the `provided_until`
-date.
+date. We recommend providers that keep old images according to the advertized `uuid_validity`
+to hide older images (setting the `os_hidden` property to `True`). If the outdated images must
+remain visible, the recommendation is to rename the images by attaching a datestamp in the
+format " `YYYYMMDD`" to the name where the date must reflect the `build_date` of the image.
 
 The three properties `uuid_validity`, `provided_until` and `replace_frequency` are mandatory;
 the field `hotfix_hours` is optional.
