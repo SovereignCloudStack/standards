@@ -16,6 +16,13 @@
     post:
       jobs:
         - scs-check-gx-scs
+    check:
+      jobs:
+        - scs-check-adr-syntax
+- job:
+    name: scs-check-adr-syntax
+    parent: base
+    run: playbooks/adr_syntax.yaml
 - job:
     name: scs-check-gx-scs
     parent: base
