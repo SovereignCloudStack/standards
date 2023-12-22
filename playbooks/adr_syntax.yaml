@@ -1,5 +1,5 @@
 ---
-- name: Run ADR syntax check tool
+- name: Run ADR syntax check tool and test script consistency check tool
   hosts: all
   roles:
     - role: ensure-pip  # https://zuul-ci.org/docs/zuul-jobs/latest/python-roles.html#role-ensure-pip
@@ -22,9 +22,16 @@
       ansible.builtin.pip:
         requirements: /home/ubuntu/Tests/requirements.txt
 
-    - name: Run check script
+    - name: Run ADR syntax check script
       ansible.builtin.command:
         cmd: python3 /home/ubuntu/Tests/chk_adrs.py /home/ubuntu/Standards
+      register: result
+      changed_when: true
+      failed_when: result.rc != 0
+
+    - name: Run test script consistency check script
+      ansible.builtin.command:
+        cmd: python3 /home/ubuntu/Tests/iaas/flavor-naming/check-yaml.py /home/ubuntu/Tests/iaas
       register: result
       changed_when: true
       failed_when: result.rc != 0
