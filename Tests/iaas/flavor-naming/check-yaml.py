@@ -20,6 +20,11 @@ CPUTYPE_KEY = {'L': 'crowded-core', 'V': 'shared-core', 'T': 'dedicated-thread',
 DISKTYPE_KEY = {'n': 'network', 'h': 'hdd', 's': 'ssd', 'p': 'nvme'}
 
 
+class Undefined:
+    def __repr__(self):
+        return 'undefined'
+
+
 class Checker:
     def __init__(self):
         self.errors = 0
@@ -39,11 +44,13 @@ class Checker:
         if not parsed:
             self.emit(f"{name}: name-v2 '{name_v2}' could not be parsed")
         cpu, disk, hype, hvirt, cpubrand, gpu, ibd = parsed
+        undefined = Undefined()
         expected = {
             'cpus': cpu.cpus,
             'cpu-type': CPUTYPE_KEY[cpu.cputype],
             'ram': cpu.ram,
             'name-v1': fnmck.new_to_old(name_v2),
+            'disk': undefined,
         }
         if disk.parsed:
             if disk.nrdisks != 1:
@@ -51,11 +58,11 @@ class Checker:
             expected['disk'] = disk.disksize
             expected['disk0-type'] = DISKTYPE_KEY[disk.disktype or 'n']
         for key, exp_val in expected.items():
-            val = flavor_spec.get(key, DEFAULTS.get(key, None))
+            val = flavor_spec.get(key, DEFAULTS.get(key, undefined))
             if val != exp_val:
                 self.emit(
                     f"flavor '{name}': field '{key}' contradicting name-v2 '{name_v2}'; "
-                    f"found '{val}', expected '{exp_val}'"
+                    f"found {val!r}, expected {exp_val!r}"
                 )
 
 
