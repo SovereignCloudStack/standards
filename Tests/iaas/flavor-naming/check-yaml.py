@@ -34,7 +34,6 @@ class Checker:
             self.emit(f"flavor spec missing keys {', '.join(missing)}: {flavor_spec}")
             return
         name = flavor_spec['name']
-        name_v1 = flavor_spec['name-v1']
         name_v2 = flavor_spec['name-v2']
         parsed = fnmck.parsename(name_v2)
         if not parsed:
@@ -48,7 +47,7 @@ class Checker:
         }
         if disk.parsed:
             if disk.nrdisks != 1:
-                emit(f"flavor '{name}': name-v2 using multiple disks")
+                self.emit(f"flavor '{name}': name-v2 using multiple disks")
             expected['disk'] = disk.disksize
             expected['disk0-type'] = DISKTYPE_KEY[disk.disktype or 'n']
         for key, exp_val in expected.items():
