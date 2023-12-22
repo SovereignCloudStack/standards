@@ -145,7 +145,7 @@ to avoid failing referencing by name. Note that `last-N` may be limited by the `
 date. We recommend providers that keep old images according to the advertized `uuid_validity`
 to hide older images (setting the `os_hidden` property to `True`). If the outdated images must
 remain visible, the recommendation is to rename the images by attaching a datestamp in the
-format "` YYYYMMDD`" to the name where the date must reflect the `build_date` of the image.
+format " `YYYYMMDD`" to the name where the date must reflect the `build_date` of the image.
 
 The three properties `uuid_validity`, `provided_until` and `replace_frequency` are mandatory;
 the field `hotfix_hours` is optional.
