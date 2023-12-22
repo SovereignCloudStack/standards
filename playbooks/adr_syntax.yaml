@@ -1,0 +1,33 @@
+---
+- name: Run ADR syntax check tool
+  hosts: all
+  roles:
+    - role: ensure-pip  # https://zuul-ci.org/docs/zuul-jobs/latest/python-roles.html#role-ensure-pip
+  tasks:
+    - name: Copy ADRs on the node
+      ansible.builtin.copy:
+        src: "../Standards"
+        dest: "~/"
+        mode: 0500
+      no_log: false
+
+    - name: Copy Tests on the node
+      ansible.builtin.copy:
+        src: "../Tests"
+        dest: "~/"
+        mode: 0500
+      no_log: false
+
+    - name: Install dependencies
+      ansible.builtin.pip:
+        requirements: /home/ubuntu/Tests/requirements.txt
+
+    - name: Run check script
+      ansible.builtin.command:
+        cmd: python3 /home/ubuntu/Tests/chk_adrs.py /home/ubuntu/Standards
+      register: result
+      changed_when: true
+      failed_when: result.rc != 0
+
+    - ansible.builtin.debug:
+        msg: "{{ result.stdout }} {{ result.stderr }}"
