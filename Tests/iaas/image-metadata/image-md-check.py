@@ -174,7 +174,7 @@ def validate_imageMD(imgnm):
             errors += 1
     # - image_source should be a URL
     if "image_source" not in img.properties:
-        pass  # this is acceptable
+        pass  # we have already noted this as error, no need to do it again
     elif img.properties["image_source"] == "private":
         if verbose:
             print(f'Info: Image {imgnm} has image_source set to private', file=sys.stderr)
