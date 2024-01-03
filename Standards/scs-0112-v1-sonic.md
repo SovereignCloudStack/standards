@@ -2,7 +2,7 @@
 title: SONiC Support in SCS
 type: Decision Record # Standard  | Decision Record | Procedural
 status: Draft
-track: Global  # Global | IaaS | Ops | KaaS | IAM
+track: Global # Global | IaaS | Ops | KaaS | IAM
 description: |
   SCSS-0112 outlines architecutral decisions in SCS in regards to SONi support and integration.
 ---
@@ -20,7 +20,7 @@ SONiC support in [SCS](https://scs.community) was considered within the context 
 
 ## Motivation
 
-In respect to SDN scalability improvements in Openstack and SCS, there are several ways SONiC can be leveraged. 
+In respect to SDN scalability improvements in Openstack and SCS, there are several ways SONiC can be leveraged.
 
 ### SONiC as a network OS where dynamic network configuration in Openstack is required
 
@@ -82,15 +82,12 @@ Good initial adoption: Microsoft, Target. Adoption requires time and money
 
 Actually not, because of different use cases.
 
-
 ## Decision
 
 IaaS team recommends to use Option 3: SCS develops SCS-specific modules as add-on for any SONiC (Community or Enterprise). It has the best tradeoff between time and resource investment and benefits for the community. Adopting this strategy would allow SCS to be agile and quickly adopt SONiC, by providing users with clear path while allowing the freedom to chose different hardware and software vendors. SCS code can be packaged independently of each SONiC distribution and installed as add-on. Also SCS contributions to core SONiC will be done directly upstream, so that the whole community can benefit from them.
 
 ## Related Documents
 
-- https://input.scs.community/VP04-issues-455-research-SDN-scalability#SDN-scalability-improvements
-- https://input.scs.community/SCS-DR-SONIC-usage?both#SCS-Decision-Record-about-Enterprise-vs-Custom-SONiC
-- https://input.scs.community/oW_plPZ6RkuXs3k9mrRDdw#
-
-
+- [Research SDN scalability](https://input.scs.community/VP04-issues-455-research-SDN-scalability)
+- [Results SONIC Usage in SCS](https://input.scs.community/SCS-DR-SONIC-usage)
+- [SONiC Community research](https://input.scs.community/oW_plPZ6RkuXs3k9mrRDdw#)
