@@ -82,9 +82,15 @@ Good initial adoption: Microsoft, Target. Adoption requires time and money
 
 Actually not, because of different use cases.
 
+- Sustainability of community SONIC for 2025+
+
+The SONiC community is healthy and growing, however progress is slower due to factors like investment of resources. The barrier of entry is much higher than other similar OSS projects.
+
 ## Decision
 
 IaaS team recommends to use Option 3: SCS develops SCS-specific modules as add-on for any SONiC (Community or Enterprise). It has the best tradeoff between time and resource investment and benefits for the community. Adopting this strategy would allow SCS to be agile and quickly adopt SONiC, by providing users with clear path while allowing the freedom to chose different hardware and software vendors. SCS code can be packaged independently of each SONiC distribution and installed as add-on. Also SCS contributions to core SONiC will be done directly upstream, so that the whole community can benefit from them.
+
+Work on hardware support in SONiC should be raised in upstream and SCS shouldn't make significant investments in this area.
 
 ## Related Documents
 
