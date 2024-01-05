@@ -1,8 +1,10 @@
 ---
 title: _Descriptive title_
-type: Standard  # | Decision Record | Procedural
+type: Decision Record
 status: Draft
 track: Global  # | IaaS | Ops | KaaS | IAM
+author: Author <Mail or Github handle>
+date: DD-MM-YYYY
 ---
 
 <!---
@@ -16,36 +18,24 @@ See https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-000
 
 Introduction
 
-## Motivation
+## Terminology
 
-Motivation
+Example (abbr. Ex)
+  This is the description for an example terminology.
 
-## Design Considerations
+## Context
 
-OPTIONAL
-
-### Options considered
-
-#### _Option 1_
-
-Option 1 description
-
-#### _Option 2_
-
-Option 2 description
-
-## Open questions
-
-RECOMMENDED
+What is the issue that we're seeing that is motivating this decision or change?
 
 ## Decision
 
-Decision
+What is the decision that we're proposing and/or doing?
+Should also include reasoning for this decision
+
+## Consequences
+
+What becomes easier or more difficult to do because of this change?
 
 ## Related Documents
 
 Related Documents, OPTIONAL
-
-## Conformance Tests
-
-Conformance Tests, OPTIONAL
