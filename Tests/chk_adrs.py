@@ -24,6 +24,10 @@ import yaml
 # | `replaced_by`   | RECOMMENDED if `status` is `Deprecated` or `Rejected`, FORBIDDEN otherwise | List of documents which replace this document.                                        |
 
 UNDEFINED = object()
+# the template files are whitelisted because they do not conform to the naming scheme
+NAMES_WHITELIST = (
+    "scs-XXXX-vN-template.md",
+)
 
 
 def optional(predicate):
@@ -69,6 +73,20 @@ class Checker:
         print(f"ERROR: {s}", file=sys.stderr)
         self.errors += 1
 
+    def check_name(self, name, whitelist=NAMES_WHITELIST):
+        if not name.startswith('scs-'):
+            return
+        if name in whitelist:
+            return
+        components = name.split('-')
+        if len(components) < 4:
+            self.emit(f"document name must have at least four components separated by '-': {name}")
+            return
+        if len(components[1]) != 4 or not components[1].isnumeric():
+            self.emit(f"document code must have format NNNN, found {components[1]}")
+        if components[2][:1] not in ("v", "w") or not components[2][1:].isnumeric():
+            self.emit(f"document version must have format vN or wN, found: {components[2]}")
+
     def check_names(self, mds):
         """Check the list `mds` of md file names for name collisions"""
         # count the occurrences of the prefixes of length 12, e.g., scs-0001-v1-
@@ -79,9 +97,16 @@ class Checker:
             self.emit(f"duplicates found: {', '.join(duplicates)}")
 
     def check_front_matter(self, fn, front):
-        """Check the dict `front` of front matter; `fn` is for context in error messages"""
+        """Check the dict `front` of front matter
+
+        The argument `fn` is mainly for context in error messages, but also to distinguish document types.
+        """
         if front is None:
             self.emit(f"in {fn}: is missing front matter altogether")
+            return
+        # so far, only check primary documents, not supplemental ones
+        if fn[9] != 'v':
+            print(f"skipping non-primary {fn}", file=sys.stderr)
             return
         # check each field in isolation
         errors = [
@@ -103,6 +128,15 @@ class Checker:
             self.emit(f"in {fn}: status is Rejected, but rejected_at date is missing")
 
 
+def _load_front_matter(path):
+    with open(path, "rb") as flo:
+        loader = yaml.SafeLoader(flo)
+        try:
+            return loader.get_data()
+        finally:
+            loader.dispose()
+
+
 def main(argv):
     if len(argv) != 2:
         raise RuntimeError("must specify exactly one argument, PATH")
@@ -113,16 +147,10 @@ def main(argv):
         if fn.startswith("scs-") and fn.endswith(".md")
     ])
     checker = Checker()
-    checker.check_names(mds)
-    # now load each file and check front matter
     for fn in mds:
-        with open(os.path.join(path, fn), "rb") as flo:
-            loader = yaml.SafeLoader(flo)
-            try:
-                front = loader.get_data()
-            finally:
-                loader.dispose()
-            checker.check_front_matter(fn, front)
+        checker.check_name(fn)
+        checker.check_front_matter(fn, _load_front_matter(os.path.join(path, fn)))
+    checker.check_names(mds)
     return checker.errors
 
 
