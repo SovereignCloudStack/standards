@@ -30,7 +30,7 @@ also (partially) exposed via the web page <https://flavors.scs.community/>.
 
 With the OpenStack tooling (`python3-openstackclient`, `OS_CLOUD`) in place, you can call
 `flavor-name-check.py -c $(openstack flavor list -f value -c Name)` to get a report
-on the flavor list compliance of the cloud environment.
+on the syntax compliance of the flavor names of the cloud environment.
 
 #### Flavor Creation
 
@@ -45,7 +45,7 @@ The following items MUST be found and reported as an error:
 
 - any syntax error in a name starting with `scs-`,
 - any mismatch between any immediately discoverable property of a flavor (currently, CPU, RAM and disk size)
-  and the meaning of its name.
+  and the meaning of its name (which is usually a lower bound).
 
 In addition, the following items MAY be reported as an error:
 
