@@ -77,7 +77,7 @@ def check_image_attributes(images, attributes=IMAGE_ATTRIBUTES):
     for image in images:
         wrong = [f"{key}={value}" for key, value in attributes.items() if image.get(key) != value]
         if wrong:
-            logger.info(f"Image '{image.name}' missing recommended attributes: {', '.join(wrong)}")
+            logger.warning(f"Image '{image.name}' missing recommended attributes: {', '.join(wrong)}")
 
 
 def check_flavor_attributes(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAVOR_OPTIONAL):
@@ -92,7 +92,7 @@ def check_flavor_attributes(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAV
             # and if the recommended attributes are present, we assume that implementers have done their job already
             if miss_opt:
                 message += f"; additionally, missing optional attributes: {', '.join(miss_opt)}"
-            logger.info(message)
+            logger.warning(message)
 
 
 def install_test_requirements(fconn):
@@ -153,7 +153,7 @@ def check_vm_recommends(fconn, image, flavor):
     try:
         result = fconn.run('sudo systemctl status rngd', hide=True, warn=True)
         if "could not be found" in result.stdout or "could not be found" in result.stderr:
-            logger.info(f"VM '{image.name}' doesn't provide the recommended service rngd")
+            logger.warning(f"VM '{image.name}' doesn't provide the recommended service rngd")
         # Check the existence of the HRNG -- can actually be skipped if the flavor
         # or the image doesn't have the corresponding attributes anyway!
         if image.hw_rng_model != "virtio" or flavor.extra_specs.get("hw_rng:allowed") != "True":
@@ -163,7 +163,7 @@ def check_vm_recommends(fconn, image, flavor):
             hw_device = fconn.run('cat /sys/devices/virtual/misc/hw_random/rng_available', hide=True, warn=True).stdout
             result = fconn.run("sudo su -c 'od -vAn -N2 -tu2 < /dev/hwrng'", hide=True, warn=True)
             if not hw_device.strip() or "No such device" in result.stdout or "No such " in result.stderr:
-                logger.info(f"VM '{image.name}' doesn't provide a hardware device.")
+                logger.warning(f"VM '{image.name}' doesn't provide a hardware device.")
     except BaseException:
         logger.critical(f"Couldn't check VM '{image.name}' recommends", exc_info=True)
 
