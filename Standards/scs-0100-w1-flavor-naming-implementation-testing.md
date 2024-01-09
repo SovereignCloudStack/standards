@@ -41,7 +41,7 @@ of flavors in one go, given a YAML description of this set.
 
 ### Errors
 
-The following items MUST be found and reported as an error:
+The following items MUST be detected and reported as an error:
 
 - any syntax error in a name starting with `scs-`,
 - any mismatch between any immediately discoverable property of a flavor (currently, CPU, RAM and disk size)

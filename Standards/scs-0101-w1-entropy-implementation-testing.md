@@ -32,7 +32,7 @@ reported as an error:
 
 - the service `rngd` is not running,
 - the special file `/proc/sys/kernel/random/entropy_avail` does not contain
-  the value 256 (pinned since kernel 5.18).
+  the value 256 (pinned since kernel 5.18),
 - the number of FIPS 140-2 failures exceeds 3 out of 1000 blocks
   tested, as determined by `cat /dev/random | rngtest -c 1000` .
 
