@@ -1,5 +1,5 @@
 ---
-title: SCS Flavor Naming Standard: Implementation and Testing Notes
+title: "SCS Flavor Naming Standard: Implementation and Testing Notes"
 type: Supplement
 status: Draft
 supplements:
