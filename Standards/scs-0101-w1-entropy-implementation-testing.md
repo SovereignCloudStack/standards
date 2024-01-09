@@ -8,8 +8,12 @@ supplements:
 
 ## Implementation
 
-We presume that nothing has to be done, as long as the CPUs and VM images are
-reasonably recent.
+We presume that almost nothing has to be done (or indeed can be done), as
+long as the CPUs and VM images are reasonably recent; only the flavor and
+image attributes have to be set:
+
+- flavor: `hw_rng:allowed=True` ,
+- image: `hw_rng_model: virtio` .
 
 ## Automated Tests
 
