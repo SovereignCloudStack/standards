@@ -58,6 +58,6 @@ as ensured by the image metadata standard.
 The script [`entropy-check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/entropy/entropy-check.py)
 connects to OpenStack and performs the checks described in this section.
 
-#### Manual Tests
+## Manual Tests
 
 None.

@@ -61,6 +61,6 @@ The script [`flavor-names-openstack.py`](https://github.com/SovereignCloudStack/
 talks to the OpenStack API of the cloud specified by the `OS_CLOUD` environment and queries properties and
 checks the names for standards compliance.
 
-#### Manual Tests
+## Manual Tests
 
 To be determined.
