@@ -81,7 +81,7 @@ class Checker:
 
 def main(argv):
     if len(argv) != 2:
-        raise RuntimeError("must specify exactly one argument, PATH to the yaml file")
+        raise RuntimeError("must specify exactly one argument, PATH to the yaml directory")
     yaml_path = argv[1]
     yaml_files = sorted([
         filename
