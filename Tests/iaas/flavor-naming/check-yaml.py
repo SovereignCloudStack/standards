@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Check flavor names in the YAML files used for scs-0103-v1 with respect to scs-0100-vX.
 
+For reference, see
+
+  - </Standards/scs-0100-v3-flavor-naming.md>
+  - </Standards/scs-0103-v1-standard-flavors.md>
+
 Also check that the flavor properties encoded in the YAML match those encoded in the name.
 """
 import importlib
@@ -10,8 +15,8 @@ import sys
 
 import yaml
 
-fnmck = importlib.import_module("flavor-name-check")
-fnmck.disallow_old = True
+flavor_name_check = importlib.import_module("flavor-name-check")
+flavor_name_check.disallow_old = True
 
 
 REQUIRED_FIELDS = ['name-v1', 'name-v2', 'name', 'cpus', 'ram', 'cpu-type']
@@ -26,6 +31,13 @@ class Undefined:
 
 
 class Checker:
+    """
+    Auxiliary class that contains the logic for checking a single flavor spec
+    as well as emitting error messages to stderr.
+
+    Once this program grows (significantly), this class should actually be split
+    in two in order to follow the single-responsibility principle.
+    """
     def __init__(self):
         self.errors = 0
 
@@ -40,7 +52,7 @@ class Checker:
             return
         name = flavor_spec['name']
         name_v2 = flavor_spec['name-v2']
-        parsed = fnmck.parsename(name_v2)
+        parsed = flavor_name_check.parsename(name_v2)
         if not parsed:
             self.emit(f"flavor {name}: name-v2 '{name_v2}' could not be parsed")
             return
@@ -50,7 +62,7 @@ class Checker:
             'cpus': cpu.cpus,
             'cpu-type': CPUTYPE_KEY[cpu.cputype],
             'ram': cpu.ram,
-            'name-v1': fnmck.new_to_old(name_v2),
+            'name-v1': flavor_name_check.new_to_old(name_v2),
             'disk': undefined,
         }
         if disk.parsed:
@@ -72,25 +84,25 @@ def main(argv):
         raise RuntimeError("must specify exactly one argument, PATH to the yaml file")
     yaml_path = argv[1]
     yaml_files = sorted([
-        fn
-        for fn in os.listdir(yaml_path)
-        if fn.startswith("scs-0103-") and fn.endswith(".yaml")
+        filename
+        for filename in os.listdir(yaml_path)
+        if filename.startswith("scs-0103-") and filename.endswith(".yaml")
     ])
     main_checker = Checker()
     if not yaml_files:
         main_checker.emit("no yaml files found!")
-    for fn in yaml_files:
-        with open(os.path.join(yaml_path, fn), "rb") as fileobj:
+    for filename in yaml_files:
+        with open(os.path.join(yaml_path, filename), "rb") as fileobj:
             flavor_spec_data = yaml.safe_load(fileobj)
         if 'flavor_groups' not in flavor_spec_data:
-            main_checker.emit(f"file '{fn}': missing field 'flavor_groups'")
+            main_checker.emit(f"file '{filename}': missing field 'flavor_groups'")
             continue
         checker = Checker()
         for group in flavor_spec_data['flavor_groups']:
             for flavor_spec in group['list']:
                 checker.check_spec(flavor_spec)
         if checker.errors:
-            main_checker.emit(f"file '{fn}': found {checker.errors} errors")
+            main_checker.emit(f"file '{filename}': found {checker.errors} errors")
     return main_checker.errors
 
 
