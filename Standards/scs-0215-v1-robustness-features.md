@@ -127,12 +127,13 @@ these certificates need to be rotated regularly and at best automatically.
 It is important to either set `--rotate-server-certificates` as a command line parameter or set `rotateCertificates: true`
 in the kubelet config or the `kubeletExtraArgs` of the cluster-template.yaml file. This activates the rotation of the
 kubelet server certificate. Another recommendation is to set `serverTLSBootstrap: true`, which also enables the request
-and rotation of the certificate for the kubelet according to the documentation.
+and rotation of the certificate for the kubelet by requesting them from `certificates.k8s.io` 
+according to the documentation under [Kubeadm certs].
 
-A clusters certificates can either be rotated by updating the cluster, which according to the Kubernetes documentation
+A clusters certificates can be rotated by updating the cluster, which according to the Kubernetes documentation
 automatically renews the certificates.
 Another method would be the manual renewal, which can be done through multiple methods, depending on the K8s cluster
-used. An example for a default K8s cluster would be to execute the command
+used. An example for a K8s cluster set up with `kubeadm` would be to execute the command
 
 ```bash
 kubeadm certs renew all
@@ -140,16 +141,18 @@ kubeadm certs renew all
 
 Since clusters conformant with the SCS standards would probably be updated within the time period described in the
 standard [SCS-0210-v2](https://github.com/SovereignCloudStack/standards/tree/main/Standards/scs-0210-v2-k8s-version-policy.md),
-this rotation can probably be assumed to happen. Nevertheless, the alternative can still be mentioned in the standard.
-Additionally, the Certificate Signing Request (CSR) need to be approved manually due to security reasons with the commands
+this rotation can probably be assumed to happen, because of the cluster update functionality.
+
+It is also important to mention, that due to security reasons, the CSR needs to be approved manually with the commands
 
 ```bash
 kubectl get csr
 kubectl certificate approve <CSR>
 ```
+in order to complete a certificate rotation.
 
 Another option to approve the CSRs would be to use a third-party controller that automates the process. One example for
-this would be the [Kubelet CSR approver](https://github.com/postfinance/kubelet-csr-approver), which can be deployed on
+this would be the [kubelet csr approver](https://github.com/postfinance/kubelet-csr-approver), which can be deployed on
 a K8s cluster and requires `serverTLSBootstrap` to be set to true. Other controllers with a similar functionality might
 have other specific requirements, which won't be explored in this document.
 
@@ -157,7 +160,7 @@ Another problem is that the CA might expire. Unfortunately, not all K8s tools ha
 certificates with the help of commands. Instead, there is documentation for manually rotating the CA, which can be found
 under [Manual rotation of ca certificate](https://kubernetes.io/docs/tasks/tls/manual-rotation-of-ca-certificates/).
 
-Further information can be found in the Kubernetes documentation:
+Further information and examples can be found in the Kubernetes documentation:
 [Kubeadm certs](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/)
 [Kubelete TLS bootstrapping](https://kubernetes.io/docs/reference/access-authn-authz/kubelet-tls-bootstrapping/)
 
@@ -223,7 +226,7 @@ How this is done is up to the operator.
 ### Certificate rotation
 
 It should be avoided, that certificates expire either on the whole cluster or for single components.
-To avoid this scenario, certificates SHOULD be rotated regularly; in the
+To avoid this scenario, certificates MUST be rotated regularly; in the
 case of SCS, we REQUIRE at least a yearly certificate rotation.
 To achieve a complete certificate rotation, the parameters `serverTLSBootstrap` and `rotateCertificates`
 MUST be set in the kubelet configuration.
@@ -234,7 +237,8 @@ renews certificates, or by manually renewing them. How this is done is dependent
 After this, new CSRs MUST be approved manually or with a third-party controller, e.g. the [kubelet-csr-approver](https://github.com/postfinance/kubelet-csr-approver).
 
 It is also RECOMMENDED to renew the CA regularly to avoid an expiration of the CA.
-This standard doesn't set a timeline for this, since it is dependent on the CA.
+This standard doesn't set an exact timeline for a renewal, since it is dependent on lifetime and 
+therefore expiration date of the CA in question.
 
 ## Related Documents
 
