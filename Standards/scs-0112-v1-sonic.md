@@ -58,6 +58,15 @@ SCS supports enterprise ans community versions of SONiC but will not develop its
 
 In option 3, SCS will change SONiC by releasing its own modules for it. Those module can be provided as add-ons and installed on top of any version, community or enterprise. While compatability between the modules the SONiC releases will need to be maintained, there will be much broader support for SONiC and users will be able to pick and chose distributions based on their existing relationships and experience and use SCS independent of this. In cases where SCS provides contributions to core SONiC, those can be made in upstream Community repositories, so that the whole community including the propriatory vendors can adopt them eventually.
 
+#### Option 4: SCS does not adopt SONiC at all
+
+This option entails no dedicated effort on SCS's part in supporting SONiC network equipement for it's users and software stack. Users can still use SONiC from what is available by other projects or if they invest the effort themselves. This has several disadvantages:
+
+- SCS is not contributing to the SONiC community
+- the value for SCS by users who already use or plan to invest in SONiC is diminished
+- users have less incentive to use community SONiC and switch to Enterprise SONiC
+- SCS will not be able to leverage SONiC for SDN scalability improvements
+
 ## Open questions
 
 State of SONiC community?
