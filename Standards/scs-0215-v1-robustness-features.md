@@ -127,7 +127,7 @@ these certificates need to be rotated regularly and at best automatically.
 It is important to either set `--rotate-server-certificates` as a command line parameter or set `rotateCertificates: true`
 in the kubelet config or the `kubeletExtraArgs` of the cluster-template.yaml file. This activates the rotation of the
 kubelet server certificate. Another recommendation is to set `serverTLSBootstrap: true`, which also enables the request
-and rotation of the certificate for the kubelet by requesting them from `certificates.k8s.io` 
+and rotation of the certificate for the kubelet by requesting them from `certificates.k8s.io`
 according to the documentation under [Kubeadm certs].
 
 A clusters certificates can be rotated by updating the cluster, which according to the Kubernetes documentation
@@ -149,6 +149,7 @@ It is also important to mention, that due to security reasons, the CSR needs to 
 kubectl get csr
 kubectl certificate approve <CSR>
 ```
+
 in order to complete a certificate rotation.
 
 Another option to approve the CSRs would be to use a third-party controller that automates the process. One example for
@@ -234,10 +235,11 @@ MUST be set in the kubelet configuration.
 The certificates can be rotated by either updating the Kubernetes cluster, which automatically
 renews certificates, or by manually renewing them. How this is done is dependent on the used K8s cluster.
 
-After this, new CSRs MUST be approved manually or with a third-party controller, e.g. the [kubelet-csr-approver](https://github.com/postfinance/kubelet-csr-approver).
+After this, new CSRs MUST be approved manually or with a third-party controller,
+e.g. the [kubelet-csr-approver](https://github.com/postfinance/kubelet-csr-approver).
 
 It is also RECOMMENDED to renew the CA regularly to avoid an expiration of the CA.
-This standard doesn't set an exact timeline for a renewal, since it is dependent on lifetime and 
+This standard doesn't set an exact timeline for a renewal, since it is dependent on lifetime and
 therefore expiration date of the CA in question.
 
 ## Related Documents
