@@ -34,7 +34,7 @@ In many network designs for Openstack, configuration of the actual network hardw
 
 ### Automation and tooling for SONiC
 
-There is no tooling in SCS or Openstack communities to facilitate with the rollout and configuration of enterprise scale SONiC deployments. Netbox and OSISM can be integrated, so that Netbox becomes the source of truth for network configuration and OSISM supports the initial rollout and configuration for the switches.
+There is no tooling in SCS or Openstack communities to facilitate the rollout and configuration of enterprise scale SONiC deployments. Netbox and OSISM can be integrated, so that Netbox becomes the source of truth for network configuration and OSISM supports the initial rollout and configuration for the switches.
 
 ### OVN for SONiC
 
