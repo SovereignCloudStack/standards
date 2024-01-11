@@ -28,7 +28,7 @@ In many network designs for Openstack, configuration of the actual network hardw
 
 - VLANs. Uisng VLANs to segment tenant networks requires the network switch to be configured. This can be manual or dynamic configuration via the ML2 Neutron driver.
 
-- EVPN/VXLAN on the switch. In this use case, SONiC runs on leaf switches. Leafs terminal VXLAN endpoints and run BGP/EVPN for the control plane. Again, the ML2 Neutron driver is used to dynamically configure the network switch. The link between the switch and the service is regular VLAN.
+- EVPN/VXLAN on the switch. In this use case, SONiC runs on leaf switches. Leafs terminate VXLAN endpoints and run BGP/EVPN for the control plane. Again, the ML2 Neutron driver is used to dynamically configure the network switch. The link between the switch and the service is regular VLAN.
 
 - VXLAN on servers and switches. This is a hybrid use case, where most of the SDN to pushed to the server, but the network is still involved where support for bare metal hosts is needed.
 
