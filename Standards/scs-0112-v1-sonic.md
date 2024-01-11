@@ -4,7 +4,7 @@ type: Decision Record # Standard  | Decision Record | Procedural
 status: Draft
 track: Global # Global | IaaS | Ops | KaaS | IAM
 description: |
-  SCSS-0112 outlines architecutral decisions in SCS in regards to SONi support and integration.
+  SCSS-0112 outlines architectural decisions in SCS in regards to SONiC support and integration.
 ---
 
 <!---
