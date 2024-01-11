@@ -38,7 +38,7 @@ There is no tooling in SCS or Openstack communities to facilitate the rollout an
 
 ### OVN for SONiC
 
-OVN and OVS are extensively reveraged in Neutron to SDN. In large scale deployments, OVN can become a bottleneck by exhausing resources on network nodes. SONiC can host the OVN control plane as a module (container) and spare the resources in network nodes. There is however a potential other bottleneck on SONiC hardware, as OVN control plane can be resource intensive. This is a potential area for further investigation.
+OVN and OVS are extensively leveraged in Neutron to SDN. In large scale deployments, OVN can become a bottleneck by exhausting resources on network nodes. SONiC can host the OVN control plane as a module (container) and spare the resources in network nodes. There is however a potential other bottleneck on SONiC hardware, as OVN control plane can be resource intensive. This is a potential area for further investigation.
 
 ## Design Considerations
 
