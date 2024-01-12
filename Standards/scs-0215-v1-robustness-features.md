@@ -235,9 +235,6 @@ MUST be set in the kubelet configuration.
 The certificates can be rotated by either updating the Kubernetes cluster, which automatically
 renews certificates, or by manually renewing them. How this is done is dependent on the used K8s cluster.
 
-After this, new CSRs MUST be approved manually or with a third-party controller,
-e.g. the [kubelet-csr-approver](https://github.com/postfinance/kubelet-csr-approver).
-
 It is also RECOMMENDED to renew the CA regularly to avoid an expiration of the CA.
 This standard doesn't set an exact timeline for a renewal, since it is dependent on lifetime and
 therefore expiration date of the CA in question.
