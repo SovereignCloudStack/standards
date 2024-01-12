@@ -143,14 +143,20 @@ Since clusters conformant with the SCS standards would probably be updated withi
 standard [SCS-0210-v2](https://github.com/SovereignCloudStack/standards/tree/main/Standards/scs-0210-v2-k8s-version-policy.md),
 this rotation can probably be assumed to happen, because of the cluster update functionality.
 
-It is also important to mention, that due to security reasons, the CSR needs to be approved manually with the commands
+It is also important to mention, that CSRs may need to be approved manually with the commands
 
 ```bash
 kubectl get csr
 kubectl certificate approve <CSR>
 ```
 
-in order to complete a certificate rotation.
+in order to complete a certificate rotation. This is most likely dependent on the K8s cluster solution in use.
+`kubectl get csr` allows to check, if this is the case; a `Pending` CSR would need to be approved.
+
+```bash
+NAME        AGE     SIGNERNAME                        REQUESTOR                      CONDITION
+csr-9wvgt   112s    kubernetes.io/kubelet-serving     system:node:worker-1           Pending
+```
 
 Another option to approve the CSRs would be to use a third-party controller that automates the process. One example for
 this would be the [kubelet csr approver](https://github.com/postfinance/kubelet-csr-approver), which can be deployed on
