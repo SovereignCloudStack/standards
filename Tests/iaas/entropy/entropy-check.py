@@ -190,7 +190,7 @@ class TestEnvironment:
             )
             external_gateway_net_id = \
                 "585ec5ec-5993-4042-93b9-264b0d82ac8e"
-                # "ebfe5546-f09f-4f42-ab54-094e457d42ec"
+            #   "ebfe5546-f09f-4f42-ab54-094e457d42ec"
             self.router = self.conn.create_router(
                 ROUTER_NAME, ext_gateway_net_id=external_gateway_net_id,
             )
@@ -225,7 +225,7 @@ class TestEnvironment:
             try:
                 self.conn.remove_router_interface(self.router, subnet_id=self.subnet.id)
             except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
-                logger.debug(f"Router interface couldn't be deleted.", exc_info=True)
+                logger.debug("Router interface couldn't be deleted.", exc_info=True)
             try:
                 self.conn.delete_router(self.router.id)
             except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
