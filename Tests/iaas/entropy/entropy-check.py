@@ -188,9 +188,16 @@ class TestEnvironment:
                 }],
                 dns_nameservers=["9.9.9.9"],
             )
-            external_gateway_net_id = \
-                "585ec5ec-5993-4042-93b9-264b0d82ac8e"
-            #   "ebfe5546-f09f-4f42-ab54-094e457d42ec"
+            external_networks = list(self.conn.network.networks(is_router_external=True))
+            if not external_networks:
+                raise RuntimeError("No external network found!")
+            if len(external_networks) > 1:
+                logger.debug(
+                    "More than one external network found: "
+                    + ', '.join([n.id for n in external_networks])  # noqa: W503
+                )
+            external_gateway_net_id = external_networks[0].id
+            logger.debug(f"Using external network {external_gateway_net_id}.")
             self.router = self.conn.create_router(
                 ROUTER_NAME, ext_gateway_net_id=external_gateway_net_id,
             )
