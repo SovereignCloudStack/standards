@@ -7,7 +7,7 @@ track:  IaaS
 
 ## Introduction
 
-Volume Types are used to classify volumes and provide a basic decision for what kind of volume should be created. These volume types can sometimes be very backend-specific and it might be hard for a user to choose the most suitable volume type, if there is more than one default type.
+Volume Types are used to classify volumes and provide a basic decision for what kind of volume should be created. These volume types can sometimes be very backend-specific and it might be hard for a user to choose the most suitable volume type, if there is more than one type.
 
 ### Glossary
 
@@ -20,13 +20,13 @@ The following special terms are used throughout this standard document:
 
 ## Motivation
 
-We want to standardize a few varieties of volume types. While a user can choose simple things like size when creating a volume, Volume Types define a few broader aspects of a volume. Encryption of volumes for example is solely decided by the volume type. While the option with which the volume will be replicated is a mix between definition in the volume type and backend specific configuration, but it's visibility can only be reached in the volume type. In the following part, we want to state, which varieties of volume types are REQUIRED, RECOMMENDED or only OPTIONAL within an SCS-compatible deployment.
+We want to standardize a few varieties of volume types. While a user can choose simple things like size when creating a volume, Volume Types define a few broader aspects of a volume. Encryption of volumes for example is solely decided by the volume type. While the option with which the volume will be replicated is a mix between definition in the volume type and backend specific configuration, but it's visibility can only be reached in the volume type. In the following part, we want to state, which varieties of volume types are REQUIRED, RECOMMENDED or only OPTIONAL within a SCS-compatible deployment.
 
 ## Design Considerations
 
 All Considerations can be looked up in detail in the [Decision Record for the Volume Type Standard.](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0111-v1-volume-type-decisions.md)
 
-To test whether a deployment has volume types with certain aspects, the discoverability of the parameters in the volume type has to be given. The following table shows, which aspects are considered in this standard. Furthermore the table shows, according to the current upstream implementation, whether the feature is discoverable, and who can discover this. The comments state what can be done to help with the discoverability and other important restrictions. The last column says how the standard is handled, which is currently through the addition of a standardized phrase at the beginning of the description of a volume type.
+To test whether a deployment has volume types with certain aspects, the discoverability of the parameters in the volume type has to be given. The following table shows, which aspects are considered in this standard. Furthermore the table shows, according to the current upstream implementation, whether the feature is discoverable, and who can discover this. The comments state what can be done to help with the discoverability and other important restrictions. The last column says how this standard is handled, which is currently through the addition of a standardized phrase at the beginning of the description of a volume type.
 
 | Aspect | Part of Standard | Discoverability | comments | concluded standardized description |
 | ---- | ---- | ---- | ---- | ------ |
@@ -38,10 +38,10 @@ To test whether a deployment has volume types with certain aspects, the discover
 | Volume QoS | **Optional** | admin only | depends on the admin only volume qos object | - |
 | Backend name | no | - | - | - |
 
-In addition it is possible to use multiple of those aspects within one volume type. SCS will only ever look, if there is a volume type that has an aspect, but they don't have to be different volume types.
+In addition it is possible to use multiple of those aspects within one volume type. SCS will only ever look, if there is a volume type that has an aspect, but there don't have to be different volume types.
 Example: one volume type that uses LUKS-encryption with a ceph storage with inherent replication would fulfill all recommendations of this standard.
 
-The current downside is that users without admin rights currently cannot see the recommended aspects. We want and need to change this in the OpenStack workflow through adding discoverable properties (e.g. "encrypted"="true" and "replicated"="true") that are also visible for users. This way we will be able to automatically check whether a volume type with encyrption and or replication is present. It should look like this example for encryption:
+The current downside is that users without admin rights currently cannot see the recommended aspects. To be able to automatically check whether a volume type with encyrption and or replication is present, an update or extension of the OpenStack workflow would be required. It should look like this example for encryption:
 
 ```text
 openstack volume type show LUKS
@@ -62,7 +62,7 @@ We want to find a way to also use the internal extra_spec for replication, when 
 
 ## DEFAULT volume types
 
-There is always a default volume type defined in an OpenStack deployment. The SCS does not have any requirements about this volume type at this moment, instead deployers are free to choose what fits best in their environment. Conversely, a cloud user can not expect any specific behavior or properties from default volume types.
+There is always a default volume type defined in an OpenStack deployment. This volume type is created in the setup of cinder and will always be present in any OpenStack deployments under the name `__default__`. The SCS does not have any requirements about this volume type at this moment, instead deployers are free to choose what fits best in their environment. Conversely, a cloud user can not expect any specific behavior or properties from volume types named `__default__`.
 
 The parameters of volume types described in this standard do not have to be applied to the chosen default volume type. And the SCS will not make any assumptions about parameters being present in the default volume type.
 
