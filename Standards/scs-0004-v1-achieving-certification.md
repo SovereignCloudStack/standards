@@ -27,7 +27,7 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
 
    For public clouds, it is recommended to offer the SCS project access to the infrastructure so the test suite runs can be triggered continuously by the SCS team.
 
-   Alternatively, and for non-public clouds, the results (log files) MUST be submitted to SCS by a mechanism of SCS' choice and need to be reproduced again on request by SCS.
+   Alternatively, and for non-public clouds, the results (log files) MUST be submitted to SCS (by a mechanism of SCS' choice) at least weekly, and they need to be reproduced again on request by SCS.
 
    <!-- Initially this will probably be eMail -->
 
