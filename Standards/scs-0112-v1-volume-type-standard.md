@@ -58,8 +58,6 @@ openstack volume type show LUKS
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
 
-We want to find a way to also use the internal extra_spec for replication, when the replication is automatically done by the backend. If this is not possible, we would like to introduce another property, which has to be set by the admin, when setting the volume type. Only after that we will have the possibility to automatically check for a volume type with replication.
-
 ## DEFAULT volume types
 
 There is always a default volume type defined in an OpenStack deployment. This volume type is created in the setup of cinder and will always be present in any OpenStack deployments under the name `__default__`. The SCS does not have any requirements about this volume type at this moment, instead deployers are free to choose what fits best in their environment. Conversely, a cloud user can not expect any specific behavior or properties from volume types named `__default__`.
@@ -195,7 +193,7 @@ A few backends enable providers to allow volumes to be attached to mulitple VMs 
 
 ### Volume QoS
 
-Quality of Service parameters for volumes can be defined in a volume qos object. While admins can use these qos objects directly on volumes, a user is not able to see such an object. Instead there can be ONE volume qos object associated to a volume type, which is then be used on all volumes created from that volume type. Through this indirection, volume types also working without these associated qos objects and this feature not being heavily used, the SCS standard will currently only view this as an OPTIONAL volume type feature.
+Quality of Service parameters for volumes can be defined in a `volume qos` object. This is an extra OpenStack ressource, that can be created by administrators having the admin role and are only visible to them. Those admins can directly use such a `volume qos` object to create a volume. To also let user roles benefit of these objects, administrators can associate a single `volume qos` object ot a volume type, which is then be used on all volumes created from that volume type. Through this indirection, volume types are also working without these associated QoS objects and this feature not being heavily used, the SCS standard will currently only view this as an OPTIONAL volume type feature.
 
 To make users aware that a volume type includes specific qos options, we recommend to write it into the description of a volume type, as any association to a volume qos object cannot be seen by normal users:
 
