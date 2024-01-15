@@ -1,5 +1,5 @@
 ---
-title: Robustness features for K8s clusters
+title: Robustness features for Kubernetes clusters
 type: Standard
 status: Draft
 track: KaaS
@@ -132,8 +132,8 @@ according to the documentation under [Kubeadm certs].
 
 A clusters certificates can be rotated by updating the cluster, which according to the Kubernetes documentation
 automatically renews the certificates.
-Another method would be the manual renewal, which can be done through multiple methods, depending on the K8s cluster
-used. An example for a K8s cluster set up with `kubeadm` would be to execute the command
+Another method would be the manual renewal, which can be done through multiple methods, depending on the Kubernetes cluster
+used. An example for a Kubernetes cluster set up with `kubeadm` would be to execute the command
 
 ```bash
 kubeadm certs renew all
@@ -150,7 +150,7 @@ kubectl get csr
 kubectl certificate approve <CSR>
 ```
 
-in order to complete a certificate rotation. This is most likely dependent on the K8s cluster solution in use.
+in order to complete a certificate rotation. This is most likely dependent on the Kubernetes cluster solution in use.
 `kubectl get csr` allows to check, if this is the case; a `Pending` CSR would need to be approved.
 
 ```bash
@@ -160,10 +160,10 @@ csr-9wvgt   112s    kubernetes.io/kubelet-serving     system:node:worker-1      
 
 Another option to approve the CSRs would be to use a third-party controller that automates the process. One example for
 this would be the [kubelet csr approver](https://github.com/postfinance/kubelet-csr-approver), which can be deployed on
-a K8s cluster and requires `serverTLSBootstrap` to be set to true. Other controllers with a similar functionality might
+a Kubernetes cluster and requires `serverTLSBootstrap` to be set to true. Other controllers with a similar functionality might
 have other specific requirements, which won't be explored in this document.
 
-Another problem is that the CA might expire. Unfortunately, not all K8s tools have functionality to renew these
+Another problem is that the CA might expire. Unfortunately, not all Kubernetes tools have functionality to renew these
 certificates with the help of commands. Instead, there is documentation for manually rotating the CA, which can be found
 under [Manual rotation of ca certificate](https://kubernetes.io/docs/tasks/tls/manual-rotation-of-ca-certificates/).
 
@@ -239,7 +239,7 @@ To achieve a complete certificate rotation, the parameters `serverTLSBootstrap` 
 MUST be set in the kubelet configuration.
 
 The certificates can be rotated by either updating the Kubernetes cluster, which automatically
-renews certificates, or by manually renewing them. How this is done is dependent on the used K8s cluster.
+renews certificates, or by manually renewing them. How this is done is dependent on the used Kubernetes cluster.
 
 It is also RECOMMENDED to renew the CA regularly to avoid an expiration of the CA.
 This standard doesn't set an exact timeline for a renewal, since it is dependent on lifetime and
