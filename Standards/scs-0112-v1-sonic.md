@@ -1,18 +1,11 @@
 ---
 title: SONiC Support in SCS
-type: Decision Record # Standard  | Decision Record | Procedural
+type: Decision Record
 status: Draft
-track: Global # Global | IaaS | Ops | KaaS | IAM
+track: Global
 description: |
   SCSS-0112 outlines architectural decisions in SCS in regards to SONiC support and integration.
 ---
-
-<!---
-This is a template striving to provide a starting point for
-creating a standard or decision record adhering to scs-0001.
-Replace at least all text which is _italic_.
-See https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0001-v1-sovereign-cloud-standards.md
---->
 
 ## Introduction
 
@@ -69,13 +62,13 @@ This option entails no dedicated effort on SCS's part in supporting SONiC networ
 
 ## Open questions
 
-State of SONiC community?
+### State of SONiC community?
 
-- community version: mature or not?
+**community version: mature or not?**
 
 Commits: between 40-52 per month. Contributors to master: 10-20. Mailing list: 6 lists, about 10-30 messages/month for list. Community version supports 25 hardware vendors. Requires significant time and resource investment and "Explorer's mindset".
 
-- enterprise version: mature or not?
+**enterprise version: mature or not?**
 
 Multiple vendor distributions. Expensive in general
 
