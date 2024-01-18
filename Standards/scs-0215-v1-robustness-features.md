@@ -156,8 +156,8 @@ This would also mean, that at least `kubeadm`-based clusters can be assumed to r
 since they would probably be updated within the time period described in the
 standard [SCS-0210-v2](https://github.com/SovereignCloudStack/standards/tree/main/Standards/scs-0210-v2-k8s-version-policy.md).
 
-If an automatic certificate rotation happens, these certificates need to be approved either manually or by a third party 
-controller like the [kubelet csr approver](https://github.com/postfinance/kubelet-csr-approver), which can be deployed on 
+If an automatic certificate rotation happens, these certificates need to be approved either manually or by a third party
+controller like the [kubelet csr approver](https://github.com/postfinance/kubelet-csr-approver), which can be deployed on
 a Kubernetes cluster to automate this process.
 
 A manual approval of these CSRs could be done with the commands
@@ -167,7 +167,7 @@ kubectl get csr
 kubectl certificate approve <CSR>
 ```
 
-in order to complete a certificate rotation. 
+in order to complete a certificate rotation.
 But it should be noted, that this is also most likely dependent on the Kubernetes cluster solution in use.
 
 `kubectl get csr` allows to check, if a CSR needs to be approved; a `Pending` CSR would need to be approved.
