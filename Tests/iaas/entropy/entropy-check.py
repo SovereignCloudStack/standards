@@ -30,6 +30,8 @@ import openstack.cloud
 
 logger = logging.getLogger(__name__)
 
+NETWORK_NAME = "scs-0101-net"
+ROUTER_NAME = "scs-0101-router"
 SERVER_NAME = "scs-0101-server"
 SECURITY_GROUP_NAME = "scs-0101-group"
 KEYPAIR_NAME = "scs-0101-keypair"
@@ -154,6 +156,9 @@ class TestEnvironment:
         self.conn = conn
         self.keypair = None
         self.keyfile = None
+        self.network = None
+        self.subnet = None
+        self.router = None
         self.sec_group = None
 
     def prepare(self):
@@ -169,6 +174,34 @@ class TestEnvironment:
             self.sec_group = self.conn.network.create_security_group(
                 name=SECURITY_GROUP_NAME
             )
+
+            # create network, subnet, router, connect everything
+            self.network = self.conn.create_network(NETWORK_NAME)
+            self.subnet = self.conn.create_subnet(
+                self.network.id,
+                cidr="10.1.0.0/24",
+                gateway_ip="10.1.0.1",
+                enable_dhcp=True,
+                allocation_pools=[{
+                    "start": "10.1.0.100",
+                    "end": "10.1.0.200",
+                }],
+                dns_nameservers=["9.9.9.9"],
+            )
+            external_networks = list(self.conn.network.networks(is_router_external=True))
+            if not external_networks:
+                raise RuntimeError("No external network found!")
+            if len(external_networks) > 1:
+                logger.debug(
+                    "More than one external network found: "
+                    + ', '.join([n.id for n in external_networks])  # noqa: W503
+                )
+            external_gateway_net_id = external_networks[0].id
+            logger.debug(f"Using external network {external_gateway_net_id}.")
+            self.router = self.conn.create_router(
+                ROUTER_NAME, ext_gateway_net_id=external_gateway_net_id,
+            )
+            self.conn.add_router_interface(self.router, subnet_id=self.subnet.id)
 
             _ = self.conn.network.create_security_group_rule(
                 security_group_id=self.sec_group.id,
@@ -195,26 +228,48 @@ class TestEnvironment:
             raise
 
     def clean(self):
-        # do it in reverse order here so we can bail as soon as we encounter None
-        if self.sec_group is None:
-            return
-        try:
-            _ = self.conn.network.delete_security_group(self.sec_group)
-        except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
-            logger.debug(f"The security group {self.sec_group.name} couldn't be deleted.", exc_info=True)
+        if self.router is not None:
+            try:
+                self.conn.remove_router_interface(self.router, subnet_id=self.subnet.id)
+            except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
+                logger.debug("Router interface couldn't be deleted.", exc_info=True)
+            try:
+                self.conn.delete_router(self.router.id)
+            except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
+                logger.debug(f"The router {self.router.id} couldn't be deleted.", exc_info=True)
+            self.router = None
 
-        if self.keyfile is None:
-            return
-        self.keyfile.close()
-        self.keyfile = None
+        if self.subnet is not None:
+            try:
+                self.conn.delete_subnet(self.subnet.id)
+            except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
+                logger.debug(f"The network {self.subnet.id} couldn't be deleted.", exc_info=True)
+            self.subnet = None
 
-        if self.keypair is None:
-            return
-        try:
-            _ = self.conn.compute.delete_keypair(self.keypair)
-        except openstack.cloud.OpenStackCloudException:
-            logger.debug(f"The keypair '{self.keypair.name}' couldn't be deleted.")
-        self.keypair = None
+        if self.network is not None:
+            try:
+                self.conn.delete_network(self.network.id)
+            except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
+                logger.debug(f"The network {self.network.name} couldn't be deleted.", exc_info=True)
+            self.network = None
+
+        if self.sec_group is not None:
+            try:
+                _ = self.conn.network.delete_security_group(self.sec_group)
+            except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
+                logger.debug(f"The security group {self.sec_group.name} couldn't be deleted.", exc_info=True)
+            self.sec_group = None
+
+        if self.keyfile is not None:
+            self.keyfile.close()
+            self.keyfile = None
+
+        if self.keypair is not None:
+            try:
+                _ = self.conn.compute.delete_keypair(self.keypair)
+            except openstack.cloud.OpenStackCloudException:
+                logger.debug(f"The keypair '{self.keypair.name}' couldn't be deleted.")
+            self.keypair = None
 
     def __enter__(self):
         self.prepare()
@@ -243,7 +298,7 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
     # the previously created keys and security group
     logger.debug(f"Creating instance of image '{image.name}' using flavor '{flavor.name}'")
     server = env.conn.create_server(
-        server_name, image=image, flavor=flavor, key_name=env.keypair.name,
+        server_name, image=image, flavor=flavor, key_name=env.keypair.name, network=env.network,
         security_groups=[env.sec_group.id], wait=True, timeout=360, auto_ip=True,
     )
     logger.debug(f"Server '{server_name}' ('{server.id}') has been created")
@@ -255,10 +310,12 @@ def delete_vm(conn, server_name=SERVER_NAME):
     try:
         _ = conn.delete_server(server_name, delete_ips=True, timeout=300, wait=True)
     except openstack.cloud.OpenStackCloudException:
-        logger.debug(f"The server '{server_name}' couldn't be deleted.")
+        logger.debug(f"The server '{server_name}' couldn't be deleted.", exc_info=True)
 
 
 def retry(func, exc_type, timeouts=(8, 7, 15, 10)):
+    if isinstance(exc_type, str):
+        exc_type = exc_type.split(',')
     timeout_iter = iter(timeouts)
     # do an initial sleep because func is known fail at first anyway
     time.sleep(next(timeout_iter))
@@ -267,7 +324,7 @@ def retry(func, exc_type, timeouts=(8, 7, 15, 10)):
             func()
         except Exception as e:
             timeout = next(timeout_iter, None)
-            if timeout is None or e.__class__.__name__ != exc_type:
+            if timeout is None or e.__class__.__name__ not in exc_type:
                 raise
             # logger.debug(f"Caught {e!r} while {func!r}; waiting {timeout} s before retry")
             time.sleep(timeout)
@@ -358,7 +415,7 @@ def main(argv):
                             connect_kwargs={"key_filename": env.keyfile.name},
                         ) as fconn:
                             # need to retry because it takes time for sshd to come up
-                            retry(fconn.open, exc_type="NoValidConnectionsError")
+                            retry(fconn.open, exc_type="NoValidConnectionsError,TimeoutError")
                             check_vm_recommends(fconn, image, server.flavor)
                             check_vm_requirements(fconn, image.name)
                     finally:
