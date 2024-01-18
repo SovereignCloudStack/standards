@@ -17,10 +17,10 @@ the SCS standards. These would harden the cluster infrastructure against several
 
 The following special terms are used throughout this standard document:
 
-| Term                        | Meaning                                                        |
-|-----------------------------|----------------------------------------------------------------|
-| Certificate Authority       | Trusted organization that issues digital certificates entities |
-| Certificate Signing Request | Request in order to apply for a digital identity certificate   |
+| Term                        | Abbreviation | Meaning                                                        |
+|-----------------------------|--------------|----------------------------------------------------------------|
+| Certificate Authority       | CA           | Trusted organization that issues digital certificates entities |
+| Certificate Signing Request | CSR          | Request in order to apply for a digital identity certificate   |
 
 ## Motivation
 
@@ -124,48 +124,58 @@ In order to secure the communication of a Kubernetes cluster, (TLS) certificates
 Certificate Authority (CA) can be used.
 Normally, these certificates expire after a set period of time. In order to avoid expiration and failure of a cluster,
 these certificates need to be rotated regularly and at best automatically.
-It is important to either set `--rotate-server-certificates` as a command line parameter or set `rotateCertificates: true`
-in the kubelet config or the `kubeletExtraArgs` of the cluster-template.yaml file. This activates the rotation of the
-kubelet server certificate. Another recommendation is to set `serverTLSBootstrap: true`, which also enables the request
-and rotation of the certificate for the kubelet by requesting them from `certificates.k8s.io`
-according to the documentation under [Kubeadm certs].
+Certificates can either be rotated manually (a reference for manually working with certificates can be found
+[here](https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/79a3f79b27bd28f82f071bb877a266c2e62ee506/docs/04-certificate-authority.md))
+or automatically, which requires other things to care about in a deployment.
 
-A clusters certificates can be rotated by updating the cluster, which according to the Kubernetes documentation
-automatically renews the certificates.
-Another method would be the manual renewal, which can be done through multiple methods, depending on the Kubernetes cluster
-used. An example for a Kubernetes cluster set up with `kubeadm` would be to execute the command
+Some tools or clusters provide possibilities to rotate certificates manually.
+For example, `kubeadm` and `k3s` provides the following commands
 
 ```bash
+# kubeadm
 kubeadm certs renew all
+
+# k3s
+k3s certificate rotate
 ```
 
-Since clusters conformant with the SCS standards would probably be updated within the time period described in the
-standard [SCS-0210-v2](https://github.com/SovereignCloudStack/standards/tree/main/Standards/scs-0210-v2-k8s-version-policy.md),
-this rotation can probably be assumed to happen, because of the cluster update functionality.
+A CA might also expire. Unfortunately, not all Kubernetes tools have functionality to renew these certificates.
+Instead, documentation is provided to manually rotating a CA ([Manual rotation of ca certificate]).
 
-It is also important to mention, that CSRs may need to be approved manually with the commands
+#### Automatic certificate rotation
+
+kubelet can be configured to obtain properly signed certificates from the `certificates.k8s.io` API of Kubernetes.
+To do this, set `serverTLSBootstrap: true` in the configuration file of kubelet, which enables both the certificate request
+during bootstrapping and the rotation mechanism. Setting `rotateCertificates: true` only enables the certificate rotation [Kubeadm certs].
+`--rotate-certificates` or `--rotate-server-certificates` shouldn't be used as command line arguments to set these flags,
+since both parameters are deprecated according to [Certificate rotation].
+
+It is also important to note that some Kubernetes clusters or admin tools provide additional ways to rotate certificates.
+For example, `kubeadm` automatically rotates certificates, if the cluster is updated with the tool (see [Automatic Certificate renewal]).
+This would also mean, that at least `kubeadm`-based clusters can be assumed to rotate their certificates regularly,
+since they would probably be updated within the time period described in the
+standard [SCS-0210-v2](https://github.com/SovereignCloudStack/standards/tree/main/Standards/scs-0210-v2-k8s-version-policy.md).
+
+If an automatic certificate rotation happens, these certificates need to be approved either manually or by a third party 
+controller like the [kubelet csr approver](https://github.com/postfinance/kubelet-csr-approver), which can be deployed on 
+a Kubernetes cluster to automate this process.
+
+A manual approval of these CSRs could be done with the commands
 
 ```bash
 kubectl get csr
 kubectl certificate approve <CSR>
 ```
 
-in order to complete a certificate rotation. This is most likely dependent on the Kubernetes cluster solution in use.
-`kubectl get csr` allows to check, if this is the case; a `Pending` CSR would need to be approved.
+in order to complete a certificate rotation. 
+But it should be noted, that this is also most likely dependent on the Kubernetes cluster solution in use.
+
+`kubectl get csr` allows to check, if a CSR needs to be approved; a `Pending` CSR would need to be approved.
 
 ```bash
 NAME        AGE     SIGNERNAME                        REQUESTOR                      CONDITION
 csr-9wvgt   112s    kubernetes.io/kubelet-serving     system:node:worker-1           Pending
 ```
-
-Another option to approve the CSRs would be to use a third-party controller that automates the process. One example for
-this would be the [kubelet csr approver](https://github.com/postfinance/kubelet-csr-approver), which can be deployed on
-a Kubernetes cluster and requires `serverTLSBootstrap` to be set to true. Other controllers with a similar functionality might
-have other specific requirements, which won't be explored in this document.
-
-Another problem is that the CA might expire. Unfortunately, not all Kubernetes tools have functionality to renew these
-certificates with the help of commands. Instead, there is documentation for manually rotating the CA, which can be found
-under [Manual rotation of ca certificate](https://kubernetes.io/docs/tasks/tls/manual-rotation-of-ca-certificates/).
 
 Further information and examples can be found in the Kubernetes documentation:
 [Kubeadm certs](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/)
@@ -235,11 +245,6 @@ How this is done is up to the operator.
 It should be avoided, that certificates expire either on the whole cluster or for single components.
 To avoid this scenario, certificates MUST be rotated regularly; in the
 case of SCS, we REQUIRE at least a yearly certificate rotation.
-To achieve a complete certificate rotation, the parameters `serverTLSBootstrap` and `rotateCertificates`
-MUST be set in the kubelet configuration.
-
-The certificates can be rotated by either updating the Kubernetes cluster, which automatically
-renews certificates, or by manually renewing them. How this is done is dependent on the used Kubernetes cluster.
 
 It is also RECOMMENDED to renew the CA regularly to avoid an expiration of the CA.
 This standard doesn't set an exact timeline for a renewal, since it is dependent on lifetime and
@@ -254,6 +259,9 @@ therefore expiration date of the CA in question.
 [Upgrade etcd](https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/)
 [Kubeadm certs](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/)
 [Kubelet TLS bootstrapping](https://kubernetes.io/docs/reference/access-authn-authz/kubelet-tls-bootstrapping/)
+[Certificate rotation](https://kubernetes.io/docs/reference/access-authn-authz/kubelet-tls-bootstrapping/#certificate-rotation)
+[Manual rotation of ca certificate](https://kubernetes.io/docs/tasks/tls/manual-rotation-of-ca-certificates/)
+[Automatic Certificate renewal](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/#automatic-certificate-renewal)
 
 ## Conformance Tests
 
