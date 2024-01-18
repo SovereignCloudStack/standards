@@ -34,14 +34,8 @@
     run: playbooks/compliance_check.yaml
 - job:
     name: scs-check-gx-scs-main
+    parent: scs-check-gx-scs
     branches: main
-    parent: base
-    secrets:
-     - name: clouds_conf
-       secret: SECRET_STANDARDS
-    vars:
-      cloud: gx-scs
-    run: playbooks/compliance_check.yaml
 - job:
     name: scs-check-pco-prod3
     parent: scs-check-gx-scs-main
