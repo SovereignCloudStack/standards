@@ -12,7 +12,7 @@
         - scs-check-wavestack
     periodic-hourly:
       jobs:
-        - scs-check-gx-scs
+        - scs-check-gx-scs-main
     post:
       jobs:
         - scs-check-gx-scs
@@ -33,27 +33,37 @@
       cloud: gx-scs
     run: playbooks/compliance_check.yaml
 - job:
+    name: scs-check-gx-scs-main
+    branches: main
+    parent: base
+    secrets:
+     - name: clouds_conf
+       secret: SECRET_STANDARDS
+    vars:
+      cloud: gx-scs
+    run: playbooks/compliance_check.yaml
+- job:
     name: scs-check-pco-prod3
-    parent: scs-check-gx-scs
+    parent: scs-check-gx-scs-main
     vars:
       cloud: pco-prod3
 - job:
     name: scs-check-pco-prod2
-    parent: scs-check-gx-scs
+    parent: scs-check-gx-scs-main
     vars:
       cloud: pco-prod2
 - job:
     name: scs-check-pco-prod1
-    parent: scs-check-gx-scs
+    parent: scs-check-gx-scs-main
     vars:
       cloud: pco-prod1
 - job:
     name: scs-check-regio-a
-    parent: scs-check-gx-scs
+    parent: scs-check-gx-scs-main
     vars:
       cloud: regio-a
 - job:
     name: scs-check-wavestack
-    parent: scs-check-gx-scs
+    parent: scs-check-gx-scs-main
     vars:
       cloud: wavestack
