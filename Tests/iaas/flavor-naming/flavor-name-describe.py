@@ -13,6 +13,10 @@ License: CC-BY-SA 4.0
 
 import sys
 
+import flavor_name_check
+
+fnmck = flavor_name_check.CompatLayer()
+
 
 def collectattrs(alist, new):
     "collect list of attitbutes"
@@ -23,73 +27,67 @@ def collectattrs(alist, new):
     return alist
 
 
-def tbl_out(item, kind, check = False):
-    "Look up table value (attach space), skip if entry is 0 or empty string and check is set"
-    val = item.__getattribute__(kind)
+def tbl_out(item, kind, check=False):
+    """Look up table value (attach space), skip if entry is 0 or empty string and check is set"""
+    val = getattr(item, kind)
     if check and not val:
         return ""
     try:
-        return item.__getattribute__("tbl_"+kind)[val] + " "
+        return getattr(item.__class__, kind).get_tbl(item)[val] + " "
     except KeyError:
         return str(val) + " "
 
 
-def prettyname(item_list, prefix=""):
-    "Output a human-readable flavor description"
-    cpu, disk, hype, hvirt, cpubrand, gpu, ibd = item_list
+def prettyname(flavorname, prefix=""):
+    """Output a human-readable flavor description"""
     # CPU (number, type, attributes)
-    stg = f"{prefix}SCS flavor with {cpu.cpus} "
-    if cpubrand.parsed:
-        stg += tbl_out(cpubrand, "perf", True)
-        stg += tbl_out(cpubrand, "cpuvendor")
-        stg += tbl_out(cpubrand, "cpugen", True)
+    stg = f"{prefix}SCS flavor with {flavorname.cpuram.cpus} "
+    if flavorname.cpubrand:
+        stg += tbl_out(flavorname.cpubrand, "perf", True)
+        stg += tbl_out(flavorname.cpubrand, "cpuvendor")
+        stg += tbl_out(flavorname.cpubrand, "cpugen", True)
     else:
         stg += "generic x86-64 "
-    stg += tbl_out(cpu, "cputype")
-    if cpu.cpuinsecure:
+    stg += tbl_out(flavorname.cpuram, "cputype")
+    if flavorname.cpuram.cpuinsecure:
         stg += "(insecure) "
     # RAM (amount, attributes)
-    stg += f"with {cpu.ram} GiB RAM "
+    stg += f"with {flavorname.cpuram.ram} GiB RAM "
     alist = ""
-    if cpu.raminsecure:
+    if flavorname.cpuram.raminsecure:
         alist = collectattrs(alist, "noECC")
-    if cpu.ramoversubscribed:
+    if flavorname.cpuram.ramoversubscribed:
         alist = collectattrs(alist, "oversubscribed")
     if alist:
         stg += f"({alist}) "
     # Hypervisor, HVirt
-    if hype.parsed:
-        stg += f'on {tbl_out(hype, "hype")}'
-    if hvirt.parsed:
+    if flavorname.hype:
+        stg += f'on {tbl_out(flavorname.hype, "hype")}'
+    if flavorname.hwvirt:
         stg += 'with HW virt '
     # Disk
-    if disk.parsed:
+    if flavorname.disk:
         stg += "and "
-        stg += tbl_out(disk, "disktype", True)
-        if disk.nrdisks != 1:
-            stg += f'{disk.nrdisks}x'
-        stg += f'{disk.disksize}GB root volume '
+        stg += tbl_out(flavorname.disk, "disktype", True)
+        if flavorname.disk.nrdisks != 1:
+            stg += f'{flavorname.disk.nrdisks}x'
+        stg += f'{flavorname.disk.disksize}GB root volume '
     # GPU
-    if gpu.parsed:
-        stg += "and " + tbl_out(gpu, "gputype")
-        stg += tbl_out(gpu, "brand")
-        stg += tbl_out(gpu, "perf", True)
-        try:
-            stg += gpu.__getattribute__(f"tbl_brand_{gpu.brand}_gen")[gpu.gen] + " "
-        except KeyError:
-            pass
-        if hasattr(gpu, "cu") and gpu.cu:
-            stg += f"(w/ {gpu.cu} CU/EU/SM) "
+    if flavorname.gpu:
+        stg += "and " + tbl_out(flavorname.gpu, "gputype")
+        stg += tbl_out(flavorname.gpu, "brand")
+        stg += tbl_out(flavorname.gpu, "perf", True)
+        stg += tbl_out(flavorname.gpu, "gen", True)
+        if flavorname.gpu.cu is not None:
+            stg += f"(w/ {flavorname.gpu.cu} CU/EU/SM) "
     # IB
-    if ibd.parsed:
+    if flavorname.ib:
         stg += "and Infiniband "
     return stg[:-1]
 
 
 def main(argv):
     "Entry point for testing"
-    import importlib
-    fnmck = importlib.import_module("flavor-name-check")
     for nm in argv:
         ret = fnmck.parsename(nm)
         if ret:

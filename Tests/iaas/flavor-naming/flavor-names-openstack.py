@@ -19,10 +19,12 @@ SPDX-License-Identifier: CC-BY-SA 4.0
 import os
 import sys
 import getopt
-import importlib
 import yaml
 import openstack
-fnmck = importlib.import_module("flavor-name-check")
+
+import flavor_name_check
+
+fnmck = flavor_name_check.CompatLayer()
 
 
 def usage(rcode=1):
@@ -47,6 +49,7 @@ def main(argv):
     verbose = False
     quiet = False
     v3mode = False
+    accept_old_mand = False
     scsMandFile = fnmck.mandFlavorFile
 
     try:
@@ -75,7 +78,7 @@ def main(argv):
         elif opt[0] == "-1" or opt[0] == "--v1prefer":
             fnmck.prefer_old = True
         elif opt[0] == "-o" or opt[0] == "--accept-old-mandatory":
-            fnmck.accept_old_mand = True
+            accept_old_mand = True
         elif opt[0] == "-v" or opt[0] == "--verbose":
             verbose = True
             # fnmck.verbose = True
@@ -88,7 +91,7 @@ def main(argv):
         print(f"CRITICAL: Extra arguments {str(args)}", file=sys.stderr)
         usage(1)
 
-    scsMandatory, scsRecommended = fnmck.readflavors(scsMandFile, v3mode, fnmck.prefer_old)
+    scsMandatory, scsRecommended = fnmck.readflavors(scsMandFile, v3mode)
 
     if not cloud:
         print("CRITICAL: You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
@@ -112,83 +115,82 @@ def main(argv):
         try:
             ret = fnmck.parsename(flv.name)
             assert ret
-            # We have a successfully parsed SCS- name now
-            # See if the OpenStack provided data fulfills what we
-            # expect from the flavor based on its name
-            err = 0
-            warn = 0
-            # Split list for readability
-            cpuram = ret[0]
-            disk = ret[1]
-            # next qwould be hype, hwvirt, cpubrand, gpu, ib
-            # see flavor-name-check.py: parsename()
-            # vCPUS
-            if flv.vcpus < cpuram.cpus:
-                print(f"ERROR: Flavor {flv.name} has only {flv.vcpus} vCPUs, "
-                      f"should have >= {cpuram.cpus}", file=sys.stderr)
-                err += 1
-            elif flv.vcpus > cpuram.cpus:
-                print(f"WARNING: Flavor {flv.name} has {flv.vcpus} vCPUs, "
-                      f"only needs {cpuram.cpus}", file=sys.stderr)
-                warn += 1
-            # RAM
-            flvram = int((flv.ram + 51) / 102.4) / 10
-            # Warn for strange sizes (want integer numbers, half allowed for < 10GiB)
-            if flvram >= 10 and flvram != int(flvram) or flvram * 2 != int(flvram * 2):
-                print(f"WARNING: Flavor {flv.name} uses discouraged uneven size "
-                      f"of memory {flvram:%.1f} GiB", file=sys.stderr)
-            if flvram < cpuram.ram:
-                print(f"ERROR: Flavor {flv.name} has only {flvram:.1f} GiB RAM, "
-                      f"should have >= {cpuram.ram:.1f} GiB", file=sys.stderr)
-                err += 1
-            elif flvram > cpuram.ram:
-                print(f"WARNING: Flavor {flv.name} has {flvram:.1f} GiB RAM, "
-                      f"only needs {cpuram.ram:.1f} GiB", file=sys.stderr)
-                warn += 1
-            # DISK
-            accdisk = (0, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000)
-            # Disk could have been omitted
-            if not disk.parsed:
-                disk.disksize = 0
-            # We have a recommendation for disk size steps
-            if disk.disksize not in accdisk:
-                print(f"WARNING: Flavor {flv.name} advertizes disk size {disk.disksize}, "
-                      f"should have (5, 10, 20, 50, 100, 200, ...)", file=sys.stderr)
-                warn += 1
-            if flv.disk < disk.disksize:
-                print(f"ERROR: Flavor {flv.name} has only {flv.disk} GB root disk, "
-                      f"should have >= {disk.disksize} GB", file=sys.stderr)
-                err += 1
-            elif flv.disk > disk.disksize:
-                print(f"WARNING: Flavor {flv.name} has {flv.disk} GB root disk, "
-                      f"only needs {disk.disksize} GB", file=sys.stderr)
-                warn += 1
-            # Ev'thing checked, react to errors by putting the bad flavors in the bad bucket
-            if err:
-                wrongFlv.append(flv.name)
-                errors += 1
-            else:
-                if flv.name in scsMandatory:
-                    scsMandatory.remove(flv.name)
-                    MSCSFlv.append(flv.name)
-                elif flv.name in scsRecommended:
-                    scsRecommended.remove(flv.name)
-                    RSCSFlv.append(flv.name)
-                elif fnmck.accept_old_mand and fnmck.old_to_new(flv.name) in scsMandatory:
-                    scsMandatory.remove(fnmck.old_to_new(flv.name))
-                    MSCSFlv.append(flv.name)   # fnmck.old_to_new(flv.name)
-                elif fnmck.accept_old_mand and fnmck.old_to_new(flv.name) in scsRecommended:
-                    scsRecommended.remove(fnmck.old_to_new(flv.name))
-                    RSCSFlv.append(flv.name)   # fnmck.old_to_new(flv.name)
-                else:
-                    SCSFlv.append(flv.name)
-                if warn:
-                    warnFlv.append(flv.name)
         # Parser error
-        except NameError as exc:
+        except ValueError as exc:
             errors += 1
             wrongFlv.append(flv.name)
             print(f"ERROR: Wrong flavor \"{flv.name}\": {exc}", file=sys.stderr)
+            continue
+        # We have a successfully parsed SCS- name now
+        # See if the OpenStack provided data fulfills what we
+        # expect from the flavor based on its name
+        err = 0
+        warn = 0
+        # Split list for readability
+        cpuram = ret.cpuram
+        # next qwould be hype, hwvirt, cpubrand, gpu, ib
+        # see flavor-name-check.py: parsename()
+        # vCPUS
+        if flv.vcpus < cpuram.cpus:
+            print(f"ERROR: Flavor {flv.name} has only {flv.vcpus} vCPUs, "
+                  f"should have >= {cpuram.cpus}", file=sys.stderr)
+            err += 1
+        elif flv.vcpus > cpuram.cpus:
+            print(f"WARNING: Flavor {flv.name} has {flv.vcpus} vCPUs, "
+                  f"only needs {cpuram.cpus}", file=sys.stderr)
+            warn += 1
+        # RAM
+        flvram = int((flv.ram + 51) / 102.4) / 10
+        # Warn for strange sizes (want integer numbers, half allowed for < 10GiB)
+        if flvram >= 10 and flvram != int(flvram) or flvram * 2 != int(flvram * 2):
+            print(f"WARNING: Flavor {flv.name} uses discouraged uneven size "
+                  f"of memory {flvram:%.1f} GiB", file=sys.stderr)
+        if flvram < cpuram.ram:
+            print(f"ERROR: Flavor {flv.name} has only {flvram:.1f} GiB RAM, "
+                  f"should have >= {cpuram.ram:.1f} GiB", file=sys.stderr)
+            err += 1
+        elif flvram > cpuram.ram:
+            print(f"WARNING: Flavor {flv.name} has {flvram:.1f} GiB RAM, "
+                  f"only needs {cpuram.ram:.1f} GiB", file=sys.stderr)
+            warn += 1
+        # DISK
+        accdisk = (0, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000)
+        # Disk could have been omitted
+        disksize = ret.disk.disksize if ret.disk else 0
+        # We have a recommendation for disk size steps
+        if disksize not in accdisk:
+            print(f"WARNING: Flavor {flv.name} advertizes disk size {disksize}, "
+                  f"should have (5, 10, 20, 50, 100, 200, ...)", file=sys.stderr)
+            warn += 1
+        if flv.disk < disksize:
+            print(f"ERROR: Flavor {flv.name} has only {flv.disk} GB root disk, "
+                  f"should have >= {disksize} GB", file=sys.stderr)
+            err += 1
+        elif flv.disk > disksize:
+            print(f"WARNING: Flavor {flv.name} has {flv.disk} GB root disk, "
+                  f"only needs {disksize} GB", file=sys.stderr)
+            warn += 1
+        # Ev'thing checked, react to errors by putting the bad flavors in the bad bucket
+        if err:
+            wrongFlv.append(flv.name)
+            errors += 1
+        else:
+            if flv.name in scsMandatory:
+                scsMandatory.remove(flv.name)
+                MSCSFlv.append(flv.name)
+            elif flv.name in scsRecommended:
+                scsRecommended.remove(flv.name)
+                RSCSFlv.append(flv.name)
+            elif accept_old_mand and fnmck.old_to_new(flv.name) in scsMandatory:
+                scsMandatory.remove(fnmck.old_to_new(flv.name))
+                MSCSFlv.append(flv.name)   # fnmck.old_to_new(flv.name)
+            elif accept_old_mand and fnmck.old_to_new(flv.name) in scsRecommended:
+                scsRecommended.remove(fnmck.old_to_new(flv.name))
+                RSCSFlv.append(flv.name)   # fnmck.old_to_new(flv.name)
+            else:
+                SCSFlv.append(flv.name)
+            if warn:
+                warnFlv.append(flv.name)
     # This makes the output more readable
     MSCSFlv.sort()
     RSCSFlv.sort()
