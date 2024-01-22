@@ -18,7 +18,7 @@ This is a list of clouds that we test on a nightly basis against our `scs-compat
 
 ## SCS standards overview
 
-Standards are organized as certification levels according to [SCS-0003-v1](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0003-v1-sovereign-cloud-standards-yaml.md). We currently maintain one certification level `scs-compatible` that is described here: [Tests/scs-compatible-iaas.yaml](Tests/scs-compatible.yaml).
+Standards are organized as certification levels according to [SCS-0003-v1](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0003-v1-sovereign-cloud-standards-yaml.md). We currently maintain one certification level `scs-compatible` that is described here: [Tests/scs-compatible-iaas.yaml](Tests/scs-compatible-iaas.yaml).
 
 More certification levels will follow as the project progresses.
 
