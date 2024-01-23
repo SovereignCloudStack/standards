@@ -13,6 +13,7 @@ In addition we check consistency by looking at the information
 provided by openstack, such as the number of vCPUs and memory.
 
 (c) Kurt Garloff <garloff@osb-alliance.com>, 12/2022
+(c) Matthias Büchse <matthias.buechse@cloudandheat.com>, 1/2024
 SPDX-License-Identifier: CC-BY-SA 4.0
 """
 
@@ -23,8 +24,6 @@ import yaml
 import openstack
 
 import flavor_name_check
-
-fnmck = flavor_name_check.CompatLayer()
 
 
 def usage(rcode=1):
@@ -44,10 +43,9 @@ def usage(rcode=1):
 
 
 def main(argv):
-    "Entry point -- main loop going over flavors"
+    """Entry point -- main loop going over flavors"""
+    fnmck = flavor_name_check.CompatLayer()
     cloud = None
-    verbose = False
-    quiet = False
     v3mode = False
     accept_old_mand = False
     scsMandFile = fnmck.mandFlavorFile

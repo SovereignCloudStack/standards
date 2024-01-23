@@ -4,22 +4,6 @@
 """Flavor naming checker
 https://github.com/SovereignCloudStack/standards/Test/iaas/flavor-naming/
 
-Return codes:
-0: Matching
-1: No SCS flavor
-10-19: Error in CPU:Ram spec
-20-29: Error in Disk spec
-30-39: Error in Hype spec
-40-49: Error in optional -hwv support
-50-59: Error in optional specific CPU description
-60-69: Error in optional GPU spec
-70-79: Unknown extension
-
-When checking a list of flavors for completeness with respect
-to mandatory flavors, we disregard non-scs flavors (code 1 above)
-and only report the number of missing flavors or -- if none was found --
-the sum of parsing errors (>=10) according to above scheme.
-
 (c) Kurt Garloff <garloff@osb-alliance.com>, 5/2021
 (c) Matthias Büchse <matthias.buechse@cloudandheat.com>, 1/2024
 License: CC-BY-SA 4.0
@@ -34,7 +18,7 @@ from flavor_name_describe import prettyname
 def usage():
     "help"
     print("Usage: flavor-name-check.py [-d] [-v] [-2] [-1] [-o] [-c] [-C mand.yaml] [-i | NAME [NAME [...]]]")
-    print("Flavor name checker returns 0 if no error, 1 for non SCS flavors and 10+ for wrong flavor names")
+    print("Flavor name checker returns 0 if no error, otherwise check stderr for details")
     print("-d enables debug mode, -v outputs a verbose description, -i enters interactive input mode")
     print("-2 disallows old v1 flavor naming, -1 checks old names for completeness, -o accepts them still")
     print("-c checks the SCS names AND checks the list for completeness w.r.t. SCS mandatory flavors.")
@@ -66,8 +50,8 @@ class Inputter:
             tbl = attr.get_tbl(target)
             if tbl:
                 print(f" {fdesc} Options:")
-                for key in tbl.keys():
-                    print(f"  {key}: {tbl[key]}")
+                for key, v in tbl.items():
+                    print(f"  {key}: {v}")
             while True:
                 print(f" {fdesc}: ", end="")
                 val = input()

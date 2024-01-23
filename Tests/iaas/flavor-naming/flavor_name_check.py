@@ -173,7 +173,7 @@ class GPU:
     """Class repesenting GPU support"""
     type = "GPU"
     gputype = TblAttr(".Type", {"g": "vGPU", "G": "Pass-Through GPU"})
-    brand = TblAttr(".Brand", {'': '', "N": "nVidia", "A": "AMD", "I": "Intel"})
+    brand = TblAttr("Brand", {"N": "nVidia", "A": "AMD", "I": "Intel"})
     gen = DepTblAttr(".Gen", brand, {
         '': {'': ''},
         "N": {'': '', "f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal",
@@ -285,6 +285,9 @@ class Outputter:
 
 
 class SyntaxV1:
+    """
+    This class bundles the regular expressions that comprise the syntax for v1 of the standard.
+    """
     prefix = "SCS-"
     cpuram = re.compile(r"([0-9]*)([LVTC])(i|):([0-9\.]*)(u|)(o|)")
     disk = re.compile(r":(?:([0-9]*)x|)([0-9]*)([nhsp]|)")
@@ -295,8 +298,21 @@ class SyntaxV1:
     gpu = re.compile(r"\-([gG])([NAI])([^:-h]*)(?::([0-9]+)|)(h*)")
     ib = re.compile(r"\-(ib)")
 
+    @classmethod
+    def from_v2(nm):
+        """v2 to v1 flavor name transformation"""
+        return nm.replace('-', ':').replace('_', '-').replace('SCS:', 'SCS-')
+
 
 class SyntaxV2:
+    """
+    This class bundles the regular expressions that comprise the syntax for v2 of the standard.
+
+    The change vs. v1 concerns the delimiters only and is best understood by looking at
+    the classmethods `SyntaxV2.from_v1` and `SyntaxV1.from_v2`.
+
+    Note that the syntax hasn't changed since v2, so this class is still valid.
+    """
     prefix = "SCS-"
     cpuram = re.compile(r"([0-9]*)([LVTC])(i|)\-([0-9\.]*)(u|)(o|)")
     disk = re.compile(r"\-(?:([0-9]*)x|)([0-9]*)([nhsp]|)")
@@ -306,6 +322,11 @@ class SyntaxV2:
     cpubrand = re.compile(r"_([izar])([0-9]*)(h*)(?=$|_)")
     gpu = re.compile(r"_([gG])([NAI])([^-h]*)(?:\-([0-9]+)|)(h*)")
     ib = re.compile(r"_(ib)")
+
+    @classmethod
+    def from_v1(nm):
+        """v1 to v2 flavor name transformation"""
+        return nm.replace('-', '_').replace(':', '-').replace('SCS_', 'SCS-')
 
 
 class ComponentParser:
@@ -367,22 +388,6 @@ parser_v2 = Parser(SyntaxV2)
 outputter = Outputter()
 
 
-def new_to_old(nm):
-    "v2 to v1 flavor name transformation"
-    nm = nm.replace('-', ':')
-    nm = nm.replace('_', '-')
-    nm = nm.replace('SCS:', 'SCS-')
-    return nm
-
-
-def old_to_new(nm):
-    "v1 to v2 flavor name transformation"
-    nm = nm.replace('-', '_')
-    nm = nm.replace(':', '-')
-    nm = nm.replace('SCS_', 'SCS-')
-    return nm
-
-
 class CompatLayer:
     """
     This class provides the functionality that was previously imported via
@@ -435,10 +440,10 @@ class CompatLayer:
         return outputter(flavorname)
 
     def old_to_new(self, nm):
-        return old_to_new(nm)
+        return SyntaxV2.from_v1(nm)
 
     def new_to_old(self, nm):
-        return new_to_old(nm)
+        return SyntaxV1.from_v2(nm)
 
     def findflvfile(self, fnm):
         """Search for flavor file and return found path"""
@@ -463,7 +468,7 @@ class CompatLayer:
         if self.prefer_old:
             for name_type in yamldict["SCS-Spec"].values():
                 for i, name in enumerate(name_type):
-                    name_type[i] = new_to_old(name)
+                    name_type[i] = self.new_to_old(name)
         mand = yamldict["SCS-Spec"]["MandatoryFlavors"]
         recd = yamldict["SCS-Spec"]["RecommendedFlavors"]
         if v3mode:
