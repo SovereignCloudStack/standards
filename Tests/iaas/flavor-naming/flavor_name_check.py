@@ -223,22 +223,22 @@ class Outputter:
 
     Use the global instance `outputter` (defined below) like so: `namestr = outputter(flavorname)`.
 
-    Using templating language with std C/Python % formatting and a few extras:
-       %? outputs following word (until next non-alnum char) if the parameter is True, otherwise nothing
+    Using templating language similar to % formatting:
+       %? outputs attribute's letter if the attribute is True, otherwise nothing
        %f gets converted to %.0f if the number is an integer, otherwise %.1f
-       %1x gets converted to %ix if the number is != 1, otherwise it's left out
-       %0i gets converted to %i if the number is non-null and != 0, otherwise it's left out
-       %-i gets converted to -%i if number is non-null, otherwise left out
+       %x gets converted to %ix if the number is not the default, otherwise it's left out
+       %0 gets converted to %i if the number is non-null and != 0, otherwise it's left out
+       %- gets converted to -%i if number is non-null, otherwise left out
     """
 
     prefix = "SCS-"
-    cpuram = "%i%s%?i-%f%?u%?o"
-    disk = "-%1x%0i%s"
+    cpuram = "%i%s%?-%f%?%?"
+    disk = "-%x%0%s"
     hype = "_%s"
-    hwvirt = "_%?hwv"
-    cpubrand = "_%s%0i%s"
-    gpu = "_%s%s%s%-i%s"
-    ib = "_%?ib"
+    hwvirt = "_%?"
+    cpubrand = "_%s%0%s"
+    gpu = "_%s%s%s%-%s"
+    ib = "_%?"
 
     def output_component(self, pattern, component, parts):
         if component is None:
@@ -246,39 +246,27 @@ class Outputter:
         attr_iter = iter(Attr.collect(component.__class__))
         i = 0
         while i < len(pattern):
-            j = i
-            while i < len(pattern) and pattern[i] != "%":
-                i += 1
-            if i > j:
-                parts.append(pattern[j:i])
-            if i == len(pattern):
+            j = pattern.find("%", i)
+            parts.append(pattern[i:j])
+            if j == -1:
                 break
-            i += 1  # skip %
+            i = j + 1  # skip %
             attr = next(attr_iter)
             value = attr.__get__(component)
             if pattern[i] == "?":
-                j = i + 1
-                while j < len(pattern) and pattern[j].isalnum():
-                    j += 1
                 if value:
-                    parts.append(pattern[i + 1:j])
-                i = j - 1
-            elif pattern[i] == "s":
+                    parts.append(attr.letter)
+            elif pattern[i] in ("s", "i"):
                 parts.append(str(value))
-            elif pattern[i] == "i":
-                parts.append(str(value))
-            elif pattern[i:i+2] == "0i":
+            elif pattern[i] == "0":
                 if value is not None and value != 0:
                     parts.append(str(value))
-                i += 1
-            elif pattern[i:i+2] == "-i":
+            elif pattern[i] == "-":
                 if value:
                     parts.append(f"-{value}")
-                i += 1
-            elif pattern[i:i+2] == "1x":
-                if value != int(pattern[i]):
+            elif pattern[i] == "x":
+                if value != attr.default:
                     parts.append(f"{value}x")
-                i += 1
             elif pattern[i] == "f":
                 if value == int(value):
                     parts.append(f"{value:.0f}")
