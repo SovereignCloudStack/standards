@@ -217,7 +217,6 @@ class Inputter:
         print(targetcls.type)
         attrs = [att for att in targetcls.__dict__.values() if isinstance(att, Attr)]
         for i, attr in enumerate(attrs):
-            fname = attr.attr
             fdesc = attr.name
             tbl = attr.get_tbl(target)
             if tbl:
@@ -344,7 +343,7 @@ class Outputter:
                 print(pattern, i)
                 raise RuntimeError("Pattern problem")
             i += 1
-    
+
     def __call__(self, flavorname):
         parts = [self.prefix]
         self.output_component(self.cpuram, flavorname.cpuram, parts)
@@ -458,13 +457,13 @@ def old_to_new(nm):
 class CompatLayer:
     """
     This class provides the functionality that was previously imported via
-    
+
     fnmck = importlib.import_module("flavor-name-check")
 
     Instead, you now do
-    
+
     fnmck = CompatLayer()
-    
+
     A few adaptation are necessary though because this package uses `Flavorname`
     instead of the old `tuple` of `Prop`s.
     """
