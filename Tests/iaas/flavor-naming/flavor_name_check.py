@@ -3,12 +3,14 @@ import os
 import os.path
 import re
 import sys
+from typing import Optional
 
 import yaml
 
 
 class TypeCheck:
-    def __call__(self, attr, value):
+    """class for validating the type of some attribute within a flavor name"""
+    def __call__(self, attr: str, value):
         raise ValueError(f"{attr} can not be set to {value}")
 
 
@@ -50,14 +52,20 @@ class FloatCheck(TypeCheck):
 
 
 class Attr:
+    """class to represent one attribute, such as brand, of one component, such as gpu, of a flavor name"""
     typ = None
     default = None
+
+    @staticmethod
+    def collect(cls):
+        """return all instances of `Attr` in the dict of given cls"""
+        return [att for att in cls.__dict__.values() if isinstance(att, Attr)]
 
     def __init__(self, name, default=None):
         self.name = name
         if default != self.default:
             self.default = default  # instance attribute will override class attibute
-        # the following will be set via __set_name__
+        # the following will be set automatically via __set_name__
         self.attr = None
         self._attr = None
 
@@ -68,6 +76,9 @@ class Attr:
         if self.typ is None:
             return
         self.typ(self.attr, val)
+
+    # the following methods make this class a `Descriptor`,
+    # see <https://docs.python.org/3/howto/descriptor.html>
 
     def __set_name__(self, owner, name):
         self.attr = name
@@ -192,19 +203,22 @@ class IB:
 
 
 class Flavorname:
+    """A flavor name; merely a bunch of components"""
     def __init__(self):
-        self.cpuram = None
-        self.disk = None
-        self.hype = None
-        self.hwvirt = None
-        self.cpubrand = None
-        self.gpu = None
-        self.ib = None
+        self.cpuram: Main = None
+        self.disk: Disk = None
+        self.hype: Hype = None
+        self.hwvirt: HWVirt = None
+        self.cpubrand: CPUBrand = None
+        self.gpu: GPU = None
+        self.ib: IB = None
 
 
 class Outputter:
     """
-    Auxiliary class for serializing the Flavorname instance.
+    Auxiliary class for serializing `Flavorname` instances.
+
+    Use the global instance `outputter` (defined below) like so: `namestr = outputter(flavorname)`.
 
     Using templating language with std C/Python % formatting and a few extras:
        %? outputs following word (until next non-alnum char) if the parameter is True, otherwise nothing
@@ -226,7 +240,7 @@ class Outputter:
     def output_component(self, pattern, component, parts):
         if component is None:
             return
-        attr_iter = iter([att for att in component.__class__.__dict__.values() if isinstance(att, Attr)])
+        attr_iter = iter(Attr.collect(component.__class__))
         i = 0
         while i < len(pattern):
             j = i
@@ -272,7 +286,7 @@ class Outputter:
                 raise RuntimeError("Pattern problem")
             i += 1
 
-    def __call__(self, flavorname):
+    def __call__(self, flavorname: Flavorname) -> str:
         parts = [self.prefix]
         self.output_component(self.cpuram, flavorname.cpuram, parts)
         self.output_component(self.disk, flavorname.disk, parts)
@@ -299,7 +313,7 @@ class SyntaxV1:
     ib = re.compile(r"\-(ib)")
 
     @staticmethod
-    def from_v2(nm):
+    def from_v2(nm: str) -> str:
         """v2 to v1 flavor name transformation"""
         return nm.replace('-', ':').replace('_', '-').replace('SCS:', 'SCS-')
 
@@ -324,21 +338,29 @@ class SyntaxV2:
     ib = re.compile(r"_(ib)")
 
     @staticmethod
-    def from_v1(nm):
+    def from_v1(nm: str) -> str:
         """v1 to v2 flavor name transformation"""
         return nm.replace('-', '_').replace(':', '-').replace('SCS_', 'SCS-')
 
 
-class ComponentParser:
-    def __init__(self, parsestr, targetcls):
-        self.parsestr = parsestr
-        self.targetcls = targetcls
+class ParseCtx:
+    """Auxiliary class used during parsing to hold current position in the string"""
+    def __init__(self, s: str, pos=0):
+        self.s = s
+        self.pos = pos
 
-    def parse(self, s, pos):
-        m = self.parsestr.match(s, pos)
+
+class ComponentParser:
+    """Auxiliary class for parsing a single component of a flavor name"""
+    def __init__(self, parsestr: re.Pattern, targetcls):
+        self.parsestr = parsestr  # re.Pattern as defined in `SyntaxV1` or `SyntaxV2`
+        self.targetcls = targetcls  # component class such as `Main` or `Disk`
+
+    def parse(self, ctx: ParseCtx):
+        m = self.parsestr.match(ctx.s, ctx.pos)
         if m is None:
-            return None, pos
-        match_attr = [att for att in self.targetcls.__dict__.values() if isinstance(att, Attr)]
+            return
+        match_attr = Attr.collect(self.targetcls)
         groups = m.groups()
         if len(groups) != len(match_attr):
             raise ValueError(f"unexpected number of matching groups: {match_attr} vs {groups}")
@@ -352,10 +374,18 @@ class ComponentParser:
                 attr.__set__(t, bool(group))
             else:
                 attr.__set__(t, group)
-        return t, pos + len(m.group(0))
+        ctx.pos += len(m.group(0))
+        return t
 
 
 class Parser:
+    """
+    Auxiliary class for parsing flavorname strings.
+
+    Use the global instances `parser_v1` and `parser_v2` (defined below) like so:
+    `flavorname = parser_v2(namestr)`.
+    """
+
     def __init__(self, syntax):
         self.prefix = syntax.prefix
         self.cpuram = ComponentParser(syntax.cpuram, Main)
@@ -366,20 +396,22 @@ class Parser:
         self.gpu = ComponentParser(syntax.gpu, GPU)
         self.ib = ComponentParser(syntax.ib, IB)
 
-    def __call__(self, s, pos=0):
+    def __call__(self, s: str, pos=0) -> Flavorname:
         if not s[pos:].startswith(self.prefix):
             return
-        pos += len(self.prefix)
+        ctx = ParseCtx(s, pos + len(self.prefix))
         flavorname = Flavorname()
-        for key, p in self.__dict__.items():
-            if not isinstance(p, ComponentParser):
-                continue
-            t, pos = p.parse(s, pos)
-            setattr(flavorname, key, t)
+        flavorname.cpuram = self.cpuram.parse(ctx)
         if flavorname.cpuram is None:
-            raise ValueError(f"Error 10: Failed to parse main part of {s}")
-        if pos != len(s):
-            raise ValueError(f"Failed to parse name {s} to completion (after {pos})")
+            raise ValueError(f"Failed to parse main part of {s}")
+        flavorname.disk = self.disk.parse(ctx)
+        flavorname.hype = self.hype.parse(ctx)
+        flavorname.hwvirt = self.hwvirt.parse(ctx)
+        flavorname.cpubrand = self.cpubrand.parse(ctx)
+        flavorname.gpu = self.gpu.parse(ctx)
+        flavorname.ib = self.ib.parse(ctx)
+        if ctx.pos != len(s):
+            raise ValueError(f"Failed to parse name {s} to completion; remainder: {s[ctx.pos:]}")
         return flavorname
 
 
@@ -412,7 +444,7 @@ class CompatLayer:
         bindir = os.path.basename(sys.argv[0])
         self.searchpath = (bindir, ) if bindir else os.environ['PATH'].split(':')
 
-    def parsename(self, namestr):
+    def parsename(self, namestr: str) -> Optional[Flavorname]:
         """
         Parse flavor name: returns None (if non-SCS) or Flavorname instance
         raises exception if name appears SCS, but not conforming to syntax

@@ -46,6 +46,7 @@ def main(argv):
     """Entry point -- main loop going over flavors"""
     fnmck = flavor_name_check.CompatLayer()
     cloud = None
+    verbose = False
     v3mode = False
     accept_old_mand = False
     scsMandFile = fnmck.mandFlavorFile
@@ -79,9 +80,7 @@ def main(argv):
             accept_old_mand = True
         elif opt[0] == "-v" or opt[0] == "--verbose":
             verbose = True
-            # fnmck.verbose = True
         elif opt[0] == "-q" or opt[0] == "--quiet":
-            quiet = True
             fnmck.quiet = True
         else:
             usage(2)
@@ -241,7 +240,7 @@ def main(argv):
         "Warnings": len(warnFlv)+len(scsRecommended),
     }
     Report = {cloud: {"TotalSummary": totSummary}}
-    if not quiet:
+    if not fnmck.quiet:
         Report[cloud]["SCSFlavorSummary"] = flvSCSRep
         Report[cloud]["OtherFlavorSummary"] = flvOthRep
     if verbose:
