@@ -298,7 +298,7 @@ class SyntaxV1:
     gpu = re.compile(r"\-([gG])([NAI])([^:-h]*)(?::([0-9]+)|)(h*)")
     ib = re.compile(r"\-(ib)")
 
-    @classmethod
+    @staticmethod
     def from_v2(nm):
         """v2 to v1 flavor name transformation"""
         return nm.replace('-', ':').replace('_', '-').replace('SCS:', 'SCS-')
@@ -323,7 +323,7 @@ class SyntaxV2:
     gpu = re.compile(r"_([gG])([NAI])([^-h]*)(?:\-([0-9]+)|)(h*)")
     ib = re.compile(r"_(ib)")
 
-    @classmethod
+    @staticmethod
     def from_v1(nm):
         """v1 to v2 flavor name transformation"""
         return nm.replace('-', '_').replace(':', '-').replace('SCS_', 'SCS-')
