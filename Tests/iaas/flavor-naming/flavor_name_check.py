@@ -152,16 +152,15 @@ class Main:
 class Disk:
     """Class representing the disk part"""
     type = "Disk"
-    nrdisks = IntAttr("#:NrDisks")
-    nrdisks.default = 1
+    nrdisks = IntAttr("#.NrDisks", default=1)
     disksize = OptIntAttr("#.GB Disk")
-    disktype = TblAttr(".Disk type", {'': '', "n": "Networked", "h": "Local HDD", "s": "SSD", "p": "HiPerf NVMe"})
+    disktype = TblAttr("Disk type", {'': '(unspecified)', "n": "Networked", "h": "Local HDD", "s": "SSD", "p": "HiPerf NVMe"})
 
 
 class Hype:
     """Class repesenting Hypervisor"""
     type = "Hypervisor"
-    hype = TblAttr(".Hypervisor", {'': '', "kvm": "KVM", "xen": "Xen", "hyv": "Hyper-V", "vmw": "VMware", "bms": "Bare Metal System"})
+    hype = TblAttr("Hypervisor", {"kvm": "KVM", "xen": "Xen", "hyv": "Hyper-V", "vmw": "VMware", "bms": "Bare Metal System"})
 
 
 class HWVirt:
@@ -173,12 +172,11 @@ class HWVirt:
 class CPUBrand:
     """Class repesenting CPU brand"""
     type = "CPUBrand"
-    cpuvendor = TblAttr(".CPU Vendor", {"i": "Intel", "z": "AMD", "a": "ARM", "r": "RISC-V"})
+    cpuvendor = TblAttr("CPU Vendor", {"i": "Intel", "z": "AMD", "a": "ARM", "r": "RISC-V"})
     cpugen = DepTblAttr("#.CPU Gen", cpuvendor, {
-        '': {'': ''},
-        "i": {None: '', 0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake", 4: "Sapphire Rapids"},
-        "z": {None: '', 0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4"},
-        "a": {None: '', 0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A710/NeoN2"},
+        "i": {None: '(unspecified)', 0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake", 4: "Sapphire Rapids"},
+        "z": {None: '(unspecified)', 0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4"},
+        "a": {None: '(unspecified)', 0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A710/NeoN2"},
     })
     perf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"})
 
@@ -186,14 +184,13 @@ class CPUBrand:
 class GPU:
     """Class repesenting GPU support"""
     type = "GPU"
-    gputype = TblAttr(".Type", {"g": "vGPU", "G": "Pass-Through GPU"})
+    gputype = TblAttr("Type", {"g": "vGPU", "G": "Pass-Through GPU"})
     brand = TblAttr("Brand", {"N": "nVidia", "A": "AMD", "I": "Intel"})
-    gen = DepTblAttr(".Gen", brand, {
-        '': {'': ''},
-        "N": {'': '', "f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal",
+    gen = DepTblAttr("Gen", brand, {
+        "N": {'': '(unspecified)', "f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal",
               "v": "Volta", "t": "Turing", "a": "Ampere", "l": "AdaLovelace"},
-        "A": {'': '', "0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "RDNA2/Navi2x", "3": "RDNA3/Navi3x"},
-        "I": {'': '', "0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1", "2": "Xe2"},
+        "A": {'': '(unspecified)', "0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "RDNA2/Navi2x", "3": "RDNA3/Navi3x"},
+        "I": {'': '(unspecified)', "0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1", "2": "Xe2"},
     })
     cu = OptIntAttr("#.CU/EU/SM")
     perf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"})
@@ -313,7 +310,7 @@ class SyntaxV1:
     hwvirt = re.compile(r"\-(hwv)")
     # cpubrand needs final lookahead assertion to exclude confusion with _ib extension
     cpubrand = re.compile(r"\-([izar])([0-9]*)(h*)(?=$|\-)")
-    gpu = re.compile(r"\-([gG])([NAI])([^:-h]*)(?::([0-9]+)|)(h*)")
+    gpu = re.compile(r"\-([gG])([NAI])([^:h]*)(?::([0-9]+)|)(h*)")
     ib = re.compile(r"\-(ib)")
 
     @staticmethod
@@ -338,7 +335,7 @@ class SyntaxV2:
     hwvirt = re.compile(r"_(hwv)")
     # cpubrand needs final lookahead assertion to exclude confusion with _ib extension
     cpubrand = re.compile(r"_([izar])([0-9]*)(h*)(?=$|_)")
-    gpu = re.compile(r"_([gG])([NAI])([^-h]*)(?:\-([0-9]+)|)(h*)")
+    gpu = re.compile(r"_([gG])([NAI])([^\-h]*)(?:\-([0-9]+)|)(h*)")
     ib = re.compile(r"_(ib)")
 
     @staticmethod
@@ -415,13 +412,14 @@ class Parser:
         flavorname.gpu = self.gpu.parse(ctx)
         flavorname.ib = self.ib.parse(ctx)
         if ctx.pos != len(s):
+            print(outputter(flavorname))
             raise ValueError(f"Failed to parse name {s} to completion; remainder: {s[ctx.pos:]}")
         return flavorname
 
 
 parser_v1 = Parser(SyntaxV1)
 parser_v2 = Parser(SyntaxV2)
-outputter = Outputter()
+outname = outputter = Outputter()
 
 
 class CompatLayer:
@@ -473,7 +471,7 @@ class CompatLayer:
         return flavorname
 
     def outname(self, flavorname):
-        return outputter(flavorname)
+        return outname(flavorname)
 
     def old_to_new(self, nm):
         return SyntaxV2.from_v1(nm)

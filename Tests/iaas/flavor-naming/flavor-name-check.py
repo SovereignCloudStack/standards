@@ -28,10 +28,10 @@ def usage():
 
 
 class Inputter:
-    """
-    Auxiliary class for interactive input of flavor names.
-    """
-    def to_bool(self, s):
+    """Auxiliary class for interactive input of flavor names."""
+
+    @staticmethod
+    def to_bool(s):
         """interpret string input as bool"""
         s = s.upper()
         if s == "" or s == "0" or s[0] == "N" or s[0] == "F":
@@ -41,7 +41,6 @@ class Inputter:
         raise ValueError
 
     def input_component(self, targetcls):
-        parsed = 0
         target = targetcls()
         print(targetcls.type)
         attrs = [att for att in targetcls.__dict__.values() if isinstance(att, Attr)]
@@ -51,53 +50,42 @@ class Inputter:
             if tbl:
                 print(f" {fdesc} Options:")
                 for key, v in tbl.items():
-                    print(f"  {key}: {v}")
+                    print(f"  {'' if key is None else key}: {v}")
             while True:
                 print(f" {fdesc}: ", end="")
                 val = input()
                 try:
-                    if fdesc[0] == "." and not val and i == 0:
+                    if not val and i == 0 and not issubclass(targetcls, (Main, Disk)):
+                        # BAIL: if you don't want an extension, supply empty first attr
                         return
                     if fdesc[0] == "?":
                         val = self.to_bool(val)
-                        if not val:
-                            break
                     elif fdesc[0:2] == "##":
                         val = float(val)
                     elif fdesc[0] == "#":
-                        if fdesc[1] == ":" and not val:     # change?
-                            val = 1
-                            break
                         if fdesc[1] == "." and not val:
-                            val = None
+                            val = attr.default
                             break
                         oval = val
                         val = int(val)
                         if str(val) != oval:
-                            print(" INVALID!")
-                            continue
+                            raise ValueError(val)
                     elif tbl:
-                        if fdesc[0] == "." and not val:
-                            break
                         if val in tbl:
-                            pass
-                        elif val.upper() in tbl:
+                            break
+                        if val.upper() in tbl:
                             val = val.upper()
                         elif val.lower() in tbl:
                             val = val.lower()
-                        if val in tbl:
-                            parsed += 1
-                            break
-                        print(" INVALID!")
-                        continue
+                        if val not in tbl:
+                            raise ValueError(val)
                 except BaseException as exc:
                     print(exc)
                     print(" INVALID!")
-                    continue
-                parsed += 1
-                break
+                else:
+                    break
             attr.__set__(target, val)
-        return parsed and target or None
+        return target
 
     def __call__(self):
         flavorname = Flavorname()
@@ -110,14 +98,11 @@ class Inputter:
         flavorname.hvirt = self.input_component(HWVirt)
         flavorname.cpubrand = self.input_component(CPUBrand)
         flavorname.gpu = self.input_component(GPU)
-        flavorname.ibd = self.input_component(IB)
+        flavorname.ib = self.input_component(IB)
         return flavorname
 
 
-inputter = Inputter()
-
-
-def inputflavor():
+def inputflavor(inputter=Inputter()):
     """Interactively input a flavor"""
     return inputter()
 
