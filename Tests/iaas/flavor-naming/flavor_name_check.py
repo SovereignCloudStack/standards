@@ -161,9 +161,10 @@ class CPUBrand:
     type = "CPUBrand"
     cpuvendor = TblAttr(".CPU Vendor", {"i": "Intel", "z": "AMD", "a": "ARM", "r": "RISC-V"})
     cpugen = DepTblAttr("#.CPU Gen", cpuvendor, {
-        "i": {0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake", 4: "Sapphire Rapids"},
-        "z": {0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4"},
-        "a": {0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A710/NeoN2"},
+        '': {'': ''},
+        "i": {None: '', 0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake", 4: "Sapphire Rapids"},
+        "z": {None: '', 0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4"},
+        "a": {None: '', 0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A710/NeoN2"},
     })
     perf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"})
 
@@ -201,98 +202,25 @@ class Flavorname:
         self.ib = None
 
 
-class Inputter:
-    def to_bool(self, s):
-        """interpret string input as bool"""
-        s = s.upper()
-        if s == "" or s == "0" or s[0] == "N" or s[0] == "F":
-            return False
-        if s == "1" or s[0] == "Y" or s[0] == "T":
-            return True
-        raise ValueError
-
-    def input_component(self, targetcls):
-        parsed = 0
-        target = targetcls()
-        print(targetcls.type)
-        attrs = [att for att in targetcls.__dict__.values() if isinstance(att, Attr)]
-        for i, attr in enumerate(attrs):
-            fdesc = attr.name
-            tbl = attr.get_tbl(target)
-            if tbl:
-                print(f" {fdesc} Options:")
-                for key in tbl.keys():
-                    print(f"  {key}: {tbl[key]}")
-            while True:
-                print(f" {fdesc}: ", end="")
-                val = input()
-                try:
-                    if fdesc[0] == "." and not val and i == 0:
-                        return
-                    if fdesc[0] == "?":
-                        val = self.to_bool(val)
-                        if not val:
-                            break
-                    elif fdesc[0:2] == "##":
-                        val = float(val)
-                    elif fdesc[0] == "#":
-                        if fdesc[1] == ":" and not val:     # change?
-                            val = 1
-                            break
-                        if fdesc[1] == "." and not val:
-                            val = None
-                            break
-                        oval = val
-                        val = int(val)
-                        if str(val) != oval:
-                            print(" INVALID!")
-                            continue
-                    elif tbl:
-                        if fdesc[0] == "." and not val:
-                            break
-                        if val in tbl:
-                            pass
-                        elif val.upper() in tbl:
-                            val = val.upper()
-                        elif val.lower() in tbl:
-                            val = val.lower()
-                        if val in tbl:
-                            parsed += 1
-                            break
-                        print(" INVALID!")
-                        continue
-                except BaseException as exc:
-                    print(exc)
-                    print(" INVALID!")
-                    continue
-                parsed += 1
-                break
-            attr.__set__(target, val)
-        return parsed and target or None
-
-    def __call__(self):
-        flavorname = Flavorname()
-        flavorname.cpuram = self.input_component(Main)
-        flavorname.disk = self.input_component(Disk)
-        if flavorname.disk and not (flavorname.disk.nrdisk and flavorname.disk.disksize):
-            # special case...
-            flavorname.disk = None
-        flavorname.hype = self.input_component(Hype)
-        flavorname.hvirt = self.input_component(HWVirt)
-        flavorname.cpubrand = self.input_component(CPUBrand)
-        flavorname.gpu = self.input_component(GPU)
-        flavorname.ibd = self.input_component(IB)
-        return flavorname
-
-
 class Outputter:
+    """
+    Auxiliary class for serializing the Flavorname instance.
+
+    Using templating language with std C/Python % formatting and a few extras:
+       %? outputs following word (until next non-alnum char) if the parameter is True, otherwise nothing
+       %f gets converted to %.0f if the number is an integer, otherwise %.1f
+       %1x gets converted to %ix if the number is != 1, otherwise it's left out
+       %0i gets converted to %i if the number is non-null and != 0, otherwise it's left out
+       %-i gets converted to -%i if number is non-null, otherwise left out
+    """
+
     prefix = "SCS-"
     cpuram = "%i%s%?i-%f%?u%?o"
     disk = "-%1x%0i%s"
     hype = "_%s"
     hwvirt = "_%?hwv"
     cpubrand = "_%s%0i%s"
-    gpu = "_%s%s%s%:i%s"
+    gpu = "_%s%s%s%-i%s"
     ib = "_%?ib"
 
     def output_component(self, pattern, component, parts):
@@ -323,10 +251,10 @@ class Outputter:
             elif pattern[i] == "i":
                 parts.append(str(value))
             elif pattern[i:i+2] == "0i":
-                if value != int(pattern[i]):
+                if value is not None and value != 0:
                     parts.append(str(value))
                 i += 1
-            elif pattern[i:i+2] == ":i":
+            elif pattern[i:i+2] == "-i":
                 if value:
                     parts.append(f"-{value}")
                 i += 1
@@ -362,8 +290,9 @@ class SyntaxV1:
     disk = re.compile(r":(?:([0-9]*)x|)([0-9]*)([nhsp]|)")
     hype = re.compile(r"\-(kvm|xen|vmw|hyv|bms)")
     hwvirt = re.compile(r"\-(hwv)")
-    cpubrand = re.compile(r"\-([izar])([0-9]*)(h*)")
-    gpu = re.compile(r"\-([gG])([NAI])([^:-]*)(?::([0-9]*)|)(h*)")
+    # cpubrand needs final lookahead assertion to exclude confusion with _ib extension
+    cpubrand = re.compile(r"\-([izar])([0-9]*)(h*)(?=$|\-)")
+    gpu = re.compile(r"\-([gG])([NAI])([^:-h]*)(?::([0-9]+)|)(h*)")
     ib = re.compile(r"\-(ib)")
 
 
@@ -373,8 +302,9 @@ class SyntaxV2:
     disk = re.compile(r"\-(?:([0-9]*)x|)([0-9]*)([nhsp]|)")
     hype = re.compile(r"_(kvm|xen|vmw|hyv|bms)")
     hwvirt = re.compile(r"_(hwv)")
-    cpubrand = re.compile(r"_([izar])([0-9]*)(h*)")
-    gpu = re.compile(r"_([gG])([NAI])([^-]*)(?:\-([0-9]*)|)(h*)")
+    # cpubrand needs final lookahead assertion to exclude confusion with _ib extension
+    cpubrand = re.compile(r"_([izar])([0-9]*)(h*)(?=$|_)")
+    gpu = re.compile(r"_([gG])([NAI])([^-h]*)(?:\-([0-9]+)|)(h*)")
     ib = re.compile(r"_(ib)")
 
 
@@ -434,7 +364,6 @@ class Parser:
 
 parser_v1 = Parser(SyntaxV1)
 parser_v2 = Parser(SyntaxV2)
-inputter = Inputter()
 outputter = Outputter()
 
 
@@ -489,18 +418,21 @@ class CompatLayer:
         except Exception:
             if self.disallow_old:
                 raise
-            flavorname = parser_v1(namestr)
-            is_old = True
+            # v2 didn't work; try v1, but if that doesn't work either, raise original exception
+            try:
+                flavorname = parser_v1(namestr)
+            except Exception:
+                pass
+            else:
+                is_old = True
+            if not is_old:
+                raise
         if not self.quiet and flavorname is not None and self.prefer_old != is_old:
             print(f"WARNING: flavor name not v{2 - self.prefer_old}: {namestr}")
         return flavorname
 
     def outname(self, flavorname):
-        outputter(flavorname)
-
-    def inputflavor():
-        """Interactively input a flavor"""
-        return inputter()
+        return outputter(flavorname)
 
     def old_to_new(self, nm):
         return old_to_new(nm)
@@ -547,4 +479,3 @@ if __name__ == "__main__":
     print(namestr)
     print(outputter(parser_v1("SCS-16T:64:3x10s-GNa:64-ib")))
     print(namestr == outputter(parser_v2(namestr)))
-    print(outputter(inputter()))
