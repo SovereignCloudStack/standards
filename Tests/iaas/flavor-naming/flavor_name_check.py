@@ -204,8 +204,10 @@ class IB:
 
 class Flavorname:
     """A flavor name; merely a bunch of components"""
-    def __init__(self, cpuram: Main = None, disk: Disk = None, hype: Hype = None, hwvirt: HWVirt = None,
-            cpubrand: CPUBrand = None, gpu: GPU = None, ib: IB = None):
+    def __init__(
+        self, cpuram: Main = None, disk: Disk = None, hype: Hype = None, hwvirt: HWVirt = None,
+        cpubrand: CPUBrand = None, gpu: GPU = None, ib: IB = None
+    ):
         self.cpuram = cpuram
         self.disk = disk
         self.hype = hype
