@@ -61,8 +61,9 @@ class Attr:
         """return all instances of `Attr` in the dict of given cls"""
         return [att for att in cls.__dict__.values() if isinstance(att, Attr)]
 
-    def __init__(self, name, default=None):
+    def __init__(self, name, default=None, letter=None):
         self.name = name
+        self.letter = letter
         if default != self.default:
             self.default = default  # instance attribute will override class attibute
         # the following will be set automatically via __set_name__
@@ -81,6 +82,8 @@ class Attr:
     # see <https://docs.python.org/3/howto/descriptor.html>
 
     def __set_name__(self, owner, name):
+        if self.letter is None:
+            self.letter = name
         self.attr = name
         self._attr = '_' + name
 
@@ -140,10 +143,10 @@ class Main:
     type = "CPU-RAM"
     cpus = IntAttr("#vCPUs")
     cputype = TblAttr("CPU type", {"L": "LowPerf vCPUs", "V": "vCPUs", "T": "SMT Threads", "C": "Dedicated Cores"})
-    cpuinsecure = BoolAttr("?Insec SMT")
+    cpuinsecure = BoolAttr("?Insec SMT", letter="i")
     ram = FloatAttr("##GiB RAM")
-    raminsecure = BoolAttr("?no ECC")
-    ramoversubscribed = BoolAttr("?RAM Over")
+    raminsecure = BoolAttr("?no ECC", letter="u")
+    ramoversubscribed = BoolAttr("?RAM Over", letter="o")
 
 
 class Disk:
@@ -164,7 +167,7 @@ class Hype:
 class HWVirt:
     """Class repesenting support for hardware virtualization"""
     type = "Hardware/NestedVirtualization"
-    hwvirt = BoolAttr("?HardwareVirt")
+    hwvirt = BoolAttr("?HardwareVirt", letter="hwv")
 
 
 class CPUBrand:
@@ -204,14 +207,15 @@ class IB:
 
 class Flavorname:
     """A flavor name; merely a bunch of components"""
-    def __init__(self):
-        self.cpuram: Main = None
-        self.disk: Disk = None
-        self.hype: Hype = None
-        self.hwvirt: HWVirt = None
-        self.cpubrand: CPUBrand = None
-        self.gpu: GPU = None
-        self.ib: IB = None
+    def __init__(self, cpuram: Main = None, disk: Disk = None, hype: Hype = None, hwvirt: HWVirt = None,
+            cpubrand: CPUBrand = None, gpu: GPU = None, ib: IB = None):
+        self.cpuram = cpuram
+        self.disk = disk
+        self.hype = hype
+        self.hwvirt = hwvirt
+        self.cpubrand = cpubrand
+        self.gpu = gpu
+        self.ib = ib
 
 
 class Outputter:

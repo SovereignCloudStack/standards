@@ -17,8 +17,11 @@ import sys
 import re
 import urllib.parse
 import html
-import importlib
-fnmck = importlib.import_module("flavor-name-check")
+
+from flavor_name_check import CompatLayer, Attr, Main, Disk, Hype, HWVirt, CPUBrand, GPU, IB, Flavorname
+from flavor_name_describe import prettyname
+
+fnmck = CompatLayer()
 
 # Global variables
 FLAVOR_NAME = ""
@@ -41,10 +44,9 @@ def parse_name(fnm):
 
 def output_parse():
     "output pretty description from SCS flavor name"
-    fnmd = importlib.import_module("flavor-name-describe")
     print('\tInput an SCS flavor name such as e.g. SCS-2V-8 ...')
     print('\t<br/>\n\t<FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
-    print('\t  <label for="flavor"?Flavor name:</label>')
+    print('\t  <label for="flavor">Flavor name:</label>')
     print(f'\t  <INPUT TYPE="text" ID="flavor" NAME="flavor" SIZE=24 VALUE="{html.escape(FLAVOR_NAME, quote=True)}"/>')
     print('\t  <INPUT TYPE="submit" VALUE="Parse"/>')
     # print('  <INPUT TYPE="reset"  VALUE="Clear"/>\n</FORM>')
@@ -52,7 +54,7 @@ def output_parse():
     if FLAVOR_NAME:
         print(f"\t<br/><font size=+1 color=blue><b>Flavor <tt>{html.escape(FLAVOR_NAME, quote=True)}</tt>:</b></font>")
         if FLAVOR_SPEC:
-            print(f"\t<font color=green>{html.escape(fnmd.prettyname(FLAVOR_SPEC), quote=True)}</font>")
+            print(f"\t<font color=green>{html.escape(prettyname(FLAVOR_SPEC), quote=True)}</font>")
         else:
             print("\t<font color=brown>Not an SCS flavor</font>")
             if ERROR:
@@ -80,8 +82,7 @@ def generate_name(form):
     global ERROR, FLAVOR_SPEC, FLAVOR_NAME
     ERROR = ""
     FLAVOR_NAME = ""
-    FLAVOR_SPEC = (fnmck.Main("0L-0"), fnmck.Disk(""), fnmck.Hype(""), fnmck.HWVirt(""),
-                   fnmck.CPUBrand(""), fnmck.GPU(""), fnmck.IB(""))
+    FLAVOR_SPEC = Flavorname()
     for key, val in form.items():
         val = val[0]
         print(f'{key}={val}', file=sys.stderr)
@@ -151,76 +152,53 @@ def generate_name(form):
 
 def is_checked(flag):
     "Checked attribute string"
-    if flag:
-        return "checked"
-    return ""
+    return flag and "checked" or ""
 
 
 def keystr(key):
     "Empty string gets converted to NN"
-    if key == "":
+    if key is None or key == "":
         return "NN"
     return key
 
 
-def flagstr(fstr):
-    "Return string fstr till next delimiter %_-"
-    for i in range(0, len(fstr)):
-        if fstr[i] == "_" or fstr[i] == "-" or fstr[i] == "%":
-            return fstr[:i]
-    return fstr
-
-
-def find_letter(idx, outstr):
-    "Find letter in output template outstr with idx i that indicates a flag"
-    found = 0
-    for ltri in range(0, len(outstr)):
-        ltr = outstr[ltri]
-        if ltr == '%':
-            if idx == found:
-                if outstr[ltri+1] == '?':
-                    return flagstr(outstr[ltri+2:])
-            else:
-                found += 1
-    return ""
-
-
-def form_attr(attr):
+def make_component_form(spec, component):
     """This mirrors flavor-name-check.py input(), but instead generates a web form.
        Defaults come from attr, the form is constructed from the attr's class
        attributes (like the mentioned input function). tblopt indicates whether
        chosing a value in a table is optional."""
-    spec = type(attr)
+    if component is not None and not isinstance(component, spec):
+        print(f"WARNING: {component} not of {targetcls}", file=sys.stderr)
     # pct = min(20, int(100/len(spec.pnames)))
     pct = 20
-    # print(attr, spec)
     if ERROR:
         print(f'\tERROR: {html.escape(ERROR, quote=True)}<br/>')
     print(f'\t <fieldset><legend>{spec.type}</legend><br/>')
-    print('\t <div id="the-whole-thing" style="position: relative; overflow: hidden;">')
-    for i, fname in enumerate(spec.pattrs):
-        tbl = None
-        fdesc = spec.pnames[i]
-        if fdesc[0] != "?" or i == 0 or spec.pnames[i-1][0] != "?":
+    print('\t <div style="position: relative; overflow: hidden;">')
+    # any consecutive Boolean fields shall be put into the same div
+    check_group = False
+    for attr in Attr.collect(spec):
+        tbl = attr.get_tbl(component)
+        fname = attr.attr
+        fdesc = attr.name
+        check_box = fdesc[0] == "?"
+        if check_group:
+            if check_box:
+                print('\t  <br/>')
+            else:
+                print('\t  </div>')
+        else:
             print(f'\t  <div id="column" style="position: relative; width: {pct}%; float: left;">')
-        # print(fname, fdesc)
-        value = ""
-        try:
-            value = getattr(attr, fname)
-        except AttributeError:
-            pass
+        check_group = check_box
+        value = getattr(component, attr.attr, '')
         # Table => READIO
-        if hasattr(attr, f"tbl_{fname}"):
-            tbl = getattr(attr, f"tbl_{fname}")
         if tbl:
-            tblopt = False
-            if fdesc[0] == '.':
-                tblopt = True
+            tblopt = fdesc[0] == '.'
+            if tblopt:
                 fdesc = fdesc[1:]
-            # print(f'\t  <label for="{fname}">{fname[0].upper()+fname[1:]}:</label><br/>')
             print(f'\t  <label for="{fname}">{fdesc}:</label><br/>')
             value_set = False
-            for key in tbl.keys():
+            for key in tbl:
                 ischk = value == key or (not key and not value)
                 value_set = value_set or ischk
                 print(f'\t   <input type="radio" id="{fname}:{key}" name="{spec.type}:{fname}" value="{keystr(key)}" {is_checked(ischk)}/>')
@@ -228,9 +206,6 @@ def form_attr(attr):
             if tblopt:
                 print(f'\t   <input type="radio" id="{fname}:NN" name="{spec.type}:{fname}" value="NN" {is_checked(not value_set)}/>')
                 print(f'\t   <label for="{fname}:NN">NN ()</label><br/>')
-            attr.create_dep_tbl(i, value)
-            # if i < len(attr.pattrs)-1 and hasattr(attr, f"tbl_{spec.pattrs[i+1]}"):
-            #     print(f" Dynamically set tbl_{attr.pattrs[i+1]} to tbl_{attr.pattrs[i]}_{value}_{attr.pattrs[i+1]}", file=sys.stderr)
         elif fdesc[0:2] == "##":
             # Float number => NUMBER
             print(f'\t  <label for="{fname}">{fdesc[2:]}:</label><br/>')
@@ -248,7 +223,7 @@ def form_attr(attr):
             print(f'\t  <input type="number" name="{spec.type}:{fname}" id="{fname}" min=0 step=1 value="{value}" size=4/>')
         elif fdesc[0] == "?":
             # Bool => Checkbox
-            letter = find_letter(i, spec.outstr)
+            letter = attr.letter
             print(f'\t  <input type="checkbox" name="{spec.type}:{fname}" id="{fname}" {is_checked(value)}/>')
             print(f'\t  <label for="{fname}">{fdesc[1:]} (<tt>{letter}</tt>)</label>')
         else:
@@ -256,10 +231,10 @@ def form_attr(attr):
                 fdesc = fdesc[1:]
             print(f'\t  <label for="{fname}">{fdesc}:</label><br/>')
             print(f'\t  <input type="text" name="{spec.type}:{fname}" id="{fname}" value="{value}" size=4/>')
-        if fdesc[0] != "?" or i == len(spec.pnames)-1 or spec.pnames[i+1][0] != "?":
+        if not check_group:
             print('\t  </div>')
-        else:
-            print('\t  <br/>')
+    if check_group:
+        print('\t  </div>')
 
     print('\t </div>')
     print('\t </fieldset>')
@@ -272,27 +247,25 @@ def output_generate():
         print(f'\tERROR: {html.escape(ERROR, quote=True)}')
         print('\t<br/>Starting with empty template ...')
         # return
-        FLAVOR_SPEC = (fnmck.Main("0L-0"), fnmck.Disk(""), fnmck.Hype(""), fnmck.HWVirt(""),
-                       fnmck.CPUBrand(""), fnmck.GPU(""), fnmck.IB(""))
-    cpu, disk, hype, hvirt, cpubrand, gpu, ibd = FLAVOR_SPEC
+        FLAVOR_SPEC = Flavorname()
     print('\t<br/>\n\t<FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
-    form_attr(cpu)
+    make_component_form(Main, FLAVOR_SPEC.cpuram)
     print('\t<INPUT TYPE="submit" VALUE="Generate"/><br/>')
     print('\t<br/>The following settings are all optional and (except for disk) meant for highly specialized / differentiated offerings.<br/>')
     print('\t<font size=-1>')
-    form_attr(disk)
-    form_attr(hype)
-    form_attr(hvirt)
-    form_attr(cpubrand)
-    form_attr(gpu)
-    form_attr(ibd)
+    make_component_form(Disk, FLAVOR_SPEC.disk)
+    make_component_form(Hype, FLAVOR_SPEC.hype)
+    make_component_form(HWVirt, FLAVOR_SPEC.hwvirt)
+    make_component_form(CPUBrand, FLAVOR_SPEC.cpubrand)
+    make_component_form(GPU, FLAVOR_SPEC.gpu)
+    make_component_form(IB, FLAVOR_SPEC.ib)
     print('\t</font><br/>')
     print('\tRemember that you are allowed to understate performance.<br/>')
     print('\t<INPUT TYPE="submit" VALUE="Generate"/><br/>')
     print('\t</FORM>')
     if FLAVOR_NAME:
         print(f"\t<br/><font size=+1 color=blue><b>SCS flavor name: <tt>{html.escape(FLAVOR_NAME, quote=True)}</tt></b>")
-        altname = fnmck.outname(cpu, disk, None, None, None, gpu, ibd)
+        altname = fnmck.outname(Flavorname(cpuram=FLAVOR_SPEC.cpuram, disk=FLAVOR_SPEC.disk, gpu=FLAVOR_SPEC.gpu, ib=FLAVOR_SPEC.ib))
         print(f"\t<br/><b>Short SCS flavor name: <tt>{html.escape(altname, quote=True)}</tt></b></font>")
     else:
         print(f'\t<font color=red>ERROR: {html.escape(ERROR, quote=True)}</font>')
