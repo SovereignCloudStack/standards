@@ -52,13 +52,12 @@ def generate_name(form):
         print(f'{key}={val}', file=sys.stderr)
         component_key, attr_key = key.split('.')
         component = getattr(flavorname, component_key, None)
-        if spec is None:
+        if component is None:
             raise RuntimeError(f"Unknown key {component_key}")
         attr = getattr(component, attr_key, None)
         if attr is None:
             raise RuntimeError(f"ERROR: Can not find attribute {attr_key} in {component_key}")
         fdesc = attr.name
-        tbl = attr.get_tbl(component)
         if val == "NN":
             val = ""
         # Now parse fdesc to get the right value
@@ -71,9 +70,9 @@ def generate_name(form):
                 val = int(val)
         elif fdesc[0] == '?':
             val = bool(val)
-        setattr(spec, attr_key, val)
+        setattr(component, attr_key, val)
     # Eliminate empty components
-    for member_name, component in FLAVOR_SPEC.__dict__.items():
+    for member_name, component in flavorname.__dict__.items():
         if not hasattr(component, "type"):
             continue
         if isinstance(component, Main):
@@ -177,8 +176,7 @@ def output_generate(namestr, flavorname, error):
     "input details to generate SCS flavor name"
     if not namestr or not flavorname or error:
         flavorname = Flavorname()
-        if isinstance(parse_result, str):
-            print(f'\t<font color=red>ERROR: {html.escape(error, quote=True)}</font>')
+        print(f'\t<font color=red>ERROR: {html.escape(error, quote=True)}</font>')
         print('\t<br/>Starting with empty template ...')
 
     print('\t<br/>\n\t<FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
