@@ -22,6 +22,7 @@
 - job:
     name: scs-check-adr-syntax
     parent: base
+    pre-run: playbooks/pre.yml
     run: playbooks/adr_syntax.yaml
 - job:
     name: scs-check-gx-scs
@@ -31,6 +32,7 @@
        secret: SECRET_STANDARDS
     vars:
       cloud: gx-scs
+    pre-run: playbooks/pre.yml
     run: playbooks/compliance_check.yaml
 - job:
     name: scs-check-gx-scs-main

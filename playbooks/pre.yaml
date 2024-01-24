@@ -1,0 +1,37 @@
+---
+- name: Run compliance check tool
+  hosts: all
+  roles:
+    - role: ensure-pip  # https://zuul-ci.org/docs/zuul-jobs/latest/python-roles.html#role-ensure-pip
+  tasks:
+    - name: Create cloud config dir
+      ansible.builtin.file:
+        path: "~/.config/openstack"
+        state: directory
+        recurse: true
+        mode: "0700"
+
+    - name: Create cloud config file
+      ansible.builtin.template:
+        src: "clouds.yaml.j2"
+        dest: "~/.config/openstack/clouds.yaml"
+        mode: "0600"
+      no_log: true
+
+    - name: Copy ADRs on the node
+      ansible.builtin.copy:
+        src: "../Standards"
+        dest: "~/"
+        mode: 0500
+      no_log: false
+
+    - name: Copy Tests on the node
+      ansible.builtin.copy:
+        src: "../Tests"
+        dest: "~/"
+        mode: 0500
+      no_log: false
+
+    - name: Install dependencies
+      ansible.builtin.pip:
+        requirements: /home/ubuntu/Tests/requirements.txt
