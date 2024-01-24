@@ -1,0 +1,25 @@
+---
+- name: Run compliance check tool
+  hosts: all
+  roles:
+    - role: ensure-pip  # https://zuul-ci.org/docs/zuul-jobs/latest/python-roles.html#role-ensure-pip
+  tasks:
+    - name: Create cloud config dir
+      ansible.builtin.file:
+        path: "~/.config/openstack"
+        state: directory
+        recurse: true
+        mode: "0700"
+
+    - name: Create cloud config file
+      ansible.builtin.template:
+        src: "clouds.yaml.j2"
+        dest: "~/.config/openstack/clouds.yaml"
+        mode: "0600"
+      no_log: true
+
+    - name: Clean up any lingering resources from previous run
+      ansible.builtin.command:
+        cmd: python3 /home/ubuntu/Tests/cleanup.py -c {{ cloud }} -p _scs-
+      failed_when: false
+      changed_when: true

@@ -2,12 +2,6 @@
 - name: Run compliance check tool
   hosts: all
   tasks:
-    - name: Clean up any lingering resources from previous run
-      ansible.builtin.command:
-        cmd: python3 /home/ubuntu/Tests/cleanup.py -c {{ cloud }} -p _scs-
-      failed_when: false
-      changed_when: true
-
     - name: Run compliance script
       ansible.builtin.command:
         cmd: python3 /home/ubuntu/Tests/scs-compliance-check.py /home/ubuntu/Tests/scs-compatible-iaas.yaml -c {{ cloud }} -o {{ cloud }}-iaas.yaml -C

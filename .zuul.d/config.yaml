@@ -32,7 +32,9 @@
        secret: SECRET_STANDARDS
     vars:
       cloud: gx-scs
-    pre-run: playbooks/pre.yaml
+    pre-run:
+     - playbooks/pre.yaml
+     - playbooks/pre_cloud.yaml
     run: playbooks/compliance_check.yaml
 - job:
     name: scs-check-gx-scs-main
