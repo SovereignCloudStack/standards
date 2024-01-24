@@ -1,5 +1,5 @@
 ---
-- name: Run compliance check tool
+- name: Copy scripts+data and install Python dependencies
   hosts: all
   roles:
     - role: ensure-pip  # https://zuul-ci.org/docs/zuul-jobs/latest/python-roles.html#role-ensure-pip
