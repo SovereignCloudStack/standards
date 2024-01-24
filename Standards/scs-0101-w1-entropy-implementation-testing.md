@@ -22,7 +22,7 @@ image attributes have to be set:
 Some checks need to be performed on a live instance. For these checks, it is
 necessary to choose a sample of VM images to test on.
 
-For the time being, the sample MUST contain the very first public image reported
+For the time being, the sample MUST contain at least one public image reported
 by OpenStack. This may be extended in the future.
 
 ### Errors
