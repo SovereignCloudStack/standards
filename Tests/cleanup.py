@@ -4,8 +4,8 @@
 
 # taken from https://github.com/osism/testbed/blob/main/terraform/scripts/cleanup.py
 # with minor adaptations:
-#  - names really start with the prefix (e.g., scs-0101-net-X instead of net-scs-0101-X)
-#  - collect the function inside a class
+#  - names really start with the prefix (e.g., PREFIX-net-X instead of net-PREFIX-X)
+#  - collect the original functions inside the class Janitor
 #  - provide command-line interface in addition to environment variables
 #  - prefix log messages with channel (can be useful for counting errors)
 
