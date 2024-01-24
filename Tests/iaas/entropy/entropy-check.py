@@ -15,6 +15,7 @@ restrictions); for further information, see the log messages on various channels
 from collections import Counter
 import getopt
 import logging
+from operator import attrgetter
 import os
 import re
 import sys
@@ -358,6 +359,21 @@ class CountingHandler(logging.Handler):
         self.bylevel[record.levelno] += 1
 
 
+def select_deb_image(images):
+    """From a list of OpenStack image objects, select a recent Debian derivative.
+
+    Try Debian first, then Ubuntu.
+    """
+    for prefix in ("Debian ", "Ubuntu "):
+        imgs = sorted(
+            [img for img in images if img.name.startswith("Debian ")],
+            key=attrgetter("name"),
+        )
+        if imgs:
+            return imgs[-1]
+    return None
+
+
 def main(argv):
     # configure logging, disable verbose library logging
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
@@ -410,7 +426,7 @@ def main(argv):
                     logger.critical(f"Missing images: {', '.join(missing_names)}")
                     return 1
             else:
-                images = all_images[:1]
+                images = [select_deb_image(all_images) or all_images[0]]
                 logger.debug(f"Selected image: {images[0].name} ({images[0].id})")
 
             logger.debug("Checking images and flavors for recommended attributes")
