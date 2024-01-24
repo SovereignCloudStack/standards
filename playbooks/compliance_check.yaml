@@ -3,8 +3,8 @@
   hosts: all
   tasks:
     - name: Run compliance script
-      ansible.builtin.command:
-        cmd: python3 /home/ubuntu/Tests/scs-compliance-check.py /home/ubuntu/Tests/scs-compatible-iaas.yaml -c {{ cloud }} -o {{ cloud }}-iaas.yaml -C
+      ansible.builtin.shell: |
+        python3 ~/Tests/scs-compliance-check.py ~/Tests/scs-compatible-iaas.yaml -c {{ cloud }} -o {{ cloud }}-iaas.yaml -C
       register: result
       changed_when: true
       failed_when: result.rc != 0

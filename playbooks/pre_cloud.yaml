@@ -19,7 +19,6 @@
       no_log: true
 
     - name: Clean up any lingering resources from previous run
-      ansible.builtin.command:
-        cmd: python3 /home/ubuntu/Tests/cleanup.py -c {{ cloud }} -p _scs-
+      ansible.builtin.shell: python3 ~/Tests/cleanup.py -c {{ cloud }} -p _scs-
       failed_when: false
       changed_when: true

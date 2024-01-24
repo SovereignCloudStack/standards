@@ -20,4 +20,4 @@
 
     - name: Install dependencies
       ansible.builtin.pip:
-        requirements: /home/ubuntu/Tests/requirements.txt
+        requirements: ~/Tests/requirements.txt
