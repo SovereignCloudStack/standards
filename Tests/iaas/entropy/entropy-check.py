@@ -30,6 +30,8 @@ import openstack.cloud
 
 logger = logging.getLogger(__name__)
 
+# prefix ephemeral resources with '_scs-' to rule out any confusion with important resources
+# (this enables us to automatically dispose of any lingering resources should this script be killed)
 NETWORK_NAME = "_scs-0101-net"
 ROUTER_NAME = "_scs-0101-router"
 SERVER_NAME = "_scs-0101-server"
