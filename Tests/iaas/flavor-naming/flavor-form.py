@@ -197,7 +197,7 @@ def output_generate(namestr, flavorname, error):
     if not namestr:
         return
     print(f"\t<br/><font size=+1 color=blue><b>SCS flavor name: <tt>{html.escape(namestr, quote=True)}</tt></b>")
-    altname = outname(Flavorname(cpuram=flavorname.cpuram, disk=flavorname.disk, gpu=flavorname.gpu, ib=flavorname.ib))
+    altname = outname(flavorname.shorten())
     print(f"\t<br/><b>Short SCS flavor name: <tt>{html.escape(altname, quote=True)}</tt></b></font>")
 
 

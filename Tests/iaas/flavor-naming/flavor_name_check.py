@@ -216,6 +216,12 @@ class Flavorname:
         self.gpu = gpu
         self.ib = ib
 
+    def shorten(self):
+        """return canonically shortened name as recommended in the standard"""
+        if self.hype is None and self.hwvirt is None and self.cpubrand is None:
+            return self
+        return Flavorname(cpuram=self.cpuram, disk=self.disk, gpu=self.gpu, ib=self.ib)
+
 
 class Outputter:
     """
@@ -402,7 +408,6 @@ class Parser:
         flavorname.gpu = self.gpu.parse(ctx)
         flavorname.ib = self.ib.parse(ctx)
         if ctx.pos != len(s):
-            print(outputter(flavorname))
             raise ValueError(f"Failed to parse name {s} to completion; remainder: {s[ctx.pos:]}")
         return flavorname
 
@@ -414,16 +419,7 @@ outname = outputter = Outputter()
 
 class CompatLayer:
     """
-    This class provides the functionality that was previously imported via
-
-    fnmck = importlib.import_module("flavor-name-check")
-
-    Instead, you now do
-
-    fnmck = CompatLayer()
-
-    A few adaptation are necessary though because this package uses `Flavorname`
-    instead of the old `tuple` of `Prop`s.
+    This class provides convenience functions previously found in `flavor-name-check.py`.
     """
     def __init__(self):
         self.verbose = False
@@ -504,7 +500,6 @@ class CompatLayer:
 
 
 if __name__ == "__main__":
-    namestr = "SCS-16T-64-3x10_GNa-64_ib"
-    print(namestr)
-    print(outputter(parser_v1("SCS-16T:64:3x10s-GNa:64-ib")))
+    namestr = "SCS-16T-64-3x10s_bms_hwv_i3h_GNa-64_ib"
+    print(outputter(parser_v1("SCS-16T:64:3x10s-GNa:64-ib")) == outputter(parser_v2(namestr).shorten()))
     print(namestr == outputter(parser_v2(namestr)))
