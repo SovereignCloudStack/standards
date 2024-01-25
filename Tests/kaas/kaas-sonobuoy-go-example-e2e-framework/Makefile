@@ -19,7 +19,7 @@ PLUGIN_FILE="${PLUGIN_NAME}.yaml"
 #~ SONO_TIMEOUT = 60
 
 KUBERNETES_SERVICE_HOST=127.0.0.1
-KUBERNETES_SERVICE_PORT=34743	
+KUBERNETES_SERVICE_PORT=34743
 
 
 ###############################################################################
@@ -29,7 +29,7 @@ KUBERNETES_SERVICE_PORT=34743
 ifeq ($(IMAGE_VERSION_TAG),)
 	export TAG=dev
 else
-  export TAG=${IMAGE_VERSION_TAG}
+	export TAG=${IMAGE_VERSION_TAG}
 endif
 
 SONOBUOY_IMAGE = "${IMAGE_REGISTRY}/${IMAGE_NAME}:${TAG}"
@@ -53,7 +53,7 @@ kind-init:
 
 dev-prerequests:
 	@echo "[check-test-setup]"
-	@kind version	
+	@kind version
 	@docker version
 	@sonobuoy version --short
 	@go version
@@ -65,7 +65,7 @@ dev-setup: kind-init
 
 dev-build: container-init
 	@echo "[build]"
-	docker build . -f ${DOCKERFILE} -t ${SONOBUOY_IMAGE}
+	DOCKER_BUILDKIT=1 docker build . -f ${DOCKERFILE} -t ${SONOBUOY_IMAGE}
 	kind load docker-image --name ${KIND_CLUSTER} ${SONOBUOY_IMAGE}
 
 

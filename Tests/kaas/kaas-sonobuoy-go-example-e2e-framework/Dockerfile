@@ -10,7 +10,7 @@ RUN wget https://storage.googleapis.com/kubernetes-release/release/v1.21.3/bin/l
 
 COPY ./scs_k8s_tests /src/scs_k8s_tests
 WORKDIR /src
-COPY go.* /src
+COPY go.* /src/
 ENV CGO_ENABLED=0
 RUN go mod download
 

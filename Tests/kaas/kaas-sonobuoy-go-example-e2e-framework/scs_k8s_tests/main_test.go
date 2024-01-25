@@ -12,6 +12,7 @@ import (
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
 )
 
+
 const (
 	ProgressReporterCtxKey = "SONOBUOY_PROGRESS_REPORTER"
 	NamespacePrefixKey = "NS_PREFIX"
@@ -39,46 +40,44 @@ func TestMain(m *testing.M) {
 	})
 
 	testenv.BeforeEachTest(func(ctx context.Context, cfg *envconf.Config, t *testing.T) (context.Context, error) {
-    fmt.Println("BeforeEachTest")
+	fmt.Println("BeforeEachTest")
 		updateReporter.StartTest(t.Name())
 		return createNSForTest(ctx, cfg, t, runID)
 	})
 
 	testenv.AfterEachTest(func(ctx context.Context, cfg *envconf.Config, t *testing.T) (context.Context, error) {
-    fmt.Println("AfterEachTest")
+	fmt.Println("AfterEachTest")
 		updateReporter.StopTest(t.Name(),t.Failed(),t.Skipped(),nil)
 		return deleteNSForTest(ctx, cfg, t, runID)
 	})
 
-  /*
+	/*
 	testenv.BeforeEachFeature(func(ctx context.Context, config *envconf.Config, info features.Feature) (context.Context, error) {
 		// Note that you can also add logic here for before a feature is tested. There may be
 		// more than one feature in a test.
-    fmt.Println("BeforeEachFeature")
+		fmt.Println("BeforeEachFeature")
 		return ctx, nil
 	})
-
 
 	testenv.AfterEachFeature(func(ctx context.Context, config *envconf.Config, info features.Feature) (context.Context, error) {
 		// Note that you can also add logic here for after a feature is tested. There may be
 		// more than one feature in a test.
-    fmt.Println("AfterEachFeature")
+		fmt.Println("AfterEachFeature")
 		return ctx, nil
 	})
-  */ 
-  
+	*/
+
 	testenv.Finish(
 		// Teardown func: delete kind cluster
 		func(ctx context.Context, cfg *envconf.Config) (context.Context, error) {
-
-      fmt.Println("Finished go test suite")
+			fmt.Println("Finished go test suite")
 			//~ if err := ???; err != nil{
 				//~ return ctx, err
 			//~ }
 			return ctx, nil
 		},
 	)
-  
+
 	os.Exit(testenv.Run(m))
 }
 
