@@ -59,9 +59,12 @@ In this case, the description of this volume type would start as follows:
 
 ## Conformance Tests
 
-TO DO: the test script shall test the following:
+The script `/Tests/iaas/volume-types/volume-types-check.py` connects to an OpenStack environment and tests
+the following:
 
 - for each volume type: if its description starts with `[feat:....]`, then this prefix is a feature list
-  (sorted, each entry at most once), and each entry is one of the possible features described here;
-  otherwise, an ERROR is produced
-- the recommended volume types are present (otherwise, a WARNING is produced)
+  (sorted, each entry at most once), and each entry is one of the possible features described here,
+- the recommended volume types are present (otherwise, a WARNING is produced).
+
+The return code is zero precisely when the test could be performed and the conditions are satisfied.
+Otherwise, detailed errors and warnings are output to stderr.
