@@ -30,11 +30,13 @@ import openstack.cloud
 
 logger = logging.getLogger(__name__)
 
-NETWORK_NAME = "scs-0101-net"
-ROUTER_NAME = "scs-0101-router"
-SERVER_NAME = "scs-0101-server"
-SECURITY_GROUP_NAME = "scs-0101-group"
-KEYPAIR_NAME = "scs-0101-keypair"
+# prefix ephemeral resources with '_scs-' to rule out any confusion with important resources
+# (this enables us to automatically dispose of any lingering resources should this script be killed)
+NETWORK_NAME = "_scs-0101-net"
+ROUTER_NAME = "_scs-0101-router"
+SERVER_NAME = "_scs-0101-server"
+SECURITY_GROUP_NAME = "_scs-0101-group"
+KEYPAIR_NAME = "_scs-0101-keypair"
 
 IMAGE_ATTRIBUTES = {
     # https://docs.openstack.org/glance/2023.1/admin/useful-image-properties.html#image-property-keys-and-values
