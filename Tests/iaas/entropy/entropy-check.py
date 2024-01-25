@@ -458,7 +458,10 @@ def main(argv):
         logger.debug("Exception info", exc_info=True)
 
     c = counting_handler.bylevel
-    logger.debug(f"Total critical / error / info: {c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.INFO]}")
+    logger.debug(
+        "Total critical / error / warning: "
+        f"{c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.WARNING]}"
+    )
     return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 
