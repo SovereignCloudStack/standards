@@ -91,7 +91,7 @@ def process_pipeline(rc, *args, **kwargs):
 @click.pass_obj
 def parse(cfg, version, name, output='none'):
     """Validates flavor names, optionally turns into prose/yaml.
-    
+
     The first argument selects the version of the flavor naming standard upon which to base the syntax
     validation. With 'v1/v2', flavor names of both kinds are accepted, but warnings are emitted for v2,
     and similarly with 'v2/v1', where warnings are emitted for v1.

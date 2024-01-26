@@ -12,7 +12,7 @@ This directory contains three basic tools:
 
 The command-line syntax of this script is best shown via the built-in help function:
 
-```
+```console
 $ ./cli.py --help
 Usage: cli.py [OPTIONS] COMMAND [ARGS]...
 
@@ -28,7 +28,7 @@ Commands:
 
 ### Parse
 
-```
+```console
  ./cli.py parse --help
 Usage: cli.py parse [OPTIONS] {v1|v1/v2|v2/v1|v2|v3|latest} [NAME]...
 
@@ -46,7 +46,7 @@ Options:
 
 Here is an example invokation:
 
-```
+```console
 $ ./cli.py parse --output prose v1/v2 SCS-16T-64-3x10s_bms_hwv_i3h_GNa-64_ib 
 WARNING: Name is merely tolerated v2: SCS-16T-64-3x10s_bms_hwv_i3h_GNa-64_ib
 SCS flavor with 16 High Perf Intel Ice Lake SMT Threads with 64.0 GiB RAM on Bare Metal System with HW virt and SSD 3x10GB root volume and Pass-Through GPU nVidia Ampere (w/ 64 CU/EU/SM) and Infiniband
@@ -54,7 +54,7 @@ SCS flavor with 16 High Perf Intel Ice Lake SMT Threads with 64.0 GiB RAM on Bar
 
 And one example with a wrong name:
 
-```
+```console
 $ ./cli.py parse --output prose v3 SCS-2T-4_ic
 Extra characters: _ic: SCS-2T-4_ic
 ```
@@ -62,7 +62,7 @@ Extra characters: _ic: SCS-2T-4_ic
 Noteworthy: if `--verbose` is used, the output format `none` will produce an output for every name (even
 those that are valid):
 
-```
+```console
 $ ./cli.py --verbose parse v3 SCS-16T-64 SC-2T-4 SCS-2-4
 OK: SCS-16T-64
 NOT an SCS flavor: SC-2T-4
@@ -71,7 +71,7 @@ Failed to parse main part: SCS-2-4
 
 ### Input
 
-```
+```console
 $ ./cli.py input --help
 Usage: cli.py input [OPTIONS]
 
@@ -83,7 +83,7 @@ Options:
 
 Example invokation:
 
-```
+```console
 $ ./cli.py input
 CPU-RAM
  #vCPUs: 16
