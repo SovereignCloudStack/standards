@@ -98,5 +98,4 @@ if __name__ == "__main__":
         sys.exit(main(sys.argv))
     except Exception as e:
         print(f"CRITICAL: {e!s}", file=sys.stderr)
-        raise
         sys.exit(1)
