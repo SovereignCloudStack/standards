@@ -8,6 +8,10 @@ from typing import Optional
 import yaml
 
 
+CPUTYPE_KEY = {'L': 'crowded-core', 'V': 'shared-core', 'T': 'dedicated-thread', 'C': 'dedicated-core'}
+DISKTYPE_KEY = {'n': 'network', 'h': 'hdd', 's': 'ssd', 'p': 'nvme'}
+
+
 class TypeCheck:
     """class for validating the type of some attribute within a flavor name"""
     def __call__(self, attr: str, value):
@@ -383,7 +387,8 @@ class Parser:
     `flavorname = parser_v2(namestr)`.
     """
 
-    def __init__(self, syntax):
+    def __init__(self, vstr, syntax):
+        self.vstr = vstr
         self.prefix = syntax.prefix
         self.cpuram = ComponentParser(syntax.cpuram, Main)
         self.disk = ComponentParser(syntax.disk, Disk)
@@ -400,7 +405,7 @@ class Parser:
         flavorname = Flavorname()
         flavorname.cpuram = self.cpuram.parse(ctx)
         if flavorname.cpuram is None:
-            raise ValueError(f"Failed to parse main part of {s}")
+            raise ValueError("Failed to parse main part")
         flavorname.disk = self.disk.parse(ctx)
         flavorname.hype = self.hype.parse(ctx)
         flavorname.hwvirt = self.hwvirt.parse(ctx)
@@ -408,13 +413,106 @@ class Parser:
         flavorname.gpu = self.gpu.parse(ctx)
         flavorname.ib = self.ib.parse(ctx)
         if ctx.pos != len(s):
-            raise ValueError(f"Failed to parse name {s} to completion; remainder: {s[ctx.pos:]}")
+            raise ValueError(f"Extra characters: {s[ctx.pos:]}")
         return flavorname
 
 
-parser_v1 = Parser(SyntaxV1)
-parser_v2 = Parser(SyntaxV2)
+class Inputter:
+    """Auxiliary class for interactive input of flavor names."""
+
+    @staticmethod
+    def to_bool(s):
+        """interpret string input as bool"""
+        s = s.upper()
+        if s == "" or s == "0" or s[0] == "N" or s[0] == "F":
+            return False
+        if s == "1" or s[0] == "Y" or s[0] == "T":
+            return True
+        raise ValueError
+
+    def input_component(self, targetcls):
+        target = targetcls()
+        print(targetcls.type)
+        attrs = [att for att in targetcls.__dict__.values() if isinstance(att, Attr)]
+        for i, attr in enumerate(attrs):
+            fdesc = attr.name
+            tbl = attr.get_tbl(target)
+            if tbl:
+                print(f" {fdesc} Options:")
+                for key, v in tbl.items():
+                    print(f"  {'' if key is None else key}: {v}")
+            while True:
+                print(f" {fdesc}: ", end="")
+                val = input()
+                try:
+                    if not val and i == 0 and not issubclass(targetcls, (Main, Disk)):
+                        # BAIL: if you don't want an extension, supply empty first attr
+                        return
+                    if fdesc[0] == "?":
+                        val = self.to_bool(val)
+                    elif fdesc[0:2] == "##":
+                        val = float(val)
+                    elif fdesc[0] == "#":
+                        if fdesc[1] == "." and not val:
+                            val = attr.default
+                            break
+                        oval = val
+                        val = int(val)
+                        if str(val) != oval:
+                            raise ValueError(val)
+                    elif tbl:
+                        if val in tbl:
+                            break
+                        if val.upper() in tbl:
+                            val = val.upper()
+                        elif val.lower() in tbl:
+                            val = val.lower()
+                        if val not in tbl:
+                            raise ValueError(val)
+                except BaseException as exc:
+                    print(exc)
+                    print(" INVALID!")
+                else:
+                    break
+            attr.__set__(target, val)
+        return target
+
+    def __call__(self):
+        flavorname = Flavorname()
+        flavorname.cpuram = self.input_component(Main)
+        flavorname.disk = self.input_component(Disk)
+        if flavorname.disk and not (flavorname.disk.nrdisks and flavorname.disk.disksize):
+            # special case...
+            flavorname.disk = None
+        flavorname.hype = self.input_component(Hype)
+        flavorname.hvirt = self.input_component(HWVirt)
+        flavorname.cpubrand = self.input_component(CPUBrand)
+        flavorname.gpu = self.input_component(GPU)
+        flavorname.ib = self.input_component(IB)
+        return flavorname
+
+
+parser_v1 = Parser("v1", SyntaxV1)
+parser_v2 = Parser("v2", SyntaxV2)
+parser_v3 = Parser("v3", SyntaxV2)  # this is the same as parser_v2 except for the vstr
 outname = outputter = Outputter()
+inputflavor = inputter = Inputter()
+
+
+def flavorname_to_dict(flavorname: Flavorname) -> dict:
+    name_v2 = outputter(flavorname)
+    result = {
+        'cpus': flavorname.cpuram.cpus,
+        'cpu-type': CPUTYPE_KEY[flavorname.cpuram.cputype],
+        'ram': flavorname.cpuram.ram,
+        'name-v1': SyntaxV1.from_v2(name_v2),
+        'name-v2': name_v2,
+    }
+    if flavorname.disk:
+        result['disk'] = flavorname.disk.disksize
+        for i in range(flavorname.disk.nrdisks):
+            result[f'disk{i}-type'] = DISKTYPE_KEY[flavorname.disk.disktype or 'n']
+    return result
 
 
 class CompatLayer:

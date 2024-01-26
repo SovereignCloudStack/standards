@@ -11,7 +11,7 @@ License: CC-BY-SA 4.0
 
 import sys
 
-from flavor_name_check import CompatLayer, Attr, Main, Disk, Hype, HWVirt, CPUBrand, GPU, IB, Flavorname
+from flavor_name_check import CompatLayer, inputflavor
 from flavor_name_describe import prettyname
 
 
@@ -25,86 +25,6 @@ def usage():
     print("-C mand.yaml reads the mandatory flavor list from mand.yaml instead of SCS-Spec.MandatoryFlavors.yaml")
     print("Example: flavor-name-check.py -c $(openstack flavor list -f value -c Name)")
     sys.exit(2)
-
-
-class Inputter:
-    """Auxiliary class for interactive input of flavor names."""
-
-    @staticmethod
-    def to_bool(s):
-        """interpret string input as bool"""
-        s = s.upper()
-        if s == "" or s == "0" or s[0] == "N" or s[0] == "F":
-            return False
-        if s == "1" or s[0] == "Y" or s[0] == "T":
-            return True
-        raise ValueError
-
-    def input_component(self, targetcls):
-        target = targetcls()
-        print(targetcls.type)
-        attrs = [att for att in targetcls.__dict__.values() if isinstance(att, Attr)]
-        for i, attr in enumerate(attrs):
-            fdesc = attr.name
-            tbl = attr.get_tbl(target)
-            if tbl:
-                print(f" {fdesc} Options:")
-                for key, v in tbl.items():
-                    print(f"  {'' if key is None else key}: {v}")
-            while True:
-                print(f" {fdesc}: ", end="")
-                val = input()
-                try:
-                    if not val and i == 0 and not issubclass(targetcls, (Main, Disk)):
-                        # BAIL: if you don't want an extension, supply empty first attr
-                        return
-                    if fdesc[0] == "?":
-                        val = self.to_bool(val)
-                    elif fdesc[0:2] == "##":
-                        val = float(val)
-                    elif fdesc[0] == "#":
-                        if fdesc[1] == "." and not val:
-                            val = attr.default
-                            break
-                        oval = val
-                        val = int(val)
-                        if str(val) != oval:
-                            raise ValueError(val)
-                    elif tbl:
-                        if val in tbl:
-                            break
-                        if val.upper() in tbl:
-                            val = val.upper()
-                        elif val.lower() in tbl:
-                            val = val.lower()
-                        if val not in tbl:
-                            raise ValueError(val)
-                except BaseException as exc:
-                    print(exc)
-                    print(" INVALID!")
-                else:
-                    break
-            attr.__set__(target, val)
-        return target
-
-    def __call__(self):
-        flavorname = Flavorname()
-        flavorname.cpuram = self.input_component(Main)
-        flavorname.disk = self.input_component(Disk)
-        if flavorname.disk and not (flavorname.disk.nrdisks and flavorname.disk.disksize):
-            # special case...
-            flavorname.disk = None
-        flavorname.hype = self.input_component(Hype)
-        flavorname.hvirt = self.input_component(HWVirt)
-        flavorname.cpubrand = self.input_component(CPUBrand)
-        flavorname.gpu = self.input_component(GPU)
-        flavorname.ib = self.input_component(IB)
-        return flavorname
-
-
-def inputflavor(inputter=Inputter()):
-    """Interactively input a flavor"""
-    return inputter()
 
 
 def main(argv):
@@ -175,7 +95,12 @@ def main(argv):
     for name in flavorlist:
         if not name:
             continue
-        ret = _fnmck.parsename(name)
+        try:
+            ret = _fnmck.parsename(name)
+        except Exception as e:
+            error += 1
+            print(f"ERROR parsing {name}: {e}")
+            continue
         if not ret:
             nonscs += 1
             continue

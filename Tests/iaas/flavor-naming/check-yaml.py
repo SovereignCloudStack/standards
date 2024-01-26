@@ -14,13 +14,11 @@ import sys
 
 import yaml
 
-from flavor_name_check import parser_v2, SyntaxV1
+from flavor_name_check import parser_v2, flavorname_to_dict
 
 
 REQUIRED_FIELDS = ['name-v1', 'name-v2', 'name', 'cpus', 'ram', 'cpu-type']
 DEFAULTS = {'disk0-type': 'network'}
-CPUTYPE_KEY = {'L': 'crowded-core', 'V': 'shared-core', 'T': 'dedicated-thread', 'C': 'dedicated-core'}
-DISKTYPE_KEY = {'n': 'network', 'h': 'hdd', 's': 'ssd', 'p': 'nvme'}
 
 
 class Undefined:
@@ -50,23 +48,15 @@ class Checker:
             return
         name = flavor_spec['name']
         name_v2 = flavor_spec['name-v2']
-        flavorname = parser_v2(name_v2)
+        try:
+            flavorname = parser_v2(name_v2)
+        except Exception:
+            flavorname = None
         if not flavorname:
             self.emit(f"flavor {name}: name-v2 '{name_v2}' could not be parsed")
             return
         undefined = Undefined()
-        expected = {
-            'cpus': flavorname.cpuram.cpus,
-            'cpu-type': CPUTYPE_KEY[flavorname.cpuram.cputype],
-            'ram': flavorname.cpuram.ram,
-            'name-v1': SyntaxV1.from_v2(name_v2),
-            'disk': undefined,
-        }
-        if flavorname.disk:
-            if flavorname.disk.nrdisks != 1:
-                self.emit(f"flavor '{name}': name-v2 using multiple disks")
-            expected['disk'] = flavorname.disk.disksize
-            expected['disk0-type'] = DISKTYPE_KEY[flavorname.disk.disktype or 'n']
+        expected = flavorname_to_dict(flavorname)
         for key, exp_val in expected.items():
             val = flavor_spec.get(key, DEFAULTS.get(key, undefined))
             if val != exp_val:
@@ -108,4 +98,5 @@ if __name__ == "__main__":
         sys.exit(main(sys.argv))
     except Exception as e:
         print(f"CRITICAL: {e!s}", file=sys.stderr)
+        raise
         sys.exit(1)
