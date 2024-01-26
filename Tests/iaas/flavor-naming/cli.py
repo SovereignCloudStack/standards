@@ -85,38 +85,44 @@ def process_pipeline(rc, *args, **kwargs):
 
 @cli.command()
 @click.argument('version', type=click.Choice(list(VERSIONS), case_sensitive=False))
-@click.argument('namestr', nargs=-1)
-@click.option('-o', '--output', 'output', type=click.Choice(['name', 'description', 'yaml']))
+@click.argument('name', nargs=-1)
+@click.option('-o', '--output', 'output', type=click.Choice(['none', 'prose', 'yaml']),
+              help='select output format (default: none)')
 @click.pass_obj
-def parse(cfg, version, namestr, output='name'):
+def parse(cfg, version, name, output='none'):
+    """Validates flavor names, optionally turns into prose/yaml.
+    
+    The first argument selects the version of the flavor naming standard upon which to base the syntax
+    validation. With 'v1/v2', flavor names of both kinds are accepted, but warnings are emitted for v2,
+    and similarly with 'v2/v1', where warnings are emitted for v1.
+    """
     version = VERSIONS.get(version)
     printv = cfg.printv
     errors = 0
-    for name in namestr:
+    for namestr in name:
         try:
-            flavorname = version.parse(name)
+            flavorname = version.parse(namestr)
         except ValueError as exc:
-            print(f"{exc}: {name}")
+            print(f"{exc}: {namestr}")
             errors += 1
         else:
             if flavorname is None:
-                print(f"NOT an SCS flavor: {name}")
-            elif output == 'description':
+                print(f"NOT an SCS flavor: {namestr}")
+            elif output == 'prose':
                 printv(name, end=': ')
                 print(f"{prettyname(flavorname)}")
             elif output == 'yaml':
                 print(yaml.dump(flavorname_to_dict(flavorname), explicit_start=True))
             else:
-                printv(f"OK: {name}")
+                printv(f"OK: {namestr}")
     return errors
 
 
 @cli.command()
-@click.option('-p', '--pretty', 'pretty', is_flag=True)
-def input(pretty=False):
+def input():
+    """Interactively constructs a flavor name."""
     flavorname = inputflavor()
-    outfn = prettyname if pretty else outputter
-    print(outfn(flavorname))
+    print(outputter(flavorname))
 
 
 if __name__ == '__main__':
