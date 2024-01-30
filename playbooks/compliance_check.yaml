@@ -1,37 +1,10 @@
 ---
 - name: Run compliance check tool
   hosts: all
-  roles:
-    - role: ensure-pip  # https://zuul-ci.org/docs/zuul-jobs/latest/python-roles.html#role-ensure-pip
   tasks:
-    - name: Create cloud config dir
-      ansible.builtin.file:
-        path: "~/.config/openstack"
-        state: directory
-        recurse: true
-        mode: "0700"
-
-    - name: Create cloud config file
-      ansible.builtin.template:
-        src: "clouds.yaml.j2"
-        dest: "~/.config/openstack/clouds.yaml"
-        mode: "0600"
-      no_log: true
-
-    - name: Copy Tests on the node
-      ansible.builtin.copy:
-        src: "../Tests"
-        dest: "~/"
-        mode: 0500
-      no_log: false
-
-    - name: Install dependencies
-      ansible.builtin.pip:
-        requirements: /home/ubuntu/Tests/requirements.txt
-
     - name: Run compliance script
-      ansible.builtin.command:
-        cmd: python3 /home/ubuntu/Tests/scs-compliance-check.py /home/ubuntu/Tests/scs-compatible-iaas.yaml -c {{ cloud }} -o {{ cloud }}-iaas.yaml -C
+      ansible.builtin.shell: |
+        python3 ~/Tests/scs-compliance-check.py ~/Tests/scs-compatible-iaas.yaml -c {{ cloud }} -o {{ cloud }}-iaas.yaml -C
       register: result
       changed_when: true
       failed_when: result.rc != 0

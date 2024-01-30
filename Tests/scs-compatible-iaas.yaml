@@ -3,6 +3,23 @@ url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/
 versions:
   - version: v4
     standards:
+      - name: OpenStack Powered Compute v2022.11
+        url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
+        # Unfortunately, no wrapper to run refstack yet, needs to be added
+      - name: Flavor naming
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v3-flavor-naming.md
+        check_tools:
+          - executable: ./iaas/flavor-naming/flavor-names-openstack.py
+            args: "--mand=./iaas/scs-0100-v3-flavors.yaml"
+      - name: Entropy
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0101-v1-entropy.md
+        check_tools:
+          - executable: ./iaas/entropy/entropy-check.py
+      - name: Image metadata
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
+        check_tools:
+          - executable: ./iaas/image-metadata/image-md-check.py
+            args: -s -v
       - name: Standard flavors
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0103-v1-standard-flavors.md
         check_tools:
@@ -13,19 +30,6 @@ versions:
         check_tools:
           - executable: ./iaas/standard-images/images-openstack.py
             args: "./iaas/scs-0104-v1-images.yaml"
-      - name: Flavor naming
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v3-flavor-naming.md
-        check_tools:
-          - executable: ./iaas/flavor-naming/flavor-names-openstack.py
-            args: "--mand=./iaas/scs-0100-v3-flavors.yaml"
-      - name: Image metadata
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
-        check_tools:
-          - executable: ./iaas/image-metadata/image-md-check.py
-            args: -s -v
-      - name: OpenStack Powered Compute v2022.11
-        url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
-        # Unfortunately, no wrapper to run refstack yet, needs to be added
   - version: v3
     stabilized_at: 2023-06-15
     obsoleted_at: 2024-04-30
