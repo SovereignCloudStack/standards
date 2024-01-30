@@ -56,7 +56,7 @@ To address this, this standard defines a new Domain Manager persona implemented 
 3. The cloud admin creates one or more users within each of the applicable domains and assigns the `manager` role for a certain domain to them. These users represent the Domain Managers of the corresponding domain.
 4. The customer uses the Domain Manager users to manage (create, update, delete) users, projects, groups and corresponding role assignments within their domain.
 
-## Design Considerations
+## Context
 
 - the Domain Manager persona MUST support managing projects, groups and users within a specific domain
 - the Domain Manager persona MUST be properly scoped to a domain, it MUST NOT gain access to resources outside of its owning domain
