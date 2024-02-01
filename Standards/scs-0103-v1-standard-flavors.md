@@ -44,7 +44,8 @@ Whenever ANY of these are present on ANY flavor, the corresponding semantics mus
 
 ## Standard SCS flavors
 
-These are flavors that must exist on standard SCS clouds (x86-64).
+Following are flavors that must exist on standard SCS clouds (x86-64).
+Note that this statement does not preclude the existence of additional flavors.
 
 ### Mandatory
 
