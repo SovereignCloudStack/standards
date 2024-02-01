@@ -51,6 +51,16 @@ FLAVOR_ATTRIBUTES = {
 FLAVOR_OPTIONAL = ("hw_rng:rate_bytes", "hw_rng:rate_period")
 
 
+# we need to set package source on Ubuntu, because the default is not fixed and can lead to Heisenbugs
+SERVER_USERDATA = """#cloud-config
+apt:
+  primary:
+    - arches: [default]
+      uri: http://az1.clouds.archive.ubuntu.com/ubuntu/
+  security: []
+"""
+
+
 def print_usage(file=sys.stderr):
     """Help output"""
     print("""Usage: entropy-check.py [options]
@@ -85,6 +95,9 @@ def check_flavor_attributes(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAV
 
 
 def install_test_requirements(fconn):
+    # in case we had to patch the apt package sources, wait here for completion
+    _ = fconn.run('cloud-init status --long --wait', hide=True, warn=True)
+    # logger.debug(_.stdout)
     # the following commands seem to be necessary for CentOS 8, but let's not go there
     # because, frankly, that image is ancient
     # sudo sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
@@ -93,17 +106,18 @@ def install_test_requirements(fconn):
     commands = (
         # use ; instead of && after update because an error in update is not fatal
         # also, on newer systems, it seems we need to install rng-tools5...
-        ('apt-get', 'apt-get -v && (sudo apt-get update ; sudo apt-get install -y rng-tools5 || sudo apt-get install -y rng-tools)'),
+        ('apt-get', 'apt-get -v && (cat /etc/apt/sources.list ; sudo apt-get update ; sudo apt-get install -y rng-tools5 || sudo apt-get install -y rng-tools)'),
         ('dnf', 'sudo dnf install -y rng-tools'),
         ('yum', 'sudo yum -y install rng-tools'),
         ('pacman', 'sudo pacman -Syu rng-tools'),
     )
     for name, cmd in commands:
         try:
-            fconn.run(cmd, hide=True)
+            _ = fconn.run(cmd, hide=True)
         except invoke.exceptions.UnexpectedExit as e:
-            logger.debug(f"Error running '{name}': {e.result.stderr.strip()}")
+            logger.debug(f"Error running '{name}':\n{e.result.stderr.strip()}\n{e.result.stdout.strip()}")
         else:
+            # logger.debug(f"Output running '{name}':\n{_.stderr.strip()}\n{_.stdout.strip()}")
             return
     logger.debug("No package manager worked; proceeding anyway as rng-utils might be present nonetheless.")
 
@@ -296,12 +310,13 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
 
     # try to pick a frugal flavor
     flavor = min(flavors, key=lambda flv: flv.vcpus)
+    userdata = SERVER_USERDATA if image.name.lower().startswith("ubuntu") else None
     # create a server with the image and the flavor as well as
     # the previously created keys and security group
     logger.debug(f"Creating instance of image '{image.name}' using flavor '{flavor.name}'")
     server = env.conn.create_server(
         server_name, image=image, flavor=flavor, key_name=env.keypair.name, network=env.network,
-        security_groups=[env.sec_group.id], wait=True, timeout=360, auto_ip=True,
+        security_groups=[env.sec_group.id], userdata=userdata, wait=True, timeout=360, auto_ip=True,
     )
     logger.debug(f"Server '{server_name}' ('{server.id}') has been created")
     return server
@@ -328,7 +343,7 @@ def retry(func, exc_type, timeouts=(8, 7, 15, 10)):
             timeout = next(timeout_iter, None)
             if timeout is None or e.__class__.__name__ not in exc_type:
                 raise
-            # logger.debug(f"Caught {e!r} while {func!r}; waiting {timeout} s before retry")
+            logger.debug(f"Caught {e!r} while {func!r}; waiting {timeout} s before retry")
             time.sleep(timeout)
         else:
             break
@@ -396,7 +411,7 @@ def main(argv):
                     return 1
             else:
                 images = all_images[:1]
-                logger.debug(f"Selected image: {images[0].name}")
+                logger.debug(f"Selected image: {images[0].name} ({images[0].id})")
 
             logger.debug("Checking images and flavors for recommended attributes")
             check_image_attributes(all_images)
@@ -414,7 +429,7 @@ def main(argv):
                         with fabric.Connection(
                             host=server.public_v4,
                             user=image.properties.get('image_original_user') or image.properties.get('standarduser'),
-                            connect_kwargs={"key_filename": env.keyfile.name},
+                            connect_kwargs={"key_filename": env.keyfile.name, "allow_agent": False},
                         ) as fconn:
                             # need to retry because it takes time for sshd to come up
                             retry(fconn.open, exc_type="NoValidConnectionsError,TimeoutError")
