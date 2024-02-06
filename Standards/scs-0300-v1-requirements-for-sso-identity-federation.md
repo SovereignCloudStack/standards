@@ -4,6 +4,13 @@ type: Decision Record
 status: Stable
 stabilized_at: 2023-06-21
 track: IAM
+description: |
+  The SCS-0300 standard outlines requirements for Single Sign-On (SSO) identity federation within the Sovereign
+  Cloud Stack (SCS). It addresses the need for customers to access SCS services using credentials stored and managed
+  externally, facilitating user onboarding and reducing the need for additional dedicated SCS accounts. The standard
+  focuses on delegating authentication to external identity providers and mapping users to roles within SCS for
+  authorization, while also considering the use of machine identities. Keycloak is the current choice as an Identity
+  Provider (IdP) for its support of OAuth 2.0 grants and its integration with OpenStack and kolla-ansible.
 ---
 
 ## Introduction
@@ -133,7 +140,7 @@ a short span of time and increasing risk connected with service restarts.
 Since version 17, Keycloak claims that it's capability for
 "cloud native" deployments on Kubernetes has improved.
 
-[Keycloak is offering a REST API](https://www.keycloak.org/docs-api/20.0.1/rest-api/index.html)
+Keycloak is offering a [documented REST API](https://www.keycloak.org/documentation)
 for all aspects of its administration interface.
 
 For storage of Keycloak configuration and local user metadata

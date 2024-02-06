@@ -3,6 +3,10 @@ title: Sovereign Cloud Standards YAML
 type: Procedural
 status: Draft
 track: Global
+description: |
+  SCS-0003 outlines the standards and certification processes for interoperable and sovereign cloud offerings,
+  categorizing certifications into levels and layers, and detailing their progression, prerequisites, and versioning
+  in a machine-readable YAML format for clarity, traceability, and tool integration.
 ---
 
 ## Introduction

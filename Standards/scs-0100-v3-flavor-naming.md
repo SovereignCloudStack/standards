@@ -5,6 +5,11 @@ status: Stable
 stabilized_at: 2023-06-14
 track: IaaS
 replaces: scs-0100-v2-flavor-naming.md
+description: |
+  The SCS Flavor Naming Standard provides a systematic approach for naming instance flavors in OpenStack
+  environments, ensuring backward compatibility and clarity on key features like the number of vCPUs, RAM,
+  and Root Disk, as well as extra features like GPU support and CPU generation. The standard aims for
+  usability and portability across all SCS flavors.
 ---
 
 ## Introduction
@@ -225,18 +230,21 @@ so users can expect some level of parallelism and independence.
 
 ## Naming policy compliance
 
-You are allowed to understate your performance; you may implement a SCS-1V-1-5 flavor with
-a flavor that actually implements SCS-1T-1-5n (i.e. you dedicate a dedicated hyperthread instead
-of higher oversubscription) or even SCS-1C-1.5-8s (1 dedicated core, 50% more RAM and a 8GiB SSD).
-Or you may offer the (v3 mandatory) `SCS-2V-4-20s` with a `SCS-2V-4-20p` (using a local NVMe
-instead of an SSD).
+Every flavor you offer MUST satisfy the following assertion:
 
-Flavor names indicating certain capabilities must _at least_ provide these, otherwise they
-are in violation of the SCS specification and prevent SCS compliance.
+- If its name starts with `SCS-`, the name has to conform to the syntax outlined above, and
+  the flavor must _at least_ provide the capabilities indicated by the name.
 
-We expect all cloud providers to offer the short, less specific flavor names (such as SCS-8V-32-100).
-Larger providers that offer more details (using the extension below) are expected to still also
-offer the short variants for usability and easier portability, even beyond the mandated flavors.
+That is to say:
+
+- You may offer flavors not following the above scheme, as long as the name does not
+  start with `SCS-`.
+
+- You are allowed to understate your performance; for instance, a flavor that satisfies
+  `SCS-1C-1.5-8s` (1 dedicated core, 1.5 GiB RAM, 8 GiB SSD) may also be named
+  `SCS-1T-1-5n` (1 dedicated hyperthread, 1 GiB RAM, 5 GiB network volume) or even
+  `SCS-1V-1-5`. Similarly, you may offer the (v3 mandatory) `SCS-2V-4-20s` with a `SCS-2V-4-20p`
+  implementation (using a local NVMe instead of an SSD).
 
 You must be very careful to expose low vCPU guarantees (`L` instead of `V`), insecure
 hyperthreading/microcode `i`, non-ECC-RAM `u`, memory oversubscription `o`. Note that omitting these qualifiers
@@ -244,11 +252,9 @@ is _overstating_ your security, reliability or performance properties and may be
 clients to feel betrayed or claim damages. This would prevent SCS compliance and certification;
 in extreme cases, the SCS project might be forced to work with public statements.
 
-You may offer additional `SCS-` flavors, following the naming scheme and rules outlined here.
-
-You may offer additional flavors, not following above scheme and not starting with `SCS-`
-
-You must not offer flavors with the `SCS-` prefix which do not follow this naming scheme.
+We expect all cloud providers to offer the short, less specific flavor names (such as `SCS-8V-32-100`).
+Larger providers that offer more details (using the extension below) are expected to still also
+offer the short variants for usability and easier portability, even beyond the mandated flavors.
 
 You must not extend the SCS naming scheme with your own extensions; you are encouraged however
 to suggest extensions that we can discuss and add to the official scheme.
@@ -270,6 +276,9 @@ the names for standards compliance.
 It goes beyond the above example in checking that the discoverable
 features of flavors (vCPUs, RAM, Disk) match what the flavor names claim.
 This is used for SCS-compatible compliance testing.
+
+The functionality of the `flavor-name-check.py` script is also
+(partially) exposed via the web page <https://flavors.scs.community/>.
 
 ## Extensions
 

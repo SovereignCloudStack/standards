@@ -121,7 +121,7 @@ maint_props = (Property("replace_frequency", True, ("yearly", "quarterly", "mont
 
 
 def is_url(stg):
-    "Is string stg an URL?"
+    "Is string stg a URL?"
     idx = stg.find("://")
     if idx < 0:
         return False
@@ -142,6 +142,7 @@ def validate_imageMD(imgnm):
         return 1
     # Now the hard work: Look at properties ....
     errors = 0
+    warnings = 0
     # (1) recommended os_* and hw_*
     for prop in (*os_props, *arch_props, *hw_props):
         if not prop.is_ok(img, imgnm):
@@ -149,8 +150,9 @@ def validate_imageMD(imgnm):
     constr_name = f"{img.os_distro} {img.os_version}"
     # (3) os_hash
     if img.hash_algo not in ('sha256', 'sha512'):
-        print(f'Error: Image "{imgnm}": no valid hash algorithm {img.hash_algo}', file=sys.stderr)
-        errors += 1
+        print(f'Warning: Image "{imgnm}": no valid hash algorithm {img.hash_algo}', file=sys.stderr)
+        # errors += 1
+        warnings += 1
 
     # (4) image_build_date, image_original_user, image_source (opt image_description)
     # (5) maintained_until, provided_until, uuid_validity, update_frequency
@@ -170,13 +172,18 @@ def validate_imageMD(imgnm):
             print(f'Error: Image "{imgnm}": no valid image_build_date '
                   f'{img.properties["image_build_date"]}', file=sys.stderr)
             errors += 1
-    # - image_source should be an URL
-    if "image_source" in img.properties:
-        if not is_url(img.properties["image_source"]):
-            print(f'Error: Image "{imgnm}": image_source should be an URL', file=sys.stderr)
+    # - image_source should be a URL
+    if "image_source" not in img.properties:
+        pass  # we have already noted this as error, no need to do it again
+    elif img.properties["image_source"] == "private":
+        if verbose:
+            print(f'Info: Image {imgnm} has image_source set to private', file=sys.stderr)
+    elif not is_url(img.properties["image_source"]):
+        print(f'Error: Image "{imgnm}": image_source should be a URL or "private"', file=sys.stderr)
+        errors += 1
     #  - uuid_validity has a distinct set of options (none, last-X, DATE, notice, forever)
     #  - hotfix hours (if set!) should be numeric
-    # (5a) Sanity: Are we actually in violation of update_frquency?
+    # (5a) Sanity: Are we actually in violation of update_frequency?
     #  This is a bit tricky: We need to disregard images that have been rotated out
     #  - os_hidden = True is a safe sign for this
     #  - A name with a date stamp or old or prev (and a newer exists)
@@ -184,12 +191,15 @@ def validate_imageMD(imgnm):
     # (6) tags os:*, managed_by_*
     #
     # (7) Recommended naming
-    if verbose and imgnm[:len(constr_name)].casefold() != constr_name.casefold():
-        print(f'Warning: Image "{imgnm}" does not start with recommended name "{constr_name}"',
+    if imgnm[:len(constr_name)].casefold() != constr_name.casefold():  # and verbose
+        # FIXME: There could be a more clever heuristic for displayed recommended names
+        rec_name = constr_name[0].upper()+constr_name[1:]
+        print(f'Warning: Image "{imgnm}" does not start with recommended name "{rec_name}"',
               file=sys.stderr)
+        warnings += 1
 
     if not errors and verbose:
-        print(f'Image "{imgnm}": All good')
+        print(f'Image "{imgnm}": All good ({warnings} warnings)')
     return errors
 
 
@@ -216,6 +226,7 @@ def main(argv):
         opts, args = getopt.gnu_getopt(argv[1:], "phvc:s",
                                        ("private", "help", "os-cloud=", "verbose", "skip-completeness"))
     except getopt.GetoptError:  # as exc:
+        print("CRITICAL: Command-line syntax error", file=sys.stderr)
         usage(1)
     for opt in opts:
         if opt[0] == "-h" or opt[0] == "--help":
@@ -230,18 +241,21 @@ def main(argv):
             cloud = opt[1]
     images = args
     if not cloud:
-        print("ERROR: Need to specify --os-cloud or set OS_CLOUD environment.", file=sys.stderr)
+        print("CRITICAL: Need to specify --os-cloud or set OS_CLOUD environment.", file=sys.stderr)
         usage(1)
-    conn = openstack.connect(cloud=cloud, timeout=24)
-    # Do work
-    if not images:
-        images = get_imagelist(private)
-    err = 0
-    # Analyse image metadata
-    for image in images:
-        err += validate_imageMD(image)
-    if not skip:
-        err += report_stdimage_coverage(images)
+    try:
+        conn = openstack.connect(cloud=cloud, timeout=24)
+        # Do work
+        if not images:
+            images = get_imagelist(private)
+        err = 0
+        # Analyse image metadata
+        for image in images:
+            err += validate_imageMD(image)
+        if not skip:
+            err += report_stdimage_coverage(images)
+    except BaseException as e:
+        print(f"CRITICAL: {e!r}")
     return err
 
 

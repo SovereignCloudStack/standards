@@ -3,6 +3,12 @@ title: SCS Standard Flavors and Properties
 type: Standard
 status: Draft
 track: IaaS
+description: |
+  The SCS-0103 standard outlines mandatory and recommended specifications for flavors and properties in OpenStack
+  environments to ensure uniformity across SCS clouds. Mandatory and recommended flavors are defined with specific
+  configurations of vCPUs, vCPU types, RAM, and root disk sizes, alongside extra specs like scs:name-vN, scs:cpu-type,
+  and scs:diskN-type to detail the flavor's specifications. This standard facilitates guaranteed availability and
+  consistency of flavors, simplifying the deployment process for DevOps teams.
 ---
 
 ## Introduction
@@ -38,7 +44,8 @@ Whenever ANY of these are present on ANY flavor, the corresponding semantics mus
 
 ## Standard SCS flavors
 
-These are flavors that must exist on standard SCS clouds (x86-64).
+Following are flavors that must exist on standard SCS clouds (x86-64).
+Note that this statement does not preclude the existence of additional flavors.
 
 ### Mandatory
 

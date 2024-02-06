@@ -1,8 +1,8 @@
 ---
 title: _Descriptive title_
-type: _Standard | Decision Record_
+type: Standard  # | Decision Record | Procedural
 status: Draft
-track: _Global | IaaS | Ops | KaaS | IAM_
+track: Global  # | IaaS | Ops | KaaS | IAM
 ---
 
 <!---
