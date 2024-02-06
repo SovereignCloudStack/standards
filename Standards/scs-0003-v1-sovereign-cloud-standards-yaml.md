@@ -116,12 +116,12 @@ then a certificate of that prerequisite scope has to be presented before the cer
 | `version`       | String        | Mandatory: Version of the particular list of standards                          | _v3_         |
 | `standards`     | Array of maps | Mandatory: List of standard descriptors for this particular layer               |              |
 | `stabilized_at` | Date          | ISO formatted date indicating the date after this version is considered stable. | _2022-11-09_ |
-| `obsoleted_at`  | Date          | ISO formatted date indicating the date on which this version is expired.        | _2023-04-09_ |
+| `deprecated_at`  | Date          | ISO formatted date indicating the date on which this version is expired.        | _2023-04-09_ |
 
-Once a version has a `stabilized_at` field, this field may not be changed. The same holds true for the `obsoleted_at` field.
+Once a version has a `stabilized_at` field, this field may not be changed. The same holds true for the `deprecated_at` field.
 
 Note that at any point in time, all versions that are older (`stabilized_at` is at or before this point)
-can be certified against, unless the version is already obsoleted (the point is after `obsoleted_at`).
+can be certified against, unless the version is already deprecated (the point is after `deprecated_at`).
 This means that more than one version may be allowable at a certain point in time. Tooling should default
 to use the newest allowable version (the one with the most recent `stabilized_at` date) then.
 
@@ -191,13 +191,13 @@ versions:
 
   - version: v3 # This is the stable set of standards that is currently active
     stabilized_at: 2021-10-01
-    obsoleted_at: 2022-11-08
+    deprecated_at: 2022-11-08
     standards:
       - name: ....
 
   - version: v2 # This set of standards is obsolete and has been replaced by v3
     stabilized_at: 2021-07-01
-    obsoleted_at: 2021-11-01
+    deprecated_at: 2021-11-01
     standards:
       - name: ....
 ```
