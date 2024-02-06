@@ -1,7 +1,8 @@
 ---
 title: SCS Standard Flavors and Properties
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2024-02-08
 track: IaaS
 description: |
   The SCS-0103 standard outlines mandatory and recommended specifications for flavors and properties in OpenStack
