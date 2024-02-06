@@ -1,7 +1,8 @@
 ---
 title: SCS K8S Version Policy
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2024-02-08
 track: KaaS
 ---
 
