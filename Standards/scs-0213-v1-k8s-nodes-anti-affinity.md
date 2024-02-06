@@ -1,7 +1,8 @@
 ---
 title: Kubernetes Nodes Anti Affinity
 type: Decision Record
-status: Draft
+status: Stable
+stabilized_at: 2024-02-08
 track: KaaS
 ---
 
