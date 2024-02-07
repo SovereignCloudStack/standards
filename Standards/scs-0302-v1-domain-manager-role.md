@@ -239,9 +239,9 @@ They are used as a basis for the domain-manager-specific changes which are imple
 The section of "`base_*`" rules is meant for easy maintenance/update of default rules while keeping the domain-manager-specific rules separate.
 
 > **Note:**
-> The "`or rule:admin_required`" appendix to the rule defintions in "Section B" is included for backwards compatibility with environments not yet fully configured for the new secure RBAC standard[^5].
+> The "`or rule:admin_required`" appendix to the rule defintions in "Section B" is included for backwards compatibility with environments not yet fully configured for the new secure RBAC standard[^6].
 
-[^5]: [OpenStack Technical Committee Governance Documents: Consistent and Secure Default RBAC](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html)
+[^6]: [OpenStack Technical Committee Governance Documents: Consistent and Secure Default RBAC](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html)
 
 #### Specifying manageable roles via "`is_domain_managed_role`"
 
