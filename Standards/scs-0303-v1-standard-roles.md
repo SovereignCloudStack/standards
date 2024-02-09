@@ -164,11 +164,14 @@ Applying the standard will result in the following roles being available:
 |---|---|
 | admin | CSP-exclusive cloud administrator possessing all privileges. |
 | domain-manager\* | Manager within customer-specific domains. Is allowed to manage groups, projects and users within a domain. Used for IAM self-service by the customer. |
+| manager[^5] | Allows access to administrating APIs for resources within projects. |
 | member | Read/write access to resources within projects. |
 | reader | Non-administrative read-only access to resources within projects. |
 
 \* Roles that are currently specific to an SCS standard and diverge from the default set of OpenStack or its RBAC rework are marked with an asterisk.
 Their existence in the infrastructure may depend on the application of the respective standard.
+
+[^5]: [Introduced in the 2024.1 release](https://review.opendev.org/c/openstack/keystone/+/822601)
 
 ## Related Documents
 
