@@ -100,8 +100,9 @@ enforce_new_defaults = True|False
 enforce_scope = True|False
 ```
 
-As of the time of writing this standard, these options currently default to `False`[^4].
-Once these options default to `True`, the standard should be updated.
+As of the time of writing this standard, these options currently default to `False`[^4] for the most OpenStack services.
+Once these options default to `True` for a list of all scs-supported services, the standard should be updated.
+This standard should provide a unified usage of policies over all OpenStack services.
 
 [^4]: [Current parameter defaults in `oslo_policy/opts.py` (2023-12-11)](https://github.com/openstack/oslo.policy/blob/a1e76258180002b288e64532676ba2bc2d1ec800/oslo_policy/opts.py#L26-L51)
 
@@ -116,10 +117,10 @@ On a per-service basis, a CSP applying this standard MUST either
 
 If deploying custom `policy.yaml` files for individual OpenStack services, the CSP must adhere to the following rules:
 
-- the default OpenStack roles (`admin`, `member`, `reader`) MUST NOT be changed regarding their permissions
-- for custom permission sets a new role MUST be added and the name of the role MUST NOT match with any of the existing default role defined by OpenStack (`admin`, `member`, `reader` etc.) or the name `domain-manager`
+- the default OpenStack roles (`admin`, `manager`, `member`, `reader`) MUST NOT be changed regarding their permissions
+- for custom permission sets a new role MUST be added and the name of the role MUST NOT match with any of the existing default role defined by OpenStack (`admin`, `manager`, `member`, `reader` etc.) or the name `domain-manager`
 - in case of Keystone, a `domain-manager` role MAY be added; in this case its definition MUST adhere to the Domain Manager SCS standard
-- if at any point in time the OpenStack release is upgraded, the CSP MUST make sure that all custom policy overrides which affect the default roles (`admin`, `member`, `reader` etc.) in the `policy.yaml` files are up-to-date and do not deviate from the defaults of the target OpenStack release
+- if at any point in time the OpenStack release is upgraded, the CSP MUST make sure that all custom policy overrides which affect the default roles (`admin`, `manager`, `member`, `reader` etc.) in the `policy.yaml` files are up-to-date and do not deviate from the defaults of the target OpenStack release
 
 Adhering to these rules ensures a consistent and secure set of roles and permission sets a customer can expect across SCS-compliant infrastructures.
 
