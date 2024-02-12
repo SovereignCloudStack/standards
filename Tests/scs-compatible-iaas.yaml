@@ -15,6 +15,7 @@ versions:
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0101-v1-entropy.md
         check_tools:
           - executable: ./iaas/entropy/entropy-check.py
+            args: -d
       - name: Image metadata
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
         check_tools:
@@ -24,12 +25,12 @@ versions:
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0103-v1-standard-flavors.md
         check_tools:
           - executable: ./iaas/standard-flavors/flavors-openstack.py
-            args: "./iaas/scs-0103-v1-flavors.yaml"
+            args: -d "./iaas/scs-0103-v1-flavors.yaml"
       - name: Standard images
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0104-v1-standard-images.md
         check_tools:
           - executable: ./iaas/standard-images/images-openstack.py
-            args: "./iaas/scs-0104-v1-images.yaml"
+            args: -d "./iaas/scs-0104-v1-images.yaml"
   - version: v3
     stabilized_at: 2023-06-15
     obsoleted_at: 2024-04-30

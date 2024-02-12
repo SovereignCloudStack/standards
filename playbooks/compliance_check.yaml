@@ -7,7 +7,9 @@
         python3 ~/Tests/scs-compliance-check.py ~/Tests/scs-compatible-iaas.yaml -c {{ cloud }} -o {{ cloud }}-iaas.yaml -C
       register: result
       changed_when: true
-      failed_when: result.rc != 0
+      # failed_when: result.rc != 0
+      # ^^^ this task does not fail; the only failure would be if the yaml file didn't get produced,
+      # but then the task "Copy result YAML" would fail anyway
 
     - ansible.builtin.debug:
         msg: "{{ result.stdout }} {{ result.stderr }}"
