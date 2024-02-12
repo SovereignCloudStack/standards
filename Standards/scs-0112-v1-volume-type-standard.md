@@ -26,39 +26,27 @@ We want to standardize a few varieties of volume types. While a user can choose 
 
 All Considerations can be looked up in detail in the [Decision Record for the Volume Type Standard.](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0111-v1-volume-type-decisions.md)
 
-To test whether a deployment has volume types with certain aspects, the discoverability of the parameters in the volume type has to be given. The following table shows, which aspects are considered in this standard. Furthermore the table shows, according to the current upstream implementation, whether the feature is discoverable, and who can discover this. The comments state what can be done to help with the discoverability and other important restrictions. The last column says how this standard is handled, which is currently through the addition of a standardized phrase at the beginning of the description of a volume type.
+### Systematic Description of Volume Types
 
-| Aspect | Part of Standard | Discoverability | comments | concluded standardized description |
-| ---- | ---- | ---- | ---- | ------ |
-| encryption | **Recommended** | admin only | Upstream work for extra_spec: encrypted=True/False needed | **"[encrypted]"** |
-| Replication | **Recommended** | backend-dependend | Upstream: setable extra_spec would help | **"[replicated]"** |
-| AZs | **Optional** | - | Upstream: setable extra_spec would help | - |
-| multiattach | **Optional** | yes | - | - |
-| Number of Replicas, etc | **Optional** | backend-dependend | Upstream: setable extra_spec would help | - |
-| Volume QoS | **Optional** | admin only | depends on the admin only volume qos object | - |
-| Backend name | no | - | - | - |
+To test whether a deployment has volume types with certain aspects, the discoverability of the parameters in the volume type has to be given. As for the time this standard is created, there is no way for users to discover all aspects through OpenStack commands. Therefore the aspects, that are fulfilled within a volume type, should be stated in the beginning of the **description** of a volume type in the following manner:
 
-In addition it is possible to use multiple of those aspects within one volume type. SCS will only ever look, if there is a volume type that has an aspect, but there don't have to be different volume types.
+`[scs:aspect1][scs:aspect2]...`
+
+There is no sorting of aspects required. Every aspect should only be mentioned to the maximal amount of one.
+
+### Standardized Aspects
+
+The following table shows, which aspects are considered in this standard. The last column shows how the description of the volume type has to be adjusted, if the aspect is fulfilled:
+
+| Aspect | Part of Standard | standardized description |
+| ---- | ---- | ------ |
+| Encryption | **Recommended** | **"[scs:encrypted]"** |
+| Replication | **Recommended** | **"[scs:replicated]"** |
+
+It is possible to use multiple of those aspects within one volume type. SCS will only ever look, if there is a volume type that has an aspect, but there don't have to be different volume types.
 Example: one volume type that uses LUKS-encryption with a ceph storage with inherent replication would fulfill all recommendations of this standard.
 
-The current downside is that users without admin rights currently cannot see the recommended aspects. To be able to automatically check whether a volume type with encyrption and or replication is present, an update or extension of the OpenStack workflow would be required. It should look like this example for encryption:
-
-```text
-openstack volume type show LUKS
-+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Field              | Value                                                                                                                                                        |
-+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| access_project_ids | None                                                                                                                                                         |
-| description        | None                                                                                                                                                         |
-| id                 | d63307fb-167a-4aa0-9066-66595ea9fb21                                                                                                                         |
-| is_public          | True                                                                                                                                                         |
-| name               | LUKS                                                                                                                                                         |
-| properties         | encrypted='true'                                                                                                                                             |
-| qos_specs_id       | None                                                                                                                                                         |
-+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-```
-
-## DEFAULT volume types
+## DEFAULT volume type
 
 There is always a default volume type defined in an OpenStack deployment. This volume type is created in the setup of cinder and will always be present in any OpenStack deployments under the name `__default__`. The SCS does not have any requirements about this volume type at this moment, instead deployers are free to choose what fits best in their environment. Conversely, a cloud user can not expect any specific behavior or properties from volume types named `__default__`.
 
@@ -70,31 +58,13 @@ Currently the SCS will not require volume types with certain specification. This
 
 ## RECOMMENDED volume types
 
-The SCS recommends to have one or more volume types, that satisfy the need for encrpytion and replication. These are all allowed possibilites for those recommended volume types:
-
-| Volume Type Nr | Type Name | Volume Type Description |
-| ---- | ---- | ---- |
-| 1 | `__DEFAULT__` | `[encrypted][replicated] Volumes will be encrypted and three times replicated` |
-| 2 | `LUKS` | `[encrypted] This volume type creates LUKS encryped volumes` |
-| 3 | `replicated` | `[replicated] Volumes will be three times replicated` |
-
-The standardized phrases are `[encrypted]` and `[replicated]`. They MUST appear at the beginning of the description of the volume type and they MUST be ordered alphabetically. Having only volume type number 1 would be enough to fulfill all recommendations. Having only volume types 2 and 3 together would also satisfy all recommendations
+The SCS recommends to have one or more volume types, that satisfy the need for encrpytion and replication.
 
 ### Encryption
 
-Encryption for volumes is an option which has to be configured within the volume type. As an admin it is possible to set encryption-provider, key size, cipher and control location. And for admins it is also currently possible to see these configurations in a volume type with both list and show commands.
+There SHOULD at least be one volume type with the encryption aspect.
 
-```text
-openstack volume type list --encryption-type
-+--------------------------------------+-------------+-----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| ID                                   | Name        | Is Public | Encryption                                                                                                                                                                         |
-+--------------------------------------+-------------+-----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| d34b5de0-d7bf-43cf-8a74-3827169d6616 | LUKS        | True      | cipher='aes-xts-plain64', control_location='front-end', encryption_id='217386bc-1e9b-46a3-9e0e-3ad62c07826c', key_size='256', provider='nova.volume.encryptors.luks.LuksEncryptor' |
-+--------------------------------------+-------------+-----------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-```
-
-As this is not visible for users, it will be necessary that deployers state that the volume type is encrypted in the description of the volume type in the following way:
-The description needs to begin with `[encrypted]`, after that any further description is allowed. It should look like this example:
+Encryption for volumes is an option which has to be configured within the volume type. As an admin it is possible to set encryption-provider, key size, cipher and control location. Additionally to be discoverable by users an admin has to edit the description and add `[scs:encrypted]` at the beginning or after another scs aspect. It should look like this example:
 
 ```text
 openstack volume type show LUKS
@@ -102,7 +72,7 @@ openstack volume type show LUKS
 | Field              | Value                                                                                                                                                        |
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | access_project_ids | None                                                                                                                                                         |
-| description        | [encrypted] This volume uses LUKS-encryption                                                                                                                 |
+| description        | [scs:encrypted] This volume uses LUKS-encryption                                                                                                             |
 | id                 | d63307fb-167a-4aa0-9066-66595ea9fb21                                                                                                                         |
 | is_public          | True                                                                                                                                                         |
 | name               | LUKS                                                                                                                                                         |
@@ -112,18 +82,14 @@ openstack volume type show LUKS
 
 ### Replication
 
+There SHOULD at least be one volume type with the replication aspect.
+
 Replication states, whether or not there are multiple replicas of a volume. Thus answers the question, whether the data could survive a node outage. Unfortunately there are two ways replication can be achieved:
 
 1. In the configuration of a volume type. It then is visible as extra_spec in the properties of a volume type.
 2. Via the used backend. Ceph for example provides automatic replication, that does not need to be specified in the volume type. This is currently not visible for users.
 
-To fulfill this recommentation for now, the deployer needs to state the replication in the description of a volume type in the following way:
-If the volume type is not encrypted the description needs to begin with `[replicated]`, after that any further description is allowed.
-Otherwise the description needs to begin with `[encrypted][replicated]`.
-
-#### OPTIONAL addition: Number of Replicas
-
-Additionally to the fact, that a volume type is replicated, it OPTIONALLY can be stated in the description or name, how many times the provisioned volume will be replicated.
+To fulfill this recommentation for now, the admin needs to add `[scs:replicated]` at the beginning or after any other scs aspect into the descriotion of the volume type.
 
 ### Example
 
@@ -136,23 +102,7 @@ It should look like the following part:
 | Field              | Value                                                                                                                                                        |
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | access_project_ids | None                                                                                                                                                         |
-| description        | [encrypted][replicated] Content will be replicated three times to ensure consistency and availability for your data. LUKS encryption is used.                |
-| id                 | d63307fb-167a-4aa0-9066-66595ea9fb21                                                                                                                         |
-| is_public          | True                                                                                                                                                         |
-| name               | hdd-three-replicas-LUKS                                                                                                                                      |
-| properties         |                                                                                                                                                              |
-| qos_specs_id       | None                                                                                                                                                         |
-+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-```
-
-It is OPTIONAL to give more information to users like this:
-
-```text
-+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Field              | Value                                                                                                                                                        |
-+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| access_project_ids | None                                                                                                                                                         |
-| description        | [encrypted:cipher=aes,key_size=256][replicated: 3 times] Content will be replicated three times and LUKS encryption is used.                                 |
+| description        | [scs:encrypted][scs:replicated] Content will be replicated three times to ensure consistency and availability for your data. LUKS encryption is used.        |
 | id                 | d63307fb-167a-4aa0-9066-66595ea9fb21                                                                                                                         |
 | is_public          | True                                                                                                                                                         |
 | name               | hdd-three-replicas-LUKS                                                                                                                                      |
@@ -163,54 +113,7 @@ It is OPTIONAL to give more information to users like this:
 
 ## OPTIONAL volume types
 
-In this section volume types are described, that we do not want to explicitly recommend, but find them worth listing as optional for deployers.
-
-### Availability Zones
-
-Availability Zones are not necessarily used by every deployer of a cloud. The SCS does not want do make it necessary to have AZs for a compatible deployment. But we want to encourage deployer who use multiple AZs to read the following:
-
-While there can be multiple Compute AZs, there can also be multiple Storage AZs for Volumes. And it might be quite confusing for users, which volumes can be used in which AZs. To make it even further complicated, there are backends like ceph, which can provide volumes for multiple compute AZs just with some Nova configuration. Therefore we would encourage to use either the property of volume types OR the description of the volume types to describe, in which AZs the volumes based on this type can be used.
-
-A description for a ceph volume type might look like this:
-
-```text
-+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Field              | Value                                                                                                                                                        |
-+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| access_project_ids | None                                                                                                                                                         |
-| description        | Content will be replicated three times on spinning disks to ensure consistency and availability for your data. The volumes can be used in AZ 1,3,4.          |
-| id                 | d63307fb-167a-4aa0-9066-66595ea9fb21                                                                                                                         |
-| is_public          | True                                                                                                                                                         |
-| name               | hdd-three-replicas-AZ134                                                                                                                                     |
-| properties         |                                                                                                                                                              |
-| qos_specs_id       | None                                                                                                                                                         |
-+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-```
-
-### Multiattach
-
-A few backends enable providers to allow volumes to be attached to mulitple VMs simultaneously. The OpenStack API can be used to enable the usage of multiattach through the volume type. The property is also automatically shown to users. If a deployer wants to use this feature they have to do it in this way. So users will always see whether a volume type can be used for mulitattach volumes or not. Nevertheless due to other problems, that might occur when using the multiattach feature such as the requirement of special file systems and suitable backends, the SCS standard will only view this as OPTIONAL.
-
-### Volume QoS
-
-Quality of Service parameters for volumes can be defined in a `volume qos` object. This is an extra OpenStack ressource, that can be created by administrators having the admin role and are only visible to them. Those admins can directly use such a `volume qos` object to create a volume. To also let user roles benefit of these objects, administrators can associate a single `volume qos` object ot a volume type, which is then be used on all volumes created from that volume type. Through this indirection, volume types are also working without these associated QoS objects and this feature not being heavily used, the SCS standard will currently only view this as an OPTIONAL volume type feature.
-
-To make users aware that a volume type includes specific qos options, we recommend to write it into the description of a volume type, as any association to a volume qos object cannot be seen by normal users:
-
-```text
-+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Field              | Value                                                                                                                                                        |
-+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| access_project_ids | None                                                                                                                                                         |
-| description        | Content will be replicated three times on spinning disks to ensure consistency and availability for your data. Iops: read:20k, write:10k               |
-| id                 | d63307fb-167a-4aa0-9066-66595ea9fb21                                                                                                                         |
-| is_public          | True                                                                                                                                                         |
-| name               | hdd-three-replicas-AZ134                                                                                                                                     |
-| properties         |
-                                  |
-| qos_specs_id       | None                                                                                                                                                         |
-+--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-```
+Any other aspects of volume types, that can be found in the decision record are OPTIONAL. They SHOULD NOT be referenced in the way this standard describes. Some of them already are natively discoverable by users, while others could be described in the name or description of a volume type. Users should look into the provided volume types of the CSPs, if they want to use some of these other aspects.
 
 ## Related Documents
 
