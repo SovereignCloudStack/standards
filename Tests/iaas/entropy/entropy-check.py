@@ -366,7 +366,7 @@ def select_deb_image(images):
     """
     for prefix in ("Debian ", "Ubuntu "):
         imgs = sorted(
-            [img for img in images if img.name.startswith("Debian ")],
+            [img for img in images if img.name.startswith(prefix)],
             key=attrgetter("name"),
         )
         if imgs:
