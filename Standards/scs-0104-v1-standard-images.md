@@ -28,8 +28,7 @@ this standard establishes, by means of a YAML file, a mechanism with the followi
 
 ## Uploading custom images
 
-Image upload via Glance MUST be allowed. If quotas are imposed at all, the following rule applies:
-It MUST be possible to upload at least 40 images and at least 200 GiB total.
+Image upload via Glance MUST be allowed on a fair-use basis.
 
 ## Standard images YAML
 
