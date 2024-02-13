@@ -188,7 +188,7 @@ def main(argv):
         if opt[0] == "-h" or opt[0] == "--help":
             print_usage()
             return 0
-        if opt[0] == "-i" or opt[0] == "--prefix":
+        if opt[0] == "-p" or opt[0] == "--prefix":
             prefix = opt[1]
         if opt[0] == "-c" or opt[0] == "--os-cloud":
             cloud = opt[1]
