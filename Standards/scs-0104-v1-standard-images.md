@@ -28,7 +28,7 @@ this standard establishes, by means of a YAML file, a mechanism with the followi
 
 ## Uploading custom images
 
-Image upload via Glance MUST be allowed on a fair-use basis.
+Image upload via Glance MUST be allowed based on a fair-use policy.
 
 ## Standard images YAML
 
