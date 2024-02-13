@@ -20,5 +20,4 @@
 
     - name: Clean up any lingering resources from previous run
       ansible.builtin.shell: python3 ~/Tests/cleanup.py -c {{ cloud }} --prefix _scs-
-      failed_when: false
       changed_when: true
