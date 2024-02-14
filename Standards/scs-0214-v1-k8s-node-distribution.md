@@ -8,7 +8,7 @@ track: KaaS
 ## Introduction
 
 A Kubernetes instance is provided as a cluster, which consists of a set of machines,
-so called nodes. A cluster is composed of a control plane and at least one worker node.
+so-called nodes. A cluster is composed of a control plane and at least one worker node.
 The control plane manages the worker nodes and therefore the pods in the cluster by making
 decisions about scheduling, event detection and rights management. Inside the control plane,
 multiple components exist, which can be duplicated and distributed over multiple nodes
@@ -19,11 +19,11 @@ separate the controller component from user workloads, which could pose a securi
 
 The following terms are used throughout this document:
 
-| Term | Meaning |
-|---|---|
-| Worker | Virtual or bare-metal machine, which hosts workloads of customers |
+| Term          | Meaning                                                                                                                                                                     |
+|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Worker        | Virtual or bare-metal machine, which hosts workloads of customers                                                                                                           |
 | Control Plane | Virtual or bare-metal machine, which hosts the container orchestration layer that exposes the API and interfaces to define, deploy, and manage the lifecycle of containers. |
-| Machine | Virtual or bare-metal entity with computational capabilities |
+| Machine       | Virtual or bare-metal entity with computational capabilities                                                                                                                |
 
 ## Motivation
 
