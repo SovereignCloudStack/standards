@@ -1,8 +1,9 @@
 ---
 title: SCS K8S Version Policy for new Kubernetes versions
 type: Standard
-status: Stable
 stabilized_at: 2023-02-07
+obsoleted_at: 2024-02-08
+status: Deprecated
 track: KaaS
 description: |
   The SCS-0210 standard outlines the expected pace at which providers should adopt new Kubernetes versions, aiming
