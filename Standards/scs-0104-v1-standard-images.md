@@ -2,7 +2,7 @@
 title: SCS Standard Images
 type: Standard
 status: Stable
-stabilized_at: 2024-02-08
+stabilized_at: 2024-02-21
 track: IaaS
 description: |
   The SCS-0104 standard establishes guidelines for virtual machine images in Sovereign Cloud Stack (SCS) environments,
