@@ -1,7 +1,8 @@
 ---
 title: Kubernetes Node Distribution and Availability
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2024-02-08
 track: KaaS
 ---
 
