@@ -457,7 +457,7 @@ def _convert_user_input(idx, attr, target, val):
         elif val.lower() in tbl:
             val = val.lower()
         else:
-            raise ValueError(f"{val} not in {tbl}")
+            raise ValueError(f"{val!r} not in {tbl}")
     return val
 
 
@@ -477,7 +477,7 @@ def ask_user_input(idx, attr, target):
         try:
             val = _convert_user_input(idx, attr, target, val)
         except BaseException as exc:
-            print(exc)
+            print(" " + str(exc))
             print(" INVALID!")
         else:
             break
