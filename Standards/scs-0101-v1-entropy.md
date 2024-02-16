@@ -1,7 +1,8 @@
 ---
 title: SCS Entropy
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2024-02-08
 track: IaaS
 description: |
   The SCS-0101 Entropy Standard ensures adequate entropy is available in virtual instances, crucial for operations
