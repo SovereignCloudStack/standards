@@ -18,7 +18,7 @@ import sys
 
 import yaml
 
-from flavor_name_check import CompatLayer, prettyname
+from flavor_names import CompatLayer, prettyname
 
 fnmck = CompatLayer()
 

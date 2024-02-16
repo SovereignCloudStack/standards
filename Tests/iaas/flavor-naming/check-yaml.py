@@ -14,7 +14,7 @@ import sys
 
 import yaml
 
-from flavor_name_check import parser_v2, flavorname_to_dict
+from flavor_names import parser_v2, flavorname_to_dict
 
 
 REQUIRED_FIELDS = ['name-v1', 'name-v2', 'name', 'cpus', 'ram', 'cpu-type']

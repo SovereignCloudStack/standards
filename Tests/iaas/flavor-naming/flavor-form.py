@@ -20,7 +20,7 @@ import re
 import sys
 import urllib.parse
 
-from flavor_name_check import parser_v2, outname, Attr, Main, Disk, Hype, HWVirt, CPUBrand, GPU, IB, Flavorname, \
+from flavor_names import parser_v2, outname, Attr, Main, Disk, Hype, HWVirt, CPUBrand, GPU, IB, Flavorname, \
     Inputter, lookup_user_input, prettyname
 
 

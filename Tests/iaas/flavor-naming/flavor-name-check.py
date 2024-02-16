@@ -11,7 +11,7 @@ License: CC-BY-SA 4.0
 
 import sys
 
-from flavor_name_check import CompatLayer, inputflavor, prettyname
+from flavor_names import CompatLayer, inputflavor, prettyname
 
 
 def usage():

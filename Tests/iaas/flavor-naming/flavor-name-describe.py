@@ -12,7 +12,7 @@ License: CC-BY-SA 4.0
 """
 import sys
 
-from flavor_name_check import CompatLayer, prettyname
+from flavor_names import CompatLayer, prettyname
 
 
 def main(argv):

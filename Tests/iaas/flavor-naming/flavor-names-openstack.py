@@ -23,7 +23,7 @@ import getopt
 import yaml
 import openstack
 
-import flavor_name_check
+import flavor_names
 
 
 def usage(rcode=1):
@@ -44,7 +44,7 @@ def usage(rcode=1):
 
 def main(argv):
     """Entry point -- main loop going over flavors"""
-    fnmck = flavor_name_check.CompatLayer()
+    fnmck = flavor_names.CompatLayer()
     cloud = None
     verbose = False
     v3mode = False
