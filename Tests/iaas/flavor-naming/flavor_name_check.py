@@ -164,7 +164,7 @@ class Disk:
 class Hype:
     """Class repesenting Hypervisor"""
     type = "Hypervisor"
-    hype = TblAttr("Hypervisor", {"kvm": "KVM", "xen": "Xen", "hyv": "Hyper-V", "vmw": "VMware", "bms": "Bare Metal System"})
+    hype = TblAttr(".Hypervisor", {"kvm": "KVM", "xen": "Xen", "hyv": "Hyper-V", "vmw": "VMware", "bms": "Bare Metal System"})
 
 
 class HWVirt:
@@ -485,7 +485,7 @@ class Inputter:
             # special case...
             flavorname.disk = None
         flavorname.hype = self.input_component(Hype)
-        flavorname.hvirt = self.input_component(HWVirt)
+        flavorname.hwvirt = self.input_component(HWVirt)
         flavorname.cpubrand = self.input_component(CPUBrand)
         flavorname.gpu = self.input_component(GPU)
         flavorname.ib = self.input_component(IB)

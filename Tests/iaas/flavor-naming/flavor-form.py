@@ -17,9 +17,13 @@ import sys
 import re
 import urllib.parse
 import html
+import logging
 
 from flavor_name_check import parser_v2, outname, Attr, Main, Disk, Hype, HWVirt, CPUBrand, GPU, IB, Flavorname
 from flavor_name_describe import prettyname
+
+
+logger = logging.getLogger(__name__)
 
 
 def output_parse(namestr: str, flavorname: Flavorname, error: str):
@@ -42,47 +46,91 @@ def output_parse(namestr: str, flavorname: Flavorname, error: str):
         print("\t<font color=brown>Not an SCS flavor</font>")
 
 
-def generate_name(form):
-    "Parse submitted form with flavor properties"
-    flavorname = Flavorname(
-        cpuram=Main(), disk=Disk(), hype=Hype(), hwvirt=HWVirt(), cpubrand=CPUBrand(), gpu=GPU(), ib=IB(),
-    )
-    for key, values in form.items():
-        val = values[0]
-        print(f'{key}={val}', file=sys.stderr)
+class Inputter:
+    """Auxiliary class for form input of flavor names, adapted from interactive Inputter class."""
+
+    @staticmethod
+    def to_bool(s):
+        """interpret string input as bool"""
+        # difference with interactive version: added "on" and "off"
+        s = s.upper()
+        if s == "" or s == "OFF" or s == "0" or s[0] == "N" or s[0] == "F":
+            return False
+        if s == "1" or s == "ON" or s[0] == "Y" or s[0] == "T":
+            return True
+        raise ValueError
+
+    def input_component(self, formdata: dict, component_name: str, targetcls):
+        # difference with interactive version: removed while loop and exception handling
+        # changed input to lookup (see comment below)
+        target = targetcls()
+        attrs = [att for att in targetcls.__dict__.values() if isinstance(att, Attr)]
+        for i, attr in enumerate(attrs):
+            fdesc = attr.name
+            tbl = attr.get_tbl(target)
+            # this is the main difference compared to interactive Inputter:
+            val = formdata.get(f"{component_name}.{attr.attr}")
+            if val is None or val == "NN":
+                val = ""
+            # logger.debug(f"{component_name}.{attr.attr} <- {val!r}")
+            # end difference
+            if not val and i == 0 and not issubclass(targetcls, (Main, Disk)):
+                # BAIL: if you don't want an extension, supply empty first attr
+                return
+            if fdesc[0] == "?":
+                val = self.to_bool(val)
+            elif fdesc[0:2] == "##":
+                val = float(val)
+            elif fdesc[0] == "#":
+                if fdesc[1] == "." and not val:
+                    val = attr.default
+                else:
+                    oval = val
+                    val = int(val)
+                    if str(val) != oval:
+                        raise ValueError(val)
+            elif tbl:
+                if val in tbl:
+                    pass
+                elif val.upper() in tbl:
+                    val = val.upper()
+                elif val.lower() in tbl:
+                    val = val.lower()
+                else:
+                    raise ValueError(f"{val} not in {tbl}")
+            attr.__set__(target, val)
+        return target
+
+    def __call__(self, formdata: dict):
+        flavorname = Flavorname()
+        flavorname.cpuram = self.input_component(formdata, "cpuram", Main)
+        flavorname.disk = self.input_component(formdata, "disk", Disk)
+        if flavorname.disk and not (flavorname.disk.nrdisks and flavorname.disk.disksize):
+            # special case...
+            flavorname.disk = None
+        flavorname.hype = self.input_component(formdata, "hype", Hype)
+        flavorname.hwvirt = self.input_component(formdata, "hwvirt", HWVirt)
+        flavorname.cpubrand = self.input_component(formdata, "cpubrand", CPUBrand)
+        flavorname.gpu = self.input_component(formdata, "gpu", GPU)
+        flavorname.ib = self.input_component(formdata, "ib", IB)
+        return flavorname
+
+
+def generate_name(form, inputter=Inputter()):
+    """Parse submitted form with flavor properties"""
+    formdata = {key: val[0] for key, val in form.items()}
+    flavorname = inputter(formdata)
+    # validate formdata for extraneous fields
+    for key, val in formdata.items():
+        if val == "NN" or key in ("disk.nrdisks", "disk.disktype"):
+            continue
         component_key, attr_key = key.split('.')
         component = getattr(flavorname, component_key, None)
         if component is None:
             raise RuntimeError(f"Unknown key {component_key}")
-        attr = getattr(component, attr_key, None)
+        attr = getattr(component.__class__, attr_key, None)
         if attr is None:
             raise RuntimeError(f"ERROR: Can not find attribute {attr_key} in {component_key}")
-        fdesc = attr.name
-        if val == "NN":
-            val = ""
-        # Now parse fdesc to get the right value
-        if fdesc[0:2] == '##':
-            val = float(val)
-        elif fdesc[0] == '#':
-            if fdesc[1] == '.' and not val:
-                val = attr.default
-            else:
-                val = int(val)
-        elif fdesc[0] == '?':
-            val = bool(val)
-        setattr(component, attr_key, val)
-    # Eliminate empty components
-    for member_name, component in flavorname.__dict__.items():
-        if not hasattr(component, "type"):
-            continue
-        if isinstance(component, Main):
-            continue
-        if isinstance(component, Disk):
-            if not component.nrdisks or not component.disksize:
-                setattr(flavorname, member_name, None)
-            continue
-        if Attr.collect(component.__class__)[0].__get__(component) is None:
-            setattr(flavorname, member_name, None)
     return flavorname
 
 
@@ -134,13 +182,13 @@ def make_component_form(spec, component, basepath):
             print(f'\t  <label for="{fname}">{fdesc}:</label><br/>')
             value_set = False
             for key in tbl:
-                ischk = value == key or (not key and not value)
+                ischk = value == key or (key == "NN" and value is None)
                 value_set = value_set or ischk
                 print(f'\t   <input type="radio" id="{fname}:{key}" name="{path}" value="{keystr(key)}" {is_checked(ischk)}/>')
-                print(f'\t   <label for="{fname}:{key}">{tbl[key]} (<tt>{keystr(key)}</tt>)</label><br/>')
+                print(f'\t   <label for="{fname}:{key}">{tbl[key]} (<tt>{"" if key is None else key}</tt>)</label><br/>')
             if tblopt:
                 print(f'\t   <input type="radio" id="{fname}:NN" name="{path}" value="NN" {is_checked(not value_set)}/>')
-                print(f'\t   <label for="{fname}:NN">NN ()</label><br/>')
+                print(f'\t   <label for="{fname}:NN">NN (<tt></tt>)</label><br/>')
         elif fdesc[0:2] == "##":
             # Float number => NUMBER
             print(f'\t  <label for="{fname}">{fdesc[2:]}:</label><br/>')
@@ -203,6 +251,7 @@ def output_generate(namestr, flavorname, error):
 
 def main(argv):
     "Entry point for cgi flavor parsing"
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
     print("Content-Type: text/html\n")
     form = {"flavor": [""]}
     if 'QUERY_STRING' in os.environ:
@@ -225,6 +274,7 @@ def main(argv):
             namestr = outname(flavorname)
     except Exception as e:
         error = repr(e)
+        logger.exception(error)
     with open("page/index.html", "r", encoding='utf-8') as infile:
         for line in infile:
             if find_parse.match(line):
