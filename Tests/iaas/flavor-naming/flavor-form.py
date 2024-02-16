@@ -21,7 +21,7 @@ import sys
 import urllib.parse
 
 from flavor_name_check import parser_v2, outname, Attr, Main, Disk, Hype, HWVirt, CPUBrand, GPU, IB, Flavorname, \
-        Inputter, lookup_user_input
+    Inputter, lookup_user_input
 from flavor_name_describe import prettyname
 
 
