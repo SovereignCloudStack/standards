@@ -12,14 +12,16 @@ It returns an error (sometimes with a useful error message)
 or a human-readable description of the flavor.
 """
 
-import os
-import sys
-import re
-import urllib.parse
+from functools import partial
 import html
 import logging
+import os
+import re
+import sys
+import urllib.parse
 
-from flavor_name_check import parser_v2, outname, Attr, Main, Disk, Hype, HWVirt, CPUBrand, GPU, IB, Flavorname
+from flavor_name_check import parser_v2, outname, Attr, Main, Disk, Hype, HWVirt, CPUBrand, GPU, IB, Flavorname, \
+        Inputter, lookup_user_input
 from flavor_name_describe import prettyname
 
 
@@ -46,80 +48,11 @@ def output_parse(namestr: str, flavorname: Flavorname, error: str):
         print("\t<font color=brown>Not an SCS flavor</font>")
 
 
-class Inputter:
-    """Auxiliary class for form input of flavor names, adapted from interactive Inputter class."""
-
-    @staticmethod
-    def to_bool(s):
-        """interpret string input as bool"""
-        # difference with interactive version: added "on" and "off"
-        s = s.upper()
-        if s == "" or s == "OFF" or s == "0" or s[0] == "N" or s[0] == "F":
-            return False
-        if s == "1" or s == "ON" or s[0] == "Y" or s[0] == "T":
-            return True
-        raise ValueError
-
-    def input_component(self, formdata: dict, component_name: str, targetcls):
-        # difference with interactive version: removed while loop and exception handling
-        # changed input to lookup (see comment below)
-        target = targetcls()
-        attrs = [att for att in targetcls.__dict__.values() if isinstance(att, Attr)]
-        for i, attr in enumerate(attrs):
-            fdesc = attr.name
-            tbl = attr.get_tbl(target)
-            # this is the main difference compared to interactive Inputter:
-            val = formdata.get(f"{component_name}.{attr.attr}")
-            if val is None or val == "NN":
-                val = ""
-            # logger.debug(f"{component_name}.{attr.attr} <- {val!r}")
-            # end difference
-            if not val and i == 0 and not issubclass(targetcls, (Main, Disk)):
-                # BAIL: if you don't want an extension, supply empty first attr
-                return
-            if fdesc[0] == "?":
-                val = self.to_bool(val)
-            elif fdesc[0:2] == "##":
-                val = float(val)
-            elif fdesc[0] == "#":
-                if fdesc[1] == "." and not val:
-                    val = attr.default
-                else:
-                    oval = val
-                    val = int(val)
-                    if str(val) != oval:
-                        raise ValueError(val)
-            elif tbl:
-                if val in tbl:
-                    pass
-                elif val.upper() in tbl:
-                    val = val.upper()
-                elif val.lower() in tbl:
-                    val = val.lower()
-                else:
-                    raise ValueError(f"{val} not in {tbl}")
-            attr.__set__(target, val)
-        return target
-
-    def __call__(self, formdata: dict):
-        flavorname = Flavorname()
-        flavorname.cpuram = self.input_component(formdata, "cpuram", Main)
-        flavorname.disk = self.input_component(formdata, "disk", Disk)
-        if flavorname.disk and not (flavorname.disk.nrdisks and flavorname.disk.disksize):
-            # special case...
-            flavorname.disk = None
-        flavorname.hype = self.input_component(formdata, "hype", Hype)
-        flavorname.hwvirt = self.input_component(formdata, "hwvirt", HWVirt)
-        flavorname.cpubrand = self.input_component(formdata, "cpubrand", CPUBrand)
-        flavorname.gpu = self.input_component(formdata, "gpu", GPU)
-        flavorname.ib = self.input_component(formdata, "ib", IB)
-        return flavorname
-
-
-def generate_name(form, inputter=Inputter()):
+def generate_name(form):
     """Parse submitted form with flavor properties"""
     formdata = {key: val[0] for key, val in form.items()}
-    flavorname = inputter(formdata)
+    inputter = Inputter(partial(lookup_user_input, formdata))
+    flavorname = inputter()
     # validate formdata for extraneous fields
     for key, val in formdata.items():
         if val == "NN" or key in ("disk.nrdisks", "disk.disktype"):
@@ -146,7 +79,7 @@ def keystr(key):
     return key
 
 
-def make_component_form(spec, component, basepath):
+def make_component_form(spec, component):
     """This mirrors flavor-name-check.py input(), but instead generates a web form.
 
     Defaults come from component, the form is constructed from the component's class attributes.
@@ -163,7 +96,7 @@ def make_component_form(spec, component, basepath):
         tbl = attr.get_tbl(component)
         fname = attr.attr
         fdesc = attr.name
-        path = f"{basepath}.{fname}"
+        path = f"{spec.component_name}.{attr.attr}"
         check_box = fdesc[0] == '?'
         if check_group:
             if check_box:
@@ -228,16 +161,16 @@ def output_generate(namestr, flavorname, error):
         print('\t<br/>Starting with empty template ...')
 
     print('\t<br/>\n\t<FORM ACTION="/cgi-bin/flavor-form.py" METHOD="GET">')
-    make_component_form(Main, flavorname.cpuram, "cpuram")
+    make_component_form(Main, flavorname.cpuram)
     print('\t<INPUT TYPE="submit" VALUE="Generate"/><br/>')
     print('\t<br/>The following settings are all optional and (except for disk) meant for highly specialized / differentiated offerings.<br/>')
     print('\t<font size=-1>')
-    make_component_form(Disk, flavorname.disk, "disk")
-    make_component_form(Hype, flavorname.hype, "hype")
-    make_component_form(HWVirt, flavorname.hwvirt, "hwvirt")
-    make_component_form(CPUBrand, flavorname.cpubrand, "cpubrand")
-    make_component_form(GPU, flavorname.gpu, "gpu")
-    make_component_form(IB, flavorname.ib, "ib")
+    make_component_form(Disk, flavorname.disk)
+    make_component_form(Hype, flavorname.hype)
+    make_component_form(HWVirt, flavorname.hwvirt)
+    make_component_form(CPUBrand, flavorname.cpubrand)
+    make_component_form(GPU, flavorname.gpu)
+    make_component_form(IB, flavorname.ib)
     print('\t</font><br/>')
     print('\tRemember that you are allowed to understate performance.<br/>')
     print('\t<INPUT TYPE="submit" VALUE="Generate"/><br/>')

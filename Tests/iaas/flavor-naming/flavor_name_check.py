@@ -145,6 +145,7 @@ class DepTblAttr(Attr):
 class Main:
     """Class representing the first part (CPU+RAM)"""
     type = "CPU-RAM"
+    component_name = "cpuram"
     cpus = IntAttr("#vCPUs")
     cputype = TblAttr("CPU type", {"L": "LowPerf vCPUs", "V": "vCPUs", "T": "SMT Threads", "C": "Dedicated Cores"})
     cpuinsecure = BoolAttr("?Insec SMT", letter="i")
@@ -156,6 +157,7 @@ class Main:
 class Disk:
     """Class representing the disk part"""
     type = "Disk"
+    component_name = "disk"
     nrdisks = IntAttr("#.NrDisks", default=1)
     disksize = OptIntAttr("#.GB Disk")
     disktype = TblAttr("Disk type", {'': '(unspecified)', "n": "Networked", "h": "Local HDD", "s": "SSD", "p": "HiPerf NVMe"})
@@ -164,18 +166,21 @@ class Disk:
 class Hype:
     """Class repesenting Hypervisor"""
     type = "Hypervisor"
+    component_name = "hype"
     hype = TblAttr(".Hypervisor", {"kvm": "KVM", "xen": "Xen", "hyv": "Hyper-V", "vmw": "VMware", "bms": "Bare Metal System"})
 
 
 class HWVirt:
     """Class repesenting support for hardware virtualization"""
     type = "Hardware/NestedVirtualization"
+    component_name = "hwvirt"
     hwvirt = BoolAttr("?HardwareVirt", letter="hwv")
 
 
 class CPUBrand:
     """Class repesenting CPU brand"""
     type = "CPUBrand"
+    component_name = "cpubrand"
     cpuvendor = TblAttr("CPU Vendor", {"i": "Intel", "z": "AMD", "a": "ARM", "r": "RISC-V"})
     cpugen = DepTblAttr("#.CPU Gen", cpuvendor, {
         "i": {None: '(unspecified)', 0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake", 4: "Sapphire Rapids"},
@@ -188,6 +193,7 @@ class CPUBrand:
 class GPU:
     """Class repesenting GPU support"""
     type = "GPU"
+    component_name = "gpu"
     gputype = TblAttr("Type", {"g": "vGPU", "G": "Pass-Through GPU"})
     brand = TblAttr("Brand", {"N": "nVidia", "A": "AMD", "I": "Intel"})
     gen = DepTblAttr("Gen", brand, {
@@ -203,6 +209,7 @@ class GPU:
 class IB:
     """Class representing Infiniband"""
     type = "Infiniband"
+    component_name = "ib"
     ib = BoolAttr("?IB")
 
 
@@ -417,63 +424,90 @@ class Parser:
         return flavorname
 
 
+def _convert_user_input(idx, attr, target, val):
+    """auxiliary function that converts user-input string `val` to the target attribute type"""
+    fdesc = attr.name
+    tbl = attr.get_tbl(target)
+    if not val and idx == 0 and not isinstance(target, (Main, Disk)):
+        # BAIL: if you don't want an extension, supply empty first attr
+        return val
+    if fdesc[0] == "?":
+        val = val.upper()
+        if val == "" or val == "OFF" or val == "0" or val[0] == "N" or val[0] == "F":
+            val = False
+        elif val == "1" or val == "ON" or val[0] == "Y" or val[0] == "T":
+            val = True
+        else:
+            raise ValueError
+    elif fdesc[0:2] == "##":
+        val = float(val)
+    elif fdesc[0] == "#":
+        if fdesc[1] == "." and not val:
+            val = attr.default
+        else:
+            oval = val
+            val = int(val)
+            if str(val) != oval:
+                raise ValueError(val)
+    elif tbl:
+        if val in tbl:
+            pass
+        elif val.upper() in tbl:
+            val = val.upper()
+        elif val.lower() in tbl:
+            val = val.lower()
+        else:
+            raise ValueError(f"{val} not in {tbl}")
+    return val
+
+
+def ask_user_input(idx, attr, target):
+    """strategy function for `Inputter` class: ask user for input"""
+    fdesc = attr.name
+    tbl = attr.get_tbl(target)
+    if idx == 0:
+        print(target.type)
+    if tbl:
+        print(f" {fdesc} Options:")
+        for key, v in tbl.items():
+            print(f"  {'' if key is None else key}: {v}")
+    while True:
+        print(f" {fdesc}: ", end="")
+        val = input()
+        try:
+            val = _convert_user_input(idx, attr, target, val)
+        except BaseException as exc:
+            print(exc)
+            print(" INVALID!")
+        else:
+            break
+    return val
+
+
+def lookup_user_input(formdata, idx, attr, target):
+    """strategy function for `Inputter` class: look up input in `formdata` dict
+
+    Use like so: `form_inputter = Inputter(partial(lookup_user_input, formdata))`
+    """
+    val = formdata.get(f"{target.component_name}.{attr.attr}")
+    if val is None or val == "NN":
+        val = ""
+    return _convert_user_input(idx, attr, target, val)
+
+
 class Inputter:
     """Auxiliary class for interactive input of flavor names."""
-
-    @staticmethod
-    def to_bool(s):
-        """interpret string input as bool"""
-        s = s.upper()
-        if s == "" or s == "0" or s[0] == "N" or s[0] == "F":
-            return False
-        if s == "1" or s[0] == "Y" or s[0] == "T":
-            return True
-        raise ValueError
+    def __init__(self, obtain_input=ask_user_input):
+        self.ask_user_input = staticmethod(obtain_input)
 
     def input_component(self, targetcls):
         target = targetcls()
-        print(targetcls.type)
         attrs = [att for att in targetcls.__dict__.values() if isinstance(att, Attr)]
-        for i, attr in enumerate(attrs):
-            fdesc = attr.name
-            tbl = attr.get_tbl(target)
-            if tbl:
-                print(f" {fdesc} Options:")
-                for key, v in tbl.items():
-                    print(f"  {'' if key is None else key}: {v}")
-            while True:
-                print(f" {fdesc}: ", end="")
-                val = input()
-                try:
-                    if not val and i == 0 and not issubclass(targetcls, (Main, Disk)):
-                        # BAIL: if you don't want an extension, supply empty first attr
-                        return
-                    if fdesc[0] == "?":
-                        val = self.to_bool(val)
-                    elif fdesc[0:2] == "##":
-                        val = float(val)
-                    elif fdesc[0] == "#":
-                        if fdesc[1] == "." and not val:
-                            val = attr.default
-                            break
-                        oval = val
-                        val = int(val)
-                        if str(val) != oval:
-                            raise ValueError(val)
-                    elif tbl:
-                        if val in tbl:
-                            break
-                        if val.upper() in tbl:
-                            val = val.upper()
-                        elif val.lower() in tbl:
-                            val = val.lower()
-                        if val not in tbl:
-                            raise ValueError(val)
-                except BaseException as exc:
-                    print(exc)
-                    print(" INVALID!")
-                else:
-                    break
+        for idx, attr in enumerate(attrs):
+            val = self.ask_user_input(idx, attr, target)
+            if not val and idx == 0 and not isinstance(target, (Main, Disk)):
+                # BAIL: if you don't want an extension, supply empty first attr
+                return
             attr.__set__(target, val)
         return target
 
