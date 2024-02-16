@@ -5,8 +5,7 @@ import sys
 import click
 import yaml
 
-from flavor_name_check import parser_v1, parser_v2, parser_v3, inputflavor, outputter, flavorname_to_dict
-from flavor_name_describe import prettyname
+from flavor_name_check import parser_v1, parser_v2, parser_v3, inputflavor, outputter, flavorname_to_dict, prettyname
 
 
 logger = logging.getLogger(__name__)
