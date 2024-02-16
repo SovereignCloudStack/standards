@@ -53,7 +53,7 @@ VERSIONS = {
     'v2': ParsingStrategy(parsers=(parser_v2, ), invalid_parsers=(parser_v1, )),
     'v3': ParsingStrategy(parsers=(parser_v3, ), invalid_parsers=(parser_v1, )),
 }
-VERSIONS['latest'] = max(VERSIONS.items())[1]
+_, VERSIONS['latest'] = max(VERSIONS.items())
 
 
 def noop(*args, **kwargs):
