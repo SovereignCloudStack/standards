@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # adapted from https://github.com/python/cpython/blob/3.12/Lib/http/server.py
-from http.server import *
+from http.server import CGIHTTPRequestHandler, BaseHTTPRequestHandler, ThreadingHTTPServer
 from http.server import _get_best_family, _url_collapse_path
 import argparse
 import contextlib
 import os
+import socket
 import sys
 
 
