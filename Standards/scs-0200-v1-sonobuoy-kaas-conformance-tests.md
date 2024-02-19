@@ -8,7 +8,7 @@ track: KaaS
 ## Introduction - Motivation
 
 With the [k8s-cluster-api-provider][k8s-api], the SCS provides a tool to generate
-and manage k8s clusters on top of its OpenStack IAAS infrastructure. As part of
+and manage k8s clusters on top of its IaaS infrastructure. As part of
 the application, [Sonobuoy][sonobuoy] is used as a test suite to execute the
 official [Kubernetes e2e tests][k8s-e2e-tests]. Future and existing conformance
 tests derived from SCS standards are perhaps part of these tests and could therefore
@@ -72,11 +72,10 @@ PROS:
 
 CONS:
 
-* compared to Python, Go is a less common programming language
-* arguments not in favor of this framework can also be derived from the [Non-Goals][e2e-frame-nongoals] description of the documentation:
+* arguments not in favor of this framework can be derived from the [Non-Goals][e2e-frame-nongoals] description of the documentation:
   * "no responsibility for bootstrapping or the execution of the tests themselves" can be ignored, as this is partly taken over by Sonobuoy
   * "no mock or fake cluster components" can be ignored, since the e2e tests of SCS should be used to test real clusters and their functionality
-  * for this test procedure, the Sonobuoy e2e plugin should be run in addition to the SCS kaas conformance tests
+  * for this test procedure, the Sonobuoy e2e plugin should be run in addition to the SCS KaaS conformance tests
 
 > proof of concept: `../Tests/kaas/kaas-sonobuoy-go-example-e2e-framework/`
 
@@ -150,9 +149,9 @@ There are two potential approaches for building the Sonobuoy images, which can b
 independent of the chosen framework. The pros and cons of the approaches can be seen
 in the following section.
 
-#### _Option 1_ GitHub container registry
+#### _Option 1_ Public container registry
 
-The image can be made available via the GitHub container registry, which would require
+The image can be made available via a public container registry, which would require
 a regular job (probably CI/CD) to build and publish the image.
 
 #### _Option 2_ Local image upload
@@ -166,7 +165,7 @@ CI/CD job, it also makes it harder to test changes quickly, since perhaps a wait
 is necessary to let the CI/CD job run through and access the image. This can be solved
 by using the "Local image upload" or a combination of both approaches.
 
-In general, the usage of the "GitHub container registry" option is highly recommended,
+In general, the usage of the "Public container registry" option is highly recommended,
 since it enables easy building and distribution of test images for different processes.
 
 ## Decision

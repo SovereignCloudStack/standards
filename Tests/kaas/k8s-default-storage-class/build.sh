@@ -5,9 +5,9 @@ IMAGE_NAME=scsconformance
 
 if [[ -v IMAGE_VERSION_TAG ]]
 then 
-  export TAG=$IMAGE_VERSION_TAG
+    export TAG=$IMAGE_VERSION_TAG
 else
-  export TAG="dev"
+    export TAG="dev"
 fi
 
 docker build . -t $IMAGE_REGISTRY/$IMAGE_NAME:$TAG
