@@ -4,7 +4,7 @@
 """Flavor naming checker
 https://github.com/SovereignCloudStack/Docs/Design-Docs/tools
 
-Uses the flavor-name-check.py tool
+Uses the flavor_names.py module.
 Assumes a connection to an OpenStack tenant,
 retrieves the list of flavors from there and validates them.
 Something similar could be achieved by:
