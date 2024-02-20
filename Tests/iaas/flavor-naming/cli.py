@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Command-line interface for validation and interactive construction of flavor names"""
 import logging
 import sys
 

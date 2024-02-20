@@ -44,7 +44,7 @@ Options:
   --help                          Show this message and exit.
 ```
 
-Here is an example invokation:
+Here is an example invocation:
 
 ```console
 $ ./cli.py parse --output prose v1/v2 SCS-16T-64-3x10s_bms_hwv_i3h_GNa-64_ib 
@@ -81,7 +81,7 @@ Options:
   --help  Show this message and exit.
 ```
 
-Example invokation:
+Example invocation:
 
 ```console
 $ ./cli.py input

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Simple webserver that can be used to test the flavor-form.py CGI script."""
 # adapted from https://github.com/python/cpython/blob/3.12/Lib/http/server.py
 from http.server import CGIHTTPRequestHandler, BaseHTTPRequestHandler, ThreadingHTTPServer
 from http.server import _get_best_family, _url_collapse_path
@@ -15,7 +16,7 @@ class RequestHandler(CGIHTTPRequestHandler):
         collapsed_path = _url_collapse_path(self.path)
         if not collapsed_path.startswith('/cgi-bin/'):
             return False
-        self.cgi_info = '', collapsed_path[8:]
+        self.cgi_info = '', collapsed_path.removeprefix('/cgi-bin')
         return True
 
 
@@ -32,10 +33,7 @@ def test(HandlerClass=BaseHTTPRequestHandler,
     with ServerClass(addr, HandlerClass) as httpd:
         host, port = httpd.socket.getsockname()[:2]
         url_host = f'[{host}]' if ':' in host else host
-        print(
-            f"Serving HTTP on {host} port {port} "
-            f"(http://{url_host}:{port}/) ..."
-        )
+        print(f"The form is accessible at http://{url_host}:{port}/cgi-bin/flavor-form.py")
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
