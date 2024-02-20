@@ -2,7 +2,6 @@
 # vim: set ts=4 sw=4 et:
 
 """Flavor naming checker
-https://github.com/SovereignCloudStack/Docs/Design-Docs/tools
 
 Uses the flavor_names.py module.
 Assumes a connection to an OpenStack tenant,
