@@ -676,6 +676,7 @@ class CompatLayer:
                 print(f"Search {tnm}")
             if os.access(tnm, os.R_OK):
                 return tnm
+        raise RuntimeError(f"Flavor yaml file not found: {fnm}")
 
     def readflavors(self, fnm, v3mode):
         """Read mandatory and recommended flavors from passed YAML file"""
