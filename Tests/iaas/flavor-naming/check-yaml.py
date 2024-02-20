@@ -57,6 +57,11 @@ class Checker:
             return
         undefined = Undefined()
         expected = flavorname_to_dict(flavorname)
+        # add explicit undefined so the final for-loop catches spurious entries
+        for key in flavor_spec:
+            if key == 'name':
+                continue
+            expected.setdefault(key, undefined)
         for key, exp_val in expected.items():
             val = flavor_spec.get(key, DEFAULTS.get(key, undefined))
             if val != exp_val:
