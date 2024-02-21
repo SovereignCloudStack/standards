@@ -1,22 +1,22 @@
 ---
-title: Sonobuoy - KaaS conformance test framework
+title: Using Sonobuoy for KaaS conformance tests
 type: Decision Record
 status: Draft
 track: KaaS
 ---
 
-## Introduction - Motivation
+## Motivation
 
 With the [k8s-cluster-api-provider][k8s-api], the SCS provides a tool to generate
 and manage k8s clusters on top of its IaaS infrastructure. As part of
 the application, [Sonobuoy][sonobuoy] is used as a test suite to execute the
-official [Kubernetes e2e tests][k8s-e2e-tests]. Future and existing conformance
-tests derived from SCS standards are perhaps part of these tests and could therefore
-be provided by running the integrated [Sonobuoy e2e test plugin][e2e test plugin].
+official [Kubernetes e2e tests][k8s-e2e-tests]. 
+We expect that current and future tests derived from SCS standards
+will benefit from (or even require) the testing mechanisms that Sonobuoy provides.
 
 Apart from running the Kubernetes e2e tests, Sonobuoy also allows users to write
 their own tests and apply them as a self-managed [plugin][sonobuoy-plugin-docu].
-All tests not provided by the [e2e test plugin][e2e test plugin] could therefore
+All tests not provided by the [e2e test plugin][e2e-test-plugin] could therefore
 be written by the respective SCS teams responsible for the standards or tests and
 then be made executable with Sonobuoy. Hence, Sonobuoy could provide both a pre-done
 test suite and a framework to write additional conformance tests required for SCS.
@@ -52,7 +52,7 @@ show one example each in order to give a better representation to the reader.
 Sonobuoy provides plugin examples in the repository <https://github.com/vmware-tanzu/sonobuoy-plugins>,
 which are referenced throughout this section.
 
-### _Option 1_ Go approach 1: Pick a framework from the Sonobuoy plugin examples
+### _Option 1_ Golang based approach 1: Pick a framework from the Sonobuoy plugin examples
 
 The seemingly most interesting plugin is the [e2e-skeleton][e2e-skel], which uses
 the [kubernetes-sigs/e2e-framework][e2e-frame]. The [kubernetes-sigs/e2e-framework][e2e-frame]
@@ -79,7 +79,7 @@ CONS:
 
 > proof of concept: `../Tests/kaas/kaas-sonobuoy-go-example-e2e-framework/`
 
-### _Option 2_ Go approach 2: Reuse the Kubernetes own e2e test infrastructure and framework
+### _Option 2_ Golang based approach 2: Reuse the Kubernetes own e2e test infrastructure and framework
 
 The existing Sonobuoy e2e plugin already provides a vast number of tests that could
 be adapted or reused for the SCS project.
@@ -110,7 +110,7 @@ CONS:
 
 > TODO: provide proof of concept: _kaas-sonobuoy-go-example-k8s-e2e_
 
-#### _Option 3_ Write Python scripts for tests
+### _Option 3_ Write Python scripts for tests
 
 Sonobuoy makes it possible to write tests in Python and execute them like other
 tests in a pod on the K8s cluster. It would therefore be possible to keep on writing
@@ -152,7 +152,7 @@ in the following section.
 #### _Option 1_ Public container registry
 
 The image can be made available via a public container registry, which would require
-a regular job (probably CI/CD) to build and publish the image.
+a regular job (e.g. CI/CD) to build and publish the image.
 
 #### _Option 2_ Local image upload
 
@@ -161,8 +161,8 @@ it manually to the Kubernetes cluster under test.
 
 Both approaches are useful in different ways. While the usage of a container registry
 allows easy distribution of tests and guarantees new images through the usage of a
-CI/CD job, it also makes it harder to test changes quickly, since perhaps a wait time
-is necessary to let the CI/CD job run through and access the image. This can be solved
+CI/CD job, it also makes it harder to test changes quickly, since a wait time could be
+necessary to let the CI/CD job run through and access the image. This can be solved
 by using the "Local image upload" or a combination of both approaches.
 
 In general, the usage of the "Public container registry" option is highly recommended,
@@ -204,7 +204,7 @@ As a first decision, "_Option 2_ Go Approach 2: Reuse Kubernetes' own e2e test i
 is the least viable, as it would mean copying almost all the files used from
 the Kubernetes e2e tests. This framework is closely linked to the development of
 the Kubernetes code. Therefore, changes to its structure mainly are in line with its usage
-in the Kubernetes repository itself and is probably not relevant for other parties.
+in the Kubernetes repository itself and is most likely not relevant for other parties.
 Changes in the framework cloud have a greater impact on our side as they are
 predictable. The development effort gained by reusing these examples could be
 outweighed by the investment necessary to adapt tests to the corresponding framework changes.
@@ -218,8 +218,8 @@ and Go code. This could possibly generate two Sonobuoy plugins, but this isn't a
 
 [k8s-e2e-tests]: https://github.com/kubernetes/kubernetes/tree/master/test/e2e
 [sonobuoy]: https://sonobuoy.io/
-[sonobuoy-plugin-docu]: https://sonobuoy.io/docs/v0.57.0/plugins/
-[e2e test plugin]: https://sonobuoy.io/docs/main/e2eplugin/
+[sonobuoy-plugin-docu]: https://sonobuoy.io/docs/main/plugins/
+[e2e-test-plugin]: https://sonobuoy.io/docs/main/e2eplugin/
 [k8s-api]: https://github.com/SovereignCloudStack/k8s-cluster-api-provider
 [e2e-skel]: https://github.com/vmware-tanzu/sonobuoy-plugins/tree/main/examples/e2e-skeleton
 [e2e-frame]: https://github.com/kubernetes-sigs/e2e-framework

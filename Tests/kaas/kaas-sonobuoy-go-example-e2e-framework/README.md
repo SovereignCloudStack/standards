@@ -1,6 +1,6 @@
 # SCS kaas Sonobuoy testsuite and K8s e2e-test-framework
 
-This directory holds all conformance tests that aim to validate the scs kaas infrastructure
+This directory holds **example** conformance tests that aim to validate the scs kaas infrastructure.
 
 ## Sonobuoy plugin description
 
