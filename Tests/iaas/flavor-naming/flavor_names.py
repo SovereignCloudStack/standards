@@ -669,15 +669,8 @@ class CompatLayer:
 
     def findflvfile(self, fnm):
         """Search for flavor file and return found path"""
-        if os.path.isabs(fnm) or os.path.dirname(fnm):
+        if os.path.isfile(fnm):
             return fnm
-        searchpath = (".", "..", *self.searchpath, self.searchpath[0] + "/..", '/opt/share/SCS')
-        for spath in searchpath:
-            tnm = os.path.join(spath, fnm)
-            if self.debug:
-                print(f"Search {tnm}")
-            if os.access(tnm, os.R_OK):
-                return tnm
         raise RuntimeError(f"Flavor yaml file not found: {fnm}")
 
     def readflavors(self, fnm, v3mode):
