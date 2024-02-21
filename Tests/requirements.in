@@ -1,0 +1,5 @@
+click
+fabric
+kubernetes_asyncio
+PyYAML
+openstacksdk
