@@ -3,6 +3,7 @@ import os
 import os.path
 import re
 import sys
+from pathlib import Path
 from typing import Optional
 
 import yaml
@@ -10,6 +11,7 @@ import yaml
 
 CPUTYPE_KEY = {'L': 'crowded-core', 'V': 'shared-core', 'T': 'dedicated-thread', 'C': 'dedicated-core'}
 DISKTYPE_KEY = {'n': 'network', 'h': 'hdd', 's': 'ssd', 'p': 'nvme'}
+HERE = Path(__file__).parent
 
 
 class TypeCheck:
@@ -628,7 +630,7 @@ class CompatLayer:
         self.disallow_old = False
         self.prefer_old = False
         self.v3_flv = False
-        self.mandFlavorFile = "SCS-Spec.MandatoryFlavors.yaml"
+        self.mandFlavorFile = str(Path(HERE.parent, "SCS-Spec.MandatoryFlavors.yaml"))
         bindir = os.path.basename(sys.argv[0])
         self.searchpath = (bindir, ) if bindir else os.environ['PATH'].split(':')
 
@@ -667,15 +669,8 @@ class CompatLayer:
 
     def findflvfile(self, fnm):
         """Search for flavor file and return found path"""
-        searchpath = (".", "..", *self.searchpath, self.searchpath[0] + "/..", '/opt/share/SCS')
-        if os.path.dirname(fnm):
+        if os.path.isfile(fnm):
             return fnm
-        for spath in searchpath:
-            tnm = os.path.join(spath, fnm)
-            if self.debug:
-                print(f"Search {tnm}")
-            if os.access(tnm, os.R_OK):
-                return tnm
         raise RuntimeError(f"Flavor yaml file not found: {fnm}")
 
     def readflavors(self, fnm, v3mode):
