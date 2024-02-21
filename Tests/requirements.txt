@@ -1,3 +1,4 @@
+click
 fabric
 kubernetes_asyncio
 PyYAML==6.0
