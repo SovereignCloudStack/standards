@@ -141,20 +141,18 @@ CONS:
 * no "native" support in Sonobuoy, a wrapper is needed
 * decision for a framework is still not done
 
-## Pros and Cons of Different Approaches
+## Approaches to providing a Sonobuoy plugin image
 
-### Providing Sonobuoy plugin image
+The following section showcases both ways to provide a Sonobuoy plugin image.
+_Option 1_ would most likely be used, if an image is published to be used by an end user.
+_Option 2_ is the expected way for local development and testing.
 
-There are two potential approaches for building the Sonobuoy images, which can be selected
-independent of the chosen framework. The pros and cons of the approaches can be seen
-in the following section.
-
-#### _Option 1_ Public container registry
+### _Option 1_ Public container registry
 
 The image can be made available via a public container registry, which would require
 a regular job (e.g. CI/CD) to build and publish the image.
 
-#### _Option 2_ Local image upload
+### _Option 2_ Local image upload
 
 Create the image locally on the "clusterctl admin control node" and then upload
 it manually to the Kubernetes cluster under test.
@@ -164,9 +162,6 @@ allows easy distribution of tests and guarantees new images through the usage of
 CI/CD job, it also makes it harder to test changes quickly, since a wait time could be
 necessary to let the CI/CD job run through and access the image. This can be solved
 by using the "Local image upload" or a combination of both approaches.
-
-In general, the usage of the "Public container registry" option is highly recommended,
-since it enables easy building and distribution of test images for different processes.
 
 ## Decision
 
