@@ -10,7 +10,7 @@ track: KaaS
 With the [k8s-cluster-api-provider][k8s-api], the SCS provides a tool to generate
 and manage k8s clusters on top of its IaaS infrastructure. As part of
 the application, [Sonobuoy][sonobuoy] is used as a test suite to execute the
-official [Kubernetes e2e tests][k8s-e2e-tests]. 
+official [Kubernetes e2e tests][k8s-e2e-tests].
 We expect that current and future tests derived from SCS standards
 will benefit from (or even require) the testing mechanisms that Sonobuoy provides.
 
