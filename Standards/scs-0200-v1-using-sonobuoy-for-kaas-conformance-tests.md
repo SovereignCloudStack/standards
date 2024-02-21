@@ -214,7 +214,6 @@ and "_Option 3_ Write Python scripts for tests" as methods for implementing test
 It is possible to use both approaches in parallel, which would enable usage of both Python
 and Go code. This could possibly generate two Sonobuoy plugins, but this isn't a necessity.
 
-
 [k8s-e2e-tests]: https://github.com/kubernetes/kubernetes/tree/master/test/e2e
 [sonobuoy]: https://sonobuoy.io/
 [sonobuoy-plugin-docu]: https://sonobuoy.io/docs/main/plugins/
