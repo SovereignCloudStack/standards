@@ -13,14 +13,14 @@ this information desired by it.
 License: CC-BY-SA 4.0
 """
 
-import sys
-# import os
 import getopt
-import importlib
+import sys
+
 import yaml
 
-fnmck = importlib.import_module("flavor-name-check")
-pp = importlib.import_module("flavor-name-describe")
+from flavor_names import CompatLayer, prettyname
+
+fnmck = CompatLayer()
 
 
 def usage(rcode=1):
@@ -35,7 +35,7 @@ def usage(rcode=1):
 
 class SpecSyntax:
     "Abstraction for the output flavor-manager spec file"
-    vocabulary = {"name": "name", "cpus": "0.cpus", "ram": "0.ram*1024", "disk": "1.disksize",
+    vocabulary = {"name": "name", "cpus": "cpuram.cpus", "ram": "cpuram.ram*1024", "disk": "disk.disksize",
                   "description": "oldname"}
 
     def spec_dict():
@@ -57,12 +57,12 @@ class SpecSyntax:
                 val = name
             elif valsel == "oldname":
                 val = "alias=" + fnmck.new_to_old(name)
-                val += " " + pp.prettyname(flv, prefix)
+                val += " " + prettyname(flv, prefix)
             else:
-                fno, attrcalc = valsel.split('.')
+                partnm, attrcalc = valsel.split('.')
                 attrnm = attrcalc.split("*")[0]
                 try:
-                    val = flv[int(fno)].__getattribute__(attrnm)
+                    val = getattr(getattr(flv, partnm), attrnm)
                     if "*" in attrcalc:
                         val = int(val*int(attrcalc.split("*")[1]))
                 except AttributeError:
@@ -125,8 +125,7 @@ def main(argv):
         scs_mand_flavors = []
         scs_rec_flavors = args
     else:
-        scs_mand_flavors, scs_rec_flavors = fnmck.readflavors(scs_mand_file,
-                                                              v3mode, fnmck.prefer_old)
+        scs_mand_flavors, scs_rec_flavors = fnmck.readflavors(scs_mand_file, v3mode)
 
     mand_list, err = parsenames(scs_mand_flavors, "Mandatory ")
     errors += err

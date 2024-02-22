@@ -19,6 +19,5 @@
       no_log: true
 
     - name: Clean up any lingering resources from previous run
-      ansible.builtin.shell: python3 ~/Tests/cleanup.py -c {{ cloud }} -p _scs-
-      failed_when: false
+      ansible.builtin.shell: python3 ~/Tests/cleanup.py -c {{ cloud }} --prefix _scs-
       changed_when: true

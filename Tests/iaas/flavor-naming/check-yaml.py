@@ -8,21 +8,17 @@ For reference, see
 
 Also check that the flavor properties encoded in the YAML match those encoded in the name.
 """
-import importlib
 import os
 import os.path
 import sys
 
 import yaml
 
-flavor_name_check = importlib.import_module("flavor-name-check")
-flavor_name_check.disallow_old = True
+from flavor_names import parser_v2, flavorname_to_dict
 
 
 REQUIRED_FIELDS = ['name-v1', 'name-v2', 'name', 'cpus', 'ram', 'cpu-type']
 DEFAULTS = {'disk0-type': 'network'}
-CPUTYPE_KEY = {'L': 'crowded-core', 'V': 'shared-core', 'T': 'dedicated-thread', 'C': 'dedicated-core'}
-DISKTYPE_KEY = {'n': 'network', 'h': 'hdd', 's': 'ssd', 'p': 'nvme'}
 
 
 class Undefined:
@@ -52,24 +48,20 @@ class Checker:
             return
         name = flavor_spec['name']
         name_v2 = flavor_spec['name-v2']
-        parsed = flavor_name_check.parsename(name_v2)
-        if not parsed:
+        try:
+            flavorname = parser_v2(name_v2)
+        except Exception:
+            flavorname = None
+        if not flavorname:
             self.emit(f"flavor {name}: name-v2 '{name_v2}' could not be parsed")
             return
-        cpu, disk, hype, hvirt, cpubrand, gpu, ibd = parsed
         undefined = Undefined()
-        expected = {
-            'cpus': cpu.cpus,
-            'cpu-type': CPUTYPE_KEY[cpu.cputype],
-            'ram': cpu.ram,
-            'name-v1': flavor_name_check.new_to_old(name_v2),
-            'disk': undefined,
-        }
-        if disk.parsed:
-            if disk.nrdisks != 1:
-                self.emit(f"flavor '{name}': name-v2 using multiple disks")
-            expected['disk'] = disk.disksize
-            expected['disk0-type'] = DISKTYPE_KEY[disk.disktype or 'n']
+        expected = flavorname_to_dict(flavorname)
+        # add explicit undefined so the final for-loop catches spurious entries
+        for key in flavor_spec:
+            if key == 'name':
+                continue
+            expected.setdefault(key, undefined)
         for key, exp_val in expected.items():
             val = flavor_spec.get(key, DEFAULTS.get(key, undefined))
             if val != exp_val:
