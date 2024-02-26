@@ -65,7 +65,7 @@ At the same time, providers must support Kubernetes versions at least as long as
 official sources as mentioned in the [Kubernetes Support Period](https://kubernetes.io/releases/patch-releases/#support-period).
 
 - Kubernetes versions MUST be supported as long as the official sources support them.
-  The current support period can therefore be found in [Kubernetes Support Period].
+  The current support period can therefore be found in [Kubernetes Support Period](https://kubernetes.io/releases/patch-releases/#support-period).
 - It is RECOMMENDED to not support versions after this period in order to not encourage
   usage of out-of-date versions.
 
