@@ -41,8 +41,8 @@ of the whole cluster.
 ## Design Considerations
 
 Most design considerations of this standard follow the previously written Decision Record
-[Kubernetes Nodes Anti Affinity] as well as the Kubernetes documents about [High Availability]
-and [Best practices for large clusters].
+[Kubernetes Nodes Anti Affinity][scs-0213-v1] as well as the Kubernetes documents about
+[High Availability][k8s-ha] and [Best practices for large clusters][k8s-large-clusters].
 
 SCS wishes to prefer distributed, highly-available systems due to their obvious advantages
 like fault-tolerance and data redundancy. But it also understands the costs and overhead
@@ -75,19 +75,16 @@ If the standard is used by a provider, the following decisions are binding and v
   provides best-practices on this topic, which are also RECOMMENDED by SCS.
 - At least one control plane instance MUST be run in each "failure zone", more are
   RECOMMENDED in each "failure zone" to provide fault-tolerance for each zone.
-
 - Worker nodes are RECOMMENDED to be distributed over multiple zones. This policy makes
   it OPTIONAL to provide a worker node in each "failure zone", meaning that worker nodes
   can also be scaled vertically first before scaling horizontally.
 - Worker node distribution MUST be indicated to the user through some kind of labeling
   in order to enable (anti)-affinity for workloads over "failure zones".
 
-## Related Documents
-
-[High Availability](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/)
-[Best practices for large clusters](https://kubernetes.io/docs/setup/best-practices/cluster-large/)
-[Kubernetes Nodes Anti Affinity](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0213-v1-k8s-nodes-anti-affinity.md)
-
 ## Conformance Tests
 
 Conformance Tests will be written in another issue
+
+[k8s-ha]: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/
+[k8s-large-clusters]: https://kubernetes.io/docs/setup/best-practices/cluster-large/
+[scs-0213-v1]: https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0213-v1-k8s-nodes-anti-affinity.md
