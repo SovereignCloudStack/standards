@@ -2,6 +2,7 @@ name: SCS Compatible IaaS
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml
 versions:
   - version: v4
+    stabilized_at: 2024-02-28
     standards:
       - name: OpenStack Powered Compute v2022.11
         url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
@@ -10,7 +11,8 @@ versions:
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v3-flavor-naming.md
         check_tools:
           - executable: ./iaas/flavor-naming/flavor-names-openstack.py
-            args: -2 "--mand=./iaas/scs-0100-v3-flavors.yaml"
+            args: "--mand=./iaas/scs-0100-v3-flavors.yaml"
+            # Note: --v2plus would outlaw the v1 flavor names. Don't do this yet.
       - name: Entropy
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0101-v1-entropy.md
         check_tools:
