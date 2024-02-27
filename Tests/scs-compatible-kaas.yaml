@@ -1,7 +1,7 @@
 name: SCS Compatible KaaS
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-kaas.yaml
 versions:
-  - version: v1
+  - version: v2
     standards:
       - name: Kubernetes version policy
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0210-v2-k8s-version-policy.md
@@ -9,3 +9,9 @@ versions:
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0214-v1-k8s-node-distribution.md
       - name: CNCF Kubernetes conformance
         url: https://github.com/cncf/k8s-conformance/tree/master
+  - version: v1
+    standards:
+      - name: Kubernetes version policy
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0210-v2-k8s-version-policy.md
+      - name: Kubernetes node distribution and availability
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0214-v1-k8s-node-distribution.md
