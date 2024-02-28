@@ -5,20 +5,20 @@ logging:
   version: 1
   disable_existing_loggers: False
   formatters:
-    k8s-version-recency-check:
+    k8s_version_policy:
       format: "%(levelname)s: %(message)s"
   handlers:
     console:
       class: logging.StreamHandler
-      formatter: k8s-version-recency-check
+      formatter: k8s_version_policy
       stream: ext://sys.stdout
     file:
       class: logging.handlers.WatchedFileHandler
-      formatter: k8s-version-recency-check
+      formatter: k8s_version_policy
       filename: MY-LOG-FILE-NAME.log
   root: # Configuring the default (root) logger is highly recommended
     handlers: [console]
   loggers:
-    k8s-version-recency-check:
+    k8s_version_policy:
       handlers: [console, file]
       propagate: no

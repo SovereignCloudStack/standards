@@ -21,10 +21,11 @@ versions with critical CVEs, which should be replaced on a shorter notice.
 License: CC-BY-SA 4.0
 """
 
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 import aiohttp
 import asyncio
-import datetime
-from dateutil import relativedelta
+import contextlib
 import getopt
 import kubernetes_asyncio
 import logging
@@ -35,10 +36,9 @@ import sys
 import yaml
 
 
-MAJOR_VERSION_CADENCE = None
-MINOR_VERSION_CADENCE_MONTHS = 4
-PATCH_VERSION_CADENCE_WEEKS = 1
-CVE_VERSION_CADENCE_DAYS = 3
+MINOR_VERSION_CADENCE = timedelta(days=120)
+PATCH_VERSION_CADENCE = timedelta(weeks=1)
+CVE_VERSION_CADENCE = timedelta(days=3)
 CVE_SEVERITY = 8  # CRITICAL
 
 logging_config = {
@@ -46,14 +46,14 @@ logging_config = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "k8s-version-recency-check": {
+        "k8s_version_policy": {
             "format": "%(levelname)s: %(message)s"
         }
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "k8s-version-recency-check",
+            "formatter": "k8s_version_policy",
             "stream": "ext://sys.stdout"
         }
     },
@@ -83,7 +83,7 @@ def print_usage():
     print("""
 K8s Version Recency Compliance Check
 
-Usage: k8s-version-recency-check.py [-h] [-c|--config PATH/TO/CONFIG] -k|--kubeconfig PATH/TO/KUBECONFIG
+Usage: k8s_version_policy.py [-h] [-c|--config PATH/TO/CONFIG] -k|--kubeconfig PATH/TO/KUBECONFIG
 
 The K8s version recency check returns 0 if the version of the tested cluster is still acceptable, otherwise
 it returns 2 for an out-of date version or 3 if the used version should be updated due to a highly critical CVE.
@@ -147,95 +147,64 @@ def initialize_config(config):
     return config
 
 
-class K8sVersionInfo:
-    """Class that contains a k8s version info.
+@dataclass(order=True)
+class K8sVersion:
+    major: int
+    minor: int
+    patch: int = 0
 
-    Attributes:
-        major (int): Major version of the k8s version
-        minor (int): Minor version of the k8s version
-        patch (int): Patch version of the k8s version
-        date (datetime): release date of the k8s version
-    """
-    def __init__(self, major=0, minor=0, patch=0):
-        self.major = major
-        self.minor = minor
-        self.patch = patch
-
-        self.date = None
-
-    def __eq__(self, other):
-        if not isinstance(other, K8sVersionInfo):
-            raise TypeError
-        return self.major == other.major and self.minor == other.minor and self.patch == other.patch
-
-    def __gt__(self, other):
-        if not isinstance(other, K8sVersionInfo):
-            raise TypeError
-        patchcomp = self.minor == other.minor and self.patch > other.patch
-        return self.major > other.major or (self.major == other.major and (self.minor > other.minor or patchcomp))
-
-    def __ge__(self, other):
-        if not isinstance(other, K8sVersionInfo):
-            raise TypeError
-        patchcomp = self.minor == other.minor and self.patch >= other.patch
-        return self.major > other.major or (self.major == other.major and (self.minor > other.minor or patchcomp))
-
-    def __lt__(self, other):
-        if not isinstance(other, K8sVersionInfo):
-            raise TypeError
-        patchcomp = self.minor == other.minor and self.patch < other.patch
-        return self.major < other.major or (self.major == other.major and (self.minor < other.minor or patchcomp))
-
-    def __le__(self, other):
-        if not isinstance(other, K8sVersionInfo):
-            raise TypeError
-        patchcomp = self.minor == other.minor and self.patch <= other.patch
-        return self.major < other.major or (self.major == other.major and (self.minor < other.minor or patchcomp))
-
-    @classmethod
-    def extract_version(cls, string, separator=".", strip=None):
-        if strip is None:
-            strip = ["v"]
-        for s in strip:
-            string = string.strip(s)
-        components = string.strip().split(separator)
-        return cls(int(components[0]), int(components[1]), int(components[2]))
-
-    def check_for_version(self, major=None, minor=None, patch=None):
-        """Check if a version or part of the version is equal to the given version numbers"""
-        return (major is None or self.major == major) and \
-               (minor is None or self.minor == minor) and \
-               (patch is None or self.patch == patch)
+    def is_same_minor_version(self, other):
+        return self.major == other.major and self.minor == other.minor
 
     def __str__(self):
         return f"{self.major}.{self.minor}.{self.patch}"
 
 
-class CVEVersionInfo:
-    """Class that contains a CVE version info.
+def parse_version(version_str: str) -> K8sVersion:
+    cleansed = version_str.removeprefix("v").strip()
+    try:
+        major, minor, patch = cleansed.split(".")
+        return K8sVersion(int(major), int(minor), int(patch))
+    except ValueError:
+        raise ValueError(f"Unrecognized version format: {version_str}")
 
-    Attributes:
-        upper_version (K8sVersionInfo): Last version with the CVE
-        lower_version (K8sVersionInfo): First version with the CVE; this value will be set if either an affected version
-            is directly set in a CVE dataset or if the CVE dataset is in a non-standard format.
-            If the variable is set, `lower_version` and `upper_version` create a range of affected versions.
-        equal (bool): check if the version is equal to the `upper_version`, (less than is always checked, since the
-            format is build like this)
-    """
-    def __init__(self, lower_version, upper_version, equal=False):
-        self.lower_version = lower_version
-        self.upper_version = upper_version
 
-        self.equal = equal
+@dataclass
+class K8sRelease:
+    version: K8sVersion
+    released_at: datetime
 
-    def __eq__(self, other):
-        if not isinstance(other, CVEVersionInfo):
-            raise TypeError
-        return self.lower_version == other.lower_version and \
-            self.upper_version == other.upper_version and \
-            self.equal == self.equal
+    def __str__(self):
+        return f"{self.version} ({self.released_at.isoformat()})"
 
-    def is_version_affected(self, version_info):
+    @property
+    def age(self):
+        return datetime.now() - self.released_at
+
+
+def parse_github_release_data(release_data: dict) -> K8sRelease:
+    version = parse_version(release_data["tag_name"].split("-")[0])
+    released_at = datetime.strptime(release_data["published_at"], "%Y-%m-%dT%H:%M:%SZ")
+    return K8sRelease(version, released_at)
+
+
+@dataclass
+class VersionRange:
+    """Version range with an lower and upper bound."""
+
+    # First version with the CVE; this value will be set if either an affected
+    # version is directly set in a CVE dataset or if the CVE dataset is in a
+    # non-standard format.  If the variable is set, `lower_version` and
+    # `upper_version` create a range of affected versions.
+    lower_version: K8sVersion
+
+    # Last version with the CVE
+    upper_version: K8sVersion
+
+    # True if upper_version is included in the range of affected versions
+    inclusive: bool = False
+
+    def __contains__(self, version: K8sVersion) -> bool:
         # See the following link for more information about the format
         # https://www.cve.org/AllResources/CveServices#cve-json-5
 
@@ -243,31 +212,22 @@ class CVEVersionInfo:
         if self.upper_version:
             # Check if a `lower version` exists and compare the version against it
             if self.lower_version:
-                gt = self.lower_version <= version_info
+                gt = self.lower_version <= version
             else:
                 gt = True
             # Compare the version either with `less than` or `less than or equal` against the `upper version`
-            if self.equal:
-                return gt and self.upper_version >= version_info
-            return gt and self.upper_version > version_info
+            if self.inclusive:
+                return gt and self.upper_version >= version
+            return gt and self.upper_version > version
         else:
             # If no upper version exists, we only need to check if the version is equal to the `lower version`
-            return self.lower_version == version_info
+            return self.lower_version == version
 
 
-def diff_months(date1, date2):
-    r = relativedelta.relativedelta(date2, date1)
-    return r.months + (12 * r.years)
-
-
-def diff_weeks(date1, date2):
-    delta = date1 - date2
-    return abs(delta.days / 7)
-
-
-def diff_days(date1, date2):
-    delta = date1 - date2
-    return abs(delta.days)
+@dataclass
+class ClusterInfo:
+    version: K8sVersion
+    name: str
 
 
 async def request_cve_data(session: aiohttp.ClientSession, cveid: str) -> dict:
@@ -279,39 +239,45 @@ async def request_cve_data(session: aiohttp.ClientSession, cveid: str) -> dict:
         return await resp.json()
 
 
-def parse_cve_version_information(cve_version_info):
+def parse_cve_version_information(cve_version_info: dict) -> VersionRange:
     """Parse the CVE version information according to their CVE JSON 5.0 schema"""
     vi_lower_version = None
     vi_upper_version = None
-    equal = False
+    inclusive = False
 
     # Extract the version if it is viable, but it's not a requirement
-    try:
-        vi_lower_version = K8sVersionInfo.extract_version(cve_version_info['version'])
-    except ValueError:
-        pass
+    with contextlib.suppress(ValueError):
+        vi_lower_version = parse_version(cve_version_info['version'])
 
     if 'lessThanOrEqual' in cve_version_info:
-        vi_upper_version = K8sVersionInfo.extract_version(cve_version_info['lessThanOrEqual'])
-        equal = True
+        vi_upper_version = parse_version(cve_version_info['lessThanOrEqual'])
+        inclusive = True
     elif 'lessThan' in cve_version_info:
-        vi_upper_version = K8sVersionInfo.extract_version(cve_version_info['lessThan'])
+        vi_upper_version = parse_version(cve_version_info['lessThan'])
 
     # This shouldn't happen, but if it happens, we look for non-standard descriptions
     # According to this(https://www.cve.org/AllResources/CveServices#cve-json-5),
     # this isn't how the data should be described
     if vi_lower_version is None and vi_upper_version is None:
-        if re.search(r'v?\d+.\d+.x', cve_version_info['version']):
+        if re.search(r'v?\d+\.\d+\.x', cve_version_info['version']):
             vdata = cve_version_info['version'].strip("v").split(".")
-            vi_lower_version = K8sVersionInfo(vdata[0], vdata[1], 0)
-            vi_upper_version = K8sVersionInfo(vdata[0], vdata[1], 0)
+            vi_lower_version = K8sVersion(int(vdata[0]), int(vdata[1]), 0)
+            vi_upper_version = K8sVersion(int(vdata[0]), int(vdata[1]), 0)
 
-        if re.search(r'v?\d+.\d+.\d+\s+-\s+v?\d+.\d+.\d+', cve_version_info['version']):
+        if re.search(r'v?\d+\.\d+\.\d+\s+-\s+v?\d+\.\d+\.\d+', cve_version_info['version']):
             vdata = cve_version_info['version'].split("-")
-            vi_lower_version = K8sVersionInfo.extract_version(vdata[0])
-            vi_upper_version = K8sVersionInfo.extract_version(vdata[1])
+            vi_lower_version = parse_version(vdata[0])
+            vi_upper_version = parse_version(vdata[1])
 
-    return CVEVersionInfo(vi_lower_version, vi_upper_version, equal)
+    return VersionRange(vi_lower_version, vi_upper_version, inclusive)
+
+
+def is_high_severity(cve_metrics: list) -> bool:
+    return any(
+        re.search(r'[cC][vV][sS]{1,2}V\d', metric_key) and metric_value['baseScore'] >= CVE_SEVERITY
+        for cve_metric in cve_metrics
+        for metric_key, metric_value in cve_metric.items()
+    )
 
 
 async def collect_cve_versions(session: aiohttp.ClientSession):
@@ -329,7 +295,7 @@ async def collect_cve_versions(session: aiohttp.ClientSession):
     ) as resp:
         cve_list = await resp.json()
 
-    tasks = [request_cve_data(session=session, cveid=cve['external_url'].split("=")[-1])
+    tasks = [request_cve_data(session=session, cveid=cve['id'])
              for cve in cve_list['items']]
 
     cve_data_list = await asyncio.gather(*tasks, return_exceptions=True)
@@ -344,6 +310,7 @@ async def collect_cve_versions(session: aiohttp.ClientSession):
             # https://github.com/CVEProject/cve-schema/tree/master/schema/v5.0
             # The containers -> cna path contains vulnerability information like severity, which is documented
             # under the metrics list.
+            # https://cveproject.github.io/cve-schema/schema/v5.0/docs/
         except KeyError as e:
             logger.debug(
                 f"They key {e} couldn't be found in the CVE json data for CVE "
@@ -351,13 +318,7 @@ async def collect_cve_versions(session: aiohttp.ClientSession):
             )
             continue
 
-        is_high_severity = any(
-            re.search(r'[cC][vV][sS]{1,2}V\d', metric_key) and metric_value['baseScore'] >= CVE_SEVERITY
-            for cve_metric in cve_metrics
-            for metric_key, metric_value in cve_metric.items()
-        )
-
-        if is_high_severity:
+        if is_high_severity(cve_metrics):
             affected_kubernetes_versions = [
                 parse_cve_version_information(version_info)
                 for aff in cve_affected
@@ -375,21 +336,18 @@ async def collect_cve_versions(session: aiohttp.ClientSession):
     return cfvs
 
 
-async def get_k8s_cluster_version(kubeconfig):
+async def get_k8s_cluster_info(kubeconfig, context=None) -> ClusterInfo:
     """Get the k8s version of the cluster under test."""
-    cluster_config = await kubernetes_asyncio.config.load_kube_config(kubeconfig)
+    cluster_config = await kubernetes_asyncio.config.load_kube_config(kubeconfig, context)
 
     async with kubernetes_asyncio.client.ApiClient() as api:
         version_api = kubernetes_asyncio.client.VersionApi(api)
-        ret = await version_api.get_code()
-
-        version = K8sVersionInfo.extract_version(ret.git_version)
-        version.date = datetime.datetime.strptime(ret.build_date, '%Y-%m-%dT%H:%M:%SZ')
-
-        return version, cluster_config.current_context['name']
+        response = await version_api.get_code()
+        version = parse_version(response.git_version)
+        return ClusterInfo(version, cluster_config.current_context['name'])
 
 
-def check_k8s_version_recency(version, cve_version_list=None):
+def check_k8s_version_recency(my_version: K8sVersion, cve_version_list=None) -> bool:
     """Check a given K8s cluster version against the list of released versions in order to find out, if the version
     is an accepted recent version according to the standard."""
     if cve_version_list is None:
@@ -400,31 +358,31 @@ def check_k8s_version_recency(version, cve_version_list=None):
         "X-GitHub-Api-Version": "2022-11-28"
     }
 
-    # Request the latest 100 version (the next are not needed, since these versions are too old)
-    response = requests.get("https://api.github.com/repos/kubernetes/kubernetes/releases?per_page=100",
-                            headers=github_headers).json()
+    # Request the latest 100 releases (the next are not needed, since these versions are too old)
+    releases_data = requests.get(
+        "https://api.github.com/repos/kubernetes/kubernetes/releases?per_page=100",
+        headers=github_headers,
+    ).json()
 
-    for r in response:
-        v = K8sVersionInfo.extract_version(r['tag_name'].split("-")[0])
-        v.date = datetime.datetime.strptime(r['published_at'], '%Y-%m-%dT%H:%M:%SZ')
-
-        if r['draft'] or r['prerelease']:
+    for release_data in releases_data:
+        if release_data['draft'] or release_data['prerelease']:
             continue
 
+        release = parse_github_release_data(release_data)
+
         # Check if the version is recent
-        if v.minor >= version.minor:
-            if diff_months(v.date, datetime.datetime.now()) >= MINOR_VERSION_CADENCE_MONTHS:
+        if release.version.minor >= my_version.minor:
+            if release.age > MINOR_VERSION_CADENCE:
                 return False
 
-        if version.check_for_version(major=v.major, minor=v.minor) and version.patch < v.patch:
-            if diff_weeks(datetime.datetime.now(), v.date) >= PATCH_VERSION_CADENCE_WEEKS:
+        if my_version.is_same_minor_version(release.version) and my_version.patch < release.version.patch:
+            if release.age > PATCH_VERSION_CADENCE:
                 return False
 
-            if v in cve_version_list and \
-               diff_days(datetime.datetime.now(), v.date) >= CVE_VERSION_CADENCE_DAYS:
+            if release.version in cve_version_list and release.age > CVE_VERSION_CADENCE:
                 return False
 
-        if v.minor == (version.minor + 1) and v.patch == 0:
+        if release.version.minor == (my_version.minor + 1) and release.version.patch == 0:
             break
 
     return True
@@ -441,25 +399,25 @@ async def main(argv):
 
     connector = aiohttp.TCPConnector(limit=5)
     async with aiohttp.ClientSession(connector=connector) as session:
-        cve_versions = await collect_cve_versions(session)
-    cluster_version, cluster_name = await get_k8s_cluster_version(config.kubeconfig)
+        cve_affected_ranges = await collect_cve_versions(session)
+    cluster = await get_k8s_cluster_info(config.kubeconfig)
 
-    if check_k8s_version_recency(cluster_version, cve_versions):
+    if check_k8s_version_recency(cluster.version, cve_affected_ranges):
         logger.info("The K8s cluster version %s of cluster '%s' is still in the recency time window." %
-                    (str(cluster_version), cluster_name))
+                    (str(cluster.version), cluster.name))
         return 0
 
-    for cvev in cve_versions:
+    for affected_range in cve_affected_ranges:
         try:
-            if cvev.is_version_affected(cluster_version):
+            if cluster.version in affected_range:
                 logger.error("The K8s cluster version %s of cluster '%s' is an outdated version "
-                             "with a possible CRITICAL CVE." % (str(cluster_version), cluster_name))
+                             "with a possible CRITICAL CVE." % (str(cluster.version), cluster.name))
                 return 3
         except TypeError as e:
             logger.error(f"An error occurred during CVE check: {e}")
 
-    logger.error("The K8s cluster version %s of cluster '%s' is outdated according to the Standard." %
-                 (str(cluster_version), cluster_name))
+    logger.error("The K8s cluster version %s of cluster '%s' is outdated according to the standard." %
+                 (str(cluster.version), cluster.name))
     return 2
 
 
