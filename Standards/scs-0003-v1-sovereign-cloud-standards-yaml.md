@@ -163,6 +163,8 @@ url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Certificati
 prerequisite:
   name: SCS Compatible IaaS
   url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml
+variables:
+  - os_cloud
 versions:
   - version: v5 # This version is in a draft state and work in progress
     # No stabilized_at: date set yet
