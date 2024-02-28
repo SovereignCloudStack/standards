@@ -153,8 +153,9 @@ class K8sVersion:
     minor: int
     patch: int = 0
 
-    def is_same_minor_version(self, other):
-        return self.major == other.major and self.minor == other.minor
+    def branch(self):
+        """Return a tuple of only the major and minor version."""
+        return (self.major, self.minor)
 
     def __str__(self):
         return f"{self.major}.{self.minor}.{self.patch}"
@@ -347,7 +348,7 @@ async def get_k8s_cluster_info(kubeconfig, context=None) -> ClusterInfo:
         return ClusterInfo(version, cluster_config.current_context['name'])
 
 
-def check_k8s_version_recency(my_version: K8sVersion, cve_version_list=None) -> bool:
+def check_k8s_version_recency(my_version: K8sVersion, cve_version_list=None, allow_older=False) -> bool:
     """Check a given K8s cluster version against the list of released versions in order to find out, if the version
     is an accepted recent version according to the standard."""
     if cve_version_list is None:
@@ -370,12 +371,13 @@ def check_k8s_version_recency(my_version: K8sVersion, cve_version_list=None) -> 
 
         release = parse_github_release_data(release_data)
 
-        # Check if the version is recent
-        if release.version.minor >= my_version.minor:
+        # Check if the minor version is recent, but allow older versions if requested
+        # FIXME: this assumes k8s stays in 1.x version schema :(
+        if release.version.minor >= my_version.minor and not allow_older:
             if release.age > MINOR_VERSION_CADENCE:
                 return False
 
-        if my_version.is_same_minor_version(release.version) and my_version.patch < release.version.patch:
+        if my_version.branch() == release.version.branch() and my_version.patch < release.version.patch:
             if release.age > PATCH_VERSION_CADENCE:
                 return False
 
@@ -400,25 +402,39 @@ async def main(argv):
     connector = aiohttp.TCPConnector(limit=5)
     async with aiohttp.ClientSession(connector=connector) as session:
         cve_affected_ranges = await collect_cve_versions(session)
-    cluster = await get_k8s_cluster_info(config.kubeconfig)
 
-    if check_k8s_version_recency(cluster.version, cve_affected_ranges):
-        logger.info("The K8s cluster version %s of cluster '%s' is still in the recency time window." %
-                    (str(cluster.version), cluster.name))
-        return 0
+    contexts = ["stable", "oldstable", "oldoldstable"]
+    branches = set()
 
-    for affected_range in cve_affected_ranges:
-        try:
-            if cluster.version in affected_range:
-                logger.error("The K8s cluster version %s of cluster '%s' is an outdated version "
-                             "with a possible CRITICAL CVE." % (str(cluster.version), cluster.name))
-                return 3
-        except TypeError as e:
-            logger.error(f"An error occurred during CVE check: {e}")
+    for context in contexts:
+        cluster = await get_k8s_cluster_info(config.kubeconfig, context)
+        branches.add(cluster.version.branch())
+        allow_older = context == contexts[0]
 
-    logger.error("The K8s cluster version %s of cluster '%s' is outdated according to the standard." %
-                 (str(cluster.version), cluster.name))
-    return 2
+        if check_k8s_version_recency(cluster.version, cve_affected_ranges, allow_older):
+            logger.info("The K8s cluster version %s of cluster '%s' is still in the recency time window." %
+                        (str(cluster.version), cluster.name))
+        else:
+            logger.error("The K8s cluster version %s of cluster '%s' is outdated according to the standard." %
+                        (str(cluster.version), cluster.name))
+            return 2
+
+        for affected_range in cve_affected_ranges:
+            try:
+                if cluster.version in affected_range:
+                    logger.error("The K8s cluster version %s of cluster '%s' is an outdated version "
+                                "with a possible CRITICAL CVE." % (str(cluster.version), cluster.name))
+                    return 3
+            except TypeError as e:
+                logger.error(f"An error occurred during CVE check: {e}")
+    
+    if len(branches) < 3:
+        # TODO
+        logger.error("support period")
+        return 4
+
+    return 0
+
 
 
 if __name__ == "__main__":
