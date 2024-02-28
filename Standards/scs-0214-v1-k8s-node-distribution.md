@@ -67,7 +67,7 @@ This standard formulates the requirement for the distribution of Kubernetes node
 to provide a fault-tolerant and available Kubernetes cluster infrastructure.
 Since some providers only have small environments to work with and therefore couldn't
 comply with this standard, it will be treated as a RECOMMENDED standard, where providers
-can OPT-OUT.
+can OPT OUT.
 
 If the standard is used by a provider, the following decisions are binding and valid:
 
@@ -83,7 +83,11 @@ If the standard is used by a provider, the following decisions are binding and v
 
 ## Conformance Tests
 
-Conformance Tests will be written in another issue
+The script `k8s-node-distribution-check.py` checks the nodes available with a user-provided
+kubeconfig file. It then determines based on the labels `kubernetes.io/hostname`, `topology.kubernetes.io/zone`,
+`topology.kubernetes.io/region` and `node-role.kubernetes.io/control-plane`, if a distribution
+of the available nodes is present. If this isn't the case, the script produces an error.
+If also produces warnings and informational outputs, if e.g. labels don't seem to be set.
 
 [k8s-ha]: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/
 [k8s-large-clusters]: https://kubernetes.io/docs/setup/best-practices/cluster-large/
