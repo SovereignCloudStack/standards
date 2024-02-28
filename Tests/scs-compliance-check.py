@@ -5,18 +5,13 @@
 #
 # (c) Eduard Itrich <eduard@itrich.net>
 # (c) Kurt Garloff <kurt@garloff.de>
+# (c) Matthias Büchse <matthias.buechse@cloudandheat.com>
 # SPDX-License-Identifier: Apache-2.0
 
-"""Master SCS compliance checker
+"""Main SCS compliance checker
 reads SCS certification requirements from e.g. scs-compatible.yaml
 and performs all the checks for the specified level and outputs a
-verdict from all tests (which is reflected in the exit code)
-The tests require the OpenStack SDK (and in the future probably
-also k8s python bindings) to be installed and access to IaaS
-(for the iaas layer tests) via configure clouds/secure.yaml
-which are passed in OS_CLOUD (or --os-cloud cmdline param).
-In the future als access to a cluster with KUBECONFIG pointing
-to a working file.
+verdict from all tests (which is reflected in the exit code).
 The goal is to work without any special admin privileges.
 (If we find things that can't be tested as normal user, we
 would split these tests out.)
@@ -38,10 +33,10 @@ import yaml
 
 # valid keywords for various parts of the spec, to be checked using `check_keywords`
 KEYWORDS = {
-    'spec': ('name', 'url', 'versions', 'prerequisite'),
+    'spec': ('name', 'url', 'versions', 'prerequisite', 'variables'),
     'version': ('version', 'standards', 'stabilized_at', 'obsoleted_at'),
     'standard': ('check_tools', 'url', 'name', 'condition'),
-    'checktool': ('executable', 'args', 'condition', 'classification'),
+    'checktool': ('executable', 'env', 'args', 'condition', 'classification'),
 }
 
 
@@ -50,12 +45,12 @@ def usage(file=sys.stdout):
     print("""Usage: scs-compliance-check.py [options] compliance-spec.yaml
 Options: -v/--verbose: More verbose output
  -q/--quiet: Don't output anything but errors
- -s/--single-scope: Don't perform required checks for prerequisite scopes
  -d/--date YYYY-MM-DD: Check standards valid on specified date instead of today
  -V/--version VERS: Force version VERS of the standard (instead of deriving from date)
- -c/--os-cloud CLOUD: Use specified cloud env (instead of OS_CLOUD env var)
+ -s/--subject SUBJECT: Name of the subject (cloud) under test, for the report
  -o/--output REPORT_PATH: Generate yaml report of compliance check under given path
  -C/--critical-only: Only return critical errors in return code
+ -a/--assign KEY=VALUE: assign variable to be used for the run (as required by yaml file)
 
 With -C, the return code will be nonzero precisely when the tests couldn't be run to completion.
 """.strip(), file=file)
@@ -89,7 +84,8 @@ class Config:
         self.arg0 = None
         self.verbose = False
         self.quiet = False
-        self.os_cloud = os.environ.get("OS_CLOUD")
+        self.subject = ""
+        self.assignment = {}
         self.checkdate = datetime.date.today()
         self.version = None
         self.output = None
@@ -99,9 +95,9 @@ class Config:
     def apply_argv(self, argv):
         """Parse options. May exit the program."""
         try:
-            opts, args = getopt.gnu_getopt(argv, "hvqd:V:sc:o:r:C", (
+            opts, args = getopt.gnu_getopt(argv, "hvqd:V:s:o:r:Ca:", (
                 "help", "verbose", "quiet", "date=", "version=",
-                "os-cloud=", "output=", "resource-usage=", "critical-only"
+                "subject=", "output=", "resource-usage=", "critical-only", "assign",
             ))
         except getopt.GetoptError as exc:
             print(f"Option error: {exc}", file=sys.stderr)
@@ -119,14 +115,19 @@ class Config:
                 self.checkdate = datetime.date.fromisoformat(opt[1])
             elif opt[0] == "-V" or opt[0] == "--version":
                 self.version = opt[1]
-            elif opt[0] == "-c" or opt[0] == "--os-cloud":
-                self.os_cloud = opt[1]
+            elif opt[0] == "-s" or opt[0] == "--subject":
+                self.subject = opt[1]
             elif opt[0] == "-o" or opt[0] == "--output":
                 self.output = opt[1]
             elif opt[0] == "-r" or opt[0] == "--resource-usage":
                 self.classes = [x.strip() for x in opt[1].split(",")]
             elif opt[0] == "-C" or opt[0] == "--critical-only":
                 self.critical_only = True
+            elif opt[0] == "-a" or opt[0] == "--assign":
+                key, value = opt[1].split("=", 1)
+                if key in self.assignment:
+                    raise ValueError(f"Double assignment for {key!r}")
+                self.assignment[key] = value
             else:
                 print(f"Error: Unknown argument {opt[0]}", file=sys.stderr)
         if len(args) < 1:
@@ -163,10 +164,10 @@ def suppress(*args, **kwargs):
     return
 
 
-def invoke_check_tool(check, check_env, check_cwd):
+def invoke_check_tool(exe, args, env, cwd):
     """run check tool and return invokation dict to use in the report"""
     try:
-        compl = run_check_tool(check["executable"], check.get("args", ''), env=check_env, cwd=check_cwd)
+        compl = run_check_tool(exe, args, env, cwd)
     except Exception as e:
         invokation = {
             "rc": 127,
@@ -191,15 +192,22 @@ def invoke_check_tool(check, check_env, check_cwd):
 def main(argv):
     """Entry point for the checker"""
     config = Config()
-    config.apply_argv(argv)
-    if not config.os_cloud:
-        print("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
+    try:
+        config.apply_argv(argv)
+    except Exception as exc:
+        print(f"CRITICAL: {exc}", file=sys.stderr)
+        return 1
+    if not config.subject:
+        print("You need pass --subject=SUBJECT.", file=sys.stderr)
         return 1
     printv = suppress if not config.verbose else partial(print, file=sys.stderr)
     printnq = suppress if config.quiet else partial(print, file=sys.stderr)
     with open(config.arg0, "r", encoding="UTF-8") as specfile:
         spec = yaml.load(specfile, Loader=yaml.SafeLoader)
-    check_env = {'OS_CLOUD': config.os_cloud, **os.environ}
+    missing_vars = [v for v in spec.get("variables", ()) if v not in config.assignment]
+    if missing_vars:
+        print(f"Missing variable assignments (via -a) for: {', '.join(missing_vars)}")
+        return 1
     check_cwd = os.path.dirname(config.arg0) or os.getcwd()
     allaborts = 0
     allerrors = 0
@@ -207,8 +215,8 @@ def main(argv):
         "spec": copy.deepcopy(spec),
         "run": {
             "argv": argv,
-            "os_cloud": config.os_cloud,
-            # TODO: Add kubeconfig context as well
+            "subject": config.subject,
+            "assignment": config.assignment,
             "checked_at": config.checkdate,
             "classes": config.classes,
             "forced_version": config.version or None,
@@ -266,11 +274,14 @@ def main(argv):
                 if check.get("classification", "light") not in config.classes:
                     print(f"skipping check tool '{check['executable']}' because of resource classification")
                     continue
-                args = check.get('args', '')
-                memo_key = f"{check['executable']} {args}".strip()
+                args = check.get('args', '').format(**config.assignment)
+                env = {key: value.format(**config.assignment) for key, value in check.get('env', {}).items()}
+                env_str = " ".join(f"{key}={value}" for key, value in env.items())
+                memo_key = f"{env_str} {check['executable']} {args}".strip()
                 invokation = memo.get(memo_key)
                 if invokation is None:
-                    invokation = invoke_check_tool(check, check_env, check_cwd)
+                    check_env = {**os.environ, **env}
+                    invokation = invoke_check_tool(check["executable"], args, check_env, check_cwd)
                     printv("\n".join(invokation["stdout"]))
                     printnq("\n".join(invokation["stderr"]))
                     memo[memo_key] = invokation
@@ -285,7 +296,7 @@ def main(argv):
         vr["errors"] = errors
         vr["passed"] = not (aborts + errors)
         printnq("*******************************************************")
-        printnq(f"Verdict for os_cloud {config.os_cloud}, {spec['name']}, "
+        printnq(f"Verdict for subject {config.subject}, {spec['name']}, "
                 f"version {vd['version']}: {errcode_to_text(aborts + errors)}")
         allaborts += aborts
         allerrors += errors

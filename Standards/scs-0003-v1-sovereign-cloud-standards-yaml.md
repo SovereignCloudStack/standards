@@ -89,7 +89,14 @@ The certification YAML _MUST_ contain the following keys:
 
 The certification YAML _MAY_ contain the following keys:
 
-### Prerequisite
+| Key                 | Type               | Description                                                   |
+| ------------------- | ------------------ | ------------------------------------------------------------- |
+| `prerequisite`      | Map                | Descriptor for the prerequisite certificate scope (see below) |
+| `variables`         | Array of String    | Lists variables that may occur in check tool descriptors      |
+
+The main check tool will expect an assignment for these variables (which is specific to the subject under test), and every occurrence of the variable in the check tool descriptor will be substituted accordingly.
+
+### Prerequisite descriptor
 
 A certificate within a certain level (above SCS-compatible) can only be granted if a valid corresponding certificate of the level below is presented,
 where corresponding means: of the same layer. The latter certificate is said to be a prerequisite for the former.
@@ -97,11 +104,10 @@ where corresponding means: of the same layer. The latter certificate is said to 
 We implement this logic by allowing for the designation of a certificate scope as a prerequisite;
 then a certificate of that prerequisite scope has to be presented before the certificate of the scope in question can be granted.
 
-| Key                 | Type   | Description                                                   | Example                                                                                                                           |
-| ------------------- | ------ | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `prerequisite`      | Map    | Descriptor for the prerequisite certificate scope, if any     |                                                                                                                                   |
-| `prerequisite.name` | String | Full name of the certificate scope                            | _SCS Compatible IaaS_                                                                                                             |
-| `prerequisite.url`  | String | Valid URL to the latest raw version of the certificate scope  | _[scs-compatible-iaas.yaml](https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml)_ |
+| Key    | Type   | Description                                                   | Example                                                                                                                           |
+| ------ | ------ | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `name` | String | Full name of the certificate scope                            | _SCS Compatible IaaS_                                                                                                             |
+| `url`  | String | Valid URL to the latest raw version of the certificate scope  | _[scs-compatible-iaas.yaml](https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml)_ |
 
 ### Version descriptor
 
@@ -138,9 +144,14 @@ Every list of standards consists of several standards that – altogether – de
 | Key               | Type   | Description                                                                                                                              | Example                |
 | ----------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
 | `executable`      | String | Valid local filename (relative to the path of scs-compliance-check.py) of a script that verifies compliance with the particular standard | _image-md-check.py_    |
-| `args`            | String | _Optional_ list of arguments to be passed to the `check_tool`. Preferably none needed.                                                   | `-v`                   |
+| `env`             | Map    | _Optional_ key-value map of environment variables (values may use variables)                                                             | OS_CLOUD: {os_cloud}   |
+| `args`            | String | _Optional_ command-line arguments to be passed to the `check_tool` (may use variables)                                                   | `-v -k {kubeconfig}`   |
 | `condition`       | String | _Optionally_ overrides the per-standard condition (`mandatory` or `optional`)                                                            | _optional_             |
 | `classification`  | String | One of: `light` (_default_), `medium`, `heavy`; describes the resource usage of the script; used to select an appropiate test interval   | _heavy_                |
+
+As mentioned, variables may be used within `env` and `args`; they are enclosed in single braces, like so: `{var}`.
+If a brace is desired, it needs to be doubled: `{{` will be turned into `{`. When the main check tool is run,
+each occurrence of a variable will be substituted for according to the variable assignment for the subject under test.
 
 _Note_: the `executable` could in principle also be given via a URL; however, this is not yet supported due to security considerations.
 
@@ -161,12 +172,14 @@ versions:
         condition: mandatory # is default and can be left out
         check_tools:
           - executable: flavor-name-check.py
+            env:
+              OS_CLOUD: "{os_cloud}"
       - name: Image metadata
         url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
         condition: mandatory
         check_tools:
           - executable: image-md-check.py
-            args: -v
+            args: -c {os_cloud} -v
           - executable: image-md-check2.py
             condition: optional
   - version: v4 # This is the upcoming version with a given target date. No further changes should be done to this set of standards
@@ -185,8 +198,6 @@ versions:
     obsoleted_at: 2021-11-01
     standards:
       - name: ....
-kaas:
-  - ...
 ```
 
 ## Process
