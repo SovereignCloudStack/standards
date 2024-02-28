@@ -1,17 +1,31 @@
 name: SCS Compatible KaaS
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-kaas.yaml
+variables:
+  - kubeconfig
 versions:
   - version: v2
     standards:
       - name: Kubernetes version policy
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0210-v2-k8s-version-policy.md
+        check_tools:
+          - executable: ./kaas/k8s-version-policy/k8s_version_policy.py
+            args: -k {kubeconfig}
       - name: Kubernetes node distribution and availability
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0214-v1-k8s-node-distribution.md
+        check_tools:
+          - executable: ./kaas/k8s-node-distribution/k8s-node-distribution-check.py
+            args: -k {kubeconfig}
       - name: CNCF Kubernetes conformance
         url: https://github.com/cncf/k8s-conformance/tree/master
   - version: v1
     standards:
       - name: Kubernetes version policy
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0210-v2-k8s-version-policy.md
+        check_tools:
+          - executable: ./kaas/k8s-version-policy/k8s_version_policy.py
+            args: -k {kubeconfig}
       - name: Kubernetes node distribution and availability
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0214-v1-k8s-node-distribution.md
+        check_tools:
+          - executable: ./kaas/k8s-node-distribution/k8s-node-distribution-check.py
+            args: -k {kubeconfig}
