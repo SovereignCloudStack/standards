@@ -215,7 +215,7 @@ def main(argv):
             "aborts": 0,
             "errors": 0,
             "versions": {},
-            "invokations": {},
+            "invocations": {},
         },
     }
     check_keywords('spec', spec)
@@ -224,7 +224,7 @@ def main(argv):
     if "prerequisite" in spec:
         print("WARNING: prerequisite not yet implemented!", file=sys.stderr)
     vrs = report["run"]["versions"]
-    memo = report["run"]["invokations"]  # memoize check tool results
+    memo = report["run"]["invocations"]  # memoize check tool results
     matches = 0
     for vd in spec["versions"]:
         check_keywords('version', vd)
@@ -237,7 +237,7 @@ def main(argv):
             "passed": False,
             "aborts": 0,
             "errors": 0,
-            "invokations": [],
+            "invocations": [],
         }
         if outdated and not config.version:
             continue
@@ -252,7 +252,7 @@ def main(argv):
                   file=sys.stderr)
         errors = 0
         aborts = 0
-        invokations = vr["invokations"]
+        invocations = vr["invocations"]
         for standard in vd.get("standards", ()):
             check_keywords('standard', standard)
             optional = condition_optional(standard)
@@ -274,7 +274,7 @@ def main(argv):
                     printv("\n".join(invokation["stdout"]))
                     printnq("\n".join(invokation["stderr"]))
                     memo[memo_key] = invokation
-                invokations.append(memo_key)
+                invocations.append(memo_key)
                 abort = invokation["critical"]
                 error = invokation["error"]
                 printnq(f"... returned {error} errors, {abort} aborts")
