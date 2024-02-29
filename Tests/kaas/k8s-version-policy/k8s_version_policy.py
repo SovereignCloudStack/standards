@@ -2,22 +2,28 @@
 # vim: set ts=4 sw=4 et:
 #
 """
-K8s Version Recency Checker
+K8s Version Policy Checker (scs-v0210-v2)
 https://github.com/SovereignCloudStack/standards
 
 Return codes:
-0: Version is inside the recency window
+0: All versions are inside the recency window
 1: Error during script execution
-2: Version isn't inside the recency windows anymore
-3: Version used contains a critical CVE
+2: A cluster version isn't inside the recency windows anymore
+3: A cluster version used contains a critical CVE
+4: Support for a non-EOL Kubernetes version is missing
 
-One or more K8s clusters are checked by providing their kubeconfigs.
-It is determined, if the version on these clusters is still inside
-the recency window, which is determined by the Standard to be 4 months
-for minor versions and 1 week for patch versions. An exception are
-versions with critical CVEs, which should be replaced on a shorter notice.
+The K8s clusters provided in a kubeconfig are checked. The kubeconfig
+must provide connection details for the clusters to be tested via
+the contexts "stable", "oldstable", "oldoldstable" and "oldoldoldstable",
+depending on how many upstream K8s releases are currently supported.
+It is determined if the version on these clusters is still inside
+the recency window, which is determined by the standard to be 4 months
+for minor versions (for the stable cluster) and 1 week for patch versions.
+An exception are versions with critical CVEs, which should be replaced on
+a shorter notice.
 
 (c) Hannes Baum <hannes.baum@cloudandheat.com>, 6/2023
+(c) Martin Morgenstern <martin.morgenstern@cloudandheat.com>, 2/2024
 License: CC-BY-SA 4.0
 """
 
@@ -81,12 +87,13 @@ class Config:
 
 def print_usage():
     print("""
-K8s Version Recency Compliance Check
+K8s Version Policy Compliance Check
 
 Usage: k8s_version_policy.py [-h] [-c|--config PATH/TO/CONFIG] -k|--kubeconfig PATH/TO/KUBECONFIG
 
-The K8s version recency check returns 0 if the version of the tested cluster is still acceptable, otherwise
+The K8s version policy check returns 0 if the versions of the tested clusters are still acceptable, otherwise
 it returns 2 for an out-of date version or 3 if the used version should be updated due to a highly critical CVE.
+It returns 4 if a supported upstream K8s release is missing.
 
     -c/--config PATH/TO/CONFIG         - Path to the config file of the test script
     -k/--kubeconfig PATH/TO/KUBECONFIG - Path to the kubeconfig of the server we want to check
