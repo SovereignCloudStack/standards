@@ -29,6 +29,7 @@ License: CC-BY-SA 4.0
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from pathlib import Path
 import aiohttp
 import asyncio
 import contextlib
@@ -46,6 +47,8 @@ MINOR_VERSION_CADENCE = timedelta(days=120)
 PATCH_VERSION_CADENCE = timedelta(weeks=1)
 CVE_VERSION_CADENCE = timedelta(days=3)
 CVE_SEVERITY = 8  # CRITICAL
+
+HERE = Path(__file__).parent
 
 logging_config = {
     "level": "INFO",
@@ -160,9 +163,10 @@ class K8sVersion:
     minor: int
     patch: int = 0
 
+    @property
     def branch(self):
-        """Return a tuple of only the major and minor version."""
-        return (self.major, self.minor)
+        """Get the branch of this version, i.e., the version w/o patch level."""
+        return K8sBranch(self.major, self.minor)
 
     def __str__(self):
         return f"{self.major}.{self.minor}.{self.patch}"
@@ -175,6 +179,35 @@ def parse_version(version_str: str) -> K8sVersion:
         return K8sVersion(int(major), int(minor), int(patch))
     except ValueError:
         raise ValueError(f"Unrecognized version format: {version_str}")
+
+
+@dataclass(frozen=True, eq=True, order=True)
+class K8sBranch:
+    """Identifies a release branch of K8s just by major and minor version."""
+
+    major: int
+    minor: int
+
+    def previous(self):
+        if self.minor == 0:
+            # FIXME: this is ugly
+            return self
+        return K8sBranch(self.major, self.minor - 1)
+
+    def __str__(self):
+        return f"{self.major}.{self.minor}"
+
+
+@dataclass(frozen=True)
+class K8sBranchInfo:
+    branch: K8sBranch
+    eol: datetime
+
+    def is_supported(self) -> bool:
+        return datetime.now() < self.eol
+
+    def is_eol(self) -> bool:
+        return not self.is_supported()
 
 
 @dataclass(frozen=True)
@@ -198,7 +231,7 @@ def parse_github_release_data(release_data: dict) -> K8sRelease:
 
 @dataclass(frozen=True, eq=True)
 class VersionRange:
-    """Version range with an lower and upper bound."""
+    """Version range with a lower and upper bound."""
 
     # First version with the CVE; this value will be set if either an affected
     # version is directly set in a CVE dataset or if the CVE dataset is in a
@@ -379,7 +412,7 @@ def check_k8s_version_recency(my_version: K8sVersion, cve_version_list=None, all
             if release.age > MINOR_VERSION_CADENCE:
                 return False
 
-        if my_version.branch() == release.version.branch() and my_version.patch < release.version.patch:
+        if my_version.branch == release.version.branch and my_version.patch < release.version.patch:
             if release.age > PATCH_VERSION_CADENCE:
                 return False
 
@@ -390,6 +423,20 @@ def check_k8s_version_recency(my_version: K8sVersion, cve_version_list=None, all
             break
 
     return True
+
+
+def parse_branch_info(data: dict) -> K8sBranchInfo:
+    major, minor = data["branch"].split(".")
+    branch = K8sBranch(int(major), int(minor))
+    eol_date = datetime.strptime(data["end-of-life"], "%Y-%m-%d")
+    return K8sBranchInfo(branch, eol_date)
+
+
+def read_supported_k8s_branches(eol_data_path: Path) -> dict[K8sBranch, K8sBranchInfo]:
+    with open(eol_data_path) as stream:
+        data = yaml.load(stream, Loader=yaml.FullLoader)
+    infos = [parse_branch_info(item) for item in data]
+    return {info.branch: info for info in infos}
 
 
 async def main(argv):
@@ -405,12 +452,22 @@ async def main(argv):
     async with aiohttp.ClientSession(connector=connector) as session:
         cve_affected_ranges = await collect_cve_versions(session)
 
-    contexts = ["stable", "oldstable", "oldoldstable"]
-    branches = set()
+    contexts = ["stable", "oldstable", "oldoldstable", "oldoldoldstable"]
+    branch_infos = read_supported_k8s_branches(Path(HERE, "k8s-eol-data.yml"))
+    supported_branches = {
+        branch
+        for branch, branch_info
+        in branch_infos.items()
+        if branch_info.is_supported()
+    }
+    seen_branches = set()
 
     for context in contexts:
+        logger.info("Checking cluster of kubeconfig context '%s'.", context)
         cluster = await get_k8s_cluster_info(config.kubeconfig, context)
-        branches.add(cluster.version.branch())
+        cluster_branch = cluster.version.branch
+        seen_branches.add(cluster_branch)
+
         # allow older k8s branches, but not for the first context (stable)
         allow_older = context != contexts[0]
 
@@ -440,9 +497,24 @@ async def main(argv):
             except TypeError as e:
                 logger.error("An error occurred during CVE check: %s", e)
 
-    if len(branches) < 3:
-        # TODO
-        logger.error("support period")
+        # this is also a bit ugly
+        if context == "oldoldstable" and branch_infos[cluster_branch.previous()].is_eol():
+            logger.info("Skipping the next context because the cluster it should reference is already EOL.")
+            break
+
+    # Now check if we saw all upstream supported K8s branches. Keep in mind
+    # that providers have a cadence time to update the "stable" context to the
+    # newest K8s release branch.
+    expected_branches = set(supported_branches)
+    newest_branch = max(supported_branches)
+    newest_branch_seen = max(seen_branches)
+    if newest_branch != newest_branch_seen:
+        expected_branches.remove(newest_branch)
+
+    if seen_branches != expected_branches:
+        missing = expected_branches - seen_branches
+        listing = " ".join(f"{branch}" for branch in missing)
+        logger.error("The following upstream branches should be supported but were missing: %s", listing)
         return 4
 
     return 0
