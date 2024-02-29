@@ -503,22 +503,22 @@ async def main(argv):
                 logger.error("An error occurred during CVE check: %s", e)
                 return 1
 
-        # this is also a bit ugly
-        if context == "oldoldstable" and branch_infos[cluster_branch.previous()].is_eol():
+        if branch_infos[cluster_branch.previous()].is_eol():
             logger.info("Skipping the next context because the cluster it should reference is already EOL.")
             break
 
     # Now check if we saw all upstream supported K8s branches. Keep in mind
     # that providers have a cadence time to update the "stable" context to the
-    # newest K8s release branch.
+    # newest K8s release branch. The corresponding window was already checked
+    # above.
     expected_branches = set(supported_branches)
     newest_branch = max(supported_branches)
     newest_branch_seen = max(seen_branches)
     if newest_branch != newest_branch_seen:
         expected_branches.remove(newest_branch)
 
-    if seen_branches != expected_branches:
-        missing = expected_branches - seen_branches
+    missing = expected_branches - seen_branches
+    if missing:
         listing = " ".join(f"{branch}" for branch in missing)
         logger.error("The following upstream branches should be supported but were missing: %s", listing)
         return 4
