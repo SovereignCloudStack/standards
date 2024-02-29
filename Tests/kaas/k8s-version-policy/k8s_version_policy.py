@@ -147,7 +147,7 @@ def initialize_config(config):
     return config
 
 
-@dataclass(order=True)
+@dataclass(frozen=True, eq=True, order=True)
 class K8sVersion:
     major: int
     minor: int
@@ -170,7 +170,7 @@ def parse_version(version_str: str) -> K8sVersion:
         raise ValueError(f"Unrecognized version format: {version_str}")
 
 
-@dataclass
+@dataclass(frozen=True)
 class K8sRelease:
     version: K8sVersion
     released_at: datetime
@@ -189,7 +189,7 @@ def parse_github_release_data(release_data: dict) -> K8sRelease:
     return K8sRelease(version, released_at)
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class VersionRange:
     """Version range with an lower and upper bound."""
 
@@ -281,13 +281,13 @@ def is_high_severity(cve_metrics: list) -> bool:
     )
 
 
-async def collect_cve_versions(session: aiohttp.ClientSession):
+async def collect_cve_versions(session: aiohttp.ClientSession) -> set:
     """Get all relevant CVE versions, that are relevant for the test according to the severity
     dictated by the Standard.
     """
 
     # CVE fix versions
-    cfvs = list()
+    cfvs = set()
 
     # Request latest version
     async with session.get(
@@ -327,12 +327,7 @@ async def collect_cve_versions(session: aiohttp.ClientSession):
                 for version_info in aff['versions']
                 if version_info['status'] == "affected"
             ]
-            for cvev in affected_kubernetes_versions:
-                try:
-                    if cvev not in cfvs:
-                        cfvs.append(cvev)
-                except TypeError:
-                    pass
+            cfvs.update(affected_kubernetes_versions)
 
     return cfvs
 
