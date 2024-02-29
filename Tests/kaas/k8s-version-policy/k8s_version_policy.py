@@ -413,29 +413,37 @@ async def main(argv):
         allow_older = context != contexts[0]
 
         if check_k8s_version_recency(cluster.version, cve_affected_ranges, allow_older):
-            logger.info("The K8s cluster version %s of cluster '%s' is still in the recency time window." %
-                        (str(cluster.version), cluster.name))
+            logger.info(
+                "The K8s cluster version %s of cluster '%s' is still in the recency time window.",
+                cluster.version,
+                cluster.name,
+            )
         else:
-            logger.error("The K8s cluster version %s of cluster '%s' is outdated according to the standard." %
-                        (str(cluster.version), cluster.name))
+            logger.error(
+                "The K8s cluster version %s of cluster '%s' is outdated according to the standard.",
+                cluster.version,
+                cluster.name,
+            )
             return 2
 
         for affected_range in cve_affected_ranges:
             try:
                 if cluster.version in affected_range:
-                    logger.error("The K8s cluster version %s of cluster '%s' is an outdated version "
-                                "with a possible CRITICAL CVE." % (str(cluster.version), cluster.name))
+                    logger.error(
+                        "The K8s cluster version %s of cluster '%s' is an outdated version with a possible CRITICAL CVE.",
+                        cluster.version,
+                        cluster.name,
+                    )
                     return 3
             except TypeError as e:
-                logger.error(f"An error occurred during CVE check: {e}")
-    
+                logger.error("An error occurred during CVE check: %s", e)
+
     if len(branches) < 3:
         # TODO
         logger.error("support period")
         return 4
 
     return 0
-
 
 
 if __name__ == "__main__":
