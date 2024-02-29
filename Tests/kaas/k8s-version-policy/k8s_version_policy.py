@@ -409,7 +409,8 @@ async def main(argv):
     for context in contexts:
         cluster = await get_k8s_cluster_info(config.kubeconfig, context)
         branches.add(cluster.version.branch())
-        allow_older = context == contexts[0]
+        # allow older k8s branches, but not for the first context (stable)
+        allow_older = context != contexts[0]
 
         if check_k8s_version_recency(cluster.version, cve_affected_ranges, allow_older):
             logger.info("The K8s cluster version %s of cluster '%s' is still in the recency time window." %
