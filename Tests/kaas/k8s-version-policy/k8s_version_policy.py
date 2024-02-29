@@ -29,6 +29,7 @@ License: CC-BY-SA 4.0
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from kubernetes_asyncio.config import ConfigException as KubeConfigException
 from pathlib import Path
 import aiohttp
 import asyncio
@@ -464,7 +465,11 @@ async def main(argv):
 
     for context in contexts:
         logger.info("Checking cluster of kubeconfig context '%s'.", context)
-        cluster = await get_k8s_cluster_info(config.kubeconfig, context)
+        try:
+            cluster = await get_k8s_cluster_info(config.kubeconfig, context)
+        except KubeConfigException as e:
+            logger.error("There was an error while connecting to the cluster: %s", e)
+            return 1
         cluster_branch = cluster.version.branch
         seen_branches.add(cluster_branch)
 
@@ -496,6 +501,7 @@ async def main(argv):
                     return 3
             except TypeError as e:
                 logger.error("An error occurred during CVE check: %s", e)
+                return 1
 
         # this is also a bit ugly
         if context == "oldoldstable" and branch_infos[cluster_branch.previous()].is_eol():
