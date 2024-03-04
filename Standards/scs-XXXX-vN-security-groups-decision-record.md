@@ -51,7 +51,7 @@ As security groups are project bound and there is no native way to them to be sh
 The `network rbac` endpoint[^1] manages the possibitity to share and access certain network sepcific resources as security groups.
 For admins it is possible to use this endpoint to share a security group with ALL projects within the the cloud including ALL projects of ALL domains:
 
-```
+```bash
 stack@devstack:~/devstack$ openstack network rbac create --target-all-projects --action access_as_shared --type security_group group-for-everyone
 +-------------------+--------------------------------------+
 | Field             | Value                                |
@@ -71,7 +71,7 @@ But there are a few downsides to this:
 1. This should be strictly bound to the admin: no other user should be able to share security groups so to not confuse user.
 2. The managing of those `network rbac` objects can get out of hand pretty quickly, because there neither is an explicit name for such an object nor do the names of the shared objects appear:
 
-```
+```bash
 stack@devstack:~/devstack$ openstack network rbac list --long
 +-----------------------------+----------------+-----------------------------+--------------------+
 | ID                          | Object Type    | Object ID                   | Action             |
@@ -102,7 +102,7 @@ stack@devstack:~/devstack$ openstack network rbac show bc22a865-46f9-4cd2-80af-3
 +-------------------+--------------------------------------+
 ```
 
-3. As soon as a security group is shared, everyone from every project, can edit the rules of this group.
+The biggest downside: As soon as a security group is shared, everyone from every project, can edit the rules of this group.
 
 [^1]: [Neutron RBAC](https://docs.openstack.org/neutron/latest/admin/config-rbac.html)
 
