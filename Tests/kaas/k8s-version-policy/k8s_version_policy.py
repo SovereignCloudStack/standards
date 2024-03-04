@@ -102,7 +102,7 @@ It returns 4 if a supported upstream K8s release is missing.
     -c/--config PATH/TO/CONFIG         - Path to the config file of the test script
     -k/--kubeconfig PATH/TO/KUBECONFIG - Path to the kubeconfig of the server we want to check
     -h                                 - Output help
-    """)
+""")
 
 
 def parse_arguments(argv):
@@ -110,7 +110,7 @@ def parse_arguments(argv):
     config = Config()
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:k:h", ["config", "kubeconfig", "help"])
+        opts, args = getopt.gnu_getopt(argv, "c:k:h", ["config=", "kubeconfig=", "help"])
     except getopt.GetoptError:
         raise ConfigException
 
