@@ -20,7 +20,7 @@ Security Group
 
 Security Group Rule (abbr. Rule)
   This references a single rule within a security group.
-  
+
 RBAC
   Role Based Access Control used for policies and alike.
 
@@ -42,6 +42,7 @@ But to also have pre-defined groups with predefined roles for certain and often 
 Those groups should best be available to all projects and pre-defined by administrators.
 
 As security groups are project bound and there is no native way to them to be shared, we are left with two options:
+
 1. To use another endpoint `network rbac` to share security groups among different projects.
 2. To adhere to the project scope of security groups and only give documentation about recommended security groups to users.
 
@@ -49,6 +50,7 @@ As security groups are project bound and there is no native way to them to be sh
 
 The `network rbac` endpoint[^1] manages the possibitity to share and access certain network sepcific resources as security groups.
 For admins it is possible to use this endpoint to share a security group with ALL projects within the the cloud including ALL projects of ALL domains:
+
 ```
 stack@devstack:~/devstack$ openstack network rbac create --target-all-projects --action access_as_shared --type security_group group-for-everyone
 +-------------------+--------------------------------------+
@@ -65,8 +67,10 @@ stack@devstack:~/devstack$ openstack network rbac create --target-all-projects -
 
 This would fulfill our goal to grant access to pre-defined security groups fro all projects and all groups recieved as shared do not count into the projects quota for security groups.
 But there are a few downsides to this:
+
 1. This should be strictly bound to the admin: no other user should be able to share security groups so to not confuse user.
 2. The managing of those `network rbac` objects can get out of hand pretty quickly, because there neither is an explicit name for such an object nor do the names of the shared objects appear:
+
 ```
 stack@devstack:~/devstack$ openstack network rbac list --long
 +-----------------------------+----------------+-----------------------------+--------------------+
@@ -97,13 +101,15 @@ stack@devstack:~/devstack$ openstack network rbac show bc22a865-46f9-4cd2-80af-3
 | target_project_id | *                                    |
 +-------------------+--------------------------------------+
 ```
+
 3. As soon as a security group is shared, everyone from every project, can edit the rules of this group.
 
-[^1]: https://docs.openstack.org/neutron/latest/admin/config-rbac.html
+[^1]: [Neutron RBAC](https://docs.openstack.org/neutron/latest/admin/config-rbac.html)
 
 ### Option 2: stay project-scoped
 
 Using and adhering the project scope of the security groups has the consequence, that:
+
 1. either an admin has to set up security groups for each project
 2. or the scs only provides a guide on how to setup and use some recommended security groups.
 
@@ -121,4 +127,4 @@ What becomes easier or more difficult to do because of this change?
 
 ## Related Documents
 
-A PR to a first draft for a guide for security groups: https://github.com/SovereignCloudStack/docs/pull/142
+[A PR to a first draft for a guide for security groups](https://github.com/SovereignCloudStack/docs/pull/142)
