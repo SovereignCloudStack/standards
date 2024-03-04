@@ -45,7 +45,7 @@ The following items MUST be detected and reported as an error:
 
 - any syntax error in a name starting with `scs-`,
 - any mismatch between any immediately discoverable property of a flavor (currently, CPU, RAM and disk size)
-  and the meaning of its name (which is usually a lower bound).
+  and the meaning of its name (which is usually a lower bound), such as the CPU generation or hypervisor.
 
 In addition, the following items MAY be reported as an error:
 
