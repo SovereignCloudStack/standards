@@ -4,7 +4,7 @@
   tasks:
     - name: Run compliance script
       ansible.builtin.shell: |
-        python3 ~/Tests/scs-compliance-check.py ~/Tests/scs-compatible-iaas.yaml -c {{ cloud }} -o {{ cloud }}-iaas.yaml -C
+        python3 ~/Tests/scs-compliance-check.py ~/Tests/scs-compatible-iaas.yaml -s {{ cloud }} -a os_cloud={{ cloud }} -o {{ cloud }}-iaas.yaml -C
       register: result
       changed_when: true
       # failed_when: result.rc != 0
