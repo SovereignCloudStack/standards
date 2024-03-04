@@ -331,7 +331,7 @@ def delete_vm(conn, server_name=SERVER_NAME):
         logger.debug(f"The server '{server_name}' couldn't be deleted.", exc_info=True)
 
 
-def retry(func, exc_type, timeouts=(8, 7, 15, 10)):
+def retry(func, exc_type, timeouts=(8, 7, 15, 10, 20, 30, 60)):
     if isinstance(exc_type, str):
         exc_type = exc_type.split(',')
     timeout_iter = iter(timeouts)
