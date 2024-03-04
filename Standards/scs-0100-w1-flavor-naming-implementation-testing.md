@@ -23,14 +23,16 @@ Every flavor whose name starts with `scs-` must conform with the naming scheme l
 
 #### Syntax Check
 
-The syntax of a flavor name can be validated using [`flavor-name-check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-check.py),
-which can also interactively construct such a name. Be sure to invoke the script with `-2` so it doesn't
-accept older (v1) syntax. On the other hand, [`flavor-name-describe.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-describe.py)
-can be used to obtain a human-readable decoding of an SCS flavor name. The functionality of these scripts is
-also (partially) exposed via the web page <https://flavors.scs.community/>.
+The [test suite](/Tests/iaas/flavor-naming) comes with a handy
+[command-line utility](/Tests/iaas/flavor-naming/cli.py) that can be used to validate flavor names, to
+interactively construct a flavor name via a questionnaire, and to generate prose descriptions for given
+flavor names. See the [README](/Tests/iaas/flavor-naming/README.md) for more details.
+
+The functionality of this script is also (partially) exposed via the web page
+<https://flavors.scs.community/>.
 
 With the OpenStack tooling (`python3-openstackclient`, `OS_CLOUD`) in place, you can call
-`flavor-name-check.py -c $(openstack flavor list -f value -c Name)` to get a report
+`cli.py -v parse v3 $(openstack flavor list -f value -c Name)` to get a report
 on the syntax compliance of the flavor names of the cloud environment.
 
 #### Flavor Creation
