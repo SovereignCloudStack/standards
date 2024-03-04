@@ -1,7 +1,8 @@
 ---
 title: "SCS Entropy: Implementation and Testing Notes"
 type: Supplement
-status: Draft
+track: IaaS
+status: Proposal
 supplements:
   - scs-0101-v1-entropy.md
 ---
