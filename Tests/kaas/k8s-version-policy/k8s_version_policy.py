@@ -5,12 +5,13 @@
 K8s Version Policy Checker (scs-v0210-v2)
 https://github.com/SovereignCloudStack/standards
 
-Return codes:
-0: All versions are inside the recency window
-1: Error during script execution
-2: A cluster version isn't inside the recency windows anymore
-3: A cluster version used contains a critical CVE
-4: Support for a non-EOL Kubernetes version is missing
+Return code is 0 precisely when it could be verified that the standard is satisfied.
+Otherwise the return code is the number of errors that occurred (up to 127 due to OS
+restrictions); for further information, see the log messages on various channels:
+    CRITICAL  for problems preventing the test to complete,
+    ERROR     for violations of requirements,
+    INFO      for violations of recommendations,
+    DEBUG     for background information and problems that don't hinder the test.
 
 The K8s clusters provided in a kubeconfig are checked. The kubeconfig
 must provide connection details for the clusters to be tested via
@@ -27,9 +28,9 @@ a shorter notice.
 License: CC-BY-SA 4.0
 """
 
+from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from kubernetes_asyncio.config import ConfigException as KubeConfigException
 from pathlib import Path
 import aiohttp
 import asyncio
@@ -73,6 +74,15 @@ logging_config = {
 }
 
 logger = logging.getLogger(__name__)
+
+
+class CountingHandler(logging.Handler):
+    def __init__(self, level=logging.NOTSET):
+        super().__init__(level=level)
+        self.bylevel = Counter()
+
+    def handle(self, record):
+        self.bylevel[record.levelno] += 1
 
 
 class ConfigException(BaseException):
@@ -444,10 +454,12 @@ async def main(argv):
     try:
         config = initialize_config(parse_arguments(argv))
     except (OSError, ConfigException, HelpException) as e:
-        if hasattr(e, 'message'):
-            logger.error(e.message)
+        logger.critical("%s", e)
         print_usage()
         return 1
+
+    counting_handler = CountingHandler(level=logging.INFO)
+    logger.addHandler(counting_handler)
 
     connector = aiohttp.TCPConnector(limit=5)
     async with aiohttp.ClientSession(connector=connector) as session:
@@ -463,49 +475,44 @@ async def main(argv):
     }
     seen_branches = set()
 
-    for context in contexts:
-        logger.info("Checking cluster of kubeconfig context '%s'.", context)
-        try:
+    try:
+        for context in contexts:
+            logger.info("Checking cluster of kubeconfig context '%s'.", context)
             cluster = await get_k8s_cluster_info(config.kubeconfig, context)
-        except KubeConfigException as e:
-            logger.error("There was an error while connecting to the cluster: %s", e)
-            return 1
-        cluster_branch = cluster.version.branch
-        seen_branches.add(cluster_branch)
+            cluster_branch = cluster.version.branch
+            seen_branches.add(cluster_branch)
 
-        # allow older k8s branches, but not for the first context (stable)
-        allow_older = context != contexts[0]
+            # allow older k8s branches, but not for the first context (stable)
+            allow_older = context != contexts[0]
 
-        if check_k8s_version_recency(cluster.version, cve_affected_ranges, allow_older):
-            logger.info(
-                "The K8s cluster version %s of cluster '%s' is still in the recency time window.",
-                cluster.version,
-                cluster.name,
-            )
-        else:
-            logger.error(
-                "The K8s cluster version %s of cluster '%s' is outdated according to the standard.",
-                cluster.version,
-                cluster.name,
-            )
-            return 2
+            if check_k8s_version_recency(cluster.version, cve_affected_ranges, allow_older):
+                logger.info(
+                    "The K8s cluster version %s of cluster '%s' is still in the recency time window.",
+                    cluster.version,
+                    cluster.name,
+                )
+            else:
+                logger.error(
+                    "The K8s cluster version %s of cluster '%s' is outdated according to the standard.",
+                    cluster.version,
+                    cluster.name,
+                )
 
-        for affected_range in cve_affected_ranges:
-            try:
+            for affected_range in cve_affected_ranges:
                 if cluster.version in affected_range:
                     logger.error(
                         "The K8s cluster version %s of cluster '%s' is an outdated version with a possible CRITICAL CVE.",
                         cluster.version,
                         cluster.name,
                     )
-                    return 3
-            except TypeError as e:
-                logger.error("An error occurred during CVE check: %s", e)
-                return 1
 
-        if branch_infos[cluster_branch.previous()].is_eol():
-            logger.info("Skipping the next context because the cluster it should reference is already EOL.")
-            break
+            if branch_infos[cluster_branch.previous()].is_eol():
+                logger.info("Skipping the next context because the cluster it should reference is already EOL.")
+                break
+    except BaseException as e:
+        logger.critical("%s", e)
+        logger.debug("Exception info", exc_info=True)
+        return 1
 
     # Now check if we saw all upstream supported K8s branches. Keep in mind
     # that providers have a cadence time to update the "stable" context to the
@@ -521,9 +528,13 @@ async def main(argv):
     if missing:
         listing = " ".join(f"{branch}" for branch in missing)
         logger.error("The following upstream branches should be supported but were missing: %s", listing)
-        return 4
 
-    return 0
+    c = counting_handler.bylevel
+    logger.debug(
+        "Total error / warning: "
+        f"{c[logging.ERROR]} / {c[logging.WARNING]}"
+    )
+    return min(127, c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 
 if __name__ == "__main__":
