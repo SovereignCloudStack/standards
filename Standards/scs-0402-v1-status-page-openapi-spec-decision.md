@@ -82,6 +82,46 @@ An impact defines the relation between an incident and a component. A component 
 
 To reflect this, each component and incident can have a list of impacts, stating the type of impact and a reference to the incident or component, it refers to.
 
+Furthermore a severity value is added to the impact when referencing an component, to gauge the impacts severity on the system.
+
+### Severity
+
+A severity contains a name, that MUST be unique and WILL be used as identifier. The value marks the upper boundary of the severity.
+
+The severity value range is calculated by the previous severitys (SeverityA) value + 1 to the current severitys (SeverityB) value. These limits are inclusive.
+
+`SeverityA.value + 1 <=Severity <=SeverityB.value`
+
+Example:
+
+```json
+[
+  {
+    "displayName": "Operational",
+    "value": 10
+  },
+  {
+    "displayName": "Restricted",
+    "value": 50
+  },
+  {
+    "displayName": "Broken",
+    "value": 100
+  }
+]
+```
+
+This means:
+
+- Operational from 0 to 10
+- Restriced from 11 to 50
+- Broken from 51 to 100.
+
+A value of 100 is the maximum of the severity value.
+
+A severity with the value of 100 MUST always be supplied. This is the heighest severty for the system. If no severty with the 100 value exists, e.g. heighest severty value is 90, an `Impact` with a heigher severity
+WILL be handled as an unkown severity.
+
 ### Component impacts
 
 Components list their impacts, which they are affected by, as read only. Only an incident creates an impact on a component. Components MUST only list their currently active impacts.
