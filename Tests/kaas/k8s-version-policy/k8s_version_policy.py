@@ -51,6 +51,7 @@ CVE_VERSION_CADENCE = timedelta(days=3)
 CVE_SEVERITY = 8  # CRITICAL
 
 HERE = Path(__file__).parent
+EOLDATA_FILE = "k8s-eol-data.yml"
 
 logging_config = {
     "level": "INFO",
@@ -461,18 +462,24 @@ async def main(argv):
     counting_handler = CountingHandler(level=logging.INFO)
     logger.addHandler(counting_handler)
 
-    connector = aiohttp.TCPConnector(limit=5)
-    async with aiohttp.ClientSession(connector=connector) as session:
-        cve_affected_ranges = await collect_cve_versions(session)
-
-    contexts = ["stable", "oldstable", "oldoldstable", "oldoldoldstable"]
-    branch_infos = read_supported_k8s_branches(Path(HERE, "k8s-eol-data.yml"))
+    branch_infos = read_supported_k8s_branches(Path(HERE, EOLDATA_FILE))
     supported_branches = {
         branch
         for branch, branch_info
         in branch_infos.items()
         if branch_info.is_supported()
     }
+    if len(supported_branches) < 3:
+        logger.warning("The EOL data in %s isn't up-to-date.", EOLDATA_FILE)
+    if len(supported_branches) < 2:
+        logger.critical("The EOL data in %s is outdated and we cannot reliably run this script.", EOLDATA_FILE)
+        return 1
+
+    connector = aiohttp.TCPConnector(limit=5)
+    async with aiohttp.ClientSession(connector=connector) as session:
+        cve_affected_ranges = await collect_cve_versions(session)
+
+    contexts = ["stable", "oldstable", "oldoldstable", "oldoldoldstable"]
     seen_branches = set()
 
     try:
