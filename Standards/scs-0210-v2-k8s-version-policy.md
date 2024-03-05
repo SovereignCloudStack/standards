@@ -78,9 +78,16 @@ official sources as described in [Kubernetes Support Period][k8s-support-period]
 All documents regarding versioning, releases, etc. for the official Kubernetes projects can
 be found on the [Kubernetes Releases page][k8s-releases].
 
-## Validation / Conformance
+## Conformance Tests
 
-*This section will be updated when the conformance tests are written.*
+The script `k8s_version_policy.py` requires a kubeconfig file with connection details for
+a set of existing Kubernetes clusters that should be checked, with each of these clusters
+representing one of the currently supported upstream Kubernetes releases.
+It will check the encountered cluster versions according to the rules of this standard.
+Rule violations will be reported on various logging channels: ERROR for mandatory rules
+and INFO for recommended rules.
+The script will exit with a non-zero status if a mandatory rule has been violated or if
+the test could not be performed.
 
 [k8s-releases]: https://kubernetes.io/releases/
 [k8s-release-cycle]: https://kubernetes.io/releases/release/#the-release-cycle
