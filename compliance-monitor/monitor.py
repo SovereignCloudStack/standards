@@ -15,6 +15,7 @@ class Settings:
         self.db_password = os.getenv("SCM_DB_PASSWORD", "mysecretpassword")
         self.bootstrap_path = os.path.abspath("./bootstrap.yaml")
 
+
 ROLES = {'read_any': 1, 'append_any': 2, 'admin': 4}
 
 
@@ -37,9 +38,16 @@ def get_conn(settings=settings):
 
 def ensure_schema(conn):
     with conn.cursor() as cur:
-        cur.execute('''
-        CREATE TABLE IF NOT EXISTS account (subject varchar PRIMARY KEY, apikey varchar, publickey varchar, roles int);
-        ''')
+        cur.execute(
+            '''
+            CREATE TABLE IF NOT EXISTS account (
+                subject varchar PRIMARY KEY,
+                apikey varchar,
+                publickey varchar,
+                roles int
+            );
+            '''
+        )
 
 
 def import_bootstrap(bootstrap_path, conn):
@@ -54,7 +62,8 @@ def import_bootstrap(bootstrap_path, conn):
     with conn.cursor() as cur:
         for account in accounts:
             roles = sum(ROLES[r] for r in account.get('roles', ()))
-            cur.execute('''
+            cur.execute(
+                '''
                 INSERT INTO account (subject, apikey, publickey, roles)
                 VALUES (%s, %s, %s, %s)
                 ON CONFLICT (subject)
