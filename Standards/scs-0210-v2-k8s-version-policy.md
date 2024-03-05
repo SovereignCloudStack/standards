@@ -21,11 +21,12 @@ support period. The remaining 2 months are the end-of-life support period for th
 
 More information can be found under [Kubernetes Support Period].
 
-The Kubernetes release cycle is set around 4 months, which usually results in about
-**3 minor** releases per year [Kubernetes Release Cycle](https://kubernetes.io/releases/release/#the-release-cycle).
+The [Kubernetes release cycle][k8s-release-cycle] is set around 4 months, which
+usually results in about **3 minor** releases per year.
 
 Patches to these releases are provided monthly, with the exception of the first patch,
-which is usually provided 1-2 weeks after the initial release [Patch Release Cadence](https://kubernetes.io/releases/patch-releases/#cadence).
+which is usually provided 1-2 weeks after the initial release (see [Patch Release
+Cadence][k8s-release-cadence]).
 
 ## Motivation
 
@@ -62,21 +63,23 @@ the provided Kubernetes versions should be kept up to date with the upstream.
   at least the CNCF E2E tests should be passed beforehand.
 
 At the same time, providers must support Kubernetes versions at least as long as the
-official sources as mentioned in the [Kubernetes Support Period](https://kubernetes.io/releases/patch-releases/#support-period).
+official sources as mentioned in [Kubernetes Support Period][k8s-support-period].
 
-- Kubernetes versions MUST be supported as long as the official sources support them.
-  The current support period can therefore be found in [Kubernetes Support Period](https://kubernetes.io/releases/patch-releases/#support-period).
+- Kubernetes versions MUST be supported as long as the official sources support them
+  according to the [Kubernetes Support Period][k8s-support-period].
 - It is RECOMMENDED to not support versions after this period in order to not encourage
   usage of out-of-date versions.
 
 ## Related Documents
 
-All documents regarding versioning, releases, etc. for the official Kubernetes projects can be found here:
-[Kubernetes Releases](https://kubernetes.io/releases/)
-[Kubernetes Support Period](https://kubernetes.io/releases/patch-releases/#support-period)
-[Kubernetes Release Cycle](https://kubernetes.io/releases/release/#the-release-cycle)
-[Patch Release Cadence](https://kubernetes.io/releases/patch-releases/#cadence)
+All documents regarding versioning, releases, etc. for the official Kubernetes projects can
+be found on the [Kubernetes Releases page][k8s-releases].
 
 ## Validation / Conformance
 
 *This section will be updated when the conformance tests are written.*
+
+[k8s-releases]: https://kubernetes.io/releases/
+[k8s-release-cycle]: https://kubernetes.io/releases/release/#the-release-cycle
+[k8s-release-cadence]: https://kubernetes.io/releases/patch-releases/#cadence
+[k8s-support-period]: https://kubernetes.io/releases/patch-releases/#support-period
