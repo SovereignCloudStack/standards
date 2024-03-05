@@ -53,11 +53,10 @@ All important documents regarding versioning, releases, etc. for the official Ku
 
 ## Conformance Tests
 
-The conformance test is written in the 'k8s-version-recency-check.py' script. The script requires the path to a valid
-kubeconfig file, which should describe the k8s cluster under test. This can either be done by creating a config from
-the also provided 'config.yaml.template' or by calling the test script with its cli arguments.
+The conformance tests have been obsoleted by the tests for [scs-0210-v2][scs-0210-v2].
 
 [k8s-releases]: https://kubernetes.io/releases/
 [k8s-release-cycle]: https://kubernetes.io/releases/release/#the-release-cycle
 [k8s-release-cadence]: https://kubernetes.io/releases/patch-releases/#cadence
 [k8s-support-period]: https://kubernetes.io/releases/patch-releases/#support-period
+[scs-0210-v2]: https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0210-v2-k8s-version-policy.md
