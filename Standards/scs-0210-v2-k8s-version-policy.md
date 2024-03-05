@@ -69,7 +69,7 @@ official sources as described in [Kubernetes Support Period][k8s-support-period]
 
 - Kubernetes versions MUST be supported as long as the official sources support them
   according to the [Kubernetes Support Period][k8s-support-period] and their end-of-life
-  date according to the [Kubernetes Releases page][k8s-release].
+  date according to the [Kubernetes Releases page][k8s-releases].
 - It is RECOMMENDED to not support versions after this period in order to not encourage
   usage of out-of-date versions.
 
