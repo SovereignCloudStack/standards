@@ -52,8 +52,8 @@ window period.
 
 ## Decision
 
-In order to keep up-to date with the latest Kubernetes features, bug fixes and security improvements,
-the provided Kubernetes versions should be kept up to date with the upstream.
+In order to keep up-to-date with the latest Kubernetes features, bug fixes and security improvements,
+the provided Kubernetes versions should be kept up-to-date with new upstream releases:
 
 - The latest minor version MUST be provided no later than 4 months after release.
 - The latest patch version MUST be provided no later than 1 week after release.
@@ -63,7 +63,7 @@ the provided Kubernetes versions should be kept up to date with the upstream.
   at least the CNCF E2E tests should be passed beforehand.
 
 At the same time, providers must support Kubernetes versions at least as long as the
-official sources as mentioned in [Kubernetes Support Period][k8s-support-period].
+official sources as described in [Kubernetes Support Period][k8s-support-period]:
 
 - Kubernetes versions MUST be supported as long as the official sources support them
   according to the [Kubernetes Support Period][k8s-support-period].
