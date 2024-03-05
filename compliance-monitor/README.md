@@ -34,8 +34,7 @@ It needs to be run in two cases:
 2. You want to bump the pinned dependencies: run `pip-compile --upgrade requirements.in`.
 
 Note: The Python version used for running `pip-compile` should be consistent. The currently
-used version is documented in the header of the `requirements.txt`. It should match the
-version used in the Docker image (see [Dockerfile](Dockerfile)).
+used version is documented in the header of the `requirements.txt`.
 
 ### Postgresql
 
