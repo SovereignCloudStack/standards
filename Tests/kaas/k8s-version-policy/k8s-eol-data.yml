@@ -1,0 +1,12 @@
+# https://kubernetes.io/releases/patch-releases/#detailed-release-history-for-active-branches
+
+- branch: '1.29'
+  end-of-life: '2025-02-28'
+- branch: '1.28'
+  end-of-life: '2024-10-28'
+- branch: '1.27'
+  end-of-life: '2024-06-28'
+- branch: '1.26'
+  end-of-life: '2024-02-28'
+- branch: '1.25'
+  end-of-life: '2023-10-28'

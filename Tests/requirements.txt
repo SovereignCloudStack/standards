@@ -5,7 +5,9 @@
 #    pip-compile requirements.in
 #
 aiohttp==3.9.3
-    # via kubernetes-asyncio
+    # via
+    #   -r requirements.in
+    #   kubernetes-asyncio
 aiosignal==1.3.1
     # via aiohttp
 appdirs==1.4.4
@@ -94,14 +96,18 @@ pycparser==2.21
 pynacl==1.5.0
     # via paramiko
 python-dateutil==2.8.2
-    # via kubernetes-asyncio
+    # via
+    #   -r requirements.in
+    #   kubernetes-asyncio
 pyyaml==6.0.1
     # via
     #   -r requirements.in
     #   kubernetes-asyncio
     #   openstacksdk
 requests==2.31.0
-    # via keystoneauth1
+    # via
+    #   -r requirements.in
+    #   keystoneauth1
 requestsexceptions==1.4.0
     # via openstacksdk
 six==1.16.0
