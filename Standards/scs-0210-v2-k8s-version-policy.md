@@ -62,7 +62,7 @@ the provided Kubernetes versions should be kept up-to-date with new upstream rel
   to the CVSS version used in the original CVE record (e.g., CVSSv3.1).
   It is RECOMMENDED to provide a new patch version in a 2 day time period after their release.
 - New versions MUST be tested before being rolled out on productive infrastructure;
-  at least the CNCF E2E tests should be passed beforehand.
+  at least the [CNCF E2E tests][cncf-conformance] should be passed beforehand.
 
 At the same time, providers must support Kubernetes versions at least as long as the
 official sources as described in [Kubernetes Support Period][k8s-support-period]:
@@ -86,3 +86,4 @@ be found on the [Kubernetes Releases page][k8s-releases].
 [k8s-release-cycle]: https://kubernetes.io/releases/release/#the-release-cycle
 [k8s-release-cadence]: https://kubernetes.io/releases/patch-releases/#cadence
 [k8s-support-period]: https://kubernetes.io/releases/patch-releases/#support-period
+[cncf-conformance]: https://github.com/cncf/k8s-conformance
