@@ -1,0 +1,7 @@
+accounts:
+  - subject: admin
+    api_key: "secret api key"
+    public_key: "..."
+    roles:
+      - read_any
+      - admin

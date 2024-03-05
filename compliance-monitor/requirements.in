@@ -1,0 +1,5 @@
+fastapi
+psycopg2
+PyYAML
+ruamel.yaml
+uvicorn[standard]
