@@ -72,8 +72,8 @@ class Checker:
     def check_names(self, mds):
         """Check the list `mds` of md file names for name collisions"""
         # count the occurrences of the prefixes of length 12, e.g., scs-0001-v1-
-        # no duplicates allowed
-        counts = collections.Counter([fn[:12] for fn in mds])
+        # no duplicates allowed, except for documents in Proposal state (scs-xxxx-...)
+        counts = collections.Counter([fn[:12] for fn in mds if fn[4:8].lower() != 'xxxx'])
         duplicates = sorted([fn for fn in mds if counts[fn[:12]] > 1])
         if duplicates:
             self.emit(f"duplicates found: {', '.join(duplicates)}")
