@@ -82,15 +82,15 @@ An impact defines the relation between an incident and a component. A component 
 
 To reflect this, each component and incident can have a list of impacts, stating the type of impact and a reference to the incident or component, it refers to.
 
-Furthermore a severity value is added to the impact when referencing an component, to gauge the impacts severity on the system.
+Furthermore, a `SeverityValue` is added to the `Impact` when referencing a component, to gauge the impact's severity on that component.
 
 ### Severity
 
 A severity contains a name, that MUST be unique and WILL be used as identifier. The value marks the upper boundary of the severity.
 
-The severity value range is calculated by the previous severitys (SeverityA) value + 1 to the current severitys (SeverityB) value. These limits are inclusive.
+The severity's value range is calculated by taking the previous severity's (`SeverityA`) value and adding 1 to obtain the starting point and taking the current severity's (SeverityB) value as the end point. These limits are inclusive.
 
-`SeverityA.value + 1 <=Severity <=SeverityB.value`
+`SeverityA.value + 1 <= Severity <= SeverityB.value`
 
 Example:
 
@@ -101,7 +101,7 @@ Example:
     "value": 10
   },
   {
-    "displayName": "Restricted",
+    "displayName": "Limited",
     "value": 50
   },
   {
@@ -114,13 +114,12 @@ Example:
 This means:
 
 - Operational from 0 to 10
-- Restriced from 11 to 50
+- Limited from 11 to 50
 - Broken from 51 to 100.
 
 A value of 100 is the maximum of the severity value.
 
-A severity with the value of 100 MUST always be supplied. This is the heighest severty for the system. If no severty with the 100 value exists, e.g. heighest severty value is 90, an `Impact` with a heigher severity
-WILL be handled as an unkown severity.
+A severity with the value of 100 MUST always be supplied. This is the highest severity for the system. If no severity with a value of 100 exists, e.g. the highest severity value is set at 90, an `Impact` with a higher `SeverityValue` WILL be considered to be an _unkown_ severity.
 
 ### Component impacts
 
