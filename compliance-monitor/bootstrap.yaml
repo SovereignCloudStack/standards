@@ -4,4 +4,5 @@ accounts:
     public_key: "..."
     roles:
       - read_any
+      - append_any
       - admin
