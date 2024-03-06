@@ -4,9 +4,9 @@ import json
 import os
 import os.path
 import secrets
-from typing import Annotated, Optional
+from typing import Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import psycopg2
 from psycopg2.errors import UniqueViolation
