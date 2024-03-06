@@ -157,6 +157,27 @@ async def root():
     return {"message": "Hello World"}
 
 
+@app.get("/reports")
+async def get_reports(
+    request: Request,
+    subject: Optional[str] = None, limit: int = 10, skip: int = 0,
+    conn: psycopg2.extensions.connection = Depends(get_conn),
+):
+    account = get_current_account(await security(request), conn)
+    current_subject, publickey, roles = account
+    print(subject, current_subject, limit, skip)
+    if subject is None:
+        subject = current_subject
+    elif subject != current_subject and ROLES['read_any'] & roles == 0:
+        raise HTTPException(status_code=401, detail="Permission denied")
+    with conn.cursor() as cur:
+        if subject != '':
+            cur.execute('SELECT data FROM report WHERE subject = %s LIMIT %s OFFSET %s;', (subject, limit, skip))
+        else:
+            cur.execute('SELECT data FROM report LIMIT %s OFFSET %s;', (limit, skip))
+        return [row[0] for row in cur.fetchall()]
+
+
 @app.post("/reports")
 async def post_report(
     request: Request,
