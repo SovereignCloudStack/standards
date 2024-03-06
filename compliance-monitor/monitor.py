@@ -62,20 +62,20 @@ def get_current_account(
         with conn.cursor() as cur:
             cur.execute(
                 '''
-                SELECT apikey, publickey FROM account WHERE subject = %s;
+                SELECT apikey, publickey, roles FROM account WHERE subject = %s;
                 ''',
                 (credentials.username, )
             )
             if not cur.rowcount:
                 raise RuntimeError
-            apikey, publickey = cur.fetchone()
+            apikey, publickey, roles = cur.fetchone()
         current_password_bytes = credentials.password.encode("utf8")
         is_correct_password = secrets.compare_digest(
             current_password_bytes, apikey.encode("utf8")
         )
         if not is_correct_password:
             raise RuntimeError
-        return credentials.username, publickey
+        return credentials.username, publickey, roles
     except RuntimeError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -163,6 +163,7 @@ async def post_report(
     conn: psycopg2.extensions.connection = Depends(get_conn),
 ):
     account = get_current_account(await security(request), conn)
+    current_subject, publickey, roles = account
     # test this like so:
     # curl --data-binary @blubb.yaml -H "Content-Type: application/yaml" -H "Authorization: Basic YWRtaW46c2VjcmV0IGFwaSBrZXk=" http://127.0.0.1:8080/reports
     content_type = request.headers['content-type']
@@ -182,6 +183,8 @@ async def post_report(
         raise HTTPException(status_code=500)
     rundata = document['run']
     uuid, subject, checked_at = rundata['uuid'], rundata['subject'], rundata['checked_at']
+    if subject != current_subject and ROLES['append_any'] & roles == 0:
+        raise HTTPException(status_code=401, detail="Permission denied")
     scope = document['spec']['name'].strip().replace('  ', ' ').lower().replace(' ', '-')
     with conn.cursor() as cur:
         try:
