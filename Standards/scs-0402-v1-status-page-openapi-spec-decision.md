@@ -90,11 +90,14 @@ Furthermore, a `SeverityValue` MUST be supplied to the `Impact` when referencing
 
 ### Severity
 
-A severity contains a name, that MUST be unique and WILL be used as identifier. The value marks the upper boundary of the severity.
+A severity contains a name, that MUST be unique and will be used as identifier. The `SeverityValue` marks the upper boundary of the severity.
 
 The severity's value range is calculated by taking the previous severity's (`SeverityA`) value and adding 1 to obtain the starting point and taking the current severity's (SeverityB) value as the end point. These limits are inclusive.
 
-`SeverityA.value + 1 <= Severity <= SeverityB.value`
+```acsii
+0, ... , SeverityA.value, SeverityA.value, + 1, ... , SeverityB.value - 1, SeverityB.value, SeverityB.value + 1, ... , 100
+                        |<------------range of severity values for SeverityB------------->|
+```
 
 Example:
 
