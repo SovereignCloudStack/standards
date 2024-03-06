@@ -10,8 +10,8 @@ track: IaaS
 
 A volume is a virtual drive that is to be used by an instance (i. e., a virtual machine). With OpenStack,
 each volume is created per a type that determines basic features of the volume as provided by the backend,
-such as encryption, replication, or quality of service. As of the writing of this document, none of these
-features can be discovered by non-privileged users via the OpenStack API.
+such as encryption, replication, or quality of service. As of the writing of this document, presence or absence of these
+features can not be discovered with full certainty by non-privileged users via the OpenStack API.
 
 ## Motivation
 
