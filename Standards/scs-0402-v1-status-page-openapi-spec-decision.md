@@ -41,6 +41,10 @@ An `Incremental` is used in combination with other identifiers to identify a sub
 
 `Generation` and `Order` are predefined objects which include a `Incremental` typed field for the common usages of the `Incremental` value.
 
+#### SeverityValue
+
+A `SeverityValue` is an unsiged integer ranging from 0 to 100 inclusively. It SHOULD be utilized by an `Impact` when referencing a `Component` to gauge the severity of the impact on that component. While being described as an unsiged integer implementing this value MAY not require it to be an uint data type in any form, because it range even fits in a signed int8 (byte) data type.
+
 ### API objects
 
 All objects which are used as payload, either as request or response, are defined by schemas. This centralizes the maintanence of field names and types, for both requests and responses.
@@ -82,7 +86,7 @@ An impact defines the relation between an incident and a component. A component 
 
 To reflect this, each component and incident can have a list of impacts, stating the type of impact and a reference to the incident or component, it refers to.
 
-Furthermore, a `SeverityValue` is added to the `Impact` when referencing a component, to gauge the impact's severity on that component.
+Furthermore, a `SeverityValue` SHOULD be added to the `Impact` when referencing a component, to gauge the impact's severity on that component.
 
 ### Severity
 
