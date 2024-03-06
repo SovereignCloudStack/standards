@@ -26,7 +26,7 @@ The following special terms are used throughout this standard document:
 As an SCS user, I want to be able to create volumes with certain common features, such as encryption or
 replication, and to do so in a standardized manner as well as programmatically.
 This standard outlines a way of formally advertising these common features for a volume type to
-non-privileged users, so that the most suitable volume type can be discovered and selected easily -- both by
+non-privileged users, so that the most suitable volume type can be discovered and selected easily — both by
 the human user and by a program.
 
 ## Design Considerations
