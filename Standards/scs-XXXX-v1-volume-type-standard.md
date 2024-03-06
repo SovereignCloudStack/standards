@@ -7,7 +7,10 @@ track:  IaaS
 
 ## Introduction
 
-Volume Types are used to classify volumes and provide a basic decision for what kind of volume should be created. These volume types can sometimes be very backend-specific and it might be hard for a user to choose the most suitable volume type, if there is more than one type.
+A volume is a virtual drive that is to be used by an instance (i. e., a virtual machine). With OpenStack,
+each volume is created per a type that determines basic features of the volume as provided by the backend,
+such as encryption, replication, or quality of service. As of the writing of this document, presence or absence of these
+features can not be discovered with full certainty by non-privileged users via the OpenStack API.
 
 ### Glossary
 
@@ -20,7 +23,11 @@ The following special terms are used throughout this standard document:
 
 ## Motivation
 
-We want to standardize a few varieties of volume types. While a user can choose simple things like size when creating a volume, Volume Types define a few broader aspects of a volume. Encryption of volumes for example is solely decided by the volume type. While the option with which the volume will be replicated is a mix between definition in the volume type and backend specific configuration, but it's visibility can only be reached in the volume type. In the following part, we want to state, which varieties of volume types are REQUIRED, RECOMMENDED or only OPTIONAL within a SCS-compatible deployment.
+As an SCS user, I want to be able to create volumes with certain common features, such as encryption or
+replication, and to do so in a standardized manner as well as programmatically.
+This standard outlines a way of formally advertising these common features for a volume type to
+non-privileged users, so that the most suitable volume type can be discovered and selected easily -- both by
+the human user and by a program.
 
 ## Design Considerations
 
@@ -30,7 +37,7 @@ All Considerations can be looked up in detail in the [Decision Record for the Vo
 
 To test whether a deployment has volume types with certain aspects, the discoverability of the parameters in the volume type has to be given. As for the time this standard is created, there is no way for users to discover all aspects through OpenStack commands. Therefore the aspects, that are fulfilled within a volume type, should be stated in the beginning of the **description** of a volume type in the following manner:
 
-`[scs:aspect1][scs:aspect2]...`
+`[scs:aspect1, aspect2, ..., aspectN]...`
 
 There is no sorting of aspects required. Every aspect should only be mentioned to the maximal amount of one.
 
@@ -48,17 +55,17 @@ Example: one volume type that uses LUKS-encryption with a ceph storage with inhe
 
 ## DEFAULT volume type
 
-There is always a default volume type defined in an OpenStack deployment. This volume type is created in the setup of cinder and will always be present in any OpenStack deployments under the name `__default__`. The SCS does not have any requirements about this volume type at this moment, instead deployers are free to choose what fits best in their environment. Conversely, a cloud user can not expect any specific behavior or properties from volume types named `__default__`.
+There is always a default volume type defined in an OpenStack deployment. This volume type is created in the setup of cinder and will always be present in any OpenStack deployments under the name `__default__`. This standard does not have any requirements about this volume type at this moment, instead deployers are free to choose what fits best in their environment. Conversely, a cloud user can not expect any specific behavior or properties from volume types named `__default__`.
 
-The parameters of volume types described in this standard do not have to be applied to the chosen default volume type. And the SCS will not make any assumptions about parameters being present in the default volume type.
+The parameters of volume types described in this standard do not have to be applied to the chosen default volume type. And this standard will not make any assumptions about parameters being present in the default volume type.
 
 ## REQUIRED volume types
 
-Currently the SCS will not require volume types with certain specification. This will change in the future.
+Currently, this standard will not require volume types with certain specification. This will change in the future.
 
 ## RECOMMENDED volume types
 
-The SCS recommends to have one or more volume types, that satisfy the need for encrpytion and replication.
+This standard recommends to have one or more volume types, that satisfy the need for encrpytion and replication.
 
 ### Encryption
 
@@ -102,7 +109,7 @@ It should look like the following part:
 | Field              | Value                                                                                                                                                        |
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | access_project_ids | None                                                                                                                                                         |
-| description        | [scs:encrypted][scs:replicated] Content will be replicated three times to ensure consistency and availability for your data. LUKS encryption is used.        |
+| description        | [scs:encrypted, replicated] Content will be replicated three times to ensure consistency and availability for your data. LUKS encryption is used.        |
 | id                 | d63307fb-167a-4aa0-9066-66595ea9fb21                                                                                                                         |
 | is_public          | True                                                                                                                                                         |
 | name               | hdd-three-replicas-LUKS                                                                                                                                      |
@@ -122,7 +129,10 @@ Any other aspects of volume types, that can be found in the decision record are 
 ## Conformance Tests
 
 As there are currently no REQUIRED volume types, we can only look for the RECOMMENDED aspects and thus executing a conformance test is not a must.
-Furthermore the recommended aspects currently have to be described in the description by the deployer. In future versions we aim to integrate some extra_specs for them in upstream OpenStack
-And it is also possible that a single volume type can currently fulfill all RECOMMENDED aspects.
+Furthermore the recommended aspects currently have to be described in the description by the deployer.
+Deployers MUST provided correct information, when adhering to this standard.
+The tests will only check the syntactical correctness.
+In future versions we aim to integrate some extra_specs for them in upstream OpenStack.
+It is also possible that a single volume type can currently fulfill all RECOMMENDED aspects.
 
 The current test will check for the presence of `[encrypted]` and `[replicated]` in the description of at least one volume type.
