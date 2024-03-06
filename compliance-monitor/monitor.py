@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
+from datetime import date, datetime
+import json
 import os
 import os.path
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException, Request
 import psycopg2
 import ruamel.yaml
 import uvicorn
@@ -24,6 +26,14 @@ app = FastAPI()
 settings = Settings()
 
 
+class TimestampEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, (date, datetime)):
+            return str(obj)
+        # Let the base class default method raise the TypeError
+        return super().default(obj)
+
+
 def mk_conn(settings=settings):
     return psycopg2.connect(host=settings.db_host, user=settings.db_user, password=settings.db_password)
 
@@ -41,10 +51,38 @@ def ensure_schema(conn):
         cur.execute(
             '''
             CREATE TABLE IF NOT EXISTS account (
-                subject varchar PRIMARY KEY,
-                apikey varchar,
-                publickey varchar,
-                roles int
+                subject text PRIMARY KEY,
+                apikey text,
+                publickey text,
+                roles integer
+            );
+            CREATE TABLE IF NOT EXISTS report (
+                id SERIAL PRIMARY KEY,
+                checked_at timestamp,
+                subject text,
+                scope text,
+                data jsonb,
+                rawformat text,
+                raw bytea
+            );
+            CREATE TABLE IF NOT EXISTS result (
+                id SERIAL PRIMARY KEY,
+                reportid integer REFERENCES report (id) ON DELETE CASCADE ON UPDATE CASCADE,
+                version text,
+                errors integer,
+                aborts integer
+            );
+            CREATE TABLE IF NOT EXISTS invocation (
+                id SERIAL PRIMARY KEY,
+                invocation text,
+                critical integer,
+                error integer,
+                warning integer
+            );
+            CREATE TABLE IF NOT EXISTS res_inv_rel (
+                resultid integer REFERENCES result (id) ON DELETE CASCADE ON UPDATE CASCADE,
+                invocationid integer REFERENCES invocation (id) ON DELETE CASCADE ON UPDATE CASCADE,
+                UNIQUE (resultid, invocationid)
             );
             '''
         )
@@ -76,8 +114,74 @@ def import_bootstrap(bootstrap_path, conn):
 
 
 @app.get("/")
-async def root(db: psycopg2.extensions.connection = Depends(get_conn)):
+async def root():
     return {"message": "Hello World"}
+
+
+@app.post("/reports")
+async def post_report(request: Request, conn: psycopg2.extensions.connection = Depends(get_conn)):
+    # so far, we don't check credentials
+    # test this like so:
+    # curl --data-binary @blubb.yaml -H "Content-Type: application/yaml" http://127.0.0.1:8080/reports
+    content_type = request.headers['content-type']
+    if content_type not in ('application/yaml', 'application/json'):
+        raise HTTPException(status_code=500, detail="Unsupported content type")
+    body = await request.body()
+    body_text = body.decode("utf-8")
+    json_text = None
+    if content_type.endswith('/yaml'):
+        yaml = ruamel.yaml.YAML(typ='safe')
+        document = yaml.load(body_text)
+        json_text = json.dumps(document, cls=TimestampEncoder)
+    elif content_type.endswith("/json"):
+        document = json.loads(body_text)
+        json_text = body_text
+    else:
+        raise HTTPException(status_code=500)
+    rundata = document['run']
+    subject, checked_at = rundata['subject'], rundata['checked_at']
+    scope = document['spec']['name'].strip().replace('  ', ' ').lower().replace(' ', '-')
+    with conn.cursor() as cur:
+        cur.execute(
+            '''
+            INSERT INTO report (checked_at, subject, scope, data, rawformat, raw)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id;
+            ''',
+            (checked_at, subject, scope, json_text, content_type, body),
+        )
+        reportid, = cur.fetchone()
+        invocation_ids = {}
+        for invocation, idata in rundata['invocations'].items():
+            cur.execute(
+                '''
+                INSERT INTO invocation (invocation, critical, error, warning)
+                VALUES (%s, %s, %s, %s)
+                RETURNING id;
+                ''',
+                (invocation, idata['critical'], idata['error'], idata['warning']),
+            )
+            invocationid, = cur.fetchone()
+            invocation_ids[invocation] = invocationid
+        for version, vdata in rundata['versions'].items():
+            cur.execute(
+                '''
+                INSERT INTO result (reportid, version, errors, aborts)
+                VALUES (%s, %s, %s, %s)
+                RETURNING id;
+                ''',
+                (reportid, version, vdata['errors'], vdata['aborts']),
+            )
+            resultid, = cur.fetchone()
+            for invocation in vdata.get('invocations', ()):
+                cur.execute(
+                    '''
+                    INSERT INTO res_inv_rel (resultid, invocationid)
+                    VALUES (%s, %s);
+                    ''',
+                    (resultid, invocation_ids[invocation]),
+                )
+    conn.commit()
 
 
 if __name__ == "__main__":
