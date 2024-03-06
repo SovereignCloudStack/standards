@@ -99,7 +99,7 @@ def parse_arguments(argv):
     config = Config()
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:k:h", ["config", "kubeconfig", "help"])
+        opts, args = getopt.gnu_getopt(argv, "c:k:h", ["config=", "kubeconfig=", "help"])
     except getopt.GetoptError:
         raise ConfigException
 
