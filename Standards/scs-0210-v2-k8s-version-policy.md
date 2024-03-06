@@ -21,11 +21,12 @@ support period. The remaining 2 months are the end-of-life support period for th
 
 More information can be found under [Kubernetes Support Period].
 
-The Kubernetes release cycle is set around 4 months, which usually results in about
-**3 minor** releases per year [Kubernetes Release Cycle](https://kubernetes.io/releases/release/#the-release-cycle).
+The [Kubernetes release cycle][k8s-release-cycle] is set around 4 months, which
+usually results in about **3 minor** releases per year.
 
 Patches to these releases are provided monthly, with the exception of the first patch,
-which is usually provided 1-2 weeks after the initial release [Patch Release Cadence](https://kubernetes.io/releases/patch-releases/#cadence).
+which is usually provided 1-2 weeks after the initial release (see [Patch Release
+Cadence][k8s-release-cadence]).
 
 ## Motivation
 
@@ -51,32 +52,45 @@ window period.
 
 ## Decision
 
-In order to keep up-to date with the latest Kubernetes features, bug fixes and security improvements,
-the provided Kubernetes versions should be kept up to date with the upstream.
+In order to keep up-to-date with the latest Kubernetes features, bug fixes and security improvements,
+the provided Kubernetes versions should be kept up-to-date with new upstream releases:
 
 - The latest minor version MUST be provided no later than 4 months after release.
 - The latest patch version MUST be provided no later than 1 week after release.
-- This time period MUST be even shorter for patches that target critical CVEs (CVSS >= 8).
+- This time period MUST be even shorter for patches that fix critical CVEs.
+  In this context, a critical CVE is a CVE with a CVSS base score >= 8 according
+  to the CVSS version used in the original CVE record (e.g., CVSSv3.1).
   It is RECOMMENDED to provide a new patch version in a 2 day time period after their release.
 - New versions MUST be tested before being rolled out on productive infrastructure;
-  at least the CNCF E2E tests should be passed beforehand.
+  at least the [CNCF E2E tests][cncf-conformance] should be passed beforehand.
 
 At the same time, providers must support Kubernetes versions at least as long as the
-official sources as mentioned in the [Kubernetes Support Period](https://kubernetes.io/releases/patch-releases/#support-period).
+official sources as described in [Kubernetes Support Period][k8s-support-period]:
 
-- Kubernetes versions MUST be supported as long as the official sources support them.
-  The current support period can therefore be found in [Kubernetes Support Period](https://kubernetes.io/releases/patch-releases/#support-period).
+- Kubernetes versions MUST be supported as long as the official sources support them
+  according to the [Kubernetes Support Period][k8s-support-period] and their end-of-life
+  date according to the [Kubernetes Releases page][k8s-releases].
 - It is RECOMMENDED to not support versions after this period in order to not encourage
   usage of out-of-date versions.
 
 ## Related Documents
 
-All documents regarding versioning, releases, etc. for the official Kubernetes projects can be found here:
-[Kubernetes Releases](https://kubernetes.io/releases/)
-[Kubernetes Support Period](https://kubernetes.io/releases/patch-releases/#support-period)
-[Kubernetes Release Cycle](https://kubernetes.io/releases/release/#the-release-cycle)
-[Patch Release Cadence](https://kubernetes.io/releases/patch-releases/#cadence)
+All documents regarding versioning, releases, etc. for the official Kubernetes projects can
+be found on the [Kubernetes Releases page][k8s-releases].
 
-## Validation / Conformance
+## Conformance Tests
 
-*This section will be updated when the conformance tests are written.*
+The script `k8s_version_policy.py` requires a kubeconfig file with connection details for
+a set of existing Kubernetes clusters that should be checked, with each of these clusters
+representing one of the currently supported upstream Kubernetes releases.
+It will check the encountered cluster versions according to the rules of this standard.
+Rule violations will be reported on various logging channels: ERROR for mandatory rules
+and INFO for recommended rules.
+The script will exit with a non-zero status if a mandatory rule has been violated or if
+the test could not be performed.
+
+[k8s-releases]: https://kubernetes.io/releases/
+[k8s-release-cycle]: https://kubernetes.io/releases/release/#the-release-cycle
+[k8s-release-cadence]: https://kubernetes.io/releases/patch-releases/#cadence
+[k8s-support-period]: https://kubernetes.io/releases/patch-releases/#support-period
+[cncf-conformance]: https://github.com/cncf/k8s-conformance
