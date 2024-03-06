@@ -3,9 +3,13 @@ from datetime import date, datetime
 import json
 import os
 import os.path
+import secrets
+from typing import Annotated, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import psycopg2
+from psycopg2.errors import UniqueViolation
 import ruamel.yaml
 import uvicorn
 
@@ -23,6 +27,8 @@ ROLES = {'read_any': 1, 'append_any': 2, 'admin': 4}
 
 # do I hate these globals, but I don't see another way with these frameworks
 app = FastAPI()
+security = HTTPBasic(realm="Compliance monitor", auto_error=True)
+optional_security = HTTPBasic(realm="Compliance monitor", auto_error=False)
 settings = Settings()
 
 
@@ -46,6 +52,38 @@ def get_conn(settings=settings):
         conn.close()
 
 
+def get_current_account(
+    credentials: Optional[HTTPBasicCredentials],
+    conn: psycopg2.extensions.connection,
+):
+    if credentials is None:
+        return
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                '''
+                SELECT apikey, publickey FROM account WHERE subject = %s;
+                ''',
+                (credentials.username, )
+            )
+            if not cur.rowcount:
+                raise RuntimeError
+            apikey, publickey = cur.fetchone()
+        current_password_bytes = credentials.password.encode("utf8")
+        is_correct_password = secrets.compare_digest(
+            current_password_bytes, apikey.encode("utf8")
+        )
+        if not is_correct_password:
+            raise RuntimeError
+        return credentials.username, publickey
+    except RuntimeError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": f"Basic {security.realm}"},
+        )
+
+
 def ensure_schema(conn):
     with conn.cursor() as cur:
         cur.execute(
@@ -58,6 +96,7 @@ def ensure_schema(conn):
             );
             CREATE TABLE IF NOT EXISTS report (
                 id SERIAL PRIMARY KEY,
+                uuid text UNIQUE,
                 checked_at timestamp,
                 subject text,
                 scope text,
@@ -119,10 +158,13 @@ async def root():
 
 
 @app.post("/reports")
-async def post_report(request: Request, conn: psycopg2.extensions.connection = Depends(get_conn)):
-    # so far, we don't check credentials
+async def post_report(
+    request: Request,
+    conn: psycopg2.extensions.connection = Depends(get_conn),
+):
+    account = get_current_account(await security(request), conn)
     # test this like so:
-    # curl --data-binary @blubb.yaml -H "Content-Type: application/yaml" http://127.0.0.1:8080/reports
+    # curl --data-binary @blubb.yaml -H "Content-Type: application/yaml" -H "Authorization: Basic YWRtaW46c2VjcmV0IGFwaSBrZXk=" http://127.0.0.1:8080/reports
     content_type = request.headers['content-type']
     if content_type not in ('application/yaml', 'application/json'):
         raise HTTPException(status_code=500, detail="Unsupported content type")
@@ -139,17 +181,20 @@ async def post_report(request: Request, conn: psycopg2.extensions.connection = D
     else:
         raise HTTPException(status_code=500)
     rundata = document['run']
-    subject, checked_at = rundata['subject'], rundata['checked_at']
+    uuid, subject, checked_at = rundata['uuid'], rundata['subject'], rundata['checked_at']
     scope = document['spec']['name'].strip().replace('  ', ' ').lower().replace(' ', '-')
     with conn.cursor() as cur:
-        cur.execute(
-            '''
-            INSERT INTO report (checked_at, subject, scope, data, rawformat, raw)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            RETURNING id;
-            ''',
-            (checked_at, subject, scope, json_text, content_type, body),
-        )
+        try:
+            cur.execute(
+                '''
+                INSERT INTO report (uuid, checked_at, subject, scope, data, rawformat, raw)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                RETURNING id;
+                ''',
+                (uuid, checked_at, subject, scope, json_text, content_type, body),
+            )
+        except UniqueViolation:
+            raise HTTPException(status_code=409, detail="Conflict: report already present")
         reportid, = cur.fetchone()
         invocation_ids = {}
         for invocation, idata in rundata['invocations'].items():

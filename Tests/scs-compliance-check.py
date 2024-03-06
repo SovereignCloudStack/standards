@@ -19,6 +19,7 @@ would split these tests out.)
 
 import os
 import os.path
+import uuid
 import sys
 import shlex
 import getopt
@@ -232,6 +233,7 @@ def main(argv):
         "versions": {},
         # this field is mostly for debugging:
         "run": {
+            "uuid": str(uuid.uuid4()),
             "argv": argv,
             "assignment": config.assignment,
             "sections": config.sections,
