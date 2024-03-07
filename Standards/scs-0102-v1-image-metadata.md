@@ -5,6 +5,12 @@ stabilized_at: 2022-10-31
 status: Stable
 track: IaaS
 replaces: Image-Metadata-Spec.md
+description: |
+  The SCS-0102 Image Metadata Standard outlines how to categorize and manage metadata for cloud-based operating
+  system images to ensure usability and clarity. The standard encompasses naming conventions, technical requirements,
+  image handling protocols including updating and origin, and licensing/support details. These guidelines ensure
+  that users can understand, access, and utilize OS images effectively, with clear information on features, updates,
+  and licensing provided through well-defined metadata properties.
 ---
 
 ## Motivation
@@ -16,8 +22,6 @@ users to understand what they can expect using these images.
 The specification is targeting images that are managed by the service provider,
 provided for public consumption. The spec or parts of it however might turn out
 to be useful whenever someone manages images for somebody else's consumption.
-
-We also suggest a standard set of images to be available.
 
 ## Overview
 
@@ -39,49 +43,6 @@ Special variants that include specific non-standard features should be named
 There are several policies possible to provide updated images to include the latest
 bug- and security fixes. This is outlined in update policy description below.
 
-## Standard images
-
-SCS does not at this point mandate the availability of certain images.
-We however intend to change this after a broader discussion.
-
-We intend to mandate the following images:
-
-- `Ubuntu <LATESTLTS>`, `Ubuntu <PREVLTS>`, `Debian <STABLE>`
-- Note that `<LATESTLTS>` refers to the latest LTS version, which at this point is `22.04`.
-  The `<PREVLTS>` is the previous LTS version, at the time of this writing (9/2022) it's `20.04`.
-  We don't carry the `.x` patch numbers in the standard image names. We switch to requiring the
-  newest Ubuntu LTS version when the `.1` version comes out (around July/August). At this point
-  the old `<PREVLTS>` version becomes optional ...
-- For Debian, we use the latest STABLE version, which is `11` at the time of this writing.
-  Similar to Ubuntu, we would do the switch and require the latest STABLE to be made available within
-  ~3 months after release.
-- When a CentOS successor emerges, we would have one in the mandatory list.
-
-We intend to recommend the following images:
-
-- `CentOS 8`
-- `Alma Linux 8`, `Rocky 8`
-- `Debian <PREVSTABLE>` (the one pre-latest `<STABLE>`, `10` at the time of writing)
-- `Fedora <LATEST>` (`36` currently, this will get replaced quickly as the next Fedora comes out)
-
-We want to suggest the following supported images (with licensing/maintenance/support as intended from OS vendor)
-
-- `SLES 15SP4`
-- `RHEL 9`, `RHEL 8`
-- `Windows Server 2022`, `Windows Server 2019`
-
-We are also looking into standard suggestions for
-
-- `openSUSE Leap 15.4`
-- `Cirros 0.5.2`
-- `Alpine`
-- `Arch`
-
-The suggestions mainly serve to align image naming between providers.
-
-Note that additional images will be available on typical platforms, e.g. `ubuntu-capi-image-v1.24.4`
-for platforms that are prepared to support SCS k8s cluster management.
-
 ## Technical requirements and features
 
 This is dependent on whether we deal with VM images or container images.
@@ -92,9 +53,11 @@ in the [OpenStack Image documentation](https://docs.openstack.org/glance/latest/
 The following properties are considered mandatory:
 
 - `architecture`, `hypervisor_type`
-- `min_disk_size`, `min_ram`
+- `min_disk_size` (in GiB), `min_ram` (in MiB)
 - `os_version`, `os_distro`
 - `hw_rng_model`, `hw_disk_bus` (`scsi` recommended, and then setting `hw_scsi_model` is also recommended)
+
+**Note**: Disk sizes tend to be measured in GB = 10^9 and not GiB = 2^30 in the disk industry, but OpenStack uses GiB.
 
 The following properties are recommended (if the features are supported):
 
@@ -137,7 +100,7 @@ as referenced by its name.
 Note the _at least_ wording: Providers can replace images more often.
 The frequency is starting from the first release; so an image published on 2021-04-14 with an
 update frequency of `monthly`, should be replaced no later than 2021-05-14. Due to weekends
-etc., up to 3 days later is not considered a violation of this policy. So the a valid sequence
+etc., up to 3 days later is not considered a violation of this policy. So a valid sequence
 from an image with `monthly` update frequency might be 2021-04-14, 2021-05-14, 2021-06-15,
 2021-07-14, 2021-07-27 (hotfix), 2021-08-13 ...
 
@@ -167,7 +130,7 @@ will be provided until a deprecation notice is published. (The values are the sa
 for below `uuid_validity`, except that `forever` and `last-N` don't make any sense.)
 
 The `uuid_validity` field indicates how long the public image will be referencable
-by it's UUID.
+by its UUID.
 
 | `uuid_validity` | meaning                                                                 |
 | --------------- | ----------------------------------------------------------------------- |
@@ -178,7 +141,7 @@ by it's UUID.
 | `forever`       | UUID will remain valid for as long as the cloud operates                |
 
 Note that the old images must be hidden from the image catalogue or renamed (or both)
-to avoid failing referencing by name. Note that `last-N` may be limited by the `provided_till`
+to avoid failing referencing by name. Note that `last-N` may be limited by the `provided_until`
 date.
 
 The three properties `uuid_validity`, `provided_until` and `replace_frequency` are mandatory;
@@ -232,10 +195,6 @@ upstream images, they should point to the place where they document and offer th
   for the image file. (This references the image file in the format it is stored in, we
   recommend raw over qcow2 for systems that use ceph.) Note that these values are
   typically generated automatically upon image registration.
-- Recommended: Digital image signature according to the [glance image
-  specification](https://docs.openstack.org/glance/wallaby/user/signature.html),
-  using `img_signature`, `img_signature_hash_method`, `img_signature_key_type`,
-  `img_signature_certificate_uuid`.
 
 - Recommended _tag_: `os:OPERATINGSYSTEM`
 
@@ -249,7 +208,7 @@ might not use any of these properties, except maybe `maintained_until`. Note tha
 Windows images would typically require `license_included`, `subscription_included`.
 A boolean property that is not present is considered to be `false`.
 
-- Optional: `license_included` (boolean) indicates whether ot not the flavor fee
+- Optional: `license_included` (boolean) indicates whether or not the flavor fee
   includes the licenses required to use this image. This field is mandatory for
   images that contain software that requires commercial licenses.
 - Optional: `license_required` (boolean) indicates whether or not a customer must bring
@@ -271,9 +230,8 @@ A boolean property that is not present is considered to be `false`.
   service provider does provide support for this image included in the image/flavor
   pricing (but it might be provided by a contracted 3rd party, e.g. the OS vendor).
 
-### Conformance test tool
+### Conformance Tests
 
-The `tools/` subdirectory has a testing tool `image-md-check.py` that retrieves the
-image list from a configured cloud and checks them for completeness (with respect
-to the intended future list of mandatory images) and checks each image for the
+The script `image-md-check.py` retrieves the
+image list from a configured cloud and checks each image for the
 completeness and consistency of mandatory properties.

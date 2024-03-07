@@ -1,0 +1,20 @@
+---
+- name: Run ADR syntax check tool and test script consistency check tool
+  hosts: all
+  tasks:
+    - name: Run ADR syntax check script
+      ansible.builtin.shell: |
+        python3 ~/Tests/chk_adrs.py ~/Standards
+      register: result
+      changed_when: true
+      failed_when: result.rc != 0
+
+    - name: Run test script consistency check script
+      ansible.builtin.shell: |
+        python3 ~/Tests/iaas/flavor-naming/check-yaml.py ~/Tests/iaas
+      register: result
+      changed_when: true
+      failed_when: result.rc != 0
+
+    - ansible.builtin.debug:
+        msg: "{{ result.stdout }} {{ result.stderr }}"

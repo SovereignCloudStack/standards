@@ -1,0 +1,86 @@
+name: SCS Compatible IaaS
+url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml
+variables:
+  - os_cloud
+versions:
+  - version: v4
+    stabilized_at: 2024-02-28
+    standards:
+      - name: OpenStack Powered Compute v2022.11
+        url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
+        # Unfortunately, no wrapper to run refstack yet, needs to be added
+      - name: Flavor naming
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v3-flavor-naming.md
+        check_tools:
+          - executable: ./iaas/flavor-naming/flavor-names-openstack.py
+            args: -c {os_cloud} --mand=./iaas/scs-0100-v3-flavors.yaml
+            # Note: --v2plus would outlaw the v1 flavor names. Don't do this yet.
+      - name: Entropy
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0101-v1-entropy.md
+        check_tools:
+          - executable: ./iaas/entropy/entropy-check.py
+            args: -c {os_cloud} -d
+      - name: Image metadata
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
+        check_tools:
+          - executable: ./iaas/image-metadata/image-md-check.py
+            args: -c {os_cloud} -s -v
+      - name: Standard flavors
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0103-v1-standard-flavors.md
+        check_tools:
+          - executable: ./iaas/standard-flavors/flavors-openstack.py
+            args: -c {os_cloud} -d ./iaas/scs-0103-v1-flavors.yaml
+      - name: Standard images
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0104-v1-standard-images.md
+        check_tools:
+          - executable: ./iaas/standard-images/images-openstack.py
+            args: -c {os_cloud} -d ./iaas/scs-0104-v1-images.yaml
+  - version: v3
+    stabilized_at: 2023-06-15
+    obsoleted_at: 2024-04-30
+    standards:
+      - name: Flavor naming
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v3-flavor-naming.md
+        check_tools:
+          - executable: ./iaas/flavor-naming/flavor-names-openstack.py
+            args: --v3 -c {os_cloud}
+            # Note: "--v3 --v2plus" would outlaw the v1 flavor names. Don't do this yet.
+      - name: Image metadata
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
+        check_tools:
+          - executable: ./iaas/image-metadata/image-md-check.py
+            args: -v -c {os_cloud}
+      - name: OpenStack Powered Compute v2022.11
+        url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
+  - version: v2
+    stabilized_at: 2023-03-23
+    obsoleted_at: 2023-11-30
+    standards:
+      - name: Flavor naming
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v2-flavor-naming.md
+        check_tools:
+          - executable: ./iaas/flavor-naming/flavor-names-openstack.py
+            args: -c {os_cloud}
+      - name: Image metadata
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
+        check_tools:
+          - executable: ./iaas/image-metadata/image-md-check.py
+            args: -v -c {os_cloud}
+      - name: OpenStack Powered Compute v2022.11
+        url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
+  - version: v1
+    stabilized_at: 2021-01-01
+    obsoleted_at: 2023-10-31
+    standards:
+      - name: Flavor naming
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v1-flavor-naming.md
+        check_tools:
+          - executable: ./iaas/flavor-naming/flavor-names-openstack.py
+            args: -c {os_cloud} --v1prefer
+      - name: Image metadata
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
+        check_tools:
+          - executable: ./iaas/image-metadata/image-md-check.py
+            args: -c {os_cloud} -v
+      - name: OpenStack Powered Compute v2020.11
+        url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2020.11.json

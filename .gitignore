@@ -1,4 +1,7 @@
 **/__pycache__/
+.venv/
 .idea
 .DS_Store
 node_modules
+Tests/kaas/results/
+*.tar.gz

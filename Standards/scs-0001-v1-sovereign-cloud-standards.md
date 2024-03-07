@@ -4,6 +4,10 @@ type: Procedural
 status: Stable
 track: Global
 stabilized_at: 2022-11-28
+description: |
+  SCS-0001 outlines the structure, requirements, and lifecycle of standards, procedural documents, and decision
+  records within the Sovereign Cloud Stack (SCS) community, ensuring clarity, organization, and governance in
+  the development and maintenance of interoperable and transparent cloud infrastructure standards.
 ---
 
 ## Introduction
@@ -223,8 +227,6 @@ Changes to the documents are gated through pull requests.
 
 Once the document is deemed ready for production use,
 its `status` is changed to `Stable`.
-Once the next SCS release happens,
-the document is officially part of the SCS standard.
 
 After stabilization,
 changes to the document which may render existing implementations non-conformant

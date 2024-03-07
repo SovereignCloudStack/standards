@@ -15,6 +15,7 @@ restrictions); for further information, see the log messages on various channels
 from collections import Counter
 import getopt
 import logging
+from operator import attrgetter
 import os
 import re
 import sys
@@ -30,9 +31,13 @@ import openstack.cloud
 
 logger = logging.getLogger(__name__)
 
-SERVER_NAME = "scs-0101-server"
-SECURITY_GROUP_NAME = "scs-0101-group"
-KEYPAIR_NAME = "scs-0101-keypair"
+# prefix ephemeral resources with '_scs-' to rule out any confusion with important resources
+# (this enables us to automatically dispose of any lingering resources should this script be killed)
+NETWORK_NAME = "_scs-0101-net"
+ROUTER_NAME = "_scs-0101-router"
+SERVER_NAME = "_scs-0101-server"
+SECURITY_GROUP_NAME = "_scs-0101-group"
+KEYPAIR_NAME = "_scs-0101-keypair"
 
 IMAGE_ATTRIBUTES = {
     # https://docs.openstack.org/glance/2023.1/admin/useful-image-properties.html#image-property-keys-and-values
@@ -45,6 +50,25 @@ FLAVOR_ATTRIBUTES = {
     "hw_rng:allowed": "True",  # testing showed that it is indeed a string?
 }
 FLAVOR_OPTIONAL = ("hw_rng:rate_bytes", "hw_rng:rate_period")
+
+
+# we need to set package source on Ubuntu, because the default is not fixed and can lead to Heisenbugs
+SERVER_USERDATA = {
+    'ubuntu': """#cloud-config
+apt:
+  primary:
+    - arches: [default]
+      uri: http://az1.clouds.archive.ubuntu.com/ubuntu/
+  security: []
+""",
+    'debian': """#cloud-config
+apt:
+  primary:
+    - arches: [default]
+      uri: https://mirror.plusserver.com/debian/debian/
+  security: []
+""",
+}
 
 
 def print_usage(file=sys.stderr):
@@ -62,7 +86,7 @@ def check_image_attributes(images, attributes=IMAGE_ATTRIBUTES):
     for image in images:
         wrong = [f"{key}={value}" for key, value in attributes.items() if image.get(key) != value]
         if wrong:
-            logger.info(f"Image '{image.name}' missing recommended attributes: {', '.join(wrong)}")
+            logger.warning(f"Image '{image.name}' missing recommended attributes: {', '.join(wrong)}")
 
 
 def check_flavor_attributes(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAVOR_OPTIONAL):
@@ -77,10 +101,13 @@ def check_flavor_attributes(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAV
             # and if the recommended attributes are present, we assume that implementers have done their job already
             if miss_opt:
                 message += f"; additionally, missing optional attributes: {', '.join(miss_opt)}"
-            logger.info(message)
+            logger.warning(message)
 
 
 def install_test_requirements(fconn):
+    # in case we had to patch the apt package sources, wait here for completion
+    _ = fconn.run('cloud-init status --long --wait', hide=True, warn=True)
+    # logger.debug(_.stdout)
     # the following commands seem to be necessary for CentOS 8, but let's not go there
     # because, frankly, that image is ancient
     # sudo sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
@@ -89,17 +116,18 @@ def install_test_requirements(fconn):
     commands = (
         # use ; instead of && after update because an error in update is not fatal
         # also, on newer systems, it seems we need to install rng-tools5...
-        ('apt-get', 'apt-get -v && (sudo apt-get update ; sudo apt-get install -y rng-tools5 || sudo apt-get install -y rng-tools)'),
+        ('apt-get', 'apt-get -v && (cat /etc/apt/sources.list ; sudo apt-get update ; sudo apt-get install -y rng-tools5 || sudo apt-get install -y rng-tools)'),
         ('dnf', 'sudo dnf install -y rng-tools'),
         ('yum', 'sudo yum -y install rng-tools'),
         ('pacman', 'sudo pacman -Syu rng-tools'),
     )
     for name, cmd in commands:
         try:
-            fconn.run(cmd, hide=True)
+            _ = fconn.run(cmd, hide=True)
         except invoke.exceptions.UnexpectedExit as e:
-            logger.debug(f"Error running '{name}': {e.result.stderr.strip()}")
+            logger.debug(f"Error running '{name}':\n{e.result.stderr.strip()}\n{e.result.stdout.strip()}")
         else:
+            # logger.debug(f"Output running '{name}':\n{_.stderr.strip()}\n{_.stdout.strip()}")
             return
     logger.debug("No package manager worked; proceeding anyway as rng-utils might be present nonetheless.")
 
@@ -134,7 +162,7 @@ def check_vm_recommends(fconn, image, flavor):
     try:
         result = fconn.run('sudo systemctl status rngd', hide=True, warn=True)
         if "could not be found" in result.stdout or "could not be found" in result.stderr:
-            logger.info(f"VM '{image.name}' doesn't provide the recommended service rngd")
+            logger.warning(f"VM '{image.name}' doesn't provide the recommended service rngd")
         # Check the existence of the HRNG -- can actually be skipped if the flavor
         # or the image doesn't have the corresponding attributes anyway!
         if image.hw_rng_model != "virtio" or flavor.extra_specs.get("hw_rng:allowed") != "True":
@@ -144,7 +172,7 @@ def check_vm_recommends(fconn, image, flavor):
             hw_device = fconn.run('cat /sys/devices/virtual/misc/hw_random/rng_available', hide=True, warn=True).stdout
             result = fconn.run("sudo su -c 'od -vAn -N2 -tu2 < /dev/hwrng'", hide=True, warn=True)
             if not hw_device.strip() or "No such device" in result.stdout or "No such " in result.stderr:
-                logger.info(f"VM '{image.name}' doesn't provide a hardware device.")
+                logger.warning(f"VM '{image.name}' doesn't provide a hardware device.")
     except BaseException:
         logger.critical(f"Couldn't check VM '{image.name}' recommends", exc_info=True)
 
@@ -154,6 +182,9 @@ class TestEnvironment:
         self.conn = conn
         self.keypair = None
         self.keyfile = None
+        self.network = None
+        self.subnet = None
+        self.router = None
         self.sec_group = None
 
     def prepare(self):
@@ -169,6 +200,34 @@ class TestEnvironment:
             self.sec_group = self.conn.network.create_security_group(
                 name=SECURITY_GROUP_NAME
             )
+
+            # create network, subnet, router, connect everything
+            self.network = self.conn.create_network(NETWORK_NAME)
+            self.subnet = self.conn.create_subnet(
+                self.network.id,
+                cidr="10.1.0.0/24",
+                gateway_ip="10.1.0.1",
+                enable_dhcp=True,
+                allocation_pools=[{
+                    "start": "10.1.0.100",
+                    "end": "10.1.0.200",
+                }],
+                dns_nameservers=["9.9.9.9"],
+            )
+            external_networks = list(self.conn.network.networks(is_router_external=True))
+            if not external_networks:
+                raise RuntimeError("No external network found!")
+            if len(external_networks) > 1:
+                logger.debug(
+                    "More than one external network found: "
+                    + ', '.join([n.id for n in external_networks])  # noqa: W503
+                )
+            external_gateway_net_id = external_networks[0].id
+            logger.debug(f"Using external network {external_gateway_net_id}.")
+            self.router = self.conn.create_router(
+                ROUTER_NAME, ext_gateway_net_id=external_gateway_net_id,
+            )
+            self.conn.add_router_interface(self.router, subnet_id=self.subnet.id)
 
             _ = self.conn.network.create_security_group_rule(
                 security_group_id=self.sec_group.id,
@@ -195,26 +254,48 @@ class TestEnvironment:
             raise
 
     def clean(self):
-        # do it in reverse order here so we can bail as soon as we encounter None
-        if self.sec_group is None:
-            return
-        try:
-            _ = self.conn.network.delete_security_group(self.sec_group)
-        except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
-            logger.debug(f"The security group {self.sec_group.name} couldn't be deleted.", exc_info=True)
+        if self.router is not None:
+            try:
+                self.conn.remove_router_interface(self.router, subnet_id=self.subnet.id)
+            except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
+                logger.debug("Router interface couldn't be deleted.", exc_info=True)
+            try:
+                self.conn.delete_router(self.router.id)
+            except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
+                logger.debug(f"The router {self.router.id} couldn't be deleted.", exc_info=True)
+            self.router = None
 
-        if self.keyfile is None:
-            return
-        self.keyfile.close()
-        self.keyfile = None
+        if self.subnet is not None:
+            try:
+                self.conn.delete_subnet(self.subnet.id)
+            except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
+                logger.debug(f"The network {self.subnet.id} couldn't be deleted.", exc_info=True)
+            self.subnet = None
 
-        if self.keypair is None:
-            return
-        try:
-            _ = self.conn.compute.delete_keypair(self.keypair)
-        except openstack.cloud.OpenStackCloudException:
-            logger.debug(f"The keypair '{self.keypair.name}' couldn't be deleted.")
-        self.keypair = None
+        if self.network is not None:
+            try:
+                self.conn.delete_network(self.network.id)
+            except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
+                logger.debug(f"The network {self.network.name} couldn't be deleted.", exc_info=True)
+            self.network = None
+
+        if self.sec_group is not None:
+            try:
+                _ = self.conn.network.delete_security_group(self.sec_group)
+            except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
+                logger.debug(f"The security group {self.sec_group.name} couldn't be deleted.", exc_info=True)
+            self.sec_group = None
+
+        if self.keyfile is not None:
+            self.keyfile.close()
+            self.keyfile = None
+
+        if self.keypair is not None:
+            try:
+                _ = self.conn.compute.delete_keypair(self.keypair)
+            except openstack.cloud.OpenStackCloudException:
+                logger.debug(f"The keypair '{self.keypair.name}' couldn't be deleted.")
+            self.keypair = None
 
     def __enter__(self):
         self.prepare()
@@ -239,12 +320,13 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
 
     # try to pick a frugal flavor
     flavor = min(flavors, key=lambda flv: flv.vcpus)
+    userdata = next((value for key, value in SERVER_USERDATA.items() if image.name.lower().startswith(key)), None)
     # create a server with the image and the flavor as well as
     # the previously created keys and security group
     logger.debug(f"Creating instance of image '{image.name}' using flavor '{flavor.name}'")
     server = env.conn.create_server(
-        server_name, image=image, flavor=flavor, key_name=env.keypair.name,
-        security_groups=[env.sec_group.id], wait=True, timeout=360, auto_ip=True,
+        server_name, image=image, flavor=flavor, key_name=env.keypair.name, network=env.network,
+        security_groups=[env.sec_group.id], userdata=userdata, wait=True, timeout=360, auto_ip=True,
     )
     logger.debug(f"Server '{server_name}' ('{server.id}') has been created")
     return server
@@ -255,10 +337,12 @@ def delete_vm(conn, server_name=SERVER_NAME):
     try:
         _ = conn.delete_server(server_name, delete_ips=True, timeout=300, wait=True)
     except openstack.cloud.OpenStackCloudException:
-        logger.debug(f"The server '{server_name}' couldn't be deleted.")
+        logger.debug(f"The server '{server_name}' couldn't be deleted.", exc_info=True)
 
 
-def retry(func, exc_type, timeouts=(8, 7, 15, 10)):
+def retry(func, exc_type, timeouts=(8, 7, 15, 10, 20, 30, 60)):
+    if isinstance(exc_type, str):
+        exc_type = exc_type.split(',')
     timeout_iter = iter(timeouts)
     # do an initial sleep because func is known fail at first anyway
     time.sleep(next(timeout_iter))
@@ -267,9 +351,9 @@ def retry(func, exc_type, timeouts=(8, 7, 15, 10)):
             func()
         except Exception as e:
             timeout = next(timeout_iter, None)
-            if timeout is None or e.__class__.__name__ != exc_type:
+            if timeout is None or e.__class__.__name__ not in exc_type:
                 raise
-            # logger.debug(f"Caught {e!r} while {func!r}; waiting {timeout} s before retry")
+            logger.debug(f"Caught {e!r} while {func!r}; waiting {timeout} s before retry")
             time.sleep(timeout)
         else:
             break
@@ -282,6 +366,21 @@ class CountingHandler(logging.Handler):
 
     def handle(self, record):
         self.bylevel[record.levelno] += 1
+
+
+def select_deb_image(images):
+    """From a list of OpenStack image objects, select a recent Debian derivative.
+
+    Try Debian first, then Ubuntu.
+    """
+    for prefix in ("Debian ", "Ubuntu "):
+        imgs = sorted(
+            [img for img in images if img.name.startswith(prefix)],
+            key=attrgetter("name"),
+        )
+        if imgs:
+            return imgs[-1]
+    return None
 
 
 def main(argv):
@@ -336,8 +435,8 @@ def main(argv):
                     logger.critical(f"Missing images: {', '.join(missing_names)}")
                     return 1
             else:
-                images = all_images[:1]
-                logger.debug(f"Selected image: {images[0].name}")
+                images = [select_deb_image(all_images) or all_images[0]]
+                logger.debug(f"Selected image: {images[0].name} ({images[0].id})")
 
             logger.debug("Checking images and flavors for recommended attributes")
             check_image_attributes(all_images)
@@ -355,10 +454,10 @@ def main(argv):
                         with fabric.Connection(
                             host=server.public_v4,
                             user=image.properties.get('image_original_user') or image.properties.get('standarduser'),
-                            connect_kwargs={"key_filename": env.keyfile.name},
+                            connect_kwargs={"key_filename": env.keyfile.name, "allow_agent": False},
                         ) as fconn:
                             # need to retry because it takes time for sshd to come up
-                            retry(fconn.open, exc_type="NoValidConnectionsError")
+                            retry(fconn.open, exc_type="NoValidConnectionsError,TimeoutError")
                             check_vm_recommends(fconn, image, server.flavor)
                             check_vm_requirements(fconn, image.name)
                     finally:
@@ -368,7 +467,10 @@ def main(argv):
         logger.debug("Exception info", exc_info=True)
 
     c = counting_handler.bylevel
-    logger.debug(f"Total critical / error / info: {c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.INFO]}")
+    logger.debug(
+        "Total critical / error / warning: "
+        f"{c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.WARNING]}"
+    )
     return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 
