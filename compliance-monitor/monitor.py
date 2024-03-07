@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import json
 import os
 import os.path
@@ -23,6 +23,7 @@ class Settings:
 
 
 ROLES = {'read_any': 1, 'append_any': 2, 'admin': 4}
+WINDOW = timedelta(weeks=1)
 
 
 # do I hate these globals, but I don't see another way with these frameworks
@@ -108,6 +109,8 @@ def ensure_schema(conn):
                 id SERIAL PRIMARY KEY,
                 reportid integer REFERENCES report (id) ON DELETE CASCADE ON UPDATE CASCADE,
                 version text,
+                passed boolean,
+                status text,
                 errors integer,
                 aborts integer
             );
@@ -165,7 +168,6 @@ async def get_reports(
 ):
     account = get_current_account(await security(request), conn)
     current_subject, publickey, roles = account
-    print(subject, current_subject, limit, skip)
     if subject is None:
         subject = current_subject
     elif subject != current_subject and ROLES['read_any'] & roles == 0:
@@ -235,11 +237,11 @@ async def post_report(
         for version, vdata in rundata['versions'].items():
             cur.execute(
                 '''
-                INSERT INTO result (reportid, version, errors, aborts)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO result (reportid, version, passed, status, errors, aborts)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 RETURNING id;
                 ''',
-                (reportid, version, vdata['errors'], vdata['aborts']),
+                (reportid, version, vdata['passed'], vdata['status'], vdata['errors'], vdata['aborts']),
             )
             resultid, = cur.fetchone()
             for invocation in vdata.get('invocations', ()):
@@ -251,6 +253,35 @@ async def post_report(
                     (resultid, invocation_ids[invocation]),
                 )
     conn.commit()
+
+
+@app.get("/status/{subject}")
+async def get_status(
+    request: Request,
+    subject: str,
+    conn: psycopg2.extensions.connection = Depends(get_conn),
+):
+    # note: text/html will be the default, but let's start with json to get the logic right
+    accept = request.headers['accept']
+    if 'application/json' not in accept and '*/*' not in accept:
+        raise HTTPException(status_code=500, detail="client needs to accept application/json")
+    account = get_current_account(await optional_security(request), conn)
+    if account:
+        current_subject, publickey, roles = account
+    else:
+        current_subject, publickey, roles = None, None, 0
+    is_privileged = subject == current_subject or ROLES['read_any'] & roles != 0
+    with conn.cursor() as cur:
+        # fetch results for all versions within the relevant timeframe
+        cur.execute(
+            '''
+            SELECT scope, version, passed, status, errors, aborts
+            FROM result JOIN report ON result.reportid = report.id
+            WHERE subject = %s AND checked_at >= %s;
+            ''',
+            (subject, datetime.now() - WINDOW),
+        )
+        return [row for row in cur.fetchall()]
 
 
 if __name__ == "__main__":
