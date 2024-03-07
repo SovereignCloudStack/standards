@@ -43,7 +43,7 @@ An `Incremental` is used in combination with other identifiers to identify a sub
 
 #### SeverityValue
 
-A `SeverityValue` is an unsiged integer ranging from 0 to 100 inclusively. It MUST be utilized by an `Impact` when referencing a `Component` to gauge the severity of the impact on that component. It MUST NOT be added to an `Impact` when referencing an `Incident`. While being described as an unsiged integer, implementing this value MAY not require it to be an uint data type in any form, because its range even fits in a signed int8 (byte) data type.
+A `SeverityValue` is an unsiged integer ranging from 0 to 100 inclusively. It MUST be utilized by an `Impact` when referenced by a `Component` to gauge the severity of the impact on that component. It MUST NOT be added to an `Impact` when referenced by an `Incident`. While being described as an unsiged integer, implementing this value MAY not require it to be an uint data type in any form, because its range even fits in a signed int8 (byte) data type.
 
 ### API objects
 
@@ -86,7 +86,7 @@ An impact defines the relation between an incident and a component. A component 
 
 To reflect this, each component and incident can have a list of impacts, stating the type of impact and a reference to the incident or component, it refers to.
 
-Furthermore, a `SeverityValue` MUST be supplied to the `Impact` when referencing a `Component`, to gauge the impact's severity on that component.
+Furthermore, a `SeverityValue` MUST be supplied to the `Impact` when referenced by a `Component`, to gauge the impact's severity on that component.
 
 ### Severity
 
