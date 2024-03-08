@@ -128,13 +128,5 @@ The user may choose to use the `virtio-rng` device via `rngd`.
 Compute nodes must use CPUs that offer instructions for accessing
 entropy (such as RDSEED or RDRAND on x86_64 or RNDR on arm64), and
 these instructions may not be filtered by the hypervisor.
-If this requirement cannot be verified directly, then at least the
-following two conditions must be satisfied in a virtual instance:
-
-1. The special file `/proc/sys/kernel/random/entropy_avail` must contain
-the value 256 (pinned since kernel 5.18).
-
-2. The number of FIPS 140-2 failures must not exceed 3 out of 1000 blocks
-tested, as determined by `cat /dev/random | rngtest -c 1000` .
 
 Compute nodes may provide a HRNG via `rngd`.
