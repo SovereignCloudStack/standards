@@ -24,10 +24,6 @@ import yaml
 # | `replaced_by`   | RECOMMENDED if `status` is `Deprecated` or `Rejected`, FORBIDDEN otherwise | List of documents which replace this document.                                        |
 
 UNDEFINED = object()
-# the template files are whitelisted because they do not conform to the naming scheme
-NAMES_WHITELIST = (
-    "scs-XXXX-vN-template.md",
-)
 
 
 def optional(predicate):
@@ -73,18 +69,18 @@ class Checker:
         print(f"ERROR: {s}", file=sys.stderr)
         self.errors += 1
 
-    def check_name(self, name, whitelist=NAMES_WHITELIST):
+    def check_name(self, name):
         if not name.startswith('scs-'):
-            return
-        if name in whitelist:
             return
         components = name.split('-')
         if len(components) < 4:
             self.emit(f"document name must have at least four components separated by '-': {name}")
             return
-        if len(components[1]) != 4 or not components[1].isnumeric():
+        doc_no = components[1]
+        v_no = components[2][1:]
+        if len(doc_no) != 4 or not (doc_no.isnumeric() or doc_no.lower() == 'xxxx'):
             self.emit(f"document code must have format NNNN, found {components[1]}")
-        if components[2][:1] not in ("v", "w") or not components[2][1:].isnumeric():
+        if components[2][:1] not in ("v", "w") or not (v_no.isnumeric() or v_no.upper() == 'N'):
             self.emit(f"document version must have format vN or wN, found: {components[2]}")
 
     def check_names(self, mds):
