@@ -48,6 +48,16 @@ More details about this can be found in the ["SCS Flavor Naming Standard"](https
 of this document. Special attention is required for the optional extension part, which doesn't need
 to be used.
 
+In order to further indicate an `SCS` flavor, `extra_specs` MUST be set for the flavors, as described in the
+["SCS Standard Flavors and Properties" Standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0103-v1-standard-flavors.md).
+
+| Name           | Value                                                                        |
+|----------------|------------------------------------------------------------------------------|
+| scs:name-v1    | recommended name, but with each dash AFTER the first one replaced by a colon |
+| scs:name-v2    | recommended name                                                             |
+| scs:cpu-type   | `shared-core` or `crowded-core`                                              |
+| scs:disk0-type | not set or some disk type (e.g. `ssd`                                        |
+
 Additionally, there are a number of mandatory and recommended (optional) flavors that need to be available
 according to ["SCS standard flavors and properties" standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0103-v1-standard-flavors.md).
 
@@ -122,10 +132,10 @@ More information about these image properties can be found in the [OpenStack Gla
 | hw_pmu                    | Recommended | Emulation of vPMU (performance monitoring unit)       | bool                                                          |
 | hw_video_ram              | Recommended | maximum RAM for video image                           | int (MB)                                                      |
 | hw_vif_multiqueue_enabled | Recommended | Equals queues with guest vCPUs                        | bool                                                          |
-| replace_frequency         | Recommended | How often image must at least be replaced             | yearly, quaterly, monthly, weekly, daily, critical bug, never |
-| provided_until            | Recommended | How long image with this name will be provided        | YYYY-MM-DD                                                    |
-| hotfix_hours              | Recommended | Time until critical security issues are dealt with    | Hours                                                         |
-| uuid_validity             | Recommended | Time this image will be referencable with this UUID   | none, last-N, YYYY-MM-DD, notice, forever                     |
+| replace_frequency         | Mandatory   | How often image must at least be replaced             | yearly, quaterly, monthly, weekly, daily, critical bug, never |
+| provided_until            | Mandatory   | How long image with this name will be provided        | YYYY-MM-DD                                                    |
+| hotfix_hours              | Optional    | Time until critical security issues are dealt with    | Hours                                                         |
+| uuid_validity             | Mandatory   | Time this image will be referencable with this UUID   | none, last-N, YYYY-MM-DD, notice, forever                     |
 | image_source              | Mandatory   | URL to download the image                             | URL                                                           |
 | image_description         | Mandatory   | URL with release notes or human-readable data         | URL or text                                                   |
 | image_build_date          | Mandatory   |                                                       | YYYY-MM-DD [hh:mm[:ss]]                                       |
