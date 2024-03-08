@@ -13,11 +13,9 @@ restrictions); for further information, see the log messages on various channels
     INFO      for violations of recommendations,
     DEBUG     for background information and problems that don't hinder the test.
 
-The K8s clusters provided in a kubeconfig are checked. The kubeconfig
-must provide connection details for the clusters to be tested via
-the contexts "stable", "oldstable", "oldoldstable" and "oldoldoldstable",
-depending on how many upstream K8s releases are currently supported.
-It is determined if the version on these clusters is still inside
+This script only checks one given cluster, so it doesn't check whether multiple
+k8s branches are being offered.
+It is determined if the version on the cluster is still inside
 the recency window, which is determined by the standard to be 4 months
 for minor versions (for the stable cluster) and 1 week for patch versions.
 An exception are versions with critical CVEs, which should be replaced on
@@ -25,6 +23,7 @@ a shorter notice.
 
 (c) Hannes Baum <hannes.baum@cloudandheat.com>, 6/2023
 (c) Martin Morgenstern <martin.morgenstern@cloudandheat.com>, 2/2024
+(c) Matthias Büchse <matthias.buechse@cloudandheat.com>, 3/2024
 License: CC-BY-SA 4.0
 """
 
@@ -39,6 +38,7 @@ import getopt
 import kubernetes_asyncio
 import logging
 import logging.config
+import os.path
 import re
 import requests
 import sys
@@ -52,6 +52,7 @@ CVE_SEVERITY = 8  # CRITICAL
 
 HERE = Path(__file__).parent
 EOLDATA_FILE = "k8s-eol-data.yml"
+DEFAULT_CONFIG_PATH = "./config.yaml"
 
 logging_config = {
     "level": "INFO",
@@ -95,8 +96,9 @@ class HelpException(BaseException):
 
 
 class Config:
-    config_path = "./config.yaml"
+    config_path = None
     kubeconfig = None
+    context = None
     logging = None
 
 
@@ -104,14 +106,14 @@ def print_usage():
     print("""
 K8s Version Policy Compliance Check
 
-Usage: k8s_version_policy.py [-h] [-c|--config PATH/TO/CONFIG] -k|--kubeconfig PATH/TO/KUBECONFIG
+Usage: k8s_version_policy.py [-h] -k|--kubeconfig PATH/TO/KUBECONFIG [--context CONTEXT]
 
-The K8s version policy check returns 0 if the versions of the tested clusters are still acceptable, otherwise
-it returns 2 for an out-of date version or 3 if the used version should be updated due to a highly critical CVE.
-It returns 4 if a supported upstream K8s release is missing.
+This tool checks whether the given cluster conforms to the SCS k8s version policy. It checks one
+cluster only, so it doesn't check whether multiple k8s branches are offered. The return code
+will be 0 precisely when all attempted checks are passed; otherwise check log messages.
 
-    -c/--config PATH/TO/CONFIG         - Path to the config file of the test script
     -k/--kubeconfig PATH/TO/KUBECONFIG - Path to the kubeconfig of the server we want to check
+    --context CONTEXT                  - Optional: kubeconfig context to use
     -h                                 - Output help
 """)
 
@@ -121,7 +123,7 @@ def parse_arguments(argv):
     config = Config()
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:k:h", ["config=", "kubeconfig=", "help"])
+        opts, args = getopt.gnu_getopt(argv, "c:k:h", ["config=", "kubeconfig=", "help", "context="])
     except getopt.GetoptError:
         raise ConfigException
 
@@ -132,6 +134,8 @@ def parse_arguments(argv):
             config.config_path = opt[1]
         if opt[0] == "-k" or opt[0] == "--kubeconfig":
             config.kubeconfig = opt[1]
+        if opt[0] == "--context":
+            config.context = opt[1]
 
     return config
 
@@ -152,9 +156,13 @@ def setup_logging(config_log):
 def initialize_config(config):
     """Initialize the configuration for the test script"""
 
+    # if config path isn't passed explicitly, then don't produce warning if the file doesn't exist
+    if not config.config_path and os.path.exists(DEFAULT_CONFIG_PATH):
+        config.config_path = DEFAULT_CONFIG_PATH
     try:
-        with open(config.config_path, "r") as f:
-            config.logging = yaml.safe_load(f)['logging']
+        if config.config_path:
+            with open(config.config_path, "r") as f:
+                config.logging = yaml.safe_load(f)['logging']
     except OSError:
         logger.warning(f"The config file under {config.config_path} couldn't be found, "
                        f"falling back to the default config.")
@@ -479,62 +487,39 @@ async def main(argv):
     async with aiohttp.ClientSession(connector=connector) as session:
         cve_affected_ranges = await collect_cve_versions(session)
 
-    contexts = ["stable", "oldstable", "oldoldstable", "oldoldoldstable"]
-    seen_branches = set()
-
     try:
-        for context in contexts:
-            logger.info("Checking cluster of kubeconfig context '%s'.", context)
-            cluster = await get_k8s_cluster_info(config.kubeconfig, context)
-            cluster_branch = cluster.version.branch
-            seen_branches.add(cluster_branch)
+        logger.info("Checking cluster of kubeconfig context '%s'.", config.context)
+        cluster = await get_k8s_cluster_info(config.kubeconfig, config.context)
+        cluster_branch = cluster.version.branch
 
-            # allow older k8s branches, but not for the first context (stable)
-            allow_older = context != contexts[0]
+        if cluster_branch not in supported_branches:
+            logger.error("The K8s cluster version %s of cluster '%s' is already EOL.", cluster.version, cluster.name)
 
-            if check_k8s_version_recency(cluster.version, cve_affected_ranges, allow_older):
-                logger.info(
-                    "The K8s cluster version %s of cluster '%s' is still in the recency time window.",
-                    cluster.version,
-                    cluster.name,
-                )
-            else:
+        # XXX: When should we pass allow_older=True? I don't see it in the standard
+        if check_k8s_version_recency(cluster.version, cve_affected_ranges):
+            logger.info(
+                "The K8s cluster version %s of cluster '%s' is still in the recency time window.",
+                cluster.version,
+                cluster.name,
+            )
+        else:
+            logger.error(
+                "The K8s cluster version %s of cluster '%s' is outdated according to the standard.",
+                cluster.version,
+                cluster.name,
+            )
+
+        for affected_range in cve_affected_ranges:
+            if cluster.version in affected_range:
                 logger.error(
-                    "The K8s cluster version %s of cluster '%s' is outdated according to the standard.",
+                    "The K8s cluster version %s of cluster '%s' is an outdated version with a possible CRITICAL CVE.",
                     cluster.version,
                     cluster.name,
                 )
-
-            for affected_range in cve_affected_ranges:
-                if cluster.version in affected_range:
-                    logger.error(
-                        "The K8s cluster version %s of cluster '%s' is an outdated version with a possible CRITICAL CVE.",
-                        cluster.version,
-                        cluster.name,
-                    )
-
-            if branch_infos[cluster_branch.previous()].is_eol():
-                logger.info("Skipping the next context because the cluster it should reference is already EOL.")
-                break
     except BaseException as e:
         logger.critical("%s", e)
         logger.debug("Exception info", exc_info=True)
         return 1
-
-    # Now check if we saw all upstream supported K8s branches. Keep in mind
-    # that providers have a cadence time to update the "stable" context to the
-    # newest K8s release branch. The corresponding window was already checked
-    # above.
-    expected_branches = set(supported_branches)
-    newest_branch = max(supported_branches)
-    newest_branch_seen = max(seen_branches)
-    if newest_branch != newest_branch_seen:
-        expected_branches.remove(newest_branch)
-
-    missing = expected_branches - seen_branches
-    if missing:
-        listing = " ".join(f"{branch}" for branch in missing)
-        logger.error("The following upstream branches should be supported but were missing: %s", listing)
 
     c = counting_handler.bylevel
     logger.debug(
