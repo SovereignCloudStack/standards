@@ -10,7 +10,7 @@ date: DD-03-2024
 ## Introduction
 
 Security Groups in IaaS (OpenStack) are sets of ip table rules, that are applied to ports which connect a VM to a network.
-In contrast to other resources like flavors or volume types that are always publicly accessable, or images that can be both publically and private, security groups are always bound to the project level.
+In contrast to other resources like flavors or volume types that are always publicly accessable, or images that can be both public and private, security groups are always bound to the project level.
 That creates some diffucilties for a possible standard of Security Groups, which are discussed in this document.
 
 ## Terminology
@@ -38,8 +38,8 @@ Like every other security group, the default group is also project bound.
 That means, it can be edited as required by project members.
 
 When thinking about standardizing security groups, the goal is to automatically have more than one default security group.
-But to also have pre-defined groups with predefined roles for certain and often used cases as e.g. ssh, http and https (maybe also icmp).
-Those groups should best be available to all projects and pre-defined by administrators.
+But to also have predefined groups with predefined roles for certain and often used cases as e.g. ssh, http and https (maybe also icmp).
+Those groups should best be available to all projects and predefined by administrators.
 
 As security groups are project bound and there is no native way to them to be shared, we are left with two options:
 
@@ -65,7 +65,7 @@ stack@devstack:~/devstack$ openstack network rbac create --target-all-projects -
 +-------------------+--------------------------------------+
 ```
 
-This would fulfill our goal to grant access to pre-defined security groups fro all projects and all groups recieved as shared do not count into the projects quota for security groups.
+This would fulfill our goal to grant access to predefined security groups for all projects and all groups recieved as shared do not count into the projects quota for security groups.
 But there are a few downsides to this:
 
 1. This should be strictly bound to the admin: no other user should be able to share security groups so to not confuse user.
@@ -111,7 +111,7 @@ The biggest downside: As soon as a security group is shared, everyone from every
 Using and adhering the project scope of the security groups has the consequence, that:
 
 1. either an admin has to set up security groups for each project
-2. or the scs only provides a guide on how to setup and use some recommended security groups.
+2. or the SCS project only provides a guide on how to setup and use some recommended security groups.
 
 As users are allowed to, will and should edit their security groups, there is no way to ensure, that a certain set of security groups with certain rules is always present in a project.
 So packing an extra burden on admins is unreasonable.
