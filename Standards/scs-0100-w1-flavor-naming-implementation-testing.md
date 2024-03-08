@@ -17,7 +17,7 @@ will only cover v3, because v1 and v2 are already obsolete by the time of writin
 
 ## Implementation Notes
 
-Every flavor whose name starts with `scs-` must conform with the naming scheme laid down in the standard.
+Every flavor whose name starts with `SCS-` must conform with the naming scheme laid down in the standard.
 
 ### Operational Tooling
 
@@ -50,7 +50,7 @@ of flavors in one go, given a YAML description of this set.
 
 The following items MUST be detected and reported as an error:
 
-- any syntax error in a name starting with `scs-`,
+- any syntax error in a name starting with `SCS-`,
 - any mismatch between any immediately discoverable property of a flavor (currently, CPU, RAM and disk size)
   and the meaning of its name (which is usually a lower bound), such as the CPU generation or hypervisor.
 
