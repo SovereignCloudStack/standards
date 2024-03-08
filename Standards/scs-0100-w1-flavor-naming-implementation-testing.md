@@ -23,10 +23,14 @@ Every flavor whose name starts with `scs-` must conform with the naming scheme l
 
 #### Syntax Check
 
-The [test suite](../Tests/iaas/flavor-naming) comes with a handy
-[command-line utility](../Tests/iaas/flavor-naming/cli.py) that can be used to validate flavor names, to
+The [test suite](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming)
+comes with a handy
+[command-line utility](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming/cli.py)
+that can be used to validate flavor names, to
 interactively construct a flavor name via a questionnaire, and to generate prose descriptions for given
-flavor names. See the [README](../Tests/iaas/flavor-naming/README.md) for more details.
+flavor names. See the
+[README](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming/README.md)
+for more details.
 
 The functionality of this script is also (partially) exposed via the web page
 <https://flavors.scs.community/>.
@@ -60,7 +64,7 @@ None so far.
 
 ### Implementation
 
-The script [`flavor-names-openstack.py`](../Tests/iaas/flavor-naming/flavor-names-openstack.py)
+The script [`flavor-names-openstack.py`](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming/flavor-names-openstack.py)
 talks to the OpenStack API of the cloud specified by the `OS_CLOUD` environment and queries properties and
 checks the names for standards compliance.
 
