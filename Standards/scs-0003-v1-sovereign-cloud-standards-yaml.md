@@ -148,6 +148,7 @@ Every list of standards consists of several standards that – altogether – de
 | `args`            | String | _Optional_ command-line arguments to be passed to the `check_tool` (may use variables)                                                   | `-v -k {kubeconfig}`   |
 | `condition`       | String | _Optionally_ overrides the per-standard condition (`mandatory` or `optional`)                                                            | _optional_             |
 | `classification`  | String | One of: `light` (_default_), `medium`, `heavy`; describes the resource usage of the script; used to select an appropiate test interval   | _heavy_                |
+| `section`         | String | _Optional_ what section to associate this check with (sections can be checked in isolation); default: equal to classification            | _flavor-name syntax_   |
 
 As mentioned, variables may be used within `env` and `args`; they are enclosed in single braces, like so: `{var}`.
 If a brace is desired, it needs to be doubled: `{{` will be turned into `{`. When the main check tool is run,
@@ -176,6 +177,8 @@ versions:
           - executable: flavor-name-check.py
             env:
               OS_CLOUD: "{os_cloud}"
+            classification: light
+            section: flavor-name-check
       - name: Image metadata
         url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
         condition: mandatory
