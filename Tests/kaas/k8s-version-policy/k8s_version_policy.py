@@ -96,10 +96,9 @@ class HelpException(BaseException):
 
 
 class Config:
-    config_path = None
     kubeconfig = None
     context = None
-    logging = None
+    logging = logging_config
 
 
 def print_usage():
@@ -113,67 +112,45 @@ cluster only, so it doesn't check whether multiple k8s branches are offered. The
 will be 0 precisely when all attempted checks are passed; otherwise check log messages.
 
     -k/--kubeconfig PATH/TO/KUBECONFIG - Path to the kubeconfig of the server we want to check
-    --context CONTEXT                  - Optional: kubeconfig context to use
+    -C/--context CONTEXT               - Optional: kubeconfig context to use
     -h                                 - Output help
 """)
 
 
 def parse_arguments(argv):
     """Parse cli arguments from the script call"""
-    config = Config()
-
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:k:h", ["config=", "kubeconfig=", "help", "context="])
+        opts, args = getopt.gnu_getopt(argv, "C:k:h", ["context=", "kubeconfig=", "help"])
     except getopt.GetoptError:
         raise ConfigException
 
+    config = Config()
     for opt in opts:
         if opt[0] == "-h" or opt[0] == "--help":
             raise HelpException
-        if opt[0] == "-c" or opt[0] == "--config":
-            config.config_path = opt[1]
         if opt[0] == "-k" or opt[0] == "--kubeconfig":
             config.kubeconfig = opt[1]
-        if opt[0] == "--context":
+        if opt[0] == "-C" or opt[0] == "--context":
             config.context = opt[1]
-
     return config
 
 
 def setup_logging(config_log):
-
     logging.config.dictConfig(config_log)
     loggers = [
         logging.getLogger(name)
         for name in logging.root.manager.loggerDict
         if not logging.getLogger(name).level
     ]
-
     for log in loggers:
         log.setLevel(config_log['level'])
 
 
 def initialize_config(config):
     """Initialize the configuration for the test script"""
-
-    # if config path isn't passed explicitly, then don't produce warning if the file doesn't exist
-    if not config.config_path and os.path.exists(DEFAULT_CONFIG_PATH):
-        config.config_path = DEFAULT_CONFIG_PATH
-    try:
-        if config.config_path:
-            with open(config.config_path, "r") as f:
-                config.logging = yaml.safe_load(f)['logging']
-    except OSError:
-        logger.warning(f"The config file under {config.config_path} couldn't be found, "
-                       f"falling back to the default config.")
-    finally:
-        # Setup logging if the config file with the relevant information could be loaded before
-        # Otherwise, we initialize logging with the included literal
-        setup_logging(config.logging or logging_config)
-
+    setup_logging(config.logging)
     if config.kubeconfig is None:
         raise ConfigException("A kubeconfig needs to be set in order to test a k8s cluster version.")
-
     return config
 
 
