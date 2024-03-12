@@ -38,7 +38,6 @@ import getopt
 import kubernetes_asyncio
 import logging
 import logging.config
-import os.path
 import re
 import requests
 import sys
