@@ -220,6 +220,19 @@ class K8sRelease:
         return datetime.now() - self.released_at
 
 
+def fetch_k8s_releases_data() -> list[dict]:
+    github_headers = {
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+    }
+
+    # Request the latest 100 releases (the next are not needed, since these versions are too old)
+    return requests.get(
+        "https://api.github.com/repos/kubernetes/kubernetes/releases?per_page=100",
+        headers=github_headers,
+    ).json()
+
+
 def parse_github_release_data(release_data: dict) -> K8sRelease:
     version = parse_version(release_data["tag_name"].split("-")[0])
     released_at = datetime.strptime(release_data["published_at"], "%Y-%m-%dT%H:%M:%SZ")
@@ -380,44 +393,32 @@ async def get_k8s_cluster_info(kubeconfig, context=None) -> ClusterInfo:
         return ClusterInfo(version, cluster_config.current_context['name'])
 
 
-def check_k8s_version_recency(my_version: K8sVersion, cve_version_list=None, allow_older=False) -> bool:
-    """Check a given K8s cluster version against the list of released versions in order to find out, if the version
+def check_k8s_version_recency(my_version: K8sVersion, releases_data: list[dict], cve_version_list=()) -> bool:
+    """Check a given K8s cluster version against the list of released versions in order to find out if the version
     is an accepted recent version according to the standard."""
-    if cve_version_list is None:
-        cve_version_list = list()
 
-    github_headers = {
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28"
-    }
-
-    # Request the latest 100 releases (the next are not needed, since these versions are too old)
-    releases_data = requests.get(
-        "https://api.github.com/repos/kubernetes/kubernetes/releases?per_page=100",
-        headers=github_headers,
-    ).json()
-
+    # iterate over all releases in the list, but only look at those whose branch matches
+    # we might break early assuming that the list is sorted somehow, but it is usually
+    # of bounded length (100), and the loop body not very expensive either
     for release_data in releases_data:
         if release_data['draft'] or release_data['prerelease']:
             continue
 
         release = parse_github_release_data(release_data)
-
-        # Check if the minor version is recent, but allow older versions if requested
-        # FIXME: this assumes k8s stays in 1.x version schema :(
-        if release.version.minor >= my_version.minor and not allow_older:
-            if release.age > MINOR_VERSION_CADENCE:
-                return False
-
-        if my_version.branch == release.version.branch and my_version.patch < release.version.patch:
-            if release.age > PATCH_VERSION_CADENCE:
-                return False
-
-            if release.version in cve_version_list and release.age > CVE_VERSION_CADENCE:
-                return False
-
-        if release.version.minor == (my_version.minor + 1) and release.version.patch == 0:
-            break
+        if my_version.branch != release.version.branch:
+            continue
+        if my_version.patch >= release.version.patch:
+            continue
+        # at this point `release` has the same major.minor, but higher patch than `my_version`
+        if release.age > PATCH_VERSION_CADENCE:
+            # whoops, the cluster should have been updated to his (or a higher version) already!
+            return False
+        if release.version in cve_version_list and release.age > CVE_VERSION_CADENCE:
+            # two FIXMEs:
+            # (a) can the `in` ever become true, when we have a version vs a set of ranges
+            # (b) if the release has a CVE, then there is no use if we updated to it?
+            # shouldn't we check for CVEs of my_version and then check whether the new one still has them?
+            return False
 
     return True
 
@@ -463,6 +464,7 @@ async def main(argv):
     connector = aiohttp.TCPConnector(limit=5)
     async with aiohttp.ClientSession(connector=connector) as session:
         cve_affected_ranges = await collect_cve_versions(session)
+    releases_data = fetch_k8s_releases_data()
 
     try:
         logger.info("Checking cluster of kubeconfig context '%s'.", config.context)
@@ -471,9 +473,7 @@ async def main(argv):
 
         if cluster_branch not in supported_branches:
             logger.error("The K8s cluster version %s of cluster '%s' is already EOL.", cluster.version, cluster.name)
-
-        # XXX: When should we pass allow_older=True? I don't see it in the standard
-        if check_k8s_version_recency(cluster.version, cve_affected_ranges):
+        elif check_k8s_version_recency(cluster.version, releases_data, cve_affected_ranges):
             logger.info(
                 "The K8s cluster version %s of cluster '%s' is still in the recency time window.",
                 cluster.version,
