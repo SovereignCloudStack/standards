@@ -48,7 +48,7 @@ As security groups are project bound and there is no native way to them to be sh
 
 ### Option 1: operator usage of network rbac
 
-The `network rbac` endpoint[^1] manages the possibitity to share and access certain network sepcific resources as security groups.
+The `network rbac` endpoint[^1] manages the possibitity to share and access certain network-specific resources such as security groups.
 For admins it is possible to use this endpoint to share a security group with ALL projects within the the cloud including ALL projects of ALL domains:
 
 ```bash
