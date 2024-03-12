@@ -34,7 +34,7 @@ def extract_feature_list(description, pattern=re.compile(r"\[scs:([^\[\]]*)\]"))
     the list [feat1, ..., featN] of substrings.
     """
     if not description:
-	      # The description can be "None" or empty - we need to catch this here
+        # The description can be "None" or empty - we need to catch this here
         # otherwise we will get a critical Error in the pattern matching
         return
     match = pattern.match(description)
