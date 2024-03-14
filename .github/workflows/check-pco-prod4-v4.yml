@@ -1,4 +1,4 @@
-name: "Compliance of pco-prod1"
+name: "Compliance IaaS v4 of pco-prod4"
 
 on:
   # Trigger compliance check every day at 4:30 UTC
@@ -11,13 +11,13 @@ on:
       - completed
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-  
+
 jobs:
-  check-pco-prod1:
-    uses: ./.github/workflows/scs-compliance-check.yml
+  check-pco-prod4:
+    uses: ./.github/workflows/scs-compliance-check-with-application-credential.yml
     with:
-      version: v1
+      version: v4
       layer: iaas
-      cloud: "pco-prod1"
-      secret_name: "OS_PASSWORD_PCOPROD1"
+      cloud: "pco-prod4"
+      secret_name: "OS_PASSWORD_PCOPROD4"
     secrets: inherit
