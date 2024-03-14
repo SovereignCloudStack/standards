@@ -38,17 +38,20 @@ Like every other security group, the default group is also project bound.
 That means, it can be edited as required by project members.
 By design of OpenStack and when not changed the default rules in the default security group block ALL incoming traffic and only allow outgoing traffic[^1].
 
-[^1]: https://docs.openstack.org/nova/latest/user/security-groups.html
+[^1]: [Security Group Overview](https://docs.openstack.org/nova/latest/user/security-groups.html)
 
 ### Reasons for and against a standard for security groups
+
 Considering having most likely similiar security groups within different projects, it might make sense to standardize a few security groups for often used cases like ssh, http, https and maybe icmp.
 What speaks for standardizing a certain set of security groups:
+
 1. Having a set of correctly configured security groups could reduce misconfiguration from users
 2. Re-using correctly configured security groups saves time for users
 3. Auditing security groups would be way easier for operators when helping customers
 4. The configuration for the SGs can be done by networking experts, which may result in a higher security level as when users without expertise configure them
 
 What are the downsides of having a set of standardized security groups:
+
 1. A bug or misconfiguration is a single point of failure for ALL customers
 2. Users might apply the wrong security group to their port or VM because they lack the domain knowledge, unknowingly opening themselves to attacks
 3. Users will not inspect such default security groups: this may result in applying a wrong group and opening traffic too much
@@ -56,10 +59,12 @@ What are the downsides of having a set of standardized security groups:
 5. Providing default groups could have the effect of stopping customers to think about their specific security needs and instead just copying default groups and or rules
 
 This leads to a conclusion, that a set of default security groups is only more valuable than harmful for users:
+
 1. when the rules in those groups are configured correctly
 2. and when the users still have to think about their network security on their own for each VM they start
 
 ### Technical limitations
+
 As security groups are project bound and there is no native way to them to be shared, we are left with three options:
 
 1. To use another endpoint `network rbac` to share security groups among different projects.
@@ -71,7 +76,7 @@ As security groups are project bound and there is no native way to them to be sh
 For every project that is created there will also be a project-specific default security group created.
 The default rules for the default groups and all other newly created groups can be looked up like this:
 
-```
+```bash
 stack@devstack:~/devstack$ openstack default security group rule list
 +------------------------+-------------+-----------+-----------+------------+-----------+-----------------------+----------------------+--------------------------------+-------------------------------+
 | ID                     | IP Protocol | Ethertype | IP Range  | Port Range | Direction | Remote Security Group | Remote Address Group | Used in default Security Group | Used in custom Security Group |
