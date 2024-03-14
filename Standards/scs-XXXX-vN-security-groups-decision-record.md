@@ -36,19 +36,63 @@ While creating a VM and also later on, one or more security groups can be added 
 When there is no security group specified the default security group will always be added.
 Like every other security group, the default group is also project bound.
 That means, it can be edited as required by project members.
+By design of OpenStack and when not changed the default rules in the default security group block ALL incoming traffic and only allow outgoing traffic[^1].
 
-When thinking about standardizing security groups, the goal is to automatically have more than one default security group.
-But to also have predefined groups with predefined roles for certain and often used cases as e.g. ssh, http and https (maybe also icmp).
-Those groups should best be available to all projects and predefined by administrators.
+[^1]: https://docs.openstack.org/nova/latest/user/security-groups.html
 
-As security groups are project bound and there is no native way to them to be shared, we are left with two options:
+### Reasons for and against a standard for security groups
+Considering having most likely similiar security groups within different projects, it might make sense to standardize a few security groups for often used cases like ssh, http, https and maybe icmp.
+What speaks for standardizing a certain set of security groups:
+1. Having a set of correctly configured security groups could reduce misconfiguration from users
+2. Re-using correctly configured security groups saves time for users
+3. Auditing security groups would be way easier for operators when helping customers
+4. The configuration for the SGs can be done by networking experts, which may result in a higher security level as when users without expertise configure them
+
+What are the downsides of having a set of standardized security groups:
+1. A bug or misconfiguration is a single point of failure for ALL customers
+2. Users might apply the wrong security group to their port or VM because they lack the domain knowledge, unknowingly opening themselves to attacks
+3. Users will not inspect such default security groups: this may result in applying a wrong group and opening traffic too much
+4. the central authority managing the groups does not necessarily know the usecase of the user, the user/operator must know best what kind of security their workload needs. What is a necessary port for 99% of deployments might be a security disaster for my deployment
+5. Providing default groups could have the effect of stopping customers to think about their specific security needs and instead just copying default groups and or rules
+
+This leads to a conclusion, that a set of default security groups is only more valuable than harmful for users:
+1. when the rules in those groups are configured correctly
+2. and when the users still have to think about their network security on their own for each VM they start
+
+### Technical limitations
+As security groups are project bound and there is no native way to them to be shared, we are left with three options:
 
 1. To use another endpoint `network rbac` to share security groups among different projects.
 2. To adhere to the project scope of security groups and only give documentation about recommended security groups to users.
+3. To only add a tutorial on how to create your own security group in general, how to detect what kind of network permissions your project needs for most frequent (linux) workloads and how to craft your own security groups in a secure way.
+
+### Option 0: Pre-Requirement: default rules for the (default) security group
+
+For every project that is created there will also be a project-specific default security group created.
+The default rules for the default groups and all other newly created groups can be looked up like this:
+
+```
+stack@devstack:~/devstack$ openstack default security group rule list
++------------------------+-------------+-----------+-----------+------------+-----------+-----------------------+----------------------+--------------------------------+-------------------------------+
+| ID                     | IP Protocol | Ethertype | IP Range  | Port Range | Direction | Remote Security Group | Remote Address Group | Used in default Security Group | Used in custom Security Group |
++------------------------+-------------+-----------+-----------+------------+-----------+-----------------------+----------------------+--------------------------------+-------------------------------+
+| 47b929fd-9b39-4f22-    | None        | IPv6      | ::/0      |            | egress    | None                  | None                 | True                           | True                          |
+| abc5-7d4f64d10909      |             |           |           |            |           |                       |                      |                                |                               |
+| 6ace51bb-5258-45ab-    | None        | IPv6      | ::/0      |            | ingress   | PARENT                | None                 | True                           | False                         |
+| 9ba9-1efbebfb086b      |             |           |           |            |           |                       |                      |                                |                               |
+| 92a79600-5358-4fef-    | None        | IPv4      | 0.0.0.0/0 |            | egress    | None                  | None                 | True                           | True                          |
+| a390-822665f46070      |             |           |           |            |           |                       |                      |                                |                               |
+| 997bb0c2-652e-4d1f-    | None        | IPv4      | 0.0.0.0/0 |            | ingress   | PARENT                | None                 | True                           | False                         |
+| b910-e12c89f88b44      |             |           |           |            |           |                       |                      |                                |                               |
++------------------------+-------------+-----------+-----------+------------+-----------+-----------------------+----------------------+--------------------------------+-------------------------------+
+```
+
+Those rules can be edited, which may pose a security risk for customers consuming the default security group.
+This should be adressed as an pre-requirement [here](https://github.com/SovereignCloudStack/standards/issues/521).
 
 ### Option 1: operator usage of network rbac
 
-The `network rbac` endpoint[^1] manages the possibitity to share and access certain network-specific resources such as security groups.
+The `network rbac` endpoint[^2] manages the possibitity to share and access certain network-specific resources such as security groups.
 For admins it is possible to use this endpoint to share a security group with ALL projects within the the cloud including ALL projects of ALL domains:
 
 ```bash
@@ -104,7 +148,7 @@ stack@devstack:~/devstack$ openstack network rbac show bc22a865-46f9-4cd2-80af-3
 
 The biggest downside: As soon as a security group is shared, everyone from every project, can edit the rules of this group.
 
-[^1]: [Neutron RBAC](https://docs.openstack.org/neutron/latest/admin/config-rbac.html)
+[^2]: [Neutron RBAC](https://docs.openstack.org/neutron/latest/admin/config-rbac.html)
 
 ### Option 2: stay project-scoped
 
@@ -116,6 +160,11 @@ Using and adhering the project scope of the security groups has the consequence,
 As users are allowed to, will and should edit their security groups, there is no way to ensure, that a certain set of security groups with certain rules is always present in a project.
 So packing an extra burden on admins is unreasonable.
 The option to give a guide and recommend a few security groups however is a quite good option.
+
+### Option 3: security-focused guide
+
+Instead of providing users with a set of default groups or the knowledge about how to create default groups, there could be a guide created that focuses on the crafting of a security group in a secure way.
+That would include identifying what kind of network permission a single VM needs and how to proceed after gathering all requirements of the customers workload.
 
 ## Decision
 
