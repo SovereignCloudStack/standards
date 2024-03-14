@@ -410,7 +410,7 @@ def check_k8s_version_recency(my_version: K8sVersion, releases_data: list[dict],
             continue
         # at this point `release` has the same major.minor, but higher patch than `my_version`
         if release.age > PATCH_VERSION_CADENCE:
-            # whoops, the cluster should have been updated to his (or a higher version) already!
+            # whoops, the cluster should have been updated to this (or a higher version) already!
             return False
         if my_version.version in cve_version_list and release.age > CVE_VERSION_CADENCE:
             # -- three FIXMEs:
