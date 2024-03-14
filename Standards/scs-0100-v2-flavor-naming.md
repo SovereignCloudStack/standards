@@ -5,7 +5,7 @@ status: Deprecated
 track: IaaS
 replaces: scs-0100-v1-flavor-naming.md
 stabilized_at: 2023-02-21
-obsoleted_at: 2023-11-30
+deprecated_at: 2023-11-30
 ---
 
 ## Introduction

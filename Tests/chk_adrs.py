@@ -18,7 +18,7 @@ import yaml
 # | `type`          | REQUIRED                                                                   | one of `Procedural`, `Standard`, or `Decision Record`                                 |
 # | `status`        | REQUIRED                                                                   | one of `Proposal`, `Draft`, `Stable`, `Deprecated`, or `Rejected`                     |
 # | `track`         | REQUIRED                                                                   | one of `Global`, `IaaS`, `KaaS`, `IAM`, `Ops`                                         |
-# | `obsoleted_at`  | REQUIRED if `status` is `Deprecated`                                       | ISO formatted date indicating the date after which the deprecation is in effect       |
+# | `deprecated_at` | REQUIRED if `status` is `Deprecated`                                       | ISO formatted date indicating the date after which the deprecation is in effect       |
 # | `stabilized_at` | REQUIRED if `status` was ever `Stable`                                     | ISO formatted date indicating the date after which the document was considered stable |
 # | `rejected_at`   | REQUIRED if `status` is `Rejected`                                         | ISO formatted date indicating the date on which the document was rejected             |
 # | `replaced_by`   | RECOMMENDED if `status` is `Deprecated` or `Rejected`, FORBIDDEN otherwise | List of documents which replace this document.                                        |
@@ -44,7 +44,7 @@ FRONT_MATTER_KEYS = {
     "type": ("Procedural", "Standard", "Decision Record").__contains__,
     "status": ("Proposal", "Draft", "Stable", "Deprecated", "Rejected").__contains__,
     "track": ("Global", "IaaS", "KaaS", "IAM", "Ops").__contains__,
-    "obsoleted_at": optional(iso_date),
+    "deprecated_at": optional(iso_date),
     "stabilized_at": optional(iso_date),
     "rejected_at": optional(iso_date),
 }
@@ -116,7 +116,7 @@ class Checker:
         status = front.get("status")
         if "replaced_by" in front and status not in ("Deprecated", "Rejected"):
             self.emit(f"in {fn}: replaced_by is set, but status does not match")
-        if status == "Deprecated" and "obsoleted_at" not in front:
+        if status == "Deprecated" and "deprecated_at" not in front:
             self.emit(f"in {fn}: status is Deprecated, but deprecated_at date is missing")
         if status in ("Stable", "Deprecated") and "stabilized_at" not in front:
             self.emit(f"in {fn}: status is Stable or Deprecated, but stabilized_at date is missing")

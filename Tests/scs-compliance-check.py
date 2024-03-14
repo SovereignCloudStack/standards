@@ -34,7 +34,7 @@ import yaml
 # valid keywords for various parts of the spec, to be checked using `check_keywords`
 KEYWORDS = {
     'spec': ('name', 'url', 'versions', 'prerequisite', 'variables'),
-    'version': ('version', 'standards', 'stabilized_at', 'obsoleted_at'),
+    'version': ('version', 'standards', 'stabilized_at', 'deprecated_at'),
     'standard': ('check_tools', 'url', 'name', 'condition'),
     'checktool': ('executable', 'env', 'args', 'condition', 'classification'),
 }
@@ -237,9 +237,9 @@ def main(argv):
     for vd in spec["versions"]:
         check_keywords('version', vd)
         stb_date = vd.get("stabilized_at")
-        obs_date = vd.get("obsoleted_at")
+        dep_date = vd.get("deprecated_at")
         futuristic = not stb_date or config.checkdate < stb_date
-        outdated = obs_date and obs_date < config.checkdate
+        outdated = dep_date and dep_date < config.checkdate
         vr = vrs[vd["version"]] = {
             "status": outdated and "outdated" or futuristic and "preview" or "valid",
             "passed": False,
