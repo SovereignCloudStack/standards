@@ -37,6 +37,15 @@ clouds:
     region_name: "prod3"
     interface: "public"
     identity_api_version: 3
+  pco-prod4:
+    auth_type: "v3applicationcredential"
+    auth:
+      auth_url: https://prod4.api.pco.get-cloud.io:5000
+      #project_id: 6a97f8c649d342429cbe5d0f943602b0
+      application_credential_id: "11ecfb998b474b99ab044f5b20cb23d6"
+    region_name: "prod4"
+    interface: "public"
+    identity_api_version: 3
   wavestack:
     auth:
       auth_url: https://api.wavestack.de:5000
