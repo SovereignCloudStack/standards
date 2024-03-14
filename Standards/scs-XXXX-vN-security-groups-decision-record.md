@@ -10,8 +10,8 @@ date: DD-03-2024
 ## Introduction
 
 Security Groups in IaaS (OpenStack) are sets of ip table rules, that are applied to ports which connect a VM to a network.
-In contrast to other resources like flavors or volume types that are always publicly accessable, or images that can be both public and private, security groups are always bound to the project level.
-That creates some diffucilties for a possible standard of Security Groups, which are discussed in this document.
+In contrast to other resources like flavors or volume types that are always publicly accessible, or images that can be both public and private, security groups are always bound to the project level.
+That creates some difficulties for a possible standard of Security Groups, which are discussed in this document.
 
 ## Terminology
 
@@ -28,7 +28,7 @@ network rbac / neutron rbac
   These access controls will let administrators and users share neutron related resources with other projects.
 
 admin
-  The most powerful role in OpenStack. Only given to some Operators of the Cloud Infratructure.
+  The most powerful role in OpenStack. Only given to some Operators of the Cloud Infrastructure.
 
 ## Context
 
