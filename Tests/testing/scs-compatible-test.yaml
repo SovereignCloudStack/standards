@@ -29,7 +29,7 @@ versions:
         # Unfortunately, no wrapper to run refstack yet, needs to be added
   - version: v3
     stabilized_at: 2023-06-15
-    obsoleted_at: 2024-04-30
+    deprecated_at: 2024-04-30
     standards:
       - name: Flavor naming
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v3-flavor-naming.md
@@ -48,7 +48,7 @@ versions:
         # Unfortunately, no wrapper to run refstack yet, needs to be added
   - version: v2
     stabilized_at: 2023-03-20
-    obsoleted_at: 2024-04-30
+    deprecated_at: 2024-04-30
     standards:
       - name: Flavor naming
         url: https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0100-v2-flavor-naming.md
@@ -64,7 +64,7 @@ versions:
         condition: mandatory
   - version: v1
     stabilized_at: 2021-01-01
-    obsoleted_at: 2023-10-30
+    deprecated_at: 2023-10-30
     standards:
       - name: Flavor naming
         url: https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0100-v2-flavor-naming.md

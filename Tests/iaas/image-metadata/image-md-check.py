@@ -256,6 +256,7 @@ def main(argv):
             err += report_stdimage_coverage(images)
     except BaseException as e:
         print(f"CRITICAL: {e!r}")
+        return 1  # just return 1 because `err` need not be assigned yet
     return err
 
 

@@ -37,7 +37,7 @@ versions:
             args: -c {os_cloud} -d ./iaas/scs-0104-v1-images.yaml
   - version: v3
     stabilized_at: 2023-06-15
-    obsoleted_at: 2024-04-30
+    deprecated_at: 2024-04-30
     standards:
       - name: Flavor naming
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v3-flavor-naming.md
@@ -54,7 +54,7 @@ versions:
         url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
   - version: v2
     stabilized_at: 2023-03-23
-    obsoleted_at: 2023-11-30
+    deprecated_at: 2023-11-30
     standards:
       - name: Flavor naming
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v2-flavor-naming.md
@@ -70,7 +70,7 @@ versions:
         url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
   - version: v1
     stabilized_at: 2021-01-01
-    obsoleted_at: 2023-10-31
+    deprecated_at: 2023-10-31
     standards:
       - name: Flavor naming
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v1-flavor-naming.md
