@@ -22,10 +22,8 @@ import os.path
 import sys
 import shlex
 import getopt
-# import time
 import datetime
 import subprocess
-import copy
 from functools import partial
 from itertools import chain
 import yaml
@@ -196,7 +194,7 @@ def compute_result(num_abort, num_error):
         return -1  # equivalent to FAIL
     if num_abort:
         return 0  # equivalent to DNF
-    return 1  #  equivalent to PASS
+    return 1  # equivalent to PASS
 
 
 def main(argv):
