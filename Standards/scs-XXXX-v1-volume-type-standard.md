@@ -45,13 +45,13 @@ There is no sorting of aspects required. Every aspect should only be mentioned t
 
 The following table shows, which aspects are considered in this standard. The last column shows how the description of the volume type has to be adjusted, if the aspect is fulfilled:
 
-| Aspect | Part of Standard | standardized description |
+| Aspect | Requirement | standardized description |
 | ---- | ---- | ------ |
 | Encryption | **Recommended** | **"[scs:encrypted]"** |
 | Replication | **Recommended** | **"[scs:replicated]"** |
 
-It is possible to use multiple of those aspects within one volume type. SCS will only ever look, if there is a volume type that has an aspect, but there don't have to be different volume types.
-Example: one volume type that uses LUKS-encryption with a ceph storage with inherent replication would fulfill all recommendations of this standard.
+It is possible to use multiple of those aspects within one volume type. There don't have to be different volume types for each aspect.
+For instance, one volume type that uses LUKS-encryption with a ceph storage with inherent replication would fulfill all recommendations of this standard.
 
 ## DEFAULT volume type
 
@@ -61,11 +61,11 @@ The parameters of volume types described in this standard do not have to be appl
 
 ## REQUIRED volume types
 
-Currently, this standard will not require volume types with certain specification. This will change in the future.
+Currently, this standard will not require volume types with certain specification.
 
 ## RECOMMENDED volume types
 
-This standard recommends to have one or more volume types, that satisfy the need for encrpytion and replication.
+This standard recommends to have one or more volume types, that feature encryption and replication.
 
 ### Encryption
 
