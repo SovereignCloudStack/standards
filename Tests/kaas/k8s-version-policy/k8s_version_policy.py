@@ -412,13 +412,20 @@ def check_k8s_version_recency(my_version: K8sVersion, releases_data: list[dict],
         if release.age > PATCH_VERSION_CADENCE:
             # whoops, the cluster should have been updated to his (or a higher version) already!
             return False
-        if release.version in cve_version_list and release.age > CVE_VERSION_CADENCE:
-            # two FIXMEs:
+        if my_version.version in cve_version_list and release.age > CVE_VERSION_CADENCE:
+            # -- three FIXMEs:
             # (a) can the `in` ever become true, when we have a version vs a set of ranges
-            # (b) if the release has a CVE, then there is no use if we updated to it?
+            # (b) if the release still has the CVE, then there is no use if we updated to it?
+            # (c) the standard says "time period MUST be even shorter ... it is RECOMMENDED that ...",
+            #     so what is it now, a requirement or a recommendation?
             # shouldn't we check for CVEs of my_version and then check whether the new one still has them?
-            return False
-
+            # -- so, this has to be reworked in a major way, but for the time being, just emit an INFO
+            # (unfortunately, the cluster name is not available here)
+            logger.info(
+                "Consider updating from %s to %s to avoid a CVE",
+                my_version,
+                release.version,
+            )
     return True
 
 
