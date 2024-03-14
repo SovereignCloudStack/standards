@@ -31,7 +31,7 @@ the human user and by a program.
 
 ## Design Considerations
 
-All Considerations can be looked up in detail in the [Decision Record for the Volume Type Standard.](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0111-v1-volume-type-decisions.md)
+All considerations can be looked up in detail in the [Decision Record for the Volume Type Standard.](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0111-v1-volume-type-decisions.md)
 
 ### Systematic Description of Volume Types
 
@@ -124,7 +124,7 @@ Any other aspects of volume types, that can be found in the decision record are 
 
 ## Related Documents
 
-[Here is the decision record document.](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0111-v1-volume-type-decisions.md)
+- corresponding [decision record document](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0111-v1-volume-type-decisions.md)
 
 ## Conformance Tests
 
