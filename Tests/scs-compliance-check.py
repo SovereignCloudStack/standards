@@ -88,7 +88,7 @@ class Config:
         self.checkdate = datetime.date.today()
         self.version = None
         self.output = None
-        self.sections = []
+        self.sections = None
         self.critical_only = False
 
     def apply_argv(self, argv):
@@ -219,13 +219,15 @@ def main(argv):
     check_cwd = os.path.dirname(config.arg0) or os.getcwd()
     allaborts = 0
     allerrors = 0
+    critical = 0
     report = {
         # these fields are essential:
         "spec": {
             "name": spec['name'],
             "url": spec['url'],
         },
-        "checked_at": config.checkdate,
+        "checked_at": datetime.datetime.now(),
+        "reference_date": config.checkdate,
         "subject": config.subject,
         "versions": {},
         # this field is mostly for debugging:
@@ -263,6 +265,7 @@ def main(argv):
         if "standards" not in vd:
             print(f"WARNING: No standards defined yet for {spec['name']} version {vd['version']}",
                   file=sys.stderr)
+        seen_ids = set()
         errors = 0
         aborts = 0
         for standard in vd.get("standards", ()):
@@ -276,11 +279,19 @@ def main(argv):
                 printnq(f"WARNING: No check tool specified for {standard['name']}", file=sys.stderr)
             for check in checks:
                 check_keywords('check', check)
+                if 'id' not in check:
+                    raise RuntimeError(f"check descriptor missing id field: {check}")
+                id_ = check['id']
+                if id_ in seen_ids:
+                    raise RuntimeError(f"duplicate id: {id_}")
+                seen_ids.add(id_)
                 if 'executable' not in check:
-                    continue  # most probably a manual check
+                    # most probably a manual check
+                    print(f"skipping check '{id_}': no executable given")
+                    continue
                 section = check.get('section', check.get('lifetime', 'day'))
                 if config.sections and section not in config.sections:
-                    print(f"skipping check '{check['id']}': not in selected sections")
+                    print(f"skipping check '{id_}': not in selected sections")
                     continue
                 args = check.get('args', '').format(**config.assignment)
                 env = {key: value.format(**config.assignment) for key, value in check.get('env', {}).items()}
@@ -290,12 +301,18 @@ def main(argv):
                 if invokation is None:
                     check_env = {**os.environ, **env}
                     invokation = invoke_check_tool(check["executable"], args, check_env, check_cwd)
+                    result = compute_result(invokation["critical"], invokation["error"])
+                    if result == 1 and invokation['rc']:
+                        print(f"CRITICAL: check {id_} reported neither error nor abort, but had non-zero rc", file=sys.stderr)
+                        critical += 1
+                        result = 0
+                    invokation['result'] = result
                     printv("\n".join(invokation["stdout"]))
                     printnq("\n".join(invokation["stderr"]))
                     memo[memo_key] = invokation
                 abort = invokation["critical"]
                 error = invokation["error"]
-                vr[check['id']] = {'result': compute_result(abort, error), 'invocation': memo_key}
+                vr[check['id']] = {'result': invokation['result'], 'invocation': memo_key}
                 printnq(f"... returned {error} errors, {abort} aborts")
                 if not condition_optional(check, optional):
                     aborts += abort
@@ -311,7 +328,8 @@ def main(argv):
         allerrors += errors
     if not matches:
         print(f"CRITICAL: No valid version found for {config.checkdate}", file=sys.stderr)
-        allaborts += 1  # note: this is after we put the number into the report, so only for return code
+        critical += 1
+    allaborts += critical  # note: this is after we put the number into the report, so only for return code
     if config.output:
         with open(config.output, 'w', encoding='UTF-8') as file:
             yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)
