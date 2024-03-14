@@ -9,7 +9,7 @@ This setup must be prepared before starting test execution.
 The following things are required:
 
 - two domains for testing
-- a user in each domain with the `domain-manager` role assigned on domain-level
+- a user in each domain with the `manager` role assigned on domain-level
 - a properly configured "`domain-manager-test.yaml`"
 
 The creation of these resources is described below.
@@ -18,10 +18,10 @@ The creation of these resources is described below.
 
 **WARNING:** Replace the `<REPLACEME>` password placeholders by securely generated passwords in the code blocks below.
 
-As a preliminary step, create the "`domain-manager`" role if it does not exist:
+As a preliminary step, create the "`manager`" role if it does not exist:
 
 ```bash
-openstack role create domain-manager
+openstack role create manager
 ```
 
 First, create two testing domains and a domain manager for each domain:
@@ -36,9 +36,9 @@ openstack user create --domain scs-test-domain-a \
     --password "<REPLACEME>" scs-test-domain-a-manager
 
 openstack role add --user scs-test-domain-a-manager \
-    --domain scs-test-domain-a domain-manager
+    --domain scs-test-domain-a manager
 openstack role add --user scs-test-domain-b-manager \
-    --domain scs-test-domain-b domain-manager
+    --domain scs-test-domain-b manager
 ```
 
 Next create a file "`domain-manager-test.yaml`" with the following content:
@@ -64,7 +64,7 @@ The content of the file is structured as follows:
 | Setting | Purpose |
 |---|---|
 | `domains.*.name` | Name of the domain |
-| `domains.*.manager` | Login credentials for a user with the `domain-manager` role within the respective domain |
+| `domains.*.manager` | Login credentials for a user with the `manager` role within the respective domain |
 | `domains.*.member_role` | Role that a domain manager is permitted to assign users within the respective domain (default: `member`) |
 
 ### Test Execution Environment
