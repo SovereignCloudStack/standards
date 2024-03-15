@@ -15,12 +15,12 @@ This is also the case for the default Security Group that is created for each pr
 
 Security Group (abbr. SG)
   Set of ip table rules, used for tenant network security.
-  
+
 Security Group Rule (abbr. SG Rule)
   A single ip table rule, that is part of a SG.
-  
+
 Administrator (abbr. Admin)
-  Operator = User of an OpenStack cloud with the admin role. 
+  Operator = User of an OpenStack cloud with the admin role.
 
 ## Motivation
 
@@ -80,6 +80,7 @@ $ openstack default security group rule list
 | 822665f46070             |             |           |           |            |           |                       |                      |                                |                               |
 +--------------------------+-------------+-----------+-----------+------------+-----------+-----------------------+----------------------+--------------------------------+-------------------------------+
 ```
+
 These rules can also be configured to only apply to custom Security Groups through the API.
 
 ## Related Documents
