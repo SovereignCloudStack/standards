@@ -20,6 +20,7 @@ class Settings:
         self.db_user = os.getenv("SCM_DB_USER", "postgres")
         self.db_password = os.getenv("SCM_DB_PASSWORD", "mysecretpassword")
         self.bootstrap_path = os.path.abspath("./bootstrap.yaml")
+        self.yaml_path = os.path.abspath("../Tests")
 
 
 ROLES = {'read_any': 1, 'append_any': 2, 'admin': 4}
@@ -86,6 +87,8 @@ def get_current_account(
 
 
 def ensure_schema(conn):
+    # strive to make column names unique across tables so that selects become simple, such as:
+    # select * from "check" natural join standardentry natural join version natural join scope;
     with conn.cursor() as cur:
         cur.execute(
             '''
@@ -95,12 +98,47 @@ def ensure_schema(conn):
                 publickey text,
                 roles integer
             );
+            CREATE TABLE IF NOT EXISTS scope (
+                scopeid SERIAL PRIMARY KEY,
+                scopeuuid text UNIQUE,
+                scope text,
+                url text
+            );
+            CREATE TABLE IF NOT EXISTS version (
+                versionid SERIAL PRIMARY KEY,
+                scopeid integer NOT NULL REFERENCES scope ON DELETE CASCADE ON UPDATE CASCADE,
+                version text,
+                stabilized_at date,
+                deprecated_at date,
+                UNIQUE (scopeid, version)
+            );
+            CREATE TABLE IF NOT EXISTS standardentry (
+                standardid SERIAL PRIMARY KEY,
+                versionid integer NOT NULL REFERENCES version ON DELETE CASCADE ON UPDATE CASCADE,
+                standard text,
+                surl text,  -- don't name it url to avoid clash with scope.url
+                condition text,
+                UNIQUE (versionid, surl)
+            );
+            CREATE TABLE IF NOT EXISTS "check" (
+                checkid SERIAL PRIMARY KEY,
+                -- the versionid field is redundant given the standardid field, but we need it for
+                -- the constraint at the bottom :(
+                versionid integer NOT NULL REFERENCES version ON DELETE CASCADE ON UPDATE CASCADE,
+                standardid integer NOT NULL REFERENCES standardentry ON DELETE CASCADE ON UPDATE CASCADE,
+                id text,
+                lifetime text,
+                ccondition text,  -- don't name it condition to avoid clash with standardentry.condition
+                UNIQUE (versionid, id)
+            );
             CREATE TABLE IF NOT EXISTS report (
                 reportid SERIAL PRIMARY KEY,
-                uuid text UNIQUE,
+                reportuuid text UNIQUE,
                 checked_at timestamp,
                 subject text,
-                scope text,
+                -- scopeid integer NOT NULL REFERENCES scope ON DELETE CASCADE ON UPDATE CASCADE,
+                -- let's omit the scope here because it is determined via the results, and it
+                -- is possible that future reports refer to multiple scopes
                 data jsonb,
                 rawformat text,
                 raw bytea
@@ -115,14 +153,26 @@ def ensure_schema(conn):
                 result integer
             );
             CREATE TABLE IF NOT EXISTS result (
-                id SERIAL PRIMARY KEY,
-                version text,
-                "check" text,
+                resultid SERIAL PRIMARY KEY,
+                checkid integer NOT NULL REFERENCES "check" ON DELETE CASCADE ON UPDATE CASCADE,
                 result int,
                 invocationid integer REFERENCES invocation ON DELETE CASCADE ON UPDATE CASCADE,
                 -- note that invocation is more like an implementation detail
                 -- therefore let's also put reportid here (added bonus: simplify queries)
                 reportid integer NOT NULL REFERENCES report ON DELETE CASCADE ON UPDATE CASCADE
+            );
+            -- now: table of latest results per checkid
+            -- use this table in an OUTER JOIN with "check", so you get a NULL resultid
+            -- if no (sufficiently recent) check result is available
+            -- whenever a new result is added, we compute its expiration, and we put it into this table
+            -- if it doesn't contain a row for the corresponding checkid or if it does contain such a row,
+            -- but with an older expiration date.
+            CREATE TABLE IF NOT EXISTS latest (
+                subject text,
+                checkid integer NOT NULL REFERENCES "check" ON DELETE CASCADE ON UPDATE CASCADE,
+                resultid integer NOT NULL REFERENCES result ON DELETE CASCADE ON UPDATE CASCADE,
+                expiration timestamp,
+                UNIQUE (subject, checkid)
             );
             '''
         )
@@ -153,6 +203,111 @@ def import_bootstrap(bootstrap_path, conn):
         conn.commit()
 
 
+def import_cert_yaml(yaml_path, conn):
+    yaml = ruamel.yaml.YAML(typ='safe')
+    with open(yaml_path, "r") as fileobj:
+        document = yaml.load(fileobj.read())
+    # The following will update any existing entries (such as versions, standards, checks),
+    # but it won't delete entries that are not present in the given yaml.
+    # We will do that in a second step. (Note that deletions will cascade to reports, but we should
+    # only ever delete entries for non-stable versions; stable versions are deemed immutable except
+    # maybe for checks, and for those, at least the ids are immutable.)
+    # It is paramount that all extant primary keys are kept because the reports refer to them.
+    with conn.cursor() as cur:
+        cur.execute(
+            '''
+            INSERT INTO scope (scopeuuid, scope, url)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (scopeuuid)
+            DO UPDATE
+            SET scope = EXCLUDED.scope, url = EXCLUDED.url
+            RETURNING scopeid;
+            ''',
+            (document['uuid'], document['name'], document['url']),
+        )
+        scopeid, = cur.fetchone()
+        all_versions = set()
+        for vdata in document['versions']:
+            all_versions.add(vdata['version'])            
+            cur.execute(
+                '''
+                INSERT INTO version (scopeid, version, stabilized_at, deprecated_at)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (scopeid, version)
+                DO UPDATE
+                SET stabilized_at = EXCLUDED.stabilized_at, deprecated_at = EXCLUDED.deprecated_at
+                RETURNING versionid;
+                ''',
+                (scopeid, vdata['version'], vdata.get('stabilized_at'), vdata.get('deprecated_at')),
+            )
+            versionid, = cur.fetchone()
+            all_standards = set()
+            for sdata in vdata['standards']:
+                all_standards.add(sdata['url'])
+                cur.execute(
+                    '''
+                    INSERT INTO standardentry (versionid, standard, surl, condition)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (versionid, surl)
+                    DO UPDATE
+                    SET condition = EXCLUDED.condition, standard = EXCLUDED.standard
+                    RETURNING standardid;
+                    ''',
+                    (versionid, sdata['name'], sdata['url'], sdata.get('condition')),
+                )
+                standardid, = cur.fetchone()
+                all_checks = set()
+                for cdata in sdata.get('checks', ()):
+                    all_checks.add(cdata['id'])
+                    cur.execute(
+                        '''
+                        INSERT INTO "check" (versionid, standardid, id, lifetime, ccondition)
+                        VALUES (%s, %s, %s, %s, %s)
+                        ON CONFLICT (versionid, id)
+                        DO UPDATE
+                        SET ccondition = EXCLUDED.ccondition, lifetime = EXCLUDED.lifetime
+                        ''',
+                        (versionid, standardid, cdata['id'], cdata.get('lifetime'), cdata.get('condition')),
+                    )
+                cur.execute(
+                    '''
+                    SELECT checkid, id FROM "check" WHERE standardid = %s;
+                    ''',
+                    (standardid, )
+                )
+                removeids = [checkid for checkid, id_ in cur.fetchall() if id_ not in all_checks]
+                while removeids:
+                    cur.execute('DELETE FROM "check" WHERE checkid IN %s', (tuple(removeids[:10]), ))
+                    del removeids[:10]
+            cur.execute(
+                '''
+                SELECT standardid, surl FROM standardentry WHERE versionid = %s;
+                ''',
+                (versionid, )
+            )
+            removeids = [standardid for standardid, surl in cur.fetchall() if surl not in all_standards]
+            while removeids:
+                cur.execute('DELETE FROM standardentry WHERE standardid IN %s', (tuple(removeids[:10]), ))
+                del removeids[:10]
+        cur.execute(
+            '''
+            SELECT versionid, version FROM version WHERE scopeid = %s;
+            ''',
+            (scopeid, )
+        )
+        removeids = [versionid for versionid, version in cur.fetchall() if version not in all_versions]
+        while removeids:
+            cur.execute('DELETE FROM version WHERE versionid IN %s', (tuple(removeids[:10]), ))
+            del removeids[:10]
+        conn.commit()
+
+
+def import_cert_yaml_dir(yaml_path, conn):
+    for fn in sorted(os.listdir(yaml_path)):
+        if fn.startswith('scs-') and fn.endswith('.yaml'):
+            import_cert_yaml(os.path.join(yaml_path, fn), conn)
+
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
@@ -176,6 +331,30 @@ async def get_reports(
         else:
             cur.execute('SELECT data FROM report LIMIT %s OFFSET %s;', (limit, skip))
         return [row[0] for row in cur.fetchall()]
+
+
+def add_period(dt: datetime, period: str):
+    # compute the moment of expiry (so we are valid before that point, but not on that point)
+    if period == 'day':
+        dt += timedelta(days=2)
+        return datetime(dt.year, dt.month, dt.day)
+    if period == 'week':
+        dt += timedelta(days=14 - dt.weekday())
+        return datetime(dt.year, dt.month, dt.day)
+    if period == 'month':
+        if dt.month == 11:
+            return datetime(dt.year + 1, 1, 1)
+        if dt.month == 12:
+            return datetime(dt.year + 1, 2, 1)
+        return datetime(dt.year, dt.month + 2, 1)
+    if period == 'quarter':
+        if dt.month >= 10:
+            return datetime(dt.year + 1, 4, 1)
+        if dt.month >= 7:
+            return datetime(dt.year + 1, 1, 1)
+        if dt.month >= 4:
+            return datetime(dt.year, 10, 1)
+        return datetime(dt.year, 7, 1)
 
 
 @app.post("/reports")
@@ -206,16 +385,23 @@ async def post_report(
     uuid, subject, checked_at = rundata['uuid'], document['subject'], document['checked_at']
     if subject != current_subject and ROLES['append_any'] & roles == 0:
         raise HTTPException(status_code=401, detail="Permission denied")
-    scope = document['spec']['name'].strip().replace('  ', ' ').lower().replace(' ', '-')
+    expiration_lookup = {
+        period: add_period(checked_at, period)
+        for period in ('day', 'week', 'month', 'quarter')
+    }
+    expiration_lookup[None] = expiration_lookup['day']  # default
+    scopeuuid = document['spec']['uuid']
     with conn.cursor() as cur:
+        cur.execute('SELECT scopeid FROM scope WHERE scopeuuid = %s;', (scopeuuid, ))
+        scopeid, = cur.fetchone()
         try:
             cur.execute(
                 '''
-                INSERT INTO report (uuid, checked_at, subject, scope, data, rawformat, raw)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO report (reportuuid, checked_at, subject, data, rawformat, raw)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 RETURNING reportid;
                 ''',
-                (uuid, checked_at, subject, scope, json_text, content_type, body),
+                (uuid, checked_at, subject, json_text, content_type, body),
             )
         except UniqueViolation:
             raise HTTPException(status_code=409, detail="Conflict: report already present")
@@ -233,14 +419,32 @@ async def post_report(
             invocationid, = cur.fetchone()
             invocation_ids[invocation] = invocationid
         for version, vdata in document['versions'].items():
+            cur.execute('SELECT versionid FROM version WHERE scopeid = %s AND version = %s;', (scopeid, version))
+            versionid, = cur.fetchone()
             for check, rdata in vdata.items():
+                cur.execute('SELECT checkid, lifetime FROM "check" WHERE versionid = %s AND id = %s;', (versionid, check))
+                checkid, lifetime = cur.fetchone()
+                expiration = expiration_lookup[lifetime]
                 invocationid = invocation_ids[rdata['invocation']]
                 cur.execute(
                     '''
-                    INSERT INTO result (reportid, invocationid, version, "check", result)
-                    VALUES (%s, %s, %s, %s, %s);
+                    INSERT INTO result (reportid, invocationid, checkid, result)
+                    VALUES (%s, %s, %s, %s)
+                    RETURNING resultid;
                     ''',
-                    (reportid, invocationid, version, check, rdata['result']),
+                    (reportid, invocationid, checkid, rdata['result']),
+                )
+                resultid, = cur.fetchone()
+                cur.execute(
+                    '''
+                    INSERT INTO latest (subject, checkid, resultid, expiration)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (subject, checkid)
+                    DO UPDATE
+                    SET resultid = EXCLUDED.resultid, expiration = EXCLUDED.expiration
+                    WHERE latest.expiration < EXCLUDED.expiration;
+                    ''',
+                    (subject, checkid, resultid, expiration),
                 )
     conn.commit()
 
@@ -262,14 +466,23 @@ async def get_status(
         current_subject, publickey, roles = None, None, 0
     is_privileged = subject == current_subject or ROLES['read_any'] & roles != 0
     with conn.cursor() as cur:
-        # fetch results for all versions within the relevant timeframe
         cur.execute(
             '''
-            SELECT scope, version, "check", result
-            FROM result NATURAL JOIN report
-            WHERE subject = %s AND checked_at >= %s;
+            SELECT scope.scope, version.version, standardentry.condition, "check".id, "check".ccondition, result.result
+            FROM "check"
+            NATURAL JOIN standardentry
+            NATURAL JOIN version
+            NATURAL JOIN scope
+            LEFT OUTER JOIN (
+                SELECT *
+                FROM latest
+                WHERE subject = %s AND expiration > NOW()
+            ) latest
+            ON latest.checkid = "check".checkid
+            LEFT OUTER JOIN result
+            ON latest.resultid = result.resultid;
             ''',
-            (subject, datetime.now() - WINDOW),
+            (subject, ),
         )
         return [row for row in cur.fetchall()]
 
@@ -278,4 +491,5 @@ if __name__ == "__main__":
     with mk_conn(settings=settings) as conn:
         ensure_schema(conn=conn)
         import_bootstrap(settings.bootstrap_path, conn=conn)
+        import_cert_yaml_dir(settings.yaml_path, conn=conn)
     uvicorn.run(app, port=8080, log_level="info", workers=1)

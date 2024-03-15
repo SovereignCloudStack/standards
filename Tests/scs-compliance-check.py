@@ -224,6 +224,7 @@ def main(argv):
     report = {
         # these fields are essential:
         "spec": {
+            "uuid": spec['uuid'],
             "name": spec['name'],
             "url": spec['url'],
         },
