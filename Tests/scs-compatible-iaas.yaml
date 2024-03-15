@@ -1,4 +1,5 @@
 name: SCS Compatible IaaS
+uuid: 50393e6f-2ae1-4c5c-a62c-3b75f2abef3f
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml
 variables:
   - os_cloud
