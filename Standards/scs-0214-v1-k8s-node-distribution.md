@@ -80,15 +80,27 @@ If the standard is used by a provider, the following decisions are binding and v
   can also be scaled vertically first before scaling horizontally.
 - Worker node distribution MUST be indicated to the user through some kind of labeling
   in order to enable (anti)-affinity for workloads over "failure zones".
+- To provide data about this node distribution and be able to test and verify compliance with this standard,
+  providers MUST label their K8s nodes with the labels "topology.kubernetes.io/region",
+  "topology.kubernetes.io/zone" and "topology.scs.openstack.org/host-id"
+  in order to provide the expected data on the KaaS layer.
+  "topology.kubernetes.io/region" and "topology.kubernetes.io/zone" correspond with the labels
+  described in the [K8s labels documentation][k8s-labels-docs] and provide logical zones of failure
+  as well as a domain made up of one or more zones. How these are defined is up to the provider and
+  the fields are most of the time autopopulated by either the kubelet, the cloud controller or another
+  external mechanism.
+  "topology.scs.openstack.org/host-id" is an SCS-specific label, which MUST contain the hostID of the
+  physical machine running the hypervisor and not the hostID of a virtual machine.
 
 ## Conformance Tests
 
 The script `k8s-node-distribution-check.py` checks the nodes available with a user-provided
-kubeconfig file. It then determines based on the labels `kubernetes.io/hostname`, `topology.kubernetes.io/zone`,
-`topology.kubernetes.io/region` and `node-role.kubernetes.io/control-plane`, if a distribution
-of the available nodes is present. If this isn't the case, the script produces an error.
+kubeconfig file. It then determines based on the labels `topology.scs.openstack.org/host-id`,
+`topology.kubernetes.io/zone`, `topology.kubernetes.io/region` and `node-role.kubernetes.io/control-plane`,
+if a distribution of the available nodes is present. If this isn't the case, the script produces an error.
 If also produces warnings and informational outputs, if e.g. labels don't seem to be set.
 
 [k8s-ha]: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/
 [k8s-large-clusters]: https://kubernetes.io/docs/setup/best-practices/cluster-large/
 [scs-0213-v1]: https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0213-v1-k8s-nodes-anti-affinity.md
+[k8s-labels-docs]: https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone
