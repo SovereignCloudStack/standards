@@ -96,7 +96,7 @@ def ensure_schema(conn):
                 roles integer
             );
             CREATE TABLE IF NOT EXISTS report (
-                id SERIAL PRIMARY KEY,
+                reportid SERIAL PRIMARY KEY,
                 uuid text UNIQUE,
                 checked_at timestamp,
                 subject text,
@@ -105,26 +105,24 @@ def ensure_schema(conn):
                 rawformat text,
                 raw bytea
             );
-            CREATE TABLE IF NOT EXISTS result (
-                id SERIAL PRIMARY KEY,
-                reportid integer REFERENCES report (id) ON DELETE CASCADE ON UPDATE CASCADE,
-                version text,
-                passed boolean,
-                status text,
-                errors integer,
-                aborts integer
-            );
             CREATE TABLE IF NOT EXISTS invocation (
-                id SERIAL PRIMARY KEY,
+                invocationid SERIAL PRIMARY KEY,
+                reportid integer NOT NULL REFERENCES report ON DELETE CASCADE ON UPDATE CASCADE,
                 invocation text,
                 critical integer,
                 error integer,
-                warning integer
+                warning integer,
+                result integer
             );
-            CREATE TABLE IF NOT EXISTS res_inv_rel (
-                resultid integer REFERENCES result (id) ON DELETE CASCADE ON UPDATE CASCADE,
-                invocationid integer REFERENCES invocation (id) ON DELETE CASCADE ON UPDATE CASCADE,
-                UNIQUE (resultid, invocationid)
+            CREATE TABLE IF NOT EXISTS result (
+                id SERIAL PRIMARY KEY,
+                version text,
+                "check" text,
+                result int,
+                invocationid integer REFERENCES invocation ON DELETE CASCADE ON UPDATE CASCADE,
+                -- note that invocation is more like an implementation detail
+                -- therefore let's also put reportid here (added bonus: simplify queries)
+                reportid integer NOT NULL REFERENCES report ON DELETE CASCADE ON UPDATE CASCADE
             );
             '''
         )
@@ -205,7 +203,7 @@ async def post_report(
     else:
         raise HTTPException(status_code=500)
     rundata = document['run']
-    uuid, subject, checked_at = rundata['uuid'], rundata['subject'], rundata['checked_at']
+    uuid, subject, checked_at = rundata['uuid'], document['subject'], document['checked_at']
     if subject != current_subject and ROLES['append_any'] & roles == 0:
         raise HTTPException(status_code=401, detail="Permission denied")
     scope = document['spec']['name'].strip().replace('  ', ' ').lower().replace(' ', '-')
@@ -215,7 +213,7 @@ async def post_report(
                 '''
                 INSERT INTO report (uuid, checked_at, subject, scope, data, rawformat, raw)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
-                RETURNING id;
+                RETURNING reportid;
                 ''',
                 (uuid, checked_at, subject, scope, json_text, content_type, body),
             )
@@ -226,31 +224,23 @@ async def post_report(
         for invocation, idata in rundata['invocations'].items():
             cur.execute(
                 '''
-                INSERT INTO invocation (invocation, critical, error, warning)
-                VALUES (%s, %s, %s, %s)
-                RETURNING id;
+                INSERT INTO invocation (reportid, invocation, critical, error, warning, result)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING invocationid;
                 ''',
-                (invocation, idata['critical'], idata['error'], idata['warning']),
+                (reportid, invocation, idata['critical'], idata['error'], idata['warning'], idata['result']),
             )
             invocationid, = cur.fetchone()
             invocation_ids[invocation] = invocationid
-        for version, vdata in rundata['versions'].items():
-            cur.execute(
-                '''
-                INSERT INTO result (reportid, version, passed, status, errors, aborts)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                RETURNING id;
-                ''',
-                (reportid, version, vdata['passed'], vdata['status'], vdata['errors'], vdata['aborts']),
-            )
-            resultid, = cur.fetchone()
-            for invocation in vdata.get('invocations', ()):
+        for version, vdata in document['versions'].items():
+            for check, rdata in vdata.items():
+                invocationid = invocation_ids[rdata['invocation']]
                 cur.execute(
                     '''
-                    INSERT INTO res_inv_rel (resultid, invocationid)
-                    VALUES (%s, %s);
+                    INSERT INTO result (reportid, invocationid, version, "check", result)
+                    VALUES (%s, %s, %s, %s, %s);
                     ''',
-                    (resultid, invocation_ids[invocation]),
+                    (reportid, invocationid, version, check, rdata['result']),
                 )
     conn.commit()
 
@@ -275,8 +265,8 @@ async def get_status(
         # fetch results for all versions within the relevant timeframe
         cur.execute(
             '''
-            SELECT scope, version, passed, status, errors, aborts
-            FROM result JOIN report ON result.reportid = report.id
+            SELECT scope, version, "check", result
+            FROM result NATURAL JOIN report
             WHERE subject = %s AND checked_at >= %s;
             ''',
             (subject, datetime.now() - WINDOW),
