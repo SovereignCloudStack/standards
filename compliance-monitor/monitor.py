@@ -157,23 +157,12 @@ def ensure_schema(conn):
                 resultid SERIAL PRIMARY KEY,
                 checkid integer NOT NULL REFERENCES "check" ON DELETE CASCADE ON UPDATE CASCADE,
                 result int,
+                approval boolean,  -- whether a result <> 1 has manual approval
+                expiration timestamp,  -- precompute when this result would be expired
                 invocationid integer REFERENCES invocation ON DELETE CASCADE ON UPDATE CASCADE,
                 -- note that invocation is more like an implementation detail
                 -- therefore let's also put reportid here (added bonus: simplify queries)
                 reportid integer NOT NULL REFERENCES report ON DELETE CASCADE ON UPDATE CASCADE
-            );
-            -- now: table of latest results per checkid
-            -- use this table in an OUTER JOIN with "check", so you get a NULL resultid
-            -- if no (sufficiently recent) check result is available
-            -- whenever a new result is added, we compute its expiration, and we put it into this table
-            -- if it doesn't contain a row for the corresponding checkid or if it does contain such a row,
-            -- but with an older expiration date.
-            CREATE TABLE IF NOT EXISTS latest (
-                subject text,
-                checkid integer NOT NULL REFERENCES "check" ON DELETE CASCADE ON UPDATE CASCADE,
-                resultid integer NOT NULL REFERENCES result ON DELETE CASCADE ON UPDATE CASCADE,
-                expiration timestamp,
-                UNIQUE (subject, checkid)
             );
             '''
         )
@@ -427,26 +416,17 @@ async def post_report(
                 checkid, lifetime = cur.fetchone()
                 expiration = expiration_lookup[lifetime]
                 invocationid = invocation_ids[rdata['invocation']]
+                result = rdata['result']
+                approval = 1 == result  # pre-approve good result
                 cur.execute(
                     '''
-                    INSERT INTO result (reportid, invocationid, checkid, result)
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO result (reportid, invocationid, checkid, result, approval, expiration)
+                    VALUES (%s, %s, %s, %s, %s, %s)
                     RETURNING resultid;
                     ''',
-                    (reportid, invocationid, checkid, rdata['result']),
+                    (reportid, invocationid, checkid, result, approval, expiration),
                 )
                 resultid, = cur.fetchone()
-                cur.execute(
-                    '''
-                    INSERT INTO latest (subject, checkid, resultid, expiration)
-                    VALUES (%s, %s, %s, %s)
-                    ON CONFLICT (subject, checkid)
-                    DO UPDATE
-                    SET resultid = EXCLUDED.resultid, expiration = EXCLUDED.expiration
-                    WHERE latest.expiration < EXCLUDED.expiration;
-                    ''',
-                    (subject, checkid, resultid, expiration),
-                )
     conn.commit()
 
 
@@ -468,36 +448,41 @@ async def get_status(
     is_privileged = subject == current_subject or ROLES['read_any'] & roles != 0
     with conn.cursor() as cur:
         # this will list all scopes, versions, checks
-        # plus, where available, the latest test result
+        # plus, where available, the latest test result (if necessary, with manual approval)
         cur.execute(
-            '''
-            SELECT scope.scope, version.version, standardentry.condition, "check".id, "check".ccondition, result.result
+            f'''
+            SELECT scope.scope, version.version, standardentry.condition, "check".id, "check".ccondition, latest.result, latest.approval
             FROM "check"
             NATURAL JOIN standardentry
             NATURAL JOIN version
             NATURAL JOIN scope
             LEFT OUTER JOIN (
-                SELECT *
-                FROM latest
-                WHERE subject = %s AND expiration > NOW()
+                -- find the latest result per checkid for this subject
+                -- DISTINCT ON is a Postgres-specific construct that comes in very handy here :)
+                SELECT DISTINCT ON (checkid) *
+                FROM result
+                NATURAL JOIN report
+                WHERE subject = %s AND expiration > NOW() {'' if is_privileged else 'AND approval'}
+                ORDER BY checkid, checked_at DESC
             ) latest
-            ON latest.checkid = "check".checkid
-            LEFT OUTER JOIN result
-            ON latest.resultid = result.resultid;
+            ON "check".checkid = latest.checkid;
             ''',
             (subject, ),
         )
         rows = cur.fetchall()
-    # now count the number of pass, DNF, fail per scope/version
-    num_pass, num_dnf, num_fail = Counter(), Counter(), Counter()
-    for scope, version, condition, check, ccondition, result in rows:
-        # count optional as 'pass', otherwise a version without mandatory checks wouldn't be counted at all
-        if condition == "optional" or ccondition == "optional" or result == 1:
-            num_pass[(scope, version)] += 1
+    # now collect pass, DNF, fail per scope/version
+    num_pass, num_dnf, num_fail = defaultdict(set), defaultdict(set), defaultdict(set)
+    for scope, version, condition, check, ccondition, result, approval in rows:
+        if result is not None and (condition == "optional" or ccondition == "optional"):
+            # count optional as 'pass' so long as a result is available;
+            # otherwise a version without mandatory checks wouldn't be counted at all
+            num_pass[(scope, version)].add(check)
+        elif result == 1:
+            num_pass[(scope, version)].add(check)
         elif result == -1:
-            num_fail[(scope, version)] += 1
+            num_fail[(scope, version)].add(check)
         else:
-            num_dnf[(scope, version)] += 1
+            num_dnf[(scope, version)].add(check)
     keys = sorted(set(num_pass) | set(num_dnf) | set(num_fail))
     results = defaultdict(dict)
     for key in keys:
