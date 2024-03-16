@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from collections import Counter, defaultdict
 from datetime import date, datetime, timedelta
 import json
 import os
@@ -466,6 +467,8 @@ async def get_status(
         current_subject, publickey, roles = None, None, 0
     is_privileged = subject == current_subject or ROLES['read_any'] & roles != 0
     with conn.cursor() as cur:
+        # this will list all scopes, versions, checks
+        # plus, where available, the latest test result
         cur.execute(
             '''
             SELECT scope.scope, version.version, standardentry.condition, "check".id, "check".ccondition, result.result
@@ -484,7 +487,26 @@ async def get_status(
             ''',
             (subject, ),
         )
-        return [row for row in cur.fetchall()]
+        rows = cur.fetchall()
+    # now count the number of pass, DNF, fail per scope/version
+    num_pass, num_dnf, num_fail = Counter(), Counter(), Counter()
+    for scope, version, condition, check, ccondition, result in rows:
+        if condition == "optional" or ccondition == "optional":
+            continue
+        if result == 1:
+            num_pass[(scope, version)] += 1
+        elif result == -1:
+            num_fail[(scope, version)] += 1
+        else:
+            num_dnf[(scope, version)] += 1
+    keys = sorted(set(num_pass) | set(num_dnf) | set(num_fail))
+    results = defaultdict(dict)
+    for key in keys:
+        result = -1 if key in num_fail else 0 if key in num_dnf else 1
+        scope, version = key
+        results[scope][version] = result
+    print(rows, num_pass, num_dnf, num_fail, results)
+    return results
 
 
 if __name__ == "__main__":
