@@ -491,9 +491,8 @@ async def get_status(
     # now count the number of pass, DNF, fail per scope/version
     num_pass, num_dnf, num_fail = Counter(), Counter(), Counter()
     for scope, version, condition, check, ccondition, result in rows:
-        if condition == "optional" or ccondition == "optional":
-            continue
-        if result == 1:
+        # count optional as 'pass', otherwise a version without mandatory checks wouldn't be counted at all
+        if condition == "optional" or ccondition == "optional" or result == 1:
             num_pass[(scope, version)] += 1
         elif result == -1:
             num_fail[(scope, version)] += 1
@@ -505,7 +504,6 @@ async def get_status(
         result = -1 if key in num_fail else 0 if key in num_dnf else 1
         scope, version = key
         results[scope][version] = result
-    print(rows, num_pass, num_dnf, num_fail, results)
     return results
 
 
