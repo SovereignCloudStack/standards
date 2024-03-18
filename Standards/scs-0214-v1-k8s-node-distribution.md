@@ -104,15 +104,18 @@ If the standard is used by a provider, the following decisions are binding and v
   - "topology.scs.community/host-id"
 
     This is an SCS-specific label, which MUST contain the hostID of the physical machine running
-    the hypervisor and not the hostID of a virtual machine. This helps identify the distribution
-    over underlying physical machines, which would be masked if VM hostIDs would be used.
+    the hypervisor and not the hostID of a virtual machine. The hostID is an arbitrary identifier,
+    which doesn't need to contain things like hostname, but it should nonetheless be unique to the host.
+    This helps identify the distribution over underlying physical machines,
+    which would be masked if VM hostIDs would be used.
 
 ## Conformance Tests
 
 The script `k8s-node-distribution-check.py` checks the nodes available with a user-provided
-kubeconfig file. It then determines based on the labels `topology.scs.community/host-id`,
+kubeconfig file. Based on the labels `topology.scs.community/host-id`,
 `topology.kubernetes.io/zone`, `topology.kubernetes.io/region` and `node-role.kubernetes.io/control-plane`,
-if a distribution of the available nodes is present. If this isn't the case, the script produces an error.
+the script then determines whether the nodes are distributed according to this standard.
+If this isn't the case, the script produces an error.
 If also produces warnings and informational outputs, if e.g. labels don't seem to be set.
 
 [k8s-ha]: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/
