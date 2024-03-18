@@ -222,7 +222,7 @@ async def main(argv):
     labels = (
         "topology.kubernetes.io/region",
         "topology.kubernetes.io/zone",
-        "topology.scs.openstack.org/host-id",
+        "topology.scs.community/host-id",
     )
 
     nodes = await get_k8s_cluster_labelled_nodes(config.kubeconfig, labels + ("node-role.kubernetes.io/control-plane", ))
