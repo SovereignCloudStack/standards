@@ -103,9 +103,9 @@ If the standard is used by a provider, the following decisions are binding and v
 
   - `topology.scs.community/host-id`
 
-    This is an SCS-specific label, which MUST contain the hostID of the physical machine running
-    the hypervisor and not the hostID of a virtual machine. Here, the hostID is an arbitrary identifier,
-    which need not to contain the actual hostname, but it should nonetheless be unique to the host.
+    This is an SCS-specific label; it MUST contain the hostID of the physical machine running
+    the hypervisor (NOT: the hostID of a virtual machine). Here, the hostID is an arbitrary identifier,
+    which need not contain the actual hostname, but it should nonetheless be unique to the host.
     This helps identify the distribution over underlying physical machines,
     which would be masked if VM hostIDs were used.
 
