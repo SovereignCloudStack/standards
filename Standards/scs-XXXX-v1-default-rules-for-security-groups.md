@@ -40,7 +40,7 @@ Until the 2023.1 release (antelope) the default Security Group rules are hardcod
 We should require to not change this behavior through code changes in deployments.
 
 Beginning with the 2023.2 release (bobcat) the default Security Group rules can now be edited by administrators through an API.
-All rules that should be present at default in Security Groups MUST be configured ba admins through this API.
+All rules that should be present as default in Security Groups MUST be configured by admins through this API.
 
 ### Open questions
 
