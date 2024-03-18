@@ -82,14 +82,15 @@ If the standard is used by a provider, the following decisions are binding and v
   in order to enable (anti)-affinity for workloads over "failure zones".
 - To provide metadata about the node distribution, which also enables testing of this standard,
   providers MUST label their K8s nodes with the labels listed below.
-  * *"topology.kubernetes.io/zone"*  
+  - *"topology.kubernetes.io/zone"*  
     Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
     It provides a logical zone of failure on the side of the provider, e.g. a server rack
     in the same electrical circuit or multiple machines bound to the internet through a
     singular network structure. How this is defined exactly is up to the plans of the provider.
     The field gets autopopulated most of the time by either the kubelet or external mechanisms
     like the cloud controller.
-  * *"topology.kubernetes.io/region"*  
+  
+  - *"topology.kubernetes.io/region"*  
     Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
     It describes the combination of one or more failure zones into a region or domain, therefore
     showing a larger entity of logical failure zone. An example for this could be a building
@@ -97,7 +98,8 @@ If the standard is used by a provider, the following decisions are binding and v
     the power for the building is cut. How this is defined exactly is also up to the provider.
     The field gets autopopulated most of the time by either the kubelet or external mechanisms
     like the cloud controller.
-  * *"topology.scs.community/host-id"*  
+  
+  - *"topology.scs.community/host-id"*  
     This is an SCS-specific label, which MUST contain the hostID of the physical machine running
     the hypervisor and not the hostID of a virtual machine. This helps identify the distribution
     over underlying physical machines, which would be masked if VM hostIDs would be used.
