@@ -128,11 +128,12 @@ It should look like the following part:
 
 ## Conformance Tests
 
-As there are currently no REQUIRED volume types, we can only look for the RECOMMENDED aspects and thus executing a conformance test is not a must.
-Furthermore the recommended aspects currently have to be described in the description by the deployer.
-Deployers MUST provided correct information, when adhering to this standard.
-The tests will only check the syntactical correctness.
-In future versions we aim to integrate some extra_specs for them in upstream OpenStack.
-It is also possible that a single volume type can currently fulfill all RECOMMENDED aspects.
+The script `/Tests/iaas/volume-types/volume-types-check.py` connects to an OpenStack environment and tests
+the following:
 
-The current test will check for the presence of `[encrypted]` and `[replicated]` in the description of at least one volume type.
+- for each volume type: if its description starts with `[scs:....]`, then this prefix is a feature list
+  (sorted, each entry at most once), and each entry is one of the possible features described here,
+- the recommended volume types are present (otherwise, a WARNING is produced).
+
+The return code is zero precisely when the test could be performed and the conditions are satisfied.
+Otherwise, detailed errors and warnings are output to stderr.
