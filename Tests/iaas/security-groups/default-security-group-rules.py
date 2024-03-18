@@ -26,13 +26,13 @@ def test_rules(cloud_name: str):
 	try:
 		connection = connect(cloud_name)
 		rules = connection.network.default_security_group_rules()
-    except Exception as e:
-      print(str(e))
-      raise Exception(
-          f"Connection to cloud '{cloud_name}' was not successfully. "
-          f"The default Security Group Rules could not be accessed. "
-          f"Please check your cloud connection and authorization."
-      )
+  except Exception as e:
+    print(str(e))
+    raise Exception(
+        f"Connection to cloud '{cloud_name}' was not successfully. "
+        f"The default Security Group Rules could not be accessed. "
+        f"Please check your cloud connection and authorization."
+    )
 
 	# count all overall ingress rules and egress rules.
 	ingress_rules = 0
