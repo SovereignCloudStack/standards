@@ -25,7 +25,8 @@ class Settings:
 
 
 ROLES = {'read_any': 1, 'append_any': 2, 'admin': 4}
-WINDOW = timedelta(weeks=1)
+# number of days that expired results will be considered in lieu of more recent, but unapproved ones
+GRACE_PERIOD_DAYS = 7
 
 
 # do I hate these globals, but I don't see another way with these frameworks
@@ -462,7 +463,9 @@ async def get_status(
                 SELECT DISTINCT ON (checkid) *
                 FROM result
                 NATURAL JOIN report
-                WHERE subject = %s AND expiration > NOW() {'' if is_privileged else 'AND approval'}
+                WHERE subject = %s
+                AND expiration > {'NOW()' if is_privileged else f"NOW() - interval '{GRACE_PERIOD_DAYS:d} days'"}
+                {'' if is_privileged else 'AND approval'}
                 ORDER BY checkid, checked_at DESC
             ) latest
             ON "check".checkid = latest.checkid;
