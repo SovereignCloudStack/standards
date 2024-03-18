@@ -27,12 +27,12 @@ def test_rules(cloud_name: str):
 		connection = connect(cloud_name)
 		rules = connection.network.default_security_group_rules()
     except Exception as e:
-        print(str(e))
-        raise Exception(
-            f"Connection to cloud '{cloud_name}' was not successfully. "
-            f"The default Security Group Rules could not be accessed. "
-            f"Please check your cloud connection and authorization."
-        )
+      print(str(e))
+      raise Exception(
+          f"Connection to cloud '{cloud_name}' was not successfully. "
+          f"The default Security Group Rules could not be accessed. "
+          f"Please check your cloud connection and authorization."
+      )
 
 	# count all overall ingress rules and egress rules.
 	ingress_rules = 0
@@ -49,7 +49,7 @@ def test_rules(cloud_name: str):
 	# test whether there are no ingress_rules allowed
 	assert ingress_rules == 0, (
 		f"expected 0 default ingress rules, "
-	    f"but there are {ingress_rules}")
+	  f"but there are {ingress_rules}")
 
 	result_dict = {
 		"Ingress Rules": ingress_rules,
