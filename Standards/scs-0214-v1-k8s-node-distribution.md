@@ -82,7 +82,7 @@ If the standard is used by a provider, the following decisions are binding and v
   in order to enable (anti)-affinity for workloads over "failure zones".
 - To provide metadata about the node distribution, which also enables testing of this standard,
   providers MUST label their K8s nodes with the labels listed below.
-  - "topology.kubernetes.io/zone"
+  - `topology.kubernetes.io/zone`
 
     Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
     It provides a logical zone of failure on the side of the provider, e.g. a server rack
@@ -91,7 +91,7 @@ If the standard is used by a provider, the following decisions are binding and v
     The field gets autopopulated most of the time by either the kubelet or external mechanisms
     like the cloud controller.
 
-  - "topology.kubernetes.io/region"
+  - `topology.kubernetes.io/region`
 
     Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
     It describes the combination of one or more failure zones into a region or domain, therefore
@@ -101,13 +101,13 @@ If the standard is used by a provider, the following decisions are binding and v
     The field gets autopopulated most of the time by either the kubelet or external mechanisms
     like the cloud controller.
 
-  - "topology.scs.community/host-id"
+  - `topology.scs.community/host-id`
 
     This is an SCS-specific label, which MUST contain the hostID of the physical machine running
-    the hypervisor and not the hostID of a virtual machine. The hostID is an arbitrary identifier,
-    which doesn't need to contain things like hostname, but it should nonetheless be unique to the host.
+    the hypervisor and not the hostID of a virtual machine. Here, the hostID is an arbitrary identifier,
+    which need not to contain the actual hostname, but it should nonetheless be unique to the host.
     This helps identify the distribution over underlying physical machines,
-    which would be masked if VM hostIDs would be used.
+    which would be masked if VM hostIDs were used.
 
 ## Conformance Tests
 
