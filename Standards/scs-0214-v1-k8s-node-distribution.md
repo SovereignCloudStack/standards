@@ -80,17 +80,27 @@ If the standard is used by a provider, the following decisions are binding and v
   can also be scaled vertically first before scaling horizontally.
 - Worker node distribution MUST be indicated to the user through some kind of labeling
   in order to enable (anti)-affinity for workloads over "failure zones".
-- To provide data about this node distribution and be able to test and verify compliance with this standard,
-  providers MUST label their K8s nodes with the labels "topology.kubernetes.io/region",
-  "topology.kubernetes.io/zone" and "topology.scs.openstack.org/host-id"
-  in order to provide the expected data on the KaaS layer.
-  "topology.kubernetes.io/region" and "topology.kubernetes.io/zone" correspond with the labels
-  described in the [K8s labels documentation][k8s-labels-docs] and provide logical zones of failure
-  as well as a domain made up of one or more zones. How these are defined is up to the provider and
-  the fields are most of the time autopopulated by either the kubelet, the cloud controller or another
-  external mechanism.
-  "topology.scs.openstack.org/host-id" is an SCS-specific label, which MUST contain the hostID of the
-  physical machine running the hypervisor and not the hostID of a virtual machine.
+- To provide metadata about the node distribution, which also enables testing of this standard,
+  providers MUST label their K8s nodes with the labels listed below.
+  * *"topology.kubernetes.io/zone"*  
+    Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
+    It provides a logical zone of failure on the side of the provider, e.g. a server rack
+    in the same electrical circuit or multiple machines bound to the internet through a
+    singular network structure. How this is defined exactly is up to the plans of the provider.
+    The field gets autopopulated most of the time by either the kubelet or external mechanisms
+    like the cloud controller.
+  * *"topology.kubernetes.io/region"*  
+    Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
+    It describes the combination of one or more failure zones into a region or domain, therefore
+    showing a larger entity of logical failure zone. An example for this could be a building
+    containing racks that are put into such a zone, since they're all prone to failure, if e.g.
+    the power for the building is cut. How this is defined exactly is also up to the provider.
+    The field gets autopopulated most of the time by either the kubelet or external mechanisms
+    like the cloud controller.
+  * *"topology.scs.community/host-id"*  
+    This is an SCS-specific label, which MUST contain the hostID of the physical machine running
+    the hypervisor and not the hostID of a virtual machine. This helps identify the distribution
+    over underlying physical machines, which would be masked if VM hostIDs would be used.
 
 ## Conformance Tests
 
