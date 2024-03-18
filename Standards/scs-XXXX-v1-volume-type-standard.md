@@ -18,6 +18,8 @@ The following special terms are used throughout this standard document:
 | Term | Meaning |
 |---|---|
 | volume | OpenStack ressource, virtual drive which usually resides in a network storage backend |
+| volume feature | A certain feature a volume can possess |
+| aspect | part of a volume type that will activate a corresponding feature in a created volume |
 | AZ | Availability Zone |
 | Volume QoS | Quality of Service object for Volumes |
 
@@ -25,7 +27,7 @@ The following special terms are used throughout this standard document:
 
 As an SCS user, I want to be able to create volumes with certain common features, such as encryption or
 replication, and to do so in a standardized manner as well as programmatically.
-This standard outlines a way of formally advertising these common features for a volume type to
+This standard outlines a way of formally advertising these common aspects for a volume type to
 non-privileged users, so that the most suitable volume type can be discovered and selected easily — both by
 the human user and by a program.
 
@@ -39,16 +41,16 @@ To test whether a deployment has volume types with certain aspects, the discover
 
 `[scs:aspect1, aspect2, ..., aspectN]...`
 
-There is no sorting of aspects required. Every aspect should only be mentioned to the maximal amount of one.
+The mentioned aspects MUST be sorted alphebetically and every aspect should only be mentioned to the maximal amount of one.
 
 ### Standardized Aspects
 
 The following table shows, which aspects are considered in this standard. The last column shows how the description of the volume type has to be adjusted, if the aspect is fulfilled:
 
-| Aspect | Requirement | standardized description |
-| ---- | ---- | ------ |
-| Encryption | **Recommended** | **"[scs:encrypted]"** |
-| Replication | **Recommended** | **"[scs:replicated]"** |
+| Aspect | Requirement | standardized description | comment |
+| ---- | ---- | ------ | ------ |
+| Encryption | **Recommended** | **"[scs:encrypted]"** | used to encrypt the volume |
+| Replication | **Recommended** | **"[scs:replicated]"** | volume is replicated to aviod data loss in a case of hardware failure |
 
 It is possible to use multiple of those aspects within one volume type. There don't have to be different volume types for each aspect.
 For instance, one volume type that uses LUKS-encryption with a ceph storage with inherent replication would fulfill all recommendations of this standard.
@@ -67,9 +69,13 @@ Currently, this standard will not require volume types with certain specificatio
 
 This standard recommends to have one or more volume types, that feature encryption and replication.
 
-### Encryption
+## OPTIONAL volume types
 
-There SHOULD at least be one volume type with the encryption aspect.
+Any other aspects of volume types, that can be found in the decision record are OPTIONAL. They SHOULD NOT be referenced in the way this standard describes. Some of them already are natively discoverable by users, while others could be described in the name or description of a volume type. Users should look into the provided volume types of the CSPs, if they want to use some of these other aspects.
+
+## Implementation Details
+
+### Encryption
 
 Encryption for volumes is an option which has to be configured within the volume type. As an admin it is possible to set encryption-provider, key size, cipher and control location. Additionally to be discoverable by users an admin has to edit the description and add `[scs:encrypted]` at the beginning or after another scs aspect. It should look like this example:
 
@@ -88,8 +94,6 @@ openstack volume type show LUKS
 ```
 
 ### Replication
-
-There SHOULD at least be one volume type with the replication aspect.
 
 Replication states, whether or not there are multiple replicas of a volume. Thus answers the question, whether the data could survive a node outage. Unfortunately there are two ways replication can be achieved:
 
@@ -117,10 +121,6 @@ It should look like the following part:
 | qos_specs_id       | None                                                                                                                                                         |
 +--------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
-
-## OPTIONAL volume types
-
-Any other aspects of volume types, that can be found in the decision record are OPTIONAL. They SHOULD NOT be referenced in the way this standard describes. Some of them already are natively discoverable by users, while others could be described in the name or description of a volume type. Users should look into the provided volume types of the CSPs, if they want to use some of these other aspects.
 
 ## Related Documents
 
