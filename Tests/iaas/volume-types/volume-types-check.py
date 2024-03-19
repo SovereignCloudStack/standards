@@ -47,7 +47,7 @@ def extract_feature_list(description, pattern=re.compile(r"\[scs:([^\[\]]*)\]"))
     fs = match.group(1)
     if not fs:
         return []
-    return fs.split(", ")
+    return [f.strip() for f in fs.split(",")]
 
 
 def test_feature_list(type_name: str, fl: list[str], recognized=RECOGNIZED_FEATURES):
@@ -68,7 +68,7 @@ def test_feature_list(type_name: str, fl: list[str], recognized=RECOGNIZED_FEATU
 
 def print_usage(file=sys.stderr):
     """Help output"""
-    print("""Usage: entropy-check.py [options]
+    print("""Usage: volume-types-check.py [options]
 This tool checks volume types according to the SCS Standard 0112 "Volume Types".
 Options:
  [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)

@@ -17,9 +17,9 @@ features can not be discovered with full certainty by non-privileged users via t
 The following special terms are used throughout this standard document:
 | Term | Meaning |
 |---|---|
-| volume | OpenStack ressource, virtual drive which usually resides in a network storage backend |
+| volume | OpenStack resource, virtual drive which usually resides in a network storage backend |
 | volume feature | A certain feature a volume can possess |
-| aspect | part of a volume type that will activate a corresponding feature in a created volume |
+| aspect | Part of a volume type that will activate a corresponding feature in a created volume |
 | AZ | Availability Zone |
 | Volume QoS | Quality of Service object for Volumes |
 
@@ -45,12 +45,12 @@ The mentioned aspects MUST be sorted alphebetically and every aspect should only
 
 ### Standardized Aspects
 
-The following table shows, which aspects are considered in this standard. The last column shows how the description of the volume type has to be adjusted, if the aspect is fulfilled:
+The following table shows which aspects are considered in this standard. The third column shows how the description of the volume type has to be adjusted, if the aspect is fulfilled:
 
 | Aspect | Requirement | standardized description | comment |
 | ---- | ---- | ------ | ------ |
-| Encryption | **Recommended** | **"[scs:encrypted]"** | used to encrypt the volume |
-| Replication | **Recommended** | **"[scs:replicated]"** | volume is replicated to aviod data loss in a case of hardware failure |
+| Encryption | **Recommended** | **"[scs:encrypted]"** | volume is encrypted |
+| Replication | **Recommended** | **"[scs:replicated]"** | volume is replicated to avoid data loss in a case of hardware failure |
 
 It is possible to use multiple of those aspects within one volume type. There don't have to be different volume types for each aspect.
 For instance, one volume type that uses LUKS-encryption with a ceph storage with inherent replication would fulfill all recommendations of this standard.
@@ -71,13 +71,13 @@ This standard recommends to have one or more volume types, that feature encrypti
 
 ## OPTIONAL volume types
 
-Any other aspects of volume types, that can be found in the decision record are OPTIONAL. They SHOULD NOT be referenced in the way this standard describes. Some of them already are natively discoverable by users, while others could be described in the name or description of a volume type. Users should look into the provided volume types of the CSPs, if they want to use some of these other aspects.
+Any other aspects of volume types, that can be found in the decision record are OPTIONAL. They SHOULD NOT be referenced in the way this standard describes. Some of them already are natively discoverable by users, while others could be described in the name or description of a volume type. Users should look into the provided volume types of the Cloud Service Providers, if they want to use some of these other aspects.
 
 ## Implementation Details
 
 ### Encryption
 
-Encryption for volumes is an option which has to be configured within the volume type. As an admin it is possible to set encryption-provider, key size, cipher and control location. Additionally to be discoverable by users an admin has to edit the description and add `[scs:encrypted]` at the beginning or after another scs aspect. It should look like this example:
+Encryption for volumes is an option which has to be configured within the volume type. As an admin it is possible to set encryption-provider, key size, cipher and control location. Additionally to be discoverable by users, the description should start with an aspect list such as `[scs:encrypted]` (potentially with additional aspects). It should look like this example:
 
 ```text
 openstack volume type show LUKS
@@ -95,12 +95,12 @@ openstack volume type show LUKS
 
 ### Replication
 
-Replication states, whether or not there are multiple replicas of a volume. Thus answers the question, whether the data could survive a node outage. Unfortunately there are two ways replication can be achieved:
+Replication states whether or not there are multiple replicas of a volume. Thus, it answers the question whether the data could survive a node outage. Unfortunately there are two ways replication can be achieved:
 
 1. In the configuration of a volume type. It then is visible as extra_spec in the properties of a volume type.
 2. Via the used backend. Ceph for example provides automatic replication, that does not need to be specified in the volume type. This is currently not visible for users.
 
-To fulfill this recommentation for now, the admin needs to add `[scs:replicated]` at the beginning or after any other scs aspect into the descriotion of the volume type.
+To fulfill this recommendation, the description should start with an aspect list such as  `[scs:replicated]` (potentially with additional aspects).
 
 ### Example
 
