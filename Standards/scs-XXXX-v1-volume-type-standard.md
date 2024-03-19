@@ -100,7 +100,7 @@ Replication states whether or not there are multiple replicas of a volume. Thus,
 1. In the configuration of a volume type. It then is visible as extra_spec in the properties of a volume type.
 2. Via the used backend. Ceph for example provides automatic replication, that does not need to be specified in the volume type. This is currently not visible for users.
 
-To fulfill this recommendation, the description should start with an aspect list such as  `[scs:replicated]` (potentially with additional aspects).
+To fulfill this recommendation, the description should start with an aspect list such as `[scs:replicated]` (potentially with additional aspects).
 
 ### Example
 
