@@ -84,6 +84,27 @@ $ openstack default security group rule list
 ```
 
 These rules can also be configured to only apply to custom Security Groups through the API.
+To create such a rule through the CLI the `--for-custom-sg` parameter can be used:
+
+```bash
+$ openstack default security group rule create --egress --ethertype IPv4 --for-custom-sg
++-------------------------+--------------------------------------+
+| Field                   | Value                                |
++-------------------------+--------------------------------------+
+| description             |                                      |
+| direction               | egress                               |
+| ether_type              | IPv4                                 |
+| id                      | 4e296fa3-4c7e-4883-9275-b6ff5374adda |
+| port_range_max          | None                                 |
+| port_range_min          | None                                 |
+| protocol                | None                                 |
+| remote_address_group_id | None                                 |
+| remote_group_id         | None                                 |
+| remote_ip_prefix        | 0.0.0.0/0                            |
+| used_in_default_sg      | False                                |
+| used_in_non_default_sg  | True                                 |
++-------------------------+--------------------------------------+
+```
 
 ## Related Documents
 
