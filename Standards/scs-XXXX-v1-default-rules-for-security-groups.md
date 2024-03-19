@@ -7,7 +7,8 @@ track: IaaS
 
 ## Introduction
 
-Security Groups in IaaS (OpenStack) are sets of ip table rules, that are applied to ports which connect a VM to a network.
+Security Groups in IaaS (OpenStack) are part of the network security mechanisms provided for the users.
+They resemble sets of virtual firewall rules allowing specific network traffic at a port of a VM that connects it to a network.
 They are project-bound, which means that all Security Groups that are newly created are only available to the project in that they were created.
 This is also the case for the default Security Group that is created for each project as soon as the project itself is created.
 
@@ -24,19 +25,20 @@ Administrator (abbr. Admin)
 
 ## Motivation
 
-The rules of a security Group can be edited by any user with the member role within a project.
-But when a Security Group is created it automatically incorporates a few SG rules that are specified by administrators since the 2023.2 release[^1][^2].
-In combination with the OpenStack bevior that when a VM is created and no Security Group is specified, the default SG of the project is automatically applied to the ports of the VM,
-a user cannot be sure which IP table rules are applied to such a VM.
+The rules of a Security Group can be edited by any user with the member role within a project.
+But when a Security Group is created it automatically incorporates a few SG rules that are configured as default rules.
+Since the 2023.2 release, this set of default rules can be adjusted by administrators[^1][^2].
+In combination with the OpenStack behavior that when a VM is created with no Security Group specified, the default SG of the project is automatically applied to the ports of the VM,
+a user cannot be sure which firewall rules are applied to such a VM.
 
-Therefore this standard proposes default Security Group rules that MUST be set by administrators to avoid differences in default network security in different IaaS-Environments.
+Therefore this standard proposes default Security Group rules that MUST be set by administrators to avoid differences in default network security in different IaaS environments.
 
 [^1]: [Tracking of development for editable default SG rules](https://bugs.launchpad.net/neutron/+bug/1983053)
 [^2]: [Release Notes of Neutron 2023.2](https://docs.openstack.org/releasenotes/neutron/2023.2.html)
 
 ## Design Considerations
 
-Until the 2023.1 release (antelope) the default Security Group rules are hardcoded in the OpenStack Code.
+Until the 2023.1 release (antelope) the default Security Group rules are hardcoded in the OpenStack code.
 We should require to not change this behavior through code changes in deployments.
 
 Beginning with the 2023.2 release (bobcat) the default Security Group rules can now be edited by administrators through an API.
@@ -51,17 +53,17 @@ It is possible to have different default Security Group rules for the default SG
 And it is arguable to have a more strict standard for default rules for the default Security Group than for the custom Security Groups.
 Because the latter ones are not automatically applied to a VM but are always edited by the users to apply to their requirements.
 
-The Whitelisting concept of Security Group rules makes it hard to allow traffic with an exception of certain ports.
+The whitelisting concept of Security Group rules makes it hard to allow traffic with an exception of certain ports.
 It would be possible to just define many rules to achieve what a blacklist would achieve.
 This has the severe downside that users could be confused by these rules and will not disable unnecessary default rules in their SGs.
 
 ## Standard
 
-The default Security Group rules for ALL Security Groups MUST NOT allow incoming Traffic. Neither IPv4 nor IPv6.
+The default Security Group rules for ALL Security Groups MUST NOT allow incoming traffic. Neither IPv4 nor IPv6.
 This can be achieved through the absence of any ingress rules in the default Security Group rules.
 
 The default Security Group rules for ALL Security Groups SHOULD allow egress Traffic for both IPv4 and IPv6.
-This standard should not forbid to also disallow all outgoing traffic.
+This standard does not forbid to also disallow all outgoing traffic making the existence of egress rules OPTIONAL.
 Allowing all outgoing traffic in the default rules in combination with blocking all incoming traffic would be strict enough from a security point of view.
 And it would make it necessary for users to check and change the rules of their security group to a meaningful set.
 
@@ -85,7 +87,7 @@ These rules can also be configured to only apply to custom Security Groups throu
 
 ## Related Documents
 
-The spec for the default Security Groups Rules can be found [here](https://specs.openstack.org/openstack/neutron-specs/specs/2023.2/configurable-default-sg-rules.html).
+The spec for introducing configurability for the default Security Groups Rules can be found [here](https://specs.openstack.org/openstack/neutron-specs/specs/2023.2/configurable-default-sg-rules.html).
 
 More about Security Groups as a resource in OpenStack can be found [here](https://docs.openstack.org/nova/latest/user/security-groups.html).
 
