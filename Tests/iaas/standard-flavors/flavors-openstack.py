@@ -129,15 +129,20 @@ def main(argv):
                 for flavor in present_flavors
                 if es_name_key in flavor.extra_specs
             }
+            by_legacy_name = {flavor.name: flavor for flavor in present_flavors}
 
         logger.debug(f"Checking {len(flavor_specs)} flavor specs against {len(present_flavors)} flavors")
         for flavor_spec in flavor_specs:
             flavor = by_name.get(flavor_spec[name_key])
             if not flavor:
-                status = flavor_spec['_group']['status']
-                level = {"mandatory": logging.ERROR}.get(status, logging.INFO)
-                logger.log(level, f"Missing {status} flavor '{flavor_spec['name']}'")
-                continue
+                flavor = by_legacy_name.get(flavor_spec[name_key])
+                if flavor:
+                    logger.warning(f"Flavor '{flavor_spec['name']}' found via name only, missing property {es_name_key!r}")
+                else:
+                    status = flavor_spec['_group']['status']
+                    level = {"mandatory": logging.ERROR}.get(status, logging.INFO)
+                    logger.log(level, f"Missing {status} flavor '{flavor_spec['name']}'")
+                    continue
             # check that flavor matches flavor_spec
             # cpu, ram, and disk should match, and they should match precisely for discoverability
             if flavor.vcpus != flavor_spec['cpus']:

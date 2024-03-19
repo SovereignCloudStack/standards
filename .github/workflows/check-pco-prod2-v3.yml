@@ -1,4 +1,4 @@
-name: "Compliance of pco-prod2"
+name: "Compliance IaaS v3 of pco-prod2"
 
 on:
   # Trigger compliance check every day at 4:30 UTC

@@ -53,6 +53,12 @@ The SCS document format formally integrates
 the documentation of such decisions
 as documents of type `Decision Record`.
 
+#### Supplement
+
+A supplement extends a Standard with additional information, such as implementation and testing notes,
+that is merely informative, but not authoritative, and that may be subject to change more frequently
+than the standard itself.
+
 ### Document format
 
 The SCS documents are provided in GitHub flavored markdown.
@@ -82,6 +88,9 @@ The file name of an SCS document is formed using the following pattern:
 For a document with the number 190, with a major version number 2 and a slugified title `flavor-naming`,
 the resulting file name would be `scs-0190-v2-flavor-naming.md`.
 
+Supplements deviate from this pattern in that they employ a `w` instead of a `v` in front of the version
+number, and each supplement uses the same document number as the main document it is extending.
+
 The second digit in `XXXX` describes the track where the document belongs:
 
 | Track | Number |
@@ -97,10 +106,11 @@ embedded in the markdown header.
 
 | Field name      | Requirement                                                                | Description                                                                           |
 | --------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `type`          | REQUIRED                                                                   | one of `Procedural`, `Standard`, or `Decision Record`                                 |
+| `type`          | REQUIRED                                                                   | one of `Procedural`, `Standard`, `Decision Record`, or `Supplement`                   |
 | `status`        | REQUIRED                                                                   | one of `Proposal`, `Draft`, `Stable`, `Deprecated`, or `Rejected`                     |
 | `track`         | REQUIRED                                                                   | one of `Global`, `IaaS`, `KaaS`, `IAM`, `Ops`                                         |
-| `obsoleted_at`  | REQUIRED if `status` is `Deprecated`                                       | ISO formatted date indicating the date after which the deprecation is in effect       |
+| `supplements`   | REQUIRED precisely when `type` is `Supplement`                             | list of documents that are extended by this document (e.g., multiple major versions)  |
+| `deprecated_at`  | REQUIRED if `status` is `Deprecated`                                       | ISO formatted date indicating the date after which the deprecation is in effect       |
 | `stabilized_at` | REQUIRED if `status` was ever `Stable`                                     | ISO formatted date indicating the date after which the document was considered stable |
 | `rejected_at`   | REQUIRED if `status` is `Rejected`                                         | ISO formatted date indicating the date on which the document was rejected             |
 | `replaced_by`   | RECOMMENDED if `status` is `Deprecated` or `Rejected`, FORBIDDEN otherwise | List of documents which replace this document.                                        |
@@ -150,6 +160,8 @@ where the group which has to form the consensus depends on the `track` of the do
 - IAM: The team working on identity and access management topics
 - Global: The entire SCS community
 
+Supplements may be kept in Draft state, because they are not authoritative.
+
 ### Proposal phase
 
 #### Proposal of a new document
@@ -161,14 +173,19 @@ against the [standards repository in the SovereignCloudStack organisation][scs-s
 The pull request MUST add exactly one SCS document,
 in the `Standards` folder.
 In the proposal phase,
-the document number MUST be replaced with `xxxx` in the file name.
+the document number MUST be replaced with `xxxx` in the file name,
+except for a Supplement, which uses the document number of the document it refers to.
 The major version MUST be 1.
 
 For a document with a slugified title `flavor-naming`,
-the file name would for instance be `scs-xxxx-v1-flavor-naming.md`.
+the file name would for instance be `scs-xxxx-v1-flavor-naming.md`;
+for a Supplement of `scs-0100-v3-flavor-naming.md`,
+the file name might be `scs-0100-w1-flavor-naming-implementation-testing.md` (note the `w1`!).
 
 The metadata MUST indicate the intended `track` and `type` of the document,
-and the `status` MUST be set to `Proposal`.
+and the `status` MUST be set to `Proposal`;
+for a Supplement, the `supplements` field MUST be set
+to a list of documents (usually containing one element).
 
 Upon acceptance by the group of people identified by the `track`,
 a number is assigned
@@ -227,6 +244,16 @@ Changes to the documents are gated through pull requests.
 
 Once the document is deemed ready for production use,
 its `status` is changed to `Stable`.
+
+If the document in question is a `Standard`
+(and if applicable),
+the following conditions MUST all be satisfied before stabilizing:
+
+- the corresponding conformance tests have been implemented
+  according to the general guidelines,
+- they have been shown to work with the reference implementation,
+- they are documented in the standard or one of its `Supplement`
+  documents.
 
 After stabilization,
 changes to the document which may render existing implementations non-conformant

@@ -116,12 +116,12 @@ then a certificate of that prerequisite scope has to be presented before the cer
 | `version`       | String        | Mandatory: Version of the particular list of standards                          | _v3_         |
 | `standards`     | Array of maps | Mandatory: List of standard descriptors for this particular layer               |              |
 | `stabilized_at` | Date          | ISO formatted date indicating the date after this version is considered stable. | _2022-11-09_ |
-| `obsoleted_at`  | Date          | ISO formatted date indicating the date on which this version is expired.        | _2023-04-09_ |
+| `deprecated_at`  | Date          | ISO formatted date indicating the date on which this version is expired.        | _2023-04-09_ |
 
-Once a version has a `stabilized_at` field, this field may not be changed. The same holds true for the `obsoleted_at` field.
+Once a version has a `stabilized_at` field, this field may not be changed. The same holds true for the `deprecated_at` field.
 
 Note that at any point in time, all versions that are older (`stabilized_at` is at or before this point)
-can be certified against, unless the version is already obsoleted (the point is after `obsoleted_at`).
+can be certified against, unless the version is already deprecated (the point is after `deprecated_at`).
 This means that more than one version may be allowable at a certain point in time. Tooling should default
 to use the newest allowable version (the one with the most recent `stabilized_at` date) then.
 
@@ -137,23 +137,38 @@ Every list of standards consists of several standards that – altogether – de
 | `name`                   | String | Full name of the particular standard                                                                   | _Flavor naming_                                                                                                                |
 | `url`                    | String | Valid URL to the latest raw version of the particular standard                                         | _[Flavor naming](https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v2-flavor-naming.md)_ |
 | `condition`              | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory`   | _mandatory_                                                                                                                    |
-| `check_tools`            | Array  | List of check tool descriptors: listing all tools that must pass                                       |                                                                                                                                |
+| `checks`                 | Array  | List of all checks that must pass; each entry being a check descriptor                                 |                                                                                                                                |
 
-### Check tool descriptor
+### Check descriptor
+
+The following fields are valid for every check descriptor:
+
+| Key               | Type   | Description                                                                                                                              | Example                |
+| ----------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| `id`              | String | Identifier for this check (immutable and unique within this version of the certificate scope)                                            | image-md-check         |
+| `condition`       | String | _Optionally_ overrides the per-standard condition (`mandatory` or `optional`)                                                            | _optional_             |
+| `lifetime`        | String | One of: `day` (_default_), `week`, `month`, `quarter`; the test result is valid until the end of the next period                         | _week_                 |
+| `section`         | String | _Optional_ what section to associate this check with (sections can be checked in isolation); default: equal to lifetime                  | _flavor-name syntax_   |
+
+Additional fields are valid depending on whether the check is automated or manual.
+
+#### Automated check
 
 | Key               | Type   | Description                                                                                                                              | Example                |
 | ----------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
 | `executable`      | String | Valid local filename (relative to the path of scs-compliance-check.py) of a script that verifies compliance with the particular standard | _image-md-check.py_    |
 | `env`             | Map    | _Optional_ key-value map of environment variables (values may use variables)                                                             | OS_CLOUD: {os_cloud}   |
 | `args`            | String | _Optional_ command-line arguments to be passed to the `check_tool` (may use variables)                                                   | `-v -k {kubeconfig}`   |
-| `condition`       | String | _Optionally_ overrides the per-standard condition (`mandatory` or `optional`)                                                            | _optional_             |
-| `classification`  | String | One of: `light` (_default_), `medium`, `heavy`; describes the resource usage of the script; used to select an appropiate test interval   | _heavy_                |
 
 As mentioned, variables may be used within `env` and `args`; they are enclosed in single braces, like so: `{var}`.
 If a brace is desired, it needs to be doubled: `{{` will be turned into `{`. When the main check tool is run,
 each occurrence of a variable will be substituted for according to the variable assignment for the subject under test.
 
 _Note_: the `executable` could in principle also be given via a URL; however, this is not yet supported due to security considerations.
+
+#### Manual check
+
+TBD
 
 ### Basic Example
 
@@ -172,18 +187,24 @@ versions:
       - name: Flavor naming
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v2-flavor-naming.md
         condition: mandatory # is default and can be left out
-        check_tools:
+        checks:
           - executable: flavor-name-check.py
             env:
               OS_CLOUD: "{os_cloud}"
+            id: flavor-name-check
+            lifetime: day
       - name: Image metadata
         url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
         condition: mandatory
-        check_tools:
+        checks:
           - executable: image-md-check.py
             args: -c {os_cloud} -v
+            id: image-md-check
+            lifetime: day
           - executable: image-md-check2.py
             condition: optional
+            id: image-md-check-2
+            lifetime: day
   - version: v4 # This is the upcoming version with a given target date. No further changes should be done to this set of standards
     stabilized_at: 2022-04-01
     standards:
@@ -191,13 +212,13 @@ versions:
 
   - version: v3 # This is the stable set of standards that is currently active
     stabilized_at: 2021-10-01
-    obsoleted_at: 2022-11-08
+    deprecated_at: 2022-11-08
     standards:
       - name: ....
 
   - version: v2 # This set of standards is obsolete and has been replaced by v3
     stabilized_at: 2021-07-01
-    obsoleted_at: 2021-11-01
+    deprecated_at: 2021-11-01
     standards:
       - name: ....
 ```

@@ -259,27 +259,6 @@ offer the short variants for usability and easier portability, even beyond the m
 You must not extend the SCS naming scheme with your own extensions; you are encouraged however
 to suggest extensions that we can discuss and add to the official scheme.
 
-## Conformance Tests
-
-There is a script in [`flavor-name-check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-check.py)
-which can be used to decode, validate and construct flavor names.
-[`flavor-name-describe.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-describe.py) outputs a human-readable decoding of the SCS flavor names.
-These scripts must stay in sync with the specification text.
-
-Ensure you have your OpenStack tooling (`python3-openstackclient`, `OS_CLOUD`) setup and call
-`tools/flavor-name-check.py -c $(openstack flavor list -f value -c Name)` to get a report
-on the flavor list compliance of the cloud environment.
-
-The script `flavor-names-openstack.py` talks to the OpenStack API of the
-cloud specified by the `OS_CLOUD` environment and queries properties and checks
-the names for standards compliance.
-It goes beyond the above example in checking that the discoverable
-features of flavors (vCPUs, RAM, Disk) match what the flavor names claim.
-This is used for SCS-compatible compliance testing.
-
-The functionality of the `flavor-name-check.py` script is also
-(partially) exposed via the web page <https://flavors.scs.community/>.
-
 ## Extensions
 
 Extensions provide a possibility for providers that offer a very differentiated set

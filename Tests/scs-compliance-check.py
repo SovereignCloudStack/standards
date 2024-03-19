@@ -22,10 +22,8 @@ import os.path
 import sys
 import shlex
 import getopt
-# import time
 import datetime
 import subprocess
-import copy
 from functools import partial
 from itertools import chain
 import yaml
@@ -34,9 +32,9 @@ import yaml
 # valid keywords for various parts of the spec, to be checked using `check_keywords`
 KEYWORDS = {
     'spec': ('name', 'url', 'versions', 'prerequisite', 'variables'),
-    'version': ('version', 'standards', 'stabilized_at', 'obsoleted_at'),
-    'standard': ('check_tools', 'url', 'name', 'condition'),
-    'checktool': ('executable', 'env', 'args', 'condition', 'classification'),
+    'version': ('version', 'standards', 'stabilized_at', 'deprecated_at'),
+    'standard': ('checks', 'url', 'name', 'condition'),
+    'check': ('executable', 'env', 'args', 'condition', 'lifetime', 'id', 'section'),
 }
 
 
@@ -48,6 +46,7 @@ Options: -v/--verbose: More verbose output
  -d/--date YYYY-MM-DD: Check standards valid on specified date instead of today
  -V/--version VERS: Force version VERS of the standard (instead of deriving from date)
  -s/--subject SUBJECT: Name of the subject (cloud) under test, for the report
+ -S/--sections SECTION_LIST: comma-separated list of sections to test (default: all sections)
  -o/--output REPORT_PATH: Generate yaml report of compliance check under given path
  -C/--critical-only: Only return critical errors in return code
  -a/--assign KEY=VALUE: assign variable to be used for the run (as required by yaml file)
@@ -89,15 +88,15 @@ class Config:
         self.checkdate = datetime.date.today()
         self.version = None
         self.output = None
-        self.classes = ["light", "medium", "heavy"]
+        self.sections = None
         self.critical_only = False
 
     def apply_argv(self, argv):
         """Parse options. May exit the program."""
         try:
-            opts, args = getopt.gnu_getopt(argv, "hvqd:V:s:o:r:Ca:", (
+            opts, args = getopt.gnu_getopt(argv, "hvqd:V:s:o:S:Ca:", (
                 "help", "verbose", "quiet", "date=", "version=",
-                "subject=", "output=", "resource-usage=", "critical-only", "assign",
+                "subject=", "output=", "sections=", "critical-only", "assign",
             ))
         except getopt.GetoptError as exc:
             print(f"Option error: {exc}", file=sys.stderr)
@@ -119,8 +118,8 @@ class Config:
                 self.subject = opt[1]
             elif opt[0] == "-o" or opt[0] == "--output":
                 self.output = opt[1]
-            elif opt[0] == "-r" or opt[0] == "--resource-usage":
-                self.classes = [x.strip() for x in opt[1].split(",")]
+            elif opt[0] == "-S" or opt[0] == "--sections":
+                self.sections = [x.strip() for x in opt[1].split(",")]
             elif opt[0] == "-C" or opt[0] == "--critical-only":
                 self.critical_only = True
             elif opt[0] == "-a" or opt[0] == "--assign":
@@ -189,6 +188,15 @@ def invoke_check_tool(exe, args, env, cwd):
     return invokation
 
 
+def compute_result(num_abort, num_error):
+    """compute check result given number of abort messages and number of error messages"""
+    if num_error:
+        return -1  # equivalent to FAIL
+    if num_abort:
+        return 0  # equivalent to DNF
+    return 1  # equivalent to PASS
+
+
 def main(argv):
     """Entry point for the checker"""
     config = Config()
@@ -211,18 +219,23 @@ def main(argv):
     check_cwd = os.path.dirname(config.arg0) or os.getcwd()
     allaborts = 0
     allerrors = 0
+    critical = 0
     report = {
-        "spec": copy.deepcopy(spec),
+        # these fields are essential:
+        "spec": {
+            "name": spec['name'],
+            "url": spec['url'],
+        },
+        "checked_at": datetime.datetime.now(),
+        "reference_date": config.checkdate,
+        "subject": config.subject,
+        "versions": {},
+        # this field is mostly for debugging:
         "run": {
             "argv": argv,
-            "subject": config.subject,
             "assignment": config.assignment,
-            "checked_at": config.checkdate,
-            "classes": config.classes,
+            "sections": config.sections,
             "forced_version": config.version or None,
-            "aborts": 0,
-            "errors": 0,
-            "versions": {},
             "invocations": {},
         },
     }
@@ -231,24 +244,18 @@ def main(argv):
         spec["versions"] = [vd for vd in spec["versions"] if vd["version"] == config.version]
     if "prerequisite" in spec:
         print("WARNING: prerequisite not yet implemented!", file=sys.stderr)
-    vrs = report["run"]["versions"]
+    vrs = report["versions"]
     memo = report["run"]["invocations"]  # memoize check tool results
     matches = 0
     for vd in spec["versions"]:
         check_keywords('version', vd)
         stb_date = vd.get("stabilized_at")
-        obs_date = vd.get("obsoleted_at")
+        dep_date = vd.get("deprecated_at")
         futuristic = not stb_date or config.checkdate < stb_date
-        outdated = obs_date and obs_date < config.checkdate
-        vr = vrs[vd["version"]] = {
-            "status": outdated and "outdated" or futuristic and "preview" or "valid",
-            "passed": False,
-            "aborts": 0,
-            "errors": 0,
-            "invocations": [],
-        }
+        outdated = dep_date and dep_date < config.checkdate
         if outdated and not config.version:
             continue
+        vr = vrs[vd["version"]] = {}
         matches += 1
         if config.version and outdated:
             print(f"WARNING: Forced version {config.version} outdated", file=sys.stderr)
@@ -258,21 +265,33 @@ def main(argv):
         if "standards" not in vd:
             print(f"WARNING: No standards defined yet for {spec['name']} version {vd['version']}",
                   file=sys.stderr)
+        seen_ids = set()
         errors = 0
         aborts = 0
-        invocations = vr["invocations"]
         for standard in vd.get("standards", ()):
             check_keywords('standard', standard)
             optional = condition_optional(standard)
             printnq("*******************************************************")
             printnq(f"Testing {'optional ' * optional}standard {standard['name']} ...")
             printnq(f"Reference: {standard['url']} ...")
-            if "check_tools" not in standard:
+            checks = standard.get("checks", ())
+            if not checks:
                 printnq(f"WARNING: No check tool specified for {standard['name']}", file=sys.stderr)
-            for check in standard.get("check_tools", ()):
-                check_keywords('checktool', check)
-                if check.get("classification", "light") not in config.classes:
-                    print(f"skipping check tool '{check['executable']}' because of resource classification")
+            for check in checks:
+                check_keywords('check', check)
+                if 'id' not in check:
+                    raise RuntimeError(f"check descriptor missing id field: {check}")
+                id_ = check['id']
+                if id_ in seen_ids:
+                    raise RuntimeError(f"duplicate id: {id_}")
+                seen_ids.add(id_)
+                if 'executable' not in check:
+                    # most probably a manual check
+                    print(f"skipping check '{id_}': no executable given")
+                    continue
+                section = check.get('section', check.get('lifetime', 'day'))
+                if config.sections and section not in config.sections:
+                    print(f"skipping check '{id_}': not in selected sections")
                     continue
                 args = check.get('args', '').format(**config.assignment)
                 env = {key: value.format(**config.assignment) for key, value in check.get('env', {}).items()}
@@ -282,29 +301,35 @@ def main(argv):
                 if invokation is None:
                     check_env = {**os.environ, **env}
                     invokation = invoke_check_tool(check["executable"], args, check_env, check_cwd)
+                    result = compute_result(invokation["critical"], invokation["error"])
+                    if result == 1 and invokation['rc']:
+                        print(f"CRITICAL: check {id_} reported neither error nor abort, but had non-zero rc", file=sys.stderr)
+                        critical += 1
+                        result = 0
+                    invokation['result'] = result
                     printv("\n".join(invokation["stdout"]))
                     printnq("\n".join(invokation["stderr"]))
                     memo[memo_key] = invokation
-                invocations.append(memo_key)
                 abort = invokation["critical"]
                 error = invokation["error"]
+                vr[check['id']] = {'result': invokation['result'], 'invocation': memo_key}
                 printnq(f"... returned {error} errors, {abort} aborts")
                 if not condition_optional(check, optional):
                     aborts += abort
                     errors += error
-        vr["aborts"] = aborts
-        vr["errors"] = errors
-        vr["passed"] = not (aborts + errors)
+        # NOTE: the following verdict may be tentative, depending on whether
+        # all tests have been run (which in turn depends on chosen sections);
+        # the logic to compute the ultimate verdict should be place further downstream,
+        # namely where the reports are gathered and evaluated
         printnq("*******************************************************")
         printnq(f"Verdict for subject {config.subject}, {spec['name']}, "
                 f"version {vd['version']}: {errcode_to_text(aborts + errors)}")
         allaborts += aborts
         allerrors += errors
-    report["run"]["aborts"] = allaborts
-    report["run"]["errors"] = allerrors
     if not matches:
-        print(f"CRITICAL: No valid scope found for {config.checkdate}", file=sys.stderr)
-        allaborts += 1  # note: this is after we put the number into the report, so only for return code
+        print(f"CRITICAL: No valid version found for {config.checkdate}", file=sys.stderr)
+        critical += 1
+    allaborts += critical  # note: this is after we put the number into the report, so only for return code
     if config.output:
         with open(config.output, 'w', encoding='UTF-8') as file:
             yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)

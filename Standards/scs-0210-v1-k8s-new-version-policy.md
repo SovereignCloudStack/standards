@@ -2,7 +2,7 @@
 title: SCS K8S Version Policy for new Kubernetes versions
 type: Standard
 stabilized_at: 2023-02-07
-obsoleted_at: 2024-02-08
+deprecated_at: 2024-02-08
 status: Deprecated
 track: KaaS
 description: |
