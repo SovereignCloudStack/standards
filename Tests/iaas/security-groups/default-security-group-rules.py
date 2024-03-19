@@ -5,9 +5,7 @@ This script tests the absence of any ingress default security group rule.
 
 import openstack
 import os
-import yaml
 import argparse
-import keystoneauth1
 
 
 def connect(cloud_name: str) -> openstack.connection.Connection:
