@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Volume types checker
+
 Check given cloud for conformance with SCS standard regarding
 volume types, to be found under /Standards/scs-0112-v1-volume-types.md
+
 Return code is 0 precisely when it could be verified that the standard is satisfied.
 Otherwise the return code is the number of errors that occurred (up to 127 due to OS
 restrictions); for further information, see the log messages on various channels:
@@ -27,14 +29,17 @@ RECOGNIZED_FEATURES = ('encrypted', 'replicated')
 
 def extract_feature_list(description, pattern=re.compile(r"\[scs:([^\[\]]*)\]")):
     """Extract feature-list-like prefix
+
     If given `description` starts with a feature-list-like prefix, return list of features,
     otherwise None. To be more precise, we look for a string of this form:
+
     `[scs:`feat1`, `...`, `...featN`]`
+
     where N >= 1 and featJ is a string that doesn't contain any comma or brackets. We return
     the list [feat1, ..., featN] of substrings.
     """
     if not description:
-        # The description can be "None" or empty - we need to catch this here
+        # The description can be None or empty - we need to catch this here
         # otherwise we will get a critical Error in the pattern matching
         return
     match = pattern.match(description)
