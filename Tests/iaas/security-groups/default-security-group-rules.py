@@ -22,40 +22,41 @@ def connect(cloud_name: str) -> openstack.connection.Connection:
         cloud=cloud_name,
     )
 
+
 def test_rules(cloud_name: str):
-	try:
-		connection = connect(cloud_name)
-		rules = connection.network.default_security_group_rules()
-  except Exception as e:
-    print(str(e))
-    raise Exception(
-        f"Connection to cloud '{cloud_name}' was not successfully. "
-        f"The default Security Group Rules could not be accessed. "
-        f"Please check your cloud connection and authorization."
-    )
+    try:
+        connection = connect(cloud_name)
+        rules = connection.network.default_security_group_rules()
+    except Exception as e:
+        print(str(e))
+        raise Exception(
+            f"Connection to cloud '{cloud_name}' was not successfully. "
+            f"The default Security Group Rules could not be accessed. "
+            f"Please check your cloud connection and authorization."
+        )
 
-	# count all overall ingress rules and egress rules.
-	ingress_rules = 0
-	egress_rules = 0
-	if not rules:
-		print("No default security group rules defined.")
-	else:
-		for rule in rules:
-			if rule.direction == "ingress":
-				ingress_rules += 1
-			elif rule.direction == "egress":
-				egress_rules += 1
+    # count all overall ingress rules and egress rules.
+    ingress_rules = 0
+    egress_rules = 0
+    if not rules:
+        print("No default security group rules defined.")
+    else:
+        for rule in rules:
+            if rule.direction == "ingress":
+                ingress_rules += 1
+            elif rule.direction == "egress":
+                egress_rules += 1
 
-	# test whether there are no ingress_rules allowed
-	assert ingress_rules == 0, (
-		f"expected 0 default ingress rules, "
-	  f"but there are {ingress_rules}")
+    # test whether there are no ingress_rules allowed
+    assert ingress_rules == 0, (
+        f"expected 0 default ingress rules, "
+        f"but there are {ingress_rules}")
 
-	result_dict = {
-		"Ingress Rules": ingress_rules,
-		"Egress Rules": egress_rules
-	}
-	return result_dict
+    result_dict = {
+        "Ingress Rules": ingress_rules,
+        "Egress Rules": egress_rules
+    }
+    return result_dict
 
 
 def main():
@@ -83,6 +84,7 @@ def main():
     )
 
     print(test_rules(cloud))
+
 
 if __name__ == "__main__":
     main()
