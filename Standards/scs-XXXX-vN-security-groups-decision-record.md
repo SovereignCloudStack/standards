@@ -9,14 +9,14 @@ date: DD-03-2024
 
 ## Introduction
 
-Security Groups in IaaS (OpenStack) are sets of ip table rules, that are applied to ports which connect a VM to a network.
+Security Groups in IaaS (OpenStack) are sets of ip table rules, that are applied to ports which connect a virtual machine to a network.
 In contrast to other resources like flavors or volume types that are always publicly accessible, or images that can be both public and private, security groups are always bound to the project level.
 That creates some difficulties for a possible standard of Security Groups, which are discussed in this document.
 
 ## Terminology
 
 Security Group
-  A set of iptables rules that is applied to ports connecting a VM and a network.
+  A set of iptables rules that is applied to ports connecting a virtual machine and a network.
 
 Security Group Rule (abbr. Rule)
   This references a single rule within a security group.
@@ -32,11 +32,11 @@ admin
 
 ## Context
 
-While creating a VM and also later on, one or more security groups can be added to it.
+While creating a virtual machine and also later on, one or more security groups can be added to it.
 When there is no security group specified the default security group will always be added.
 Like every other security group, the default group is also project bound.
 That means, it can be edited as required by project members.
-By design of OpenStack and when not changed the default rules in the default security group block ALL incoming traffic and only allow outgoing traffic[^1].
+By design of OpenStack and when not changed, default rules in the default security group block ALL incoming traffic and only allow outgoing traffic[^1].
 
 [^1]: [Security Group Overview](https://docs.openstack.org/nova/latest/user/security-groups.html)
 
@@ -48,7 +48,7 @@ What speaks for standardizing a certain set of security groups:
 1. Having a set of correctly configured security groups could reduce misconfiguration from users
 2. Re-using correctly configured security groups saves time for users
 3. Auditing security groups would be way easier for operators when helping customers
-4. The configuration for the SGs can be done by networking experts, which may result in a higher security level as when users without expertise configure them
+4. The configuration for the Security Groups can be done by networking experts, which may result in a higher security level as when users without expertise configure them
 
 What are the downsides of having a set of standardized security groups:
 
@@ -93,7 +93,7 @@ stack@devstack:~/devstack$ openstack default security group rule list
 ```
 
 Those rules can be edited, which may pose a security risk for customers consuming the default security group.
-This should be adressed as an pre-requirement [here](https://github.com/SovereignCloudStack/standards/issues/521).
+This should be adressed as a pre-requirement [here](https://github.com/SovereignCloudStack/standards/issues/521).
 
 ### Option 1: operator usage of network rbac
 
@@ -171,14 +171,19 @@ The option to give a guide and recommend a few security groups however is a quit
 Instead of providing users with a set of default groups or the knowledge about how to create default groups, there could be a guide created that focuses on the crafting of a security group in a secure way.
 That would include identifying what kind of network permission a single VM needs and how to proceed after gathering all requirements of the customers workload.
 
-## Decision
+## Decisions
 
-To be decided.
+The default Security Group Rules should be standardized as a pre-requirement (Option 0).
+
+Using the `network rbac` endpoint (Option 1) would not solve the idea of having pre-defined and administrator audited Security Groups, because it is possible for any user to edit the rules of shared Security Groups.
+Instead the project-scope of the Security Groups should by focused and a guide prepared, that gives insight about creating and using Security Groups with a few examples but with a clear security focus (Mix of Option 2 and 3).
 
 ## Consequences
 
-What becomes easier or more difficult to do because of this change?
+Any CSP will have to follow the standard for the default Security Group Rules.
+There are no consequences regarding Security Groups as it and users stay in full control and responsible for their own Security Groups
 
 ## Related Documents
 
+[A PR to standardize default Security Group Rules](https://github.com/SovereignCloudStack/standards/pull/525)
 [A PR to a first draft for a guide for security groups](https://github.com/SovereignCloudStack/docs/pull/142)
