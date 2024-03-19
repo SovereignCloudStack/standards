@@ -168,7 +168,7 @@ class K8sVersion:
 
 
 def parse_version(version_str: str) -> K8sVersion:
-    cleansed = version_str.removeprefix("v").strip()
+    cleansed = version_str.strip().removeprefix("v")
     try:
         major, minor, patch = cleansed.split(".")
         return K8sVersion(int(major), int(minor), int(patch))
@@ -248,7 +248,7 @@ class VersionRange:
     lower_version: K8sVersion
 
     # Last version with the CVE
-    upper_version: K8sVersion
+    upper_version: K8sVersion = None
 
     # True if upper_version is included in the range of affected versions
     inclusive: bool = False
