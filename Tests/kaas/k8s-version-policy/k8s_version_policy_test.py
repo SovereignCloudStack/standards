@@ -6,13 +6,16 @@ License: CC-BY-SA 4.0
 """
 
 from datetime import datetime
+from unittest import mock
 
 from k8s_version_policy import (
     is_high_severity,
     parse_branch_info,
+    parse_cve_version_information,
     parse_github_release_data,
     parse_version,
     K8sBranch,
+    K8sBranchInfo,
     K8sVersion,
     VersionRange,
 )
@@ -28,6 +31,23 @@ def test_is_high_severity():
     assert is_high_severity([low31, high30])
     assert not is_high_severity([low31])
     assert not is_high_severity([low30, low31])
+
+
+# We could have used pytest.mark.parametrize() for the following tests, but
+# readability suffers because of the nested data structures.
+def test_parse_cve_info1():
+    parsed_range = parse_cve_version_information({"version": "1.2.3"})
+    assert parsed_range == VersionRange(K8sVersion(1, 2, 3))
+
+
+def test_parse_cve_info2():
+    parsed_range = parse_cve_version_information({"version": "1.2.3", "lessThan": "1.3.0"})
+    assert parsed_range == VersionRange(K8sVersion(1, 2, 3), K8sVersion(1, 3, 0))
+
+
+def test_parse_cve_info3():
+    parsed_range = parse_cve_version_information({"version": "1.2.3", "lessThanOrEqual": "1.3.0"})
+    assert parsed_range == VersionRange(K8sVersion(1, 2, 3), K8sVersion(1, 3, 0), inclusive=True)
 
 
 def test_parse_version():
@@ -63,6 +83,14 @@ def test_parse_release_data2():
     })
     assert release.version == K8sVersion(1, 24, 0)
     assert release.released_at == datetime(2023, 1, 3, 13, 37, 42)
+
+
+def test_is_eol():
+    branch_info = K8sBranchInfo(K8sBranch(1, 29), datetime(2025, 2, 28))
+    with mock.patch("k8s_version_policy.datetime", wraps=datetime) as dt:
+        dt.now.return_value = datetime(2025, 3, 1)
+        assert branch_info.is_eol()
+        assert not branch_info.is_supported()
 
 
 def test_k8s_version_operators():
