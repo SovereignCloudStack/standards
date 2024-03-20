@@ -11,7 +11,7 @@
 
     - name: Run test script consistency check script
       ansible.builtin.shell: |
-        python3 ~/Tests/iaas/flavor-naming/check-yaml.py ~/Tests/iaas
+        python3 ~/Tests/iaas/flavor-naming/check_yaml.py ~/Tests/iaas
       register: result
       changed_when: true
       failed_when: result.rc != 0
