@@ -495,6 +495,38 @@ async def get_status(
     return results
 
 
+@app.get("/results")
+async def get_results(
+    request: Request,
+    approved: Optional[bool] = None, limit: int = 10, skip: int = 0,
+    conn: psycopg2.extensions.connection = Depends(get_conn),
+):
+    """get recent results, potentially filtered by approval status"""
+    account = get_current_account(await security(request), conn)
+    current_subject, publickey, roles = account
+    if ROLES['read_any'] & roles == 0:
+        raise HTTPException(status_code=401, detail="Permission denied")
+    with conn.cursor() as cur:
+        columns = ('reportuuid', 'subject', 'checked_at', 'scope', 'version', 'check', 'result', 'approval')
+        cur.execute(
+            f'''
+            SELECT report.reportuuid, report.subject, report.checked_at, scope.scope, version.version, "check".id, result.result, result.approval
+            FROM result
+            NATURAL JOIN report
+            NATURAL JOIN "check"
+            NATURAL JOIN standardentry
+            NATURAL JOIN version
+            NATURAL JOIN scope
+            WHERE expiration > NOW() - interval '{GRACE_PERIOD_DAYS:d} days'
+            {'' if approved is None else f'AND approval = {str(bool(approved))}'}
+            ORDER BY checked_at
+            LIMIT %s OFFSET %s;
+            ''',
+            (limit, skip)
+        )
+        return [{col: val for col, val in zip(columns, row)} for row in cur.fetchall()]
+
+
 if __name__ == "__main__":
     with mk_conn(settings=settings) as conn:
         ensure_schema(conn=conn)
