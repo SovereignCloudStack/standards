@@ -75,6 +75,7 @@ accounts:
       # - append_any  # can append results for any subject
       - read_any  # can read non-public details of compliance results for any subject
       - admin  # can cause reload of the bootstrap file, among other things
+      - approve  # can approve non-pass results
   - subject: gx-scs
     api_key: "secret api key 2"
     public_key: "..."
@@ -101,6 +102,58 @@ Supports query parameters:
   the restriction;
 - `limit=N`: return at most N items (default: 10);
 - `skip=N`: skip N items (useful for pagination).
+
+### GET /results
+
+Returns the most recent results that are not expired or have been expired for at most 7 days.
+
+Needs to be authenticated (via basic auth).
+
+The return value is a _list of objects_ like the following:
+
+```json
+    {
+        "reportuuid": "def374a9-56a9-492c-b113-330d491c58c7",
+        "subject": "gxscs",
+        "checked_at": "2024-03-16T14:13:53.857422",
+        "scopeuuid": "50393e6f-2ae1-4c5c-a62c-3b75f2abef3f",
+        "version": "v3",
+        "check": "image-metadata-check",
+        "result": 1,
+        "approval": false
+    }
+```
+
+Supports query parameters:
+
+- `approved=APPROVED`: return only results with approval status `APPROVED` (either 0 or 1);
+  default: no such restriction is applied;
+- `limit=N`: return at most N items (default: 10);
+- `skip=N`: skip N items (useful for pagination).
+
+### POST /results
+
+Sets approval state of given results.
+
+Needs to be authenticated (via basic auth).
+
+Needs to specify `Content-Type` as `application/json`.
+
+The request body is a _list of objects_ like the following:
+
+```json
+    {
+        "reportuuid": "def374a9-56a9-492c-b113-330d491c58c7",
+        "scopeuuid": "50393e6f-2ae1-4c5c-a62c-3b75f2abef3f",
+        "version": "v3",
+        "check": "image-metadata-check",
+        "approval": true
+    }
+```
+
+The final field is the desired state; the other fields are used to determine the result in question
+(within one report, version and check uniquely determine a result; the scope is given here as well
+in case reports at some point contain multiple scopes).
 
 ### GET /status/{subject}
 

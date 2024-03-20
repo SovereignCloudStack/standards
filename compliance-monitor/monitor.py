@@ -24,7 +24,7 @@ class Settings:
         self.yaml_path = os.path.abspath("../Tests")
 
 
-ROLES = {'read_any': 1, 'append_any': 2, 'admin': 4}
+ROLES = {'read_any': 1, 'append_any': 2, 'admin': 4, 'approve': 8}
 # number of days that expired results will be considered in lieu of more recent, but unapproved ones
 GRACE_PERIOD_DAYS = 7
 
@@ -507,10 +507,10 @@ async def get_results(
     if ROLES['read_any'] & roles == 0:
         raise HTTPException(status_code=401, detail="Permission denied")
     with conn.cursor() as cur:
-        columns = ('reportuuid', 'subject', 'checked_at', 'scope', 'version', 'check', 'result', 'approval')
+        columns = ('reportuuid', 'subject', 'checked_at', 'scopeuuid', 'version', 'check', 'result', 'approval')
         cur.execute(
             f'''
-            SELECT report.reportuuid, report.subject, report.checked_at, scope.scope, version.version, "check".id, result.result, result.approval
+            SELECT report.reportuuid, report.subject, report.checked_at, scope.scopeuuid, version.version, "check".id, result.result, result.approval
             FROM result
             NATURAL JOIN report
             NATURAL JOIN "check"
@@ -525,6 +525,52 @@ async def get_results(
             (limit, skip)
         )
         return [{col: val for col, val in zip(columns, row)} for row in cur.fetchall()]
+
+
+@app.post("/results")
+async def post_results(
+    request: Request,
+    conn: psycopg2.extensions.connection = Depends(get_conn),
+):
+    """post approvals to this endpoint"""
+    content_type = request.headers['content-type']
+    if content_type not in ('application/json', ):
+        raise HTTPException(status_code=500, detail="Unsupported content type")
+    body = await request.body()
+    document = json.loads(body.decode("utf-8"))
+    records = [document] if isinstance(document, dict) else document
+    account = get_current_account(await security(request), conn)
+    current_subject, publickey, roles = account
+    if ROLES['approve'] & roles == 0:
+        raise HTTPException(status_code=401, detail="Permission denied")
+    with conn.cursor() as cur:
+        resultids = []
+        for record in records:
+            reportuuid, scopeuuid, version, check, approval = [
+                record[key]
+                for key in ['reportuuid', 'scopeuuid', 'version', 'check', 'approval']
+            ]
+            cur.execute(
+                f'''
+                UPDATE result
+                SET approval = %s
+                FROM report, scope, version, "check"
+                WHERE report.reportuuid = %s
+                AND result.reportid = report.reportid
+                AND scope.scopeuuid = %s
+                AND version.scopeid = scope.scopeid
+                AND version.version = %s
+                AND "check".versionid = version.versionid
+                AND "check".id = %s
+                AND result.checkid = "check".checkid
+                RETURNING resultid;
+                ''',
+                (approval, reportuuid, scopeuuid, version, check)
+            )
+            resultid, = cur.fetchone()
+            resultids.append(resultid)
+    print(resultids)
+    conn.commit()
 
 
 if __name__ == "__main__":
