@@ -72,12 +72,13 @@ docker run -it --env OS_CLOUD=CLOUDNAME -v ~/.config/openstack:/root/.config/ope
 
 ## Information for developers
 
-## Unit and regression tests
+### Unit and regression tests
 
 Some of the conformance tests scripts are themselves tested with unit tests.
 
 To run them, first ensure that you have installed the unit test dependencies
-(inside your [virtualenv as described above](#local-execution-linux-bsd)):
+in addition to the main dependencies (inside your [virtualenv as described
+above](#local-execution-linux-bsd)):
 
 ```shell
 pip install -r test-requirements.txt
@@ -96,7 +97,7 @@ pytest kaas/k8s-version-policy/k8s_version_policy_test.py
 You are encouraged to cover new conformance tests with unit tests!
 We run the tests on a regular basis in our GitHub workflows.
 
-## Maintaining the Python dependencies
+### Maintaining the Python dependencies
 
 We list our main Python dependencies in `requirements.in`. Additionally, we list
 [unit tests](#unit-and-regression-tests) dependencies in `test-requirements.in`.
