@@ -71,25 +71,25 @@ class Checker:
                 )
 
 
-def check(yaml_path):
-    if not isinstance(yaml_path, Path):
-        raise ValueError("yaml_path must be a pathlib.Path")
-    yaml_files = sorted(yaml_path.glob("scs-0103-*.yaml"))
+def check(yaml_dir_path):
+    if not isinstance(yaml_dir_path, Path):
+        raise ValueError("yaml_dir_path must be a pathlib.Path")
+    yaml_paths = sorted(yaml_dir_path.glob("scs-0103-*.yaml"))
     main_checker = Checker()
-    if not yaml_files:
+    if not yaml_paths:
         main_checker.emit("no yaml files found!")
-    for yaml_file in yaml_files:
-        with open(yaml_file, mode="rb") as fileobj:
+    for yaml_path in yaml_paths:
+        with open(yaml_path, mode="rb") as fileobj:
             flavor_spec_data = yaml.safe_load(fileobj)
         if 'flavor_groups' not in flavor_spec_data:
-            main_checker.emit(f"file '{yaml_file.name}': missing field 'flavor_groups'")
+            main_checker.emit(f"file '{yaml_path.name}': missing field 'flavor_groups'")
             continue
         checker = Checker()
         for group in flavor_spec_data['flavor_groups']:
             for flavor_spec in group['list']:
                 checker.check_spec(flavor_spec)
         if checker.errors:
-            main_checker.emit(f"file '{yaml_file.name}': found {checker.errors} errors")
+            main_checker.emit(f"file '{yaml_path.name}': found {checker.errors} errors")
     return main_checker.errors
 
 
