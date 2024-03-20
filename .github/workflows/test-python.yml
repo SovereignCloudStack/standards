@@ -1,0 +1,20 @@
+---
+name: Run Python unit and regression tests
+
+"on":
+  push:
+    paths:
+      - '**.py'
+      - .github/workflows/test-python.yml
+
+jobs:
+  lint-python-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - run: pip3 install --upgrade pip setuptools
+      - run: pip3 install -r Tests/test-requirements.txt
+      - run: pytest Tests

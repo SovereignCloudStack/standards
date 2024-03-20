@@ -114,4 +114,5 @@ It needs to be run in two cases:
 
 Note: The Python version used for running `pip-compile` should be consistent. The currently
 used version is documented in the header of the `requirements.txt`. It should match the
-version used in the Docker image (see [Dockerfile](Dockerfile)).
+version used in the Docker image (see [Dockerfile](Dockerfile)) and in our GitHub
+workflows (`lint-python.yml` and `test-python.yml` in `.github/workflows`).
