@@ -76,10 +76,10 @@ docker run -it --env OS_CLOUD=CLOUDNAME -v ~/.config/openstack:/root/.config/ope
 
 Some of the conformance tests scripts are themselves tested with unit tests.
 
-To run them, first ensure that you have installed the unit test dependencies:
+To run them, first ensure that you have installed the unit test dependencies
+(inside your [virtualenv as described above](#local-execution-linux-bsd)):
 
 ```shell
-python3 -m venv .venv && source .venv/bin/activate   # if not already done
 pip install -r test-requirements.txt
 ```
 
@@ -98,11 +98,11 @@ We run the tests on a regular basis in our GitHub workflows.
 
 ## Maintaining the Python dependencies
 
-We manage Python dependencies in `requirements.in` and `test-requirements.in`.
-The latter is a superset of the former one and lists the additional dependencies
-for the [unit tests](#unit-and-regression-tests).
+We list our main Python dependencies in `requirements.in`. Additionally, we list
+[unit tests](#unit-and-regression-tests) dependencies in `test-requirements.in`.
 The `*.in` files are fed to `pip-compile` to produce corresponding `*.txt` files
-that contain an exact listing of *all* dependencies, including transitive ones.
+that contain an exact, version pinned listing of *all* dependencies, including
+transitive ones.
 
 `pip-compile` can be installed via `pip install pip-tools`.
 It needs to be run in two cases:
