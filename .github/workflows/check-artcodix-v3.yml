@@ -1,4 +1,4 @@
-name: "Compliance of artcodix"
+name: "Compliance IaaS v3 of artcodix"
 
 on:
   # Trigger compliance check every day at 4:20 UTC

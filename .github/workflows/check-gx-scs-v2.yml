@@ -1,4 +1,4 @@
-name: "Compliance of gx-scs"
+name: "Compliance IaaS v2 of gx-scs"
 
 on:
   # Trigger compliance check every day at 4:30 UTC

@@ -245,6 +245,16 @@ Changes to the documents are gated through pull requests.
 Once the document is deemed ready for production use,
 its `status` is changed to `Stable`.
 
+If the document in question is a `Standard`
+(and if applicable),
+the following conditions MUST all be satisfied before stabilizing:
+
+- the corresponding conformance tests have been implemented
+  according to the general guidelines,
+- they have been shown to work with the reference implementation,
+- they are documented in the standard or one of its `Supplement`
+  documents.
+
 After stabilization,
 changes to the document which may render existing implementations non-conformant
 MUST NOT be made.

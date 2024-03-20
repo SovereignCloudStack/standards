@@ -1,9 +1,9 @@
-name: "Compliance IaaS v3 of pco-prod1"
+name: "Compliance IaaS v4 of artcodix"
 
 on:
-  # Trigger compliance check every day at 4:30 UTC
+  # Trigger compliance check every day at 4:20 UTC
   schedule:
-    - cron:  '30 4 * * *'
+    - cron:  '20 4 * * *'
   # Trigger compliance check after Docker image has been built
   workflow_run:
     workflows: [Build and publish scs-compliance-check Docker image]
@@ -11,13 +11,13 @@ on:
       - completed
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-  
+
 jobs:
-  check-pco-prod1:
-    uses: ./.github/workflows/scs-compliance-check.yml
+  check-artcodix:
+    uses: ./.github/workflows/scs-compliance-check-with-application-credential.yml
     with:
-      version: v3
+      version: v4
       layer: iaas
-      cloud: "pco-prod1"
-      secret_name: "OS_PASSWORD_PCOPROD1"
+      cloud: "artcodix"
+      secret_name: "OS_PASSWORD_ARTCODIX"
     secrets: inherit

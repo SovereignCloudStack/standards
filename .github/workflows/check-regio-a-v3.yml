@@ -1,4 +1,4 @@
-name: "Compliance of regio-a"
+name: "Compliance IaaS v3 of regio-a"
 
 on:
   # Trigger compliance check every day at 4:30 UTC

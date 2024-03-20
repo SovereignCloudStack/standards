@@ -1,4 +1,4 @@
-name: "Compliance of gx-scs"
+name: "Compliance IaaS v4 of pco-prod2"
 
 on:
   # Trigger compliance check every day at 4:30 UTC
@@ -13,11 +13,11 @@ on:
   workflow_dispatch:
   
 jobs:
-  check-gx-scs:
+  check-pco-prod2:
     uses: ./.github/workflows/scs-compliance-check.yml
     with:
-      version: v1
+      version: v4
       layer: iaas
-      cloud: "gx-scs"
-      secret_name: "OS_PASSWORD_GXSCS"
+      cloud: "pco-prod2"
+      secret_name: "OS_PASSWORD_PCOPROD2"
     secrets: inherit

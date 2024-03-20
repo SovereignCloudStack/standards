@@ -13,11 +13,9 @@ restrictions); for further information, see the log messages on various channels
     INFO      for violations of recommendations,
     DEBUG     for background information and problems that don't hinder the test.
 
-The K8s clusters provided in a kubeconfig are checked. The kubeconfig
-must provide connection details for the clusters to be tested via
-the contexts "stable", "oldstable", "oldoldstable" and "oldoldoldstable",
-depending on how many upstream K8s releases are currently supported.
-It is determined if the version on these clusters is still inside
+This script only checks one given cluster, so it doesn't check whether multiple
+k8s branches are being offered.
+It is determined if the version on the cluster is still inside
 the recency window, which is determined by the standard to be 4 months
 for minor versions (for the stable cluster) and 1 week for patch versions.
 An exception are versions with critical CVEs, which should be replaced on
@@ -25,6 +23,7 @@ a shorter notice.
 
 (c) Hannes Baum <hannes.baum@cloudandheat.com>, 6/2023
 (c) Martin Morgenstern <martin.morgenstern@cloudandheat.com>, 2/2024
+(c) Matthias Büchse <matthias.buechse@cloudandheat.com>, 3/2024
 License: CC-BY-SA 4.0
 """
 
@@ -52,6 +51,7 @@ CVE_SEVERITY = 8  # CRITICAL
 
 HERE = Path(__file__).parent
 EOLDATA_FILE = "k8s-eol-data.yml"
+DEFAULT_CONFIG_PATH = "./config.yaml"
 
 logging_config = {
     "level": "INFO",
@@ -95,77 +95,61 @@ class HelpException(BaseException):
 
 
 class Config:
-    config_path = "./config.yaml"
     kubeconfig = None
-    logging = None
+    context = None
+    logging = logging_config
 
 
 def print_usage():
     print("""
 K8s Version Policy Compliance Check
 
-Usage: k8s_version_policy.py [-h] [-c|--config PATH/TO/CONFIG] -k|--kubeconfig PATH/TO/KUBECONFIG
+Usage: k8s_version_policy.py [-h] -k|--kubeconfig PATH/TO/KUBECONFIG [--context CONTEXT]
 
-The K8s version policy check returns 0 if the versions of the tested clusters are still acceptable, otherwise
-it returns 2 for an out-of date version or 3 if the used version should be updated due to a highly critical CVE.
-It returns 4 if a supported upstream K8s release is missing.
+This tool checks whether the given cluster conforms to the SCS k8s version policy. It checks one
+cluster only, so it doesn't check whether multiple k8s branches are offered. The return code
+will be 0 precisely when all attempted checks are passed; otherwise check log messages.
 
-    -c/--config PATH/TO/CONFIG         - Path to the config file of the test script
     -k/--kubeconfig PATH/TO/KUBECONFIG - Path to the kubeconfig of the server we want to check
+    -C/--context CONTEXT               - Optional: kubeconfig context to use
     -h                                 - Output help
 """)
 
 
 def parse_arguments(argv):
     """Parse cli arguments from the script call"""
-    config = Config()
-
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:k:h", ["config=", "kubeconfig=", "help"])
+        opts, args = getopt.gnu_getopt(argv, "C:k:h", ["context=", "kubeconfig=", "help"])
     except getopt.GetoptError:
         raise ConfigException
 
+    config = Config()
     for opt in opts:
         if opt[0] == "-h" or opt[0] == "--help":
             raise HelpException
-        if opt[0] == "-c" or opt[0] == "--config":
-            config.config_path = opt[1]
         if opt[0] == "-k" or opt[0] == "--kubeconfig":
             config.kubeconfig = opt[1]
-
+        if opt[0] == "-C" or opt[0] == "--context":
+            config.context = opt[1]
     return config
 
 
 def setup_logging(config_log):
-
     logging.config.dictConfig(config_log)
     loggers = [
         logging.getLogger(name)
         for name in logging.root.manager.loggerDict
         if not logging.getLogger(name).level
     ]
-
     for log in loggers:
         log.setLevel(config_log['level'])
 
 
 def initialize_config(config):
     """Initialize the configuration for the test script"""
-
-    try:
-        with open(config.config_path, "r") as f:
-            config.logging = yaml.safe_load(f)['logging']
-    except OSError:
-        logger.warning(f"The config file under {config.config_path} couldn't be found, "
-                       f"falling back to the default config.")
-    finally:
-        # Setup logging if the config file with the relevant information could be loaded before
-        # Otherwise, we initialize logging with the included literal
-        setup_logging(config.logging or logging_config)
-
+    setup_logging(config.logging)
     if config.kubeconfig is None:
         raise ConfigException("A kubeconfig needs to be set in order to test a k8s cluster version.")
-
     return config
 
 
@@ -233,6 +217,19 @@ class K8sRelease:
     @property
     def age(self):
         return datetime.now() - self.released_at
+
+
+def fetch_k8s_releases_data() -> list[dict]:
+    github_headers = {
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+    }
+
+    # Request the latest 100 releases (the next are not needed, since these versions are too old)
+    return requests.get(
+        "https://api.github.com/repos/kubernetes/kubernetes/releases?per_page=100",
+        headers=github_headers,
+    ).json()
 
 
 def parse_github_release_data(release_data: dict) -> K8sRelease:
@@ -395,45 +392,40 @@ async def get_k8s_cluster_info(kubeconfig, context=None) -> ClusterInfo:
         return ClusterInfo(version, cluster_config.current_context['name'])
 
 
-def check_k8s_version_recency(my_version: K8sVersion, cve_version_list=None, allow_older=False) -> bool:
-    """Check a given K8s cluster version against the list of released versions in order to find out, if the version
+def check_k8s_version_recency(my_version: K8sVersion, releases_data: list[dict], cve_version_list=()) -> bool:
+    """Check a given K8s cluster version against the list of released versions in order to find out if the version
     is an accepted recent version according to the standard."""
-    if cve_version_list is None:
-        cve_version_list = list()
 
-    github_headers = {
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28"
-    }
-
-    # Request the latest 100 releases (the next are not needed, since these versions are too old)
-    releases_data = requests.get(
-        "https://api.github.com/repos/kubernetes/kubernetes/releases?per_page=100",
-        headers=github_headers,
-    ).json()
-
+    # iterate over all releases in the list, but only look at those whose branch matches
+    # we might break early assuming that the list is sorted somehow, but it is usually
+    # of bounded length (100), and the loop body not very expensive either
     for release_data in releases_data:
         if release_data['draft'] or release_data['prerelease']:
             continue
 
         release = parse_github_release_data(release_data)
-
-        # Check if the minor version is recent, but allow older versions if requested
-        # FIXME: this assumes k8s stays in 1.x version schema :(
-        if release.version.minor >= my_version.minor and not allow_older:
-            if release.age > MINOR_VERSION_CADENCE:
-                return False
-
-        if my_version.branch == release.version.branch and my_version.patch < release.version.patch:
-            if release.age > PATCH_VERSION_CADENCE:
-                return False
-
-            if release.version in cve_version_list and release.age > CVE_VERSION_CADENCE:
-                return False
-
-        if release.version.minor == (my_version.minor + 1) and release.version.patch == 0:
-            break
-
+        if my_version.branch != release.version.branch:
+            continue
+        if my_version.patch >= release.version.patch:
+            continue
+        # at this point `release` has the same major.minor, but higher patch than `my_version`
+        if release.age > PATCH_VERSION_CADENCE:
+            # whoops, the cluster should have been updated to this (or a higher version) already!
+            return False
+        if my_version.version in cve_version_list and release.age > CVE_VERSION_CADENCE:
+            # -- three FIXMEs:
+            # (a) can the `in` ever become true, when we have a version vs a set of ranges
+            # (b) if the release still has the CVE, then there is no use if we updated to it?
+            # (c) the standard says "time period MUST be even shorter ... it is RECOMMENDED that ...",
+            #     so what is it now, a requirement or a recommendation?
+            # shouldn't we check for CVEs of my_version and then check whether the new one still has them?
+            # -- so, this has to be reworked in a major way, but for the time being, just emit an INFO
+            # (unfortunately, the cluster name is not available here)
+            logger.info(
+                "Consider updating from %s to %s to avoid a CVE",
+                my_version,
+                release.version,
+            )
     return True
 
 
@@ -478,63 +470,39 @@ async def main(argv):
     connector = aiohttp.TCPConnector(limit=5)
     async with aiohttp.ClientSession(connector=connector) as session:
         cve_affected_ranges = await collect_cve_versions(session)
-
-    contexts = ["stable", "oldstable", "oldoldstable", "oldoldoldstable"]
-    seen_branches = set()
+    releases_data = fetch_k8s_releases_data()
 
     try:
-        for context in contexts:
-            logger.info("Checking cluster of kubeconfig context '%s'.", context)
-            cluster = await get_k8s_cluster_info(config.kubeconfig, context)
-            cluster_branch = cluster.version.branch
-            seen_branches.add(cluster_branch)
+        logger.info("Checking cluster of kubeconfig context '%s'.", config.context)
+        cluster = await get_k8s_cluster_info(config.kubeconfig, config.context)
+        cluster_branch = cluster.version.branch
 
-            # allow older k8s branches, but not for the first context (stable)
-            allow_older = context != contexts[0]
+        if cluster_branch not in supported_branches:
+            logger.error("The K8s cluster version %s of cluster '%s' is already EOL.", cluster.version, cluster.name)
+        elif check_k8s_version_recency(cluster.version, releases_data, cve_affected_ranges):
+            logger.info(
+                "The K8s cluster version %s of cluster '%s' is still in the recency time window.",
+                cluster.version,
+                cluster.name,
+            )
+        else:
+            logger.error(
+                "The K8s cluster version %s of cluster '%s' is outdated according to the standard.",
+                cluster.version,
+                cluster.name,
+            )
 
-            if check_k8s_version_recency(cluster.version, cve_affected_ranges, allow_older):
-                logger.info(
-                    "The K8s cluster version %s of cluster '%s' is still in the recency time window.",
-                    cluster.version,
-                    cluster.name,
-                )
-            else:
+        for affected_range in cve_affected_ranges:
+            if cluster.version in affected_range:
                 logger.error(
-                    "The K8s cluster version %s of cluster '%s' is outdated according to the standard.",
+                    "The K8s cluster version %s of cluster '%s' is an outdated version with a possible CRITICAL CVE.",
                     cluster.version,
                     cluster.name,
                 )
-
-            for affected_range in cve_affected_ranges:
-                if cluster.version in affected_range:
-                    logger.error(
-                        "The K8s cluster version %s of cluster '%s' is an outdated version with a possible CRITICAL CVE.",
-                        cluster.version,
-                        cluster.name,
-                    )
-
-            if branch_infos[cluster_branch.previous()].is_eol():
-                logger.info("Skipping the next context because the cluster it should reference is already EOL.")
-                break
     except BaseException as e:
         logger.critical("%s", e)
         logger.debug("Exception info", exc_info=True)
         return 1
-
-    # Now check if we saw all upstream supported K8s branches. Keep in mind
-    # that providers have a cadence time to update the "stable" context to the
-    # newest K8s release branch. The corresponding window was already checked
-    # above.
-    expected_branches = set(supported_branches)
-    newest_branch = max(supported_branches)
-    newest_branch_seen = max(seen_branches)
-    if newest_branch != newest_branch_seen:
-        expected_branches.remove(newest_branch)
-
-    missing = expected_branches - seen_branches
-    if missing:
-        listing = " ".join(f"{branch}" for branch in missing)
-        logger.error("The following upstream branches should be supported but were missing: %s", listing)
 
     c = counting_handler.bylevel
     logger.debug(
