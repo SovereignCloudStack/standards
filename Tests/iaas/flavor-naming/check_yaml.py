@@ -71,10 +71,7 @@ class Checker:
                 )
 
 
-def main(argv):
-    if len(argv) != 2:
-        raise RuntimeError("must specify exactly one argument, PATH to the yaml directory")
-    yaml_path = argv[1]
+def check(yaml_path):
     yaml_files = sorted([
         filename
         for filename in os.listdir(yaml_path)
@@ -100,7 +97,9 @@ def main(argv):
 
 if __name__ == "__main__":
     try:
-        sys.exit(main(sys.argv))
+        if len(sys.argv) != 2:
+            raise RuntimeError("must specify exactly one argument, PATH to the yaml directory")
+        sys.exit(check(sys.argv[1]))
     except Exception as e:
         print(f"CRITICAL: {e!s}", file=sys.stderr)
         sys.exit(1)
