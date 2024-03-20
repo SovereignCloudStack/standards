@@ -6,9 +6,14 @@ License: CC-BY-SA 4.0
 """
 
 from datetime import datetime
+from pathlib import Path
 from unittest import mock
+import json
+
+import pytest
 
 from k8s_version_policy import (
+    check_k8s_version_recency,
     is_high_severity,
     parse_branch_info,
     parse_cve_version_information,
@@ -19,6 +24,33 @@ from k8s_version_policy import (
     K8sVersion,
     VersionRange,
 )
+
+
+HERE = Path(__file__).parent
+
+
+@pytest.fixture
+def release_data():
+    """Fixture that loads our releases.json test data."""
+    with open(Path(HERE, "testdata", "releases.json")) as stream:
+        return json.load(stream)
+
+
+# in our test data set, v1.28.6 was released on 2024-01-17
+K8S_VERSION = K8sVersion(1, 28, 5)
+EXPECTED_RECENCIES = {
+    datetime(2024, 1, 17): True,
+    datetime(2024, 1, 24): True,
+    datetime(2024, 1, 25): False,
+}
+
+
+@pytest.mark.parametrize("ref_time, expected_recent", EXPECTED_RECENCIES.items())
+def test_check_version_recency_without_cve(release_data, ref_time, expected_recent):
+    with mock.patch("k8s_version_policy.datetime", wraps=datetime) as dt:
+        dt.now.return_value = ref_time
+        actual_recent = check_k8s_version_recency(K8S_VERSION, release_data, [])
+        assert actual_recent == expected_recent
 
 
 def test_is_high_severity():
