@@ -13,8 +13,8 @@ from pathlib import Path
 HERE = Path(__file__).parent
 TEST_ROOT = HERE.parent.parent
 
-CLEAN_YAML_DIR = str(Path(TEST_ROOT, "iaas"))
-BUGGY_YAML_DIR = str(Path(TEST_ROOT, "testing"))
+CLEAN_YAML_DIR = Path(TEST_ROOT, "iaas")
+BUGGY_YAML_DIR = Path(TEST_ROOT, "testing")
 
 EXPECTED_ERRORS = """
 ERROR: flavor 'SCS-1V-4': field 'cpu-type' contradicting name-v2 'SCS-1V-4'; found 'crowded-core', expected 'shared-core'

@@ -8,9 +8,9 @@ For reference, see
 
 Also check that the flavor properties encoded in the YAML match those encoded in the name.
 """
-import os
-import os.path
+
 import sys
+from pathlib import Path
 
 import yaml
 
@@ -72,34 +72,39 @@ class Checker:
 
 
 def check(yaml_path):
-    yaml_files = sorted([
-        filename
-        for filename in os.listdir(yaml_path)
-        if filename.startswith("scs-0103-") and filename.endswith(".yaml")
-    ])
+    if not isinstance(yaml_path, Path):
+        raise ValueError("yaml_path must be a pathlib.Path")
+    yaml_files = sorted(yaml_path.glob("scs-0103-*.yaml"))
     main_checker = Checker()
     if not yaml_files:
         main_checker.emit("no yaml files found!")
-    for filename in yaml_files:
-        with open(os.path.join(yaml_path, filename), "rb") as fileobj:
+    for yaml_file in yaml_files:
+        with open(yaml_file, mode="rb") as fileobj:
             flavor_spec_data = yaml.safe_load(fileobj)
         if 'flavor_groups' not in flavor_spec_data:
-            main_checker.emit(f"file '{filename}': missing field 'flavor_groups'")
+            main_checker.emit(f"file '{yaml_file.name}': missing field 'flavor_groups'")
             continue
         checker = Checker()
         for group in flavor_spec_data['flavor_groups']:
             for flavor_spec in group['list']:
                 checker.check_spec(flavor_spec)
         if checker.errors:
-            main_checker.emit(f"file '{filename}': found {checker.errors} errors")
+            main_checker.emit(f"file '{yaml_file.name}': found {checker.errors} errors")
     return main_checker.errors
+
+
+def validate_args(argv):
+    if len(sys.argv) != 2:
+        raise RuntimeError("must specify exactly one argument, PATH to the yaml directory")
+    yaml_path = Path(argv[1])
+    if not yaml_path.is_dir():
+        raise RuntimeError(f"not a directory: {yaml_path}")
+    return yaml_path
 
 
 if __name__ == "__main__":
     try:
-        if len(sys.argv) != 2:
-            raise RuntimeError("must specify exactly one argument, PATH to the yaml directory")
-        sys.exit(check(sys.argv[1]))
+        sys.exit(check(validate_args(sys.argv)))
     except Exception as e:
         print(f"CRITICAL: {e!s}", file=sys.stderr)
         sys.exit(1)
