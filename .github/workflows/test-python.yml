@@ -8,7 +8,7 @@ name: Run Python unit and regression tests
       - .github/workflows/test-python.yml
 
 jobs:
-  lint-python-syntax:
+  run-pytest-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
