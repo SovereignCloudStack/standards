@@ -5,4 +5,5 @@ accounts:
     roles:
       - read_any
       - append_any
+      - approve
       - admin
