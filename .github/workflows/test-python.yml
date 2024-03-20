@@ -16,5 +16,5 @@ jobs:
         with:
           python-version: '3.10'
       - run: pip3 install --upgrade pip setuptools
-      - run: pip3 install -r Tests/test-requirements.txt
+      - run: pip3 install -r Tests/requirements.txt -r Tests/test-requirements.txt
       - run: pytest Tests
