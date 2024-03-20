@@ -78,7 +78,7 @@ Some of the conformance tests scripts are themselves tested with unit tests.
 
 To run them, first ensure that you have installed the unit test dependencies
 in addition to the main dependencies (inside your [virtualenv as described
-above](#local-execution-linux-bsd)):
+above](#local-execution-linux-bsd-)):
 
 ```shell
 pip install -r test-requirements.txt
