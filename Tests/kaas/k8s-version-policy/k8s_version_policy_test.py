@@ -36,7 +36,10 @@ def release_data():
         return json.load(stream)
 
 
-# in our test data set, v1.28.6 was released on 2024-01-17
+# The test simulates checking a v1.28.5 cluster at different
+# points in time. The version becomes "unrecent" a week after
+# the successor v1.28.6 is released.
+# In our test data set, v1.28.6 was released on 2024-01-17.
 K8S_VERSION = K8sVersion(1, 28, 5)
 EXPECTED_RECENCIES = {
     datetime(2024, 1, 17): True,
