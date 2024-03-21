@@ -59,8 +59,6 @@ For instance, one volume type that uses LUKS-encryption with a ceph storage with
 
 There is always a default volume type defined in an OpenStack deployment. This volume type is created in the setup of cinder and will always be present in any OpenStack deployments under the name `__default__`. This standard does not have any requirements about this volume type at this moment, instead deployers are free to choose what fits best in their environment. Conversely, a cloud user can not expect any specific behavior or properties from volume types named `__default__`.
 
-The parameters of volume types described in this standard do not have to be applied to the chosen default volume type. And this standard will not make any assumptions about parameters being present in the default volume type.
-
 ## REQUIRED volume types
 
 Currently, this standard will not require volume types with certain specification.
