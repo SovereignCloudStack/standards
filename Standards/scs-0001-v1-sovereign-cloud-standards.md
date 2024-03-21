@@ -150,7 +150,7 @@ In addition, the following OPTIONAL sections should be considered:
 
 Each Decision Record document MUST have the following sections:
 
-- An _Introduction_ providing context on the document and linking to other relevant materials.
+- An _Abstract_ providing a brief introduction on the topic of the document.
 - A _Context_ section describing the issue relevant for motivating this Decision Record.
 - A section containing the actual decision that is introduced. The section should also include
   reasoning for this decision. We RECOMMEND naming the section _Decision_.
