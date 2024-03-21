@@ -9,7 +9,7 @@ track: IAM
 
 SCS Clouds should provide a way to grant Domain Manager rights to SCS Customers which provides IAM self-service capabilities within an OpenStack domain.
 This is not properly implemented in the default OpenStack configuration and requires specific adjustments to the Keystone identity management configuration.
-To avoid conflict with the unscoped `admin` role in OpenStack we want to refer to this new role as "Domain Manager" (`domain-manager`).
+To avoid conflict with the unscoped `admin` role in OpenStack we want to refer to this new persona as "Domain Manager", introducing the `manager` role in the API for domains.
 
 ### Glossary
 
@@ -24,6 +24,7 @@ The following special terms are used throughout this standard document:
 | role | OpenStack role as per Keystone RBAC |
 | domain | OpenStack domain as per Keystone RBAC |
 | IAM | identity and access management |
+| persona | Abstract and conceptual role of a user in terms of IAM |
 | IAM resources | projects, users, groups, roles, domains as managed by OpenStack Keystone |
 | CSP | Cloud Service Provider, provider managing the OpenStack infrastructure |
 | cloud admin | OpenStack user belonging to the CSP that possesses the `admin` role |
@@ -32,13 +33,13 @@ The following special terms are used throughout this standard document:
 
 ### Impact
 
-Applying this standard modifies the API policy configuration of Keystone and introduces a new global role definition to Keystone to enable IAM self-service for customers within a domain.
-Once assigned, the role allows special Domain Manager users within a domain to manage users, project, groups and role assignments as part of the IAM self-service.
+Applying this standard modifies the API policy configuration of Keystone and introduces a new persona to Keystone to enable IAM self-service for customers within a domain.
+Once assigned, this persona allows special Domain Manager users within a domain to manage users, project, groups and role assignments as part of the IAM self-service.
 
-However, the configuration change introduced by this standard does not automatically assign the Domain Manager role to any users per default.
-Assigning the new role and granting customers the resulting self-service capabilities is a deliberate action to be taken by the CSP on a per-tenant (i.e. per domain) basis.
+However, the configuration change introduced by this standard does not automatically assign the Domain Manager persona to any users per default.
+Assigning the new persona and granting customers the resulting self-service capabilities is a deliberate action to be taken by the CSP on a per-tenant (i.e. per domain) basis.
 
-Omitting the provisioning of any Domain Manager users (i.e. not assigning the new role to any user) will result in an OpenStack cloud that behaves identically to a configuration without the standard applied, making the actual usage of the functionality a CSP's choice and entirely optional.
+Omitting the provisioning of any Domain Manager users (i.e. not assigning the new persona to any user) will result in an OpenStack cloud that behaves identically to a configuration without the standard applied, making the actual usage of the functionality a CSP's choice and entirely optional.
 
 ## Motivation
 
@@ -46,25 +47,25 @@ In the default configuration of Keystone, only users with the `admin` role may m
 The `admin` role in OpenStack Keystone is not properly scoped when assigned within a domain or project only as due to hard-coded architectural limitations in OpenStack, a user with the `admin` role may escalate their privileges outside of their assigned project or domain boundaries.
 Thus, it is not possible to properly give customers a self-service functionality in regards to project, group and user management with the default configuration.
 
-To address this, this standard defines a new Domain Manager role in conjunction with appropriate Keystone API policy adjustments to establish a standardized extension to the default Keystone configuration allowing for IAM self-service capabilities for customers within domains.
+To address this, this standard defines a new Domain Manager persona implemented using a domain-scoped `manager` role in conjunction with appropriate Keystone API policy adjustments to establish a standardized extension to the default Keystone configuration allowing for IAM self-service capabilities for customers within domains.
 
 ### Desired Workflow
 
 1. The cloud admin deploys the Domain Manager policy configuration for Keystone as per this standard if it is not already applied.
 2. The cloud admin creates the desired domains for the customers for which IAM self-service capabilities are desired.
-3. The cloud admin creates one or more users within each of the applicable domains and assigns the Domain Manager role to them. These users represent the Domain Managers of the corresponding domain.
+3. The cloud admin creates one or more users within each of the applicable domains and assigns the `manager` role for a certain domain to them. These users represent the Domain Managers of the corresponding domain.
 4. The customer uses the Domain Manager users to manage (create, update, delete) users, projects, groups and corresponding role assignments within their domain.
 
 ## Design Considerations
 
-- the Domain Manager role MUST support managing projects, groups and users within a specific domain
-- the Domain Manager role MUST be properly scoped to a domain, it MUST NOT gain access to resources outside of its owning domain
-- the Domain Manager role MUST NOT be able to manipulate existing roles or create new roles
-- the Domain Manager role MUST only be able to assign specific non-administrative\* roles to their managed users where the applicable roles are defined by the CSP
+- the Domain Manager persona MUST support managing projects, groups and users within a specific domain
+- the Domain Manager persona MUST be properly scoped to a domain, it MUST NOT gain access to resources outside of its owning domain
+- the Domain Manager persona MUST NOT be able to manipulate existing roles or create new roles
+- the Domain Manager persona MUST only be able to assign specific non-administrative\* roles to their managed users where the applicable roles are defined by the CSP
 - Domain Managers MUST NOT be able to abuse the role assignment functionalities to escalate their own privileges or those of other users beyond the roles defined by the CSP
 
 \* "non-administrative" in this context means this excludes the role "`admin`" and any comparable role that grants permissions beyond domain and tenant scope.
-Since the Domain Manager role as defined in this standard is domain-scoped, it does not count as administrative.
+Since the "`manager`" role as defined in this standard is domain-scoped for a Domain Manager, it does not count as administrative.
 
 ### Options considered
 
@@ -83,13 +84,13 @@ Upstream (OpenStack) is in the process of addressing this across the services bu
 
 [^3]: [OpenStack Documentation: Keystone for Other Services - Domain Scope](https://docs.openstack.org/keystone/latest/contributor/services.html#domain-scope)
 
-#### Introducing a new role and API policy changes
+#### Introducing a new persona and role with API policy changes
 
 OpenStack Keystone allows for new roles to be created via its API by administrative users.
 Additionally, each OpenStack API's RBAC can be adjusted through an API policy file (`policy.yaml`) through olso-policy[^4], Keystone included.
 The possibility of managing users, projects, role assignments and so on is regulated through Keystone's RBAC configured by its API policy file.
 
-This means that by creating a new role and extending Keystone's API policy configuration a new Domain Manager role can be established that is limited to a specific subset of the Keystone API to be used to manage users, projects and role assignments within a domain.
+This means that by creating a new role and extending Keystone's API policy configuration a new Domain Manager persona can be established that is limited to a specific subset of the Keystone API to be used to manage users, projects and role assignments within a domain.
 
 [^4]: [OpenStack Documentation: Administering Applications that use oslo.policy](https://docs.openstack.org/oslo.policy/latest/admin/index.html)
 
@@ -104,13 +105,13 @@ The approach described in this standard imposes the following limitations:
 
 **As a result of points 1 and 2, metadata of all domains and roles will be exposed to all Domain Managers!**
 
-If a CSP deems either of these points critical, they may abstain from granting the Domain Manager role to users, effectively disabling the functionality. See [Impact](#impact).
+If a CSP deems either of these points critical, they may abstain from granting the `"manager"` role to any user in a domain scope, effectively disabling the Domain Manager functionality. See [Impact](#impact).
 
 [^5]: see the [corresponding Launchpad bug at Keystone](https://bugs.launchpad.net/keystone/+bug/2041611)
 
 ## Decision
 
-A role named "`domain-manager`" is to be created via the Keystone API and the policy adjustments quoted below are to be applied.
+A role named "`manager`" is to be created via the Keystone API and the policy adjustments quoted below are to be applied.
 
 ### Policy adjustments
 
@@ -126,7 +127,7 @@ The only parts of the policy definitions that may be changed are:
 # Section A: OpenStack base definitons
 # The entries beginning with "base_<rule>" should be exact copies of the
 # default "identity:<rule>" definitions for the target OpenStack release.
-# They will be extended upon for the domain manager role below this section.
+# They will be extended upon for the manager role below this section.
 "base_get_domain": "(role:reader and system_scope:all) or token.domain.id:%(target.domain.id)s or token.project.domain.id:%(target.domain.id)s"
 "base_list_domains": "(role:reader and system_scope:all)"
 "base_list_roles": "(role:reader and system_scope:all)"
@@ -161,7 +162,7 @@ The only parts of the policy definitions that may be changed are:
 # Section B: Domain Manager Extensions
 
 # classify domain managers with a special role
-"is_domain_manager": "role:domain-manager"
+"is_domain_manager": "role:manager"
 
 # specify a rule that whitelists roles which domain admins are permitted
 # to assign and revoke within their domain
@@ -259,12 +260,12 @@ Further roles can be appended using the logical `or` directive.
 "is_domain_managed_role": "'member':%(target.role.name)s or 'load-balancer_member':%(target.role.name)s or 'reader':%(target.role.name)s"
 ```
 
-**Note regarding the `domain-manager` role**
+**Note regarding the `manager` role**
 
-When adjusting the "`is_domain_managed_role`" rule a CSP might opt to also include the "`domain-manager`" role itself in the manageable roles, resulting in Domain Managers being able to propagate the Domain Manager role to other users within their domain.
+When adjusting the "`is_domain_managed_role`" rule a CSP might opt to also include the "`manager`" role itself in the manageable roles, resulting in Domain Managers being able to propagate the Domain Manager capabilities to other users within their domain.
 This increases the self-service capabilities of the customer but introduces risks of Domain Managers also being able to revoke this role from themselves or each other (within their domain) in an unintended fashion.
 
-CSPs have to carefully evaluate whether Domain Manager designation authority should reside solely on their side or be part of the customer self-service scope and decide about adding "`'domain-manager':%(target.role.name)s`" to the rule accordingly.
+CSPs have to carefully evaluate whether Domain Manager designation authority should reside solely on their side or be part of the customer self-service scope and decide about adding "`'manager':%(target.role.name)s`" to the rule accordingly.
 
 ## Related Documents
 
@@ -292,6 +293,27 @@ Please consult the associated [README.md](https://github.com/SovereignCloudStack
 ## Appendix
 
 ### Decision Record
+
+#### Change the naming of the Domain Manager role to align with upstream
+
+Decision Date: 2024-03-13
+
+Decision Maker: Team IaaS
+
+Decision:
+
+- the Domain Manager role should be named "manager" not "domain-manager"
+
+Rationale:
+
+- upstream (OpenStack) will introduce a "manager" role with the upcoming RBAC rework
+- the "manager" role is intended to grant managing capabilities bound to the scope it is assigned for, e.g. projects; it would make sense to also integrate the Domain Manager approach here
+- during the process of contributing the Domain Manager functionality upstream we were asked to use the already defined "manager" role instead of introducing a new role; so the rename would then also be in line with the upstream contribution
+
+Links / Comments / References:
+
+- [Team IaaS meeting protocol entry](https://github.com/SovereignCloudStack/minutes/blob/main/iaas/20240313.md#domain-manager-rolepersona-markus-hentsch)
+- [request from upstream to re-use existing "manager" role](https://review.opendev.org/c/openstack/keystone-specs/+/903172/2/specs/keystone/2023.1/domain-manager-role.rst#20)
 
 #### Allow flexibility for the roles a Domain Manager can assign/revoke within domain
 
