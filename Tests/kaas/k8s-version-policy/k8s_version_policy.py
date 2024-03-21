@@ -51,7 +51,6 @@ CVE_SEVERITY = 8  # CRITICAL
 
 HERE = Path(__file__).parent
 EOLDATA_FILE = "k8s-eol-data.yml"
-DEFAULT_CONFIG_PATH = "./config.yaml"
 
 logging_config = {
     "level": "INFO",
@@ -412,7 +411,7 @@ def check_k8s_version_recency(my_version: K8sVersion, releases_data: list[dict],
         if release.age > PATCH_VERSION_CADENCE:
             # whoops, the cluster should have been updated to this (or a higher version) already!
             return False
-        if my_version.version in cve_version_list and release.age > CVE_VERSION_CADENCE:
+        if my_version in cve_version_list and release.age > CVE_VERSION_CADENCE:
             # -- three FIXMEs:
             # (a) can the `in` ever become true, when we have a version vs a set of ranges
             # (b) if the release still has the CVE, then there is no use if we updated to it?
@@ -473,7 +472,8 @@ async def main(argv):
     releases_data = fetch_k8s_releases_data()
 
     try:
-        logger.info("Checking cluster of kubeconfig context '%s'.", config.context)
+        context_desc = f"context '{config.context}'" if config.context else "default context"
+        logger.info("Checking cluster specified by %s in %s.", context_desc, config.kubeconfig)
         cluster = await get_k8s_cluster_info(config.kubeconfig, config.context)
         cluster_branch = cluster.version.branch
 
