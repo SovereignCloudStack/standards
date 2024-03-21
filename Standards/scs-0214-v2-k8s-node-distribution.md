@@ -50,7 +50,7 @@ like fault-tolerance and data redundancy. But it also understands the costs and 
 for the providers associated with this effort, since the infrastructure needs to have
 hardware which will just be used to provide fail-over safety or duplication.
 
-The document [Best practices for large clusters] describes the concept of a failure zone.
+The document [Best practices for large clusters][k8s-large-clusters] describes the concept of a failure zone.
 This term isn't defined any further, but can in this context be described as a number of
 physical (computing) machines in such a vicinity to each other (either through physical
 or logical interconnection in some way), that specific problems inside this zone would put
@@ -82,8 +82,7 @@ If the standard is used by a provider, the following decisions are binding and v
 - Worker node distribution MUST be indicated to the user through some kind of labeling
   in order to enable (anti)-affinity for workloads over "failure zones".
 - To provide metadata about the node distribution, which also enables testing of this standard,
-  providers MUST annotate their K8s nodes with the labels listed below. These labels MUST be kept
-  up to date with the current state of the deployment.
+  providers MUST annotate their K8s nodes with the labels listed below.
   - `topology.kubernetes.io/zone`
 
     Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
