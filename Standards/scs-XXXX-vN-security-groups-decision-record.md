@@ -36,9 +36,9 @@ While creating a virtual machine and also later on, one or more security groups 
 When there is no security group specified the default security group will always be added.
 Like every other security group, the default group is also project bound.
 That means, it can be edited as required by project members.
-By design of OpenStack and when not changed, default rules in the default security group block ALL incoming traffic and only allow outgoing traffic[^1].
+By design of OpenStack and when not changed, default rules in the default security group block all incoming traffic except from the same Security Group and only allow outgoing traffic[^1].
 
-[^1]: [Security Group Overview](https://docs.openstack.org/nova/latest/user/security-groups.html)
+[^1]: [Default Security Group Rules](https://github.com/openstack/neutron/blob/master/neutron/db/migration/alembic_migrations/versions/2023.2/expand/c33da356b165_security_group_default_rules.py)
 
 ### Reasons for and against a standard for security groups
 
