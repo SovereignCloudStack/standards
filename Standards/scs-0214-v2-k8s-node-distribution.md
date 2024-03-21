@@ -2,7 +2,8 @@
 title: Kubernetes Node Distribution and Availability
 type: Standard
 status: Stable
-stabilized_at: 2024-03-21
+stabilized_at: 2024-04-04
+replaces: scs-0214-v1-k8s-node-distribution.md
 track: KaaS
 ---
 
