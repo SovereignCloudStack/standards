@@ -239,38 +239,25 @@ def parse_github_release_data(release_data: dict) -> K8sRelease:
 
 @dataclass(frozen=True, eq=True)
 class VersionRange:
-    """Version range with a lower and upper bound."""
+    """
+    Version range with a lower and upper bound. Supports checking if a
+    K8sVersion is in the range using the `in` operator.
+    If `inclusive` is true, `upper_version` is inside the range (i.e.,
+    it is a closed interval), otherwise `upper_version` is outside.
+    If `upper_version` is not set, the range just represents a single
+    version, namely `lower_version`.
+    """
 
-    # First version with the CVE; this value will be set if either an affected
-    # version is directly set in a CVE dataset or if the CVE dataset is in a
-    # non-standard format.  If the variable is set, `lower_version` and
-    # `upper_version` create a range of affected versions.
     lower_version: K8sVersion
-
-    # Last version with the CVE
     upper_version: K8sVersion = None
-
-    # True if upper_version is included in the range of affected versions
     inclusive: bool = False
 
     def __contains__(self, version: K8sVersion) -> bool:
-        # See the following link for more information about the format
-        # https://www.cve.org/AllResources/CveServices#cve-json-5
-
-        # Check if an `upper version` exists
-        if self.upper_version:
-            # Check if a `lower version` exists and compare the version against it
-            if self.lower_version:
-                gt = self.lower_version <= version
-            else:
-                gt = True
-            # Compare the version either with `less than` or `less than or equal` against the `upper version`
-            if self.inclusive:
-                return gt and self.upper_version >= version
-            return gt and self.upper_version > version
-        else:
-            # If no upper version exists, we only need to check if the version is equal to the `lower version`
+        if self.upper_version is None:
             return self.lower_version == version
+        if self.inclusive:
+            return self.lower_version <= version <= self.upper_version
+        return self.lower_version <= version < self.upper_version
 
 
 @dataclass
