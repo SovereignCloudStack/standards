@@ -14,6 +14,10 @@ Replace at least all text in the sections not marked as OPTIONAL.
 See https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0001-v1-sovereign-cloud-standards.md
 --->
 
+## Abstract
+
+Very short introduction about the topic of this document.
+
 ## Terminology
 
 Example (abbr. Ex)
