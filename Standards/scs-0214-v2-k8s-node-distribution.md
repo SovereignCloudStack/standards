@@ -124,3 +124,8 @@ If also produces warnings and informational outputs, if e.g. labels don't seem t
 [k8s-large-clusters]: https://kubernetes.io/docs/setup/best-practices/cluster-large/
 [scs-0213-v1]: https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0213-v1-k8s-nodes-anti-affinity.md
 [k8s-labels-docs]: https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone
+
+## Previous standard versions
+
+This is version 2 of the standard; it extends [version 1](scs-0214-v1-k8s-node-distribution.md) by the
+requirements regarding node labeling.
