@@ -24,7 +24,7 @@ While often times, consumers will choose a `StorageClass` explicitly, usually, t
 
 This document attempts to define the properties this default `StorageClass` should have.
 
-## Decision
+## Standard
 
 The default `StorageClass` is made default using the `storageclass.kubernetes.io/is-default-class` annotation, following [Kubernetes upstream](https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/). Hence, standardizing its name is not required for the intents of this standard.
 

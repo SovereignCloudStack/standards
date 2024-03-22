@@ -17,7 +17,7 @@ We want to standardize a few varieties of volume types. While a user can choose 
 
 In General: what the different volume types are capable of is highly dependend on both the used backend and the configurations of OpenStack. A few options are worth being at least recommended.
 
-## Design Considerations
+## Context
 
 We want to have a discoverable Standard. So there should be no naming conventions as per request by operators.
 
