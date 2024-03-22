@@ -7,7 +7,7 @@ track: IaaS
 status: Deprecated
 state: v1.1 (for R3)
 stabilized_at: 2022-09-08
-obsoleted_at: 2023-10-31
+deprecated_at: 2023-10-31
 ---
 
 ## Introduction

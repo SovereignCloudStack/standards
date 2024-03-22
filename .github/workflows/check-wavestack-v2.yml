@@ -1,4 +1,4 @@
-name: "Compliance of wavestack"
+name: "Compliance IaaS v2 of wavestack"
 
 on:
   # Trigger compliance check every day at 4:30 UTC

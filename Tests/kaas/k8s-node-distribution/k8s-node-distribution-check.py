@@ -22,7 +22,7 @@ and comparing them. This doesn't always attest to a good distribution
 and does require these labels to be set, but should yield overall pretty
 good initial results.
 
-    kubernetes.io/hostname
+    topology.scs.openstack.org/host-id  # previously kubernetes.io/hostname
     topology.kubernetes.io/zone
     topology.kubernetes.io/region
     node-role.kubernetes.io/control-plane
@@ -222,7 +222,7 @@ async def main(argv):
     labels = (
         "topology.kubernetes.io/region",
         "topology.kubernetes.io/zone",
-        "kubernetes.io/hostname",
+        "topology.scs.community/host-id",
     )
 
     nodes = await get_k8s_cluster_labelled_nodes(config.kubeconfig, labels + ("node-role.kubernetes.io/control-plane", ))

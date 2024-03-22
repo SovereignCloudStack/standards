@@ -9,7 +9,7 @@ Otherwise the return code is the number of errors that occurred (up to 127 due t
 restrictions); for further information, see the log messages on various channels:
     CRITICAL  for problems preventing the test to complete,
     ERROR     for violations of requirements,
-    INFO      for violations of recommendations,
+    WARNING   for violations of recommendations,
     DEBUG     for background information and problems that don't hinder the test.
 """
 from collections import Counter
@@ -53,13 +53,22 @@ FLAVOR_OPTIONAL = ("hw_rng:rate_bytes", "hw_rng:rate_period")
 
 
 # we need to set package source on Ubuntu, because the default is not fixed and can lead to Heisenbugs
-SERVER_USERDATA = """#cloud-config
+SERVER_USERDATA = {
+    'ubuntu': """#cloud-config
 apt:
   primary:
     - arches: [default]
       uri: http://az1.clouds.archive.ubuntu.com/ubuntu/
   security: []
-"""
+""",
+    'debian': """#cloud-config
+apt:
+  primary:
+    - arches: [default]
+      uri: https://mirror.plusserver.com/debian/debian/
+  security: []
+""",
+}
 
 
 def print_usage(file=sys.stderr):
@@ -311,7 +320,7 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
 
     # try to pick a frugal flavor
     flavor = min(flavors, key=lambda flv: flv.vcpus)
-    userdata = SERVER_USERDATA if image.name.lower().startswith("ubuntu") else None
+    userdata = next((value for key, value in SERVER_USERDATA.items() if image.name.lower().startswith(key)), None)
     # create a server with the image and the flavor as well as
     # the previously created keys and security group
     logger.debug(f"Creating instance of image '{image.name}' using flavor '{flavor.name}'")
@@ -331,7 +340,7 @@ def delete_vm(conn, server_name=SERVER_NAME):
         logger.debug(f"The server '{server_name}' couldn't be deleted.", exc_info=True)
 
 
-def retry(func, exc_type, timeouts=(8, 7, 15, 10)):
+def retry(func, exc_type, timeouts=(8, 7, 15, 10, 20, 30, 60)):
     if isinstance(exc_type, str):
         exc_type = exc_type.split(',')
     timeout_iter = iter(timeouts)
