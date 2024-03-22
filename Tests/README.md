@@ -92,6 +92,10 @@ pytest
 
 # Option B: run only a subset of the tests
 pytest kaas/k8s-version-policy/k8s_version_policy_test.py
+
+# Option C: produce a HTML code coverage report and open it
+pytest --cov --cov-report=html
+xdg-open htmldoc/index.html
 ```
 
 You are encouraged to cover new conformance tests with unit tests!
