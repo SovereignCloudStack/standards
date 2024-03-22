@@ -435,6 +435,7 @@ async def post_report(
 async def get_status(
     request: Request,
     subject: str,
+    scopeuuid: str = None, version: str = None,
     conn: psycopg2.extensions.connection = Depends(get_conn),
 ):
     # note: text/html will be the default, but let's start with json to get the logic right
@@ -452,7 +453,7 @@ async def get_status(
         # plus, where available, the latest test result (if necessary, with manual approval)
         cur.execute(
             f'''
-            SELECT scope.scope, version.version, standardentry.condition, "check".id, "check".ccondition, latest.result, latest.approval
+            SELECT scope.scopeuuid, scope.scope, version.version, standardentry.condition, "check".id, "check".ccondition, latest.result, latest.approval
             FROM "check"
             NATURAL JOIN standardentry
             NATURAL JOIN version
@@ -468,30 +469,43 @@ async def get_status(
                 {'' if is_privileged else 'AND approval'}
                 ORDER BY checkid, checked_at DESC
             ) latest
-            ON "check".checkid = latest.checkid;
+            ON "check".checkid = latest.checkid
+            {'' if scopeuuid is None and version is None else 'WHERE'}
+            {'' if scopeuuid is None else 'scope.scopeuuid = %s'}
+            {'' if scopeuuid is None or version is None else 'AND'}
+            {'' if version is None else 'version.version = %s'}
+            ;
             ''',
-            (subject, ),
+            (subject, ) + (() if scopeuuid is None else (scopeuuid, )) + (() if version is None else (version, )),
         )
         rows = cur.fetchall()
     # now collect pass, DNF, fail per scope/version
     num_pass, num_dnf, num_fail = defaultdict(set), defaultdict(set), defaultdict(set)
-    for scope, version, condition, check, ccondition, result, approval in rows:
+    # also collect some ancillary information
+    scopes = {}
+    for scopeuuid, scope, version, condition, check, ccondition, result, approval in rows:
+        scopes.setdefault(scopeuuid, scope)
         if result is not None and (condition == "optional" or ccondition == "optional"):
             # count optional as 'pass' so long as a result is available;
             # otherwise a version without mandatory checks wouldn't be counted at all
-            num_pass[(scope, version)].add(check)
+            num_pass[(scopeuuid, version)].add(check)
         elif result == 1:
-            num_pass[(scope, version)].add(check)
+            num_pass[(scopeuuid, version)].add(check)
         elif result == -1:
-            num_fail[(scope, version)].add(check)
+            num_fail[(scopeuuid, version)].add(check)
         else:
-            num_dnf[(scope, version)].add(check)
+            num_dnf[(scopeuuid, version)].add(check)
+    results = {}
+    for scopeuuid, scope in scopes.items():
+        results[scopeuuid] = {"name": scope, "versions": defaultdict(dict), "result": 0}
     keys = sorted(set(num_pass) | set(num_dnf) | set(num_fail))
-    results = defaultdict(dict)
     for key in keys:
         result = -1 if key in num_fail else 0 if key in num_dnf else 1
-        scope, version = key
-        results[scope][version] = result
+        scopeuuid, version = key
+        results[scopeuuid]["versions"][version] = result
+        if result == 1:
+            # FIXME also check that the version is valid
+            results[scopeuuid]["result"] = 1
     return results
 
 
