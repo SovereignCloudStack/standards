@@ -46,7 +46,7 @@ import yaml
 
 MINOR_VERSION_CADENCE = timedelta(days=120)
 PATCH_VERSION_CADENCE = timedelta(weeks=1)
-CVE_VERSION_CADENCE = timedelta(days=3)
+CVE_VERSION_CADENCE = timedelta(days=2)
 CVE_SEVERITY = 8  # CRITICAL
 
 HERE = Path(__file__).parent
@@ -378,9 +378,16 @@ async def get_k8s_cluster_info(kubeconfig, context=None) -> ClusterInfo:
         return ClusterInfo(version, cluster_config.current_context['name'])
 
 
-def check_k8s_version_recency(my_version: K8sVersion, releases_data: list[dict], cve_version_list=()) -> bool:
-    """Check a given K8s cluster version against the list of released versions in order to find out if the version
-    is an accepted recent version according to the standard."""
+def check_k8s_version_recency(
+    my_version: K8sVersion,
+    releases_data: list[dict],
+    cve_affected_ranges: set[VersionRange]
+) -> bool:
+    """
+    Check a given K8s cluster version against the list of released versions
+    in order to find out if the version is an accepted recent version according
+    to the standard.
+    """
 
     # iterate over all releases in the list, but only look at those whose branch matches
     # we might break early assuming that the list is sorted somehow, but it is usually
@@ -398,11 +405,11 @@ def check_k8s_version_recency(my_version: K8sVersion, releases_data: list[dict],
         if release.age > PATCH_VERSION_CADENCE:
             # whoops, the cluster should have been updated to this (or a higher version) already!
             return False
-        if my_version in cve_version_list and release.age > CVE_VERSION_CADENCE:
-            # -- three FIXMEs:
-            # (a) can the `in` ever become true, when we have a version vs a set of ranges
-            # (b) if the release still has the CVE, then there is no use if we updated to it?
-            # (c) the standard says "time period MUST be even shorter ... it is RECOMMENDED that ...",
+        is_affected = any(my_version in _range for _range in cve_affected_ranges)
+        if is_affected and release.age > CVE_VERSION_CADENCE:
+            # -- two FIXMEs:
+            # (a) if the release still has the CVE, then there is no use if we updated to it?
+            # (b) the standard says "time period MUST be even shorter ... it is RECOMMENDED that ...",
             #     so what is it now, a requirement or a recommendation?
             # shouldn't we check for CVEs of my_version and then check whether the new one still has them?
             # -- so, this has to be reworked in a major way, but for the time being, just emit an INFO
