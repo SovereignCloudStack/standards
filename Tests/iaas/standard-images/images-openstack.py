@@ -12,7 +12,7 @@ Otherwise the return code is the number of errors that occurred (up to 127 due t
 restrictions); for further information, see the log messages on various channels:
     CRITICAL  for problems preventing the test to complete,
     ERROR     for violations of requirements,
-    INFO      for violations of recommendations,
+    WARNING   for violations of recommendations,
     DEBUG     for background information and problems that don't hinder the test.
 """
 from collections import Counter
