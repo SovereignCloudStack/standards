@@ -569,7 +569,6 @@ async def post_results(
             )
             resultid, = cur.fetchone()
             resultids.append(resultid)
-    print(resultids)
     conn.commit()
 
 
