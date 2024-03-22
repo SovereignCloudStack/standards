@@ -120,7 +120,7 @@ def main(argv):
                 matches = [img for img in (by_name.get(image_spec['name']), ) if img is not None]
             if not matches:
                 status = image_spec.get('status', 'optional')
-                level = {"mandatory": logging.ERROR, "recommended": logging.INFO}.get(status, logging.DEBUG)
+                level = {"mandatory": logging.ERROR, "recommended": logging.WARNING}.get(status, logging.DEBUG)
                 logger.log(level, f"Missing {status} image '{image_spec['name']}'")
                 continue
             for image in matches:
@@ -135,7 +135,7 @@ def main(argv):
         logger.debug("Exception info", exc_info=True)
 
     c = counting_handler.bylevel
-    logger.debug(f"Total critical / error / info: {c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.INFO]}")
+    logger.debug(f"Total critical / error / warning: {c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.WARNING]}")
     return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 
