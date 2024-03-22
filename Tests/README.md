@@ -106,16 +106,20 @@ We run the tests on a regular basis in our GitHub workflows.
 We list our main Python dependencies in `requirements.in`. Additionally, we list
 [unit tests](#unit-and-regression-tests) dependencies in `test-requirements.in`.
 The `*.in` files are fed to `pip-compile` to produce corresponding `*.txt` files
-that contain an exact, version pinned listing of *all* dependencies, including
+that contain an exact, version-pinned listing of *all* dependencies, including
 transitive ones.
 
 `pip-compile` can be installed via `pip install pip-tools`.
 It needs to be run in two cases:
 
-1. You modified an `*.in` file: run `pip-compile <INFILE>` (e.g.,
-   `pip-compile test-requirements.in`).
+1. You modified an `*.in` file: run `pip-compile <INFILE>`. For example:
+
+       pip-compile test-requirements.in
+
 2. You want to bump the pinned dependencies: add the `--upgrade` flag to the
-   `pip-compile` invocation (e.g., `pip-compile --upgrade requirements.in`).
+   `pip-compile` invocation. For example:
+   
+       pip-compile --upgrade requirements.in
 
 Note: The Python version used for running `pip-compile` should be consistent. The currently
 used version is documented in the header of the `requirements.txt`. It should match the
