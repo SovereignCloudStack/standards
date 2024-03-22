@@ -407,8 +407,8 @@ def check_k8s_version_recency(
         if release.age > PATCH_VERSION_CADENCE:
             # whoops, the cluster should have been updated to this (or a higher version) already!
             return False
-        is_affected = any(my_version in _range for _range in cve_affected_ranges)
-        if is_affected and release.age > CVE_VERSION_CADENCE:
+        ranges = [_range for _range in cve_affected_ranges if my_version in _range]
+        if ranges and release.age > CVE_VERSION_CADENCE:
             # -- two FIXMEs:
             # (a) if the release still has the CVE, then there is no use if we updated to it?
             # (b) the standard says "time period MUST be even shorter ... it is RECOMMENDED that ...",
