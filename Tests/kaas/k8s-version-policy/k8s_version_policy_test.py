@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from unittest import mock
 import json
+import logging
 
 import pytest
 
@@ -52,8 +53,21 @@ EXPECTED_RECENCIES = {
 def test_check_version_recency_without_cve(release_data, ref_time, expected_recent):
     with mock.patch("k8s_version_policy.datetime", wraps=datetime) as dt:
         dt.now.return_value = ref_time
-        actual_recent = check_k8s_version_recency(K8S_VERSION, release_data, [])
+        actual_recent = check_k8s_version_recency(K8S_VERSION, release_data, set())
         assert actual_recent == expected_recent
+
+
+def test_check_version_recency_with_cve(caplog, release_data):
+    caplog.set_level(logging.INFO)
+    affected_version = K8sVersion(1, 28, 5)
+    fake_ranges = {VersionRange(affected_version)}
+    with mock.patch("k8s_version_policy.datetime", wraps=datetime) as dt:
+        # 2 days after release of patch for affected_version
+        dt.now.return_value = datetime(2024, 1, 20)
+        assert check_k8s_version_recency(affected_version, release_data, fake_ranges)
+    assert len(caplog.records) == 1, "expected a log message"
+    assert caplog.records[0].levelname == "INFO"
+    assert "Consider updating from 1.28.5" in caplog.records[0].message
 
 
 def test_is_high_severity():
