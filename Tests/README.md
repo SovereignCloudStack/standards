@@ -114,14 +114,14 @@ It needs to be run in two cases:
 
 1. You modified an `*.in` file: run `pip-compile <INFILE>`. For example:
 
-   ```
+   ```shell
    pip-compile test-requirements.in
    ```
 
 2. You want to bump the pinned dependencies: add the `--upgrade` flag to the
    `pip-compile` invocation. For example:
 
-   ```
+   ```shell
    pip-compile --upgrade requirements.in
    ```
 
