@@ -82,7 +82,8 @@ If the standard is used by a provider, the following decisions are binding and v
 - Worker node distribution MUST be indicated to the user through some kind of labeling
   in order to enable (anti)-affinity for workloads over "failure zones".
 - To provide metadata about the node distribution, which also enables testing of this standard,
-  providers MUST annotate their K8s nodes with the labels listed below.
+  providers SHOULD annotate their K8s nodes with the labels listed below, and the labels
+  SHOULD be kept up to date.
   - `topology.kubernetes.io/zone`
 
     Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
