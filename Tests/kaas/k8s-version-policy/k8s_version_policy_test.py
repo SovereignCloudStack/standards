@@ -2,7 +2,7 @@
 Pytest based unit tests for k8s_version_policy.
 
 (c) Martin Morgenstern <martin.morgenstern@cloudandheat.com>, 3/2024
-License: CC-BY-SA 4.0
+SPDX-License-Identifier: CC-BY-SA-4.0
 """
 
 from datetime import datetime

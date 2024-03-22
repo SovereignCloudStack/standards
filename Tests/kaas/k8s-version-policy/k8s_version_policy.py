@@ -24,7 +24,7 @@ a shorter notice.
 (c) Hannes Baum <hannes.baum@cloudandheat.com>, 6/2023
 (c) Martin Morgenstern <martin.morgenstern@cloudandheat.com>, 2/2024
 (c) Matthias Büchse <matthias.buechse@cloudandheat.com>, 3/2024
-License: CC-BY-SA 4.0
+SPDX-License-Identifier: CC-BY-SA-4.0
 """
 
 from collections import Counter
