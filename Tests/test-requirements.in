@@ -1,3 +1,4 @@
 -c requirements.txt
 pytest
 pytest-asyncio
+pytest-cov

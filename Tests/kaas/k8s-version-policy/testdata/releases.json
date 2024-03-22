@@ -1,0 +1,142 @@
+[
+  {
+    "name": "Kubernetes v1.28.8",
+    "tag_name": "v1.28.8",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2024-03-15T18:53:33Z"
+  },
+  {
+    "name": "Kubernetes v1.27.12",
+    "tag_name": "v1.27.12",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2024-03-15T19:26:37Z"
+  },
+  {
+    "name": "Kubernetes v1.29.3",
+    "tag_name": "v1.29.3",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2024-03-15T20:15:39Z"
+  },
+  {
+    "name": "Kubernetes v1.26.15",
+    "tag_name": "v1.26.15",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2024-03-14T16:24:57Z"
+  },
+  {
+    "name": "Kubernetes v1.30.0-beta.0",
+    "tag_name": "v1.30.0-beta.0",
+    "draft": false,
+    "prerelease": true,
+    "published_at": "2024-03-13T05:40:09Z"
+  },
+  {
+    "name": "Kubernetes v1.30.0-alpha.3",
+    "tag_name": "v1.30.0-alpha.3",
+    "draft": false,
+    "prerelease": true,
+    "published_at": "2024-02-28T05:37:33Z"
+  },
+  {
+    "name": "Kubernetes v1.29.2",
+    "tag_name": "v1.29.2",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2024-02-14T18:01:57Z"
+  },
+  {
+    "name": "Kubernetes v1.28.7",
+    "tag_name": "v1.28.7",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2024-02-14T15:49:40Z"
+  },
+  {
+    "name": "Kubernetes v1.27.11",
+    "tag_name": "v1.27.11",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2024-02-14T15:51:57Z"
+  },
+  {
+    "name": "Kubernetes v1.26.14",
+    "tag_name": "v1.26.14",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2024-02-14T16:07:53Z"
+  },
+  {
+    "name": "Kubernetes v1.30.0-alpha.2",
+    "tag_name": "v1.30.0-alpha.2",
+    "draft": false,
+    "prerelease": true,
+    "published_at": "2024-02-14T05:11:21Z"
+  },
+  {
+    "name": "Kubernetes v1.30.0-alpha.1",
+    "tag_name": "v1.30.0-alpha.1",
+    "draft": false,
+    "prerelease": true,
+    "published_at": "2024-01-31T19:48:16Z"
+  },
+  {
+    "name": "Kubernetes v1.29.1",
+    "tag_name": "v1.29.1",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2024-01-17T19:37:29Z"
+  },
+  {
+    "name": "Kubernetes v1.28.6",
+    "tag_name": "v1.28.6",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2024-01-17T19:40:09Z"
+  },
+  {
+    "name": "Kubernetes v1.27.10",
+    "tag_name": "v1.27.10",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2024-01-17T19:40:02Z"
+  },
+  {
+    "name": "Kubernetes v1.26.13",
+    "tag_name": "v1.26.13",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2024-01-17T19:42:17Z"
+  },
+  {
+    "name": "Kubernetes v1.28.5",
+    "tag_name": "v1.28.5",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2023-12-20T13:23:37Z"
+  },
+  {
+    "name": "Kubernetes v1.27.9",
+    "tag_name": "v1.27.9",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2023-12-20T11:14:33Z"
+  },
+  {
+    "name": "Kubernetes v1.26.12",
+    "tag_name": "v1.26.12",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2023-12-20T13:27:00Z"
+  },
+  {
+    "name": "Kubernetes v1.29.0",
+    "tag_name": "v1.29.0",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2023-12-13T16:34:20Z"
+  }
+]

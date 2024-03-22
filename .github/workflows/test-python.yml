@@ -1,0 +1,26 @@
+---
+name: Run Python unit and regression tests
+
+"on":
+  push:
+    paths:
+      - '**.py'
+      - .github/workflows/test-python.yml
+
+jobs:
+  run-pytest-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: |
+            Tests/requirements.txt
+            Tests/test-requirements.txt
+      - run: pip3 install --upgrade pip setuptools
+      - run: pip3 install -r requirements.txt -r test-requirements.txt
+        working-directory: ./Tests
+      - run: pytest --cov
+        working-directory: ./Tests
