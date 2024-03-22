@@ -240,9 +240,11 @@ def parse_github_release_data(release_data: dict) -> K8sRelease:
 @dataclass(frozen=True, eq=True)
 class VersionRange:
     """
-    Version range with a lower and upper bound. Supports checking if a
-    K8sVersion is in the range using the `in` operator.
-    If `inclusive` is true, `upper_version` is inside the range (i.e.,
+    Version range with a lower and upper bound.
+
+    Supports checking if a K8sVersion is in the range using the `in`
+    operator.
+    If `inclusive` is True, `upper_version` is inside the range (i.e.,
     it is a closed interval), otherwise `upper_version` is outside.
     If `upper_version` is not set, the range just represents a single
     version, namely `lower_version`.
@@ -381,7 +383,7 @@ async def get_k8s_cluster_info(kubeconfig, context=None) -> ClusterInfo:
 def check_k8s_version_recency(
     my_version: K8sVersion,
     releases_data: list[dict],
-    cve_affected_ranges: set[VersionRange]
+    cve_affected_ranges: set[VersionRange],
 ) -> bool:
     """
     Check a given K8s cluster version against the list of released versions

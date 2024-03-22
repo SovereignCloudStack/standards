@@ -27,10 +27,10 @@ ERROR: flavor 'SCS-4V-16-100s': field 'disk' contradicting name-v2 'SCS-4V-16-10
 ERROR: file 'scs-0103-v1-flavors-wrong.yaml': found 7 errors
 """.strip()
 
-TEST_PARAMS = [
+TEST_PARAMS = (
     (CLEAN_YAML_DIR, 0, ""),
-    (BUGGY_YAML_DIR, 1, EXPECTED_ERRORS)
-]
+    (BUGGY_YAML_DIR, 1, EXPECTED_ERRORS),
+)
 
 
 @pytest.mark.parametrize("directory, num_errors, expected_output", TEST_PARAMS)
