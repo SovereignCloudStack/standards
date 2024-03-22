@@ -84,19 +84,24 @@ def test_is_high_severity():
 
 # We could have used pytest.mark.parametrize() for the following tests, but
 # readability suffers because of the nested data structures.
-def test_parse_cve_info1():
+def test_parse_cve_info_missing_upper():
     parsed_range = parse_cve_version_information({"version": "1.2.3"})
     assert parsed_range == VersionRange(K8sVersion(1, 2, 3))
 
 
-def test_parse_cve_info2():
+def test_parse_cve_info_exclusive():
     parsed_range = parse_cve_version_information({"version": "1.2.3", "lessThan": "1.3.0"})
     assert parsed_range == VersionRange(K8sVersion(1, 2, 3), K8sVersion(1, 3, 0))
 
 
-def test_parse_cve_info3():
+def test_parse_cve_info_inclusive():
     parsed_range = parse_cve_version_information({"version": "1.2.3", "lessThanOrEqual": "1.3.0"})
     assert parsed_range == VersionRange(K8sVersion(1, 2, 3), K8sVersion(1, 3, 0), inclusive=True)
+
+
+def test_parse_cve_info_missing_lower():
+    parsed_range = parse_cve_version_information({"version": "unspecified", "lessThanOrEqual": "1.3.0"})
+    assert parsed_range == VersionRange(K8sVersion(0, 0), K8sVersion(1, 3, 0), inclusive=True)
 
 
 def test_parse_version():
@@ -155,6 +160,16 @@ def test_k8s_branch_basics():
     assert K8sBranch(1, 28) < K8sBranch(1, 29)
     assert K8sVersion(1, 28, 5).branch == K8sBranch(1, 28)
     assert K8sBranch(1, 29).previous() == K8sBranch(1, 28)
+
+
+def test_version_range_constructor1():
+    with pytest.raises(ValueError, match="must not be None"):
+        VersionRange(lower_version=None)
+
+
+def test_version_range_constructor2():
+    with pytest.raises(ValueError, match="must be lower than"):
+        VersionRange(K8sVersion(2, 3), K8sVersion(1, 3))
 
 
 def test_version_range_contains_with_no_upper_limit():

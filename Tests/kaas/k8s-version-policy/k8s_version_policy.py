@@ -167,6 +167,9 @@ class K8sVersion:
         return f"{self.major}.{self.minor}.{self.patch}"
 
 
+K8sVersion.MINIMUM = K8sVersion(0, 0)
+
+
 def parse_version(version_str: str) -> K8sVersion:
     cleansed = version_str.strip().removeprefix("v")
     try:
@@ -254,6 +257,12 @@ class VersionRange:
     upper_version: K8sVersion = None
     inclusive: bool = False
 
+    def __post_init__(self):
+        if self.lower_version is None:
+            raise ValueError("lower_version must not be None")
+        if self.upper_version and self.upper_version < self.lower_version:
+            raise ValueError("lower_version must be lower than upper_version")
+
     def __contains__(self, version: K8sVersion) -> bool:
         if self.upper_version is None:
             return self.lower_version == version
@@ -306,6 +315,9 @@ def parse_cve_version_information(cve_version_info: dict) -> VersionRange:
             vdata = cve_version_info['version'].split("-")
             vi_lower_version = parse_version(vdata[0])
             vi_upper_version = parse_version(vdata[1])
+
+    if vi_lower_version is None:
+        vi_lower_version = K8sVersion.MINIMUM
 
     return VersionRange(vi_lower_version, vi_upper_version, inclusive)
 
