@@ -89,6 +89,20 @@ Needs to be authenticated (via basic auth).
 
 Needs to specify `Content-Type`, either `application/json` or `application/yaml`.
 
+The actual report must be prefixed by an SSH signature, plus an ampersand character. The full body can
+be created and sent as follows:
+
+```shell
+ssh-keygen \
+  -Y sign -f ~/.ssh/id_ed25519 -n report myreport.yaml
+curl \
+  --data-binary @myreport.yaml.sig --data-binary @myreport.yaml \
+  -H "Content-Type: application/yaml" -H "Authorization: Basic $BASICAUTH" \
+  http://127.0.0.1:8080/reports
+```
+
+The tool `curl` will concatenate the contents of the two files with an ampersand in between.
+
 ### GET /reports
 
 Returns the most recent reports, by default restricted to the authenticated subject and limited to 10 items.
