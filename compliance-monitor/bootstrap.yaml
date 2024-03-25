@@ -1,7 +1,8 @@
 accounts:
   - subject: admin
     api_key: "secret api key"
-    public_key: "..."
+    public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
+    public_key_type: "ssh-ed25519"
     roles:
       - read_any
       - append_any
