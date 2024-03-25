@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-from collections import Counter, defaultdict
+from collections import defaultdict
 from datetime import date, datetime, timedelta
 import json
 import os
 import os.path
 import secrets
+from shutil import which
+from subprocess import run
+from tempfile import NamedTemporaryFile
 from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
@@ -27,6 +30,15 @@ class Settings:
 ROLES = {'read_any': 1, 'append_any': 2, 'admin': 4, 'approve': 8}
 # number of days that expired results will be considered in lieu of more recent, but unapproved ones
 GRACE_PERIOD_DAYS = 7
+# separator between signature and report data; use something like
+#     ssh-keygen \
+#       -Y sign -f ~/.ssh/id_ed25519 -n report myreport.yaml
+#     curl \
+#       --data-binary @myreport.yaml.sig --data-binary @myreport.yaml \
+#       -H "Content-Type: application/yaml" -H "Authorization: Basic ..." \
+#       http://127.0.0.1:8080/reports
+# to achieve this!
+SEP = "-----END SSH SIGNATURE-----\n&"
 
 
 # do I hate these globals, but I don't see another way with these frameworks
@@ -66,20 +78,20 @@ def get_current_account(
         with conn.cursor() as cur:
             cur.execute(
                 '''
-                SELECT apikey, publickey, roles FROM account WHERE subject = %s;
+                SELECT apikey, publickey, publickeytype, roles FROM account WHERE subject = %s;
                 ''',
                 (credentials.username, )
             )
             if not cur.rowcount:
                 raise RuntimeError
-            apikey, publickey, roles = cur.fetchone()
+            apikey, publickey, publickey_type, roles = cur.fetchone()
         current_password_bytes = credentials.password.encode("utf8")
         is_correct_password = secrets.compare_digest(
             current_password_bytes, apikey.encode("utf8")
         )
         if not is_correct_password:
             raise RuntimeError
-        return credentials.username, publickey, roles
+        return credentials.username, publickey, publickey_type, roles
     except RuntimeError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -98,6 +110,7 @@ def ensure_schema(conn):
                 subject text PRIMARY KEY,
                 apikey text,
                 publickey text,
+                publickeytype text,
                 roles integer
             );
             CREATE TABLE IF NOT EXISTS scope (
@@ -183,13 +196,17 @@ def import_bootstrap(bootstrap_path, conn):
             roles = sum(ROLES[r] for r in account.get('roles', ()))
             cur.execute(
                 '''
-                INSERT INTO account (subject, apikey, publickey, roles)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO account (subject, apikey, publickey, publickeytype, roles)
+                VALUES (%s, %s, %s, %s, %s)
                 ON CONFLICT (subject)
                 DO UPDATE
-                SET apikey = EXCLUDED.apikey, publickey = EXCLUDED.publickey, roles = EXCLUDED.roles;
+                SET apikey = EXCLUDED.apikey
+                , publickey = EXCLUDED.publickey
+                , publickeytype = EXCLUDED.publickeytype
+                , roles = EXCLUDED.roles
+                ;
                 ''',
-                (account['subject'], account['api_key'], account['public_key'], roles),
+                (account['subject'], account['api_key'], account['public_key'], account['public_key_type'], roles),
             )
         conn.commit()
 
@@ -219,7 +236,7 @@ def import_cert_yaml(yaml_path, conn):
         scopeid, = cur.fetchone()
         all_versions = set()
         for vdata in document['versions']:
-            all_versions.add(vdata['version'])            
+            all_versions.add(vdata['version'])
             cur.execute(
                 '''
                 INSERT INTO version (scopeid, version, stabilized_at, deprecated_at)
@@ -311,7 +328,7 @@ async def get_reports(
     conn: psycopg2.extensions.connection = Depends(get_conn),
 ):
     account = get_current_account(await security(request), conn)
-    current_subject, publickey, roles = account
+    current_subject, publickey, publickey_type, roles = account
     if subject is None:
         subject = current_subject
     elif subject != current_subject and ROLES['read_any'] & roles == 0:
@@ -354,7 +371,7 @@ async def post_report(
     conn: psycopg2.extensions.connection = Depends(get_conn),
 ):
     account = get_current_account(await security(request), conn)
-    current_subject, publickey, roles = account
+    current_subject, publickey, publickey_type, roles = account
     # test this like so:
     # curl --data-binary @blubb.yaml -H "Content-Type: application/yaml" -H "Authorization: Basic YWRtaW46c2VjcmV0IGFwaSBrZXk=" http://127.0.0.1:8080/reports
     content_type = request.headers['content-type']
@@ -362,6 +379,32 @@ async def post_report(
         raise HTTPException(status_code=500, detail="Unsupported content type")
     body = await request.body()
     body_text = body.decode("utf-8")
+    sep = body_text.find(SEP)
+    if sep < 0:
+        raise HTTPException(status_code=401)
+    sep += len(SEP)
+    signature = body_text[:sep - 1]  # do away with the ampersand!
+    body_text = body_text[sep:]
+    # create 3 files:
+    # - allowed_signers
+    # - report.sig
+    # - report
+    with NamedTemporaryFile(mode="w") as allowed_signers_file, \
+            NamedTemporaryFile(mode="w") as report_sig_file, \
+            NamedTemporaryFile(mode="w") as report_file:
+        allowed_signers_file.write(f"mail@csp.eu {publickey_type} {publickey}")
+        allowed_signers_file.flush()
+        report_sig_file.write(signature)
+        report_sig_file.flush()
+        report_file.write(body_text)
+        report_file.flush()
+        report_file.seek(0)
+        if run([
+            which("ssh-keygen"),
+            "-Y", "verify", "-f", allowed_signers_file.name, "-I", "mail@csp.eu", "-n", "report",
+            "-s", report_sig_file.name,
+        ], stdin=report_file).returncode:
+            raise HTTPException(status_code=401)
     json_text = None
     if content_type.endswith('/yaml'):
         yaml = ruamel.yaml.YAML(typ='safe')
@@ -444,9 +487,9 @@ async def get_status(
         raise HTTPException(status_code=500, detail="client needs to accept application/json")
     account = get_current_account(await optional_security(request), conn)
     if account:
-        current_subject, publickey, roles = account
+        current_subject, _, _, roles = account
     else:
-        current_subject, publickey, roles = None, None, 0
+        current_subject, roles = None, 0
     is_privileged = subject == current_subject or ROLES['read_any'] & roles != 0
     with conn.cursor() as cur:
         # this will list all scopes, versions, checks
@@ -517,7 +560,7 @@ async def get_results(
 ):
     """get recent results, potentially filtered by approval status"""
     account = get_current_account(await security(request), conn)
-    current_subject, publickey, roles = account
+    current_subject, publickey, publickey_type, roles = account
     if ROLES['read_any'] & roles == 0:
         raise HTTPException(status_code=401, detail="Permission denied")
     with conn.cursor() as cur:
@@ -554,7 +597,7 @@ async def post_results(
     document = json.loads(body.decode("utf-8"))
     records = [document] if isinstance(document, dict) else document
     account = get_current_account(await security(request), conn)
-    current_subject, publickey, roles = account
+    current_subject, publickey, publickey_type, roles = account
     if ROLES['approve'] & roles == 0:
         raise HTTPException(status_code=401, detail="Permission denied")
     with conn.cursor() as cur:
@@ -565,7 +608,7 @@ async def post_results(
                 for key in ['reportuuid', 'scopeuuid', 'version', 'check', 'approval']
             ]
             cur.execute(
-                f'''
+                '''
                 UPDATE result
                 SET approval = %s
                 FROM report, scope, version, "check"
