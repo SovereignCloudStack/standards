@@ -14,6 +14,7 @@ from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import psycopg2
 from psycopg2.errors import UniqueViolation
+from psycopg2 import sql
 import ruamel.yaml
 import uvicorn
 
@@ -68,6 +69,12 @@ def get_conn(settings=settings):
         conn.close()
 
 
+def make_where_clause(*filter_clauses):
+    """join args of type sql.Composable via AND, dropping None, and prepend WHERE if appropriate"""
+    clause = sql.SQL(' AND ').join(filter(None, filter_clauses))
+    return sql.SQL(' WHERE {} ').format(clause) if clause.seq else sql.SQL('')
+
+
 def get_current_account(
     credentials: Optional[HTTPBasicCredentials],
     conn: psycopg2.extensions.connection,
@@ -77,10 +84,8 @@ def get_current_account(
     try:
         with conn.cursor() as cur:
             cur.execute(
-                '''
-                SELECT apikey, publickey, publickeytype, roles FROM account WHERE subject = %s;
-                ''',
-                (credentials.username, )
+                "SELECT apikey, publickey, publickeytype, roles FROM account WHERE subject = %s;",
+                (credentials.username, ),
             )
             if not cur.rowcount:
                 raise RuntimeError
@@ -334,10 +339,13 @@ async def get_reports(
     elif subject != current_subject and ROLES['read_any'] & roles == 0:
         raise HTTPException(status_code=401, detail="Permission denied")
     with conn.cursor() as cur:
-        if subject != '':
-            cur.execute('SELECT data FROM report WHERE subject = %s LIMIT %s OFFSET %s;', (subject, limit, skip))
-        else:
-            cur.execute('SELECT data FROM report LIMIT %s OFFSET %s;', (limit, skip))
+        cur.execute(
+            sql.SQL("SELECT data FROM report {} LIMIT %(limit)s OFFSET %(skip)s;")
+            .format(make_where_clause(
+                None if not subject else sql.SQL('subject = %(subject)s'),
+            )),
+            {"subject": subject, "limit": limit, "skip": skip},
+        )
         return [row[0] for row in cur.fetchall()]
 
 
@@ -492,34 +500,40 @@ async def get_status(
         current_subject, roles = None, 0
     is_privileged = subject == current_subject or ROLES['read_any'] & roles != 0
     with conn.cursor() as cur:
-        # this will list all scopes, versions, checks
+        # list all scopes, versions, checks
         # plus, where available, the latest test result (if necessary, with manual approval)
         cur.execute(
-            f'''
-            SELECT scope.scopeuuid, scope.scope, version.version, standardentry.condition, "check".id, "check".ccondition, latest.result, latest.approval
-            FROM "check"
-            NATURAL JOIN standardentry
-            NATURAL JOIN version
-            NATURAL JOIN scope
-            LEFT OUTER JOIN (
-                -- find the latest result per checkid for this subject
-                -- DISTINCT ON is a Postgres-specific construct that comes in very handy here :)
-                SELECT DISTINCT ON (checkid) *
-                FROM result
-                NATURAL JOIN report
-                WHERE subject = %s
-                AND expiration > {'NOW()' if is_privileged else f"NOW() - interval '{GRACE_PERIOD_DAYS:d} days'"}
-                {'' if is_privileged else 'AND approval'}
-                ORDER BY checkid, checked_at DESC
-            ) latest
-            ON "check".checkid = latest.checkid
-            {'' if scopeuuid is None and version is None else 'WHERE'}
-            {'' if scopeuuid is None else 'scope.scopeuuid = %s'}
-            {'' if scopeuuid is None or version is None else 'AND'}
-            {'' if version is None else 'version.version = %s'}
-            ;
-            ''',
-            (subject, ) + (() if scopeuuid is None else (scopeuuid, )) + (() if version is None else (version, )),
+            sql.SQL('''
+SELECT scope.scopeuuid, scope.scope, version.version, standardentry.condition, "check".id, "check".ccondition, latest.result, latest.approval
+FROM "check"
+NATURAL JOIN standardentry
+NATURAL JOIN version
+NATURAL JOIN scope
+LEFT OUTER JOIN (
+    -- find the latest result per checkid for this subject
+    -- DISTINCT ON is a Postgres-specific construct that comes in very handy here :)
+    SELECT DISTINCT ON (checkid) *
+    FROM result
+    NATURAL JOIN report
+    {report_filter}
+    ORDER BY checkid, checked_at DESC
+) latest
+ON "check".checkid = latest.checkid
+{filter_condition};''')
+            .format(
+                filter_condition=make_where_clause(
+                    None if scopeuuid is None else sql.SQL('scope.scopeuuid = %(scopeuuid)s'),
+                    None if version is None else sql.SQL('version.version = %(version)s'),
+                ),
+                report_filter=make_where_clause(
+                    sql.SQL('subject = %(subject)s'),
+                    {
+                        0: sql.SQL(f"approval AND expiration > NOW() - interval '{GRACE_PERIOD_DAYS:d} days'"),
+                        1: sql.SQL('expiration > NOW()'),
+                    }[is_privileged],
+                ),
+            ),
+            {"subject": subject, "scopeuuid": scopeuuid, "version": version},
         )
         rows = cur.fetchall()
     # now collect pass, DNF, fail per scope/version
@@ -566,20 +580,22 @@ async def get_results(
     with conn.cursor() as cur:
         columns = ('reportuuid', 'subject', 'checked_at', 'scopeuuid', 'version', 'check', 'result', 'approval')
         cur.execute(
-            f'''
-            SELECT report.reportuuid, report.subject, report.checked_at, scope.scopeuuid, version.version, "check".id, result.result, result.approval
-            FROM result
-            NATURAL JOIN report
-            NATURAL JOIN "check"
-            NATURAL JOIN standardentry
-            NATURAL JOIN version
-            NATURAL JOIN scope
-            WHERE expiration > NOW() - interval '{GRACE_PERIOD_DAYS:d} days'
-            {'' if approved is None else f'AND approval = {str(bool(approved))}'}
-            ORDER BY checked_at
-            LIMIT %s OFFSET %s;
-            ''',
-            (limit, skip)
+            sql.SQL('''
+SELECT report.reportuuid, report.subject, report.checked_at, scope.scopeuuid, version.version, "check".id, result.result, result.approval
+FROM result
+NATURAL JOIN report
+NATURAL JOIN "check"
+NATURAL JOIN standardentry
+NATURAL JOIN version
+NATURAL JOIN scope
+{}
+ORDER BY checked_at
+LIMIT %(limit)s OFFSET %(skip)s;''')
+            .format(make_where_clause(
+                sql.SQL(f"expiration > NOW() - interval '{GRACE_PERIOD_DAYS:d} days'"),
+                None if approved is None else sql.SQL('approval = %(approved)s'),
+            )),
+            {"limit": limit, "skip": skip, "approved": approved},
         )
         return [{col: val for col, val in zip(columns, row)} for row in cur.fetchall()]
 
@@ -603,27 +619,19 @@ async def post_results(
     with conn.cursor() as cur:
         resultids = []
         for record in records:
-            reportuuid, scopeuuid, version, check, approval = [
-                record[key]
-                for key in ['reportuuid', 'scopeuuid', 'version', 'check', 'approval']
-            ]
-            cur.execute(
-                '''
-                UPDATE result
-                SET approval = %s
-                FROM report, scope, version, "check"
-                WHERE report.reportuuid = %s
-                AND result.reportid = report.reportid
-                AND scope.scopeuuid = %s
-                AND version.scopeid = scope.scopeid
-                AND version.version = %s
-                AND "check".versionid = version.versionid
-                AND "check".id = %s
-                AND result.checkid = "check".checkid
-                RETURNING resultid;
-                ''',
-                (approval, reportuuid, scopeuuid, version, check)
-            )
+            cur.execute('''
+UPDATE result
+SET approval = %(approval)s
+FROM report, scope, version, "check"
+WHERE report.reportuuid = %(reportuuid)s
+  AND result.reportid = report.reportid
+  AND scope.scopeuuid = %(scopeuuid)s
+  AND version.scopeid = scope.scopeid
+  AND version.version = %(version)s
+  AND "check".versionid = version.versionid
+  AND "check".id = %(check)s
+  AND result.checkid = "check".checkid
+RETURNING resultid;''', record)
             resultid, = cur.fetchone()
             resultids.append(resultid)
     conn.commit()
