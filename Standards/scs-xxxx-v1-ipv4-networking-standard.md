@@ -25,13 +25,13 @@ ease of use for IaaS users and DevOps teams.
 
 #### _Neutron Routers_
 
-Usage of Neutron Routers: To manage traffic between internal and external networks Neutron Routers **MUST** be used as the default gateway for VMs requiring access to external networks and the internet, thereby facilitating the routing of traffic and enhancing network security. 
+Usage of Neutron Routers: To manage traffic between internal and external networks Neutron Routers **MUST** be used as the default gateway for VMs requiring access to external networks and the internet, thereby facilitating the routing of traffic and enhancing network security.
 
 CSPs **SHOULD** use OVN or L3agent as High Availability (HA) service deployments.
 Standard external networks **MUST NOT** be made accessible as _shared networks_. It is advised that external networks are only reachable by the usage of routing and floating IPs.
 However, for special use cases like certain storage or VPN solutions it could be useful to allow _direct access networks_.
 
-External networks and subnets **SHOULD** (very strong should) be configured with _--no-dhcp_ (DHCP - Dynamic Host Configuration Protocol). It is more secure to configure it like this, since it gives less space for reflection attacks, e.g. _Denial of Service_ (DOS) attacks. If _dhcp_ is configured, certain firewall configurations **MUST** be made to catch IPs from the _Neutron dhcp agent_ in the public network. 
+External networks and subnets **SHOULD** (very strong should) be configured with _--no-dhcp_ (DHCP - Dynamic Host Configuration Protocol). It is more secure to configure it like this, since it gives less space for reflection attacks, e.g. _Denial of Service_ (DOS) attacks. If _dhcp_ is configured, certain firewall configurations **MUST** be made to catch IPs from the _Neutron dhcp agent_ in the public network.
 
 #### _Neutron Plugins_
 
