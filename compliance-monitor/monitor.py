@@ -325,12 +325,11 @@ def db_insert_result(cur, reportid, invocationid, checkid, result, approval, exp
     return resultid
 
 
-def db_get_results(cur, subject, scopeuuid, version, approved_only=True, grace_period_days=None):
-    # list all scopes, versions, checks
-    # plus, where available, the latest test result (if necessary, with manual approval)
+def db_get_relevant_results(cur, subject, scopeuuid, version, approved_only=True, grace_period_days=None):
+    """for each combination of scope/version/check, get the most recent test result that is still valid"""
     cur.execute(sql.SQL('''
     SELECT scope.scopeuuid, scope.scope, version.version, standardentry.condition
-    , "check".id, "check".ccondition, latest.result, latest.approval
+    , "check".id, "check".ccondition, latest.result
     FROM "check"
     NATURAL JOIN standardentry
     NATURAL JOIN version
@@ -362,10 +361,12 @@ def db_get_results(cur, subject, scopeuuid, version, approved_only=True, grace_p
     return cur.fetchall()
 
 
-def db_get_results2(cur, approved, limit, skip):
+def db_get_recent_results(cur, approved, limit, skip):
+    """list recent test results without grouping by scope/version/check"""
     columns = ('reportuuid', 'subject', 'checked_at', 'scopeuuid', 'version', 'check', 'result', 'approval')
     cur.execute(sql.SQL('''
-    SELECT report.reportuuid, report.subject, report.checked_at, scope.scopeuuid, version.version, "check".id, result.result, result.approval
+    SELECT report.reportuuid, report.subject, report.checked_at, scope.scopeuuid, version.version
+    , "check".id, result.result, result.approval
     FROM result
     NATURAL JOIN report
     NATURAL JOIN "check"
@@ -626,7 +627,7 @@ async def get_status(
         current_subject, roles = None, 0
     is_privileged = subject == current_subject or ROLES['read_any'] & roles != 0
     with conn.cursor() as cur:
-        rows = db_get_results(
+        rows = db_get_relevant_results(
             cur, subject, scopeuuid, version,
             approved_only=not is_privileged,
             grace_period_days=None if is_privileged else GRACE_PERIOD_DAYS,
@@ -634,7 +635,7 @@ async def get_status(
     # collect pass, DNF, fail per scope/version
     num_pass, num_dnf, num_fail = defaultdict(set), defaultdict(set), defaultdict(set)
     scopes = {}  # also collect some ancillary information
-    for scopeuuid, scope, version, condition, check, ccondition, result, approval in rows:
+    for scopeuuid, scope, version, condition, check, ccondition, result in rows:
         scopes.setdefault(scopeuuid, scope)
         if result is not None and (condition == "optional" or ccondition == "optional"):
             # count optional as 'pass' so long as a result is available;
@@ -672,7 +673,7 @@ async def get_results(
     if ROLES['read_any'] & roles == 0:
         raise HTTPException(status_code=401, detail="Permission denied")
     with conn.cursor() as cur:
-        return db_get_results2(cur, approved, limit, skip)
+        return db_get_recent_results(cur, approved, limit, skip)
 
 
 @app.post("/results")
