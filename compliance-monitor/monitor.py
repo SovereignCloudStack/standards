@@ -517,7 +517,7 @@ async def get_reports(
     elif subject != current_subject and ROLES['read_any'] & roles == 0:
         raise HTTPException(status_code=401, detail="Permission denied")
     with conn.cursor() as cur:
-        return db_get_reports(subject, limit, skip)
+        return db_get_reports(cur, subject, limit, skip)
 
 
 def add_period(dt: datetime, period: str):
