@@ -33,7 +33,7 @@ flavor names. See the
 for more details.
 
 The functionality of this script is also (partially) exposed via the web page
-<https://flavors.scs.community/>.
+[https://flavors.scs.community/](https://flavors.scs.community/).
 
 With the OpenStack tooling (`python3-openstackclient`, `OS_CLOUD`) in place, you can call
 `cli.py -v parse v3 $(openstack flavor list -f value -c Name)` to get a report

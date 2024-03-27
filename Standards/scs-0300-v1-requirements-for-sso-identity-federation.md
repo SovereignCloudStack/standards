@@ -244,7 +244,7 @@ be used in federation to external domains.
 
 ## Related Documents
 
-- <https://github.com/SovereignCloudStack/standards/tree/main/Drafts/IAM-federation>
+- [https://github.com/SovereignCloudStack/standards/tree/main/Drafts/IAM-federation](https://github.com/SovereignCloudStack/standards/tree/main/Drafts/IAM-federation)
 
 ## Conformance Tests
 
