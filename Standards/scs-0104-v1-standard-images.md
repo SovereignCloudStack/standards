@@ -37,12 +37,12 @@ The YAML file MUST contain the key `images`, whose value is a list of objects. E
 
 ### Image specification, single image
 
-| Key       | Type                 | Description                                          | Example                                              |
-| --------- | -------------------- | ---------------------------------------------------- | ---------------------------------------------------- |
-| `name`    | String               | Name of the image                                    | `"Debian 12"`                                        |
-| `status`  | String               | _optional_: either `mandatory` or `recommended`      | `"recommended"`                                      |
-| `source`  | String               | Prefix of the source URL                             | `"https://cloud.debian.org/images/cloud/bookworm/"`  |
-|           | OR: List of strings  | multiple possible prefixes                           | (see full example below)                             |
+| Key      | Type                | Description                                     | Example                                             |
+| -------- | ------------------- | ----------------------------------------------- | --------------------------------------------------- |
+| `name`   | String              | Name of the image                               | `"Debian 12"`                                       |
+| `status` | String              | _optional_: either `mandatory` or `recommended` | `"recommended"`                                     |
+| `source` | String              | Prefix of the source URL                        | `"https://cloud.debian.org/images/cloud/bookworm/"` |
+|          | OR: List of strings | multiple possible prefixes                      | (see full example below)                            |
 
 The meaning of this specification is as follows.
 
@@ -53,13 +53,13 @@ The meaning of this specification is as follows.
 
 ### Image specification, class of images
 
-| Key           | Type                 | Description                                          | Example                                          |
-| ------------- | -------------------- | ---------------------------------------------------- | ------------------------------------------------ |
-| `name`        | String               | Name of the class of images                          | `"ubuntu-2204-kube"`                             |
-| `name_scheme` | String (regex)       | Regular expression for the image name                | `"ubuntu-2204-kube-v[0-9].[0-9]+(.[0-9]+)?"`     |
-| `status`      | String               | _optional_: either `mandatory` or `recommended`      | `"recommended"`                                  |
-| `source`      | String               | Prefix of the source URL                             | `"https://swift.services.a.regiocloud.tech"`     |
-|               | OR: List of strings  | multiple possible prefixes                           | (see full example below)                         |
+| Key           | Type                | Description                                     | Example                                      |
+| ------------- | ------------------- | ----------------------------------------------- | -------------------------------------------- |
+| `name`        | String              | Name of the class of images                     | `"ubuntu-2204-kube"`                         |
+| `name_scheme` | String (regex)      | Regular expression for the image name           | `"ubuntu-2204-kube-v[0-9].[0-9]+(.[0-9]+)?"` |
+| `status`      | String              | _optional_: either `mandatory` or `recommended` | `"recommended"`                              |
+| `source`      | String              | Prefix of the source URL                        | `"https://swift.services.a.regiocloud.tech"` |
+|               | OR: List of strings | multiple possible prefixes                      | (see full example below)                     |
 
 The meaning of this specification is as follows:
 
@@ -72,27 +72,27 @@ The meaning of this specification is as follows:
 
 ```yaml
 images:
-- name: "Ubuntu 22.04"
-  source:
-  - https://cloud-images.ubuntu.com/releases/jammy/
-  - https://cloud-images.ubuntu.com/jammy/
-  status: mandatory
-- name: "ubuntu-capi-image"
-  name_scheme: "ubuntu-capi-image-v[0-9].[0-9]+(.[0-9]+)?"
-  source: https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube
-  status: recommended
-- name: "Ubuntu 20.04"
-  source:
-  - https://cloud-images.ubuntu.com/releases/focal/
-  - https://cloud-images.ubuntu.com/focal/
-- name: "Debian 12"
-  source:
-  - https://cloud.debian.org/images/cloud/bookworm/
-  - https://cdimage.debian.org/cdimage/cloud/bookworm/
-- name: "Debian 11"
-  source:
-  - https://cloud.debian.org/images/cloud/bullseye/
-  - https://cdimage.debian.org/cdimage/cloud/bullseye/
+  - name: "Ubuntu 22.04"
+    source:
+      - https://cloud-images.ubuntu.com/releases/jammy/
+      - https://cloud-images.ubuntu.com/jammy/
+    status: mandatory
+  - name: "ubuntu-capi-image"
+    name_scheme: "ubuntu-capi-image-v[0-9].[0-9]+(.[0-9]+)?"
+    source: https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube
+    status: recommended
+  - name: "Ubuntu 20.04"
+    source:
+      - https://cloud-images.ubuntu.com/releases/focal/
+      - https://cloud-images.ubuntu.com/focal/
+  - name: "Debian 12"
+    source:
+      - https://cloud.debian.org/images/cloud/bookworm/
+      - https://cdimage.debian.org/cdimage/cloud/bookworm/
+  - name: "Debian 11"
+    source:
+      - https://cloud.debian.org/images/cloud/bullseye/
+      - https://cdimage.debian.org/cdimage/cloud/bullseye/
 ```
 
 This example provides allowable source prefixes for two Debian versions, two Ubuntu
@@ -104,7 +104,7 @@ recommended, while only Ubuntu 22.04 is mandatory.
 ### YAML lifecycle
 
 The YAML file is generally located under
-<https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/>.
+[https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/).
 
 Any change that could render existing installations non-conformant (i.e., when new
 specifications are added, when the name scheme of a specification is changed so as to

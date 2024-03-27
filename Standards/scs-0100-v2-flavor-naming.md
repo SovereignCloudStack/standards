@@ -71,7 +71,7 @@ encoding all details) as well as very detailed longer names.
 ## Complete Proposal for systematic flavor naming
 
 | Prefix | CPUs & Suffix     | RAM[GiB]           | optional: Disk[GB]&type       | opt: extensions |
-| ------ | ----------------- | ------------------ | ----------------------------- | ----------------|
+| ------ | ----------------- | ------------------ | ----------------------------- | --------------- |
 | `SCS-` | N`L/V/T/C`\[`i`\] | `-`N\[`u`\]\[`o`\] | \[`-`\[M`x`\]N\[`n/s/l/p`\]\] | \[`_`EXT\]      |
 
 Note that `N` and `M` are placeholders for numbers here.
@@ -118,7 +118,7 @@ flavors must declare themselves insecure with the `i` suffix (see below).
 #### Higher oversubscription
 
 Must be indicated with a `L` vCPU type (low performance for > 5x/core or > 3x/thread oversubscription and
-the lack of workload management that would prevent worst case performance <20% in more than 7.2h per month).
+the lack of workload management that would prevent worst case performance < 20% in more than 7.2h per month).
 
 #### Insufficient microcode
 
@@ -384,9 +384,9 @@ capabilities. Flavors may over-deliver ...)
 #### Examples
 
 - SCS-2C-4-10 <- may or may not support HW virtualization in VMs
-- SCS-2C-4-10_kvm_**hwv** <- kvm with enabled nested virtualization
+- SCS-2C-4-10*kvm***hwv** <- kvm with enabled nested virtualization
 - SCS-2C-4-10\_**hwv** <- not recommended, but allowed
-- SCS-2C-4-10\_bms\_**hwv** <- better: bare metal with HW virt support (VMX on intel, SVM on AMD, ...)
+- SCS-2C-4-10_bms\_**hwv** <- better: bare metal with HW virt support (VMX on intel, SVM on AMD, ...)
 - ~~SCS-2C-4-10\_**hwv**\_xen~~ <- illegal, wrong ordering
 
 ### [OPTIONAL] CPU Architecture Details
@@ -432,11 +432,11 @@ out when generating the name for comparison. In other words: 0 has a meaning of
 - SCS-2C-4-10n\_**z3**
 - SCS-2C-4-10n\_**z3h**
 - SCS-2C-4-10n\_**z3hh**
-- SCS-2C-4-10n_bms_**z**
-- SCS-2C-4-10n_bms_**z3**
-- SCS-2C-4-10n_bms_**z3**
-- SCS-2C-4-10n_bms_**z3h**
-- SCS-2C-4-10n_bms_**z3hh** <- Bare Metal, Intel Ice Lake with > 3.25GHz all core freq
+- SCS-2C-4-10n*bms***z**
+- SCS-2C-4-10n*bms***z3**
+- SCS-2C-4-10n*bms***z3**
+- SCS-2C-4-10n*bms***z3h**
+- SCS-2C-4-10n*bms***z3hh** <- Bare Metal, Intel Ice Lake with > 3.25GHz all core freq
 
 ### [OPTIONAL] GPU support
 

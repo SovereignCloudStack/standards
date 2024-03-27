@@ -36,8 +36,8 @@ In order to use the existing conformance tests as a Sonobuoy plugin, a wrapper
 around the individual test scripts would be required. This wrapper would need to
 have the following effects:
 
-* gathers all test results and provides them in the results file
-* run tests in sequence and signal the worker when it's finished by generating a "Done" file
+- gathers all test results and provides them in the results file
+- run tests in sequence and signal the worker when it's finished by generating a "Done" file
 
 Apart from providing the test results, a plugin container must also forward the
 status of each test by setting a status flag in the results file.
@@ -49,7 +49,7 @@ There are different approaches to create a Sonobuoy plugin, which are discussed
 below in order to find a best practice for the SCS project. The documented approaches
 show one example each in order to give a better representation to the reader.
 
-Sonobuoy provides plugin examples in the repository <https://github.com/vmware-tanzu/sonobuoy-plugins>,
+Sonobuoy provides plugin examples in the repository [https://github.com/vmware-tanzu/sonobuoy-plugins](https://github.com/vmware-tanzu/sonobuoy-plugins)
 which are referenced throughout this section.
 
 ### _Option 1_ Golang based approach 1: Pick a framework from the Sonobuoy plugin examples
@@ -66,16 +66,16 @@ which are described in more detail in the [goals][e2e-frame-goals].
 
 PROS:
 
-* arguments in favor of this framework can also be found under the [goals description][e2e-frame-goals] of the documentation
-* [e2e-framework][e2e-frame] is a well-defined framework, that allows the handling of resource creation and deletion
-* official framework provided by "Kubernetes-sigs"
+- arguments in favor of this framework can also be found under the [goals description][e2e-frame-goals] of the documentation
+- [e2e-framework][e2e-frame] is a well-defined framework, that allows the handling of resource creation and deletion
+- official framework provided by "Kubernetes-sigs"
 
 CONS:
 
-* arguments not in favor of this framework can be derived from the [Non-Goals][e2e-frame-nongoals] description of the documentation:
-  * "no responsibility for bootstrapping or the execution of the tests themselves" can be ignored, as this is partly taken over by Sonobuoy
-  * "no mock or fake cluster components" can be ignored, since the e2e tests of SCS should be used to test real clusters and their functionality
-  * for this test procedure, the Sonobuoy e2e plugin should be run in addition to the SCS KaaS conformance tests
+- arguments not in favor of this framework can be derived from the [Non-Goals][e2e-frame-nongoals] description of the documentation:
+  - "no responsibility for bootstrapping or the execution of the tests themselves" can be ignored, as this is partly taken over by Sonobuoy
+  - "no mock or fake cluster components" can be ignored, since the e2e tests of SCS should be used to test real clusters and their functionality
+  - for this test procedure, the Sonobuoy e2e plugin should be run in addition to the SCS KaaS conformance tests
 
 > proof of concept: `../Tests/kaas/kaas-sonobuoy-go-example-e2e-framework/`
 
@@ -91,22 +91,22 @@ image containing the e2e tests. The setup could be copied from [kubernetes/test/
 and adapted to the projects requirements. The mentioned build process must use the
 files of the following directories from the Kubernetes repository:
 
-* [kubernetes/cluster](https://github.com/kubernetes/kubernetes/tree/master/cluster)
-* [kubernetes/test/e2e/framework](https://github.com/kubernetes/kubernetes/tree/master/test/e2e)
-* [kubernetes/test/conformance/image/go-runner](https://github.com/kubernetes/kubernetes/tree/master/test/conformance/image/go-runner)
-* [kubernetes/hack/conformance](https://github.com/kubernetes/kubernetes/tree/master/hack/conformance)
-* [kubernetes/hack/make-rules](https://github.com/kubernetes/kubernetes/tree/master/hack/make-rules)
+- [kubernetes/cluster](https://github.com/kubernetes/kubernetes/tree/master/cluster)
+- [kubernetes/test/e2e/framework](https://github.com/kubernetes/kubernetes/tree/master/test/e2e)
+- [kubernetes/test/conformance/image/go-runner](https://github.com/kubernetes/kubernetes/tree/master/test/conformance/image/go-runner)
+- [kubernetes/hack/conformance](https://github.com/kubernetes/kubernetes/tree/master/hack/conformance)
+- [kubernetes/hack/make-rules](https://github.com/kubernetes/kubernetes/tree/master/hack/make-rules)
 
 PROS:
 
-* [Kubernetes' own e2e tests][k8s-e2e-tests] already provide a vast amount of examples, which could be reused to develop specific SCS tests
-* compared to _option 1_, the [non-goals][e2e-frame-nongoals] of the [e2e-framework][e2e-frame] can be seen as the advantages of using [Kubernetes' own e2e-tests][k8s-e2e-tests].
+- [Kubernetes' own e2e tests][k8s-e2e-tests] already provide a vast amount of examples, which could be reused to develop specific SCS tests
+- compared to _option 1_, the [non-goals][e2e-frame-nongoals] of the [e2e-framework][e2e-frame] can be seen as the advantages of using [Kubernetes' own e2e-tests][k8s-e2e-tests].
 
 CONS:
 
-* not easy to implement, as we would have to copy part of the Kubernetes repository and track the changes from the upstream
-* according to [README.md](https://github.com/kubernetes/kubernetes/tree/master/cluster#readme), part of it seems to be outdated and might change with a future version
-  * compared to _option 1_, the [goals][e2e-frame-goals] of the [e2e-framework][e2e-frame] can be seen as the disadvantages of using [Kubernetes' own e2e-tests][k8s-e2e-tests].
+- not easy to implement, as we would have to copy part of the Kubernetes repository and track the changes from the upstream
+- according to [README.md](https://github.com/kubernetes/kubernetes/tree/master/cluster#readme), part of it seems to be outdated and might change with a future version
+  - compared to _option 1_, the [goals][e2e-frame-goals] of the [e2e-framework][e2e-frame] can be seen as the disadvantages of using [Kubernetes' own e2e-tests][k8s-e2e-tests].
 
 > TODO: provide proof of concept: _kaas-sonobuoy-go-example-k8s-e2e_
 
@@ -133,13 +133,13 @@ used for Python, which should be decided in a secondary Decision Record.
 
 PROS:
 
-* continue using the already available Python tests
-  * only a small number of tests is implemented thus far
+- continue using the already available Python tests
+  - only a small number of tests is implemented thus far
 
 CONS:
 
-* no "native" support in Sonobuoy, a wrapper is needed
-* decision for a framework is still not done
+- no "native" support in Sonobuoy, a wrapper is needed
+- decision for a framework is still not done
 
 ## Approaches to providing a Sonobuoy plugin image
 
@@ -169,10 +169,10 @@ The KaaS conformance test MUST be provided as a test suite holding the
 test cases for the Kubernetes clusters to be checked.
 Furthermore, the test cases themselves MUST be wrapped by a test framework to:
 
-* handle the creation and deletion of resources
-* collect and present results
-* consolidate redundant code across test cases
-* support the creation of test cases through predefined structures
+- handle the creation and deletion of resources
+- collect and present results
+- consolidate redundant code across test cases
+- support the creation of test cases through predefined structures
 
 As with the [k8s-cluster-api-provider][k8s-api] the SCS provides a tooling to generate
 its KaaS infrastructure. Part of the [k8s-cluster-api-provider][k8s-api] is the usage
