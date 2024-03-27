@@ -3,8 +3,6 @@ title: Security Groups Decision Record
 type: Decision Record
 status: Draft
 track: IaaS
-author: josephineSei
-date: DD-03-2024
 ---
 
 ## Introduction
