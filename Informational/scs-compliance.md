@@ -245,43 +245,43 @@ Naming SHOULD be done by providing plain OS names and versioning as image names 
 `Distribution Version`, e.g. "Ubuntu 22.04" or "Debian 12". Special variants can be supplied with
 `Distribution Version Feature1 ...` in order to provide more detailed information, but this is generally not advised.
 
-For properties, the standard generally suggests using the properties found in the [OpenStack Image documentation](https://docs.openstack.org/glance/latest//admin/useful-image-properties), but some properties are especially mentioned, either because they're
+For properties, the standardF generally suggests using the properties found in the [OpenStack Image documentation](https://docs.openstack.org/glance/latest//admin/useful-image-properties), but some properties are especially mentioned, either because they're
 mandatory or recommended for SCS-compliance. The following table provides an overview with example values:
 
-| Property name             | status      | Description                                           | Values / Unit                                                 |
-|---------------------------|-------------|-------------------------------------------------------|---------------------------------------------------------------|
-| architecture              | Mandatory   |                                                       |                                                               |
-| hypervisor_type           | Mandatory   |                                                       |                                                               |
-| min_disk_size             | Mandatory   | Minimum disk size                                     | GiB                                                           |
-| min_ram                   | Mandatory   | Minimum RAM size                                      | MiB                                                           |
-| os_version                | Mandatory   | OS version                                            |                                                               |
-| os_distro                 | Mandatory   | Distro name                                           |                                                               |
-| hw_rng_model              | Mandatory   | Add rng device to image instance                      | virtio, ..                                                    |
-| hw_disk_bus               | Mandatory   |                                                       | scsi, hw_scsi_model, ...                                      |
-| os_secure_boot            | Recommended | Is Secure Boot active?                                |                                                               |
-| hw_firmware_type          | Recommended |                                                       | bios, uefi                                                    |
-| hw_watchdog_action        | Recommended | Hardware watchdog action on server hang               | disabled, reset, poweroff, pause, none                        |
-| hw_mem_encryption         | Recommended | Encryption of guest memory on HW level                | bool                                                          |
-| hw_pmu                    | Recommended | Emulation of vPMU (performance monitoring unit)       | bool                                                          |
-| hw_video_ram              | Recommended | maximum RAM for video image                           | int (MB)                                                      |
-| hw_vif_multiqueue_enabled | Recommended | Equals queues with guest vCPUs                        | bool                                                          |
-| replace_frequency         | Mandatory   | How often image must at least be replaced             | yearly, quaterly, monthly, weekly, daily, critical bug, never |
-| provided_until            | Mandatory   | How long image with this name will be provided        | YYYY-MM-DD                                                    |
-| hotfix_hours              | Optional    | Time until critical security issues are dealt with    | Hours                                                         |
-| uuid_validity             | Mandatory   | Time this image will be referencable with this UUID   | none, last-N, YYYY-MM-DD, notice, forever                     |
-| image_source              | Mandatory   | URL to download the image                             | URL                                                           |
-| image_description         | Mandatory   | URL with release notes or human-readable data         | URL or text                                                   |
-| image_build_date          | Mandatory   |                                                       | YYYY-MM-DD [hh:mm[:ss]]                                       |
-| image_original_user       | Mandatory   | Default login user for the OS                         |                                                               |
-| patchlevel                | Optional    |                                                       |                                                               |
-| os_hash_algo              | Recommended | SHA256 or SHA512                                      |                                                               |
-| os_hash_value             | Recommended | Value of the SHAXXX for the image                     |                                                               |
-| license_included          | Optional    | Is license include in the flavor fee?                 | boolean                                                       |
-| license_required          | Optional    | Does customer need to bring his own license?          | boolean                                                       |
-| subscription_included     | Optional    | Does the image contain a maintenance subscription?    | boolean                                                       |
-| subscription_required     | Optional    | Does the customer require a maintenance subscription? | boolean                                                       |
-| maintained_until          | Optional    | Date of maintenance                                   | YYYY-MM-DD                                                    |
-| l1_support_contact        | Optional    | Customer support contact                              | URI                                                           |
+| Property name             | status                    | Description                                           | Values / Unit                                                  |
+|---------------------------|---------------------------|-------------------------------------------------------|----------------------------------------------------------------|
+| architecture              | Mandatory                 |                                                       |                                                                |
+| hypervisor_type           | Mandatory                 |                                                       |                                                                |
+| min_disk_size             | Mandatory                 | Minimum disk size                                     | GiB                                                            |
+| min_ram                   | Mandatory                 | Minimum RAM size                                      | MiB                                                            |
+| os_version                | Mandatory                 | OS version                                            |                                                                |
+| os_distro                 | Mandatory                 | Distro name                                           |                                                                |
+| hw_rng_model              | Mandatory                 | Add rng device to image instance                      | virtio, ..                                                     |
+| hw_disk_bus               | Mandatory                 |                                                       | scsi, hw_scsi_model, ...                                       |
+| os_secure_boot            | Recommended, if supported | Is Secure Boot active?                                |                                                                |
+| hw_firmware_type          | Recommended, if supported |                                                       | bios, uefi                                                     |
+| hw_watchdog_action        | Recommended, if supported | Hardware watchdog action on server hang               | disabled, reset, poweroff, pause, none                         |
+| hw_mem_encryption         | Recommended, if supported | Encryption of guest memory on HW level                | bool                                                           |
+| hw_pmu                    | Recommended, if supported | Emulation of vPMU (performance monitoring unit)       | bool                                                           |
+| hw_video_ram              | Recommended, if supported | maximum RAM for video image                           | int (MB)                                                       |
+| hw_vif_multiqueue_enabled | Recommended, if supported | Equals queues with guest vCPUs                        | bool                                                           |
+| replace_frequency         | Mandatory                 | How often image must at least be replaced             | yearly, quarterly, monthly, weekly, daily, critical bug, never |
+| provided_until            | Mandatory                 | How long image with this name will be provided        | YYYY-MM-DD                                                     |
+| hotfix_hours              | Optional                  | Time until critical security issues are dealt with    | Hours                                                          |
+| uuid_validity             | Mandatory                 | Time this image will be referencable with this UUID   | none, last-N, YYYY-MM-DD, notice, forever                      |
+| image_source              | Mandatory                 | URL to download the image                             | URL                                                            |
+| image_description         | Mandatory                 | URL with release notes or human-readable data         | URL or text                                                    |
+| image_build_date          | Mandatory                 |                                                       | YYYY-MM-DD [hh:mm[:ss]]                                        |
+| image_original_user       | Mandatory                 | Default login user for the OS                         |                                                                |
+| patchlevel                | Optional                  |                                                       |                                                                |
+| os_hash_algo              | Recommended               | SHA256 or SHA512                                      |                                                                |
+| os_hash_value             | Recommended               | Value of the SHAXXX for the image                     |                                                                |
+| license_included          | Optional                  | Is license include in the flavor fee?                 | boolean                                                        |
+| license_required          | Optional                  | Does customer need to bring his own license?          | boolean                                                        |
+| subscription_included     | Optional                  | Does the image contain a maintenance subscription?    | boolean                                                        |
+| subscription_required     | Optional                  | Does the customer require a maintenance subscription? | boolean                                                        |
+| maintained_until          | Optional                  | Date of maintenance                                   | YYYY-MM-DD                                                     |
+| l1_support_contact        | Optional                  | Customer support contact                              | URI                                                            |
 
 Also `trait:XXX=required` can be set to indicate that the virtual hardware feature `XXX` is required.
 
@@ -391,7 +391,7 @@ Please note, that if an image from the previous table is present, the image prop
 to the protocol and hostname of the source URL (also called "prefix" in the standard) or a list of them, if multiple
 sources are possible.
 
-### SSD Flavors (scs-0105-v1-standard-images)
+### SSD Flavors (scs-0110-v1-ssd-flavors)
 
 This standard extends the required standard flavors for OpenStack to include some flavors that contain
 local SSDs or faster technologies. This is required in order to satisfy access times, write times and other

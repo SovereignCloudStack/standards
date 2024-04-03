@@ -1,0 +1,131 @@
+---
+images:
+  - name: Ubuntu
+    format: qcow2
+    login: ubuntu
+    password: ubuntu
+    status: active
+    visibility: public
+    multi: false
+    meta:
+      architecture: x86_64
+      # hypervisor_type:
+      hw_disk_bus: scsi
+      hw_rng_model: virtio
+      hw_scsi_model: virtio-scsi
+      # hw_firmware_type: bios/uefi
+      hw_watchdog_action: reset
+      hw_mem_encryption: false
+      hw_pmu: false
+      # hw_video_ram: 256
+      hw_vif_multiqueue_enabled: false
+      os_distro: ubuntu
+      # os_version: '22.04'
+      # os_secure_boot: false
+      # os_hash_algo: "sha256"
+      # os_hash_value: "304983616fcba6ee1452e9f38993d7d3b8a90e1eb65fb0054d672ce23294d812"
+      replace_frequency: never
+      uuid_validity: none
+      provided_until: none
+      # image_source: https://cloud-images.ubuntu.com/releases/jammy/release/ubuntu-22.04-server-cloudimg-amd64.img
+      # image_description: https://cloud-images.ubuntu.com/releases/jammy/
+      # image_build_date: 2024-03-19
+      image_original_user: ubuntu
+    min_disk: 8
+    min_ram: 4096
+    tags: []
+    versions:
+    - version: '20.04'
+      url: https://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64.img
+      checksum: "sha256:edf43eb9f4e5ededbb3606c719c98b0e14c956278da42567e907a17d8bccb571"
+      build_date: 2024-03-07
+    - version: '22.04'
+      url: https://cloud-images.ubuntu.com/releases/jammy/release/ubuntu-22.04-server-cloudimg-amd64.img
+      checksum: "sha256:304983616fcba6ee1452e9f38993d7d3b8a90e1eb65fb0054d672ce23294d812"
+      build_date: 2024-03-19
+  - name: ubuntu-capi-image
+    format: qcow2
+    login: ubuntu
+    password: ubuntu
+    status: active
+    visibility: public
+    multi: false
+    meta:
+      architecture: x86_64
+      #hypervisor_type:
+      hw_disk_bus: scsi
+      hw_rng_model: virtio
+      hw_scsi_model: virtio-scsi
+      # hw_firmware_type: bios/uefi
+      hw_watchdog_action: reset
+      hw_mem_encryption: false
+      hw_pmu: false
+      # hw_video_ram: 256
+      hw_vif_multiqueue_enabled: false
+      os_distro: ubuntu
+      # os_version: '22.04'
+      # os_secure_boot: false
+      # os_hash_algo: "sha256"
+      # os_hash_value: "2a16b6e5f58bf1ddd3c7f4c3092aa3336905bd4eaf0cda2c8a95d704d3d98ea4"
+      replace_frequency: never
+      uuid_validity: none
+      provided_until: none
+      # image_source: https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube-v1.29/ubuntu-2204-kube-v1.29.3.qcow2
+      # image_description: "Ubuntu image containing a pre-installed Kubernetes"
+      # image_build_date: 2024-03-07
+      image_original_user: ubuntu
+    min_disk: 8
+    min_ram: 4096
+    tags: []
+    versions:
+    - version: 'v1.29.3'
+      url: https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube-v1.29/ubuntu-2204-kube-v1.29.3.qcow2
+      checksum: "sha256:2a16b6e5f58bf1ddd3c7f4c3092aa3336905bd4eaf0cda2c8a95d704d3d98ea4"
+      build_date: 2024-03-07
+  - name: 'Debian'
+    format: raw
+    login: debian
+    password: debian
+    status: active
+    visibility: public
+    multi: false
+    meta:
+      architecture: x86_64
+      # hypervisor_type:
+      hw_disk_bus: scsi
+      hw_rng_model: virtio
+      hw_scsi_model: virtio-scsi
+      # hw_firmware_type: bios/uefi
+      hw_watchdog_action: reset
+      hw_mem_encryption: false
+      hw_pmu: false
+      # hw_video_ram: 256
+      hw_vif_multiqueue_enabled: false
+      os_distro: debian
+      # os_version: '12'
+      # os_secure_boot: false
+      # os_hash_algo: "sha512"
+      # os_hash_value: "4d493674bd9edd885e489e0ae3f00c080e21884c25263cff27458edaa3d9b6e534397417bb13659df772a3b10fb1bfa9321b7f78c2feaa3d862682cf4c6a03bc"
+      replace_frequency: never
+      uuid_validity: none
+      provided_until: none
+      # image_source: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.raw
+      # image_description:
+      # image_build_date: 2024-02-12
+      image_original_user: debian
+    min_disk: 8
+    min_ram: 4096
+    tags: []
+    versions:
+    - version: '10'
+      url: https://cloud.debian.org/images/cloud/buster/latest/debian-10-generic-amd64.raw
+      checksum: "sha512:02e353f00149f637bb5a6c4123364272974bb799892f7e1d32f1bd08439097e4f5d3bd0661316e892e8aab75a7092927ae36ecff33b3eace996f2e6fbe8c16ac"
+      build_date: 2024-02-04
+    - version: '11'
+      url: https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-generic-amd64.raw
+      checksum: "sha512:56f808261f1575aa47f3e0b52222d7cb881e773013fbbfe2dd3e0d910b6e59bd86a1206c7f44c6e623bdcc6603df31d257798ef87cb10eb8e24facc51069c483"
+      build_date: 2024-02-12
+    - version: '12'
+      url: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.raw
+      checksum: "sha512:4d493674bd9edd885e489e0ae3f00c080e21884c25263cff27458edaa3d9b6e534397417bb13659df772a3b10fb1bfa9321b7f78c2feaa3d862682cf4c6a03bc"
+      build_date: 2024-02-12
