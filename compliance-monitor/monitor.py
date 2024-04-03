@@ -8,7 +8,7 @@ import secrets
 from shutil import which
 from subprocess import run
 from tempfile import NamedTemporaryFile
-from typing import Optional
+from typing import Annotated, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
@@ -546,6 +546,27 @@ def import_cert_yaml_dir(yaml_path, conn):
             import_cert_yaml(os.path.join(yaml_path, fn), conn)
 
 
+async def auth(request: Request, conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)]):
+    return get_current_account(await security(request), conn)
+
+
+async def optional_auth(request: Request, conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)]):
+    return get_current_account(await optional_security(request), conn)
+
+
+def check_role(
+    account: Optional[tuple[str, str]],
+    subject: str = None,
+    roles: int = 0
+):
+    if account is None:
+        raise HTTPException(status_code=401, detail="Permission denied")
+    current_subject, present_roles = account
+    if subject != current_subject and roles & present_roles != roles:
+        raise HTTPException(status_code=401, detail="Permission denied")
+    return current_subject
+
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
@@ -553,16 +574,14 @@ async def root():
 
 @app.get("/reports")
 async def get_reports(
-    request: Request,
+    account: Annotated[tuple[str, str], Depends(auth)],
+    conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)],
     subject: Optional[str] = None, limit: int = 10, skip: int = 0,
-    conn: psycopg2.extensions.connection = Depends(get_conn),
 ):
-    account = get_current_account(await security(request), conn)
-    current_subject, roles = account
     if subject is None:
-        subject = current_subject
-    elif subject != current_subject and ROLES['read_any'] & roles == 0:
-        raise HTTPException(status_code=401, detail="Permission denied")
+        subject, _ = account
+    else:
+        check_role(account, subject, ROLES['read_any'])
     with conn.cursor() as cur:
         return db_get_reports(cur, subject, limit, skip)
 
@@ -594,10 +613,9 @@ def add_period(dt: datetime, period: str):
 @app.post("/reports")
 async def post_report(
     request: Request,
-    conn: psycopg2.extensions.connection = Depends(get_conn),
+    account: Annotated[tuple[str, str], Depends(auth)],
+    conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)],
 ):
-    account = get_current_account(await security(request), conn)
-    current_subject, roles = account
     content_type = request.headers['content-type']
     if content_type not in ('application/yaml', 'application/json'):
         raise HTTPException(status_code=500, detail="Unsupported content type")
@@ -621,8 +639,7 @@ async def post_report(
         raise HTTPException(status_code=500)
     rundata = document['run']
     uuid, subject, checked_at = rundata['uuid'], document['subject'], document['checked_at']
-    if subject != current_subject and ROLES['append_any'] & roles == 0:
-        raise HTTPException(status_code=401, detail="Permission denied")
+    check_role(account, subject, ROLES['append_any'])
     with conn.cursor() as cur:
         keys = db_get_keys(cur, subject)
     try:
@@ -660,20 +677,18 @@ async def post_report(
 @app.get("/status/{subject}")
 async def get_status(
     request: Request,
+    account: Annotated[Optional[tuple[str, str]], Depends(optional_auth)],
+    conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)],
     subject: str,
     scopeuuid: str = None, version: str = None,
     privileged_view: bool = False,
-    conn: psycopg2.extensions.connection = Depends(get_conn),
 ):
     # note: text/html will be the default, but let's start with json to get the logic right
     accept = request.headers['accept']
     if 'application/json' not in accept and '*/*' not in accept:
         raise HTTPException(status_code=500, detail="client needs to accept application/json")
     if privileged_view:
-        account = get_current_account(await security(request), conn)
-        current_subject, roles = account
-        if subject != current_subject and ROLES['read_any'] & roles == 0:
-            raise HTTPException(status_code=401, detail="Permission denied")
+        check_role(account, subject, ROLES['read_any'])
     with conn.cursor() as cur:
         rows = db_get_relevant_results(
             cur, subject, scopeuuid, version,
@@ -712,11 +727,11 @@ async def get_status(
 @app.get("/results")
 async def get_results(
     request: Request,
+    account: Annotated[tuple[str, str], Depends(auth)],
+    conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)],
     approved: Optional[bool] = None, limit: int = 10, skip: int = 0,
-    conn: psycopg2.extensions.connection = Depends(get_conn),
 ):
     """get recent results, potentially filtered by approval status"""
-    account = get_current_account(await security(request), conn)
     current_subject, roles = account
     if ROLES['read_any'] & roles == 0:
         raise HTTPException(status_code=401, detail="Permission denied")
@@ -727,7 +742,8 @@ async def get_results(
 @app.post("/results")
 async def post_results(
     request: Request,
-    conn: psycopg2.extensions.connection = Depends(get_conn),
+    account: Annotated[tuple[str, str], Depends(auth)],
+    conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)],
 ):
     """post approvals to this endpoint"""
     content_type = request.headers['content-type']
@@ -736,7 +752,6 @@ async def post_results(
     body = await request.body()
     document = json.loads(body.decode("utf-8"))
     records = [document] if isinstance(document, dict) else document
-    account = get_current_account(await security(request), conn)
     current_subject, roles = account
     if ROLES['approve'] & roles == 0:
         raise HTTPException(status_code=401, detail="Permission denied")
