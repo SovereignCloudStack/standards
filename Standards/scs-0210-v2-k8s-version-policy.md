@@ -28,14 +28,6 @@ Patches to these releases are provided monthly, with the exception of the first 
 which is usually provided 1-2 weeks after the initial release (see [Patch Release
 Cadence][k8s-release-cadence]).
 
-## Terminology
-
-Common Vulnerabilities and Exposures (abbr. CVE)
-  System to provide a references for publicly known information-security vulnerabilities and exposures
-
-Cloud Native Computing Foundation (abbr. CNCF)
-  Linux Foundation project that was founded to help advance container technology
-
 ## Motivation
 
 Kubernetes is a living, fast-paced project, which follows a pre-defined release cycle.

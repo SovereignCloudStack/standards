@@ -20,14 +20,6 @@ but try to avoid changing in incompatible ways.
 (See at the end for the v1 to v2 transition where we have not met that
 goal, but at least managed to have a 1:1 relationship between v1 and v2 names.)
 
-## Terminology
-
-Error correction code memory (abbr. ECC memory)
-  Memory able to detect and correct n-bit data corruption
-
-L1 Terminal Fault (abbr. L1TF)
-  Speculative execution vulnerability on Intel processors
-
 ## Motivation
 
 In OpenStack environments there is a need to define different flavors for instances.
