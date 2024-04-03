@@ -662,23 +662,23 @@ async def get_status(
     request: Request,
     subject: str,
     scopeuuid: str = None, version: str = None,
+    privileged_view: bool = False,
     conn: psycopg2.extensions.connection = Depends(get_conn),
 ):
     # note: text/html will be the default, but let's start with json to get the logic right
     accept = request.headers['accept']
     if 'application/json' not in accept and '*/*' not in accept:
         raise HTTPException(status_code=500, detail="client needs to accept application/json")
-    account = get_current_account(await optional_security(request), conn)
-    if account:
+    if privileged_view:
+        account = get_current_account(await security(request), conn)
         current_subject, roles = account
-    else:
-        current_subject, roles = None, 0
-    is_privileged = subject == current_subject or ROLES['read_any'] & roles != 0
+        if subject != current_subject and ROLES['read_any'] & roles == 0:
+            raise HTTPException(status_code=401, detail="Permission denied")
     with conn.cursor() as cur:
         rows = db_get_relevant_results(
             cur, subject, scopeuuid, version,
-            approved_only=not is_privileged,
-            grace_period_days=None if is_privileged else GRACE_PERIOD_DAYS,
+            approved_only=not privileged_view,
+            grace_period_days=None if privileged_view else GRACE_PERIOD_DAYS,
         )
     # collect pass, DNF, fail per scope/version
     num_pass, num_dnf, num_fail = defaultdict(set), defaultdict(set), defaultdict(set)

@@ -180,9 +180,15 @@ Returns the current status of the subject. Use the `Accept` header to select des
 - `image/png`: a PNG image of a badge;
 - `application/json`: a short summary in JSON format.
 
-NOTE: The result may differ depending on the authentication status. If the most recent report does not
-indicate a conclusive pass, then an authenticated user will immediately see this. The public, on the other
-hand, may only see this after some time window that allows manual verification of the result.
+Query parameters:
+
+- `scopeuuid` (optional): restrict scope
+- `version` (optional): restrict version
+- `privileged_view` (optional `0` or `1`, default `0`): request privileged view (see below)
+
+If the privileged view is requested, then this request needs to be authenticated (via basic auth),
+either for the same subject or for some account with role `read_any`. This view will immediately
+show any non-pass result, whereas otherwise, such a result needs to be verified manually.
 
 ### GET /metrics/{subject}
 
