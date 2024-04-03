@@ -392,10 +392,10 @@ def db_get_relevant_results(cur, subject, scopeuuid, version, approved_only=True
         report_filter=make_where_clause(
             sql.SQL('subject = %(subject)s'),
             sql.SQL('approval') if approved_only else None,
-            {
-                0: sql.SQL(f"expiration > NOW() - interval '{grace_period_days:d} days'"),
-                1: sql.SQL('expiration > NOW()'),
-            }[grace_period_days is None],
+            sql.SQL(
+                'expiration > NOW()' if grace_period_days is None else
+                f"expiration > NOW() - interval '{grace_period_days:d} days'"
+            ),
         ),
     ), {"subject": subject, "scopeuuid": scopeuuid, "version": version})
     return cur.fetchall()
