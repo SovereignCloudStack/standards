@@ -70,7 +70,8 @@ def get_conn(settings=settings):
 
 
 # use ... (Ellipsis) here to indicate that no default value exists (will lead to error if no value is given)
-ACCOUNT_DEFAULTS = {'subject': ..., 'api_key': ..., 'public_key': ..., 'public_key_type': ..., 'roles': ...}
+ACCOUNT_DEFAULTS = {'subject': ..., 'api_key': ..., 'roles': ...}
+PUBLIC_KEY_DEFAULTS = {'public_key': ..., 'public_key_type': ..., 'public_key_name': ...}
 SCOPE_DEFAULTS = {'uuid': ..., 'name': ..., 'url': ...}
 VERSION_DEFAULTS = {'version': ..., 'stabilized_at': None, 'deprecated_at': None}
 STANDARD_DEFAULTS = {'name': ..., 'url': ..., 'condition': None}
@@ -92,10 +93,19 @@ def make_where_clause(*filter_clauses):
 
 def db_find_account(cur, subject):
     cur.execute('''
-    SELECT apikey, publickey, publickeytype, roles
+    SELECT apikey, roles
     FROM account
     WHERE subject = %s;''', (subject, ))
     return cur.fetchone()
+
+
+def db_get_keys(cur, subject):
+    cur.execute('''
+    SELECT keytype, key
+    FROM publickey
+    NATURAL JOIN account
+    WHERE subject = %s;''', (subject, ))
+    return cur.fetchall()
 
 
 def db_ensure_schema(cur):
@@ -103,11 +113,18 @@ def db_ensure_schema(cur):
     # select * from "check" natural join standardentry natural join version natural join scope;
     cur.execute('''
     CREATE TABLE IF NOT EXISTS account (
-        subject text PRIMARY KEY,
+        accountid SERIAL PRIMARY KEY,
+        subject text UNIQUE,
         apikey text,
-        publickey text,
-        publickeytype text,
         roles integer
+    );
+    CREATE TABLE IF NOT EXISTS publickey (
+        keyid SERIAL PRIMARY KEY,
+        key text,
+        keytype text,
+        keyname text,
+        accountid integer NOT NULL REFERENCES account ON DELETE CASCADE ON UPDATE CASCADE,
+        UNIQUE (accountid, keyname)
     );
     CREATE TABLE IF NOT EXISTS scope (
         scopeid SERIAL PRIMARY KEY,
@@ -180,15 +197,38 @@ def db_ensure_schema(cur):
 def db_update_account(cur, record: dict):
     sanitized = sanitize_record(record, ACCOUNT_DEFAULTS)
     cur.execute('''
-    INSERT INTO account (subject, apikey, publickey, publickeytype, roles)
-    VALUES (%(subject)s, %(api_key)s, %(public_key)s, %(public_key_type)s, %(roles)s)
+    INSERT INTO account (subject, apikey, roles)
+    VALUES (%(subject)s, %(api_key)s, %(roles)s)
     ON CONFLICT (subject)
     DO UPDATE
     SET apikey = EXCLUDED.apikey
-    , publickey = EXCLUDED.publickey
-    , publickeytype = EXCLUDED.publickeytype
     , roles = EXCLUDED.roles
-    ;''', sanitized)
+    RETURNING accountid;''', sanitized)
+    accountid, = cur.fetchone()
+    return accountid
+
+
+def db_update_publickey(cur, accountid, record: dict):
+    sanitized = sanitize_record(record, PUBLIC_KEY_DEFAULTS, accountid=accountid)
+    cur.execute('''
+    INSERT INTO publickey (key, keytype, keyname, accountid)
+    VALUES (%(public_key)s, %(public_key_type)s, %(public_key_name)s, %(accountid)s)
+    ON CONFLICT (accountid, keyname)
+    DO UPDATE
+    SET key = EXCLUDED.key
+    , keytype = EXCLUDED.keytype
+    , keyname = EXCLUDED.keyname
+    RETURNING keyid;''', sanitized)
+    keyid, = cur.fetchone()
+    return keyid
+
+
+def db_filter_publickeys(cur, accountid, predicate: callable):
+    cur.execute('SELECT keyid, keyname FROM publickey WHERE accountid = %s;', (accountid, ))
+    removeids = [row[0] for row in cur.fetchall() if not predicate(*row)]
+    while removeids:
+        cur.execute('DELETE FROM publickey WHERE keyid IN %s', (tuple(removeids[:10]), ))
+        del removeids[:10]
 
 
 def db_update_scope(cur, record: dict):
@@ -402,11 +442,15 @@ def db_patch_approval(cur, record):
     return resultid
 
 
-def ssh_validate(publickey_type, publickey, signature, data):
+def ssh_validate(keys, signature, data):
+    # based on https://www.agwa.name/blog/post/ssh_signatures
     with NamedTemporaryFile(mode="w") as allowed_signers_file, \
             NamedTemporaryFile(mode="w") as report_sig_file, \
             NamedTemporaryFile(mode="w") as report_file:
-        allowed_signers_file.write(f"mail@csp.eu {publickey_type} {publickey}")
+        allowed_signers_file.write("".join([
+            f"mail@csp.eu {publickey_type} {publickey}\n"
+            for publickey_type, publickey in keys
+        ]))
         allowed_signers_file.flush()
         report_sig_file.write(signature)
         report_sig_file.flush()
@@ -432,14 +476,14 @@ def get_current_account(
             row = db_find_account(cur, credentials.username)
         if not row:
             raise RuntimeError
-        apikey, publickey, publickey_type, roles = row
+        apikey, roles = row
         current_password_bytes = credentials.password.encode("utf8")
         is_correct_password = secrets.compare_digest(
             current_password_bytes, apikey.encode("utf8")
         )
         if not is_correct_password:
             raise RuntimeError
-        return credentials.username, publickey, publickey_type, roles
+        return credentials.username, roles
     except RuntimeError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -460,7 +504,9 @@ def import_bootstrap(bootstrap_path, conn):
     with conn.cursor() as cur:
         for account in accounts:
             roles = sum(ROLES[r] for r in account.get('roles', ()))
-            db_update_account(cur, {**account, "roles": roles})
+            accountid = db_update_account(cur, {**account, "roles": roles})
+            keyids = set(db_update_publickey(cur, accountid, key) for key in account.get("keys", ()))
+            db_filter_publickeys(cur, accountid, lambda keyid, *_: keyid in keyids)
         conn.commit()
 
 
@@ -512,7 +558,7 @@ async def get_reports(
     conn: psycopg2.extensions.connection = Depends(get_conn),
 ):
     account = get_current_account(await security(request), conn)
-    current_subject, publickey, publickey_type, roles = account
+    current_subject, roles = account
     if subject is None:
         subject = current_subject
     elif subject != current_subject and ROLES['read_any'] & roles == 0:
@@ -551,7 +597,7 @@ async def post_report(
     conn: psycopg2.extensions.connection = Depends(get_conn),
 ):
     account = get_current_account(await security(request), conn)
-    current_subject, publickey, publickey_type, roles = account
+    current_subject, roles = account
     content_type = request.headers['content-type']
     if content_type not in ('application/yaml', 'application/json'):
         raise HTTPException(status_code=500, detail="Unsupported content type")
@@ -563,10 +609,6 @@ async def post_report(
     sep += len(SEP)
     signature = body_text[:sep - 1]  # do away with the ampersand!
     body_text = body_text[sep:]
-    try:
-        ssh_validate(publickey_type, publickey, signature, body_text)
-    except ValueError:
-        raise HTTPException(status_code=401)
     json_text = None
     if content_type.endswith('/yaml'):
         yaml = ruamel.yaml.YAML(typ='safe')
@@ -581,6 +623,12 @@ async def post_report(
     uuid, subject, checked_at = rundata['uuid'], document['subject'], document['checked_at']
     if subject != current_subject and ROLES['append_any'] & roles == 0:
         raise HTTPException(status_code=401, detail="Permission denied")
+    with conn.cursor() as cur:
+        keys = db_get_keys(cur, subject)
+    try:
+        ssh_validate(keys, signature, body_text)
+    except ValueError:
+        raise HTTPException(status_code=401)
     expiration_lookup = {
         period: add_period(checked_at, period)
         for period in ('day', 'week', 'month', 'quarter')
@@ -622,7 +670,7 @@ async def get_status(
         raise HTTPException(status_code=500, detail="client needs to accept application/json")
     account = get_current_account(await optional_security(request), conn)
     if account:
-        current_subject, _, _, roles = account
+        current_subject, roles = account
     else:
         current_subject, roles = None, 0
     is_privileged = subject == current_subject or ROLES['read_any'] & roles != 0
@@ -669,7 +717,7 @@ async def get_results(
 ):
     """get recent results, potentially filtered by approval status"""
     account = get_current_account(await security(request), conn)
-    current_subject, publickey, publickey_type, roles = account
+    current_subject, roles = account
     if ROLES['read_any'] & roles == 0:
         raise HTTPException(status_code=401, detail="Permission denied")
     with conn.cursor() as cur:
@@ -689,7 +737,7 @@ async def post_results(
     document = json.loads(body.decode("utf-8"))
     records = [document] if isinstance(document, dict) else document
     account = get_current_account(await security(request), conn)
-    current_subject, publickey, publickey_type, roles = account
+    current_subject, roles = account
     if ROLES['approve'] & roles == 0:
         raise HTTPException(status_code=401, detail="Permission denied")
     with conn.cursor() as cur:

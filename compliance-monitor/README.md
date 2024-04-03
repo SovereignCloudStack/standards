@@ -67,7 +67,10 @@ corresponding signal.
 accounts:
   - subject: admin  # usually the subject under test, but this one is a special account
     api_key: "secret api key"  # needed for basic auth
-    public_key: "..."  # needed to check signature of posted material
+    keys:  # needed to check signature of posted material
+      - public_key: "..."
+        public_key_type: "ssh-ed25519"
+        public_key_name: "primary"
     roles:
       # anyone (even non-authenticated) can read public details for any subject
       # any account can read the non-public details of compliance results of their subject
