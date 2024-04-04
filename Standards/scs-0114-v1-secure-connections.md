@@ -102,7 +102,43 @@ Thus, the SCS community is unable to fully assess a CSPs conformance to this sta
 
 ## Decision
 
-<!-- TODO: Decision -->
+### Transport Layer Security (TLS)
+
+All server-side TLS configurations integrated into the infrastructure as covered by this standard MUST adhere to the folllowing rules:
+
+- The following deprecated TLS versions MUST NOT be used:
+  - v1.0
+  - v1.1
+- The following cipher suites MUST NOT be used:
+  - any RC4 cipher
+  - any DES cipher
+  - any cipher with less than 128-bit encryption
+  - any cipher in CBC mode
+- Cipher suites with Perfect Forward Secrecy (using ephemeral keys with the 'E' suffix, e.g. DHE, ECDHE) SHOULD be used instead of their static key counterpart (e.g. DH, ECDH)
+
+### API Interfaces
+
+<!-- TODO -->
+
+### Database Connections
+
+<!-- TODO -->
+
+### Message Queue Connections
+
+<!-- TODO -->
+
+### Live Migration Connections
+
+<!-- TODO -->
+
+### External VM Connections
+
+<!-- TODO -->
+
+### Internal Neutron Connections
+
+<!-- TODO -->
 
 ## Related Documents
 
@@ -111,6 +147,7 @@ Thus, the SCS community is unable to fully assess a CSPs conformance to this sta
   - [OpenStack Security Guide: Database transport security](https://docs.openstack.org/security-guide/databases/database-transport-security.html)
   - [OpenStack Security Guide: Messaging transport security](https://docs.openstack.org/security-guide/messaging/security.html#messaging-transport-security)
 - [Nova Documentation: Secure live migration with QEMU-native TLS](https://docs.openstack.org/nova/latest/admin/secure-live-migration-with-qemu-native-tls.html)
+- [Guide to TLS Standards Compliance](https://www.ssl.com/guide/tls-standards-compliance/)
 
 ## Conformance Tests
 
