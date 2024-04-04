@@ -65,21 +65,45 @@ Notes about the classification categories and implications:
 
 ### Options considered
 
-#### _Option 1_
+#### Option 1: fully mandate securing all channels without differentiation
 
-Option 1 description
+This option would reach the highest security standard and establish protection on all identified communication channels simultaneously.
+However, this would burden CSPs greatly due to the difficulty of addressing some of the channels and properly maintaining the solution.
+Also there is a risk of making this incompatible with existing infrastructures due to some of their specifics being mutually exclusive to the more intricate protection mechanisms such as cross-node IPsec configurations.
+As a third aspect, not all mechanisms might fulfill the CSPs requirements regarding performance and stability and SCS cannot in good faith force CSPs to use technologies not suited to their infrastructures.
 
-#### _Option 2_
+This seems like a bad option from many perspectives.
+It also allows very little flexibility and might even make SCS conformance unappealing to CSPs due to the immense effort required to reach it.
 
-Option 2 description
+#### Option 2: only make recommendations
+
+This option would limit SCS to only recommend mechanisms in this standard like presented in the OpenStack Security Guide.
+Although this can increase awareness about the best practices recommended by OpenStack and maybe encourage CSPs to abide by them, it would actually contribute very little to the security baseline of SCS infrastructures as a whole since everything would stay optional.
+
+This option would be very easy to standardize and get consensus on due to its lightweight and optional nature.
+However, the actual added value for SCS is questionable at best.
+
+#### Option 3: mix recommendations and obligations
+
+This option forms a middle ground between options 1 and 2.
+For this, the standard needs to carefully assess each communication channel, mechanisms for protecting it and the effort required to do so as well as the implications.
+Then, only for mechanisms that are known to be reliable, are feasible to implement and for which the benefits clearly outweigh the integration effort required, should this standard enforce their implementation in a permissive way.
+For any remaining mechanisms SCS should only make recommendations and refer to known best practices where applicable.
+
+This option would still offer improvements over arbitrary OpenStack clouds by establishing a baseline that goes beyond mere recommendations while still taking into account that not all communication channels are equally easy to secure and allowing necessary flexibility for the CSP.
 
 ## Open questions
 
-RECOMMENDED
+### Verifying standard conformance for internal mechanisms
+
+Most of the mentioned communication channels to be secured are part of the internal IaaS infrastructure of an SCS cloud.
+When an internal protection mechanism is implemented by the CSP it cannot be verified from outside of the infrastructure without administrative access to the infrastructure.
+
+Thus, the SCS community is unable to fully assess a CSPs conformance to this standard without a dedicated audit of the infrastructure.
 
 ## Decision
 
-Decision
+<!-- TODO: Decision -->
 
 ## Related Documents
 
@@ -91,4 +115,6 @@ Decision
 
 ## Conformance Tests
 
-Conformance Tests, OPTIONAL
+Conformance tests are limited to communication channels exposed to users, such as the public API interfaces.
+
+<!-- TODO: implement public API tests checking the TLS handshakes including cipher suites etc. -->
