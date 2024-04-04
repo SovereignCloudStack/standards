@@ -42,4 +42,4 @@ jobs:
 
       - name: Lint markdown files
         run: |
-          npm run lint:md ${files_to_lint}
+          npm run lint:md $DIFF_DOCUMENTS
