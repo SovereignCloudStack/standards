@@ -182,11 +182,7 @@ async def optional_auth(request: Request, conn: Annotated[psycopg2.extensions.co
     return get_current_account(await optional_security(request), conn)
 
 
-def check_role(
-    account: Optional[tuple[str, str]],
-    subject: str = None,
-    roles: int = 0
-):
+def check_role(account: Optional[tuple[str, str]], subject: str = None, roles: int = 0):
     if account is None:
         raise HTTPException(status_code=401, detail="Permission denied")
     current_subject, present_roles = account
@@ -244,6 +240,8 @@ async def post_report(
     account: Annotated[tuple[str, str], Depends(auth)],
     conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)],
 ):
+    # check_role call further below because we need the subject from the document
+    # (we could expect the subject in the path or query and then later only check equality)
     content_type = request.headers['content-type']
     if content_type not in ('application/yaml', 'application/json'):
         raise HTTPException(status_code=500, detail="Unsupported content type")
@@ -311,12 +309,12 @@ async def get_status(
     scopeuuid: str = None, version: str = None,
     privileged_view: bool = False,
 ):
+    if privileged_view:
+        check_role(account, subject, ROLES['read_any'])
     # note: text/html will be the default, but let's start with json to get the logic right
     accept = request.headers['accept']
     if 'application/json' not in accept and '*/*' not in accept:
         raise HTTPException(status_code=500, detail="client needs to accept application/json")
-    if privileged_view:
-        check_role(account, subject, ROLES['read_any'])
     with conn.cursor() as cur:
         rows = db_get_relevant_results(
             cur, subject, scopeuuid, version,
@@ -360,9 +358,7 @@ async def get_results(
     approved: Optional[bool] = None, limit: int = 10, skip: int = 0,
 ):
     """get recent results, potentially filtered by approval status"""
-    current_subject, roles = account
-    if ROLES['read_any'] & roles == 0:
-        raise HTTPException(status_code=401, detail="Permission denied")
+    check_role(account, roles=ROLES['read_any'])
     with conn.cursor() as cur:
         return db_get_recent_results(cur, approved, limit, skip, grace_period_days=GRACE_PERIOD_DAYS)
 
@@ -374,15 +370,13 @@ async def post_results(
     conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)],
 ):
     """post approvals to this endpoint"""
+    check_role(account, roles=ROLES['approve'])
     content_type = request.headers['content-type']
     if content_type not in ('application/json', ):
         raise HTTPException(status_code=500, detail="Unsupported content type")
     body = await request.body()
     document = json.loads(body.decode("utf-8"))
     records = [document] if isinstance(document, dict) else document
-    current_subject, roles = account
-    if ROLES['approve'] & roles == 0:
-        raise HTTPException(status_code=401, detail="Permission denied")
     with conn.cursor() as cur:
         for record in records:
             db_patch_approval(cur, record)
