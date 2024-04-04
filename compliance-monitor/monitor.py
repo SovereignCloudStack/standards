@@ -123,7 +123,7 @@ def get_current_account(credentials: Optional[HTTPBasicCredentials], conn: conne
 
 
 def import_bootstrap(bootstrap_path, conn):
-    ryaml = ruamel.yaml.YAML()
+    ryaml = ruamel.yaml.YAML(typ='safe')
     with open(bootstrap_path) as fp:
         data = ryaml.load(fp)
     if not data or not isinstance(data, dict):
