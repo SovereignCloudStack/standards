@@ -1,5 +1,5 @@
-import psycopg2
 from psycopg2 import sql
+from psycopg2.extensions import cursor
 
 # use ... (Ellipsis) here to indicate that no default value exists (will lead to error if no value is given)
 ACCOUNT_DEFAULTS = {'subject': ..., 'api_key': ..., 'roles': ...}
@@ -23,7 +23,7 @@ def make_where_clause(*filter_clauses):
     return sql.SQL(' WHERE {} ').format(clause) if clause.seq else sql.SQL('')
 
 
-def db_find_account(cur: psycopg2.extensions.cursor, subject):
+def db_find_account(cur: cursor, subject):
     cur.execute('''
     SELECT apikey, roles
     FROM account
@@ -31,7 +31,7 @@ def db_find_account(cur: psycopg2.extensions.cursor, subject):
     return cur.fetchone()
 
 
-def db_get_keys(cur: psycopg2.extensions.cursor, subject):
+def db_get_keys(cur: cursor, subject):
     cur.execute('''
     SELECT keytype, key
     FROM publickey
@@ -40,7 +40,7 @@ def db_get_keys(cur: psycopg2.extensions.cursor, subject):
     return cur.fetchall()
 
 
-def db_ensure_schema(cur: psycopg2.extensions.cursor):
+def db_ensure_schema(cur: cursor):
     # strive to make column names unique across tables so that selects become simple, such as:
     # select * from "check" natural join standardentry natural join version natural join scope;
     cur.execute('''
@@ -126,7 +126,7 @@ def db_ensure_schema(cur: psycopg2.extensions.cursor):
     ''')
 
 
-def db_update_account(cur: psycopg2.extensions.cursor, record: dict):
+def db_update_account(cur: cursor, record: dict):
     sanitized = sanitize_record(record, ACCOUNT_DEFAULTS)
     cur.execute('''
     INSERT INTO account (subject, apikey, roles)
@@ -140,7 +140,7 @@ def db_update_account(cur: psycopg2.extensions.cursor, record: dict):
     return accountid
 
 
-def db_update_publickey(cur: psycopg2.extensions.cursor, accountid, record: dict):
+def db_update_publickey(cur: cursor, accountid, record: dict):
     sanitized = sanitize_record(record, PUBLIC_KEY_DEFAULTS, accountid=accountid)
     cur.execute('''
     INSERT INTO publickey (key, keytype, keyname, accountid)
@@ -155,7 +155,7 @@ def db_update_publickey(cur: psycopg2.extensions.cursor, accountid, record: dict
     return keyid
 
 
-def db_filter_publickeys(cur: psycopg2.extensions.cursor, accountid, predicate: callable):
+def db_filter_publickeys(cur: cursor, accountid, predicate: callable):
     cur.execute('SELECT keyid, keyname FROM publickey WHERE accountid = %s;', (accountid, ))
     removeids = [row[0] for row in cur.fetchall() if not predicate(*row)]
     while removeids:
@@ -163,7 +163,7 @@ def db_filter_publickeys(cur: psycopg2.extensions.cursor, accountid, predicate: 
         del removeids[:10]
 
 
-def db_update_scope(cur: psycopg2.extensions.cursor, record: dict):
+def db_update_scope(cur: cursor, record: dict):
     sanitized = sanitize_record(record, SCOPE_DEFAULTS)
     cur.execute('''
     INSERT INTO scope (scopeuuid, scope, url)
@@ -176,7 +176,7 @@ def db_update_scope(cur: psycopg2.extensions.cursor, record: dict):
     return scopeid
 
 
-def db_update_version(cur: psycopg2.extensions.cursor, scopeid, record: dict):
+def db_update_version(cur: cursor, scopeid, record: dict):
     sanitized = sanitize_record(record, VERSION_DEFAULTS, scopeid=scopeid)
     cur.execute('''
     INSERT INTO version (scopeid, version, stabilized_at, deprecated_at)
@@ -189,7 +189,7 @@ def db_update_version(cur: psycopg2.extensions.cursor, scopeid, record: dict):
     return versionid
 
 
-def db_update_standard(cur: psycopg2.extensions.cursor, versionid, record: dict):
+def db_update_standard(cur: cursor, versionid, record: dict):
     sanitized = sanitize_record(record, STANDARD_DEFAULTS, versionid=versionid)
     cur.execute('''
     INSERT INTO standardentry (versionid, standard, surl, condition)
@@ -202,7 +202,7 @@ def db_update_standard(cur: psycopg2.extensions.cursor, versionid, record: dict)
     return standardid
 
 
-def db_update_check(cur: psycopg2.extensions.cursor, versionid, standardid, record: dict):
+def db_update_check(cur: cursor, versionid, standardid, record: dict):
     sanitized = sanitize_record(record, CHECK_DEFAULTS, versionid=versionid, standardid=standardid)
     cur.execute('''
     INSERT INTO "check" (versionid, standardid, id, lifetime, ccondition)
@@ -215,7 +215,7 @@ def db_update_check(cur: psycopg2.extensions.cursor, versionid, standardid, reco
     return checkid
 
 
-def db_filter_checks(cur: psycopg2.extensions.cursor, standardid, predicate: callable):
+def db_filter_checks(cur: cursor, standardid, predicate: callable):
     cur.execute('SELECT checkid, id FROM "check" WHERE standardid = %s;', (standardid, ))
     removeids = [row[0] for row in cur.fetchall() if not predicate(*row)]
     while removeids:
@@ -223,7 +223,7 @@ def db_filter_checks(cur: psycopg2.extensions.cursor, standardid, predicate: cal
         del removeids[:10]
 
 
-def db_filter_standards(cur: psycopg2.extensions.cursor, versionid, predicate: callable):
+def db_filter_standards(cur: cursor, versionid, predicate: callable):
     cur.execute('SELECT standardid, surl FROM standardentry WHERE versionid = %s;', (versionid, ))
     removeids = [row[0] for row in cur.fetchall() if not predicate(*row)]
     while removeids:
@@ -231,7 +231,7 @@ def db_filter_standards(cur: psycopg2.extensions.cursor, versionid, predicate: c
         del removeids[:10]
 
 
-def db_filter_versions(cur: psycopg2.extensions.cursor, scopeid, predicate: callable):
+def db_filter_versions(cur: cursor, scopeid, predicate: callable):
     cur.execute('SELECT versionid, version FROM version WHERE scopeid = %s;', (scopeid, ))
     removeids = [row[0] for row in cur.fetchall() if not predicate(*row)]
     while removeids:
@@ -239,7 +239,7 @@ def db_filter_versions(cur: psycopg2.extensions.cursor, scopeid, predicate: call
         del removeids[:10]
 
 
-def db_get_reports(cur: psycopg2.extensions.cursor, subject, limit, skip):
+def db_get_reports(cur: cursor, subject, limit, skip):
     cur.execute(
         sql.SQL("SELECT data FROM report {} LIMIT %(limit)s OFFSET %(skip)s;")
         .format(make_where_clause(
@@ -250,15 +250,13 @@ def db_get_reports(cur: psycopg2.extensions.cursor, subject, limit, skip):
     return [row[0] for row in cur.fetchall()]
 
 
-def db_get_scopeid(cur: psycopg2.extensions.cursor, scopeuuid):
+def db_get_scopeid(cur: cursor, scopeuuid):
     cur.execute('SELECT scopeid FROM scope WHERE scopeuuid = %s;', (scopeuuid, ))
     scopeid, = cur.fetchone()
     return scopeid
 
 
-def db_insert_report(
-    cur: psycopg2.extensions.cursor, uuid, checked_at, subject, json_text, content_type, body,
-):
+def db_insert_report(cur: cursor, uuid, checked_at, subject, json_text, content_type, body):
     # this is an exception in that we don't use a record parameter (it's just not as practical here)
     cur.execute('''
     INSERT INTO report (reportuuid, checked_at, subject, data, rawformat, raw)
@@ -268,7 +266,7 @@ def db_insert_report(
     return reportid
 
 
-def db_insert_invocation(cur: psycopg2.extensions.cursor, reportid, invocation, record):
+def db_insert_invocation(cur: cursor, reportid, invocation, record):
     sanitized = sanitize_record(record, INVOCATION_DEFAULTS, reportid=reportid, invocation=invocation)
     cur.execute('''
     INSERT INTO invocation (reportid, invocation, critical, error, warning, result)
@@ -278,20 +276,18 @@ def db_insert_invocation(cur: psycopg2.extensions.cursor, reportid, invocation, 
     return invocationid
 
 
-def db_get_versionid(cur: psycopg2.extensions.cursor, scopeid, version):
+def db_get_versionid(cur: cursor, scopeid, version):
     cur.execute('SELECT versionid FROM version WHERE scopeid = %s AND version = %s;', (scopeid, version))
     versionid, = cur.fetchone()
     return versionid
 
 
-def db_get_checkdata(cur: psycopg2.extensions.cursor, versionid, check):
+def db_get_checkdata(cur: cursor, versionid, check):
     cur.execute('SELECT checkid, lifetime FROM "check" WHERE versionid = %s AND id = %s;', (versionid, check))
     return cur.fetchone()
 
 
-def db_insert_result(
-    cur: psycopg2.extensions.cursor, reportid, invocationid, checkid, result, approval, expiration,
-):
+def db_insert_result(cur: cursor, reportid, invocationid, checkid, result, approval, expiration):
     # this is an exception in that we don't use a record parameter (it's just not as practical here)
     cur.execute('''
     INSERT INTO result (reportid, invocationid, checkid, result, approval, expiration)
@@ -302,8 +298,7 @@ def db_insert_result(
 
 
 def db_get_relevant_results(
-    cur: psycopg2.extensions.cursor,
-    subject, scopeuuid, version, approved_only=True, grace_period_days=None,
+    cur: cursor, subject, scopeuuid, version, approved_only=True, grace_period_days=None,
 ):
     """for each combination of scope/version/check, get the most recent test result that is still valid"""
     cur.execute(sql.SQL('''
@@ -340,7 +335,7 @@ def db_get_relevant_results(
     return cur.fetchall()
 
 
-def db_get_recent_results(cur: psycopg2.extensions.cursor, approved, limit, skip, grace_period_days=None):
+def db_get_recent_results(cur: cursor, approved, limit, skip, grace_period_days=None):
     """list recent test results without grouping by scope/version/check"""
     columns = ('reportuuid', 'subject', 'checked_at', 'scopeuuid', 'version', 'check', 'result', 'approval')
     cur.execute(sql.SQL('''
@@ -366,7 +361,7 @@ def db_get_recent_results(cur: psycopg2.extensions.cursor, approved, limit, skip
     return [{col: val for col, val in zip(columns, row)} for row in cur.fetchall()]
 
 
-def db_patch_approval(cur: psycopg2.extensions.cursor, record):
+def db_patch_approval(cur: cursor, record):
     cur.execute('''
     UPDATE result
     SET approval = %(approval)s

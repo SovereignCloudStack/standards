@@ -14,10 +14,17 @@ from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import psycopg2
 from psycopg2.errors import UniqueViolation
+from psycopg2.extensions import connection
 import ruamel.yaml
 import uvicorn
 
-from sql import *
+from sql import (
+    db_find_account, db_update_account, db_update_publickey, db_filter_publickeys, db_update_scope,
+    db_update_version, db_update_standard, db_update_check, db_filter_checks, db_filter_standards,
+    db_filter_versions, db_get_reports, db_get_keys, db_get_scopeid, db_insert_report, db_insert_invocation,
+    db_get_versionid, db_get_checkdata, db_insert_result, db_get_relevant_results, db_get_recent_results,
+    db_patch_approval, db_ensure_schema,
+)
 
 
 class Settings:
@@ -93,10 +100,7 @@ def ssh_validate(keys, signature, data):
             raise ValueError
 
 
-def get_current_account(
-    credentials: Optional[HTTPBasicCredentials],
-    conn: psycopg2.extensions.connection,
-):
+def get_current_account(credentials: Optional[HTTPBasicCredentials], conn: connection):
     if credentials is None:
         return
     try:
@@ -105,11 +109,9 @@ def get_current_account(
         if not row:
             raise RuntimeError
         apikey, roles = row
-        current_password_bytes = credentials.password.encode("utf8")
-        is_correct_password = secrets.compare_digest(
-            current_password_bytes, apikey.encode("utf8")
-        )
-        if not is_correct_password:
+        if not secrets.compare_digest(
+            credentials.password.encode("utf8"), apikey.encode("utf8")
+        ):
             raise RuntimeError
         return credentials.username, roles
     except RuntimeError:
@@ -174,11 +176,11 @@ def import_cert_yaml_dir(yaml_path, conn):
             import_cert_yaml(os.path.join(yaml_path, fn), conn)
 
 
-async def auth(request: Request, conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)]):
+async def auth(request: Request, conn: Annotated[connection, Depends(get_conn)]):
     return get_current_account(await security(request), conn)
 
 
-async def optional_auth(request: Request, conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)]):
+async def optional_auth(request: Request, conn: Annotated[connection, Depends(get_conn)]):
     return get_current_account(await optional_security(request), conn)
 
 
@@ -199,7 +201,7 @@ async def root():
 @app.get("/reports")
 async def get_reports(
     account: Annotated[tuple[str, str], Depends(auth)],
-    conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)],
+    conn: Annotated[connection, Depends(get_conn)],
     subject: Optional[str] = None, limit: int = 10, skip: int = 0,
 ):
     if subject is None:
@@ -238,7 +240,7 @@ def add_period(dt: datetime, period: str):
 async def post_report(
     request: Request,
     account: Annotated[tuple[str, str], Depends(auth)],
-    conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)],
+    conn: Annotated[connection, Depends(get_conn)],
 ):
     # check_role call further below because we need the subject from the document
     # (we could expect the subject in the path or query and then later only check equality)
@@ -304,7 +306,7 @@ async def post_report(
 async def get_status(
     request: Request,
     account: Annotated[Optional[tuple[str, str]], Depends(optional_auth)],
-    conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)],
+    conn: Annotated[connection, Depends(get_conn)],
     subject: str,
     scopeuuid: str = None, version: str = None,
     privileged_view: bool = False,
@@ -354,7 +356,7 @@ async def get_status(
 async def get_results(
     request: Request,
     account: Annotated[tuple[str, str], Depends(auth)],
-    conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)],
+    conn: Annotated[connection, Depends(get_conn)],
     approved: Optional[bool] = None, limit: int = 10, skip: int = 0,
 ):
     """get recent results, potentially filtered by approval status"""
@@ -367,7 +369,7 @@ async def get_results(
 async def post_results(
     request: Request,
     account: Annotated[tuple[str, str], Depends(auth)],
-    conn: Annotated[psycopg2.extensions.connection, Depends(get_conn)],
+    conn: Annotated[connection, Depends(get_conn)],
 ):
     """post approvals to this endpoint"""
     check_role(account, roles=ROLES['approve'])
