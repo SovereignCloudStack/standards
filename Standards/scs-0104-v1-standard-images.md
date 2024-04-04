@@ -104,7 +104,7 @@ recommended, while only Ubuntu 22.04 is mandatory.
 ### YAML lifecycle
 
 The YAML file is generally located under
-<https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/>.
+[https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/).
 
 Any change that could render existing installations non-conformant (i.e., when new
 specifications are added, when the name scheme of a specification is changed so as to

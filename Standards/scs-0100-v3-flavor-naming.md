@@ -126,7 +126,7 @@ the flavors must be declared insecure with the `i` suffix (see below).
 #### Higher oversubscription
 
 Must be indicated with a `L` vCPU type (low performance for > 5x/core or > 3x/thread oversubscription and
-the lack of workload management that would prevent worst case performance <20% in more than 7.2h per month).
+the lack of workload management that would prevent worst case performance < 20% in more than 7.2h per month).
 
 #### Insufficient microcode
 
