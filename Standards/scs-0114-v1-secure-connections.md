@@ -18,7 +18,7 @@ A lot of internal and external connectivity is established to and within a cloud
 Due to the nature of the IaaS approach, many communication channels may occasionally or even primarily carry potentially sensitive data of customers.
 To protect this data from both tampering and unintended disclosure, communication channels need to be properly secured.
 
-For this reason, [SCS](https://scs.community) standardizes the use of common protection mechanisms for communication channels in OpenStack infrastructures. 
+For this reason, [SCS](https://scs.community) standardizes the use of common protection mechanisms for communication channels in OpenStack infrastructures.
 
 ## Motivation
 
@@ -50,7 +50,6 @@ The following overview will classify the main communication channels.
 | 6 | Nova VM migration traffic | Nova VM migration data transfer traffic between compute nodes | QEMU-native TLS |
 | 7 | External Neutron network traffic | VM-related traffic between the network/controller nodes and external networks (e.g. internet) established through routed provider networks and floating IPs | VPN |
 | 8 | Internal Neutron network traffic | Traffic within Neutron SDN networks exchanged between internal systems such as network/controller and compute nodes | IPsec |
-
 
 Notes about the classification categories and implications:
 
@@ -108,9 +107,9 @@ Thus, the SCS community is unable to fully assess a CSPs conformance to this sta
 ## Related Documents
 
 - [OpenStack Security Guide](https://docs.openstack.org/security-guide/)
-    - [OpenStack Security Guide: Secure communication](https://docs.openstack.org/security-guide/secure-communication.html)
-    - [OpenStack Security Guide: Database transport security](https://docs.openstack.org/security-guide/databases/database-transport-security.html)
-    - [OpenStack Security Guide: Messaging transport security](https://docs.openstack.org/security-guide/messaging/security.html#messaging-transport-security)
+  - [OpenStack Security Guide: Secure communication](https://docs.openstack.org/security-guide/secure-communication.html)
+  - [OpenStack Security Guide: Database transport security](https://docs.openstack.org/security-guide/databases/database-transport-security.html)
+  - [OpenStack Security Guide: Messaging transport security](https://docs.openstack.org/security-guide/messaging/security.html#messaging-transport-security)
 - [Nova Documentation: Secure live migration with QEMU-native TLS](https://docs.openstack.org/nova/latest/admin/secure-live-migration-with-qemu-native-tls.html)
 
 ## Conformance Tests
