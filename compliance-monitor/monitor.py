@@ -144,12 +144,10 @@ def import_cert_yaml(yaml_path, conn):
     yaml = ruamel.yaml.YAML(typ='safe')
     with open(yaml_path, "r") as fileobj:
         document = yaml.load(fileobj.read())
-    # The following will update any existing entries (such as versions, standards, checks),
-    # but it won't delete entries that are not present in the given yaml.
-    # We will do that in a second step. (Note that deletions will cascade to reports, but we should
-    # only ever delete entries for non-stable versions; stable versions are deemed immutable except
-    # maybe for checks, and for those, at least the ids are immutable.)
-    # It is paramount that all extant primary keys are kept because the reports refer to them.
+    # The following will also delete entries that are not present in the given yaml.
+    # It is paramount that all extant primary keys be kept because the reports refer to them, and
+    # deletions will cascade! But we should only ever delete entries for non-stable versions; stable versions
+    # are deemed immutable except maybe for checks, and for those, at least the ids are immutable.
     with conn.cursor() as cur:
         scopeid = db_update_scope(cur, document)
         all_versions = set()
