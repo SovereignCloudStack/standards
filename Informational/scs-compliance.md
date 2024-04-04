@@ -219,14 +219,16 @@ This requirement is satisfied by every mandatory image in the other standards.
 Images should also activate the `hw_rng_model: virtio` attribute and install the
 `rngd` daemon, which enables users to use the `virtio-rng`.
 
-Additionally, the Standard defines some hardware requirements in order to enable
+Additionally, the Standard defines some hardware requirements in order to enable 
 virtual machines to have access to enough entropy.
-Compute nodes MUST use CPUs that offer instructions for entropy access (e.g. RDSEED, RDRAND OR RNDR), which may not be filtered by the hypervisor.
+Compute nodes MUST use CPUs that offer instructions for entropy access (e.g. RDSEED, RDRAND OR RNDR),
+which may not be filtered by the hypervisor.
 This must result to the following things on the virtual instances; the file
 `/proc/sys/kernel/random/entropy_avail` must equal 256 or higher in value and
 the number of FIPS 140-2 failures MUST not exceed 3 out of 1000 blocks, which is
 tested with `cat /dev/random | rngtest -c 1000`.
-Please note that the CPU instruction requirement may be optional if enough entropy is available otherwise, which is mostly the case with modern kernel builds.
+Please note that the CPU instruction requirement may be optional if enough entropy is available otherwise,
+which is mostly the case with modern kernel builds.
 
 
 ### SCS Image Metadata Standard (scs-0102-v1-image-metadata)
