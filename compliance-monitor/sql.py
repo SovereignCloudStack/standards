@@ -25,10 +25,22 @@ def make_where_clause(*filter_clauses):
 
 def db_find_account(cur: cursor, subject):
     cur.execute('''
-    SELECT apikey, roles
+    SELECT roles
     FROM account
     WHERE subject = %s;''', (subject, ))
-    return cur.fetchone()
+    if not cur.rowcount:
+        raise KeyError(subject)
+    roles, = cur.fetchone()
+    return roles
+
+
+def db_get_apikeys(cur: cursor, subject):
+    cur.execute('''
+    SELECT apikeyhash
+    FROM apikey
+    NATURAL JOIN account
+    WHERE subject = %s;''', (subject, ))
+    return [row[0] for row in cur.fetchall()]
 
 
 def db_get_keys(cur: cursor, subject):
@@ -47,8 +59,13 @@ def db_ensure_schema(cur: cursor):
     CREATE TABLE IF NOT EXISTS account (
         accountid SERIAL PRIMARY KEY,
         subject text UNIQUE,
-        apikey text,
         roles integer
+    );
+    CREATE TABLE IF NOT EXISTS apikey (
+        apikeyid SERIAL PRIMARY KEY,
+        apikeyhash text,
+        accountid integer NOT NULL REFERENCES account ON DELETE CASCADE ON UPDATE CASCADE,
+        UNIQUE (accountid, apikeyhash)
     );
     CREATE TABLE IF NOT EXISTS publickey (
         keyid SERIAL PRIMARY KEY,
@@ -129,15 +146,35 @@ def db_ensure_schema(cur: cursor):
 def db_update_account(cur: cursor, record: dict):
     sanitized = sanitize_record(record, ACCOUNT_DEFAULTS)
     cur.execute('''
-    INSERT INTO account (subject, apikey, roles)
-    VALUES (%(subject)s, %(api_key)s, %(roles)s)
+    INSERT INTO account (subject, roles)
+    VALUES (%(subject)s, %(roles)s)
     ON CONFLICT (subject)
     DO UPDATE
-    SET apikey = EXCLUDED.apikey
-    , roles = EXCLUDED.roles
+    SET roles = EXCLUDED.roles
     RETURNING accountid;''', sanitized)
     accountid, = cur.fetchone()
     return accountid
+
+
+def db_update_apikey(cur: cursor, accountid, apikey_hash):
+    sanitized = dict(accountid=accountid, apikey_hash=apikey_hash)
+    cur.execute('''
+    INSERT INTO apikey (apikeyhash, accountid)
+    VALUES (%(apikey_hash)s, %(accountid)s)
+    ON CONFLICT (accountid, apikeyhash)
+    DO UPDATE
+    SET apikeyhash = EXCLUDED.apikeyhash  -- changes nothing, but necessary for RETURNING
+    RETURNING apikeyid;''', sanitized)
+    apikeyid, = cur.fetchone()
+    return apikeyid
+
+
+def db_filter_apikeys(cur: cursor, accountid, predicate: callable):
+    cur.execute('SELECT apikeyid FROM apikey WHERE accountid = %s;', (accountid, ))
+    removeids = [row[0] for row in cur.fetchall() if not predicate(*row)]
+    while removeids:
+        cur.execute('DELETE FROM apikey WHERE apikeyid IN %s', (tuple(removeids[:10]), ))
+        del removeids[:10]
 
 
 def db_update_publickey(cur: cursor, accountid, record: dict):

@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 from collections import defaultdict
+# TODO: `crypt` deprecated since version 3.11, will be removed in version 3.13
+# probably switch to Passlib: https://pypi.org/project/passlib/
+from crypt import crypt
 from datetime import date, datetime, timedelta
 import json
 import os
 import os.path
-import secrets
+from secrets import compare_digest
 from shutil import which
 from subprocess import run
 from tempfile import NamedTemporaryFile
@@ -23,7 +26,7 @@ from sql import (
     db_update_version, db_update_standard, db_update_check, db_filter_checks, db_filter_standards,
     db_filter_versions, db_get_reports, db_get_keys, db_get_scopeid, db_insert_report, db_insert_invocation,
     db_get_versionid, db_get_checkdata, db_insert_result, db_get_relevant_results, db_get_recent_results,
-    db_patch_approval, db_ensure_schema,
+    db_patch_approval, db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys,
 )
 
 
@@ -105,16 +108,18 @@ def get_current_account(credentials: Optional[HTTPBasicCredentials], conn: conne
         return
     try:
         with conn.cursor() as cur:
-            row = db_find_account(cur, credentials.username)
-        if not row:
-            raise RuntimeError
-        apikey, roles = row
-        if not secrets.compare_digest(
-            credentials.password.encode("utf8"), apikey.encode("utf8")
-        ):
+            roles = db_find_account(cur, credentials.username)
+            api_keys = db_get_apikeys(cur, credentials.username)
+        match = False
+        for keyhash in api_keys:
+            # be sure to check every single one to make timing attacks less likely
+            match = compare_digest(
+                crypt(credentials.password, keyhash), keyhash
+            ) or match
+        if not match:
             raise RuntimeError
         return credentials.username, roles
-    except RuntimeError:
+    except (KeyError, RuntimeError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -134,7 +139,9 @@ def import_bootstrap(bootstrap_path, conn):
     with conn.cursor() as cur:
         for account in accounts:
             roles = sum(ROLES[r] for r in account.get('roles', ()))
-            accountid = db_update_account(cur, {**account, "roles": roles})
+            accountid = db_update_account(cur, {'subject': account['subject'], 'roles': roles})
+            keyids = set(db_update_apikey(cur, accountid, h) for h in account.get("api_keys", ()))
+            db_filter_apikeys(cur, accountid, lambda keyid, *_: keyid in keyids)
             keyids = set(db_update_publickey(cur, accountid, key) for key in account.get("keys", ()))
             db_filter_publickeys(cur, accountid, lambda keyid, *_: keyid in keyids)
         conn.commit()

@@ -66,7 +66,8 @@ corresponding signal.
 ```yaml
 accounts:
   - subject: admin  # usually the subject under test, but this one is a special account
-    api_key: "secret api key"  # needed for basic auth
+    api_keys:  # needed for basic auth, this must be the hash as returned by `crypt.crypt`
+      - "$2b$12$02j2DtlOXdT/MTVmWG60Yu.MNIJOGxRGKvE3DdA5DylCaHXxAY1Om"
     keys:  # needed to check signature of posted material
       - public_key: "..."
         public_key_type: "ssh-ed25519"
@@ -80,8 +81,8 @@ accounts:
       - admin  # can cause reload of the bootstrap file, among other things
       - approve  # can approve non-pass results
   - subject: gx-scs
-    api_key: "secret api key 2"
-    public_key: "..."
+    api_keys: []
+    keys: []
 ```
 
 ## Endpoints
