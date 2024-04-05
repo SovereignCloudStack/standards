@@ -142,17 +142,19 @@ You MAY refer to [TLS proxies and HTTP services](https://docs.openstack.org/secu
 - If using Apache Kafka, the server listener MUST be configured to accept SSL connections. See [Apache Kafka Listener Configuration](https://kafka.apache.org/documentation/#listener_configuration).
   - The OpenStack services' oslo.messaging configuration for Kafka MUST specify `security_protocol` as either `SSL` or `SASL_SSL` and the related options appropriately. See [Kafka Driver Options](https://docs.openstack.org/oslo.messaging/latest/admin/kafka.html#driver-options).
 
-### Live Migration Connections
+### Hypervisor and Live Migration Connections
 
-<!-- TODO -->
+- If using libvirt on compute nodes, the libvirt port (as per `listen_addr`) MUST NOT be exposed to the network in an unauthenticated and unprotected fashion. It SHOULD be bound to `127.0.0.1`.
+- If QEMU and libvirt are used as the hypervisor interface in Nova, QEMU-native TLS SHOULD be used. See [Secure live migration with QEMU-native TLS](https://docs.openstack.org/nova/latest/admin/secure-live-migration-with-qemu-native-tls.html).
+
 
 ### External VM Connections
 
-<!-- TODO -->
+- As an OPTIONAL measure to assist customers in protecting external connections to their OpenStack networks and VMs, the Neutron VPNaaS service MAY be integrated into the infrastructure and the Neutron VPNaaS API extension offered to users. See the [Neutron VPNaaS documentation](https://docs.openstack.org/neutron-vpnaas/latest/).
 
 ### Internal Neutron Connections
 
-<!-- TODO -->
+- As an OPTIONAL measure to protect Neutron SDN traffic between physical nodes within the infrastructure, IPsec tunnels MAY be established between nodes involved in Neutron networks, such as compute and network controller nodes, at the network interfaces configured in Neutron.
 
 ## Related Documents
 
