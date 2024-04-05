@@ -157,7 +157,7 @@ Additional fields are valid depending on whether the check is automated or manua
 | Key               | Type   | Description                                                                                                                              | Example                |
 | ----------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
 | `executable`      | String | Valid local filename (relative to the path of scs-compliance-check.py) of a script that verifies compliance with the particular standard | _image-md-check.py_    |
-| `env`             | Map    | _Optional_ key-value map of environment variables (values may use variables)                                                             | OS_CLOUD: {os_cloud}   |
+| `env`             | Map    | _Optional_ key-value map of environment variables (values may use variables)                                                             | `OS_CLOUD: {os_cloud}` |
 | `args`            | String | _Optional_ command-line arguments to be passed to the `check_tool` (may use variables)                                                   | `-v -k {kubeconfig}`   |
 
 As mentioned, variables may be used within `env` and `args`; they are enclosed in single braces, like so: `{var}`.
