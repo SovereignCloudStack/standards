@@ -240,6 +240,7 @@ async def post_report(
     account: Annotated[tuple[str, str], Depends(auth)],
     conn: Annotated[connection, Depends(get_conn)],
 ):
+    # TODO this endpoint handles almost all user input, so check thoroughly and generate nice errors!
     # check_role call further below because we need the subject from the document
     # (we could expect the subject in the path or query and then later only check equality)
     content_type = request.headers['content-type']
@@ -276,10 +277,13 @@ async def post_report(
         period: add_period(checked_at, period)
         for period in ('day', 'week', 'month', 'quarter')
     }
-    expiration_lookup[None] = expiration_lookup['day']  # default
+    default_expiration = expiration_lookup['day']
     scopeuuid = document['spec']['uuid']
     with conn.cursor() as cur:
-        scopeid = db_get_scopeid(cur, scopeuuid)
+        try:
+            scopeid = db_get_scopeid(cur, scopeuuid)
+        except KeyError:
+            raise HTTPException(status_code=500, detail=f"Unknown scope: {scopeuuid}")
         try:
             reportid = db_insert_report(cur, uuid, checked_at, subject, json_text, content_type, body)
         except UniqueViolation:
@@ -292,7 +296,7 @@ async def post_report(
             versionid = db_get_versionid(cur, scopeid, version)
             for check, rdata in vdata.items():
                 checkid, lifetime = db_get_checkdata(cur, versionid, check)
-                expiration = expiration_lookup[lifetime]
+                expiration = expiration_lookup.get(lifetime, default_expiration)
                 invocationid = invocation_ids[rdata['invocation']]
                 result = rdata['result']
                 approval = 1 == result  # pre-approve good result

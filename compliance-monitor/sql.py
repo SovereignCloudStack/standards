@@ -252,6 +252,8 @@ def db_get_reports(cur: cursor, subject, limit, skip):
 
 def db_get_scopeid(cur: cursor, scopeuuid):
     cur.execute('SELECT scopeid FROM scope WHERE scopeuuid = %s;', (scopeuuid, ))
+    if not cur.rowcount:
+        raise KeyError(scopeuuid)
     scopeid, = cur.fetchone()
     return scopeid
 
