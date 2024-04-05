@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - .nvmrc
+      - package-lock.json
       - "**/*.md"
 
 jobs:
