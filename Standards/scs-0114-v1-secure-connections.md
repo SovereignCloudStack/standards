@@ -102,6 +102,9 @@ Thus, the SCS community is unable to fully assess a CSPs conformance to this sta
 
 ## Decision
 
+This standard will mandate or recommend appropriate measures for securing the communication channels based on existing standards and recommendations.
+It will reference documents like the [OpenStack Security Guide](https://docs.openstack.org/security-guide/) where applicable.
+
 ### Transport Layer Security (TLS)
 
 All server-side TLS configurations integrated into the infrastructure as covered by this standard MUST adhere to the folllowing rules:
@@ -110,23 +113,34 @@ All server-side TLS configurations integrated into the infrastructure as covered
   - v1.0
   - v1.1
 - The following cipher suites MUST NOT be used:
-  - any RC4 cipher
-  - any DES cipher
-  - any cipher with less than 128-bit encryption
-  - any cipher in CBC mode
+  - any RC4 cipher suite
+  - any DES cipher suite
+  - any cipher suite involving MD5 hash algorithms
+  - any cipher suite with less than 128-bit encryption
+  - any cipher suite in CBC mode
 - Cipher suites with Perfect Forward Secrecy (using ephemeral keys with the 'E' suffix, e.g. DHE, ECDHE) SHOULD be used instead of their static key counterpart (e.g. DH, ECDH)
 
 ### API Interfaces
 
-<!-- TODO -->
+- Internal API endpoints of all OpenStack services MUST use TLS. Their endpoint as registered in the Keystone service catalog MUST be an HTTPS address.
+- External API endpoints of all OpenStack services MUST use TLS. Their endpoint as registered in the Keystone service catalog MUST be an HTTPS address.
+
+You MAY refer to [TLS proxies and HTTP services](https://docs.openstack.org/security-guide/secure-communication/tls-proxies-and-http-services.html) and [Secure reference architectures](https://docs.openstack.org/security-guide/secure-communication/secure-reference-architectures.html) of the OpenStack Security Guide for best practices and recommendations.
 
 ### Database Connections
 
-<!-- TODO -->
+- The database servers used by the OpenStack services MUST be configured for TLS transport.
+- All OpenStack services MUST have TLS configured for the database connection via the `ssl_ca` directive. See [OpenStack service database configuration](https://docs.openstack.org/security-guide/databases/database-access-control.html#openstack-service-database-configuration).
+- Database user accounts for the OpenStack services SHOULD be configured to require TLS connections via the `REQUIRE SSL` SQL directive. See [Require user accounts to require SSL transport](https://docs.openstack.org/security-guide/databases/database-access-control.html#require-user-accounts-to-require-ssl-transport).
+- Security MAY be further enhanced by configuring the OpenStack services to use X.509 client certificates for database authentication. See [Authentication with X.509 certificates](https://docs.openstack.org/security-guide/databases/database-access-control.html#authentication-with-x-509-certificates).
 
 ### Message Queue Connections
 
-<!-- TODO -->
+- If using RabbitMQ or Qpid as the message queue service, the SSL functionality of the message broker MUST be enabled and used by the OpenStack services. See [Messaging transport security](https://docs.openstack.org/security-guide/messaging/security.html#messaging-transport-security).
+  - If using RabbitMQ, the OpenStack services' oslo.messaging configuration for RabbitMQ MUST use the `kombu_ssl_*` options accordingly to enable SSL.
+  - If using Qpid, the OpenStack services' oslo.messaging configuration for Qpid MUST set the `qpid_protocol` option to `ssl` to enable SSL.
+- If using Apache Kafka, the server listener MUST be configured to accept SSL connections. See [Apache Kafka Listener Configuration](https://kafka.apache.org/documentation/#listener_configuration).
+  - The OpenStack services' oslo.messaging configuration for Kafka MUST specify `security_protocol` as either `SSL` or `SASL_SSL` and the related options appropriately. See [Kafka Driver Options](https://docs.openstack.org/oslo.messaging/latest/admin/kafka.html#driver-options).
 
 ### Live Migration Connections
 
