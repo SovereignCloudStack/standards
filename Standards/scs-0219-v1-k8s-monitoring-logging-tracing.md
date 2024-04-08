@@ -44,6 +44,29 @@ This SHOULD contain a minimal set of important metrics that signal problematic c
 > Describe one examples here in more detail
 
 
+#### Kubernetes Metric Server 
+
+Kubernetes provides a source for container resource metrics. 
+The main purpose of this source is to be used for Kubernetes' built-in auto-scaling [kubernetes-metrics-server][kubernetes-metrics-server-repo].
+However, it could also be used as a source of metrics for monitoring. 
+Therefore, this metrics server MUST also be readily accessible for the mono-monitoring setup.
+
+Furthermore, end users rely on certain metrics to debug their applications.
+More specifically, an end user wants to have access to all metrics defined by Kubernetes itself.
+The content of the metrics to be provided by the [kubernetes-metrics-server][kubernetes-metrics-server-repo] are bound to a Kubernetes version and are organized according to the [kubernetes metrics lifecycle][system-metrics_metric-lifecycle]).
+
+In order for an end user to be sure that these metrics are accessible, a cluster MUST provide the metrics in the respective version.
+
+
+
+
+### Logging
+
+> see: [Logging Architecture][k8s-logging]
+
+### Tracing
+
+> see: [Traces For Kubernetes System Components][system-traces]
 
 
 
