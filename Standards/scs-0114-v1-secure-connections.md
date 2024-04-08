@@ -169,4 +169,7 @@ You MAY refer to [TLS proxies and HTTP services](https://docs.openstack.org/secu
 
 Conformance tests are limited to communication channels exposed to users, such as the public API interfaces.
 
-<!-- TODO: implement public API tests checking the TLS handshakes including cipher suites etc. -->
+There is a test suite in [`tls-checker.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/secure-connections/tls-checker.py).
+The test suite connects to the OpenStack API and retrieves all public API endpoints from the service catalog.
+It then connects to each endpoint and verifies the compliance to the standard by checking SSL/TLS protocol versions and cipher suites offered by the server against the guidelines of this standard.
+<!-- TODO: Please consult the associated [README.md](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/secure-connections/README.md) for detailed setup and testing instructions. -->
