@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 from collections import defaultdict
-# TODO: `crypt` deprecated since version 3.11, will be removed in version 3.13
-# probably switch to Passlib: https://pypi.org/project/passlib/
-from crypt import crypt
 from datetime import date, datetime, timedelta
 import json
 import os
 import os.path
-from secrets import compare_digest
 from shutil import which
 from subprocess import run
 from tempfile import NamedTemporaryFile
@@ -15,6 +11,7 @@ from typing import Annotated, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from passlib.context import CryptContext
 import psycopg2
 from psycopg2.errors import UniqueViolation
 from psycopg2.extensions import connection
@@ -58,6 +55,11 @@ app = FastAPI()
 security = HTTPBasic(realm="Compliance monitor", auto_error=True)
 optional_security = HTTPBasic(realm="Compliance monitor", auto_error=False)
 settings = Settings()
+# see https://passlib.readthedocs.io/en/stable/narr/quickstart.html
+cryptctx = CryptContext(
+    schemes=('argon2', 'bcrypt'),
+    deprecated='auto',
+)
 
 
 class TimestampEncoder(json.JSONEncoder):
@@ -113,9 +115,7 @@ def get_current_account(credentials: Optional[HTTPBasicCredentials], conn: conne
         match = False
         for keyhash in api_keys:
             # be sure to check every single one to make timing attacks less likely
-            match = compare_digest(
-                crypt(credentials.password, keyhash), keyhash
-            ) or match
+            match = cryptctx.verify(credentials.password, keyhash) or match
         if not match:
             raise RuntimeError
         return credentials.username, roles

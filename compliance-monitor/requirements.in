@@ -1,4 +1,7 @@
+argon2_cffi
+bcrypt
 fastapi
+passlib
 psycopg2
 PyYAML
 ruamel.yaml

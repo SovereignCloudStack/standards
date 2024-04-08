@@ -10,6 +10,14 @@ anyio==4.3.0
     # via
     #   starlette
     #   watchfiles
+argon2-cffi==23.1.0
+    # via -r requirements.in
+argon2-cffi-bindings==21.2.0
+    # via argon2-cffi
+bcrypt==4.1.2
+    # via -r requirements.in
+cffi==1.16.0
+    # via argon2-cffi-bindings
 click==8.1.7
     # via uvicorn
 exceptiongroup==1.2.0
@@ -22,8 +30,12 @@ httptools==0.6.1
     # via uvicorn
 idna==3.6
     # via anyio
+passlib==1.7.4
+    # via -r requirements.in
 psycopg2==2.9.9
     # via -r requirements.in
+pycparser==2.22
+    # via cffi
 pydantic==2.6.3
     # via fastapi
 pydantic-core==2.16.3
