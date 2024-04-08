@@ -117,7 +117,7 @@ All server-side TLS configurations integrated into the infrastructure as covered
   - any DES cipher suite
   - any cipher suite involving MD5 hash algorithms
   - any cipher suite with less than 128-bit encryption
-  - any cipher suite in CBC mode
+- Cipher suites utilizing CBC mode SHOULD NOT be used
 - Cipher suites with Perfect Forward Secrecy (using ephemeral keys with the 'E' suffix, e.g. DHE, ECDHE) SHOULD be used instead of their static key counterpart (e.g. DH, ECDH)
 
 ### API Interfaces
