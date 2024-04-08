@@ -87,7 +87,7 @@ echo "Installing required pip packages..."
 python3 -m pip install openstack-flavor-manager
 
 echo "Fixing openstack-flavor-manager..."
-sed -i '10s/^/from typing import Union\\n/' .scs-venv-ofm/lib/python3.9/site-packages/openstack_flavor_manager/main.py
+sed -i '10s/^/from typing import Union\n/' .scs-venv-ofm/lib/python3.9/site-packages/openstack_flavor_manager/main.py
 sed -i 's/Flavor\s|\sNone/ Union\[Flavor, None\]/g' .scs-venv-ofm/lib/python3.9/site-packages/openstack_flavor_manager/main.py
 
 openstack-flavor-manager --cloud $CLOUD_NAME
