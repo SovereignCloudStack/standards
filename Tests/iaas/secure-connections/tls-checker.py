@@ -94,7 +94,7 @@ def verify_tls(service: str, host: str, port: int) -> None:
 
     # The following are sslyze.ServerScanResult.scan_result class attrs
     # mapped to a boolean value that indicates whether the SSL/TLS version
-    # is permittted (True) or deprecated/insecure/disallowed (False).
+    # is permitted (True) or deprecated/insecure/disallowed (False).
     # In case of the latter, the server is expectedf *not* to offer this
     # protocol version at all.
     cipher_suite_categories = {
