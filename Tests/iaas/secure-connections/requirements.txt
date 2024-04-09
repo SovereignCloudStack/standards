@@ -1,0 +1,2 @@
+openstacksdk>=3.0.0
+sslyze>=6.0.0
