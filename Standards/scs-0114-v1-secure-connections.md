@@ -5,13 +5,6 @@ status: Draft
 track: IaaS  # | IaaS | Ops | KaaS | IAM
 ---
 
-<!---
-This is a template striving to provide a starting point for
-creating a standard or decision record adhering to scs-0001.
-Replace at least all text which is _italic_.
-See https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0001-v1-sovereign-cloud-standards.md
---->
-
 ## Introduction
 
 A lot of internal and external connectivity is established to and within a cloud infrastructure.
@@ -57,10 +50,10 @@ Notes about the classification categories and implications:
 2. The database frontend interface is the primary connection target for the OpenStack services. OpenStack supports using TLS for database connections.
 3. For the message queue, AMQP-based solutions such as RabbitMQ and QPid do offer TLS natively which is also supported by OpenStack. ZeroMQ does not and requires IPsec or CIPSO instead.
 4. External API endpoints can be protected easily by using a TLS proxy. They can then be registered with their HTTPS endpoint in the Keystone service catalog. The certificates of external APIs usually need to be signed by a well-known CA in order to be accepted by arbitrary external clients.
-5. Internal API endpoints can use the same TLS proxy mechanisms as the internal ones. Optionally, the TLS certificate provider and PKI can differ to the internal ones. It is often sufficient for the CA of internal TLS endpoints to be accepted within the infrastructure and doesn't need to be a common public CA.
+5. Internal API endpoints can be treated and secured similarly to the external ones. Optionally, the TLS certificate provider and PKI can differ to the external ones. It is often sufficient for the CA of internal TLS endpoints to be accepted within the infrastructure and doesn't need to be a common public CA.
 6. For protecting the data transferred between compute nodes during live-migration of VMs, [Nova offers support for QEMU-native TLS](https://docs.openstack.org/nova/latest/admin/secure-live-migration-with-qemu-native-tls.html). As an alternative, SSH is also a channel that Nova can be configured to use between hosts for this but requires passwordless SSH keys with root access to all other compute nodes which in turn requires further hardening.
 7. Neutron's external network traffic leaves the IaaS infrastructure. This part is twofold: connections initiated by the VMs themselves (egress) and connections reaching VMs from the outside (ingress). The CSP cannot influence the egress connections but can offer VPNaaS for the ingress direction.
-8. Neutron's internal network traffic one of the hardest aspects to address. Due to the highly dynamic nature of SDN, connection endpoints and relations are constantly changing. There is no holistic approach currently offered or recommended by OpenStack itself. IPsec could be established between all involved nodes but requires sophisticated and reliable key management. A per-tenant/per-customer encryption is very hard to establish this way.
+8. Neutron's internal network traffic is one of the hardest aspects to address. Due to the highly dynamic nature of SDN, connection endpoints and relations are constantly changing. There is no holistic approach currently offered or recommended by OpenStack itself. IPsec could be established between all involved nodes but requires sophisticated and reliable key management. A per-tenant/per-customer encryption is very hard to establish this way.
 
 ### Options considered
 
@@ -147,10 +140,10 @@ You MAY refer to [TLS proxies and HTTP services](https://docs.openstack.org/secu
 - If using libvirt on compute nodes, the libvirt port (as per `listen_addr`) MUST NOT be exposed to the network in an unauthenticated and unprotected fashion. It SHOULD be bound to `127.0.0.1`.
 - If QEMU and libvirt are used as the hypervisor interface in Nova, QEMU-native TLS SHOULD be used. See [Secure live migration with QEMU-native TLS](https://docs.openstack.org/nova/latest/admin/secure-live-migration-with-qemu-native-tls.html).
 
-
 ### External VM Connections
 
-- As an OPTIONAL measure to assist customers in protecting external connections to their OpenStack networks and VMs, the Neutron VPNaaS service MAY be integrated into the infrastructure and the Neutron VPNaaS API extension offered to users. See the [Neutron VPNaaS documentation](https://docs.openstack.org/neutron-vpnaas/latest/).
+- As an OPTIONAL measure to assist customers in protecting external connections to their OpenStack networks and VMs, the infrastructure MAY provide VPNaaS solutions to users.
+  - For example the Neutron VPNaaS service MAY be integrated into the infrastructure with the Neutron VPNaaS API extension enabled. See the [Neutron VPNaaS documentation](https://docs.openstack.org/neutron-vpnaas/latest/).
 
 ### Internal Neutron Connections
 
