@@ -40,27 +40,6 @@ import sys
 import yaml
 
 
-logging_config = {
-    "level": "INFO",
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "k8s-node-distribution-check": {
-            "format": "%(levelname)s: %(message)s"
-        }
-    },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "k8s-node-distribution-check",
-            "stream": "ext://sys.stdout"
-        }
-    },
-    "root": {
-        "handlers": ["console"]
-    }
-}
-
 logger = logging.getLogger(__name__)
 
 
@@ -79,6 +58,7 @@ class DistributionException(BaseException):
 class Config:
     config_path = "./config.yaml"
     kubeconfig = None
+    testconfig = None
     logging = None
 
 
@@ -99,6 +79,7 @@ The following return values are possible:
 The following arguments can be set:
     -c/--config PATH/TO/CONFIG         - Path to the config file of the test script
     -k/--kubeconfig PATH/TO/KUBECONFIG - Path to the kubeconfig of the server we want to check
+    -t/--test PATH/TO/YAML             - Input a formatted yaml file to test the script functionality
     -h                                 - Output help
 """)
 
@@ -108,7 +89,7 @@ def parse_arguments(argv):
     config = Config()
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:k:h", ["config", "kubeconfig", "help"])
+        opts, args = getopt.gnu_getopt(argv, "c:k:t:h", ["config", "kubeconfig", "test", "help"])
     except getopt.GetoptError:
         raise ConfigException
 
@@ -119,6 +100,9 @@ def parse_arguments(argv):
             config.config_path = opt[1]
         if opt[0] == "-k" or opt[0] == "--kubeconfig":
             config.kubeconfig = opt[1]
+        if opt[0] == "-t" or opt[0] == "--test":
+            with open(opt[1], 'r') as file:
+                config.testconfig = yaml.safe_load(file)
 
     return config
 
@@ -143,12 +127,12 @@ def initialize_config(config):
         with open(config.config_path, "r") as f:
             config.logging = yaml.safe_load(f)['logging']
     except OSError:
-        logger.warning(f"The config file under {config.config_path} couldn't be found, "
-                       f"falling back to the default config.")
+        logger.warning(f"The config file under {config.config_path} couldn't be found.")
+        exit(1)
     finally:
         # Setup logging if the config file with the relevant information could be loaded before
         # Otherwise, we initialize logging with the included literal
-        setup_logging(config.logging or logging_config)
+        setup_logging(config.logging)
 
     if config.kubeconfig is None:
         raise ConfigException("A kubeconfig needs to be set in order to test a k8s cluster version.")
@@ -194,7 +178,10 @@ def compare_labels(node_list, labels, node_type="master"):
             logger.warning(f"There seems to be no distribution across multiple {label.split('/')[1]}s "
                            "or labels aren't set correctly across nodes.")
         else:
-            logger.info(f"The nodes are distributed across {str(len(set(label_data[label])))} {label.split('/')[1]}s.")
+            logger.info(
+                f"The {node_type} nodes are distributed across "
+                f"{str(len(set(label_data[label])))} {label.split('/')[1]}s."
+            )
             return
 
     if node_type == "master":
@@ -225,7 +212,13 @@ async def main(argv):
         "topology.scs.community/host-id",
     )
 
-    nodes = await get_k8s_cluster_labelled_nodes(config.kubeconfig, labels + ("node-role.kubernetes.io/control-plane", ))
+    if isinstance(config.testconfig, dict):
+        nodes = [v for _, v in config.testconfig.items()]
+    else:
+        nodes = await get_k8s_cluster_labelled_nodes(
+            config.kubeconfig,
+            labels + ("node-role.kubernetes.io/control-plane", )
+        )
 
     if len(nodes) < 2:
         logger.error("The tested cluster only contains a single node, which can't comply with the standard.")
