@@ -89,7 +89,7 @@ as insecure with the `i` suffix (see below).
 #### Higher oversubscription
 
 Must be indicated with a `L` vCPU type (low performance for > 5x/core or > 3x/thread oversubscription and
-the lack of workload management that would prevent worst case performance <20% in more than 7.2h per month).
+the lack of workload management that would prevent worst case performance < 20% in more than 7.2h per month).
 
 #### Insufficient microcode
 
@@ -104,8 +104,8 @@ on L1TF susceptible CPUs w/o effective core scheduling or disabled protections o
 - SCS-**2V**:4:10n
 - SCS-**2L**:4:10n
 - SCS-**2Li**:4:10n
-- ~~SCS-**2**:\*\*4:10n~~ <- CPU suffix missing
-- ~~SCS-**2iT**:4:10n~~ <- This order is forbidden
+- ~~SCS-**2**:\*\*4:10n~~ - CPU suffix missing
+- ~~SCS-**2iT**:4:10n~~ - This order is forbidden
 
 ### [REQUIRED] Memory
 
@@ -130,7 +130,7 @@ You have to expose this with the `o sufffix`.
 - SCS-2C:**4u**:10n
 - SCS-2C:**4o**:10n
 - SCS-2C:**4uo**:10n
-- ~~SCS-2C:**4ou**:10n~~ <- This order is forbidden
+- ~~SCS-2C:**4ou**:10n~~ - This order is forbidden
 
 ### [OPTIONAL] Disk sizes and types
 
@@ -170,22 +170,22 @@ is provisioned M times.
 - SCS-2C:4:**10n**
 - SCS-2C:4:**10s**
 - SCS-2C:4:**10s**-bms-z3
-- SCS-2C:4:**3x10s** <- Cloud creates three 10GB SSDs
+- SCS-2C:4:**3x10s** - Cloud creates three 10GB SSDs
 - SCS-2C:4:**3x10s**-bms-z3
-- SCS-2C:4:**10** <- Cloud decides disk type
+- SCS-2C:4:**10** - Cloud decides disk type
 - SCS-2C:4:**10**-bms-z3
-- SCS-2C:4:**n** <- Cloud decides disk size (min_disk from image or larger)
+- SCS-2C:4:**n** - Cloud decides disk size (min_disk from image or larger)
 - SCS-2C:4:**n**-bms-3
-- SCS-2C:4: <- Cloud decides disk type and size
+- SCS-2C:4: - Cloud decides disk type and size
 - SCS-2C:4:-bms-z3
 - SCS-2C:4:-bms-z3h-GNa:64-ib
 - SCS-2C:4:-ib
-- SCS-2C:4 <- You need to specify a boot volume yourself (boot from volume, or use block_device_mapping_v2)
+- SCS-2C:4 - You need to specify a boot volume yourself (boot from volume, or use block_device_mapping_v2)
 - SCS-2C:4-bms-z3
-- SCS-2C:4:3x <- Cloud decides disk type and size and creates three of them (FIXME: Is this useful?)
-- SCS-2C:4:3xs <- Cloud decides size and creates three local SSD volumes (FIXME: useful?)
-- SCS-2C:4:3x10 <- Cloud decides type and creates three 10GB volumes
-- ~~SCS-2C:4:**1.5n**~~ <- You must not specify disk sizes which are not in full GiBs
+- SCS-2C:4:3x - Cloud decides disk type and size and creates three of them (FIXME: Is this useful?)
+- SCS-2C:4:3xs - Cloud decides size and creates three local SSD volumes (FIXME: useful?)
+- SCS-2C:4:3x10 - Cloud decides type and creates three 10GB volumes
+- ~~SCS-2C:4:**1.5n**~~ - You must not specify disk sizes which are not in full GiBs
 
 ### [OPTIONAL] Hypervisor
 
@@ -220,10 +220,10 @@ capabilities. Flavors may overdeliver ...)
 
 #### Examples
 
-- SCS-2C:4:10 <- may or may not support HW virtualization in VMs
+- SCS-2C:4:10 - may or may not support HW virtualization in VMs
 - SCS-2C:4:10-kvm-**hwv**
-- SCS-2C:4:10-**hwv** <- not recommended, but allowed
-- ~~SCS-2C:4:10-**hwv**-xen~~ <- illegal, wrong ordering
+- SCS-2C:4:10-**hwv** - not recommended, but allowed
+- ~~SCS-2C:4:10-**hwv**-xen~~ - illegal, wrong ordering
 
 ### [OPTIONAL] CPU Architecture Details
 

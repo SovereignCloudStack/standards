@@ -43,7 +43,7 @@ An `Incremental` is used in combination with other identifiers to identify a sub
 
 #### SeverityValue
 
-A `SeverityValue` is an unsiged integer ranging from 0 to 100 inclusively. It MUST be utilized by an `Impact` when referenced by a `Component` to gauge the severity of the impact on that component. It MUST NOT be added to an `Impact` when referenced by an `Incident`. While being described as an unsiged integer, implementing this value MAY not require it to be an uint data type in any form, because its range even fits in a signed int8 (byte) data type.
+A `SeverityValue` is an unsiged integer ranging from 0 to 100 inclusively. It MUST be utilized by an `Impact` when referenced by a requested `Component` to gauge the severity of the impact on that component. It MUST be added to an `Impact` when refereced by an `Incident`, when its created. While being described as an unsiged integer, implementing this value MAY not require it to be an uint data type in any form, because its range even fits in a signed int8 (byte) data type.
 
 ### API objects
 
@@ -104,15 +104,19 @@ Example:
 ```json
 [
   {
-    "displayName": "Operational",
-    "value": 10
+    "displayName": "operational",
+    "value": 25
   },
   {
-    "displayName": "Limited",
+    "displayName": "maintenance",
     "value": 50
   },
   {
-    "displayName": "Broken",
+    "displayName": "limited",
+    "value": 75
+  },
+  {
+    "displayName": "broken",
     "value": 100
   }
 ]
@@ -120,9 +124,10 @@ Example:
 
 This means:
 
-- Operational from 0 to 10
-- Limited from 11 to 50
-- Broken from 51 to 100.
+- operational from 0 to 25
+- maintenance from 26 to 50
+- limited from 51 to 75
+- broken from 76 to 100.
 
 A value of 100 is the maximum of the severity value.
 
