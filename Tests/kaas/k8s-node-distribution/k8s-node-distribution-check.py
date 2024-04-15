@@ -37,8 +37,17 @@ import kubernetes_asyncio
 import logging
 import logging.config
 import sys
-import yaml
 
+# It is important to note, that the order of these labels matters for this test.
+# Since we want to check if nodes are distributed, we want to do this from bigger
+# infrastructure parts to smaller ones. So we first look if nodes are distributed
+# across regions, then zones and then hosts. If one of these requirements is fulfilled,
+# we don't need to check anymore, since a distribution was already detected.
+labels = (
+    "topology.kubernetes.io/region",
+    "topology.kubernetes.io/zone",
+    "topology.scs.community/host-id",
+)
 
 logger = logging.getLogger(__name__)
 
@@ -56,10 +65,7 @@ class DistributionException(BaseException):
 
 
 class Config:
-    config_path = "./config.yaml"
     kubeconfig = None
-    testconfig = None
-    logging = None
 
 
 def print_usage():
@@ -77,9 +83,7 @@ The following return values are possible:
     2 - No distribution according to the standard could be detected for the nodes available.
 
 The following arguments can be set:
-    -c/--config PATH/TO/CONFIG         - Path to the config file of the test script
     -k/--kubeconfig PATH/TO/KUBECONFIG - Path to the kubeconfig of the server we want to check
-    -t/--test PATH/TO/YAML             - Input a formatted yaml file to test the script functionality
     -h                                 - Output help
 """)
 
@@ -89,53 +93,26 @@ def parse_arguments(argv):
     config = Config()
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:k:t:h", ["config", "kubeconfig", "test", "help"])
+        opts, args = getopt.gnu_getopt(argv, "k:t:h", ["kubeconfig=", "test=", "help"])
     except getopt.GetoptError:
         raise ConfigException
 
     for opt in opts:
         if opt[0] == "-h" or opt[0] == "--help":
             raise HelpException
-        if opt[0] == "-c" or opt[0] == "--config":
-            config.config_path = opt[1]
         if opt[0] == "-k" or opt[0] == "--kubeconfig":
             config.kubeconfig = opt[1]
-        if opt[0] == "-t" or opt[0] == "--test":
-            with open(opt[1], 'r') as file:
-                config.testconfig = yaml.safe_load(file)
 
     return config
-
-
-def setup_logging(config_log):
-
-    logging.config.dictConfig(config_log)
-    loggers = [
-        logging.getLogger(name)
-        for name in logging.root.manager.loggerDict
-        if not logging.getLogger(name).level
-    ]
-
-    for log in loggers:
-        log.setLevel(config_log['level'])
 
 
 def initialize_config(config):
     """Initialize the configuration for the test script"""
 
-    try:
-        with open(config.config_path, "r") as f:
-            config.logging = yaml.safe_load(f)['logging']
-    except OSError:
-        logger.warning(f"The config file under {config.config_path} couldn't be found.")
-        exit(1)
-    finally:
-        # Setup logging if the config file with the relevant information could be loaded before
-        # Otherwise, we initialize logging with the included literal
-        setup_logging(config.logging)
-
     if config.kubeconfig is None:
         raise ConfigException("A kubeconfig needs to be set in order to test a k8s cluster version.")
+
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
 
     return config
 
@@ -160,7 +137,7 @@ async def get_k8s_cluster_labelled_nodes(kubeconfig, interesting_labels):
     return nodes
 
 
-def compare_labels(node_list, labels, node_type="master"):
+def compare_labels(node_list, node_type="master"):
 
     label_data = {key: list() for key in labels}
 
@@ -192,34 +169,7 @@ def compare_labels(node_list, labels, node_type="master"):
         return
 
 
-async def main(argv):
-    try:
-        config = initialize_config(parse_arguments(argv))
-    except (OSError, ConfigException, HelpException) as e:
-        if hasattr(e, 'message'):
-            logger.error(e.message)
-        print_usage()
-        return 1
-
-    # It is important to note, that the order of these labels matters for this test.
-    # Since we want to check if nodes are distributed, we want to do this from bigger
-    # infrastructure parts to smaller ones. So we first look if nodes are distributed
-    # across regions, then zones and then hosts. If one of these requirements is fulfilled,
-    # we don't need to check anymore, since a distribution was already detected.
-    labels = (
-        "topology.kubernetes.io/region",
-        "topology.kubernetes.io/zone",
-        "topology.scs.community/host-id",
-    )
-
-    if isinstance(config.testconfig, dict):
-        nodes = [v for _, v in config.testconfig.items()]
-    else:
-        nodes = await get_k8s_cluster_labelled_nodes(
-            config.kubeconfig,
-            labels + ("node-role.kubernetes.io/control-plane", )
-        )
-
+def check_nodes(nodes):
     if len(nodes) < 2:
         logger.error("The tested cluster only contains a single node, which can't comply with the standard.")
         return 2
@@ -229,15 +179,32 @@ async def main(argv):
         if len(labelled_master_nodes) >= 1:
             worker_nodes = [node for node in nodes if "node-role.kubernetes.io/control-plane" not in node]
             # Compare the labels of both types, since we have enough of them with labels
-            compare_labels(labelled_master_nodes, labels, "master")
-            compare_labels(worker_nodes, labels, "worker")
+            compare_labels(labelled_master_nodes, "master")
+            compare_labels(worker_nodes, "worker")
         else:
-            compare_labels(nodes, labels)
+            compare_labels(nodes)
     except DistributionException as e:
         logger.error(str(e))
         return 2
 
     return 0
+
+
+async def main(argv):
+    try:
+        config = initialize_config(parse_arguments(argv))
+    except (OSError, ConfigException, HelpException) as e:
+        if hasattr(e, 'message'):
+            logger.error(e.message)
+        print_usage()
+        return 1
+
+    nodes = await get_k8s_cluster_labelled_nodes(
+        config.kubeconfig,
+        labels + ("node-role.kubernetes.io/control-plane", )
+    )
+
+    return check_nodes(nodes)
 
 
 if __name__ == "__main__":
