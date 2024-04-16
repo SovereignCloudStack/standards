@@ -3,8 +3,6 @@ title: _Descriptive title_
 type: Decision Record
 status: Draft
 track: Global  # | IaaS | Ops | KaaS | IAM
-author: Author <Mail or Github handle>
-date: DD-MM-YYYY
 ---
 
 <!---

@@ -3,8 +3,6 @@ title: _Descriptive title_
 type: Standard  # | Procedural
 status: Draft
 track: Global  # | IaaS | Ops | KaaS | IAM
-author: Author <Mail or Github handle>
-date: DD-MM-YYYY
 ---
 
 <!---
@@ -47,7 +45,7 @@ RECOMMENDED
 
 ## Standard
 
-Standard
+What is the essence of this standard? Adjust heading accordingly.
 
 ## Related Documents
 

@@ -124,14 +124,13 @@ Each Standard document MUST have the following sections:
 
 - An _Introduction_ providing context on the document and linking to other relevant materials.
 - A _Motivation_ section which details why this document or the thing it describes is necessary.
-- A section containing the actual standardization decision. The naming for this is up to the standards
-  author, since the flow of the document possibly changes the naming. We RECOMMEND naming the section _Standard_.
+- A section containing the actual standardization decision.
 - A _Conformance Tests_ section that contains hints on how to validate
   conformance with this spec, ideally links to conformance test cases.
 
 We also RECOMMEND the following sections:
 
-- A _Terminology_ section which shortly describes terms used in the document, including possible abbreviations.
+- A _Terminology_ section which briefly describes terms used in the document, including possible abbreviations.
 
 In addition, the following OPTIONAL sections should be considered:
 
@@ -153,7 +152,7 @@ Each Decision Record document MUST have the following sections:
 - An _Abstract_ providing a brief introduction on the topic of the document.
 - A _Context_ section describing the issue relevant for motivating this Decision Record.
 - A section containing the actual decision that is introduced. The section should also include
-  reasoning for this decision. We RECOMMEND naming the section _Decision_.
+  reasoning for this decision.
 
 We also RECOMMEND the following sections:
 
