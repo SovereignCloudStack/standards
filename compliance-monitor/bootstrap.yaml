@@ -18,3 +18,19 @@ accounts:
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
         public_key_type: "ssh-ed25519"
         public_key_name: "auxiliary"
+  - subject: gxscs
+    api_keys:
+      - "$2b$12$02j2DtlOXdT/MTVmWG60YufkbpXX3uPIYydzhnRUs9FD6T73ciC76"
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "auxiliary"
+subjects:
+  wavecon:
+    active: true
+    name: Wavestack
+    provider: Wavecon
+  gxscs:
+    active: true
+    name: GX-SCS
+    provider: Plusserver

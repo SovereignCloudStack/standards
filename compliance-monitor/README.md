@@ -199,6 +199,16 @@ Needs to be authenticated (via basic auth).
 
 Supports content type `text/plain; version=0.0.4; charset=utf-8` only.
 
-### GET /page/{subject}
+### GET /pages
 
-Returns the certificate status page (HTML) for the subject.
+Returns the compliance table for all active subjects (type `text/html`).
+
+### GET /pages/{subject}
+
+Returns the current status page of the subject (type `text/html`).
+
+### GET /subjects
+
+Returns the list of subjects (together with activity status).
+
+### POST /subjects

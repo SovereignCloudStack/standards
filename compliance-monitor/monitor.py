@@ -9,8 +9,9 @@ from subprocess import run
 from tempfile import NamedTemporaryFile
 from typing import Annotated, Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from jinja2 import Environment
 from passlib.context import CryptContext
 import psycopg2
 from psycopg2.errors import UniqueViolation
@@ -24,6 +25,7 @@ from sql import (
     db_filter_versions, db_get_reports, db_get_keys, db_get_scopeid, db_insert_report, db_insert_invocation,
     db_get_versionid, db_get_checkdata, db_insert_result, db_get_relevant_results, db_get_recent_results,
     db_patch_approval, db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys,
+    db_patch_subject, db_get_subjects,
 )
 
 
@@ -33,6 +35,7 @@ class Settings:
         self.db_user = os.getenv("SCM_DB_USER", "postgres")
         self.db_password = os.getenv("SCM_DB_PASSWORD", "mysecretpassword")
         self.bootstrap_path = os.path.abspath("./bootstrap.yaml")
+        self.template_path = os.path.abspath(".")
         self.yaml_path = os.path.abspath("../Tests")
 
 
@@ -48,6 +51,9 @@ GRACE_PERIOD_DAYS = 7
 #       http://127.0.0.1:8080/reports
 # to achieve this!
 SEP = "-----END SSH SIGNATURE-----\n&"
+TEMPLATE_OVERVIEW = 'overview'
+TEMPLATE_OVERVIEW_FRAGMENT = 'overview_fragment'
+REQUIRED_TEMPLATES = (TEMPLATE_OVERVIEW, TEMPLATE_OVERVIEW_FRAGMENT)
 
 
 # do I hate these globals, but I don't see another way with these frameworks
@@ -60,6 +66,11 @@ cryptctx = CryptContext(
     schemes=('argon2', 'bcrypt'),
     deprecated='auto',
 )
+env = Environment()
+env.filters.update(
+    passed=lambda scopedata: ", ".join(key for key, val in scopedata['versions'].items() if val == 1) or '–',
+)
+templates_map = {}
 
 
 class TimestampEncoder(json.JSONEncoder):
@@ -133,8 +144,9 @@ def import_bootstrap(bootstrap_path, conn):
         data = ryaml.load(fp)
     if not data or not isinstance(data, dict):
         return
-    accounts = data.get('accounts')
-    if not accounts:
+    accounts = data.get('accounts', ())
+    subjects = data.get('subjects', {})
+    if not accounts and not subjects:
         return
     with conn.cursor() as cur:
         for account in accounts:
@@ -144,6 +156,8 @@ def import_bootstrap(bootstrap_path, conn):
             db_filter_apikeys(cur, accountid, lambda keyid, *_: keyid in keyids)
             keyids = set(db_update_publickey(cur, accountid, key) for key in account.get("keys", ()))
             db_filter_publickeys(cur, accountid, lambda keyid, *_: keyid in keyids)
+        for subject, record in subjects.items():
+            db_patch_subject(cur, {'subject': subject, **record})
         conn.commit()
 
 
@@ -179,6 +193,20 @@ def import_cert_yaml_dir(yaml_path, conn):
     for fn in sorted(os.listdir(yaml_path)):
         if fn.startswith('scs-') and fn.endswith('.yaml'):
             import_cert_yaml(os.path.join(yaml_path, fn), conn)
+
+
+def import_templates(template_dir, env, templates):
+    for fn in os.listdir(template_dir):
+        if fn.startswith(".") or not fn.endswith(".html"):
+            continue
+        with open(os.path.join(template_dir, fn), "r") as fileobj:
+            templates[fn.rsplit(".", 1)[0]] = env.from_string(fileobj.read())
+
+
+def validate_templates(templates, required_templates=REQUIRED_TEMPLATES):
+    missing = [key for key in required_templates if key not in templates]
+    if missing:
+        raise RuntimeError(f"missing templates: {', '.join(missing)}")
 
 
 async def auth(request: Request, conn: Annotated[connection, Depends(get_conn)]):
@@ -311,12 +339,45 @@ async def post_report(
     conn.commit()
 
 
-@app.get("/status/{subject}")
+def convert_result_rows_to_dict(rows):
+    # collect pass, DNF, fail per scope/version
+    num_pass, num_dnf, num_fail = defaultdict(set), defaultdict(set), defaultdict(set)
+    scopes = {}  # also collect some ancillary information
+    subjects = set()
+    for subject, scopeuuid, scope, version, condition, check, ccondition, result in rows:
+        scopes.setdefault(scopeuuid, scope)
+        subjects.add(subject)
+        if result is not None and (condition == "optional" or ccondition == "optional"):
+            # count optional as 'pass' so long as a result is available;
+            # otherwise a version without mandatory checks wouldn't be counted at all
+            num_pass[(subject, scopeuuid, version)].add(check)
+        elif result == 1:
+            num_pass[(subject, scopeuuid, version)].add(check)
+        elif result == -1:
+            num_fail[(subject, scopeuuid, version)].add(check)
+        else:
+            num_dnf[(subject, scopeuuid, version)].add(check)
+    results = defaultdict(dict)
+    for subject in subjects:
+        for scopeuuid, scope in scopes.items():
+            results[subject][scopeuuid] = {"name": scope, "versions": defaultdict(dict), "result": 0}
+    keys = sorted(set(num_pass) | set(num_dnf) | set(num_fail))
+    for key in keys:
+        result = -1 if key in num_fail else 0 if key in num_dnf else 1
+        subject, scopeuuid, version = key
+        results[subject][scopeuuid]["versions"][version] = result
+        if result == 1:
+            # FIXME also check that the version is valid
+            results[subject][scopeuuid]["result"] = 1
+    return results
+
+
+@app.get("/status")
 async def get_status(
     request: Request,
     account: Annotated[Optional[tuple[str, str]], Depends(optional_auth)],
     conn: Annotated[connection, Depends(get_conn)],
-    subject: str,
+    subject: str = None,
     scopeuuid: str = None, version: str = None,
     privileged_view: bool = False,
 ):
@@ -329,36 +390,34 @@ async def get_status(
     with conn.cursor() as cur:
         rows = db_get_relevant_results(
             cur, subject, scopeuuid, version,
+            active_only=True,
             approved_only=not privileged_view,
             grace_period_days=None if privileged_view else GRACE_PERIOD_DAYS,
         )
-    # collect pass, DNF, fail per scope/version
-    num_pass, num_dnf, num_fail = defaultdict(set), defaultdict(set), defaultdict(set)
-    scopes = {}  # also collect some ancillary information
-    for scopeuuid, scope, version, condition, check, ccondition, result in rows:
-        scopes.setdefault(scopeuuid, scope)
-        if result is not None and (condition == "optional" or ccondition == "optional"):
-            # count optional as 'pass' so long as a result is available;
-            # otherwise a version without mandatory checks wouldn't be counted at all
-            num_pass[(scopeuuid, version)].add(check)
-        elif result == 1:
-            num_pass[(scopeuuid, version)].add(check)
-        elif result == -1:
-            num_fail[(scopeuuid, version)].add(check)
-        else:
-            num_dnf[(scopeuuid, version)].add(check)
-    results = {}
-    for scopeuuid, scope in scopes.items():
-        results[scopeuuid] = {"name": scope, "versions": defaultdict(dict), "result": 0}
-    keys = sorted(set(num_pass) | set(num_dnf) | set(num_fail))
-    for key in keys:
-        result = -1 if key in num_fail else 0 if key in num_dnf else 1
-        scopeuuid, version = key
-        results[scopeuuid]["versions"][version] = result
-        if result == 1:
-            # FIXME also check that the version is valid
-            results[scopeuuid]["result"] = 1
-    return results
+    return convert_result_rows_to_dict(rows)
+
+
+@app.get("/pages")
+async def get_pages(
+    request: Request,
+    account: Annotated[Optional[tuple[str, str]], Depends(optional_auth)],
+    conn: Annotated[connection, Depends(get_conn)],
+    fragment_only: bool = True,
+):
+    """get recent results, potentially filtered by approval status"""
+    # check_role(account, roles=ROLES['read_any'])
+    with conn.cursor() as cur:
+        rows = db_get_relevant_results(
+            cur, active_only=True, approved_only=True, grace_period_days=GRACE_PERIOD_DAYS,
+        )
+    results = convert_result_rows_to_dict(rows)
+    result = templates_map[TEMPLATE_OVERVIEW_FRAGMENT].render(results=results)
+    if not fragment_only:
+        result = templates_map[TEMPLATE_OVERVIEW].render(fragment=result)
+    return Response(
+        content=result,
+        media_type='text/html',
+    )
 
 
 @app.get("/results")
@@ -394,6 +453,39 @@ async def post_results(
     conn.commit()
 
 
+@app.get("/subjects")
+async def get_subjects(
+    request: Request,
+    account: Annotated[tuple[str, str], Depends(auth)],
+    conn: Annotated[connection, Depends(get_conn)],
+    active: Optional[bool] = None, limit: int = 10, skip: int = 0,
+):
+    """get subjects, potentially filtered by activity status"""
+    check_role(account, roles=ROLES['read_any'])
+    with conn.cursor() as cur:
+        return db_get_subjects(cur, active, limit, skip)
+
+
+@app.post("/subjects")
+async def post_subjects(
+    request: Request,
+    account: Annotated[tuple[str, str], Depends(auth)],
+    conn: Annotated[connection, Depends(get_conn)],
+):
+    """post approvals to this endpoint"""
+    check_role(account, roles=ROLES['admin'])
+    content_type = request.headers['content-type']
+    if content_type not in ('application/json', ):
+        raise HTTPException(status_code=500, detail="Unsupported content type")
+    body = await request.body()
+    document = json.loads(body.decode("utf-8"))
+    records = [document] if isinstance(document, dict) else document
+    with conn.cursor() as cur:
+        for record in records:
+            db_patch_subject(cur, record)
+    conn.commit()
+
+
 if __name__ == "__main__":
     with mk_conn(settings=settings) as conn:
         with conn.cursor() as cur:
@@ -401,4 +493,6 @@ if __name__ == "__main__":
         del cur
         import_bootstrap(settings.bootstrap_path, conn=conn)
         import_cert_yaml_dir(settings.yaml_path, conn=conn)
+        import_templates(settings.template_path, env=env, templates=templates_map)
+        validate_templates(templates=templates_map)
     uvicorn.run(app, port=8080, log_level="info", workers=1)

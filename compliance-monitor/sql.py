@@ -9,6 +9,7 @@ VERSION_DEFAULTS = {'version': ..., 'stabilized_at': None, 'deprecated_at': None
 STANDARD_DEFAULTS = {'name': ..., 'url': ..., 'condition': None}
 CHECK_DEFAULTS = {'id': ..., 'lifetime': None, 'condition': None}
 INVOCATION_DEFAULTS = {'critical': ..., 'error': ..., 'warning': ..., 'result': ...}
+SUBJECT_DEFAULTS = {'subject': ..., 'name': ..., 'provider': None, 'active': False}
 
 
 def sanitize_record(record, defaults, **kwargs):
@@ -139,6 +140,12 @@ def db_ensure_schema(cur: cursor):
         -- note that invocation is more like an implementation detail
         -- therefore let's also put reportid here (added bonus: simplify queries)
         reportid integer NOT NULL REFERENCES report ON DELETE CASCADE ON UPDATE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS subject (
+        subject text PRIMARY KEY,
+        active boolean,
+        name text,
+        provider text
     );
     ''')
 
@@ -337,40 +344,43 @@ def db_insert_result(cur: cursor, reportid, invocationid, checkid, result, appro
 
 
 def db_get_relevant_results(
-    cur: cursor, subject, scopeuuid, version, approved_only=True, grace_period_days=None,
+    cur: cursor,
+    subject=None, scopeuuid=None, version=None, approved_only=True, grace_period_days=None, active_only=None,
 ):
     """for each combination of scope/version/check, get the most recent test result that is still valid"""
     cur.execute(sql.SQL('''
-    SELECT scope.scopeuuid, scope.scope, version.version, standardentry.condition
+    SELECT subject.subject, scope.scopeuuid, scope.scope, version.version, standardentry.condition
     , "check".id, "check".ccondition, latest.result
     FROM "check"
+    CROSS JOIN subject
     NATURAL JOIN standardentry
     NATURAL JOIN version
     NATURAL JOIN scope
     LEFT OUTER JOIN (
         -- find the latest result per checkid for this subject
         -- DISTINCT ON is a Postgres-specific construct that comes in very handy here :)
-        SELECT DISTINCT ON (checkid) *
+        SELECT DISTINCT ON (subject, checkid) *
         FROM result
         NATURAL JOIN report
         {report_filter}
-        ORDER BY checkid, checked_at DESC
+        ORDER BY subject, checkid, checked_at DESC
     ) latest
-    ON "check".checkid = latest.checkid
+    ON "check".checkid = latest.checkid AND subject.subject = latest.subject
     {filter_condition};''').format(
-        filter_condition=make_where_clause(
-            None if scopeuuid is None else sql.SQL('scope.scopeuuid = %(scopeuuid)s'),
-            None if version is None else sql.SQL('version.version = %(version)s'),
-        ),
         report_filter=make_where_clause(
-            sql.SQL('subject = %(subject)s'),
             sql.SQL('approval') if approved_only else None,
             sql.SQL(
                 'expiration > NOW()' if grace_period_days is None else
                 f"expiration > NOW() - interval '{grace_period_days:d} days'"
             ),
         ),
-    ), {"subject": subject, "scopeuuid": scopeuuid, "version": version})
+        filter_condition=make_where_clause(
+            None if scopeuuid is None else sql.SQL('scope.scopeuuid = %(scopeuuid)s'),
+            None if version is None else sql.SQL('version.version = %(version)s'),
+            None if subject is None else sql.SQL('subject.subject = %(subject)s'),
+            None if active_only is None else sql.SQL('subject.active = %(active)s'),
+        ),
+    ), {"subject": subject, "scopeuuid": scopeuuid, "version": version, "active": active_only})
     return cur.fetchall()
 
 
@@ -416,3 +426,29 @@ def db_patch_approval(cur: cursor, record):
     RETURNING resultid;''', record)
     resultid, = cur.fetchone()
     return resultid
+
+
+def db_get_subjects(cur: cursor, active: bool, limit, skip):
+    """list subjects"""
+    columns = ('subject', 'active', 'name', 'provider')
+    cur.execute(sql.SQL('''
+    SELECT subject, active, name, provider
+    FROM subject
+    {where_clause}
+    LIMIT %(limit)s OFFSET %(skip)s;''').format(
+        where_clause=make_where_clause(
+            None if active is None else sql.SQL('active = %(active)s'),
+        ),
+    ), {"limit": limit, "skip": skip, "active": active})
+    return [{col: val for col, val in zip(columns, row)} for row in cur.fetchall()]
+
+
+def db_patch_subject(cur: cursor, record: dict):
+    sanitized = sanitize_record(record, SUBJECT_DEFAULTS)
+    cur.execute('''
+    INSERT INTO subject (subject, active, name, provider)
+    VALUES (%(subject)s, %(active)s, %(name)s, %(provider)s)
+    ON CONFLICT (subject)
+    DO UPDATE
+    SET active = EXCLUDED.active, name = EXCLUDED.name, provider = EXCLUDED.provider
+    ;''', sanitized)
