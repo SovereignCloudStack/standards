@@ -1,13 +1,13 @@
 ---
 title: _Descriptive title_
-type: Standard  # | Decision Record | Procedural
+type: Standard  # | Procedural
 status: Draft
 track: Global  # | IaaS | Ops | KaaS | IAM
 ---
 
 <!---
 This is a template striving to provide a starting point for
-creating a standard or decision record adhering to scs-0001.
+creating a standard adhering to scs-0001.
 Replace at least all text which is _italic_.
 See https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0001-v1-sovereign-cloud-standards.md
 --->
@@ -15,6 +15,11 @@ See https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-000
 ## Introduction
 
 Introduction
+
+## Terminology
+
+Example (abbr. Ex)
+  This is the description for an example terminology.
 
 ## Motivation
 
@@ -34,13 +39,13 @@ Option 1 description
 
 Option 2 description
 
-## Open questions
+### Open questions
 
 RECOMMENDED
 
-## Decision
+## Standard
 
-Decision
+What is the essence of this standard? Adjust heading accordingly.
 
 ## Related Documents
 
