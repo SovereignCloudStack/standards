@@ -3,14 +3,14 @@ we could of course iterate over results etc., but hardcode the table (except the
 for the time being to have the highest degree of control
 #}
 <table>
-    <tr><th>subject</th><th>SCS-compatible IaaS</th></tr>
-    <tr><td>gx-scs</td><td>{{
+    <tr><th>Name</th><th>Description</th><th>Operator</th><th>SCS-compatible IaaS</th><th>HealthMon</th></tr>
+    <tr><td>gx-scs</td><td>Dev environment provided for SCS & GAIA-X context</td><td>plusserver GmbH</td><td>{{
         results.gxscs['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
-    }}</td></tr>
-    <tr><td>REGIO.cloud</td><td>{{
+    }}</td><td><a href="https://health.gx-scs.sovereignit.cloud:3000/">HM</a></td></tr>
+    <tr><td>REGIO.cloud</td><td>Public cloud for customers</td><td>OSISM GmbH</td><td>{{
         results['regio-a']['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
-    }}</td></tr>
-    <tr><td>wavestack</td><td>{{
+    }}</td><td><a href="https://apimon.services.regio.digital/public-dashboards/17cf094a47404398a5b8e35a4a3968d4?orgId=1&refresh=5m">HM</a></td></tr>
+    <tr><td>Wavestack</td><td>Public cloud for customers</td><td>noris network AG/Wavecon GmbH</td><td>{{
         results.wavecon['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
-    }}</td></tr>
+    }}</td><td><a href="https://health.wavestack1.sovereignit.cloud:3000/">HM</a></td></tr>
 </table>
