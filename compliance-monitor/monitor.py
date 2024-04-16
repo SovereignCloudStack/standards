@@ -68,7 +68,7 @@ cryptctx = CryptContext(
 )
 env = Environment()
 env.filters.update(
-    passed=lambda scopedata: ", ".join(key for key, val in scopedata['versions'].items() if val == 1) or '–',
+    passed=lambda scopedata: ", ".join(key for key, val in scopedata['versions'].items() if val == 1),
 )
 templates_map = {}
 
