@@ -203,9 +203,9 @@ Supports content type `text/plain; version=0.0.4; charset=utf-8` only.
 
 Returns the compliance table for all active subjects (type `text/html`).
 
-### GET /pages/{subject}
+Query parameters:
 
-Returns the current status page of the subject (type `text/html`).
+- `fragment_only` (optional `0` or `1`, default `1`): return just the table (otherwise a complete HTML doc)
 
 ### GET /subjects
 
