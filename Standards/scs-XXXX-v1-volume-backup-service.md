@@ -66,4 +66,6 @@ The volume backup target storage SHOULD be a separate storage system from the on
 
 Conformance tests include using the `/v3/{project_id}/backups` Block Storage API endpoint to create a volume and a backup of it as a non-admin user and subsequently restore the backup on a new volume while verifying the success of each operation.
 
-<!-- TODO: implement script to trigger and verify a volume backup -->
+There is a test suite in [`volume-backup-tester.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/volume-backup/volume-backup-tester.py).
+The test suite connects to the OpenStack API and executes basic operations using the volume backup API to verify that the functionality requested by the standard is available.
+Please consult the associated [README.md](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/volume-backup/README.md) for detailed setup and testing instructions.
