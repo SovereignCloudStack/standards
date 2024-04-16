@@ -1,8 +1,8 @@
 ---
 title: Volume Backup Functionality
-type: Standard  # | Decision Record | Procedural
-status: Draft
-track: IaaS  # | IaaS | Ops | KaaS | IAM
+type: Standard
+status: Proposal
+track: IaaS
 ---
 
 ## Introduction
