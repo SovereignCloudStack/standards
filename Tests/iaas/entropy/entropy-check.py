@@ -307,9 +307,9 @@ class TestEnvironment:
 
 def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
     # Pick a flavor matching the image
-    flavors = [flv for flv in all_flavors if flv.disk >= image.min_disk and flv.ram >= image.min_ram]
+    flavors = [flv for flv in all_flavors if flv.ram >= image.min_ram]
     # if at all possible, prefer a flavor that provides hw_rng:allowed!
-    flavors_hrng = [flv for flv in flavors if flv.extra_specs.get("hw_rng:allowed") == "True"]
+    flavors_hrng = [flv for flv in flavors if flv.extra_specs.get("hw_rng:allowed", "").lower() == "true"]
     if flavors_hrng:
         flavors = flavors_hrng
     elif flavors:
@@ -319,14 +319,18 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
         return
 
     # try to pick a frugal flavor
-    flavor = min(flavors, key=lambda flv: flv.vcpus)
+    flavor = min(flavors, key=lambda flv: flv.vcpus + flv.ram / 3.0 + flv.disk / 10.0)
     userdata = next((value for key, value in SERVER_USERDATA.items() if image.name.lower().startswith(key)), None)
     # create a server with the image and the flavor as well as
     # the previously created keys and security group
-    logger.debug(f"Creating instance of image '{image.name}' using flavor '{flavor.name}'")
+    logger.debug(
+        f"Creating instance of image '{image.name}' using flavor '{flavor.name}' and "
+        f"{image.min_disk} GiB ephemeral boot volume"
+    )
     server = env.conn.create_server(
         server_name, image=image, flavor=flavor, key_name=env.keypair.name, network=env.network,
         security_groups=[env.sec_group.id], userdata=userdata, wait=True, timeout=360, auto_ip=True,
+        boot_from_volume=True, terminate_volume=True, volume_size=image.min_disk,
     )
     logger.debug(f"Server '{server_name}' ('{server.id}') has been created")
     return server
