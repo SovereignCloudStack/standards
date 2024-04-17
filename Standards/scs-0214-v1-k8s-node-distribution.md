@@ -49,7 +49,7 @@ like fault-tolerance and data redundancy. But it also understands the costs and 
 for the providers associated with this effort, since the infrastructure needs to have
 hardware which will just be used to provide fail-over safety or duplication.
 
-The document [Best practices for large clusters] describes the concept of a failure zone.
+The document [Best practices for large clusters][k8s-large-clusters] describes the concept of a failure zone.
 This term isn't defined any further, but can in this context be described as a number of
 physical (computing) machines in such a vicinity to each other (either through physical
 or logical interconnection in some way), that specific problems inside this zone would put
