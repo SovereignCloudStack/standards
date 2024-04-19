@@ -11,7 +11,17 @@ A lot of internal and external connectivity is established to and within a cloud
 Due to the nature of the IaaS approach, many communication channels may occasionally or even primarily carry potentially sensitive data of customers.
 To protect this data from both tampering and unintended disclosure, communication channels need to be properly secured.
 
-For this reason, [SCS](https://scs.community) standardizes the use of common protection mechanisms for communication channels in OpenStack infrastructures.
+For this reason, the [SCS project](https://scs.community) standardizes the use of common protection mechanisms for communication channels in OpenStack infrastructures.
+
+### Glossary
+
+| Term | Meaning |
+|---|---|
+| CSP | Cloud Service Provider, provider managing the OpenStack infrastructure |
+| SSL | Secure Sockets Layer, the predecessor of TLS |
+| TLS | Transport Layer Security |
+| PKI | Public Key Infrastructure |
+| SDN | Software-Defined Networking |
 
 ## Motivation
 
@@ -19,13 +29,13 @@ As mentioned above, a lot of communication channels in an OpenStack infrastructu
 For example this includes authentication data of customers and internal OpenStack configuration data such as encryption keys among others.
 OpenStack does not generically mandate or preconfigure the use of specific protection mechanisms by itself and instead only makes recommendations about best practices in its offical [Security Guide](https://docs.openstack.org/security-guide/).
 
-To address the potential lack of implementation of such mechanisms by a CSP and to establish a reliable foundation for communication data protection in SCS clouds, SCS formulates this standard for securing communication channels in the infrastructure, so that a customer can rely on adequate security mechanisms being in use.
+To address the potential lack of implementation of such mechanisms by a CSP and to establish a reliable foundation for communication data protection in SCS clouds, the SCS project formulates this standard for securing communication channels in the infrastructure, so that a customer can rely on adequate security mechanisms being in use.
 
 ## Design Considerations
 
 There are many communication channels in OpenStack with different characteristics, location and eligible means of protection.
 Not all channels are equally easy to secure and some protection mechanisms might put unbearable burdens on a CSP.
-Hence, careful assessment is required to determine for which SCS will either mandate or recommend the use of a protection mechanism.
+Hence, careful assessment is required to determine for which the SCS standard will either mandate or recommend the use of a protection mechanism.
 
 For this distinction to be made, communication channels must be categorized and classified accordingly.
 
@@ -62,14 +72,14 @@ Notes about the classification categories and implications:
 This option would reach the highest security standard and establish protection on all identified communication channels simultaneously.
 However, this would burden CSPs greatly due to the difficulty of addressing some of the channels and properly maintaining the solution.
 Also there is a risk of making this incompatible with existing infrastructures due to some of their specifics being mutually exclusive to the more intricate protection mechanisms such as cross-node IPsec configurations.
-As a third aspect, not all mechanisms might fulfill the CSPs requirements regarding performance and stability and SCS cannot in good faith force CSPs to use technologies not suited to their infrastructures.
+As a third aspect, not all mechanisms might fulfill the CSPs requirements regarding performance and stability and the SCS standard cannot in good faith force CSPs to use technologies not suited to their infrastructures.
 
 This seems like a bad option from many perspectives.
 It also allows very little flexibility and might even make SCS conformance unappealing to CSPs due to the immense effort required to reach it.
 
 #### Option 2: only make recommendations
 
-This option would limit SCS to only recommend mechanisms in this standard like presented in the OpenStack Security Guide.
+This option would limit the SCS project to only recommend mechanisms in this standard like presented in the OpenStack Security Guide.
 Although this can increase awareness about the best practices recommended by OpenStack and maybe encourage CSPs to abide by them, it would actually contribute very little to the security baseline of SCS infrastructures as a whole since everything would stay optional.
 
 This option would be very easy to standardize and get consensus on due to its lightweight and optional nature.
@@ -80,7 +90,7 @@ However, the actual added value for SCS is questionable at best.
 This option forms a middle ground between options 1 and 2.
 For this, the standard needs to carefully assess each communication channel, mechanisms for protecting it and the effort required to do so as well as the implications.
 Then, only for mechanisms that are known to be reliable, are feasible to implement and for which the benefits clearly outweigh the integration effort required, should this standard enforce their implementation in a permissive way.
-For any remaining mechanisms SCS should only make recommendations and refer to known best practices where applicable.
+For any remaining mechanisms the SCS standard should only make recommendations and refer to known best practices where applicable.
 
 This option would still offer improvements over arbitrary OpenStack clouds by establishing a baseline that goes beyond mere recommendations while still taking into account that not all communication channels are equally easy to secure and allowing necessary flexibility for the CSP.
 
@@ -88,7 +98,7 @@ This option would still offer improvements over arbitrary OpenStack clouds by es
 
 ### Verifying standard conformance for internal mechanisms
 
-Most of the mentioned communication channels to be secured are part of the internal IaaS infrastructure of an SCS cloud.
+Most of the mentioned communication channels to be secured are part of the internal IaaS infrastructure of a SCS cloud.
 When an internal protection mechanism is implemented by the CSP it cannot be verified from outside of the infrastructure without administrative access to the infrastructure.
 
 Thus, the SCS community is unable to fully assess a CSPs conformance to this standard without a dedicated audit of the infrastructure.
