@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  reverse-proxy:
+    image: traefik:v2.11
+    # Enables the web UI and tells Traefik to listen to docker
+    command: --api.insecure=true --providers.docker --entryPoints.web.address=:80 --entryPoints.websecure.address=:443
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  web:
+    build: .
+    ports:
+      - "5000:8080"
+    environment:
+      - SCM_DB_HOST=postgres
+      - SCM_DB_PASSWORD_FILE=/run/secrets/db_password
+    volumes:
+      - ../Tests:/Tests
+    labels:
+      - traefik.http.routers.web.rule=PathPrefix(`/`)
+    secrets:
+      - db_password
+  postgres:
+    image: postgres
+    volumes:
+      - $HOME/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+    ports:
+      - "8001:5432"
+    secrets:
+      - db_password
+    labels:
+      # do not publish this service publicly
+      - "traefik.http.routers.postgres.entrypoints=traefik"
+
+secrets:
+   db_password:
+     file: db_password.txt

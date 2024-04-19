@@ -33,7 +33,12 @@ class Settings:
     def __init__(self):
         self.db_host = os.getenv("SCM_DB_HOST", "localhost")
         self.db_user = os.getenv("SCM_DB_USER", "postgres")
-        self.db_password = os.getenv("SCM_DB_PASSWORD", "mysecretpassword")
+        password_file_path = os.getenv("SCM_DB_PASSWORD_FILE", None)
+        if password_file_path:
+            with open(os.path.abspath(password_file_path), "r") as fileobj:
+                self.db_password = fileobj.read().strip()
+        else:
+            self.db_password = os.getenv("SCM_DB_PASSWORD", "mysecretpassword")
         self.bootstrap_path = os.path.abspath("./bootstrap.yaml")
         self.template_path = os.path.abspath(".")
         self.yaml_path = os.path.abspath("../Tests")
@@ -402,7 +407,7 @@ async def get_pages(
     request: Request,
     account: Annotated[Optional[tuple[str, str]], Depends(optional_auth)],
     conn: Annotated[connection, Depends(get_conn)],
-    fragment_only: bool = True,
+    part: str = "full",
 ):
     """get recent results, potentially filtered by approval status"""
     # check_role(account, roles=ROLES['read_any'])
@@ -412,7 +417,7 @@ async def get_pages(
         )
     results = convert_result_rows_to_dict(rows)
     result = templates_map[TEMPLATE_OVERVIEW_FRAGMENT].render(results=results)
-    if not fragment_only:
+    if part == "full":
         result = templates_map[TEMPLATE_OVERVIEW].render(fragment=result)
     return Response(
         content=result,
@@ -495,4 +500,4 @@ if __name__ == "__main__":
         import_cert_yaml_dir(settings.yaml_path, conn=conn)
         import_templates(settings.template_path, env=env, templates=templates_map)
         validate_templates(templates=templates_map)
-    uvicorn.run(app, port=8080, log_level="info", workers=1)
+    uvicorn.run(app, host='0.0.0.0', port=8080, log_level="info", workers=1)
