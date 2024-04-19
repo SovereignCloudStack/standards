@@ -27,7 +27,9 @@ DNS can also be used to publish DNS records for virtual machines that have exter
 
 ## Motivation
 
-<!-- TODO -->
+The behavior and feature set regarding DNS functionalities can differ greatly between OpenStack infrastructures, depending on their individual configuration.
+
+With this standard the SCS project aims to establish a baseline for reliable and consistent DNS features in SCS cloud environments.
 
 ## Design Considerations
 
@@ -40,13 +42,16 @@ DNS can also be used to publish DNS records for virtual machines that have exter
 To offer a consistent feature set to customers, the SCS project could consider to make Designate mandatory in a sense that SCS clouds would need to integrate the service, make it available to customers and properly configure it for publishing DNS records.
 This would offer easy DNS-as-a-Service functionality to customers.
 
-However, this would also require solid DNS expertise at CSP-side to properly set up and integrate Designate and DNS zones.
+However, this would also require solid DNS expertise at CSP-side to properly set up and integrate Designate and DNS zones as Designate does not act as a full DNS server on its own but instead relies on external DNS providers or self-hosted DNS infrastructures that the CSP needs to integrate into it.
 
 #### Mandating the use of DNSSEC
 
-<!-- TODO: document thoughts and reasoning -->
+The DNSSEC extension to DNS ensures authenticity and integrity of the data provided to DNS resolvers.
+This protects against attacks like cache poisoning and increases the trustworthiness of the DNS infrastructure.
 
-#### Mandating the provision of local DNS recursor
+This is a direct improvement for customers and yields low complexity for the CSP to implement since it is supported by most major DNS implementations natively.
+
+#### Mandating the use of local DNS recursors
 
 <!-- TODO: document thoughts and reasoning -->
 
@@ -69,8 +74,8 @@ External DNS refers to the integration of external or public DNS via OpenStack D
 A CSP MUST disable the `dnsmasq_local_resolv` setting for Neutron DHCP agents.
 Instead, the setting `dnsmasq_dns_server` MUST be set accordingly:
 
-- A local DNS recursor SHOULD be integrated into the infrastructure and the `dnsmasq_dns_server` setting SHOULD point to the local DNS recursor.
-- Any local DNS recursor referenced by the `dnsmasq_dns_server` setting MUST implement DNSSEC validation.
+- One or more local DNS recursors SHOULD be integrated into the infrastructure and the `dnsmasq_dns_server` setting SHOULD point to the local DNS recursor(s) only.
+    - Any local DNS recursor referenced by the `dnsmasq_dns_server` setting MUST implement DNSSEC validation.
 - If the cloud infrastructure has any provider networks connected to the internet, then the `dnsmasq_dns_server` entries MUST contain DNS servers (recursors or resolvers) that can resolve public DNS records.
 - If no local DNS recursor is integrated and one or more public DNS server(s) are referenced in `dnsmasq_dns_server`, public DNS servers that do not offer DNSSEC MUST NOT be included.
 
