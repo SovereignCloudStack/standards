@@ -156,23 +156,50 @@ def test_backup(conn: openstack.connection.Connection,
     print("Restore volume from backup: PASS")
 
 
-def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX):
+def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
+            timeout=WAIT_TIMEOUT):
     """
     Looks up volume and volume backup resources matching the given prefix and
     deletes them.
     """
+
+    def wait_for_resource(resource_type: str, resource_id: str,
+                          expected_status="available") -> None:
+        seconds_waited = 0
+        get_func = getattr(conn.block_storage, f"get_{resource_type}")
+        while get_func(resource_id).status != expected_status:
+            time.sleep(1.0)
+            seconds_waited += 1
+            assert seconds_waited < timeout, (
+                f"Timeout reached while waiting for {resource_type} during "
+                f"cleanup to be in status '{expected_status}' "
+                f"(id: {resource_id}) after {seconds_waited} seconds"
+            )
+
     print(f"\nPerforming cleanup for resources with the "
           f"'{prefix}' prefix ...")
 
     backups = conn.block_storage.backups()
     for backup in backups:
         if backup.name.startswith(prefix):
+            try:
+                wait_for_resource("backup", backup.id)
+            except openstack.exceptions.ResourceNotFound:
+                # if the resource has vanished on
+                # its own in the meantime ignore it
+                continue
             print(f"↳ deleting volume backup '{backup.id}' ...")
             conn.block_storage.delete_backup(backup.id)
 
     volumes = conn.block_storage.volumes()
     for volume in volumes:
         if volume.name.startswith(prefix):
+            try:
+                wait_for_resource("volume", volume.id)
+            except openstack.exceptions.ResourceNotFound:
+                # if the resource has vanished on
+                # its own in the meantime ignore it
+                continue
             print(f"↳ deleting volume '{volume.id}' ...")
             conn.block_storage.delete_volume(volume.id)
 
@@ -230,11 +257,11 @@ def main():
         password=getpass.getpass("Enter password: ") if args.ask else None
     )
     if args.cleanup_only:
-        cleanup(conn, prefix=args.prefix)
+        cleanup(conn, prefix=args.prefix, timeout=args.timeout)
     else:
-        cleanup(conn, prefix=args.prefix)
+        cleanup(conn, prefix=args.prefix, timeout=args.timeout)
         test_backup(conn, prefix=args.prefix, timeout=args.timeout)
-        cleanup(conn, prefix=args.prefix)
+        cleanup(conn, prefix=args.prefix, timeout=args.timeout)
 
 
 if __name__ == "__main__":
