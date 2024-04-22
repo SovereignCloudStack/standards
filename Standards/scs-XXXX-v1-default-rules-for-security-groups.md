@@ -59,8 +59,9 @@ This has the severe downside that users could be confused by these rules and wil
 
 ## Standard
 
-The default Security Group rules for ALL Security Groups MUST NOT allow incoming traffic. Neither IPv4 nor IPv6.
-This can be achieved through the absence of any ingress rules in the default Security Group rules.
+The default Security Group rules for the default Security Groups SHOULD allow incoming traffic from the same Security Group.
+The default Security Group rules for ALL Security Groups MUST NOT allow any other incoming traffic. Neither IPv4 nor IPv6.
+This can be achieved through having ingress rules in the default Security Group rules that allow ingress traffic from the Remote Security Group "PARENT" but are only used in the default Security Group.
 
 The default Security Group rules for ALL Security Groups SHOULD allow egress Traffic for both IPv4 and IPv6.
 This standard does not forbid to also disallow all outgoing traffic making the existence of egress rules OPTIONAL.
@@ -69,7 +70,7 @@ And it would make it necessary for users to check and change the rules of their 
 
 ### Example
 
-In the following table, there is no ingress traffic allowed but all egress traffic:
+In the following table, there is only ingress traffic between the same default security groups allowed plus all egress traffic:
 
 ```bash
 $ openstack default security group rule list
@@ -80,6 +81,10 @@ $ openstack default security group rule list
 | 7d4f64d10909             |             |           |           |            |           |                       |                      |                                |                               |
 | 92a79600-5358-4fef-a390- | None        | IPv4      | 0.0.0.0/0 |            | egress    | None                  | None                 | True                           | True                          |
 | 822665f46070             |             |           |           |            |           |                       |                      |                                |                               |
+| 93e35d0c-2482-4ec1-9fbd- | None        | IPv4      | 0.0.0.0/0 |            | ingress   | PARENT                | None                 | True                           | False                         |
+| fd8c9a21a04e             |             |           |           |            |           |                       |                      |                                |                               |
+| ed5cd662-add2-4e42-b0a7- | None        | IPv6      | ::/0      |            | ingress   | PARENT                | None                 | True                           | False                         |
+| 3b585d348820             |             |           |           |            |           |                       |                      |                                |                               |
 +--------------------------+-------------+-----------+-----------+------------+-----------+-----------------------+----------------------+--------------------------------+-------------------------------+
 ```
 
