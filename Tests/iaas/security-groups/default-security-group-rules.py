@@ -45,8 +45,8 @@ def test_rules(cloud_name: str):
                 ingress_rules += 1
                 # we allow ingress from the same security group
                 # but only for the default security group
-                if (rule.remote_group_id == "PARENT" and 
-                  not rule.used_in_non_default_sg):
+                if (rule.remote_group_id == "PARENT"
+                    and not rule.used_in_non_default_sg):
                     ingress_from_same_sg += 1
             elif rule.direction == "egress":
                 egress_rules += 1
