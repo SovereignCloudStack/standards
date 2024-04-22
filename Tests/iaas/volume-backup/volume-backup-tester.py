@@ -191,6 +191,19 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
             print(f"↳ deleting volume backup '{backup.id}' ...")
             conn.block_storage.delete_backup(backup.id)
 
+    # wait for all backups to be cleaned up before attempting to remove volumes
+    seconds_waited = 0
+    while len(
+        # list of all backups whose name starts with the prefix
+        [b for b in conn.block_storage.backups() if b.name.startswith(prefix)]
+    ) > 0:
+        time.sleep(1.0)
+        seconds_waited += 1
+        assert seconds_waited < timeout, (
+            f"Timeout reached while waiting for all backups with prefix "
+            f"'{prefix}' to finish deletion"
+        )
+
     volumes = conn.block_storage.volumes()
     for volume in volumes:
         if volume.name.startswith(prefix):
