@@ -173,7 +173,8 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
             assert seconds_waited < timeout, (
                 f"Timeout reached while waiting for {resource_type} during "
                 f"cleanup to be in status '{expected_status}' "
-                f"(id: {resource_id}) after {seconds_waited} seconds"
+                f"({resource_type} id: {resource_id}) after {seconds_waited} "
+                f"seconds"
             )
 
     print(f"\nPerforming cleanup for resources with the "
