@@ -23,6 +23,7 @@ DNS can also be used to publish DNS records for virtual machines that have exter
 | network | OpenStack Neutron network resource unless stated otherwise |
 | port | OpenStack Neutron port resource unless stated otherwise |
 | DNS | Domain Name System |
+| DNS recursor | Recursive DNS resolver |
 | VM | Virtual Machine, also known as "server" resource in OpenStack Nova |
 
 ## Motivation
@@ -33,7 +34,8 @@ With this standard the SCS project aims to establish a baseline for reliable and
 
 ## Design Considerations
 
-<!-- TODO -->
+OpenStack offers a lot of extension choices and even a dedicated service (Designate) for DNS functionality.
+The standard should make sure that a specified level of DNS functionality can be reached while taking into account that not all settings and choices might be feasible for CSPs to implement.
 
 ### Options considered
 
@@ -53,7 +55,13 @@ This is a direct improvement for customers and yields low complexity for the CSP
 
 #### Mandating the use of local DNS recursors
 
-<!-- TODO: document thoughts and reasoning -->
+A local DNS recursor can be used to cache and serve DNS responses locally. It servers as a proxy between the clients and external DNS servers.
+This improves performance and speed of DNS resolution in the infrastructure.
+Furthermore, it can be configured to use DNSSEC, DNS over HTTPS and/or DNS over TLS to increase security and privacy of DNS requests it handles for clients.
+Even if individual clients do not support these functionalities, they can still benefit from a local recursor's implementation of those and don't have to trust external DNS servers directly.
+
+As such, the implementation of local DNS recursors in the infrastructure can be very beneficial.
+This standard should consider mandating or at least recommending the use of local DNS recursors for SCS clouds to be configured as the default DNS servers for Neutron resources.
 
 ## Open questions
 
