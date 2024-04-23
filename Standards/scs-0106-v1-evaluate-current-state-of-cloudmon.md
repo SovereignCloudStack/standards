@@ -6,7 +6,7 @@ type: Decision Record
 ## Introduction
 
 In the fast-paced environment of modern cloud computing, ensuring the reliability and performance
-of cloud infrastructure is paramount for organizations. Effective monitoring and testing framework 
+of cloud infrastructure is paramount for organizations. Effective monitoring and testing framework
 are essential tools in this endeavor, enabling proactive identification and resolution of issues before
 they impact critical operations. However, selecting the right monitoring solution can be a daunting task,
 particularly when faced with options that are overly complex and lack essential documentation and working
@@ -33,7 +33,6 @@ OpenStack's ecosystem, and the robust support from the Python community, it's ev
 choice for implementing Gherkin-based testing over Java. By harnessing Python's strengths, we can maximize efficiency,
 accelerate development, and ensure seamless integration with OpenStack, ultimately enhancing the effectiveness of our
 testing processes.
-
 
 ## Decision
 
