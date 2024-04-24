@@ -12,7 +12,7 @@ The Domain Name System (DNS) is used to resolve name records to addresses in Int
 DNS has a variety of use cases in OpenStack infrastructures.
 For basic egress traffic, it is used to enable proper connectivity for customer virtual machines to the outside world by offering DNS servers to them.
 For internal connectivity and discoverability between cloud resources, DNS is used to make virtual machines addressable via their name within tenant networks.
-DNS can also be used to publish DNS records for virtual machines that have external connectivity using the integrating the OpenStack Designate service.
+DNS can also be used to publish DNS records for virtual machines that have external connectivity by integrating and using the OpenStack Designate service.
 
 ### Glossary
 
@@ -57,8 +57,8 @@ This is a direct improvement for customers and yields low complexity for the CSP
 
 A local DNS recursor can be used to cache and serve DNS responses locally. It servers as a proxy between the clients and external DNS servers.
 This improves performance and speed of DNS resolution in the infrastructure.
-Furthermore, it can be configured to use DNSSEC, DNS over HTTPS and/or DNS over TLS to increase security and privacy of DNS requests it handles for clients.
-Even if individual clients do not support these functionalities, they can still benefit from a local recursor's implementation of those and don't have to trust external DNS servers directly.
+Furthermore, it can be configured to use DNSSEC and DNS over TLS to increase security and privacy of DNS requests it handles for clients.
+Regardless of whether clients within the cloud infrastructure individually support those features or not, they all benefit from a local recursor implementing it as their DNS traffic is then properly protected outside of the infrastructure.
 
 As such, the implementation of local DNS recursors in the infrastructure can be very beneficial.
 This standard should consider mandating or at least recommending the use of local DNS recursors for SCS clouds to be configured as the default DNS servers for Neutron resources.
@@ -75,17 +75,22 @@ Forwarded DNS refers to the DNS servers communicated to tenant VMs for DNS resol
 
 Internal DNS refers to the DNS resolution that OpenStack Neutron implements internally to make VM instances' addresses resolvable via name within the same tenant network.
 
-External DNS refers to the integration of external or public DNS via OpenStack Designate and its publishing of DNS records for VMs that are externally reachable (DNS-as-a-Service functionality).
+DNS-as-a-Service refers to the integration of external or public DNS via OpenStack Designate and its publishing of DNS records for VMs that are externally reachable.
 
 ### Forwarded DNS
 
-A CSP MUST disable the `dnsmasq_local_resolv` setting for Neutron DHCP agents.
-Instead, the setting `dnsmasq_dns_server` MUST be set accordingly:
+- In OVS-based setups, the `dnsmasq_local_resolv` setting for Neutron DHCP agents MUST be disabled.
+- One or more local DNS recursors SHOULD be integrated into the infrastructure.
+    - In case one or more local DNS recursors are provided, the *DNS server setting* MUST point to the local DNS recursor(s) only.
+    - Any local DNS recursor referenced by the *DNS server setting* MUST implement DNSSEC validation and offer DNSSEC itself.
+- If the cloud infrastructure has any provider networks connected to the internet, then the *DNS server setting* entries MUST contain DNS servers (recursors or resolvers) that are able to resolve public DNS records.
+- If no local DNS recursor is integrated and one or more public DNS server(s) are referenced in the *DNS server setting*, all referenced public DNS servers MUST offer DNSSEC as well as validate DNSSEC themselves and discard invalid responses.
 
-- One or more local DNS recursors SHOULD be integrated into the infrastructure and the `dnsmasq_dns_server` setting SHOULD point to the local DNS recursor(s) only.
-    - Any local DNS recursor referenced by the `dnsmasq_dns_server` setting MUST implement DNSSEC validation.
-- If the cloud infrastructure has any provider networks connected to the internet, then the `dnsmasq_dns_server` entries MUST contain DNS servers (recursors or resolvers) that can resolve public DNS records.
-- If no local DNS recursor is integrated and one or more public DNS server(s) are referenced in `dnsmasq_dns_server`, public DNS servers that do not offer DNSSEC MUST NOT be included.
+The *DNS server setting* refers to the following:
+
+- In OVS-based setups, the `dnsmasq_dns_servers` setting in the `[DEFAULT]` section of the `dhcp_agent.ini` for all Neutron DHCP agents.
+- In OVN-based setups, the `dns_servers` setting in the `[ovn]` section of `ml2_conf.ini`.
+
 
 ### Internal DNS
 
@@ -105,9 +110,9 @@ extension_drivers = ...,dns_domain_ports
 #### Internal DNS Domain
 
 The `dns_domain` setting in the global Neutron configuration will act as the default domain name for any ports created by users unless overridden by explicit network or port settings.
-A CSP MAY change this setting freely.
+A CSP MAY choose this setting freely but SHOULD NOT change it after the initial deployment of the cloud.
 
-### External DNS
+### DNS-as-a-Service
 
 The following section only applies to SCS clouds which include the DNS service Designate and offer its functionality and API to customers.
 
