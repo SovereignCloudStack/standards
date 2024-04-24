@@ -1,0 +1,27 @@
+master0:
+  node-role.kubernetes.io/control-plane: ""
+  topology.kubernetes.io/region: "region"
+  topology.kubernetes.io/zone: "zone1"
+  topology.scs.community/host-id: "vm0"
+master1:
+  node-role.kubernetes.io/control-plane: ""
+  topology.kubernetes.io/region: "region"
+  topology.kubernetes.io/zone: "zone1"
+  topology.scs.community/host-id: "vm0"
+master2:
+  node-role.kubernetes.io/control-plane: ""
+  topology.kubernetes.io/region: "region"
+  topology.kubernetes.io/zone: "zone1"
+  topology.scs.community/host-id: "vm0"
+worker0:
+  topology.kubernetes.io/region: "region"
+  topology.kubernetes.io/zone: "zone1"
+  topology.scs.community/host-id: "vm1"
+worker1:
+  topology.kubernetes.io/region: "region"
+  topology.kubernetes.io/zone: "zone1"
+  topology.scs.community/host-id: "vm1"
+worker2:
+  topology.kubernetes.io/region: "region"
+  topology.kubernetes.io/zone: "zone1"
+  topology.scs.community/host-id: "vm1"

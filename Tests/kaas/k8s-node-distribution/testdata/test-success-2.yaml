@@ -1,3 +1,6 @@
+# Success Scenario 2:
+# Nodes share the host-id and region, but are in different zones.
+
 master0:
   node-role.kubernetes.io/control-plane: ""
   topology.kubernetes.io/region: "region"
@@ -7,21 +10,21 @@ master1:
   node-role.kubernetes.io/control-plane: ""
   topology.kubernetes.io/region: "region"
   topology.kubernetes.io/zone: "zone2"
-  topology.scs.community/host-id: "vm1"
+  topology.scs.community/host-id: "vm0"
 master2:
   node-role.kubernetes.io/control-plane: ""
   topology.kubernetes.io/region: "region"
   topology.kubernetes.io/zone: "zone3"
-  topology.scs.community/host-id: "vm2"
+  topology.scs.community/host-id: "vm0"
 worker0:
   topology.kubernetes.io/region: "region"
   topology.kubernetes.io/zone: "zone1"
-  topology.scs.community/host-id: "vm3"
+  topology.scs.community/host-id: "vm1"
 worker1:
   topology.kubernetes.io/region: "region"
   topology.kubernetes.io/zone: "zone2"
-  topology.scs.community/host-id: "vm4"
+  topology.scs.community/host-id: "vm1"
 worker2:
   topology.kubernetes.io/region: "region"
   topology.kubernetes.io/zone: "zone3"
-  topology.scs.community/host-id: "vm5"
+  topology.scs.community/host-id: "vm1"
