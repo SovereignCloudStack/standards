@@ -1,9 +1,9 @@
-master0:
+control-0:
   node-role.kubernetes.io/control-plane: ""
   topology.kubernetes.io/region: "region"
   topology.kubernetes.io/zone: "zone1"
   topology.scs.community/host-id: "vm0"
-worker0:
+worker-0:
   topology.kubernetes.io/region: "region"
   topology.kubernetes.io/zone: "zone1"
   topology.scs.community/host-id: "vm0"
