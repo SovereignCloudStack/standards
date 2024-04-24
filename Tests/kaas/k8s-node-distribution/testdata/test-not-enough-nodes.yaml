@@ -1,4 +1,4 @@
-node0:
+node-0:
   node-role.kubernetes.io/control-plane: ""
   topology.kubernetes.io/region: "region"
   topology.kubernetes.io/zone: "zone1"
