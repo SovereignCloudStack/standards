@@ -39,5 +39,5 @@ testing processes.
 By opting for [Gherkin](https://cucumber.io/docs/gherkin/) test scenarios with Python mapping API calls to OpenStack,
 we aim to address the complexities and shortcomings of the Cloudmon project while ensuring our monitoring and testing
 processes remain efficient, reliable, and aligned with our organizational goals. To connect both technologies we use as
-well [Behave](https://behave.readthedocs.io/en/latest/) framework.  This decision represents a strategic move towards
-enhancing our cloud infrastructure management capabilities and maximizing operational effectiveness. 
+well [Behave](https://behave.readthedocs.io/en/latest/) framework. This decision represents a strategic move towards
+enhancing our cloud infrastructure management capabilities and maximizing operational effectiveness.
