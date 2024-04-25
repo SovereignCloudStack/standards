@@ -1,5 +1,5 @@
 ---
-title: Networking Standard
+title: Provider Networks
 type: Standard
 status: Proposal
 track: IaaS
@@ -7,72 +7,70 @@ track: IaaS
 
 ## Introduction
 
-[...]
+Connecting a virtual machine to the internet requires a virtual networks that is also connected to the non-virtualised network infrastructure outside of the cloud environment.
+Because such networks break the isolation of the cloud environment, they must be created and managed by the CSP and made available to projects only in a controlled manner.
+
+In OpenStack, such CSP-managed networks are called _provider networks_, though not all provider networks have to provide access to the Internet.
+And those who do may impose different restrictions and use different methods of allocating IP addresses.
+
+External access to and from virtualised resources is a fundamental property of IaaS, and providing this access is a hard requirement for any cloud provider.
+This document outlines a standardized setup of provider networks to ensure a consistent, secure, and efficient methodology for managing public IP addresses and providing external access in SCS clouds.
 
 ## Motivation
 
-[...]
-
 ## Design Considerations
 
-Networking setups can vary between OpenStack clouds in a number of aspects. The focus of this standard are those aspects that have an impact on the cloud user, which can be broadly grouped into two areas:
-* API behavior, which includes policy rules and the availability of API extensions,
-* and CSP-managed resources, which includes provider networks and their subnets, as well as floating IPs and subnet pools.
+In OpenStack, ownership of resources is generally tracked through projects, and, as per default policy, only members of a project have access to its resources
+This is also true for CSP-managed resources, such as provider networks, which have to be created in a designated internal projec, and are initially only accessible in this project.
+
+The Network API's Role Based Access Control (RBAC) extension can then be used to share it with other projects.
+RBAC rules for networks support the two actions `access_as_external` and `access_as_shared`, and can be created automatically on `openstack network create` with the options `--external` and `--share`.
+* `access_as_external` allows networks to be used as external gateway for virtual routers in the target projects. Such networks are in the following referred to as _external networks_.
+* `access_as_shared` allows networks to be attached directly to VMs in the target projects. Such networks are in the following referred to as _shared networks_.
+
+Rules can be created with either a specific target project ID or with a wild card (`*`) to target all projects.
+They can also overlap, allowing a network to be both external and shared to the same target projects.
+
+CSPs can assign a subnet to a provider network to supply connected VMs or routers with public IP addresses, making them externally accessible.
+This works well for a shared provider network, but connecting VMs behind a virtual router to the internet is a bit more complicated.
+
+* subnet pools
+* NAS
 
 ### Options considered
 
-#### API Extensions
+#### Single Default Provider Network
 
-The OpenStack Networking API is more modular than many other OpenStack APIs, adding new functionality as optional API extensions, rather than a linear sequence of micro-versions. Which of those extensions are available from Neutron depends on the enabled plugins and back-end drivers.
+* multiple provider networks may confusing, user has to figure out the "right" one
+* dual stack possible with multiple subnets in a single networks
 
-Mandating a minimum set of enabled extensions will ensure that users have a consistent feature-set available across SCS clouds, but should not unnecessarily restrict the choice of back-end drivers for CSPs.
+#### Shared Provider Network
 
-[...]
+* simplicity of use, no extra resources
+* port security is essential
+* no quota for address use
 
-#### Policies
+#### External Provider Network and subnet allocation
 
-[...]
+* requires virtual router
+* requires dynamic routing
+* IPv4+IPv6
+* prefer over shared network because: FWaaS, Quota
 
-#### Provider Networks
+#### NAT and Floating IPs
 
-Provider networks are CSP-managed networks that are made available to projects, such that project-internal resources can be connected to them. In Openstack, provider networks can be made available as _external_, as _shared_, or both:
-* External networks provide the standard way of connecting project-internal resources to networks outside of the cloud environment, such as the internet. They can be connected to project-internal networks with a virtual router, but do not allow VMs to connect directly.
-* Shared networks are typically used to connect resources of different projects within the same cloud environment. Unlike external networks, VMs can be directly attached to them.
-* Shared external networks are a special case that allows external access, but also direct attachment of VMs.
+* requires virtual router
+* IPv4 only
+* dual stack use with IPv6 from subnetpool
+* IPv4: prefer NAT/FIP over subnet pool to discourage wasting addresses
 
-Networks can be shared or external to either a specified subset of projects or to all projects (the latter is the default for external networks). For the purpose of standardization we primarily care about provider networks that are available to all projects.
-Purely shared networks between all projects have very few use-cases in a public cloud. They are more of special case solution to connect a specific set of related projects, so they will not be further considered here.
-External networks, on the other hand, are required to make VMs in a project externally accessible, which is an essential functionality, and as such should be mandatory in an SCS compliant cloud.
+#### Dual Stack
 
-Connecting a VM to a non-shared external network does at minimum require the creation of a virtual router and a project-internal network and subnet.
-Assigning public IPs to VMs in an internal network requires an internal subnet with public IP allocation ranges, that will usually be allocated from a CSP-managed subnet pool.
-To allow users the dynamic allocation and deallocation of publicly routable subnets, CSPs need to provide [dynamic routing via BGP](https://docs.openstack.org/neutron/latest/admin/config-bgp-dynamic-routing.html).
+#### Security Considerations
 
-Alternatively, at least for IPv4, virtual routers can also act as source NAT, allowing VMs in the internal network to access the internet through the routers external gateway IP.
-To make VMs in a NATed subnet externally accessible, OpenStack also supports destination NAT in the form of Floating IPs.
-A floating IP represents an address from the external network which can be allocated from a CSP-managed pool and mapped onto an IP within an internal network.
-
-NAT and floating IPs do not require dynamic routing and can greatly reduce the number of required IPv4 addresses, which are an increasingly sparse resource and may be subject to tight project-quotas by the CSP.
-Being ultimately a workaround for the limited IPv4 address space, neither are available for IPv6.
-It is possible, however, to create a dual-stack setup in which VMs attached to a routed internal network can have both public IPv6 addresses and private, NATed IPv4 addresses.
-
-[...]
-
-A shared external network may provide some usability benefits over a purely external one, as users can make their VMs directly accessible from the internet without creating additional resources.
-Beyond that, skipping virtual routers may be important for projects implementing some form of network function virtualisation (NFV) within a VM, but this is more of a niche application, that may also require disabling port security.
-
-[...]
+* disallow creation of rbac rules for users to prevent creation of faux provider networks
 
 ## Decision
-### API Extensions
-
-[...]
-
-### Policies
-
-[...]
-
-### Provider Networks
 
 CSPs **MUST** provide a standard external network that gives projects access to the internet.
 
