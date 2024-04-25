@@ -64,6 +64,10 @@ class DistributionException(BaseException):
     """Exception raised if the distribution seems to be not enough"""
 
 
+class LabelException(BaseException):
+    """Exception raised if a label isn't set"""
+
+
 class Config:
     kubeconfig = None
 
@@ -137,7 +141,7 @@ async def get_k8s_cluster_labelled_nodes(kubeconfig, interesting_labels):
     return nodes
 
 
-def compare_labels(node_list, node_type="master"):
+def compare_labels(node_list, node_type="control"):
 
     label_data = {key: list() for key in labels}
 
@@ -146,11 +150,9 @@ def compare_labels(node_list, node_type="master"):
             try:
                 label_data[key].append(node[key])
             except KeyError:
-                logger.warning(f"The label for {key.split('/')[1]}s don't seem to be set for all nodes.")
+                raise LabelException(f"The label for {key.split('/')[1]}s doesn't seem to be set for all nodes.")
 
     for label in labels:
-        if len(label_data[label]) < len(node_list):
-            logger.warning(f"The label for {label.split('/')[1]}s doesn't seem to be set for all nodes.")
         if len(set(label_data[label])) <= 1:
             logger.warning(f"There seems to be no distribution across multiple {label.split('/')[1]}s "
                            "or labels aren't set correctly across nodes.")
@@ -161,7 +163,7 @@ def compare_labels(node_list, node_type="master"):
             )
             return
 
-    if node_type == "master":
+    if node_type == "control":
         raise DistributionException("The distribution of nodes described in the standard couldn't be detected.")
     elif node_type == "worker":
         logger.warning("No node distribution could be detected for the worker nodes. "
@@ -174,16 +176,16 @@ def check_nodes(nodes):
         logger.error("The tested cluster only contains a single node, which can't comply with the standard.")
         return 2
 
-    labelled_master_nodes = [node for node in nodes if "node-role.kubernetes.io/control-plane" in node]
+    labelled_control_nodes = [node for node in nodes if "node-role.kubernetes.io/control-plane" in node]
     try:
-        if len(labelled_master_nodes) >= 1:
+        if len(labelled_control_nodes) >= 1:
             worker_nodes = [node for node in nodes if "node-role.kubernetes.io/control-plane" not in node]
             # Compare the labels of both types, since we have enough of them with labels
-            compare_labels(labelled_master_nodes, "master")
+            compare_labels(labelled_control_nodes, "control")
             compare_labels(worker_nodes, "worker")
         else:
             compare_labels(nodes)
-    except DistributionException as e:
+    except (DistributionException, LabelException) as e:
         logger.error(str(e))
         return 2
 

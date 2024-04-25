@@ -55,12 +55,6 @@ def test_no_distribution(yaml_file, caplog):
 def test_missing_label(caplog):
     data = load_testdata("test-missing-labels.yaml")
     assert check_nodes(data.values()) == 2
-    no_distribution_records = [
-        record for record in caplog.records
-        if "distribution of nodes described in the standard couldn't be detected" in record.message
-    ]
-    assert len(no_distribution_records) == 1
-    assert no_distribution_records[0].levelname == "ERROR"
     hostid_missing_records = [
         record for record in caplog.records
         if "label for host-ids" in record.message
