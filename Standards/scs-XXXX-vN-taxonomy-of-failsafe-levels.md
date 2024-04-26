@@ -79,7 +79,7 @@ A possible way to group the failure cases into levels considering the matrix of 
 |---|---|-----|
 | 1. Level | single volumes, VMs... | Disk Failure, Node outage, (maybe rack outage) |
 | 2. Level | number of resources, most of the time recoverable | Rack outage, (Fire), (Power outage when different power supplies exist) |
-| 3. Level | lots of resources / user data  + potentially not recoverable | Fire, Earthquake, Storm/Tornado, Power Outage |
+| 3. Level | lots of resources / user data + potentially not recoverable | Fire, Earthquake, Storm/Tornado, Power Outage |
 | 4. Level | complete deployment, not recoverable | Flood, Fire |
 
 Unfortunately something similar does not seem to exist right now.
