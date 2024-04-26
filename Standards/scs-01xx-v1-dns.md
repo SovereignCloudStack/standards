@@ -63,6 +63,24 @@ Regardless of whether clients within the cloud infrastructure individually suppo
 As such, the implementation of local DNS recursors in the infrastructure can be very beneficial.
 This standard should consider mandating or at least recommending the use of local DNS recursors for SCS clouds to be configured as the default DNS servers for Neutron resources.
 
+#### Extension driver choices
+
+There is a hierarchy of DNS extensions in the Networking API in which they supersede one another in terms of functionality:
+
+- dns-integration
+- dns-domain-ports (includes functionality of dns-integration)
+- subnet-dns-publish-fixed-ip (includes functionality of dns-integration and dns-domain-ports)
+- dns-integration-domain-keywords (includes functionality of all of the above)
+
+For example, to get the "subnet-dns-publish-fixed-ip" functionality, either "subnet-dns-publish-fixed-ip" or "dns-integration-domain-keywords" (which includes the former) must be activate.
+
+Note that each API extension has a corresponding backend driver functionality associated to it.
+The availability of each API extension depends on the backend configuration and implementation.
+
+As a result, the DNS functionalities and behaviors available to the customer vary depending on the individual backend configuration of the Networking API.
+Mandating or recommending the integration of specific drivers/extensions can therefore be crucial to establish specific DNS functionality baselines.
+On the other hand, some functionality might not be desired in contrast, such as the ability to publish arbitrary DNS records for fixed IP addresses in Neutron networks.
+
 ## Open questions
 
 RECOMMENDED
@@ -96,10 +114,15 @@ The *DNS server setting* refers to the following:
 
 #### DNS Extensions
 
-In the Neutron configuration, the `dns_domain_ports` extension driver MUST be enabled to offer the full range of DNS settings for both ports and networks.
-Due to it being the successor to the old `dns` extension driver, the `dns` driver MUST NOT be enabled and needs to be removed from the `extension_drivers` setting, if that entry exists.
+In the Neutron configuration, one of the following extension drivers MUST be enabled to offer the full range of DNS settings for both ports and networks:
 
-The extension driver setting is part of the ML2 plugin configuration:
+- `dns_domain_ports`
+- `subnet_dns_publish_fixed_ip`
+- `dns_domain_keywords`
+
+Due to them being the successor to the old `dns` extension driver, the `dns` driver MUST NOT be enabled and needs to be removed from the `extension_drivers` setting, if that entry exists.
+
+The extension driver setting is part of the ML2 plugin configuration (example for `dns_domain_ports`):
 
 ```
 [ml2]
