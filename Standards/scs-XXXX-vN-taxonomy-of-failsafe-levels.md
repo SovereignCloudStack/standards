@@ -70,7 +70,6 @@ The following table shows the affection without considering any redundancy or fa
 | network configuration (DB objects) | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P |
 | network connectivity (materialization) | | T (if on node) | T/P | T | P (T if lucky) | T/P |
 | floating IP | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P |
-.. | Resource | Disk Loss | Node Loss | Rack Loss | Power Loss | natural catastrophy | Cyber threat |
 
 For some cases there are only temporary unavailabilites and clouds do have certain workflows to avoid data loss, like redundancy in storagy backends and databases.
 So some of these outages are more easy to solve than others.
