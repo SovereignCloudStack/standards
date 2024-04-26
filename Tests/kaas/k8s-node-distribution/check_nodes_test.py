@@ -20,7 +20,7 @@ HERE = Path(__file__).parent
 
 def load_testdata(filename):
     with open(Path(HERE, "testdata", filename)) as stream:
-        return yaml.load(stream, yaml.SafeLoader)
+        return yaml.safe_load(stream)
 
 
 @pytest.mark.parametrize("yaml_file", ["test-success-1.yaml", "test-success-2.yaml"])
