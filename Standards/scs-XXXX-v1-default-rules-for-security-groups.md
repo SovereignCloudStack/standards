@@ -83,7 +83,6 @@ The default Security Group rules for ALL Security Groups MUST NOT allow any othe
 This can be achieved through having ingress rules in the default Security Group rules that allow ingress traffic from the Remote Security Group "PARENT" but are only used in the default Security Group.
 
 The default Security Group rules for ALL Security Groups SHOULD allow egress Traffic for both IPv4 and IPv6.
-This standard does not forbid to also disallow all outgoing traffic making the existence of egress rules OPTIONAL.
 
 ### Example
 
