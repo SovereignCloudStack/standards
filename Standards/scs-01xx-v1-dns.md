@@ -160,4 +160,8 @@ In Neutron, this can be done by activating either the `subnet_dns_publish_fixed_
 
 ## Conformance Tests
 
-Conformance Tests, OPTIONAL
+Conformance tests verify the existence of necessary APIs and API extensions as mandated by the standard.
+
+There is a test suite in [`dns-extensions-check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/dns-extensions/dns-extensions-check.py).
+The test suite connects to the OpenStack API and queries the applicable APIs and extensions related to the DNS features.
+Please consult the associated [README.md](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/dns-extensions/README.md) for detailed setup and testing instructions.
