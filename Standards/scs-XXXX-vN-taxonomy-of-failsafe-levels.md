@@ -8,7 +8,7 @@ track: IaaS
 
 ## Abstract
 
-Talking about redundancy and backups in the context of clouds, the scope under which circumstances these concepts work for various ressources is not clear.
+When talking about redundancy and backups in the context of cloud infrastructures, the scope under which circumstances these concepts apply to various ressources is neither homogenous nor intuitive.
 This decision record aims to define different levels of failure-safety.
 These levels can then be used in standards to clearly set the scope that certain procedures in e.g. OpenStack offer.
 
@@ -35,7 +35,7 @@ Cyber threat
 
 ## Context
 
-Some standards in will talk about or require procedures to backup resources or have redundancy for resources.
+Some standards provided by the SCS will talk about or require procedures to backup resources or have redundancy for resources.
 This decision record should discuss, which failure threats are CSP-facing and will classify them into several levels.
 In consequence these levels should be used in standards concerning redundancy or failure-safety.
 
