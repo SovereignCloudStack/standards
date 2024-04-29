@@ -20,6 +20,8 @@ This document outlines a standardized setup of provider networks to ensure a con
 
 ## Design Considerations
 
+### Provider Network Access Control
+
 In OpenStack, ownership of resources is generally tracked through projects, and, as per default policy, only members of a project have access to its resources
 This is also true for CSP-managed resources, such as provider networks, which have to be created in a designated internal projec, and are initially only accessible in this project.
 
@@ -28,14 +30,33 @@ RBAC rules for networks support the two actions `access_as_external` and `access
 * `access_as_external` allows networks to be used as external gateway for virtual routers in the target projects. Such networks are in the following referred to as _external networks_.
 * `access_as_shared` allows networks to be attached directly to VMs in the target projects. Such networks are in the following referred to as _shared networks_.
 
-Rules can be created with either a specific target project ID or with a wild card (`*`) to target all projects.
+The rules can be created with either a specific target project ID, or with a wild card (`*`) to target all projects.
 They can also overlap, allowing a network to be both external and shared to the same target projects.
 
-CSPs can assign a subnet to a provider network to supply connected VMs or routers with public IP addresses, making them externally accessible.
-This works well for a shared provider network, but connecting VMs behind a virtual router to the internet is a bit more complicated.
+### Address Allocation and Routing
 
-* subnet pools
-* NAS
+CSPs can assign a subnet to a provider network to supply connected VMs or virtual routers with public IP addresses, making them externally accessible.
+This works well for shared networks where VMs can be attached directly, although there is no quota option to limit the number of allocated addresses per project.
+
+Making VMs in a project-internal network externally accessible through a virtual router is a bit more complicated, though.
+One option is for the user to create a subnet with a public IP range for the internal network, and then ask the CSP to configure a static route to the subnet via the gateway IP of a virtual router.
+This is cumbersome to set up manually, but can be automated with the `bgp` extension of the Network API, which is implemented by the `neutron-dynamic-routing` project [^bgp].
+For users this takes the form of a CSP-managed, shared subnet pool that they can create externally routable subnets from, limited by a per-project quota.
+
+For IPv6, there is also the option of prefix delegation, where a DHCPv6 server automatically assigns an IPv6 prefix to a subnet whenever it is connected to the external provider network [^pd].
+This also means that ports in the subnet can lose their addresses and get new ones if the subnet is removed from the external network and later reattached.
+With prefix delegation there is no quota on the number of prefixes per project.
+
+For IPv4, OpenStack virtual routers support source NAT, allowing all VMs in the internal subnet to access the external network with the gateway IP of the virtual router.
+They also support destination NAT in the form of floating IPs, addresses from the external network that can be mapped onto specific VMs in the internal subnet to make them externally accessible.
+Floating IPs are allocated from a CSP-managed pool, and can be controlled by a per-project quota.
+There is also a set of API extensions that allow more fine grained port-forwarding, mapping different TCP or UDP ports of a floating IP to different internal IP addresses [^pf].
+
+### Port Security and Spoofing
+
+OpenStack networks have the flag `port_security_enabled`, that is set to true by default and can only be changed by it's owner.
+In Neutron, besides enabling security groups for ports in this network, it also enables a built-in DHCP, MAC and IP address spoofing protection.
+Whether this flag is set is primarily of concern for shared provider networks, as users only have limited control over the gateway ports of virtual routers.
 
 ### Options considered
 
@@ -50,7 +71,7 @@ This works well for a shared provider network, but connecting VMs behind a virtu
 * port security is essential
 * no quota for address use
 
-#### External Provider Network and subnet allocation
+#### External Provider Network
 
 * requires virtual router
 * requires dynamic routing
@@ -69,6 +90,7 @@ This works well for a shared provider network, but connecting VMs behind a virtu
 #### Security Considerations
 
 * disallow creation of rbac rules for users to prevent creation of faux provider networks
+* require port security in shared provider networks
 
 ## Decision
 
@@ -83,4 +105,8 @@ They **SHOULD** also provide a subnet pool for the allocation of IPv4 prefixes t
 
 CSPs **MUST** provide dynamic routing for all project-allocated IP-prefixes.
 
-All subnets of external networks **MUST** be configured with `--no-dhcp`.
+## References
+
+[^bgp]: https://docs.openstack.org/neutron/latest/admin/config-bgp-dynamic-routing.html
+[^pd]: https://docs.openstack.org/neutron/latest/admin/config-ipv6.html#prefix-delegation
+[^pf]: https://docs.openstack.org/api-ref/network/v2/index.html#floating-ips-port-forwarding
