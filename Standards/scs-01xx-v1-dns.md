@@ -12,9 +12,9 @@ The Domain Name System (DNS) is used to resolve name records to addresses in Int
 DNS has a variety of use cases in OpenStack infrastructures.
 For basic egress traffic, it is used to enable proper connectivity for customer virtual machines to the outside world by offering DNS servers to them.
 For internal connectivity and discoverability between cloud resources, DNS is used to make virtual machines addressable via their name within tenant networks.
-DNS can also be used to publish DNS records for virtual machines that have external connectivity by integrating and using the OpenStack Designate service.
+DNS can also be used to publish DNS records for virtual machines that have external connectivity by integrating and using the OpenStack DNS v2 API, e.g. by integrating the Designate service.
 
-### Glossary
+## Terminology
 
 | Term | Meaning |
 |---|---|
@@ -63,7 +63,7 @@ Regardless of whether clients within the cloud infrastructure individually suppo
 As such, the implementation of local DNS recursors in the infrastructure can be very beneficial.
 This standard should consider mandating or at least recommending the use of local DNS recursors for SCS clouds to be configured as the default DNS servers for Neutron resources.
 
-#### Extension driver choices
+#### Extension and driver choices
 
 There is a hierarchy of DNS extensions in the Networking API in which they supersede one another in terms of functionality:
 
@@ -72,20 +72,25 @@ There is a hierarchy of DNS extensions in the Networking API in which they super
 - subnet-dns-publish-fixed-ip (includes functionality of dns-integration and dns-domain-ports)
 - dns-integration-domain-keywords (includes functionality of all of the above)
 
-For example, to get the "subnet-dns-publish-fixed-ip" functionality, either "subnet-dns-publish-fixed-ip" or "dns-integration-domain-keywords" (which includes the former) must be activate.
+For example, to get the "subnet-dns-publish-fixed-ip" functionality, either "subnet-dns-publish-fixed-ip" or "dns-integration-domain-keywords" (which includes the former) must be activated.
 
 Note that each API extension has a corresponding backend driver functionality associated to it.
 The availability of each API extension depends on the backend configuration and implementation.
 
 As a result, the DNS functionalities and behaviors available to the customer vary depending on the individual backend configuration of the Networking API.
-Mandating or recommending the integration of specific drivers/extensions can therefore be crucial to establish specific DNS functionality baselines.
-On the other hand, some functionality might not be desired in contrast, such as the ability to publish arbitrary DNS records for fixed IP addresses in Neutron networks.
+Mandating or recommending the integration of specific drivers/extensions can therefore be crucial to establish specific DNS functionality baselines for both internal DNS and DNS-as-a-Service:
 
-## Open questions
+The "dns-integration" extension provides the basic feature set for internal DNS resolution and should be the minimum requirement.
 
-RECOMMENDED
+The "dns-domain-ports" extension adds port-specific DNS domain name override capabilities but those are only important for DNS-as-a-Service scenarios mostly.
 
-## Decision
+Starting with the "subnet-dns-publish-fixed-ip" API extension, the largest flexibility is provided in regards to self-service publishing DNS records for fixed IPs from externally reachable tenant networks (e.g. for IPv6 subnet pools).
+In cases where DNS-as-a-Service is offered (e.g. via Designate), this extension should be recommended as opposed to its predecessors.
+
+The "dns-integration-domain-keywords" extension allows dynamically resolving placeholders for user or project id/name in the DNS domain name attribute for port and network metadata.
+Its use case seems pretty niche and will most likely be considered entirely optional by the standard.
+
+## Standard
 
 The decisions of this standard will be categorized into three main sections: forwarded DNS, internal DNS and external DNS.
 
@@ -93,7 +98,8 @@ Forwarded DNS refers to the DNS servers communicated to tenant VMs for DNS resol
 
 Internal DNS refers to the DNS resolution that OpenStack Neutron implements internally to make VM instances' addresses resolvable via name within the same tenant network.
 
-DNS-as-a-Service refers to the integration of external or public DNS via OpenStack Designate and its publishing of DNS records for VMs that are externally reachable.
+DNS-as-a-Service refers to the integration of external or public DNS via the OpenStack DNS v2 API and its publishing of DNS records for VMs that are externally reachable.
+This is an optional feature of OpenStack clouds and can be implemented by integrating the Designate service for example.
 
 ### Forwarded DNS
 
@@ -109,18 +115,18 @@ The *DNS server setting* refers to the following:
 - In OVS-based setups, the `dnsmasq_dns_servers` setting in the `[DEFAULT]` section of the `dhcp_agent.ini` for all Neutron DHCP agents.
 - In OVN-based setups, the `dns_servers` setting in the `[ovn]` section of `ml2_conf.ini`.
 
-
 ### Internal DNS
 
 #### DNS Extensions
 
-In the Neutron configuration, one of the following extension drivers MUST be enabled to offer the full range of DNS settings for both ports and networks:
+In the Networking API, the "dns-integration" extension MUST be enabled to offer internal DNS resolution.
 
-- `dns_domain_ports`
-- `subnet_dns_publish_fixed_ip`
-- `dns_domain_keywords`
+For Neutron, this can implemented by enabling one of the following extension drivers:
 
-Due to them being the successor to the old `dns` extension driver, the `dns` driver MUST NOT be enabled and needs to be removed from the `extension_drivers` setting, if that entry exists.
+- `dns`
+- `dns_domain_ports` (includes `dns`)
+- `subnet_dns_publish_fixed_ip` (includes `dns` and `dns_domain_ports`)
+- `dns_domain_keywords` (includes all of the above)
 
 The extension driver setting is part of the ML2 plugin configuration (example for `dns_domain_ports`):
 
@@ -137,13 +143,20 @@ A CSP MAY choose this setting freely but SHOULD NOT change it after the initial 
 
 ### DNS-as-a-Service
 
-The following section only applies to SCS clouds which include the DNS service Designate and offer its functionality and API to customers.
+The following section only applies to SCS clouds which include the DNS-as-a-Service functionality for customers via the [OpenStack DNS v2 API](https://docs.openstack.org/api-ref/dns/dns-api-v2-index.html).
+All guidelines above still apply.
 
-<!-- TODO -->
+In the Networking API, the "dns-domain-ports" extension MUST be enabled to offer the full range of DNS record settings for both ports and networks.
+This is implemented by the `dns_domain_ports` Neutron extension driver for the ML2 plugin.
+See the Internal DNS section above for an example on how to enable an extension driver.
+
+However, is RECOMMENDED to provide the "subnet-dns-publish-fixed-ip" API extension for the Networking API in addition to "dns-domain-ports".
+In Neutron, this can be done by activating either the `subnet_dns_publish_fixed_ip` or `dns_domain_keywords` extension driver instead of `dns_domain_ports`.
 
 ## Related Documents
 
-- [OpenStack User Guide for using DNS with Neutron and Nova resources](https://docs.openstack.org/designate/latest/user/neutron-integration.html)
+- [OpenStack User Guide for basic usage of DNS-as-a-Service with Neutron and Nova resources](https://docs.openstack.org/designate/latest/user/neutron-integration.html)
+- [OpenStack Configuration and User Guide for various DNS-as-a-Service scenarios in Neutron](https://docs.openstack.org/neutron/latest/admin/config-dns-int-ext-serv.html)
 
 ## Conformance Tests
 
