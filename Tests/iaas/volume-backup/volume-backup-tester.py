@@ -220,7 +220,7 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
 
 def main():
     parser = argparse.ArgumentParser(
-        description="SCS Domain Manager Conformance Checker")
+        description="SCS Volume Backup API Conformance Checker")
     parser.add_argument(
         "--os-cloud", type=str,
         help="Name of the cloud from clouds.yaml, alternative "
