@@ -12,30 +12,26 @@ When talking about redundancy and backups in the context of cloud infrastructure
 This decision record aims to define different levels of failure-safety.
 These levels can then be used in standards to clearly set the scope that certain procedures in e.g. OpenStack offer.
 
-## Terminology
+## Glossary
 
-Image
-  OpenStack resource, virtual machine images usually residing in a network storage backend.
-Volume
-  OpenStack resource, virtual drive which usually resides in a network storage backend.
-Virtual Machine (abbr. VM)
-  IaaS resource, also called server, executes workloads from users.
-Secret
-  OpenStack ressource, cryptographic asset stored in the Key Manager (e.g. Barbican).
-Key Encryption Key (abbr. KEK)
-  OpenStack resource, used to encrypt other keys to be able to store them encrypted in a database.
-Floating IP (abbr. FIP)
-  OpenStack resource, an IP that is usually routed and accessible from external networks.
-Disk
-  A physical disk drive (e.g. HDD, SSD) in the infrastructure.
-Node
-  A physical machine in the infrastructure.
-Cyber threat
-  Attacks on the infrastructure through the means of electronic access.
+| Term               | Explanation                                                                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Virtual Machine    | Equals the `server` resource in Nova.                                                                                                    |
+| Ephemeral Storage  | Disk storage directly supplied to a virtual machine by Nova. Different from volumes.                                                     |
+| (Glance) Image     | IaaS resource usually storing raw disk data. Managed by the Glance service.                                                              |
+| (Cinder) Volume    | IaaS resource representing block storage disk that can be attached as a virtual disk to virtual machines. Managed by the Cinder service. |
+| (Volume) Snapshot  | Thinly-provisioned copy-on-write snapshots of volumes. Stored in the same Cinder storage backend as volumes.                             |
+| Volume Type        | Attribute of volumes determining storage details of a volume such as backend location or whether the volume will be encrypted.           |
+| (Barbican) Secret  | IaaS resource storing cryptographic assets such as encryption keys. Managed by the Barbican service.                                     |
+| Key Encryption Key | IaaS resource, used to encrypt other keys to be able to store them encrypted in a database.                                              |
+| Floating IP        | IaaS resource, an IP that is usually routed and accessible from external networks.                                                       |
+| Disk               | A physical disk drive (e.g. HDD, SSD) in the infrastructure.                                                                             |
+| Node               | A physical machine in the infrastructure.                                                                                                |
+| Cyber threat       | Attacks on the infrastructure through the means of electronic access.                                                                    |
 
 ## Context
 
-Some standards provided by the SCS will talk about or require procedures to backup resources or have redundancy for resources.
+Some standards provided by the SCS project will talk about or require procedures to backup resources or have redundancy for resources.
 This decision record should discuss, which failure threats are CSP-facing and will classify them into several levels.
 In consequence these levels should be used in standards concerning redundancy or failure-safety.
 
