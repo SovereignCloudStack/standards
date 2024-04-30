@@ -33,11 +33,14 @@ To address the potential lack of implementation of such mechanisms by a CSP and 
 
 ## Design Considerations
 
-There are many communication channels in OpenStack with different characteristics, location and eligible means of protection.
+There are many internal communication channels in OpenStack with different characteristics, location and eligible means of protection.
 Not all channels are equally easy to secure and some protection mechanisms might put unbearable burdens on a CSP.
 Hence, careful assessment is required to determine for which the SCS standard will either mandate or recommend the use of a protection mechanism.
 
-For this distinction to be made, communication channels must be categorized and classified accordingly.
+Note that this standard only focuses on security considerations for securing the Openstack API as well as inter-component connections, which a CSP has full control over on an infrastructure level.
+This standard will not address the security of customer-deployed instances and services on top of OpenStack or other IaaS implementations.
+
+For this distinction to be made, applicable communication channels must be categorized and classified accordingly.
 
 ### Communication Channels
 
@@ -45,8 +48,8 @@ The following overview will classify the main communication channels.
 
 | # | Classification | Details | Example solution |
 |---|---|---|---|
-| 1 | Database backend traffic | Replication and sync between database instances | SSL/TLS |
-| 2 | Database frontend traffic | Communication between OpenStack services and databases | SSL/TLS |
+| 1 | OpenStack database backend traffic | Replication and sync between database instances of the OpenStack services' databases | SSL/TLS |
+| 2 | OpenStack database frontend traffic | Communication between OpenStack services and their corresponding databases | SSL/TLS |
 | 3 | Message queue traffic | Message queue communication between OpenStack components as provided by oslo.messaging | SSL/TLS |
 | 4 | External API communication | HTTP traffic to services registered as external endpoints in the Keystone service catalog | SSL/TLS |
 | 5 | Internal API communication | HTTP traffic to services registered as internal endpoints in the Keystone service catalog | SSL/TLS |
