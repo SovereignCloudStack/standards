@@ -21,6 +21,7 @@ For this reason, the [SCS project](https://scs.community) standardizes the use o
 | SSL | Secure Sockets Layer, the predecessor of TLS |
 | TLS | Transport Layer Security |
 | PKI | Public Key Infrastructure |
+| CA  | Certificate Authority |
 | SDN | Software-Defined Networking |
 
 ## Motivation
@@ -143,7 +144,15 @@ You MAY refer to [TLS proxies and HTTP services](https://docs.openstack.org/secu
 ### Message Queue Connections
 
 - If using RabbitMQ or Qpid as the message queue service, the SSL functionality of the message broker MUST be enabled and used by the OpenStack services. See [Messaging transport security](https://docs.openstack.org/security-guide/messaging/security.html#messaging-transport-security).
-  - If using RabbitMQ, the OpenStack services' oslo.messaging configuration for RabbitMQ MUST use the `kombu_ssl_*` options accordingly to enable SSL.
+  - If using RabbitMQ, all OpenStack services' oslo.messaging configuration for RabbitMQ MUST specify options accordingly to enable SSL:
+    ```ini
+    [oslo_messaging_rabbit]
+    ssl = true
+    ssl_ca_file = /path/to/file
+    ssl_key_file =
+    ssl_cert_file =
+    ```
+    (`ssl_ca_file` MUST be set to the path of the CA certificate, `ssl_key_file` and `ssl_cert_file` for client certificates are OPTIONAL)
   - If using Qpid, the OpenStack services' oslo.messaging configuration for Qpid MUST set the `qpid_protocol` option to `ssl` to enable SSL.
 - If using Apache Kafka, the server listener MUST be configured to accept SSL connections. See [Apache Kafka Listener Configuration](https://kafka.apache.org/documentation/#listener_configuration).
   - The OpenStack services' oslo.messaging configuration for Kafka MUST specify `security_protocol` as either `SSL` or `SASL_SSL` and the related options appropriately. See [Kafka Driver Options](https://docs.openstack.org/oslo.messaging/latest/admin/kafka.html#driver-options).
