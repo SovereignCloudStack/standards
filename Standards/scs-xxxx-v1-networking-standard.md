@@ -18,6 +18,10 @@ This document outlines a standardized setup of provider networks to ensure a con
 
 ## Motivation
 
+The ability to interface virtualised resources with networks outside of the cloud environment, such as the internet, is an integral part of IaaS.
+Providing external access in an OpenStack cloud requires a number of configuration choices from the CSP, some of which have direct implications on how users interact with the cloud.
+This standard identifies some of these options and defines a baseline setup that provides flexibility and consistency to users but is also realistic to implement for CSPs.
+
 ## Design Considerations
 
 ### Provider Network Access Control
@@ -41,7 +45,7 @@ This works well for shared networks where VMs can be attached directly, although
 Making VMs in a project-internal network externally accessible through a virtual router is a bit more complicated, though.
 One option is for the user to create a subnet with a public IP range for the internal network, and then ask the CSP to configure a static route to the subnet via the gateway IP of a virtual router.
 This is cumbersome to set up manually, but can be automated with the `bgp` extension of the Network API, which is implemented by the `neutron-dynamic-routing` project [^bgp].
-For users this takes the form of a CSP-managed, shared subnet pool that they can create externally routable subnets from, limited by a per-project quota.
+For users, this takes the form of a CSP-managed shared subnet pool that they can create externally routable subnets from, limited by a per-project quota.
 
 For IPv6, there is also the option of prefix delegation, where a DHCPv6 server automatically assigns an IPv6 prefix to a subnet whenever it is connected to the external provider network [^pd].
 This also means that ports in the subnet can lose their addresses and get new ones if the subnet is removed from the external network and later reattached.
@@ -55,8 +59,13 @@ There is also a set of API extensions that allow more fine grained port-forwardi
 ### Port Security and Spoofing
 
 OpenStack networks have the flag `port_security_enabled`, that is set to true by default and can only be changed by it's owner.
-In Neutron, besides enabling security groups for ports in this network, it also enables a built-in DHCP, MAC and IP address spoofing protection.
+In Neutron, besides enabling security groups for ports in this network, it also enables a set of built-in spoofing protections.
+
 Whether this flag is set is primarily of concern for shared provider networks, as users only have limited control over the gateway ports of virtual routers.
+A lack of spoofing protection in a shared network, however, does enable a number of attacks that a malicious user or compromised VM could perform against other VMs in the network, such as DHCP-spoofing or ARP-Poisoning.
+
+There are legitimate use-cases for networks without port security, such as the implementations of network function virtualisation (NFV) within a VM.
+However, this seems to be more of a niche use-case and may warrant the creation of a project-specific provider network, rather than making all other projects vulnerable to spoofing attacks.
 
 ### Options considered
 
