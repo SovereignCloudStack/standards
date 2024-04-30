@@ -179,6 +179,7 @@ You MAY refer to [TLS proxies and HTTP services](https://docs.openstack.org/secu
   - [OpenStack Security Guide: Messaging transport security](https://docs.openstack.org/security-guide/messaging/security.html#messaging-transport-security)
 - [Nova Documentation: Secure live migration with QEMU-native TLS](https://docs.openstack.org/nova/latest/admin/secure-live-migration-with-qemu-native-tls.html)
 - [Guide to TLS Standards Compliance](https://www.ssl.com/guide/tls-standards-compliance/)
+- [RFC 8996: Deprecating TLS 1.0 and TLS 1.1](https://www.ietf.org/rfc/rfc8996.html)
 
 ## Conformance Tests
 
