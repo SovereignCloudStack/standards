@@ -43,15 +43,15 @@ First there needs to be an overview about possible failure cases in infrastructu
 | Failure Case | Probability | Consequences |
 |----|-----|----|
 | Disk Failure/Loss | High | Permanent data loss in this disk. Impact depends on type of lost data (data base, user data) |
-| Node Failure/Loss (without disks) | Medium to High | Permanent  loss of functionality and connectivity of node (impact depends on type of node)  |
-| Node Outage | Medium to High | Data loss in RAM and temporary loss of functionality and connectivity of node (impact depends on type of node)  |
+| Node Failure/Loss (without disks) | Medium to High | Permanent loss of functionality and connectivity of node (impact depends on type of node) |
+| Node Outage | Medium to High | Data loss in RAM and temporary loss of functionality and connectivity of node (impact depends on type of node) |
 | Rack Outage | Medium | Outage of all nodes in rack |
-| Power Outage (Data Center supply)  | Medium | temporary outage of all nodes in all racks |
+| Power Outage (Data Center supply) | Medium | temporary outage of all nodes in all racks |
 | Fire | Medium | permanent Disk and Node loss in the affected zone |
 | Flood | Low | permanent Disk and Node loss in the affected zone |
 | Earthquake | Very Low | permanent Disk and Node loss in the affected zone |
 | Storm/Tornado | Low | permanent Disk and Node loss in the affected fire zone |
-| Cyber threat  | High | permanent loss or compromise of data on affected Disk and Node  |
+| Cyber threat | High | permanent loss or compromise of data on affected Disk and Node |
 
 These failure cases can result in temporary (T) or permanent (P) loss of the resource or data within.
 Additionally there are a lot of resources in IaaS alone that are more or less affected by these Failure Cases.
