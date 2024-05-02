@@ -29,8 +29,8 @@ Mandate the CSP to keep cluster-api Images up-to-date.
 
 From the meeting notes:
 
-- will save time and money for both CSP and customer
-- would guarantee quality and timelness of image
+- will save time, money, physical resources and power for both CSP and customer
+- would guarantee quality and timeliness of image
 - regardless of CSP taste, this KaaS tech is part of SCS
 - CSP won't have noticable disadvantages from providing the image
 
