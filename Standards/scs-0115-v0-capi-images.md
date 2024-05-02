@@ -28,15 +28,16 @@ One image will be downloaded (from upstream) and uploaded (to glance) and stored
 Mandate the CSP to keep cluster-api Images up-to-date.
 
 From the meeting notes:
+
 - will save time and money for both CSP and customer
 - would guarantee quality and timelness of image
 - regardless of CSP taste, this KaaS tech is part of SCS
 - CSP won't have noticable disadvantages from providing the image
 
 This would lead to the following standard changes:
-Create a copy of this: https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/scs-0104-v1-images.yaml and change the capi block from "recommended" to "mandatory"
+Create a copy of the [default image list](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/scs-0104-v1-images.yaml) and change the capi block from "recommended" to "mandatory".
 
-Also, strictly speaking, we have to change: https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0104-v1-standard-images.md#image-specification-class-of-images so that "mandatory" for an image class does not mean that at least one image MUST be present in glance but all that match the [SCS K8S Version Policy](https://docs.scs.community/standards/scs-0210-v2-k8s-version-policy#motivation). Also the checking script has to be adapted.
+Also, strictly speaking, we have to change [the standard image format definition](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0104-v1-standard-images.md#image-specification-class-of-images) so that "mandatory" for an image class does not mean that at least one image MUST be present in glance but all that match the [SCS K8S Version Policy](https://docs.scs.community/standards/scs-0210-v2-k8s-version-policy#motivation). Also the checking script has to be adapted.
 
 ## Consequences
 
