@@ -1,8 +1,8 @@
 ---
-title: _Cluster-API images_
+title: Cluster-API images
 type: Decision Record
 status: Draft
-track: Iaas # | IaaS | Ops | KaaS | IAM
+track: Iaas
 ---
 
 <!---
@@ -39,6 +39,7 @@ Create a copy of this: https://github.com/SovereignCloudStack/standards/blob/mai
 Also, strictly speaking, we have to change: https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0104-v1-standard-images.md#image-specification-class-of-images so that "mandatory" for an image class does not mean that at least one image MUST be present in glance but all that match the [SCS K8S Version Policy](https://docs.scs.community/standards/scs-0210-v2-k8s-version-policy#motivation). Also the checking script has to be adapted.
 
 ## Consequences
+
 CSPs will have the additional burden to provide cluster-api images in glance (and update them regularly).
 
 The CSP will save bandwitdth and diskspace when images are only downloaded and stored once, instead of per Customer.
