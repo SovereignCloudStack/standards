@@ -17,6 +17,7 @@ These levels can then be used in standards to clearly set the scope that certain
 | Term               | Explanation                                                                                                                              |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | Virtual Machine    | Equals the `server` resource in Nova.                                                                                                    |
+| Ironic Machine     | A physical node managed by Ironic or as a `server` resource in Nova.                                                                     |
 | Ephemeral Storage  | Disk storage directly supplied to a virtual machine by Nova. Different from volumes.                                                     |
 | (Glance) Image     | IaaS resource usually storing raw disk data. Managed by the Glance service.                                                              |
 | (Cinder) Volume    | IaaS resource representing block storage disk that can be attached as a virtual disk to virtual machines. Managed by the Cinder service. |
@@ -37,14 +38,15 @@ In consequence these levels should be used in standards concerning redundancy or
 
 ## Decision
 
-First there needs to be an overview about possible failure cases in infrastructures:
+First there needs to be an overview about possible failure cases in infrastructures as well as their probability of occurance and the damage they may cause:
 
 | Failure Case | Probability | Consequences |
 |----|-----|----|
-| Disk Failure/Loss | High | Data loss on this disk. Impact depends on type of lost data (data base, user data) |
-| Node Outage | Medium to High | Data loss on node / (temporary) loss of functionality and connectivity of node (impact depends on type of node)  |
-| Rack Outage | Medium | similar to Disk Failure and Node Outage |
-| Power Outage (Data Center supply)  | Medium | potential data loss, temporary loss of functionality and connectivity of node (impact depends on type of node)  |
+| Disk Failure/Loss | High | Permanent data loss in this disk. Impact depends on type of lost data (data base, user data) |
+| Node Failure/Loss (without disks) | Medium to High | Permanent  loss of functionality and connectivity of node (impact depends on type of node)  |
+| Node Outage | Medium to High | Data loss in RAM and temporary loss of functionality and connectivity of node (impact depends on type of node)  |
+| Rack Outage | Medium | Outage of all nodes in rack |
+| Power Outage (Data Center supply)  | Medium | temporary outage of all nodes in all racks |
 | Fire | Medium | permanent Disk and Node loss in the affected zone |
 | Flood | Low | permanent Disk and Node loss in the affected zone |
 | Earthquake | Very Low | permanent Disk and Node loss in the affected zone |
@@ -62,6 +64,7 @@ The following table shows the impact when no redundancy or failure safety measur
 | User Data on RAM /CPU | | P | P | P | P | T/P |
 | volume-based VM | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P |
 | ephemeral-based VM | P (if on disk) | P | P | T | P (T if lucky) | T/P |
+| Ironic-based VM | P (all data on disk) | P | P | T | P (T if lucky) | T/P |
 | Secret | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P |
 | network configuration (DB objects) | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P |
 | network connectivity (materialization) | | T (if on node) | T/P | T | P (T if lucky) | T/P |
