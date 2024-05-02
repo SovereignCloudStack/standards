@@ -27,7 +27,7 @@ Administrator (abbr. Admin)
 
 The rules of a Security Group can be edited by default by any user with the member role within a project.
 But when a Security Group is created it automatically incorporates a few SG rules that are configured as default rules.
-Since the 2023.2 release, this set of default rules can be adjusted by administrators[^1][^2].
+Since the 2023.2 release, this set of default rules can be adjusted by administrators only[^1][^2].
 In combination with the OpenStack behavior that when a VM is created with no Security Group specified, the default SG of the project is automatically applied to the ports of the VM,
 a user cannot be sure which firewall rules are applied to such a VM.
 
