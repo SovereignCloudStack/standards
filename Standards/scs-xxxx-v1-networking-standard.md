@@ -24,6 +24,8 @@ This standard identifies some of these options and defines a baseline setup that
 
 ## Design Considerations
 
+(discuss required API extensions?)
+
 ### Provider Network Access Control
 
 In OpenStack, ownership of resources is generally tracked through projects, and, as per default policy, only members of a project have access to its resources
@@ -59,23 +61,38 @@ There is also a set of API extensions that allow more fine grained port-forwardi
 ### Port Security and Spoofing
 
 OpenStack networks have the flag `port_security_enabled`, that is set to true by default and can only be changed by it's owner.
-In Neutron, besides enabling security groups for ports in this network, it also enables a set of built-in spoofing protections.
+In Neutron, besides enabling security groups for ports in this network, it also enables a number of built-in spoofing protections.
 
 Whether this flag is set is primarily of concern for shared provider networks, as users only have limited control over the gateway ports of virtual routers.
 A lack of spoofing protection in a shared network, however, does enable a number of attacks that a malicious user or compromised VM could perform against other VMs in the network, such as DHCP-spoofing or ARP-Poisoning.
 
-There are legitimate use-cases for networks without port security, such as the implementations of network function virtualisation (NFV) within a VM.
+There are legitimate use-cases for networks without port security, such as the implementation of network function virtualisation (NFV) within a VM.
 However, this seems to be more of a niche use-case and may warrant the creation of a project-specific provider network, rather than making all other projects vulnerable to spoofing attacks.
 
 ### Options considered
 
+#### IPv6
+
+The OpenStack Network API allows the creation of subnets with either IPv4 or IPv6 address ranges, as indicated by the `ip_version` field.
+However, to allow external access to either, the CSP needs to provide projects with externally routable addresses for that IP version.
+
+While it is possible (and common) for CSPs to provide both IPv4 and IPv6, the increasing scarcity (and cost) of IPv4 address space may at some point become a barrier to entry for new CSPs.
+Mandatory support for IPv6 but not IPv4 addresses this problem while providing users with a consistent feature set across SCS clouds.
+
 #### Single Default Provider Network
 
-* multiple provider networks may confusing, user has to figure out the "right" one
-* dual stack possible with multiple subnets in a single networks
+In principle, CSPs can create multiple provider networks for a number of reasons, for example to make cloud-internal shared services available to projects.
+VMs can be connected to multiple networks, and connecting to additional provider networks would not interfere with their ability be externally accessible.
+
+CSPs may also create multiple provider networks with different options for external access, such as separate networks for IPv4 and IPv6, or one external network for use with virtual routers and a separate shared network for direct connection.
+This mostly just adds complexity to the setup, though, as a provider network can be both external and shared at the same time, and can even provide both IPv4 and IPv6 subnets in a dual stack setup [^ds].
+
+Another problem with multiple provider networks is that user may only be able to distinguish their respective function by their name.
+A single default provider network leaves no ambiguity by the user in this regard and is thus preferable from a standardisation perspective.
 
 #### Shared Provider Network
 
+A shared provider network has the benefit of being easy to 
 * simplicity of use, no extra resources
 * port security is essential
 * no quota for address use
@@ -94,25 +111,29 @@ However, this seems to be more of a niche use-case and may warrant the creation 
 * dual stack use with IPv6 from subnetpool
 * IPv4: prefer NAT/FIP over subnet pool to discourage wasting addresses
 
-#### Dual Stack
-
-#### Security Considerations
+#### RBAC for Users
 
 * disallow creation of rbac rules for users to prevent creation of faux provider networks
-* require port security in shared provider networks
 
 ## Decision
 
-CSPs **MUST** provide a standard external network that gives projects access to the internet.
+CSPs **MUST** provide a standard provider network to every project to access to the internet.
+There **SHOULD** be no other provider networks available to projects by default.
+
+The standard provider network **MUST** be an external network, allowing it to be used as external gateway by virtual routers.
+The standard provider network **MAY** be a shared network, allowing direct attachment of VMs.
+If the standard provider network is a shared network, it **MUST** enable port security.
 
 The external network **MUST** have an IPv6 subnet.
 CSPs **MUST** provide a subnet pool for the allocation of at least one public /64 IPv6 prefix per project.
 
 The external network **SHOULD** have an IPv4 subnet.
-If CSPs provide an IPv4 subnet, then CSPs **MUST** at least one public Floating IP per project.
-They **SHOULD** also provide a subnet pool for the allocation of IPv4 prefixes to project networks.
+If CSPs provide an IPv4 subnet, then CSPs **MUST** provide at least one public Floating IP per project.
+They **MAY** also provide a subnet pool for the allocation of public IPv4 prefixes to project networks.
 
-CSPs **MUST** provide dynamic routing for all project-allocated IP-prefixes.
+CSPs **MUST** provide dynamic routing for all project-allocated public IP-prefixes.
+
+Users **SHOULD** by default be prohibited by policy from creating RBAC rules for networks in their projects, to prevent the creation of faux provider networks.
 
 ## References
 
