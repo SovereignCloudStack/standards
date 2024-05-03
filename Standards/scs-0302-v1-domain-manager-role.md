@@ -98,6 +98,8 @@ This means that by creating a new role and extending Keystone's API policy confi
 
 ### Limitations
 
+#### Domain Visibility
+
 The approach described in this standard imposes the following limitations:
 
 1. as a result of the "`identity:list_domains`" rule (see below), Domain Managers are able to see all domains[^5] via "`openstack domain list`" and can inspect the metadata of other domains with "`openstack domain show`"
@@ -109,9 +111,34 @@ If a CSP deems either of these points critical, they may abstain from granting t
 
 [^5]: see the [corresponding Launchpad bug at Keystone](https://bugs.launchpad.net/keystone/+bug/2041611)
 
+#### New Scope Defaults
+
+Due to the way the Domain Manager persona works, the configuration of the standard is incompatible with the "`enforce_scope`" and "`enforce_new_defaults`" options of Keystone.
+With the current Keystone API implementation, these options would make crucial API endpoints required by the Domain Manager persona (e.g. the list of roles) inaccessible for a domain-scoped `"manager"` role, which the Domain Manager is based on.
+The options are currently still disabled per default but are planned to be enabled per default in future OpenStack releases.
+In order to be future-proof, the standard will mandate to keep the options explicitly disabled for the time being.
+
+This will be solved once the Domain Manager persona is introduced upstream and natively integrated into Keystone which will make it compatible with the new scope defaults.
+See [the corresponding Launchpad bug at Keystone](https://bugs.launchpad.net/keystone/+bug/2045974).
+Without changing the source code of Keystone this standard is currently limited to just policy configuration changes and thus depends on those options being disabled.
+
 ## Decision
 
 A role named "`manager`" is to be created via the Keystone API and the policy adjustments quoted below are to be applied.
+
+### Configuration adjustments
+
+The options "`enforce_scope`" and "`enforce_new_defaults`" MUST be disabled in the "`[oslo_policy]`" section of "`keystone.conf`":
+
+```ini
+[oslo_policy]
+enforce_new_defaults = false
+enforce_scope = false
+```
+
+A restart of the Keystone service is usually necessary to apply changes to these options.
+
+Note that you will observe permission errors when executing the conformance check script for this standard if these options are misconfigured.
 
 ### Policy adjustments
 
