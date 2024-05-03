@@ -18,12 +18,14 @@ DNS can also be used to publish DNS records for virtual machines that have exter
 
 | Term | Meaning |
 |---|---|
-| SCS | Sovereign Cloud Stack |
 | CSP | Cloud Service Provider, provider managing the OpenStack infrastructure |
-| network | OpenStack Neutron network resource unless stated otherwise |
-| port | OpenStack Neutron port resource unless stated otherwise |
 | DNS | Domain Name System |
 | DNS recursor | Recursive DNS resolver |
+| network | OpenStack Neutron network resource unless stated otherwise |
+| OVN | Virtual networking component of the Open vSwitch project and a mechanism driver choice for OpenStack Neutron as an alternative to the OVS driver |
+| OVS | Abbreviation for Open vSwitch, a virtualized switch solution and mechanism driver choice for OpenStack Neutron |
+| port | OpenStack Neutron port resource unless stated otherwise |
+| SCS | Sovereign Cloud Stack |
 | VM | Virtual Machine, also known as "server" resource in OpenStack Nova |
 
 ## Motivation
