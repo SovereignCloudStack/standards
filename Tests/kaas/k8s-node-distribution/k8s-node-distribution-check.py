@@ -43,7 +43,7 @@ import sys
 # infrastructure parts to smaller ones. So we first look if nodes are distributed
 # across regions, then zones and then hosts. If one of these requirements is fulfilled,
 # we don't need to check anymore, since a distribution was already detected.
-labels = (
+LABELS = (
     "topology.kubernetes.io/region",
     "topology.kubernetes.io/zone",
     "topology.scs.community/host-id",
@@ -143,16 +143,16 @@ async def get_k8s_cluster_labelled_nodes(kubeconfig, interesting_labels):
 
 def compare_labels(node_list, node_type="control"):
 
-    label_data = {key: list() for key in labels}
+    label_data = {key: list() for key in LABELS}
 
     for node in node_list:
-        for key in labels:
+        for key in LABELS:
             try:
                 label_data[key].append(node[key])
             except KeyError:
                 raise LabelException(f"The label for {key.split('/')[1]}s doesn't seem to be set for all nodes.")
 
-    for label in labels:
+    for label in LABELS:
         if len(set(label_data[label])) <= 1:
             logger.warning(f"There seems to be no distribution across multiple {label.split('/')[1]}s "
                            "or labels aren't set correctly across nodes.")
@@ -203,7 +203,7 @@ async def main(argv):
 
     nodes = await get_k8s_cluster_labelled_nodes(
         config.kubeconfig,
-        labels + ("node-role.kubernetes.io/control-plane", )
+        LABELS + ("node-role.kubernetes.io/control-plane", )
     )
 
     return check_nodes(nodes)
