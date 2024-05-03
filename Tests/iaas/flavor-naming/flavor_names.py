@@ -234,6 +234,11 @@ class Flavorname:
         """return canonically shortened name as recommended in the standard"""
         if self.hype is None and self.hwvirt is None and self.cpubrand is None:
             return self
+        # For non-x86-64, don't strip out CPU brand for short name, as it contains the architecture
+        if self.cpubrand and self.cpubrand.cpuvendor != 'i' and self.cpubrand.cpuvendor != 'z':
+            cpubrand = self.cpubrand
+            cpubrand.cpugen = 0; cpubrand.perf = ""
+            return Flavorname(cpuram=self.cpuram, disk=self.disk, cpubrand=cpubrand, gpu=self.gpu, ib=self.ib)
         return Flavorname(cpuram=self.cpuram, disk=self.disk, gpu=self.gpu, ib=self.ib)
 
 
