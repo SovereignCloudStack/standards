@@ -107,8 +107,8 @@ This is an optional feature of OpenStack clouds and can be implemented by integr
 
 - In OVS-based setups, the `dnsmasq_local_resolv` setting for Neutron DHCP agents MUST be disabled.
 - One or more local DNS recursors SHOULD be integrated into the infrastructure.
-    - In case one or more local DNS recursors are provided, the *DNS server setting* MUST point to the local DNS recursor(s) only.
-    - Any local DNS recursor referenced by the *DNS server setting* MUST implement DNSSEC validation and offer DNSSEC itself.
+  - In case one or more local DNS recursors are provided, the *DNS server setting* MUST point to the local DNS recursor(s) only.
+  - Any local DNS recursor referenced by the *DNS server setting* MUST implement DNSSEC validation and offer DNSSEC itself.
 - If the cloud infrastructure has any provider networks connected to the internet, then the *DNS server setting* entries MUST contain DNS servers (recursors or resolvers) that are able to resolve public DNS records.
 - If no local DNS recursor is integrated and one or more public DNS server(s) are referenced in the *DNS server setting*, all referenced public DNS servers MUST offer DNSSEC as well as validate DNSSEC themselves and discard invalid responses.
 
@@ -132,10 +132,11 @@ For Neutron, this can implemented by enabling one of the following extension dri
 
 The extension driver setting is part of the ML2 plugin configuration (example for `dns_domain_ports`):
 
-```
+```ini
 [ml2]
 extension_drivers = ...,dns_domain_ports
 ```
+
 (the `...` resembles a placeholder for other enabled drivers)
 
 #### Internal DNS Domain
