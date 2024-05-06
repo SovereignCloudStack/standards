@@ -1,5 +1,5 @@
 ---
-title: Evaluate current state of CloudMon
+title: Evaluating the deployment of CloudMon in SCS infrastructure
 type: Decision Record
 ---
 
