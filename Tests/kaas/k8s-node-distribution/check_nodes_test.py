@@ -2,30 +2,30 @@
 Unit tests for node distribution check functions.
 
 (c) Martin Morgenstern <martin.morgenstern@cloudandheat.com>, 4/2024
+(c) Hannes Baum <hannes.baum@cloudandheat.com>, 5/2024
 SPDX-License-Identifier: CC-BY-SA-4.0
 """
 
 from pathlib import Path
-import importlib
 import yaml
 
 import pytest
 
-
-check_nodes = importlib.import_module("k8s-node-distribution-check").check_nodes
+from k8s_node_distribution_check import check_nodes
 
 
 HERE = Path(__file__).parent
 
 
-def load_testdata(filename):
-    with open(Path(HERE, "testdata", filename)) as stream:
+@pytest.fixture
+def load_testdata():
+    with open(Path(HERE, "testdata", "scenarios.yaml")) as stream:
         return yaml.safe_load(stream)
 
 
-@pytest.mark.parametrize("yaml_file", ["test-success-1.yaml", "test-success-2.yaml"])
-def test_success_single_region_warning(yaml_file, caplog):
-    data = load_testdata(yaml_file)
+@pytest.mark.parametrize("yaml_key", ["success-1", "success-2"])
+def test_success_single_region_warning(yaml_key, caplog, load_testdata):
+    data = load_testdata[yaml_key]
     assert check_nodes(data.values()) == 0
     assert len(caplog.records) == 2
     for record in caplog.records:
@@ -33,17 +33,17 @@ def test_success_single_region_warning(yaml_file, caplog):
         assert record.levelname == "WARNING"
 
 
-def test_not_enough_nodes(caplog):
-    data = load_testdata("test-not-enough-nodes.yaml")
+def test_not_enough_nodes(caplog, load_testdata):
+    data = load_testdata["not-enough-nodes"]
     assert check_nodes(data.values()) == 2
     assert len(caplog.records) == 1
     assert "cluster only contains a single node" in caplog.records[0].message
     assert caplog.records[0].levelname == "ERROR"
 
 
-@pytest.mark.parametrize("yaml_file", ["test-no-distribution-1.yaml", "test-no-distribution-2.yaml"])
-def test_no_distribution(yaml_file, caplog):
-    data = load_testdata(yaml_file)
+@pytest.mark.parametrize("yaml_key", ["no-distribution-1", "no-distribution-2"])
+def test_no_distribution(yaml_key, caplog, load_testdata):
+    data = load_testdata[yaml_key]
     with caplog.at_level("ERROR"):
         assert check_nodes(data.values()) == 2
     assert len(caplog.records) == 1
@@ -52,8 +52,8 @@ def test_no_distribution(yaml_file, caplog):
     assert record.levelname == "ERROR"
 
 
-def test_missing_label(caplog):
-    data = load_testdata("test-missing-labels.yaml")
+def test_missing_label(caplog, load_testdata):
+    data = load_testdata["missing-labels"]
     assert check_nodes(data.values()) == 2
     hostid_missing_records = [
         record for record in caplog.records

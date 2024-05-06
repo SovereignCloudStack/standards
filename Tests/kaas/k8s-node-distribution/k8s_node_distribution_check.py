@@ -28,6 +28,7 @@ good initial results.
     node-role.kubernetes.io/control-plane
 
 (c) Hannes Baum <hannes.baum@cloudandheat.com>, 6/2023
+(c) Martin Morgenstern <martin.morgenstern@cloudandheat.com>, 4/2024
 License: CC-BY-SA 4.0
 """
 
