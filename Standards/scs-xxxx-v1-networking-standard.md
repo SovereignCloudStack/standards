@@ -29,7 +29,7 @@ This standard identifies some of these options and defines a baseline setup that
 ### Provider Network Access Control
 
 In OpenStack, ownership of resources is generally tracked through projects, and, as per default policy, only members of a project have access to its resources
-This is also true for CSP-managed resources, such as provider networks, which have to be created in a designated internal projec, and are initially only accessible in this project.
+This is also true for CSP-managed resources, such as provider networks, which have to be created in a CSP-internal project, and are initially only accessible in this project.
 
 The Network API's Role Based Access Control (RBAC) extension can then be used to share it with other projects.
 RBAC rules for networks support the two actions `access_as_external` and `access_as_shared`, and can be created automatically on `openstack network create` with the options `--external` and `--share`.
@@ -49,9 +49,9 @@ One option is for the user to create a subnet with a public IP range for the int
 This is cumbersome to set up manually, but can be automated with the `bgp` extension of the Network API, which is implemented by the `neutron-dynamic-routing` project [^bgp].
 For users, this takes the form of a CSP-managed shared subnet pool that they can create externally routable subnets from, limited by a per-project quota.
 
-For IPv6, there is also the option of prefix delegation, where a DHCPv6 server automatically assigns an IPv6 prefix to a subnet whenever it is connected to the external provider network [^pd].
-This also means that ports in the subnet can lose their addresses and get new ones if the subnet is removed from the external network and later reattached.
-With prefix delegation there is no quota on the number of prefixes per project.
+For IPv6, there is also the option of prefix delegation, where a DHCPv6 server automatically assigns an IPv6 prefix to a subnet when it connects to the external provider network [^pd].
+However, this also means that ports in the subnet can lose their addresses and get assigned new ones if the subnet is removed from the external network and later reattached.
+The documentation at [^pd] still marks prefix delegation as an experimental feature in Neutron and notes low test coverage.
 
 For IPv4, OpenStack virtual routers support source NAT, allowing all VMs in the internal subnet to access the external network with the gateway IP of the virtual router.
 They also support destination NAT in the form of floating IPs, addresses from the external network that can be mapped onto specific VMs in the internal subnet to make them externally accessible.
@@ -66,8 +66,8 @@ In Neutron, besides enabling security groups for ports in this network, it also 
 Whether this flag is set is primarily of concern for shared provider networks, as users only have limited control over the gateway ports of virtual routers.
 A lack of spoofing protection in a shared network, however, does enable a number of attacks that a malicious user or compromised VM could perform against other VMs in the network, such as DHCP-spoofing or ARP-Poisoning.
 
-There are legitimate use-cases for networks without port security, such as the implementation of network function virtualisation (NFV) within a VM.
-However, this seems to be more of a niche use-case and may warrant the creation of a project-specific provider network, rather than making all other projects vulnerable to spoofing attacks.
+There are legitimate use-cases for networks without port security, such as the implementation of network function virtualisation (NFV) within a VM (i.e. using a VM as a virtual router).
+This seems to be more of a niche use-case, however, and may warrant the creation of a project-specific provider network, rather than making all other projects vulnerable to spoofing attacks.
 
 ### Options considered
 
@@ -77,7 +77,7 @@ The OpenStack Network API allows the creation of subnets with either IPv4 or IPv
 However, to allow external access to either, the CSP needs to provide projects with externally routable addresses for that IP version.
 
 While it is possible (and common) for CSPs to provide both IPv4 and IPv6, the increasing scarcity (and cost) of IPv4 address space may at some point become a barrier to entry for new CSPs.
-Mandatory support for IPv6 but not IPv4 addresses this problem while providing users with a consistent feature set across SCS clouds.
+Mandatory support for IPv6 but not IPv4 addresses this problem, while also providing users with a consistent feature set across SCS clouds.
 
 #### Single Default Provider Network
 
@@ -87,33 +87,53 @@ VMs can be connected to multiple networks, and connecting to additional provider
 CSPs may also create multiple provider networks with different options for external access, such as separate networks for IPv4 and IPv6, or one external network for use with virtual routers and a separate shared network for direct connection.
 This mostly just adds complexity to the setup, though, as a provider network can be both external and shared at the same time, and can even provide both IPv4 and IPv6 subnets in a dual stack setup [^ds].
 
-Another problem with multiple provider networks is that user may only be able to distinguish their respective function by their name.
+Another problem with multiple provider networks is, that users may only be able to distinguish their respective function by their name.
+
 A single default provider network leaves no ambiguity by the user in this regard and is thus preferable from a standardisation perspective.
 
 #### Shared Provider Network
 
-A shared provider network has the benefit of being easy to 
-* simplicity of use, no extra resources
-* port security is essential
-* no quota for address use
+A shared provider network has the benefit of being easy to use.
+VMs can be attached directly and will be accessible immediately, without the requirement to create virtual routers, project-internal networks, subnets, or floating IPs.
 
-#### External Provider Network
+Users do have a higher control over VM ports than they have over virtual router ports, so it is important to enable Neutrons port security feature on shared provider networks to prevent spoofing.
 
-* requires virtual router
-* requires dynamic routing
-* IPv4+IPv6
-* prefer over shared network because: FWaaS, Quota
+The lack of address quota may be a problem if IPv4 is used and the number of available addresses is so limited that fairness between projects needs to be enforced.
+In that case, CSPs may restrict the number of VMs, routers, or ports to limit the addresses used by individual projects.
+
+#### External Provider Network and Subnet Allocation
+
+Creating a project-internal network to connect to an external provider network with a virtual router does take more effort than just using a shared network, but also offers some additional flexibility and control.
+In an internal network, users have greater control over IP allocation and may also choose to disable port security.
+With the FWaaS API extensions, they can also assign firewall rules to the virtual router, to control which traffic can pass between project-internal and provider networks.
+
+* why subnet pool allocation?
+  * Floating IP limited to IPv4
+  * Prefix Delegation limited to IPv6
+* what benefits does a CSP have from this setup?
+  * Quota for subnet pools
+* what are drawbacks
+  * complexity of setting up dynamic routing
 
 #### NAT and Floating IPs
 
 * requires virtual router
 * IPv4 only
 * dual stack use with IPv6 from subnetpool
-* IPv4: prefer NAT/FIP over subnet pool to discourage wasting addresses
+* IPv4: prefer NAT/FIP over subnet pool to discourage wasting addresses?
 
-#### RBAC for Users
+#### Disable RBAC for Users
 
-* disallow creation of rbac rules for users to prevent creation of faux provider networks
+Per default policy, Neutron allows any user the creation RBAC rules to share resources of their projects with other projects.
+Only the use of the `*` wildcard target is limited to admin users.
+
+However, how a network was shared, and who shared it, is not immediately obvious from the perspecive of a target project, the `openstack network list` command will not even show project IDs by default.
+Even if a user determines the project ID using the `--long` option or `network show`, they are by default forbidden from listing any other projects metadata, including it's name.
+
+Under these conditions, a malicious user could create a network with a misleading name, share it with target projects to trick them into using it like a provider network, and then intercept their traffic.
+
+For this attack to work, the attacker has to find out the target's project ID, and the target has to be sufficiently oblivious to the CSP's provider network setup.
+CSPs can try to educate users on the correct provider networks to use, and can avoid leaking project IDs, but the best protection is to disable the creation of RBAC rules for non-admin users.
 
 ## Decision
 
@@ -133,10 +153,10 @@ They **MAY** also provide a subnet pool for the allocation of public IPv4 prefix
 
 CSPs **MUST** provide dynamic routing for all project-allocated public IP-prefixes.
 
-Users **SHOULD** by default be prohibited by policy from creating RBAC rules for networks in their projects, to prevent the creation of faux provider networks.
+By default, users **SHOULD** be prohibited by policy from creating RBAC rules for networks in their projects, to prevent the creation of faux provider networks.
 
 ## References
 
-[^bgp]: https://docs.openstack.org/neutron/latest/admin/config-bgp-dynamic-routing.html
-[^pd]: https://docs.openstack.org/neutron/latest/admin/config-ipv6.html#prefix-delegation
+[^bgp]: https://docs.openstack.org/neutron/2024.1/admin/config-bgp-dynamic-routing.html
+[^pd]: https://docs.openstack.org/neutron/2024.1/admin/config-ipv6.html#prefix-delegation
 [^pf]: https://docs.openstack.org/api-ref/network/v2/index.html#floating-ips-port-forwarding
