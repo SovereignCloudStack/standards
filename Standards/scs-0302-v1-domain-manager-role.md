@@ -1,7 +1,8 @@
 ---
 title: Domain Manager configuration for Keystone
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2024-05-XX
 track: IAM
 ---
 
