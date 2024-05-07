@@ -49,7 +49,7 @@ There are different approaches to create a Sonobuoy plugin, which are discussed
 below in order to find a best practice for the SCS project. The documented approaches
 show one example each in order to give a better representation to the reader.
 
-Sonobuoy provides plugin examples in the repository <https://github.com/vmware-tanzu/sonobuoy-plugins>,
+Sonobuoy provides plugin examples in the [plugins repository](https://github.com/vmware-tanzu/sonobuoy-plugins),
 which are referenced throughout this section.
 
 ### _Option 1_ Golang based approach 1: Pick a framework from the Sonobuoy plugin examples

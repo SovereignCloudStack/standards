@@ -24,7 +24,7 @@ a shorter notice.
 (c) Hannes Baum <hannes.baum@cloudandheat.com>, 6/2023
 (c) Martin Morgenstern <martin.morgenstern@cloudandheat.com>, 2/2024
 (c) Matthias Büchse <matthias.buechse@cloudandheat.com>, 3/2024
-License: CC-BY-SA 4.0
+SPDX-License-Identifier: CC-BY-SA-4.0
 """
 
 from collections import Counter
@@ -46,12 +46,11 @@ import yaml
 
 MINOR_VERSION_CADENCE = timedelta(days=120)
 PATCH_VERSION_CADENCE = timedelta(weeks=1)
-CVE_VERSION_CADENCE = timedelta(days=3)
+CVE_VERSION_CADENCE = timedelta(days=2)
 CVE_SEVERITY = 8  # CRITICAL
 
 HERE = Path(__file__).parent
 EOLDATA_FILE = "k8s-eol-data.yml"
-DEFAULT_CONFIG_PATH = "./config.yaml"
 
 logging_config = {
     "level": "INFO",
@@ -168,8 +167,11 @@ class K8sVersion:
         return f"{self.major}.{self.minor}.{self.patch}"
 
 
+K8sVersion.MINIMUM = K8sVersion(0, 0)
+
+
 def parse_version(version_str: str) -> K8sVersion:
-    cleansed = version_str.removeprefix("v").strip()
+    cleansed = version_str.strip().removeprefix("v")
     try:
         major, minor, patch = cleansed.split(".")
         return K8sVersion(int(major), int(minor), int(patch))
@@ -240,38 +242,33 @@ def parse_github_release_data(release_data: dict) -> K8sRelease:
 
 @dataclass(frozen=True, eq=True)
 class VersionRange:
-    """Version range with a lower and upper bound."""
+    """
+    Version range with a lower and upper bound.
 
-    # First version with the CVE; this value will be set if either an affected
-    # version is directly set in a CVE dataset or if the CVE dataset is in a
-    # non-standard format.  If the variable is set, `lower_version` and
-    # `upper_version` create a range of affected versions.
+    Supports checking if a K8sVersion is in the range using the `in`
+    operator.
+    If `inclusive` is True, `upper_version` is inside the range (i.e.,
+    it is a closed interval), otherwise `upper_version` is outside.
+    If `upper_version` is not set, the range just represents a single
+    version, namely `lower_version`.
+    """
+
     lower_version: K8sVersion
-
-    # Last version with the CVE
-    upper_version: K8sVersion
-
-    # True if upper_version is included in the range of affected versions
+    upper_version: K8sVersion = None
     inclusive: bool = False
 
-    def __contains__(self, version: K8sVersion) -> bool:
-        # See the following link for more information about the format
-        # https://www.cve.org/AllResources/CveServices#cve-json-5
+    def __post_init__(self):
+        if self.lower_version is None:
+            raise ValueError("lower_version must not be None")
+        if self.upper_version and self.upper_version < self.lower_version:
+            raise ValueError("lower_version must be lower than upper_version")
 
-        # Check if an `upper version` exists
-        if self.upper_version:
-            # Check if a `lower version` exists and compare the version against it
-            if self.lower_version:
-                gt = self.lower_version <= version
-            else:
-                gt = True
-            # Compare the version either with `less than` or `less than or equal` against the `upper version`
-            if self.inclusive:
-                return gt and self.upper_version >= version
-            return gt and self.upper_version > version
-        else:
-            # If no upper version exists, we only need to check if the version is equal to the `lower version`
+    def __contains__(self, version: K8sVersion) -> bool:
+        if self.upper_version is None:
             return self.lower_version == version
+        if self.inclusive:
+            return self.lower_version <= version <= self.upper_version
+        return self.lower_version <= version < self.upper_version
 
 
 @dataclass
@@ -318,6 +315,9 @@ def parse_cve_version_information(cve_version_info: dict) -> VersionRange:
             vdata = cve_version_info['version'].split("-")
             vi_lower_version = parse_version(vdata[0])
             vi_upper_version = parse_version(vdata[1])
+
+    if vi_lower_version is None:
+        vi_lower_version = K8sVersion.MINIMUM
 
     return VersionRange(vi_lower_version, vi_upper_version, inclusive)
 
@@ -392,9 +392,16 @@ async def get_k8s_cluster_info(kubeconfig, context=None) -> ClusterInfo:
         return ClusterInfo(version, cluster_config.current_context['name'])
 
 
-def check_k8s_version_recency(my_version: K8sVersion, releases_data: list[dict], cve_version_list=()) -> bool:
-    """Check a given K8s cluster version against the list of released versions in order to find out if the version
-    is an accepted recent version according to the standard."""
+def check_k8s_version_recency(
+    my_version: K8sVersion,
+    releases_data: list[dict],
+    cve_affected_ranges: set[VersionRange],
+) -> bool:
+    """
+    Check a given K8s cluster version against the list of released versions
+    in order to find out if the version is an accepted recent version according
+    to the standard.
+    """
 
     # iterate over all releases in the list, but only look at those whose branch matches
     # we might break early assuming that the list is sorted somehow, but it is usually
@@ -412,11 +419,11 @@ def check_k8s_version_recency(my_version: K8sVersion, releases_data: list[dict],
         if release.age > PATCH_VERSION_CADENCE:
             # whoops, the cluster should have been updated to this (or a higher version) already!
             return False
-        if my_version.version in cve_version_list and release.age > CVE_VERSION_CADENCE:
-            # -- three FIXMEs:
-            # (a) can the `in` ever become true, when we have a version vs a set of ranges
-            # (b) if the release still has the CVE, then there is no use if we updated to it?
-            # (c) the standard says "time period MUST be even shorter ... it is RECOMMENDED that ...",
+        ranges = [_range for _range in cve_affected_ranges if my_version in _range]
+        if ranges and release.age > CVE_VERSION_CADENCE:
+            # -- two FIXMEs:
+            # (a) if the release still has the CVE, then there is no use if we updated to it?
+            # (b) the standard says "time period MUST be even shorter ... it is RECOMMENDED that ...",
             #     so what is it now, a requirement or a recommendation?
             # shouldn't we check for CVEs of my_version and then check whether the new one still has them?
             # -- so, this has to be reworked in a major way, but for the time being, just emit an INFO
@@ -473,7 +480,8 @@ async def main(argv):
     releases_data = fetch_k8s_releases_data()
 
     try:
-        logger.info("Checking cluster of kubeconfig context '%s'.", config.context)
+        context_desc = f"context '{config.context}'" if config.context else "default context"
+        logger.info("Checking cluster specified by %s in %s.", context_desc, config.kubeconfig)
         cluster = await get_k8s_cluster_info(config.kubeconfig, config.context)
         cluster_branch = cluster.version.branch
 

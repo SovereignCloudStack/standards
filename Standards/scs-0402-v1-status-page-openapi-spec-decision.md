@@ -41,6 +41,10 @@ An `Incremental` is used in combination with other identifiers to identify a sub
 
 `Generation` and `Order` are predefined objects which include a `Incremental` typed field for the common usages of the `Incremental` value.
 
+#### SeverityValue
+
+A `SeverityValue` is an unsiged integer ranging from 0 to 100 inclusively. It MUST be utilized by an `Impact` when referenced by a requested `Component` to gauge the severity of the impact on that component. It MUST be added to an `Impact` when refereced by an `Incident`, when its created. While being described as an unsiged integer, implementing this value MAY not require it to be an uint data type in any form, because its range even fits in a signed int8 (byte) data type.
+
 ### API objects
 
 All objects which are used as payload, either as request or response, are defined by schemas. This centralizes the maintanence of field names and types, for both requests and responses.
@@ -81,6 +85,53 @@ Labels are simple key/value pairs attached to components, categorizing them dyna
 An impact defines the relation between an incident and a component. A component can be affected by multiple incidents and an incident can affect multiple components. Each of these impacts can have a different type depending on the incident and component, like for example connectivity or performance issues.
 
 To reflect this, each component and incident can have a list of impacts, stating the type of impact and a reference to the incident or component, it refers to.
+
+Furthermore, a `SeverityValue` MUST be supplied to the `Impact` when referenced by a `Component`, to gauge the impact's severity on that component.
+
+### Severity
+
+A severity contains a name, that MUST be unique and will be used as identifier. The `SeverityValue` marks the upper boundary of the severity.
+
+The severity's value range is calculated by taking the previous severity's (`SeverityA`) value and adding 1 to obtain the starting point and taking the current severity's (SeverityB) value as the end point. These limits are inclusive.
+
+```acsii
+0, ... , SeverityA.value, SeverityA.value, + 1, ... , SeverityB.value - 1, SeverityB.value, SeverityB.value + 1, ... , 100
+                        |<------------range of severity values for SeverityB------------->|
+```
+
+Example:
+
+```json
+[
+  {
+    "displayName": "operational",
+    "value": 25
+  },
+  {
+    "displayName": "maintenance",
+    "value": 50
+  },
+  {
+    "displayName": "limited",
+    "value": 75
+  },
+  {
+    "displayName": "broken",
+    "value": 100
+  }
+]
+```
+
+This means:
+
+- operational from 0 to 25
+- maintenance from 26 to 50
+- limited from 51 to 75
+- broken from 76 to 100.
+
+A value of 100 is the maximum of the severity value.
+
+A severity with the value of 100 MUST always be supplied. This is the highest severity for the system. If no severity with a value of 100 exists, e.g. the highest severity value is set at 90, an `Impact` with a higher `SeverityValue` WILL be considered to be an _unkown_ severity.
 
 ### Component impacts
 

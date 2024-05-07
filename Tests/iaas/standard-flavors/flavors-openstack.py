@@ -27,6 +27,7 @@ import yaml
 
 
 logger = logging.getLogger(__name__)
+RESERVED_KEYS = ('scs:name-v1', 'scs:name-v2')
 
 
 def print_usage(file=sys.stderr):
@@ -130,6 +131,11 @@ def main(argv):
                 if es_name_key in flavor.extra_specs
             }
             by_legacy_name = {flavor.name: flavor for flavor in present_flavors}
+            # for reserved keys, keep track of all flavors that don't have a matching spec
+            unmatched = {flavor.id: (flavor, keys) for flavor, keys in [
+                (flavor, tuple(key for key in RESERVED_KEYS if key in flavor.extra_specs))
+                for flavor in present_flavors
+            ] if keys}
 
         logger.debug(f"Checking {len(flavor_specs)} flavor specs against {len(present_flavors)} flavors")
         for flavor_spec in flavor_specs:
@@ -143,6 +149,8 @@ def main(argv):
                     level = {"mandatory": logging.ERROR}.get(status, logging.INFO)
                     logger.log(level, f"Missing {status} flavor '{flavor_spec['name']}'")
                     continue
+            # this flavor has a matching spec
+            unmatched.pop(flavor.id, None)
             # check that flavor matches flavor_spec
             # cpu, ram, and disk should match, and they should match precisely for discoverability
             if flavor.vcpus != flavor_spec['cpus']:
@@ -163,6 +171,12 @@ def main(argv):
             ]
             if report:
                 logger.error(f"Flavor '{flavor.name}' violating property constraints: {'; '.join(report)}")
+        if unmatched:
+            logger.error(
+                "The following flavors are not standard, yet use a reserved property: " + ", ".join(
+                    f"{flavor.name}: {', '.join(keys)}" for flavor, keys in unmatched.values() if keys
+                )
+            )
     except BaseException as e:
         logger.critical(f"{e!r}")
         logger.debug("Exception info", exc_info=True)
