@@ -191,7 +191,10 @@ class CPUBrand:
         "r": {None: '(unspecified)', 0: "Unspec"},
     })
     perf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"})
-
+    def __init__(self, cpuvendor="i", cpugen=0, perf=""):
+        self.cpuvendor = cpuvendor
+        self.cpugen = cpugen
+        self.perf = perf
 
 class GPU:
     """Class repesenting GPU support"""
@@ -236,11 +239,9 @@ class Flavorname:
             return self
         # For non-x86-64, don't strip out CPU brand for short name, as it contains the architecture
         if self.cpubrand and self.cpubrand.cpuvendor != 'i' and self.cpubrand.cpuvendor != 'z':
-            cpubrand = self.cpubrand
-            # Delete non-relevant details for the short name, only keep brand
-            cpubrand.cpugen = 0
-            cpubrand.perf = ""
-            return Flavorname(cpuram=self.cpuram, disk=self.disk, cpubrand=cpubrand, gpu=self.gpu, ib=self.ib)
+            return Flavorname(cpuram=self.cpuram, disk=self.disk,
+                              cpubrand=CPUBrand(self.cpubrand.cpuvendor),
+                              gpu=self.gpu, ib=self.ib)
         return Flavorname(cpuram=self.cpuram, disk=self.disk, gpu=self.gpu, ib=self.ib)
 
 
