@@ -191,10 +191,12 @@ class CPUBrand:
         "r": {None: '(unspecified)', 0: "Unspec"},
     })
     perf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"})
+
     def __init__(self, cpuvendor="i", cpugen=0, perf=""):
         self.cpuvendor = cpuvendor
         self.cpugen = cpugen
         self.perf = perf
+
 
 class GPU:
     """Class repesenting GPU support"""
