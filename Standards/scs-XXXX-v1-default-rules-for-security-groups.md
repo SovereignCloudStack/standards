@@ -27,7 +27,8 @@ Administrator (abbr. Admin)
 
 The rules of a Security Group can be edited by default by any user with the member role within a project.
 But when a Security Group is created it automatically incorporates a few SG rules that are configured as default rules.
-Since the 2023.2 release, this set of default rules can be adjusted by administrators only[^1][^2].
+Since the 2023.2 release, the default set of security group rules can be adjusted.
+This functionality is only available to administrators[^1][^2].
 In combination with the OpenStack behavior that when a VM is created with no Security Group specified, the default SG of the project is automatically applied to the ports of the VM,
 a user cannot be sure which firewall rules are applied to such a VM.
 
@@ -47,26 +48,29 @@ All rules that should be present as default in Security Groups have to be config
 There are two ways to approach a standard for the default rules of security groups.
 
 1. There could be a set of rules standardized that has to be configured by admins.
+
 OpenStacks default rules for security groups already provide a good baseline for port security, because they allow all egress traffic and for the default security group only ingress traffic from the same group.
+
 Allowing more rules would not benefit the security level, while reducing or limiting the existing rules would barely improve it.
 Nevertheless a standard could hold up the current security level against possible future release with more open default rules.
 Changing the default rules will not change the rules any existing security groups.
 
 2. With the already strict OpenStack default rules users are required in most use cases to create and manage their own security groups.
+
 This has the benefit that users need to explicitly think about the port security of their VMs and may be less likely to apply security groups which rules open up more ports than needed.
 There is also a guide from the SCS on how to set up a security group that also focuses on having a good port security[^3].
 
 With the default OpenStack behavior of having already strict rules, which in most cases require users to manage their own security groups, this standard should mandate a middle way:
 It should allow adjusting the default rules, but only to stricter version.
+
 Allowing all outgoing traffic in the default rules in combination with blocking all incoming traffic would be strict enough from a security point of view.
 And it would make it necessary for users to check and change the rules of their security group to a meaningful set.
 
 [^3]: [Guide for Security Groups](https://docs.scs.community/docs/iaas/guides/user-guide/security-groups/)
 
-### Open questions
+### Further Annotations
 
-The requirement to not change the default code of earlier OpenStack releases is difficult to test.
-It should be considered to only apply this standard onto versions of OpenStack that implement the new endpoint for the default Security Group rules, which would only include 2023.2 or higher releases.
+This standard should only be applied onto versions of OpenStack that implement the new endpoint for the default Security Group rules, which would only include 2023.2 or higher releases.
 
 It is possible to have different default Security Group rules for the default SG and custom SGs.
 And it is arguable to have a more strict standard for default rules for the default Security Group than for the custom Security Groups.
@@ -113,4 +117,4 @@ More about Security Groups as a resource in OpenStack can be found [here](https:
 ## Conformance Tests
 
 The conformance tests should check for the absence of any ingress traffic rules in the `openstack security group rule list`.
-As having egress rules is allowed by this standard, but not forced and can be set in various ways, there will not be any tests for such rules.
+As having egress rules is allowed by this standard, but not forced and can be set in various ways, the tests should check for presence of any egress rules.
