@@ -105,30 +105,31 @@ In that case, CSPs may restrict the number of VMs, routers, or ports to limit th
 
 Creating a project-internal network to connect to an external provider network with a virtual router does take more effort than just using a shared network, but also offers some additional flexibility and control.
 In an internal network, users have greater control over IP allocation and may also choose to disable port security.
-With the FWaaS API extensions, they can also assign firewall rules to the virtual router, to control which traffic can pass between project-internal and provider networks.
+With the FWaaS API extensions, they can also assign firewall rules to the virtual router, to control which traffic can pass between internal and provider networks.
 
-* why subnet pool allocation?
-  * Floating IP limited to IPv4
-  * Prefix Delegation limited to IPv6
-* what benefits does a CSP have from this setup?
-  * Quota for subnet pools
-* what are drawbacks
-  * complexity of setting up dynamic routing
+As described above, there are multiple methods for allocating public IP addresses to project-internal networks.
+For IPv6, the currently best option seems to be subnet allocation from a CSP-managed subnet pool, because support for Prefix Delegation is still experimental.
+For IPv4, NAT and floating IPs are generally preferred over subnet allocation because of scarcity of IPv4 address space.
 
 #### NAT and Floating IPs
 
-* requires virtual router
-* IPv4 only
-* dual stack use with IPv6 from subnetpool
-* IPv4: prefer NAT/FIP over subnet pool to discourage wasting addresses?
+Subnets can only have a size that is a power of two, and will thus usually be oversized for the project.
+They also need to reserve one address for the gateway and, if DHCP is used, one or more addresses for DHCP service ports.
+Each subnet also has a broadcast and a network address, which for small subnets make up a noticeable part of the address space.
+
+Source NAT, combined with selective use of floating IPs can significantly reduce the number of required addresses over a public IPv4 subnet.
+The floating IP quota also offers a finer granularity for distributing IPs among projects, though it is important to note that the routers external gateway IP which is used for the source NAT is not subject to any quotas.
+
+IPv4 NAT can also be used in a dual stack setup alongside a routed IPv6 subnet (source?).
 
 #### Disable RBAC for Users
 
 Per default policy, Neutron allows any user the creation RBAC rules to share resources of their projects with other projects.
 Only the use of the `*` wildcard target is limited to admin users.
 
-However, how a network was shared, and who shared it, is not immediately obvious from the perspecive of a target project, the `openstack network list` command will not even show project IDs by default.
-Even if a user determines the project ID using the `--long` option or `network show`, they are by default forbidden from listing any other projects metadata, including it's name.
+However, how a network was shared, and who shared it, is not immediately obvious from the perspective of the target project.
+The `openstack network list` command will by default not even show the project IDs of the networks.
+And even though users can determine the project ID of networks by using `network list --long` or `network show`, they are by default forbidden from accessing any details of other projects, including the project name.
 
 Under these conditions, a malicious user could create a network with a misleading name, share it with target projects to trick them into using it like a provider network, and then intercept their traffic.
 
