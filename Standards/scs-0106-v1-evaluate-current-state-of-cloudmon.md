@@ -34,6 +34,17 @@ choice for implementing Gherkin-based testing over Java. By harnessing Python's 
 accelerate development, and ensure seamless integration with OpenStack, ultimately enhancing the effectiveness of our
 testing processes.
 
+## Challanges
+
+During our assessment of the Cloudmon/Stackmon project, we encountered significant challenges related to documentation,
+particularly regarding lack of examples for configuration setups and usage guidelines. The lack of comprehensive
+documentation impeded our understanding of the project and hindered effective utilization. We understood that some
+features implemented in the cloudmon/stackmon are not neccessary for the health monitor like running the tests from
+different virtual locations because every network in the project is responsible for different AZ and on the other hand
+with our tests approach we can just clone [shs-health-monitor](https://github.com/SovereignCloudStack/scs-health-monitor/tree/main)
+to another physical location and run the same tests from physically different place on earth. Examples like that
+confirmed our belief that atomic approach save us a lot of effort, time and costs.
+
 ## Decision
 
 By opting for [Gherkin](https://cucumber.io/docs/gherkin/) test scenarios with Python mapping API calls to OpenStack,
