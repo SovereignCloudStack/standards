@@ -47,7 +47,7 @@ All rules that should be present as default in Security Groups have to be config
 
 There are two ways to approach a standard for the default rules of security groups.
 
-1. There could be a set of rules standardized that has to be configured by admins.
+1: There could be a set of rules standardized that has to be configured by admins.
 
 OpenStacks default rules for security groups already provide a good baseline for port security, because they allow all egress traffic and for the default security group only ingress traffic from the same group.
 
@@ -55,7 +55,7 @@ Allowing more rules would not benefit the security level, while reducing or limi
 Nevertheless a standard could hold up the current security level against possible future release with more open default rules.
 Changing the default rules will not change the rules any existing security groups.
 
-2. With the already strict OpenStack default rules users are required in most use cases to create and manage their own security groups.
+2: With the already strict OpenStack default rules users are required in most use cases to create and manage their own security groups.
 
 This has the benefit that users need to explicitly think about the port security of their VMs and may be less likely to apply security groups which rules open up more ports than needed.
 There is also a guide from the SCS on how to set up a security group that also focuses on having a good port security[^3].
