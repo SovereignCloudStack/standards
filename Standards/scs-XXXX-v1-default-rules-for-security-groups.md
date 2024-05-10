@@ -116,5 +116,5 @@ More about Security Groups as a resource in OpenStack can be found [here](https:
 
 ## Conformance Tests
 
-The conformance tests should check for the absence of any ingress traffic rules in the `openstack security group rule list`.
+The conformance tests should check for the absence of any ingress traffic rules except traffic from the same Security Group in the `openstack security group rule list`.
 As having egress rules is allowed by this standard, but not forced and can be set in various ways, the tests should check for presence of any egress rules.
