@@ -36,6 +36,7 @@ def test_rules(cloud_name: str):
     # count all overall ingress rules and egress rules.
     ingress_rules = 0
     ingress_from_same_sg = 0
+    egress_rules = 0
     egress_ipv4_default_sg = 0
     egress_ipv4_custom_sg = 0
     egress_ipv6_default_sg = 0
@@ -75,13 +76,13 @@ def test_rules(cloud_name: str):
         f"But there are more - in total {ingress_rules} ingress rules. "
         f"There should be only {ingress_from_same_sg} ingress rules.")
     assert egress_rules > 0, (
-        f"Expected to have egress rules present.")
+        f"Expected to have more than {egress_rules} egress rules present.")
     var_list = [egress_ipv4_default_sg, egress_ipv4_custom_sg,
                 egress_ipv6_default_sg, egress_ipv6_custom_sg]
     assert all([var > 0 for var in var_list]), (
-        f"Not all expected egress rules are present. "
-        f"Expected rules for egress for IPv4 and IPv6 "
-        f"both for default and custom security groups.")
+        "Not all expected egress rules are present. "
+        "Expected rules for egress for IPv4 and IPv6 "
+        "both for default and custom security groups.")
 
     result_dict = {
         "Ingress Rules": ingress_rules,
