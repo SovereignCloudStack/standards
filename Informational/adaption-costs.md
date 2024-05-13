@@ -1,13 +1,13 @@
-# Adaption costs for SCS standards
+# Adoption costs for SCS standards
 
-This document outlines the adaption costs for the IaaS/OpenStack standards of the SCS project. Tests and estimates were
+This document outlines the adoption costs for the IaaS/OpenStack standards of the SCS project. Tests and estimates were
 done using Yaook especially `yaook/k8s` and `yaook/operator` which together provided a functioning OpenStack instance.
-Nonetheless, other OpenStack types should have similar costs for adapting standards, since in the end, the frontend
+Nonetheless, other OpenStack types should have similar costs for adopting standards, since in the end, the frontend
 is an OpenStack.
 
 ## Standards
 
-### SCS Flavor Naming Standard (scs-v100-v3-flavor-naming)
+### SCS Flavor Naming Standard (scs-0100-v3-flavor-naming)
 
 The [SCS Flavor Naming Standard (scs-v100-v3-flavor-naming)](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-v100-v3-flavor-naming.md)
 requires all flavors starting with `SCS-` to follow a certain schema in order to apply with the standard.
@@ -37,7 +37,7 @@ the CSP needs to provide entropy by offering CPU instructions that provide entro
 All newer CPUs offer instructions for this kind of use-case (e.g. Intel introduced RDRAND in 2014 in their Broadwell architecture)
 and the expectation is, that most CSPs don't use older processors.
 
-The only scenario with slightly higher adaption costs would be a CSP with old hardware and a customer that requires
+The only scenario with slightly higher adoption costs would be a CSP with old hardware and a customer that requires
 systems with old kernels. The cost here would probably be estimated on the base of moving the customer to a newer system
 with support for entropy instructions on CPUs.
 
@@ -78,12 +78,12 @@ The expected images with correctly standardized names and properties can simply 
 by using the ["osism-image-manager"](https://github.com/osism/openstack-image-manager) tool.
 The `openstack-image-manager` expects a file containing information about the images. This isn't provided by the SCS
 project, but can be derived from the information available in the standard documents. Through this mechanism, the
-`openstack-image-manager` also enables the adaption of the "SCS Image Metadata Standard (scs-0102-v1-image-metadata)".
+`openstack-image-manager` also enables the adoption of the "SCS Image Metadata Standard (scs-0102-v1-image-metadata)".
 
 This project provides an `images.yaml` file containing the standard images expected by this standard in order to cut
-down on future adaption costs. The file will be up-to-date with the current standard version.
+down on future adoption costs. The file will be up-to-date with the current standard version.
 
-Additional images must be included and their properties adapted to the needs of the provider,
+Additional images must be included and their properties adopted to the needs of the provider,
 which should make them SCS-compatible, if all properties listed in the `images.yaml` are set.
 For more information on this read either the ["Image metadata" standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0102-v1-image-metadata.md)
 or the ["SCS compliance" document](scs-compliance.md).
@@ -91,11 +91,11 @@ or the ["SCS compliance" document](scs-compliance.md).
 Using the tool with the command `openstack-image-manager --cloud CLOUD --images images.yaml` simplifies the whole process
 down to a simple command in addition to the previous installation and modification of the `images.yaml`.
 
-If the "osism-image-manager" is used, adaption should be relatively quick depending on the number of images.
+If the "osism-image-manager" is used, adoption should be relatively quick depending on the number of images.
 Obviously a large number of images scales the time for this process linearly, so for big deployments, some additional
 automation should be done.
 
-For a simple setup with only the standard images, a maximum of two hours for standard adaption with the "osism-image-manager"
+For a simple setup with only the standard images, a maximum of two hours for standard adoption with the "osism-image-manager"
 is expected.
 A manual approach is not recommended, since this process would involve a multitude of OpenStack commands and could easily
 take multiple days depending on the setup.
@@ -120,4 +120,4 @@ Estimated cost: 1 man-hour (just for the flavors)
 
 In summary, a time of 4 man-hours up to multiple days can be estimated depending on the size of the deployment and the
 usage of tools for automating this process.
-Multiple adaptions can decrease the time required on subsequent runs.
+Multiple adoptions can decrease the time required on subsequent runs.
