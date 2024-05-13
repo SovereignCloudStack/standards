@@ -65,7 +65,7 @@ sed -i 's/import\sDict/import Union, Dict/g' .scs-venv-oim/lib/python3.9/site-pa
 sed -i 's/Image\s|\sNone/ Union\[Image, None\]/g' .scs-venv-oim/lib/python3.9/site-packages/openstack_image_manager/manage.py
 
 if [ "$INSTALL_FROM_LOCAL" = true ]; then
-    openstack-image-manager --cloud $CLOUD_NAME --images images-local.yaml --hypervisor $HYPERVISOR
+    openstack-image-manager --cloud $CLOUD_NAME --images images-local.yaml
 
     image_names=("Ubuntu 20.04" "Ubuntu 22.04" "ubuntu-capi-image v1.29.3" "Debian 10" "Debian 11" "Debian 12")
     for i in "${!image_names[@]}"; do
@@ -73,7 +73,7 @@ if [ "$INSTALL_FROM_LOCAL" = true ]; then
     done
 
 else
-    openstack-image-manager --cloud $CLOUD_NAME --images images.yaml --hypervisor $HYPERVISOR
+    openstack-image-manager --cloud $CLOUD_NAME --images images.yaml
 fi
 
 echo "Removing OIM virtual environment..."
