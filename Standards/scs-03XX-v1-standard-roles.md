@@ -18,6 +18,8 @@ The following special terms are used throughout this standard document:
 |---|---|
 | API | Application Programming Interface, often referring to the REST API interfaces provided by OpenStack and related services |
 | CSP | Cloud Service Provider, provider managing the OpenStack infrastructure |
+| IaaS | Infrastructure-as-a-Service |
+| IAM | Identity and Access Management |
 | RBAC | Role-Based Access Control[^1] established by OpenStack Keystone |
 
 [^1]: [OpenStack Documentation: Role-Based Access Control Overview](https://static.opendev.org/docs/patrole/latest/rbac-overview.html)
@@ -32,6 +34,9 @@ For this reason it is important to have a secure and sensible default configurat
 
 One key aspect of the design considerations for this standard is to be as close to the native (upstream) OpenStack role model and role definitions as possible to not introduce unnecessary complexity or divergence from OpenStack.
 Meanwhile the standardized roles and permission sets should cover all scenarios and use cases that SCS deems necessary.
+
+Due to the high level of modularity and the large amount of available services for OpenStack clouds, this standard cannot address all possible manifestations of OpenStack clouds.
+This standard will therefore only cover IaaS APIs and services that are classified as either mandatory or supported by the SCS project.
 
 ### Scope Enforcement Compatibility
 
@@ -82,7 +87,28 @@ This would mean enabling the new defaults and scope-enforcing options that curre
 
 ### Open questions
 
-RECOMMENDED
+#### Incorporating the new upstream defaults into this standard
+
+Due to the ongoing RBAC rework in upstream OpenStack[^2], not all changes which are to be introduced by it will be included in the first iteration of this standard to avoid prematurely adopting role and policy definitions which might still change before being stabilized or have unresolved compatibility issues with certain services.
+
+This results in a need of keeping this standard in sync once the upstream rework finishes.
+It is currently unknown when the upstream rework will conclude exactly and how this standard will need to be adjusted as a result.
+
+This primarily concerns the new scoping and defaults in `oslo.policy`:
+
+```ini
+[oslo_policy]
+enforce_new_defaults = True
+enforce_scope = True
+```
+
+As of the time of writing this standard, those options currently default to `False`[^3] for all OpenStack services.
+Once those options default to `True` in a future OpenStack release, this standard must be updated to properly account for the resulting changes in policy and role defaults.
+Due to the fact that the details on how the remaining compatibility issues will be addressed upstream are still unknown, the full implications on when and how this standard will need to be updated specifically remains an open question.
+
+[^2]: [OpenStack Technical Committee Governance Documents: Consistent and Secure Default RBAC](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html)
+
+[^3]: [Current parameter defaults in `oslo_policy/opts.py` (2023-12-11)](https://github.com/openstack/oslo.policy/blob/a1e76258180002b288e64532676ba2bc2d1ec800/oslo_policy/opts.py#L26-L51)
 
 ## Standard
 
