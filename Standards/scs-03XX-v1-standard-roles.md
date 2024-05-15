@@ -194,6 +194,13 @@ TODO: what does the CSP need to adhere to when it comes to API policy configurat
 
 ## Related Documents
 
+### SCS Mandatory and Supported IaaS Services
+
+**Description:** SCS standard that lists mandatory and supported OpenStack APIs for SCS clouds.
+This list is decisive for the standard on roles as all applicable services need to be taken into consideration.
+
+**Link:** TBD <!-- https://github.com/SovereignCloudStack/standards/pull/587 -->
+
 ### SCS Domain Manager standard
 
 **Description:** SCS standard that describes the Domain Manager role introduced by SCS and its configuration.
