@@ -40,7 +40,7 @@ This standard will therefore only cover IaaS APIs and services that are classifi
 
 ### Scope Enforcement Compatibility
 
-The API policy library used by OpenStack (oslo.policy) introduced two new [configuration options](https://docs.openstack.org/oslo.policy/latest/configuration/#oslo-policy) during the [ongoing RBAC rework of OpenStack](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html):
+The API policy library used by OpenStack (oslo.policy) introduced two new [configuration options](https://docs.openstack.org/oslo.policy/latest/configuration/#oslo-policy) during the ongoing RBAC rework of OpenStack[^2]:
 
 - `enforce_scope`
 - `enforce_new_defaults`
@@ -48,8 +48,8 @@ The API policy library used by OpenStack (oslo.policy) introduced two new [confi
 Using those new defaults and scope-enforcing options [will currently break](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html#the-issues-we-are-facing-with-scope-concept) orchestration tooling such as **OpenStack Heat** and Tacker.
 Due to OpenStack Heat being a service supported by the SCS project, those conflicting options cannot be mandated by a SCS standard.
 
-Some service-specific role sets currently found in OpenStack services can only be eliminated and streamlined with the general roles when those new options are enabled.
-As a result, this standard cannot consider role models dependent on the aforementioned options due to their currently unresolved compatibility issues and must incorporate the service-specific role sets for the time being.
+Some service-specific role sets currently found in OpenStack services can only be eliminated and streamlined with the general roles (reader, member etc.) when those new options are enabled.
+Due to their currently unresolved compatibility issues, this standard cannot consider role models dependent on the those oslo.policy options and must keep incorporating the service-specific role sets for the time being.
 The affected services and roles are documented below.
 
 #### Barbican Role Set
@@ -62,7 +62,7 @@ The Key Manager component Barbican [established a set of dedicated roles](https:
 - audit
 
 This set of roles is Barbican-specific and not used by any other API.
-It became deprecated during the [RBAC rework](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html) of OpenStack but is still included per default in recent OpenStack releases (as of the 2024.1 release).
+It became deprecated during the RBAC rework of OpenStack[^2] but is still included per default in recent OpenStack releases (as of the 2024.1 release).
 
 Due to its deprecation it is possible to enable Barbican's use of the already established reader, member and admin roles instead.
 This however requires the olso.policy options `enforce_scope` and `enforce_new_default` to be enabled, which are currently non-defaults and break compatibility with orchestration tooling, see above.
@@ -112,11 +112,13 @@ Due to the fact that the details on how the remaining compatibility issues will 
 
 ## Standard
 
-### Established Roles
+### Roles
 
 This standard establishes the following roles in SCS clouds.
+**Core Roles** MUST be present in the Identity API at all times.
+**Service-specific Roles** MUST be present in the Identity API as long as the corresponding service (denoted in parentheses) is part of the infrastructure.
 
-Core Roles:
+**Core Roles:**
 
 - reader
 - member
@@ -124,19 +126,19 @@ Core Roles:
 - admin
 - service
 
-Service-specific Roles:
+**Service-specific Roles:**
 
-- key-manager:service-admin
-- creator
-- observer
-- audit
-- load-balancer_observer
-- load-balancer_global_observer
-- load-balancer_member
-- load-balancer_quota_admin
-- load-balancer_admin
-- ResellerAdmin
-- heat_stack_user
+- key-manager:service-admin (Barbican)
+- creator (Barbican)
+- observer (Barbican)
+- audit (Barbican)
+- load-balancer_observer (Octavia)
+- load-balancer_global_observer (Octavia)
+- load-balancer_member (Octavia)
+- load-balancer_quota_admin (Octavia)
+- load-balancer_admin (Octavia)
+- ResellerAdmin (Swift + Ceilometer)
+- heat_stack_user (Heat)
 
 #### Role Definitions
 
@@ -166,12 +168,27 @@ Service-specific Roles:
 | Octavia | load-balancer_member | customer | access to read and write APIs |
 | Octavia | load-balancer_quota_admin | CSP | admin access to quota APIs only, including quota resources owned by others |
 | Octavia | load-balancer_admin | CSP | admin access to all LB APIs including resources owned by others |
-| Ceilometer | ResellerAdmin | internal | technical user of Ceilometer with access privileges in the object storage API to store statistics for metering |
+| Swift | ResellerAdmin | Ceilometer (internal) | assigned to technical users of Ceilometer to integrate with Swift for access privileges in the object storage API to store statistics for metering |
 | Heat | heat_stack_user | internal | assigned to technical user accounts resulting from other resources' creation in Heat templates |
+
+### API Policies
+
+TODO: what does the CSP need to adhere to when it comes to API policy configuration?
 
 ## Related Documents
 
-- [OpenStack Governance: Consistent and Secure Default RBAC](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html)
+### SCS Domain Manager standard
+
+**Description:** SCS standard that describes the Domain Manager role introduced by SCS and its configuration.
+
+**Link:** [SCS Standards: Domain Manager configuration for Keystone](https://docs.scs.community/standards/scs-0302-v1-domain-manager-role)
+
+### Consistent and Secure Default RBAC
+
+**Description:** Upstream rework of the default role definitions and hierarchy across all OpenStack services.
+Explains the reasoning for the `enforce_scope` and `enforce_new_defaults` options and the transition process.
+
+**Link:** [OpenStack Technical Committee Governance Documents: Consistent and Secure Default RBAC](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html)
 
 ## Conformance Tests
 
