@@ -97,6 +97,15 @@ Using the alternative configurations would streamline Octavia's policies with th
 However, both of the alternative policy files that omit the Octavia-specific roles currently state "The [oslo_policy] `enforce_scope` and `enforce_new_defaults` must be `True`.".
 This would mean enabling the new defaults and scope-enforcing options that currently break compatibility with orchestration tooling like explained above.
 
+### Key Manager Role Model
+
+The OpenStack policy defaults for the Key Manager service Barbican establish service-specific roles as documented above.
+Unless the new scoping defaults are used, this leads to users possessing the generic "member" role being unable to access the Key Manager API to create and manage secrets.
+This in turn renders encryption features like the volume encryption of OpenStack's volume service unusable for customers unless the corresponding users are assigned the Barbican-specific "creator" role in projects additionally.
+This creates unnecessary management overhead on the CSP side and ambiguity for users since the role is only useful in Barbican but its name does not communicate this.
+
+<!-- TODO: extend API policy of Barbican in a minimal way to unlock usage for "member" role (e.g. by adjusting `all_but_audit` and `admin_or_creator`? is this feasible?) -->
+
 ### Open questions
 
 #### Incorporating future upstream defaults into this standard
