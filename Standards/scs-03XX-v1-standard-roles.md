@@ -52,6 +52,18 @@ Some service-specific role sets currently found in OpenStack services can only b
 Due to their currently unresolved compatibility issues, this standard cannot consider role models dependent on the those oslo.policy options and must keep incorporating the service-specific role sets for the time being.
 The affected services and roles are documented below.
 
+#### Core Role Set
+
+Independently from any service-specific roles, the set of core roles is fundamentally affected by the scope enforcement options as well.
+
+The proper distinction between reader, member and manager roles is only fully implemented in all services when the `enforce_scope` and `enforce_new_defaults` oslo.policy options are used.
+Otherwise the OpenStack APIs will oftentimes fall back to their earlier policy implementations which do not fully differentiate between reader, member and manager.
+
+This results in more elevated permissions for users possessing the reader role than its role description suggests.
+Since this standard cannot mandate or expect the use of the aforementioned oslo.policy options due to their current compatibility issues as stated above, this reduces the usefulness of the reader role and will introduce unexpected behavior when using it.
+
+Due to this, the standard will omit the reader role in its current state.
+
 #### Barbican Role Set
 
 The Key Manager component Barbican [established a set of dedicated roles](https://docs.openstack.org/barbican/2024.1/admin/access_control.html#default-policy):
@@ -120,7 +132,6 @@ This standard establishes the following roles in SCS clouds.
 
 **Core Roles:**
 
-- reader
 - member
 - manager
 - admin
@@ -149,8 +160,7 @@ Core Roles:
 
 | Role | Primary Target(s) | Purpose |
 |---|---|---|
-| reader | customer | read-only access to resources and information in the scope of authentication (e.g. project) |
-| member | customer | similar to *reader* but extended by write access to resources in the scope of authentication (e.g. project) |
+| member | customer | read and write access to resources in the scope of authentication (e.g. project) |
 | manager | customer, CSP | slightly more elevated privileges than *member*, able to manage core resources or settings of a project or domain |
 | admin | CSP | cloud-level global administrative access to all resources (cross-domain, cross-project) |
 | service | internal | internal technical user role for service communication |
