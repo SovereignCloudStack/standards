@@ -99,7 +99,7 @@ This would mean enabling the new defaults and scope-enforcing options that curre
 
 ### Open questions
 
-#### Incorporating the new upstream defaults into this standard
+#### Incorporating future upstream defaults into this standard
 
 Due to the ongoing RBAC rework in upstream OpenStack[^2], not all changes which are to be introduced by it will be included in the first iteration of this standard to avoid prematurely adopting role and policy definitions which might still change before being stabilized or have unresolved compatibility issues with certain services.
 
@@ -117,6 +117,13 @@ enforce_scope = True
 As of the time of writing this standard, those options currently default to `False`[^3] for all OpenStack services.
 Once those options default to `True` in a future OpenStack release, this standard must be updated to properly account for the resulting changes in policy and role defaults.
 Due to the fact that the details on how the remaining compatibility issues will be addressed upstream are still unknown, the full implications on when and how this standard will need to be updated specifically remains an open question.
+However, at the very least this will most likely result in the following changes to this standard:
+
+- mandate the use of the new olso.policy options in all APIs
+- remove the service-specific roles of Barbican and Octavia from the standard
+- add the reader role to the core roles of this standard
+- remove the design considerations sections related to the above
+- if applicable, update any policy generation workflows to use the new role model
 
 [^2]: [OpenStack Technical Committee Governance Documents: Consistent and Secure Default RBAC](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html)
 
