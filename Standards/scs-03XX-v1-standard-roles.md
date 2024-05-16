@@ -100,11 +100,15 @@ This would mean enabling the new defaults and scope-enforcing options that curre
 ### Key Manager Role Model
 
 The OpenStack policy defaults for the Key Manager service Barbican establish service-specific roles as documented above.
-Unless the new scoping defaults are used, this leads to users possessing the generic "member" role being unable to access the Key Manager API to create and manage secrets.
+Unless the new scoping defaults (`enforce_new_defaults`) are used, this leads to users possessing the generic "member" role being unable to access the Key Manager API to create and manage secrets.
 This in turn renders encryption features like the volume encryption of OpenStack's volume service unusable for customers unless the corresponding users are assigned the Barbican-specific "creator" role in projects additionally.
 This creates unnecessary management overhead on the CSP side and ambiguity for users since the role is only useful in Barbican but its name does not communicate this.
 
-<!-- TODO: extend API policy of Barbican in a minimal way to unlock usage for "member" role (e.g. by adjusting `all_but_audit` and `admin_or_creator`? is this feasible?) -->
+To improve user experience and make the encryption features easily accessible, this standard should adjust the Key Manager API policies to extend permissions referencing the Barbican-specific "creator" role by the "member" role.
+This offers users easy access to the Key Manager API and aligns the permission set with the future rework (as per `enforce_new_defaults`), because it will later replace the "creator" role by the "member" role entirely.
+
+The "creator" role will be kept for compatibility reasons concerning service integration.
+For example, the block storage service Cinder usually has a technical user in Keystone possessing the "creator" role in the "service" project.
 
 ### Open questions
 
@@ -187,7 +191,7 @@ Service-specific Roles:
 |---|---|---|---|
 | Barbican | audit | customer | allows read-only access to metadata of secrets within a project; does not allow secret retrieval or decryption |
 | Barbican | observer | customer | allows read-only access to secrets within a project, including retrieval and decryption |
-| Barbican | creator | customer | allows access to, creation and deletion of secrets within a project, including retrieval and decryption |
+| Barbican | creator | customer | allows access to, creation and deletion of secrets within a project, including retrieval and decryption, equal to the member role |
 | Barbican | key-manager:service-admin | CSP | management API access for the cloud administrator, e.g. for project quota settings |
 | Octavia | load-balancer_observer | customer | access to read-only APIs |
 | Octavia | load-balancer_global_observer | CSP | access to read-only APIs including resources owned by others |
@@ -200,6 +204,24 @@ Service-specific Roles:
 ### API Policies
 
 TODO: what does the CSP need to adhere to when it comes to API policy configuration?
+
+#### Key Manager API
+
+For the Key Manager API, the policy rule called "creator" MUST be adjusted to incorporate the "member" role as shown below.
+This can be achieved by adding the following entry to a `policy.yaml` for Barbican (usually located at "`/etc/barbican/policy.yaml`"):
+
+```yaml
+"creator": "role:creator or role:member"
+```
+
+Exemplary contents of a "`/etc/barbican/barbican.conf`":
+
+```ini
+[oslo_policy]
+enforce_new_defaults = False
+enforce_scope = False
+policy_file = policy.yaml
+```
 
 ## Related Documents
 
