@@ -240,7 +240,7 @@ class Flavorname:
         if self.hype is None and self.hwvirt is None and self.cpubrand is None:
             return self
         # For non-x86-64, don't strip out CPU brand for short name, as it contains the architecture
-        if self.cpubrand and self.cpubrand.cpuvendor != 'i' and self.cpubrand.cpuvendor != 'z':
+        if self.cpubrand and self.cpubrand.cpuvendor not in ('i', 'z'):
             return Flavorname(cpuram=self.cpuram, disk=self.disk,
                               cpubrand=CPUBrand(self.cpubrand.cpuvendor),
                               gpu=self.gpu, ib=self.ib)
