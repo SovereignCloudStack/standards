@@ -109,6 +109,7 @@ This offers users easy access to the Key Manager API and aligns the permission s
 
 The "creator" role will be kept for compatibility reasons concerning service integration.
 For example, the block storage service Cinder usually has a technical user in Keystone possessing the "creator" role in the "service" project.
+Moving such service accounts to the "member" role could introduce undesired access patterns in other APIs that otherwise don't accept the "creator" role but offer a lot of functionality to the "member" role by default.
 
 ### Open questions
 
