@@ -7,7 +7,6 @@ import openstack
 
 CORE_ROLES = {
     "member",
-    "manager",
     "admin",
     "service"
 }
@@ -23,6 +22,9 @@ SERVICE_ROLES = {
         "load-balancer_member",
         "load-balancer_quota_admin",
         "load-balancer_admin ",
+    },
+    "identity": {
+        "manager",
     },
     "key-manager": {
         "key-manager:service-admin",

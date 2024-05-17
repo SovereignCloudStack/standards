@@ -111,6 +111,21 @@ The "creator" role will be kept for compatibility reasons concerning service int
 For example, the block storage service Cinder usually has a technical user in Keystone possessing the "creator" role in the "service" project.
 Moving such service accounts to the "member" role could introduce undesired access patterns in other APIs that otherwise don't accept the "creator" role but offer a lot of functionality to the "member" role by default.
 
+### Classification of the "manager" role
+
+The current RBAC rework in upstream OpenStack[^2] describes a "project-manager" persona utilizing a "manager" role on project scope to perform more privileged operations than "member" (see "Phase 3" of the document).
+This role is intended to be used across various OpenStack services.
+As of the OpenStack release 2024.1 this role is not implemented in any of the core services yet, only in Ironic with `enforce_new_defaults` enabled[^4].
+
+On the other hand, the SCS project is making use of this role to implement a Domain Manager persona (see the [SCS Domain Manager standard under "Related Documents"](#scs-domain-manager-standard)).
+
+As a result, the "manager" role has no effect outside of the Keystone Identity API until phase 3 of the RBAC rework is implemented upstream and this standard is migrated to the proper use of `enforce_new_defaults`.
+As such, it will be handled as a service-specific role for Keystone in this standard, not as a core role.
+This is to ensure that the effective scope of the role in SCS clouds is clearly documented and communicated to users.
+It might be elevated to a core role in future iterations of the standard when it is implemented in other services.
+
+[^4]: [Implementation of the "manager" role in Ironic for the 2024.1 release](https://github.com/openstack/ironic/blob/stable/2024.1/ironic/common/policy.py#L76-L82)
+
 ### Open questions
 
 #### Incorporating future upstream defaults into this standard
@@ -136,6 +151,7 @@ However, at the very least this will most likely result in the following changes
 - mandate the use of the new olso.policy options in all APIs
 - remove the service-specific roles of Barbican and Octavia from the standard
 - add the reader role to the core roles of this standard
+- move the manager role from service-specific roles to core roles
 - remove the design considerations sections related to the above
 - if applicable, update any policy generation workflows to use the new role model
 
@@ -154,12 +170,12 @@ This standard establishes the following roles in SCS clouds.
 **Core Roles:**
 
 - member
-- manager
 - admin
 - service
 
 **Service-specific Roles:**
 
+- manager (Keystone)
 - key-manager:service-admin (Barbican)
 - creator (Barbican)
 - observer (Barbican)
@@ -182,7 +198,6 @@ Core Roles:
 | Role | Primary Target(s) | Purpose |
 |---|---|---|
 | member | customer | read and write access to resources in the scope of authentication (e.g. project) |
-| manager | customer, CSP | slightly more elevated privileges than *member*, able to manage core resources or settings of a project or domain |
 | admin | CSP | cloud-level global administrative access to all resources (cross-domain, cross-project) |
 | service | internal | internal technical user role for service communication |
 
@@ -190,6 +205,7 @@ Service-specific Roles:
 
 | Service | Role | Primary Target(s) | Purpose |
 |---|---|---|---|
+| Keystone | manager | customer, CSP | slightly more elevated privileges than *member*, able to manage core resources or settings of a project or domain; currently this is limited to managing identity resources within a domain |
 | Barbican | audit | customer | allows read-only access to metadata of secrets within a project; does not allow secret retrieval or decryption |
 | Barbican | observer | customer | allows read-only access to secrets within a project, including retrieval and decryption |
 | Barbican | creator | customer | allows access to, creation and deletion of secrets within a project, including retrieval and decryption, equal to the member role |
