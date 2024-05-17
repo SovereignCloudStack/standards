@@ -16,7 +16,7 @@ For this purpose, this standard will establish lists for mandatory services that
 
 There are many OpenStack APIs and their corresponding services that can be deployed on the IaaS level.
 These services have differences in the quality of their implementation and liveness and some of them may be easily omitted when creating an IaaS deployment.
-To fulfill all SCS-provided standards there are only some of these APIs required.
+To fulfill all SCS-provided standards only a subset of these APIs are required.
 Some more but not all remaining OpenStack APIs are also supported additionally by the SCS project and may be part of its reference implementation.
 This results in different levels of support for specific services.
 This document will give readers insight about how the SCS classifies the OpenStack services accordingly.
