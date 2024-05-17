@@ -5,6 +5,11 @@ import typing
 
 import openstack
 
+# Name of the application credential that will be created during the test
+# to temporarily scope the authentication to a specific role for testing
+# purposes.
+APP_CREDENTIAL_NAME = "scs-member-role-credential"
+
 CORE_ROLES = {
     "member",
     "admin",
@@ -65,6 +70,23 @@ def connect(cloud_name: str, password: typing.Optional[str] = None
         )
 
 
+def delete_application_credential(conn: openstack.connection.Connection,
+                                  credential_name: str) -> None:
+    existing_credential = conn.identity.find_application_credential(
+        conn.current_user_id,
+        credential_name
+    )
+    if existing_credential:
+        print(
+            f"INFO: deleting application credential "
+            f"'{credential_name}' ..."
+        )
+        conn.identity.delete_application_credential(
+            conn.current_user_id,
+            existing_credential
+        )
+
+
 def reconnect_with_role(conn: openstack.connection.Connection,
                         target_role_name: str
                         ) -> openstack.connection.Connection:
@@ -75,16 +97,8 @@ def reconnect_with_role(conn: openstack.connection.Connection,
     returns it, effectively scoping the returned connection to the specific
     role.
     """
-    credential_name = f"scs-{target_role_name}-role-credential"
-    existing_credential = conn.identity.find_application_credential(
-        conn.current_user_id,
-        credential_name
-    )
-    if existing_credential:
-        conn.identity.delete_application_credential(
-            conn.current_user_id,
-            existing_credential
-        )
+    credential_name = APP_CREDENTIAL_NAME
+    delete_application_credential(conn, credential_name)
     app_credential = conn.identity.create_application_credential(
         conn.current_user_id,
         credential_name,
@@ -168,6 +182,8 @@ def check_key_manager_permissions(conn: openstack.connection.Connection
             f"ERROR: {str(e)}"
         )
         exit(1)
+    finally:
+        delete_application_credential(conn, APP_CREDENTIAL_NAME)
     print(
         "Users of the 'member' role can use Key Manager API: PASS"
     )
