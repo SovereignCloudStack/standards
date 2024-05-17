@@ -264,4 +264,8 @@ Explains the reasoning for the `enforce_scope` and `enforce_new_defaults` option
 
 ## Conformance Tests
 
-Conformance Tests, OPTIONAL
+Conformance tests verify that the roles mandated by the standard exist and the Key Manager API adjustments are implemented.
+
+There is a test suite in [`standard-roles-check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iam/iaas-roles/standard-roles-check.py).
+The test suite connects to the OpenStack API, queries the role list and verifies the behavior of the Key Manager API.
+Please consult the associated [README.md](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iam/iaas-roles/README.md) for detailed setup and testing instructions.
