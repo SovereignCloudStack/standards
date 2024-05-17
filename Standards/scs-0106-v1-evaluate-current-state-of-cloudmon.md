@@ -41,7 +41,7 @@ particularly regarding lack of examples for configuration setups and usage guide
 documentation impeded our understanding of the project and hindered effective utilization. We understood that some
 features implemented in the cloudmon/stackmon are not neccessary for the health monitor like running the tests from
 different virtual locations because every network in the project is responsible for different AZ and on the other hand
-with our tests approach we can just clone [shs-health-monitor](https://github.com/SovereignCloudStack/scs-health-monitor/tree/main)
+with our tests approach we can just clone [scs-health-monitor](https://github.com/SovereignCloudStack/scs-health-monitor/tree/main)
 to another physical location and run the same tests from physically different place on earth. Examples like that
 confirmed our belief that atomic approach save us a lot of effort, time and costs.
 
