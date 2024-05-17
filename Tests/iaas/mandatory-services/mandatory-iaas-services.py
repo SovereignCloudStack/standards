@@ -8,7 +8,6 @@ As the s3 endpoint might differ, a missing one will only result in a warning.
 """
 
 import argparse
-import getpass
 import logging
 import os
 
