@@ -1,12 +1,11 @@
 
 import asyncio
-import getopt
 import kubernetes_asyncio
 import sys
 
-HOST = "UNKNOWN"
-ZONE = "AZ1"
-REGION = "f1a"
+HOST = "HOST"
+ZONE = "ZONE"
+REGION = "REGION"
 
 
 async def main(argv):
