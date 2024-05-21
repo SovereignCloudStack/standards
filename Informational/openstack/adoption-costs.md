@@ -1,7 +1,7 @@
 # Adoption costs for SCS standards
 
 This document outlines the adoption costs for the IaaS/OpenStack standards of the SCS project. Tests and estimates were
-done using Yaook especially `yaook/k8s` and `yaook/operator` which together provided a functioning OpenStack instance.
+done using Yaook especially `yaook/k8s` and `yaook/operator`, which together provided a functioning OpenStack instance.
 Nonetheless, other OpenStack types should have similar costs for adopting standards, since in the end, the frontend
 is an OpenStack.
 
@@ -24,7 +24,7 @@ could reduce the time spent on research and information retrieval for this stand
 
 Time for these scales linearly with the number of non-standard flavors that need to be named.
 
-Estimated cost: 1 man-hour + 5 minutes for every flavor
+Estimated cost: 60 man-minutes + 5 man-minutes for every flavor
 
 ### SCS Entropy Standard (scs-0101-v1-entropy)
 
@@ -44,7 +44,7 @@ with support for entropy instructions on CPUs.
 In a normal case though, the costs are estimated to be much lower, since they only involve labelling flavors, which
 should be done in little time, especially if tools like the ["osism-flavor-manager"](https://github.com/osism/openstack-flavor-manager) are used.
 
-Estimated cost: 1 man-hour
+Estimated cost: 60 man-minutes
 
 ### SCS Image Metadata Standard (scs-0102-v1-image-metadata)
 
@@ -56,7 +56,7 @@ or clusters with many images need to be worked on.
 A better estimate can be read in the section [SCS Standard Images (scs-0104-v1-standard-images)](#scs-standard-images-scs-0104-v1-standard-images)
 due to their close interaction.
 
-Estimated cost: 1-2 man-hours (already included in [SCS Standard Images (scs-0104-v1-standard-images)](#scs-standard-images-scs-0104-v1-standard-images))
+Estimated cost: 60-120 man-minutes (already included in [SCS Standard Images (scs-0104-v1-standard-images)](#scs-standard-images-scs-0104-v1-standard-images))
 
 ### SCS Standard Flavors and Properties (scs-0103-v1-standard-flavors)
 
@@ -70,7 +70,7 @@ The costs for this are very small and can be estimated with a maximum of one hou
 If a manual approach is taken, a maximum of eight hours can be estimated. In this case, it would already be recommended
 to create a simple (bash) script in order to automate the process internally for future usage in setups.
 
-Estimated cost: 1 man-hour
+Estimated cost: 60 man-minutes
 
 ### SCS Standard Images (scs-0104-v1-standard-images)
 
@@ -100,7 +100,7 @@ is expected.
 A manual approach is not recommended, since this process would involve a multitude of OpenStack commands and could easily
 take multiple days depending on the setup.
 
-Estimated cost: 1-2 man-hours
+Estimated cost: 60-120 man-minutes
 
 ### SSD Flavors (scs-0110-v1-ssd-flavors)
 
@@ -114,10 +114,10 @@ An estimation for this is hard, but a terabyte of SSD in the datacenter space ar
 scale linearly if multiple SSDs need to be installed. Due to the scale of variation, no man-hour estimation will be done
 here for the hardware part.
 
-Estimated cost: 1 man-hour (just for the flavors)
+Estimated cost: 60 man-minutes (just for the flavors)
 
 ## Summary
 
-In summary, a time of 4 man-hours up to multiple days can be estimated depending on the size of the deployment and the
+In summary, a time of 240 man-minutes up to multiple days can be estimated depending on the size of the deployment and the
 usage of tools for automating this process.
 Multiple adoptions can decrease the time required on subsequent runs.
