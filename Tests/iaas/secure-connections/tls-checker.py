@@ -5,23 +5,29 @@ SDK and connects to each to each public endpoint to check its SSL/TLS settings.
 The script relies on an OpenStack SDK compatible clouds.yaml file for
 authentication with Keystone.
 
-For each endpoint, SSL/TLS protocol versions and ciphers supported by the
-server are checked using the SSLyze Python library.
+For each endpoint, SSL/TLS protocol parameters supported by the server are
+checked using the SSLyze Python library.
 The script will fail with a non-zero exit code in case any standard violation
-is discovered such as deprecated/insecure TLS versions or weak ciphers as
-determined by the standard.
-
-For guidelines marked as OPTIONAL, SHOULD or SHOULD NOT in the standard,
-appropriate warnings are printed in the log output for each endpoint.
+is discovered such as endpoints being non-conformant to the corresponding
+Mozilla TLS recommendations.
+Details about the conformance issues will be printed for each endpoint to
+help with identifying and addressing the violations of the Mozilla TLS preset.
 """
 
 import argparse
 import getpass
 import os
+import sys
 import typing
 
 import openstack
 import sslyze
+from sslyze.mozilla_tls_profile.mozilla_config_checker import (
+    SCAN_COMMANDS_NEEDED_BY_MOZILLA_CHECKER, MozillaTlsConfigurationChecker,
+    MozillaTlsConfigurationEnum, ServerNotCompliantWithMozillaTlsConfiguration)
+
+# The Mozilla recommendation preset to use
+MOZILLA_TLS_PRESET = MozillaTlsConfigurationEnum.INTERMEDIATE
 
 
 def connect(cloud_name: str, password: typing.Optional[str] = None
@@ -73,8 +79,8 @@ def retrieve_endpoints(conn: openstack.connection.Connection) \
             subdict = ret.setdefault(enp_type, {})
             subdict[svc_name] = enp_url
 
-    print(f"\nINFO: the following public endpoints have been retrieved from "
-          f"the service catalog:")
+    print("\nINFO: the following public endpoints have been retrieved from "
+          "the service catalog:")
     for svc_name in ret["public"].keys():
         print(
             f"↳ {svc_name} @ {ret['public'][svc_name]}"
@@ -83,121 +89,50 @@ def retrieve_endpoints(conn: openstack.connection.Connection) \
     return ret
 
 
-def verify_tls(service: str, host: str, port: int) -> None:
+def verify_tls(service: str, host: str, port: int) -> bool:
     """Use SSLyze library to scan the SSL/TLS interface of the server.
 
-    Evaluates the SSL/TLS versions the server reports to support as well as
-    the cipher suites it accepts.
-    Checks the protocol versions and cipher suites against the rules
-    established by the standard to assure conformance.
+    Evaluates the SSL/TLS configurations the server reports as supported.
+    Checks the scan results against the Mozilla TLS recommendation preset.
+    Prints any issues found with details.
+
+    Returns True if no errors were encountered, False otherwise.
     """
 
-    # The following are sslyze.ServerScanResult.scan_result class attrs
-    # mapped to a boolean value that indicates whether the SSL/TLS version
-    # is permitted (True) or deprecated/insecure/disallowed (False).
-    # In case of the latter, the server is expectedf *not* to offer this
-    # protocol version at all.
-    cipher_suite_categories = {
-        "ssl_2_0_cipher_suites": False,
-        "ssl_3_0_cipher_suites": False,
-        "tls_1_0_cipher_suites": False,
-        "tls_1_1_cipher_suites": False,
-        "tls_1_2_cipher_suites": True,
-        "tls_1_3_cipher_suites": True,
-    }
-
-    # The following string patterns will be matched against to identify
-    # algorithms, modes or key lengths which are considered insecure by
-    # the standard and will throw errors if found.
-    # Note: for an exhaustive list of available ciphers, see
-    # https://www.openssl.org/docs/man1.0.2/man1/ciphers.html
-    insecure_cipher_patterns = {
-        "RC4",  # RC4 encryption
-        "MD5",  # MD5 hashing
-        "DES",  # DES encryption
-        "_56",  # algorithms with 56-bit keys
-        "_64",  # algorithms with 64-bit keys
-    }
-
+    errors_encountered = 0
     server = sslyze.ServerNetworkLocation(host, port)
-    scans = {
-        sslyze.ScanCommand.SSL_2_0_CIPHER_SUITES,
-        sslyze.ScanCommand.SSL_3_0_CIPHER_SUITES,
-        sslyze.ScanCommand.TLS_1_0_CIPHER_SUITES,
-        sslyze.ScanCommand.TLS_1_1_CIPHER_SUITES,
-        sslyze.ScanCommand.TLS_1_2_CIPHER_SUITES,
-        sslyze.ScanCommand.TLS_1_3_CIPHER_SUITES
-    }
-    req = sslyze.ServerScanRequest(server, scan_commands=scans)
+    scans = SCAN_COMMANDS_NEEDED_BY_MOZILLA_CHECKER
+    request = sslyze.ServerScanRequest(server, scan_commands=scans)
     scanner = sslyze.Scanner()
-    scanner.queue_scans([req])
+    scanner.queue_scans([request])
+    mozilla_checker = MozillaTlsConfigurationChecker.get_default()
     for result in scanner.get_results():
         assert result.scan_result, (
             f"Service '{service}' at {host}:{port} did not respond to "
             f"TLS connection"
         )
-        for suite_cat in cipher_suite_categories.keys():
-            protocol = suite_cat.replace("_cipher_suites", "")
-            attempt = getattr(result.scan_result, suite_cat)
-            assert (
-                attempt.status == sslyze.ScanCommandAttemptStatusEnum.COMPLETED
-            ), (
-                f"'{service}' at {host}:{port} failed to respond to "
-                f"{protocol} scan"
+        try:
+            mozilla_checker.check_server(MOZILLA_TLS_PRESET, result)
+            print(
+                f"Service '{service}' at {host}:{port} complies to "
+                f"TLS recommendations: PASS"
             )
+        except ServerNotCompliantWithMozillaTlsConfiguration as e:
+            print(
+                f"Service '{service}' at {host}:{port} complies to "
+                f"TLS recommendations: FAIL"
+            )
+            for criteria, error_description in e.issues.items():
+                print(f"↳ {criteria}: {error_description}")
+            errors_encountered += 1
 
-            # If the cipher suite was marked as disallowed, assert that the
-            # server does not accept it.
-            server_cipher_suites = attempt.result.accepted_cipher_suites
-            if not cipher_suite_categories[suite_cat]:
-                assert (
-                    len(server_cipher_suites) == 0
-                ), (
-                    f"'{service}' at {host}:{port} accepts cipher "
-                    f"suites for prohibited SSL/TLS version: {protocol}"
-                )
-                print(
-                    f"↳ Checking denial of deprecated or insecure "
-                    f"protocol version {protocol}: PASS")
-            else:
-                # else inspect the cipher suites that the server is claiming
-                # to accept for cipher suites prohibited by the standard
-                for suite in server_cipher_suites:
-                    name = suite.cipher_suite.name
-                    for pat in insecure_cipher_patterns:
-                        assert pat not in str(name), (
-                            f"'{service}' at {host}:{port} accepts "
-                            f"insecure cipher suite including the algorithm, "
-                            f"mode or key length '{pat}' for "
-                            f"{protocol}: {name}"
-                        )
-
-                    # Check some OPTIONAL guidelines of the standard and print
-                    # a warning if any is found.
-                    if "CBC" in name:
-                        print(
-                            f"↳ WARN: Server accepts cipher in 'CBC' mode, "
-                            f"which SHOULD NOT be used: {name}"
-                        )
-                    if "_DH" in name and "_DHE" not in name:
-                        print(
-                            f"↳ WARN: Server accepts cipher with 'DH' "
-                            f"algorithm but 'DHE' SHOULD be used: {name}"
-                        )
-                    if "_ECDH" in name and "_ECDHE" not in name:
-                        print(
-                            f"↳ WARN: Server accepts cipher with 'ECDH' "
-                            f"algorithm but 'ECDHE' SHOULD be used: {name}"
-                        )
-                print(
-                    f"↳ Checking denial of weak or deprecated ciphers "
-                    f"on protocol version {protocol}: PASS"
-                )
+    return errors_encountered == 0
 
 
 def check_endpoints(endpoints: dict[str, str],
                     ignore: typing.Optional[str]) -> None:
     ignore_list = ignore.split(',') if ignore else []
+    error_count = 0
     for service in endpoints:
         url = endpoints[service]
         host_ref = url.split("://", 1)[-1].split("/", 1)[0]
@@ -207,7 +142,7 @@ def check_endpoints(endpoints: dict[str, str],
         for ignore_pattern in ignore_list:
             if ignore_pattern in host_ref:
                 print(
-                    f"WARN: matching ignore rule for '{ignore_pattern}', "
+                    f"INFO: Matching ignore rule for '{ignore_pattern}', "
                     f"ignoring endpoint: {url}"
                 )
                 ignored = True
@@ -215,14 +150,26 @@ def check_endpoints(endpoints: dict[str, str],
         if ignored:
             continue
 
+        # Default to port 443 if no port is specified
         if ':' in host_ref:
             host, port = host_ref.split(':', 1)
         else:
             host = host_ref
             port = 443
 
-        print(f"\nINFO: Checking public endpoint {host}:{port} ...")
-        verify_tls(service, host, int(port))
+        print(f"INFO: Checking public '{service}' endpoint {host}:{port} ...")
+        # Collect errors instead of failing immediately; this makes the output
+        # more useful since all endpoints are checked in one run and the
+        # printed output will cover all of them, logging all issues at once
+        error_count = error_count if verify_tls(service, host, int(port)) \
+            else error_count + 1
+
+    print(
+        f"INFO: Number of endpoints that failed compliance check: "
+        f"{error_count} (out of {len(endpoints)})"
+    )
+    if error_count > 0:
+        sys.exit(1)
 
 
 def main():
@@ -265,7 +212,7 @@ def main():
     )
     endpoints_catalog = retrieve_endpoints(conn)
     assert "public" in endpoints_catalog, (
-        "No public endpoints returned in the service catalog"
+        "No public endpoints found in the service catalog"
     )
     endpoints = endpoints_catalog["public"]
     check_endpoints(endpoints, args.ignore)
