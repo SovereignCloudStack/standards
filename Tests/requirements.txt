@@ -104,7 +104,7 @@ pyyaml==6.0.1
     #   -r requirements.in
     #   kubernetes-asyncio
     #   openstacksdk
-requests==2.31.0
+requests==2.32.0
     # via
     #   -r requirements.in
     #   keystoneauth1
