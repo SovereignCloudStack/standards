@@ -8,7 +8,7 @@ track: KaaS
 ## Introduction
 
 A Kubernetes instance is provided as a cluster, which consists of a set of worker machines,
-so called nodes. A cluster is composed of a control plane and at least one worker node.
+so-called nodes. A cluster is composed of a control plane and at least one worker node.
 The control plane manages the worker nodes and therefore the pods in the cluster by making
 decisions about scheduling, event detection and global decisions. Inside the control plane,
 multiple components exist, which can be duplicated and distributed over multiple machines
@@ -36,20 +36,23 @@ could fail, they should be distributed over multiple nodes on different machines
 This can be steered with the Affinity or Anti Affinity features, which are separated by
 Kubernetes into two features:
 
-Node Affinity
-The Node Affinity feature allows to match pods according to logical matches of
-key-value-pairs referring to labels of nodes.
-These can be defined with different weights or preferences in order to allow fine-grained
-selection of nodes. The feature works similar to the Kubernetes nodeSelector.
-It is defined in the PodSpec using the nodeAffinity field in the affinity section.
+- Node Affinity
 
-Pod Affinity
-Pod Affinity or Pod Anti Affinity allows the constraint of pod scheduling based on the
-labels of pods already running on a node.
-This means the constraint will match other pods on a node according to their labels key-value-pairs
-and then either schedule the pod to the same (Affinity) or another (Anti Affinity) node.
-This feature is also defined in the PodSpec using the podAffinity and podAntiAffinity
-fields in the affinity section. [3]
+  The Node Affinity feature allows to match pods according to logical matches of
+  key-value-pairs referring to labels of nodes.
+  These can be defined with different weights or preferences in order to allow fine-grained
+  selection of nodes. The feature works similar to the Kubernetes nodeSelector.
+  It is defined in the PodSpec using the nodeAffinity field in the affinity section.
+
+
+- Pod Affinity
+  
+  Pod Affinity or Pod Anti Affinity allows the constraint of pod scheduling based on the
+  labels of pods already running on a node.
+  This means the constraint will match other pods on a node according to their labels key-value-pairs
+  and then either schedule the pod to the same (Affinity) or another (Anti Affinity) node.
+  This feature is also defined in the PodSpec using the podAffinity and podAntiAffinity
+  fields in the affinity section. [3]
 
 Both features allow the usage of "required" or "preferred" keywords, which create
 "hard" or "soft" affinities. By using a hard affinity, a pod would need to be scheduled
@@ -97,7 +100,7 @@ assign them to different nodes, but at this point, a redundant setup like presen
 So Anti Affinity in this context probably means more like distribution over multiple
 physical machines, which needs to be planned beforehand on the machine/server level.
 
-Therefore would it be preferred for the control plane to use a redundant setup, which
+Therefore, would it be preferred for the control plane to use a redundant setup, which
 is separated over different physical machines, meaning at least half of the control plane
 nodes runs on a different physical machine as the rest. The currently used ClusterAPI
 enables this by establishing the concept of "failure domains". These are used to control

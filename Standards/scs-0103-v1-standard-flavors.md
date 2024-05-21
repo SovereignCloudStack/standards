@@ -34,8 +34,8 @@ The following extra specs are recognized, together with the respective semantics
   measured over the course of one month (1% is 7,2 h/month). The `cpu-type=shared-core`
   corresponds to the `V` cpu modifier in the [flavor-naming spec](./scs-0100-v3-flavor-naming.md),
   other options are `crowded-core` (`L`), `dedicated-thread` (`T`) and `dedicated-core` (`C`).
-- `scs:diskN-type=ssd` (where `N` is a nonnegative integer, usually `0`) means that the
-  root disk `N` must support 1000 _sequential_ IOPS per VM and it must be equipped with
+- `scs:diskN-type=ssd` (where `N` is a non-negative integer, usually `0`) means that the
+  root disk `N` must support 1000 _sequential_ IOPS per VM, and it must be equipped with
   power-loss protection; see [scs-0110-v1-ssd-flavors](./scs-0110-v1-ssd-flavors.md).
   The `disk`N`-type=ssd` setting corresponds to the `s` disk modifier, other options
   are `nvme` (`p`), `hdd` (`h`) and `network` (`n`). Only flavors without disk and

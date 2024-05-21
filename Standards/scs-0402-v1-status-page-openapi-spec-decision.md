@@ -11,7 +11,7 @@ While defining the [OpenAPI spec](https://github.com/SovereignCloudStack/status-
 
 ## Requirements
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
+The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
 In addition, "FORBIDDEN" is to be interpreted equivalent to "MUST NOT".
 
@@ -35,7 +35,7 @@ UUIDs are used, to ensure uniqueness. Also, they can be visually recognized as i
 
 #### Incremental
 
-An `Incremental` is used in combination with other identifiers to identify a sub resource of any kind. `Incremental`s themselves are not globally unique, but unique for every sub resource of an unique resource.
+An `Incremental` is used in combination with other identifiers to identify a sub resource of any kind. `Incremental`s themselves are not globally unique, but unique for every sub resource of a unique resource.
 
 #### Generation and order
 
@@ -43,11 +43,11 @@ An `Incremental` is used in combination with other identifiers to identify a sub
 
 #### SeverityValue
 
-A `SeverityValue` is an unsiged integer ranging from 0 to 100 inclusively. It MUST be utilized by an `Impact` when referenced by a requested `Component` to gauge the severity of the impact on that component. It MUST be added to an `Impact` when refereced by an `Incident`, when its created. While being described as an unsiged integer, implementing this value MAY not require it to be an uint data type in any form, because its range even fits in a signed int8 (byte) data type.
+A `SeverityValue` is an unsigned integer ranging from 0 to 100 inclusively. It MUST be utilized by an `Impact` when referenced by a requested `Component` to gauge the severity of the impact on that component. It MUST be added to an `Impact` when referenced by an `Incident`, when its created. While being described as an unsigned integer, implementing this value MAY not require it to be an uint data type in any form, because its range even fits in a signed int8 (byte) data type.
 
 ### API objects
 
-All objects which are used as payload, either as request or response, are defined by schemas. This centralizes the maintanence of field names and types, for both requests and responses.
+All objects which are used as payload, either as request or response, are defined by schemas. This centralizes the maintenance of field names and types, for both requests and responses.
 
 ### API object fields
 
@@ -62,7 +62,7 @@ Requests to updating operations SHOULD contain the minimum of the changed fields
 
 ### Endpoint naming
 
-The endpoints are named in plural form, even when handeling single objects, to keep uniform paths.
+The endpoints are named in plural form, even when handling single objects, to keep uniform paths.
 
 ### Phase list
 
@@ -131,7 +131,7 @@ This means:
 
 A value of 100 is the maximum of the severity value.
 
-A severity with the value of 100 MUST always be supplied. This is the highest severity for the system. If no severity with a value of 100 exists, e.g. the highest severity value is set at 90, an `Impact` with a higher `SeverityValue` WILL be considered to be an _unkown_ severity.
+A severity with the value of 100 MUST always be supplied. This is the highest severity for the system. If no severity with a value of 100 exists, e.g. the highest severity value is set at 90, an `Impact` with a higher `SeverityValue` WILL be considered to be an _unknown_ severity.
 
 ### Component impacts
 
@@ -139,13 +139,13 @@ Components list their impacts, which they are affected by, as read only. Only an
 
 ### Return of `POST` requests
 
-Generally `POST` requests create new resources. These endpoints do not return the new resource, but a unique identifier to the resource e.g. an UUID.
+Generally `POST` requests create new resources. These endpoints do not return the new resource, but a unique identifier to the resource e.g. a UUID.
 
 In most cases the new resource won't be used directly after creation. Most often list calls are used. If the new resource is used directly, it can be retrieved by the returned identifier.
 
 Payloads to POST requests SHALL NOT include ID or `Incremental` typed fields, it lies in the responsibility of the API server to assign IDs and `Incremental`s to objects.
 
-### Return of `PATCH` requestes
+### Return of `PATCH` requisites
 
 Most commonly `PATCH` requests are used to partially or fully change a resource. These requests do not respond with the changed resource, nor an identifier.
 
@@ -159,4 +159,4 @@ The `PUT` requests is most commonly used to update full objects, whereas `PATCH`
 
 ### Authentication and authorization
 
-The API spec does not include either authentication (AuthN) nor authorization (AuthZ) of any kind. The API server MUST be secured by an reverse/auth proxy.
+The API spec does not include either authentication (AuthN) nor authorization (AuthZ) of any kind. The API server MUST be secured by a reverse/auth proxy.

@@ -7,7 +7,7 @@ track:  IaaS
 
 ## Introduction
 
-A volume is a virtual drive that is to be used by an instance (i. e., a virtual machine). With OpenStack,
+A volume is a virtual drive that is to be used by an instance (i.e., a virtual machine). With OpenStack,
 each volume is created per a type that determines basic features of the volume as provided by the backend,
 such as encryption, replication, or quality of service. As of the writing of this document, presence or absence of these
 features can not be discovered with full certainty by non-privileged users via the OpenStack API.
@@ -37,11 +37,11 @@ All considerations can be looked up in detail in the [Decision Record for the Vo
 
 ### Systematic Description of Volume Types
 
-To test whether a deployment has volume types with certain aspects, the discoverability of the parameters in the volume type has to be given. As for the time this standard is created, there is no way for users to discover all aspects through OpenStack commands. Therefore the aspects, that are fulfilled within a volume type, should be stated in the beginning of the **description** of a volume type in the following manner:
+To test whether a deployment has volume types with certain aspects, the discoverability of the parameters in the volume type has to be given. As for the time this standard is created, there is no way for users to discover all aspects through OpenStack commands. Therefore, the aspects, that are fulfilled within a volume type, should be stated in the beginning of the **description** of a volume type in the following manner:
 
 `[scs:aspect1, aspect2, ..., aspectN]...`
 
-The mentioned aspects MUST be sorted alphebetically and every aspect should only be mentioned to the maximal amount of one.
+The mentioned aspects MUST be sorted alphabetically and every aspect should only be mentioned to the maximal amount of one.
 
 ### Standardized Aspects
 
@@ -93,7 +93,7 @@ openstack volume type show LUKS
 
 ### Replication
 
-Replication states whether or not there are multiple replicas of a volume. Thus, it answers the question whether the data could survive a node outage. Unfortunately there are two ways replication can be achieved:
+Replication states whether or not there are multiple replicas of a volume. Thus, it answers whether the data could survive a node outage. Unfortunately there are two ways replication can be achieved:
 
 1. In the configuration of a volume type. It then is visible as extra_spec in the properties of a volume type.
 2. Via the used backend. Ceph for example provides automatic replication, that does not need to be specified in the volume type. This is currently not visible for users.
