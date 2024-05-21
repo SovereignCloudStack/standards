@@ -69,6 +69,15 @@ Notes about the classification categories and implications:
 7. Neutron's external network traffic leaves the IaaS infrastructure. This part is twofold: connections initiated by the VMs themselves (egress) and connections reaching VMs from the outside (ingress). The CSP cannot influence the egress connections but can offer VPNaaS for the ingress direction.
 8. Neutron's internal network traffic is one of the hardest aspects to address. Due to the highly dynamic nature of SDN, connection endpoints and relations are constantly changing. There is no holistic approach currently offered or recommended by OpenStack itself. Encrypted tunnels could be established between all involved nodes but would require a scalable solution and reliable key management. WireGuard could be considered a good starting point for this. A per-tenant/per-customer encryption remains very hard to establish this way though.
 
+### TLS Configuration Recommendations
+
+Server-side TLS configuration is complex and involves a lot of choices for protocol versions, cipher suites and algorithms.
+Determining and maintaining secure configuration guidelines for this is non-trivial for a community project as it requires a high level security expertise and consistent evaluation.
+For this reason, the standard should reference widely accepted best practices and established third party guidelines instead of creating and maintaining its own set of rules.
+
+[Mozilla publishes and maintains](https://wiki.mozilla.org/Security/Server_Side_TLS) TLS recommendations and corresponding presets for configuration and testing.
+Considering Mozilla's well-established name in the internet and open source communities, this could qualify as a good basis for the standard concerning the TLS configurations.
+
 ### Options considered
 
 #### Option 1: fully mandate securing all channels without differentiation
@@ -114,18 +123,7 @@ It will reference documents like the [OpenStack Security Guide](https://docs.ope
 
 ### Transport Layer Security (TLS)
 
-All server-side TLS configurations integrated into the infrastructure as covered by this standard MUST adhere to the folllowing rules:
-
-- The following deprecated TLS versions MUST NOT be used:
-  - v1.0
-  - v1.1
-- The following cipher suites MUST NOT be used:
-  - any RC4 cipher suite
-  - any DES cipher suite
-  - any cipher suite involving MD5 hash algorithms
-  - any cipher suite with less than 128-bit encryption
-- Cipher suites utilizing CBC mode SHOULD NOT be used
-- Cipher suites with Perfect Forward Secrecy (using ephemeral keys with the 'E' suffix, e.g. DHE, ECDHE) SHOULD be used instead of their static key counterpart (e.g. DH, ECDH)
+- All server-side TLS configurations integrated into the infrastructure as covered by this standard MUST adhere to the ["Intermediate" Mozilla TLS configuration](https://wiki.mozilla.org/Security/Server_Side_TLS#Intermediate_compatibility_.28recommended.29).
 
 ### API Interfaces
 
@@ -178,8 +176,7 @@ You MAY refer to [TLS proxies and HTTP services](https://docs.openstack.org/secu
   - [OpenStack Security Guide: Database transport security](https://docs.openstack.org/security-guide/databases/database-transport-security.html)
   - [OpenStack Security Guide: Messaging transport security](https://docs.openstack.org/security-guide/messaging/security.html#messaging-transport-security)
 - [Nova Documentation: Secure live migration with QEMU-native TLS](https://docs.openstack.org/nova/latest/admin/secure-live-migration-with-qemu-native-tls.html)
-- [Guide to TLS Standards Compliance](https://www.ssl.com/guide/tls-standards-compliance/)
-- [RFC 8996: Deprecating TLS 1.0 and TLS 1.1](https://www.ietf.org/rfc/rfc8996.html)
+- [MozillaWiki: Security / Server Side TLS](https://wiki.mozilla.org/Security/Server_Side_TLS)
 
 ## Conformance Tests
 
@@ -187,5 +184,5 @@ Conformance tests are limited to communication channels exposed to users, such a
 
 There is a test suite in [`tls-checker.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/secure-connections/tls-checker.py).
 The test suite connects to the OpenStack API and retrieves all public API endpoints from the service catalog.
-It then connects to each endpoint and verifies the compliance to the standard by checking SSL/TLS protocol versions and cipher suites offered by the server against the guidelines of this standard.
+It then connects to each endpoint and verifies the compliance to the standard by checking SSL/TLS properties against the Mozilla TLS preset.
 Please consult the associated [README.md](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/secure-connections/README.md) for detailed setup and testing instructions.
