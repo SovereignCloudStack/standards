@@ -16,8 +16,10 @@ It is recommended to use a Python virtual environment[^2].
 Next, install the libraries required by the test suite:
 
 ```bash
-pip3 install -r requirements.txt
+pip3 install openstacksdk sslyze
 ```
+
+> Note: the version of the sslyze library determines the [version of the Mozilla TLS recommendation JSON](https://wiki.mozilla.org/Security/Server_Side_TLS#JSON_version_of_the_recommendations) that it checks against.
 
 Within this environment execute the test suite.
 

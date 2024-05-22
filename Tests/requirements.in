@@ -6,3 +6,4 @@ python-dateutil
 PyYAML
 openstacksdk
 requests
+sslyze==6.0.0
