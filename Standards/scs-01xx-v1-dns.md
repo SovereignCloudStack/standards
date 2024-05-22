@@ -43,7 +43,7 @@ The standard should make sure that a specified level of DNS functionality can be
 
 #### Making Designate mandatory
 
-To offer a consistent feature set to customers, the SCS project could consider to make Designate mandatory in a sense that SCS clouds would need to integrate the service, make it available to customers and properly configure it for publishing DNS records.
+To offer a consistent feature set to customers, the SCS project could consider to make Designate mandatory in a sense that SCS-compliant clouds would need to integrate the service, make it available to customers and properly configure it for publishing DNS records.
 This would offer easy DNS-as-a-Service functionality to customers.
 
 However, this would also require solid DNS expertise at CSP-side to properly set up and integrate Designate and DNS zones as Designate does not act as a full DNS server on its own but instead relies on external DNS providers or self-hosted DNS infrastructures that the CSP needs to integrate into it.
