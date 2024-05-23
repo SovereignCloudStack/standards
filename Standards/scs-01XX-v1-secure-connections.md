@@ -17,12 +17,13 @@ For this reason, the [SCS project](https://scs.community) standardizes the use o
 
 | Term | Meaning |
 |---|---|
+| CA  | Certificate Authority |
 | CSP | Cloud Service Provider, provider managing the OpenStack infrastructure |
+| PKI | Public Key Infrastructure |
+| SDN | Software-Defined Networking |
 | SSL | Secure Sockets Layer, the predecessor of TLS |
 | TLS | Transport Layer Security |
-| PKI | Public Key Infrastructure |
-| CA  | Certificate Authority |
-| SDN | Software-Defined Networking |
+| Compute Host | System within the IaaS infrastructure that runs the hypervisor services and hosts virtual machines |
 
 ## Motivation
 
@@ -68,6 +69,65 @@ Notes about the classification categories and implications:
 6. For protecting the data transferred between compute nodes during live-migration of VMs, [Nova offers support for QEMU-native TLS](https://docs.openstack.org/nova/latest/admin/secure-live-migration-with-qemu-native-tls.html). As an alternative, SSH is also a channel that Nova can be configured to use between hosts for this but requires passwordless SSH keys with root access to all other compute nodes which in turn requires further hardening.
 7. Neutron's external network traffic leaves the IaaS infrastructure. This part is twofold: connections initiated by the VMs themselves (egress) and connections reaching VMs from the outside (ingress). The CSP cannot influence the egress connections but can offer VPNaaS for the ingress direction.
 8. Neutron's internal network traffic is one of the hardest aspects to address. Due to the highly dynamic nature of SDN, connection endpoints and relations are constantly changing. There is no holistic approach currently offered or recommended by OpenStack itself. Encrypted tunnels could be established between all involved nodes but would require a scalable solution and reliable key management. WireGuard could be considered a good starting point for this. A per-tenant/per-customer encryption remains very hard to establish this way though.
+
+### libvirt Hypervisor Interface on Compute Nodes
+
+Live migration of virtual machines between compute hosts requires communication between the hypervisor services of the involved hosts.
+In OpenStack, the libvirt virtualization API is used to control the hypervisor on compute nodes as well as to enable the live migration communication.
+This libvirt interface allows direct control of the hypervisor.
+Besides control of virtual machines themselves, in OpenStack this also includes attaching and detaching volumes, setting or retrieving their encryption keys and controlling network attachments.
+As such, severe risks are associated with unauthorized access to this interface as it can easily compromise sensitive data of arbitrary tenants if abused.
+
+This is acknowledged in the OpenStack Security Note [OSSN-0007](https://wiki.openstack.org/wiki/OSSN/OSSN-0007), which recommends either configuring SASL and/or TLS for libvirt connections or utilizing the UNIX socket in combination with SSH.
+
+The OpenStack kolla-ansible documentation on Nova libvirt connections states[^1]:
+
+> This should not be considered as providing a secure, encrypted channel, since the username/password SASL mechanisms available for TCP are no longer considered cryptographically secure.
+
+[^1]: https://docs.openstack.org/kolla-ansible/latest/reference/compute/libvirt-guide.html#sasl-authentication
+
+This leaves only TLS or UNIX socket with SSH as viable options for securing the channel.
+
+#### TLS for libvirt and live migration
+
+Since the Stein release of OpenStack, Nova supports QEMU-native TLS[^2] which protects the migration data streams using TLS.
+It requires to add `LIBVIRTD_ARGS="--listen"` to the QEMU configuration, which will lead to TLS being active on the libvirt interface per default (due to `listen_tls` defaulting to being enabled[^3]).
+This protects data streams for migration as well as the hypervisor control channel data flow with TLS but does not restrict access.
+Client certificates must be deployed additionally and libvirt configured accordingly[^4] in order to meaningfully restrict access to the interface as advised by the OSSN-0007 document.
+
+[^2]: https://docs.openstack.org/nova/latest/admin/secure-live-migration-with-qemu-native-tls.html
+
+[^3]: https://libvirt.org/remote.html#libvirtd-configuration-file
+
+[^4]: https://wiki.libvirt.org/TLSDaemonConfiguration.html#restricting-access
+
+#### UNIX socket and SSH live migration
+
+As an alternative to the TLS setup, libvirt can be configured to use a local UNIX socket and Nova can be configured to use SSH to this socket for live migrations instead.
+The regular libvirt port can then be limited to localhost (`127.0.0.1`) which will make it inaccessible from outside the host but still enables local connections to use it.
+The challenge of this approach lies in restricting the SSH access on the compute nodes appropriately to avoid full root access across compute nodes for the SSH user identity that Nova will use for live migration.
+
+A basic setup for combining the UNIX socket with SSH live migration settings is illustrated below.
+
+Libvirt configuration:
+
+```conf
+listen_tcp = 1
+listen_addr = "127.0.0.1"
+unix_sock_group = "libvirt"
+unix_sock_ro_perms = "0770"
+unix_sock_rw_perms = "0770"
+```
+
+Nova configuration:
+
+```ini
+[libvirt]
+connection_uri=
+live_migration_uri=qemu+ssh://...
+live_migration_scheme = ssh
+
+```
 
 ### TLS Configuration Recommendations
 
