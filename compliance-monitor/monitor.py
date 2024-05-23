@@ -40,7 +40,7 @@ class Settings:
         else:
             self.db_password = os.getenv("SCM_DB_PASSWORD", "mysecretpassword")
         self.bootstrap_path = os.path.abspath("./bootstrap.yaml")
-        self.template_path = os.path.abspath(".")
+        self.template_path = os.path.abspath("./templates")
         self.yaml_path = os.path.abspath("../Tests")
 
 
@@ -56,9 +56,10 @@ GRACE_PERIOD_DAYS = 7
 #       http://127.0.0.1:8080/reports
 # to achieve this!
 SEP = "-----END SSH SIGNATURE-----\n&"
-TEMPLATE_OVERVIEW = 'overview'
-TEMPLATE_OVERVIEW_FRAGMENT = 'overview_fragment'
-REQUIRED_TEMPLATES = (TEMPLATE_OVERVIEW, TEMPLATE_OVERVIEW_FRAGMENT)
+TEMPLATE_OVERVIEW = 'overview.html'
+TEMPLATE_OVERVIEW_FRAGMENT = 'overview_fragment.html'
+TEMPLATE_OVERVIEW_MD = 'overview.md'
+REQUIRED_TEMPLATES = (TEMPLATE_OVERVIEW, TEMPLATE_OVERVIEW_FRAGMENT, TEMPLATE_OVERVIEW_MD)
 
 
 # do I hate these globals, but I don't see another way with these frameworks
@@ -75,7 +76,9 @@ env = Environment()
 env.filters.update(
     passed=lambda scopedata: ", ".join(key for key, val in scopedata['versions'].items() if val == 1),
 )
-templates_map = {}
+templates_map = {
+    k: None for k in REQUIRED_TEMPLATES
+}
 
 
 class TimestampEncoder(json.JSONEncoder):
@@ -202,14 +205,17 @@ def import_cert_yaml_dir(yaml_path, conn):
 
 def import_templates(template_dir, env, templates):
     for fn in os.listdir(template_dir):
-        if fn.startswith(".") or not fn.endswith(".html"):
+        if fn.startswith("."):
+            continue
+        name = fn  # used to be fn.rsplit(".", 1)[0]
+        if name not in templates:
             continue
         with open(os.path.join(template_dir, fn), "r") as fileobj:
-            templates[fn.rsplit(".", 1)[0]] = env.from_string(fileobj.read())
+            templates[name] = env.from_string(fileobj.read())
 
 
 def validate_templates(templates, required_templates=REQUIRED_TEMPLATES):
-    missing = [key for key in required_templates if key not in templates]
+    missing = [key for key in required_templates if not templates.get(key)]
     if missing:
         raise RuntimeError(f"missing templates: {', '.join(missing)}")
 
@@ -402,6 +408,24 @@ async def get_status(
     return convert_result_rows_to_dict(rows)
 
 
+@app.get("/table")
+async def get_table(
+    request: Request,
+    account: Annotated[Optional[tuple[str, str]], Depends(optional_auth)],
+    conn: Annotated[connection, Depends(get_conn)],
+):
+    with conn.cursor() as cur:
+        rows = db_get_relevant_results(
+            cur, active_only=True, approved_only=True, grace_period_days=GRACE_PERIOD_DAYS,
+        )
+    results = convert_result_rows_to_dict(rows)
+    result = templates_map[TEMPLATE_OVERVIEW_MD].render(results=results)
+    return Response(
+        content=result,
+        media_type='text/markdown',
+    )
+
+
 @app.get("/pages")
 async def get_pages(
     request: Request,
@@ -409,8 +433,6 @@ async def get_pages(
     conn: Annotated[connection, Depends(get_conn)],
     part: str = "full",
 ):
-    """get recent results, potentially filtered by approval status"""
-    # check_role(account, roles=ROLES['read_any'])
     with conn.cursor() as cur:
         rows = db_get_relevant_results(
             cur, active_only=True, approved_only=True, grace_period_days=GRACE_PERIOD_DAYS,
