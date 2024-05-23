@@ -68,5 +68,6 @@ If possible CSPs SHOULD NOT store the Master-KEK in plain-text on the physical h
 ## Conformance Tests
 
 Conformance must be tested in two steps.
+
 1. The check whether a key-manager is present can be done in a similar way as in the mandatory OpenStack service APIs standard.
 2. The check, that there is no Master-KEK present on the Barbican Node, has to be done by the CSP themself.
