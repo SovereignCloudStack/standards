@@ -1,4 +1,4 @@
-name: "Compliance IaaS v4 of poc-wgcloud.osba"
+name: "Compliance IaaS v3 of poc-wgcloud.osba"
 
 on:
   # Trigger compliance check every day at 4:12 UTC
