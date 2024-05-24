@@ -52,37 +52,49 @@ First there needs to be an overview about possible failure cases in infrastructu
 | Earthquake | Very Low | permanent Disk and Node loss in the affected zone |
 | Storm/Tornado | Low | permanent Disk and Node loss in the affected fire zone |
 | Cyber threat | High | permanent loss or compromise of data on affected Disk and Node |
+| Software Bug | High | permanent loss or compromise of data that trigger the bug up to data on the whole physical machine |
 
 These failure cases can result in temporary (T) or permanent (P) loss of the resource or data within.
 Additionally there are a lot of resources in IaaS alone that are more or less affected by these Failure Cases.
 The following table shows the impact when no redundancy or failure safety measure is in place:
 
-| Resource | Disk Loss | Node Loss | Rack Loss | Power Loss | natural catastrophy | Cyber threat |
-|----|----|----|----|----|----|----|
-| Image | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P |
-| Volume | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P |
-| User Data on RAM /CPU | | P | P | P | P | T/P |
-| volume-based VM | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P |
-| ephemeral-based VM | P (if on disk) | P | P | T | P (T if lucky) | T/P |
-| Ironic-based VM | P (all data on disk) | P | P | T | P (T if lucky) | T/P |
-| Secret | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P |
-| network configuration (DB objects) | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P |
-| network connectivity (materialization) | | T (if on node) | T/P | T | P (T if lucky) | T/P |
-| floating IP | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P |
+| Resource | Disk Loss | Node Loss | Rack Loss | Power Loss | natural catastrophy | Cyber threat | Software Bug |
+|----|----|----|----|----|----|----|----|
+| Image | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | P |
+| Volume | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | P |
+| User Data on RAM /CPU | | P | P | P | P | T/P | P |
+| volume-based VM | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | P |
+| ephemeral-based VM | P (if on disk) | P | P | T | P (T if lucky) | T/P | P |
+| Ironic-based VM | P (all data on disk) | P | P | T | P (T if lucky) | T/P | P |
+| Secret | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | P |
+| network configuration (DB objects) | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | P |
+| network connectivity (materialization) | | T (if on node) | T/P | T | P (T if lucky) | T/P | T |
+| floating IP | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | T |
 
 For some cases, this only results in temporary unavailabilities and cloud infrastructures usually have certain mechanisms in place to avoid data loss, like redundancy in storage backends and databases.
 So some of these outages are easier to mitigate than others.
-A possible way to classify the failure cases into levels considering the matrix of impact would be:
+A possible way to classify the failure cases into levels considering the matrix of impact would be, to classify the failure cases from small to big ones.
+The following table shows such a classification, the occurance probability of a failure case of each class and what resources with user data might be affected.
 
-| Level/Class | level of impact | Use Cases |
-|---|---|-----|
-| 1. Level | individual volumes, VMs... | Disk Failure, Node outage, (maybe rack outage) |
-| 2. Level | limited number of resources, most of the time recoverable | Rack outage, (Fire), (Power outage when different power supplies exist) |
-| 3. Level | lots of resources / user data + potentially not recoverable | Fire, Earthquake, Storm/Tornado, Power Outage |
-| 4. Level | entire infrastructure, not recoverable | Flood, Fire |
+:::caution
+
+This table only contains examples of failure cases and examples of affected resources.
+This should not be used as a replacement for a risk analysis.
+The column **user hints** only show examples of standards that may provide this class of failure safety for a certain resource.
+Customers should always check, what they can do to protect their data and not rely solely on the CSP.
+
+:::
+
+| Level/Class | Probability | Failure Causes | loss in IaaS | User Hints |
+|---|---|---|-----|-----|
+| 1. Level | Very High | small Hardware or Software Failures (e.g. Disk/Node Failure, Software Bug,...) | individual volumes, VMs... | [volume replication](https://docs.scs.community/standards/scs-0114-v1-volume-type-standard) |
+| 2. Level | High | important Hardware or Software Failures (e.g. Rack outage, small Fire, Power outage, ...) | limited number of resources, sometimes recoverable | [volume backups](https://github.com/SovereignCloudStack/standards/pull/567) |
+| 3. Level | Medium | small catastrophes or major Failures (e.g. fire, regional Power Outage, orchestrated cyber attacks,...) | lots of resources / user data + potentially not recoverable | Availability Zones, user responsibility |
+| 4. Level | Low | whole deployment loss (e.g. natural desaster,...) | entire infrastructure, not recoverable | user responsibility |
 
 Based on our research, no similar standardized classification scheme seems to exist currently.
-Thus, this decision record establishes its own.
+Something close but also very detailed can be found in [this (german)](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Grundschutz/BSI_Standards/standard_200_3.pdf?__blob=publicationFile&v=2) from the BSI.
+As we want to focus on IaaS resources and also have an easily understandable structure that can be applied in standards covering replication, redundancy and backups, this document is too detailed.
 
 ## Consequences
 
