@@ -115,18 +115,34 @@ then a certificate of that prerequisite scope has to be presented before the cer
 | --------------- | ------------- | ------------------------------------------------------------------------------- | ------------ |
 | `version`       | String        | Mandatory: Version of the particular list of standards                          | _v3_         |
 | `standards`     | Array of maps | Mandatory: List of standard descriptors for this particular layer               |              |
-| `stabilized_at` | Date          | ISO formatted date indicating the date after this version is considered stable. | _2022-11-09_ |
-| `deprecated_at`  | Date          | ISO formatted date indicating the date on which this version is expired.        | _2023-04-09_ |
+| `stabilized_at` | Date          | (ISO formatted) from then on, this version is considered stable (see remarks)   | _2022-11-09_ |
+| `obsoleted_at`  | Date          | (ISO formatted) from then on, this version is considered obsolete (see remarks) | _2023-03-01_ |
+| `deprecated_at` | Date          | (ISO formatted) from then on, this version is considered deprecated (see remarks) | _2023-04-09_ |
 
-Once a version has a `stabilized_at` field, this field may not be changed. The same holds true for the `deprecated_at` field.
+Once a version has a `stabilized_at` field, this field MAY NOT be changed.
+The same holds true for the fields `obsoleted_at` and `deprecated_at`.
 
-Note that at any point in time, all versions that are older (`stabilized_at` is at or before this point)
-can be certified against, unless the version is already deprecated (the point is after `deprecated_at`).
-This means that more than one version may be allowable at a certain point in time. Tooling should default
+The following list MUST be in chronological order: `stabilized_at` (if present), `obsoleted_at` (if present), `deprecated_at` (if present).
+
+A version is deemed _effective_ at a given date (and thus eligible for certification) if the following conditions are satisfied:
+
+- `stabilized_at` is before or at the given date,
+- `deprecated_at` is not present or after the given date.
+
+This means that more than one version may be eligible at a certain point in time. Tooling SHOULD default
 to use the newest allowable version (the one with the most recent `stabilized_at` date) then.
 
-Note: We intend to keep only one version in effect, except for a grace period of 4 to 6 weeks, when two versions
-are effective at the same time.
+A version is deemed _obsolete_ at a given date if
+
+- `obsoleted_at` is before or at the given date.
+
+Any test result that refers to an obsolete, yet effective version MUST be accompanied by a notice that
+this version is obsolete. This case is meant to be used to implement a formal grace period to encourage
+providers to switch to the next version.
+
+Note: At any given date, we intend to have at most two effective versions,
+with an overlapping period of at most 4 to 6 weeks.
+The older version may or may not be obsolete during this period.
 
 ### Standard descriptor
 
