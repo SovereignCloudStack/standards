@@ -32,7 +32,7 @@ import yaml
 
 # valid keywords for various parts of the spec, to be checked using `check_keywords`
 KEYWORDS = {
-    'spec': ('name', 'url', 'versions', 'prerequisite', 'variables'),
+    'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables'),
     'version': ('version', 'standards', 'stabilized_at', 'deprecated_at'),
     'standard': ('checks', 'url', 'name', 'condition'),
     'check': ('executable', 'env', 'args', 'condition', 'lifetime', 'id', 'section'),
