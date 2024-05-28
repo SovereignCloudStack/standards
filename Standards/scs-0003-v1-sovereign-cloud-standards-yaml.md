@@ -136,7 +136,7 @@ A version is deemed _obsolete_ at a given date if
 
 - `obsoleted_at` is before or at the given date.
 
-Any test result that refers to an obsolete, yet effective version MUST be accompanied by a notice that
+Any conformance test result that refers to an obsolete, yet effective version MUST be accompanied by a notice that
 this version is obsolete. This case is meant to be used to implement a formal grace period to encourage
 providers to switch to the next version.
 
