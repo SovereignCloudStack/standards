@@ -27,7 +27,7 @@ These levels can then be used in standards to clearly set the scope that certain
 | Key Encryption Key | IaaS resource, used to encrypt other keys to be able to store them encrypted in a database.                                              |
 | Floating IP        | IaaS resource, an IP that is usually routed and accessible from external networks.                                                       |
 | Disk               | A physical disk drive (e.g. HDD, SSD) in the infrastructure.                                                                             |
-| Node               | A physical machine in the infrastructure providing computational, storage and/or network  connectivity capabilities. 
+| Node               | A physical machine in the infrastructure providing computational, storage and/or network connectivity capabilities.                      |
 | Cyber threat       | Attacks on the infrastructure through the means of electronic access.                                                                    |
 
 ## Context
@@ -87,10 +87,10 @@ Customers should always check, what they can do to protect their data and not re
 
 | Level/Class | Probability | Failure Causes | loss in IaaS | User Hints |
 |---|---|---|-----|-----|
-| 1. Level | Very High | small Hardware or Software Failures (e.g. Disk/Node Failure, Software Bug,...) | individual volumes, VMs... | CSP MUST operate replicas for important components (e.g. replicated volume back-end, uninterruptible power supply, ...). User SHOULD backup his data hiself and place it on an other host. |
-| 2. Level | High | important Hardware or Software Failures (e.g. Rack outage, small Fire, Power outage, ...) | limited number of resources, sometimes recoverable | CSP MUST operate replicas for important components (e.g. replicated volume back-end, uninterruptible power supply, ...) OR users MUST backup their data themselves and place it on an other host.  |
-| 3. Level | Medium | small catastrophes or major Failures (e.g. fire, regional Power Outage, orchestrated cyber attacks,...) | lots of resources / user data + potentially not recoverable | CPS SHOULD operate hardware in dedicated  Availability Zones. User SHOULD backup his data, hiself.  |
-| 4. Level | Low | whole deployment loss (e.g. natural disaster,...) | entire infrastructure, not recoverable | CSP is able to save user from such catastrophes. User is responsibility for saving his data from natural disasters. |
+| 1. Level | Very High | small Hardware or Software Failures (e.g. Disk/Node Failure, Software Bug,...) | individual volumes, VMs... | CSPs MUST operate replicas for important components (e.g. replicated volume back-end, uninterruptible power supply, ...). Users SHOULD backup their data themself and place it on an other host. |
+| 2. Level | High | important Hardware or Software Failures (e.g. Rack outage, small Fire, Power outage, ...) | limited number of resources, sometimes recoverable | CSPs MUST operate replicas for important components (e.g. replicated volume back-end, uninterruptible power supply, ...) OR users MUST backup their data themselves and place it on an other host. |
+| 3. Level | Medium | small catastrophes or major Failures (e.g. fire, regional Power Outage, orchestrated cyber attacks,...) | lots of resources / user data + potentially not recoverable | CPSs SHOULD operate hardware in dedicated Availability Zones. Users SHOULD backup their data, themself. |
+| 4. Level | Low | whole deployment loss (e.g. natural disaster,...) | entire infrastructure, not recoverable | CSPs may not be able to save user data from such catastrophes. Users are responsible for saving their data from natural disasters. |
 
 Based on our research, no similar standardized classification scheme seems to exist currently.
 Something close but also very detailed can be found in [this (german)](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Grundschutz/BSI_Standards/standard_200_3.pdf?__blob=publicationFile&v=2) from the German Federal Office for Information Security.
