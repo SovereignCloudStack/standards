@@ -7,7 +7,7 @@ track: IaaS
 
 ## Introduction
 
-To be SCS-compliant a CSP has to fulfill all SCS standards.
+To be SCS-compliant a Cloud Service Provider (CSP) has to fulfill all SCS standards.
 Some of those standards are broad and consider ALL services on the IaaS-Layer.
 There exist many services on that layer and they need to be limited to have a clear scope for the standards and the Cloud Service Providers following them.
 For this purpose, this standard will establish lists for mandatory services that have to be present in a SCS cloud as well as supported services, which are considered by some standards and may be tested or even implemented in the reference implementation but are optional in a sense that their omission will not violate SCS conformance.
@@ -67,7 +67,7 @@ The following services MAY be present in SCS-compliant IaaS deployment and are c
 ## Unsupported OpenStack services
 
 All other OpenStack services that are not mentioned in the mandatory or supported lists are not tested for their compatibility and behavior in SCS clouds by the SCS community.
-Those services MAY be integrated into IaaS deployments by a CSP on their own responsibility but the SCS will not assume they are present and potential issues that occur during deployment or usage have to be handled by the CSP on their own accord.
+Those services MAY be integrated into IaaS deployments by a Cloud Service Provider on their own responsibility but the SCS will not assume they are present and potential issues that occur during deployment or usage have to be handled by the CSP on their own accord.
 The SCS standard offers no guarantees for compatibility or reliability of services categorized as unsupported in conjunction with an SCS-conformant infrastructure.
 
 ## Related Documents
