@@ -329,7 +329,7 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
     )
     server = env.conn.create_server(
         server_name, image=image, flavor=flavor, key_name=env.keypair.name, network=env.network,
-        security_groups=[env.sec_group.id], userdata=userdata, wait=True, timeout=360, auto_ip=True,
+        security_groups=[env.sec_group.id], userdata=userdata, wait=True, timeout=500, auto_ip=True,
         boot_from_volume=True, terminate_volume=True, volume_size=image.min_disk,
     )
     logger.debug(f"Server '{server_name}' ('{server.id}') has been created")

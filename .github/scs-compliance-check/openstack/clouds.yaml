@@ -73,3 +73,12 @@ clouds:
       auth_url: https://api.dc1.muc.cloud.cnds.io:5000/
       application_credential_id: "f3102a98821641c19d8ea762dc64b0b0"
       #project_id: 225a7363dab74b69aa1e3f744aced109
+  poc-wgcloud:
+    interface: public
+    identity_api_verion: 3
+    auth_type: "v3applicationcredential"
+    #region_name: default
+    auth:
+      auth_url: https://identity.l1.cloudandheat.com/v3
+      application_credential_id: "b4844a0fb23247149997bf0ff2c0b156"
+      #project_id: 9adb8fc81ba345178654cee5cb7f1464

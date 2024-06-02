@@ -27,7 +27,9 @@ import yaml
 
 
 logger = logging.getLogger(__name__)
-RESERVED_KEYS = ('scs:name-v1', 'scs:name-v2')
+# do not enforce this part of the standard, because it doesn't work for the customers
+# RESERVED_KEYS = ('scs:name-v1', 'scs:name-v2')
+RESERVED_KEYS = ()
 
 
 def print_usage(file=sys.stderr):
