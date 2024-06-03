@@ -1,6 +1,8 @@
 """Default Security Group Rules Checker
 
-This script tests the absence of any ingress default security group rule.
+This script tests the absence of any ingress default security group rule
+except for ingress rules from the same Security Group. Furthermore the
+presence of default rules for egress traffic is checked.
 """
 
 import openstack
@@ -58,12 +60,18 @@ def test_rules(cloud_name: str):
                     ingress_from_same_sg += 1
             elif direction == "egress" and ethertype == "IPv4":
                 egress_rules += 1
+                if rule.remote_ip_prefix:
+                    # this rule does not allow traffic to all external ips
+                    continue
                 if r_custom_sg:
                     egress_ipv4_custom_sg += 1
                 if r_default_sg:
                     egress_ipv4_default_sg += 1
             elif direction == "egress" and ethertype == "IPv6":
                 egress_rules += 1
+                if rule.remote_ip_prefix:
+                    # this rule does not allow traffic to all external ips
+                    continue
                 if r_custom_sg:
                     egress_ipv6_custom_sg += 1
                 if r_default_sg:
