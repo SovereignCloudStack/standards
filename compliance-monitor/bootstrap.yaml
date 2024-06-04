@@ -16,7 +16,7 @@ accounts:
       - "$argon2id$v=19$m=65536,t=3,p=4$m3OOcQ4BoNR6L0VoDUFIyQ$Y/cCKggkIuyHHFGv1Ng5ijMIIJjyvfkjvdASL2LFiPA"
     roles:
       - append_any
-  - subject: gxscs
+  - subject: gx-scs
     keys:
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIBgla2bdGVztsncJNoAEVdAUiZaOW9Lwvf2yCt5GcI1J"
         public_key_type: "ssh-ed25519"
@@ -60,3 +60,32 @@ accounts:
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
         public_key_type: "ssh-ed25519"
         public_key_name: "auxiliary"
+subjects:
+  gx-scs:
+    active: true
+    name: gx-scs
+    provider: plusserver GmbH
+  pco-prod1:
+    active: true
+    name: pluscloud open prod1
+    provider: plusserver GmbH
+  pco-prod2:
+    active: true
+    name: pluscloud open prod2
+    provider: plusserver GmbH
+  pco-prod3:
+    active: true
+    name: pluscloud open prod3
+    provider: plusserver GmbH
+  pco-prod4:
+    active: true
+    name: pluscloud open prod4
+    provider: plusserver GmbH
+  regio-a:
+    active: true
+    name: REGIO.cloud
+    provider: OSISM GmbH
+  wavestack:
+    active: true
+    name: Wavestack
+    provider: noris network AG/Wavecon GmbH
