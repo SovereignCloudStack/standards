@@ -11,6 +11,6 @@ COPY requirements.txt requirements.txt
 #  python3 -m pip install -r requirements.txt --no-cache-dir && \
 #  apk --purge del .build-deps
 RUN python3 -m pip install -r requirements.txt --no-cache-dir
-COPY . .
+COPY *.py .
 EXPOSE 8080
 CMD ["python3", "./monitor.py"]

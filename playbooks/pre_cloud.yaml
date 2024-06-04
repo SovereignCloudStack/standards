@@ -18,6 +18,11 @@
         mode: "0600"
       no_log: true
 
+    - name: Create ssh key file
+      ansible.builtin.copy:
+        content: "{{ secret_key }}"
+        dest: "~/id_subject"
+
     - name: Clean up any lingering resources from previous run
       ansible.builtin.shell: python3 ~/Tests/cleanup.py -c {{ cloud }} --prefix _scs-
       changed_when: true

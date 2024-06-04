@@ -29,6 +29,8 @@ services:
       - SCM_DB_PASSWORD_FILE=/run/secrets/db_password
     volumes:
       - ../Tests:/Tests
+      - ./bootstrap.yaml:/code/bootstrap.yaml
+      - ./templates:/code/templates
     labels:
       - traefik.http.routers.web.entryPoints=web
       - traefik.http.routers.web.rule=Host(`localhost`) && PathPrefix(`/`)

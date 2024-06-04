@@ -11,5 +11,5 @@ for the time being to have the highest degree of control
     results['regio-a']['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
 }} | [HM](https://apimon.services.regio.digital/public-dashboards/17cf094a47404398a5b8e35a4a3968d4?orgId=1&refresh=5m) |
 | [Wavestack](https://www.noris.de/wavestack-cloud/) | Public cloud for customers | noris network AG/Wavecon GmbH | {{
-    results.wavecon['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
+    results.wavestack['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
 }} | [HM](https://health.wavestack1.sovereignit.cloud:3000/) |

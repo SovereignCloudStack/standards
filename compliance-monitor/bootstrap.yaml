@@ -11,33 +11,52 @@ accounts:
       - append_any
       - approve
       - admin
-  - subject: wavecon
+  - subject: zuul_ci
     api_keys:
-      - "$2b$12$02j2DtlOXdT/MTVmWG60YufkbpXX3uPIYydzhnRUs9FD6T73ciC76"
-    keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "auxiliary"
+      - "$argon2id$v=19$m=65536,t=3,p=4$m3OOcQ4BoNR6L0VoDUFIyQ$Y/cCKggkIuyHHFGv1Ng5ijMIIJjyvfkjvdASL2LFiPA"
+    roles:
+      - append_any
   - subject: gxscs
     keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIBgla2bdGVztsncJNoAEVdAUiZaOW9Lwvf2yCt5GcI1J"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
         public_key_type: "ssh-ed25519"
         public_key_name: "auxiliary"
+  - subject: pco-prod1
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAICDpHZkrbLAbmO6XD83VzV9oCEjT8hW3EBWpPp2b5sMC"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+  - subject: pco-prod2
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIG5ceonQYybVcibYteMKqvBkyVo+fDPgcXhe+kfUq3ab"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+  - subject: pco-prod3
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIA51kSpR6GX7Gi1oHAKPAIpoBUJE/XLARg3CmUszaMDv"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+  - subject: pco-prod4
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIF4/B21gkWDTjoVdaw26TMYG34+IOFGEw77N2n3dXWGa"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
   - subject: regio-a
     keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIHpECmihjsuyhMf8pmg3Rqbi7KXszIBoVrgrLi5V6QmX"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
         public_key_type: "ssh-ed25519"
         public_key_name: "auxiliary"
-subjects:
-  wavecon:
-    active: true
-    name: Wavestack
-    provider: Wavecon
-  gxscs:
-    active: true
-    name: GX-SCS
-    provider: Plusserver
-  regio-a:
-    active: true
-    name: REGIO.cloud
-    provider: OSISM GmbH
+  - subject: wavestack
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIKkNLjCCHP2H84nyRD8sZ66HdPzmFr7nlcitFPkEjr/D"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "auxiliary"
