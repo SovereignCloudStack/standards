@@ -30,7 +30,9 @@ services:
     volumes:
       - ../Tests:/Tests
     labels:
-      - traefik.http.routers.web.rule=PathPrefix(`/`)
+      - traefik.http.routers.web.entryPoints=web
+      - traefik.http.routers.web.rule=Host(`localhost`) && PathPrefix(`/`)
+      - traefik.http.routers.websecure.entryPoints=websecure
       - traefik.http.routers.websecure.rule=Host(`compliance.sovereignit.cloud`) && PathPrefix(`/`)
       - traefik.http.routers.websecure.tls=true
       - traefik.http.routers.websecure.tls.certresolver=myresolver
