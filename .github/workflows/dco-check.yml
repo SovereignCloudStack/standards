@@ -1,0 +1,27 @@
+# Based on the example described in:
+#   https://github.com/christophebedard/dco-check/blob/master/README.md#github
+# plus version pinning and caching.
+
+name: DCO check
+
+on: push
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Check DCO
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        pip3 install dco-check==0.4.0
+        dco-check
