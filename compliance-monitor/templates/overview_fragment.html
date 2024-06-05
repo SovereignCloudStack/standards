@@ -4,13 +4,16 @@ for the time being to have the highest degree of control
 #}
 <table>
     <tr><th>Name</th><th>Description</th><th>Operator</th><th>SCS-compatible IaaS</th><th>HealthMon</th></tr>
-    <tr><td>gx-scs</td><td>Dev environment provided for SCS & GAIA-X context</td><td>plusserver GmbH</td><td>{{
+    <tr><td><a hreg="https://github.com/SovereignCloudStack/docs/blob/main/community/cloud-resources/plusserver-gx-scs.md">gx-scs</a></td><td>Dev environment provided for SCS & GAIA-X context</td><td>plusserver GmbH</td><td>{{
         results['gx-scs']['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
     }}</td><td><a href="https://health.gx-scs.sovereignit.cloud:3000/">HM</a></td></tr>
-    <tr><td>REGIO.cloud</td><td>Public cloud for customers</td><td>OSISM GmbH</td><td>{{
+    <tr><td><a href="https://cnds.io/">CNDS</a></td><td>Public cloud for customers</td><td>artcodix UG</td><td>{{
+        results.artcodix['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
+    }}</td><td><a href="https://ohm.muc.cloud.cnds.io/">HM</a></td></tr>
+    <tr><td><a href="https://regio.digital">REGIO.cloud</a></td><td>Public cloud for customers</td><td>OSISM GmbH</td><td>{{
         results['regio-a']['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
     }}</td><td><a href="https://apimon.services.regio.digital/public-dashboards/17cf094a47404398a5b8e35a4a3968d4?orgId=1&refresh=5m">HM</a></td></tr>
-    <tr><td>Wavestack</td><td>Public cloud for customers</td><td>noris network AG/Wavecon GmbH</td><td>{{
+    <tr><td><a href="https://www.noris.de/wavestack-cloud/">Wavestack</a></td><td>Public cloud for customers</td><td>noris network AG/Wavecon GmbH</td><td>{{
         results.wavestack['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
     }}</td><td><a href="https://health.wavestack1.sovereignit.cloud:3000/">HM</a></td></tr>
 </table>

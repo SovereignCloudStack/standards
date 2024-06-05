@@ -9,6 +9,16 @@ clouds:
     interface: "public"
     identity_api_version: 3
     auth_type: "v3applicationcredential"
+  artcodix:
+    interface: public
+    identity_api_verion: 3
+    auth_type: "v3applicationcredential"
+    #region_name: "MUC"
+    auth:
+      auth_url: https://api.dc1.muc.cloud.cnds.io:5000/
+      application_credential_id: "{{ clouds_conf.cnds_ac_id }}"
+      application_credential_secret: "{{ clouds_conf.cnds_ac_secret }}"
+      #project_id: 225a7363dab74b69aa1e3f744aced109
   pco-prod1:
     region_name: "prod1"
     interface: "public"

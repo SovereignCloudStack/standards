@@ -42,6 +42,12 @@
     parent: scs-check-gx-scs
     branches: main
 - job:
+    name: scs-check-artcodix
+    parent: scs-check-gx-scs-main
+    vars:
+      cloud: artcodix
+      secret_key: "{{ clouds_conf.cnds_key }}"
+- job:
     name: scs-check-pco-prod3
     parent: scs-check-gx-scs-main
     vars:

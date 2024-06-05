@@ -7,6 +7,9 @@ for the time being to have the highest degree of control
 | [gx-scs](https://github.com/SovereignCloudStack/docs/blob/main/community/cloud-resources/plusserver-gx-scs.md) | Dev environment provided for SCS & GAIA-X context | plusserver GmbH | {{
     results['gx-scs']['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
 }} | [HM](https://health.gx-scs.sovereignit.cloud:3000/) |
+| [CNDS](https://cnds.io/) | Public cloud for customers | artcodix UG | {{
+    results.artcodix['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
+}} | [HM](https://ohm.muc.cloud.cnds.io/) |
 | [REGIO.cloud](https://regio.digital) | Public cloud for customers | OSISM GmbH | {{
     results['regio-a']['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
 }} | [HM](https://apimon.services.regio.digital/public-dashboards/17cf094a47404398a5b8e35a4a3968d4?orgId=1&refresh=5m) |
