@@ -10,6 +10,15 @@ for the time being to have the highest degree of control
 | [CNDS](https://cnds.io/) | Public cloud for customers | artcodix UG | {{
     results.artcodix['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
 }} | [HM](https://ohm.muc.cloud.cnds.io/) |
+| [pluscloud open](https://www.plusserver.com/en/products/pluscloud-open)<br />- prod1</br>- prod2<br />- prod3<br />- prod4 | Public cloud for customers (4 regions)   | plusserver GmbH | &nbsp;<br /> | &nbsp;<br />{{
+    results['pco-prod1']['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
+}}<br />{{
+    results['pco-prod2']['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
+}}<br />{{
+    results['pco-prod3']['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
+}}<br />{{
+    results['pco-prod4']['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
+}} | &nbsp;<br /> [HM1](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-pco)<br />[HM2](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-prod2)<br />[HM3](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-prod3)<br />[HM4](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-prod4) |
 | PoC KDO | Cloud PoC for FITKO | KDO Service GmbH / OSISM GmbH | {{
     results['poc-kdo']['50393e6f-2ae1-4c5c-a62c-3b75f2abef3f'] | passed or '–'
 }} |  (soon) |
