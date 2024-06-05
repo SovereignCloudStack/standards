@@ -23,6 +23,26 @@ Security Group Rule (abbr. SG Rule)
 Administrator (abbr. Admin)
   Operator = User of an OpenStack cloud with the admin role.
 
+### Default Security Groups, Custom Security Groups and default Security Group Rules
+
+To properly understand the concepts in this standard and avoid ambiguity, is very important to distinguish between the following similar-sounding but different resources in the OpenStack Networking API:
+
+1. default Security Group
+2. custom Security Group
+3. default Security Group Rules
+
+A **default Security Group** is a predefined Security Group which is automatically created once a project is created and is specific to that project.
+This Security Group is called "default" and there exists only one per project.
+It will automatically be assigned to VMs that have no other Security Group explicitly assigned to it, when a VM is created.
+
+A **custom Security Group** is any additional Security Group created within a project separate from the *default Security Group* of the project.
+
+The **default Security Group Rules** may target the *default Security Groups* or the *custom Security Groups* or both.
+They resemble a rule template and each Security Group will be initially created with rules according to this template.
+
+Although the rules of a Security Group may be adjusted freely after its creation, these default rule presets applied on initialization are predefined.
+In recent OpenStack releases, both presets can be adjusted independently by administrators of the infrastructure.
+
 ## Motivation
 
 The rules of a Security Group can be edited by default by any user with the member role within a project.
@@ -47,7 +67,7 @@ All rules that should be present as default in Security Groups have to be config
 
 There are two ways to approach a standard for the default rules of Security Groups.
 
-1: There could be a set of rules standardized that has to be configured by admins.
+**1: There could be a set of rules standardized that has to be configured by admins.**
 
 OpenStack's default rules for Security Groups already provide a good baseline for port security, because they allow all egress traffic and for the default Security Group only ingress traffic from the same group.
 
@@ -55,7 +75,7 @@ Allowing more rules would not benefit the security level, while reducing or limi
 Nevertheless a standard could hold up the current security level against possible future release with more open default rules.
 Changing the default rules will not change the rules of any existing security groups.
 
-2: With the already strict OpenStack default rules users are required in most use cases to create and manage their own Security Groups.
+**2: With the already strict OpenStack default rules users are required in most use cases to create and manage their own Security Groups.**
 
 This has the benefit that users need to explicitly think about the port security of their VMs and may be less likely to apply Security Groups which rules open up more ports than needed.
 There is also a guide from the SCS project on how to set up a security group that also focuses on having a good port security[^3].
