@@ -24,6 +24,11 @@ accounts:
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
         public_key_type: "ssh-ed25519"
         public_key_name: "auxiliary"
+  - subject: artcodix
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIN06QZq0dbCk4C4s2Gm1EtB47E8KGY6iLeOdjnEkY29V"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
   - subject: pco-prod1
     keys:
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAICDpHZkrbLAbmO6XD83VzV9oCEjT8hW3EBWpPp2b5sMC"
