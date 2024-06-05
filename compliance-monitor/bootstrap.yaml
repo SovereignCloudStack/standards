@@ -49,6 +49,16 @@ accounts:
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIF4/B21gkWDTjoVdaw26TMYG34+IOFGEw77N2n3dXWGa"
         public_key_type: "ssh-ed25519"
         public_key_name: "zuul_ci"
+  - subject: poc-kdo
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIE/rox61EobYkrMr8Kz31XEmfEWp79oNiwphgeAl9Lzn"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+  - subject: poc-wgcloud
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIG/u4YdurqIdtrQHcbyLD+taGoIi8sQccYTsWCZ24uew"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
   - subject: regio-a
     keys:
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIHpECmihjsuyhMf8pmg3Rqbi7KXszIBoVrgrLi5V6QmX"
@@ -90,6 +100,14 @@ subjects:
     active: true
     name: pluscloud open prod4
     provider: plusserver GmbH
+  poc-kdo:
+    active: true
+    name: PoC KDO
+    provider: KDO Service GmbH / OSISM GmbH
+  poc-wgcloud:
+    active: true
+    name: PoC WG-Cloud OSBA
+    provider: Cloud&Heat Technologies GmbH
   regio-a:
     active: true
     name: REGIO.cloud
