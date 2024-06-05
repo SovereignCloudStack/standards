@@ -71,7 +71,7 @@ clouds:
     #region_name: "MUC"
     auth:
       auth_url: https://api.dc1.muc.cloud.cnds.io:5000/
-      application_credential_id: "f3102a98821641c19d8ea762dc64b0b0"
+      application_credential_id: "39a5bf194c6e4b0d8348d28e55136750"
       #project_id: 225a7363dab74b69aa1e3f744aced109
   poc-wgcloud:
     interface: public
