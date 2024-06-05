@@ -188,6 +188,10 @@ CSPs **MUST** provide dynamic routing for all project-allocated public IP-prefix
 
 By default, users **SHOULD** be prohibited by policy from creating RBAC rules for networks in their projects, to prevent the creation of faux provider networks.
 
+## Conformance Tests
+
+(TBD, current requirements should all be testable by API, though dynamic routing might be a bit tricky)
+
 ## References
 
 [^bgp]: https://docs.openstack.org/neutron/2024.1/admin/config-bgp-dynamic-routing.html
