@@ -73,6 +73,14 @@ clouds:
       auth_url: https://api.dc1.muc.cloud.cnds.io:5000/
       application_credential_id: "39a5bf194c6e4b0d8348d28e55136750"
       #project_id: 225a7363dab74b69aa1e3f744aced109
+  poc-kdo:
+    interface: public
+    identity_api_verion: 3
+    auth_type: "v3applicationcredential"
+    auth:
+      auth_url: https://keystone.services.poc-kdo.fitko.sovereignit.cloud
+      application_credential_id: "248684b7a3da4dc786fbe65592f165be"
+    region_name: "RegionOne"
   poc-wgcloud:
     interface: public
     identity_api_verion: 3
