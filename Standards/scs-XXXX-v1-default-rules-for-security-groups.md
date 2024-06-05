@@ -73,12 +73,12 @@ OpenStack's default rules for Security Groups already provide a good baseline fo
 
 Allowing more rules would not benefit the security level, while reducing or limiting the existing rules would barely improve it.
 Nevertheless a standard could hold up the current security level against possible future release with more open default rules.
-Changing the default rules will not change the rules of any existing security groups.
+Changing the default rules will not change the rules of any existing Security Groups.
 
 **2: With the already strict OpenStack default rules users are required in most use cases to create and manage their own Security Groups.**
 
 This has the benefit that users need to explicitly think about the port security of their VMs and may be less likely to apply Security Groups which rules open up more ports than needed.
-There is also a guide from the SCS project on how to set up a security group that also focuses on having a good port security[^3].
+There is also a guide from the SCS project on how to set up a Security Group that also focuses on having a good port security[^3].
 
 With the default OpenStack behavior of having already strict rules, which in most cases require users to manage their own Security Groups, this standard should mandate a middle way:
 It should allow adjusting the default rules, but only to a stricter version.
