@@ -14,13 +14,12 @@ scenarios.
 
 ## Motivation
 
-One such solution, the [Cloudmon](https://stackmon.org/) project, presents challenges that may hinder its
-suitability for organizations seeking efficient and reliable monitoring capabilities. This introduction
-outlines the reasons why our organization opts against utilizing the Cloudmon project and instead embraces
-a more streamlined and effective approach involving Gherkin test scenarios and mapping Python API calls to
-interact with OpenStack resources. By addressing the complexities and shortcomings of the Cloudmon project,
-SCS organization aims to adopt a monitoring solution that not only meets but exceeds our requirements for
-simplicity, reliability, and ease of use.
+One such solution, the [Cloudmon](https://stackmon.org/) project, faces challenges that might limit its effectiveness for organizations looking
+for efficient and reliable monitoring capabilities. This introduction outlines the reasons why our organization opts
+against utilizing the Cloudmon project and instead embraces a more streamlined and effective approach involving Gherkin
+test scenarios and mapping Python API calls to interact with OpenStack resources. By addressing the complexities and
+shortcomings of the Cloudmon project, SCS organization aims to adopt a monitoring solution that not only meets but
+exceeds our requirements for simplicity, reliability, and ease of use.
 
 ## Design Considerations
 
