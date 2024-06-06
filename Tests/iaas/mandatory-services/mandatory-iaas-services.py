@@ -16,7 +16,8 @@ import openstack
 
 logger = logging.getLogger(__name__)
 mandatory_services = ["compute", "identity", "image", "block-storage",
-                      "network", "load-balancer", "s3", "placement"]
+                      "network", "load-balancer", "placement"]
+object_store_service = ["s3", "object-store"]
 
 
 def connect(cloud_name: str) -> openstack.connection.Connection:
@@ -46,20 +47,22 @@ def check_presence_of_mandatory_services(cloud_name: str):
         svc_type = svc['type']
         if svc_type in mandatory_services:
             mandatory_services.remove(svc_type)
+            continue
+        if svc_type in object_store_service:
+            object_store_service.remove(svc_type)
 
+    if len(object_store_service) == 2:
+        # neither s3 nor object-store is available,
+        # but might be named differently
+        logger.warning("No s3 or object-store endpoint found.")
     if not mandatory_services:
         # every mandatory service API had an endpoint
         return 0
     else:
-        # if only s3 is not available, that might be named differently
-        if mandatory_services == ["s3"]:
-            logger.warning("No s3 endpoint found.")
-            return 0
-        else:
-            # there were multiple mandatory APIs not found
-            logger.error(f"The following endpoints are missing: "
-                         f"{mandatory_services}")
-            return len(mandatory_services)
+        # there were multiple mandatory APIs not found
+        logger.error(f"The following endpoints are missing: "
+                     f"{mandatory_services}")
+        return len(mandatory_services)
 
 
 def main():
