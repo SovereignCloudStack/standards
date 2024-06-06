@@ -66,7 +66,7 @@ The following services MAY be present in SCS-compliant IaaS deployment and are c
 
 ## Unsupported OpenStack services
 
-All other OpenStack services that are not mentioned in the mandatory or supported lists are not tested for their compatibility and behavior in SCS clouds by the SCS community.
+All other OpenStack services that are not mentioned in the mandatory or supported lists will not be tested for their compatibility and conformance in SCS clouds by the SCS community.
 Those services MAY be integrated into IaaS deployments by a Cloud Service Provider on their own responsibility but the SCS will not assume they are present and potential issues that occur during deployment or usage have to be handled by the CSP on their own accord.
 The SCS standard offers no guarantees for compatibility or reliability of services categorized as unsupported in conjunction with an SCS-conformant infrastructure.
 
