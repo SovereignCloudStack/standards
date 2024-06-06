@@ -44,10 +44,9 @@ To minimize the burden and enable more CSPs to step up and provide encryption, t
 
 #### _Option 1_
 
-Barbican as the OpenStack key-manager implementation offers different plugins to store the Master-KEK.
-It was considered to only recommend a certain set of plugins, but this may be very prone to change if Barbican adds a new plugin and this standard would need to consider other possible key-managers as well.
-As the SCS only wants to mandate the API that can be abstracted through the Castellan library in OpenStack, integrating any other key-manager implementation is not uncommon.
-So this Option was disregarded.
+It was considered to only recommend a certain set of plugins or backends for the key-manager, but this may be very prone to change if Barbican adds a new plugin.
+As the SCS only wants to mandate the API that can be abstracted through the Castellan library in OpenStack, integrating any other key-manager implementation is not uncommon, so this standard needs to consider other possible key-managers as well.
+Due to these reasons this Option was disregarded.
 
 #### _Option 2_
 
