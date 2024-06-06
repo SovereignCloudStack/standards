@@ -8,7 +8,7 @@ track: IaaS
 ## Introduction
 
 To encrypt user data like volumes or in the future also Images and ephemeral storage for VMs, the key is needed to be present in the infrastructure.
-Therefore a key-manager is needed to store the keys and apply autorization policies on requests.
+Therefore a key-manager is needed to store the keys and apply authorization policies on requests.
 The OpenStack key-manager implemenation that can bu utilized for this is named Barbican.
 This standard aims to provide a base level of security for Cloud Service Providers that integrate a key-manager into their deployments.
 
@@ -25,7 +25,7 @@ This standard aims to provide a base level of security for Cloud Service Provide
 ## Motivation
 
 When user data is encrypted the keys need to be stored securely in the Infrastructure to be present, when a possible encryption or decryption needs to take place.
-Key-managers like Barbican provide this functionality on IaaS-Level.
+Key-managers like Barbican provide this functionality on the IaaS-Level.
 Using such a key-manger and thus provide to customers the possibility to encrypt user data is not yet implemented everywhere in IaaS deployments.
 A first step towards more security is to encourage CSPs to use this service and provide the feature of using encrypted resources to customers.
 It is also important to take a closer look into the key-manager and to apply aim for an appropiate level of security there.
