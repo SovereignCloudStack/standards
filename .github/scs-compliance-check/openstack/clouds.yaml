@@ -79,6 +79,5 @@ clouds:
     auth_type: "v3applicationcredential"
     #region_name: default
     auth:
-      auth_url: https://identity.l1.cloudandheat.com/v3
-      application_credential_id: "b4844a0fb23247149997bf0ff2c0b156"
-      #project_id: 9adb8fc81ba345178654cee5cb7f1464
+      auth_url: https://identity.l1a.cloudandheat.com/v3
+      application_credential_id: "7ab4e3339ea04255bc131868974cfe63"
