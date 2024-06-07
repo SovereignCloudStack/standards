@@ -112,7 +112,17 @@
           wdcmRc1emZIOsa3YCAyGhEE1DgyjQzsHprewjmsIWXqigr6e8eT4XimNMovhrZiN0zIUU
           3LlDffNO1eGzUZOz2/prp/m8eD/n/+x1sku2ktjyqovASVwQoiiaFNK9nlWvwy9FSOYoT
           AiAv8LecYUkNFlonXXR/iiXhjWzmAzgCcAiSqWbGPMVQvw/dilgrHlbhD7djB8=
-      poc_kdo_ac_secret: ""
+      poc_kdo_ac_secret: !encrypted/pkcs1-oaep
+        - PQ44tlT4qGSzdx1JAPe/TbWfttNicGAl9ng9OmjbGTtNd5NLVhwfGSIP/UPEkCCneGDKJ
+          y+eFwHpmQPMpfHWrfCSuCm/cMI3UkRqQ6Yn1UJCfbIj3YOMa4KezenXlNMHsq4489sRJ4
+          bUq6O002NrExa31lDVAA15U06qDwte+Gq/+iX2DeZF2o6gWSuWF5kSf+0mWBT98diKSSE
+          tSsYLbjl68Vq8KqqJ8HrPJfDpVDuX3AUVEg5JxuxoIoqJM62sJLqj1a3AdQk1QIB2TzCh
+          OHGT55lyL+gBnJnOqGZ9q5uldGOuPEDW2e9dwrUZZoPPZcfVGfXLhqtFP3UuQ4f/BiHJO
+          rGnNwfQkEAu53hYYzZAFGHgRMeiMF8bWP+7QUyV6u21bfVhOhO5hMC4sIh4ewa6DjKEmM
+          xQenS/D7Nbf8y5DbXUqGB10SawwXiVlsJsjBYPE2thc3JwfZq/Zcp8Rxlku5KfIcRUrsy
+          NIadxXBGLDDqTWaiOp0Mg9eXQ7tz+8lOg23uojzyXzgNiDGu77azuNkfJ4iosBHUraYEE
+          cewhUsF1mXh3le03eEUnMVnnRBmFTsAyygjhLtUwnDDSoJHp3g1e1dRTd/nihsOjSLwBa
+          vNFgP3N8s1smIbNMpjyMjQiTbXQ87Sqx6ZmUoSX+1tKu8tJU0k04y00xaFYWxE=
       poc_wgcloud_key: !encrypted/pkcs1-oaep
         - jxVFFxbR/UqXioWLk+RUWCQmrocQVVDQ370fOdEhzj8KDdXLY9wCxBXNi03niZnt++t4V
           FudgJ7wEZgajv2s98N0ZRiY5GmJKppMxKPva7A7qbMCuu2wSXJEf+Pj9pVs6QVKsZho2d
