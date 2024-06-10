@@ -424,7 +424,8 @@ async def get_status(
     # note: text/html will be the default, but let's start with json to get the logic right
     accept = request.headers['accept']
     if 'application/json' not in accept and '*/*' not in accept:
-        raise HTTPException(status_code=500, detail="client needs to accept application/json")
+        # see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/406
+        raise HTTPException(status_code=406, detail="client needs to accept application/json")
     with conn.cursor() as cur:
         rows = db_get_relevant_results(
             cur, subject, scopeuuid, version,
