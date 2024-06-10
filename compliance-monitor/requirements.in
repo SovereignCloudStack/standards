@@ -4,6 +4,5 @@ fastapi
 jinja2
 passlib
 psycopg2
-PyYAML
 ruamel.yaml
 uvicorn[standard]
