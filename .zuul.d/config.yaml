@@ -32,6 +32,7 @@
        secret: SECRET_STANDARDS
     vars:
       cloud: gx-scs
+      secret_key: "{{ clouds_conf.gx_scs_key }}"
     pre-run:
      - playbooks/pre.yaml
      - playbooks/pre_cloud.yaml
@@ -41,27 +42,38 @@
     parent: scs-check-gx-scs
     branches: main
 - job:
+    name: scs-check-artcodix
+    parent: scs-check-gx-scs-main
+    vars:
+      cloud: artcodix
+      secret_key: "{{ clouds_conf.cnds_key }}"
+- job:
     name: scs-check-pco-prod3
     parent: scs-check-gx-scs-main
     vars:
       cloud: pco-prod3
+      secret_key: "{{ clouds_conf.pco_prod3_key }}"
 - job:
     name: scs-check-pco-prod2
     parent: scs-check-gx-scs-main
     vars:
       cloud: pco-prod2
+      secret_key: "{{ clouds_conf.pco_prod2_key }}"
 - job:
     name: scs-check-pco-prod1
     parent: scs-check-gx-scs-main
     vars:
       cloud: pco-prod1
+      secret_key: "{{ clouds_conf.pco_prod1_key }}"
 - job:
     name: scs-check-regio-a
     parent: scs-check-gx-scs-main
     vars:
       cloud: regio-a
+      secret_key: "{{ clouds_conf.regio_a_key }}"
 - job:
     name: scs-check-wavestack
     parent: scs-check-gx-scs-main
     vars:
       cloud: wavestack
+      secret_key: "{{ clouds_conf.wavestack_key }}"
