@@ -101,7 +101,7 @@ accounts:
 
 Needs to be authenticated (via basic auth).
 
-Needs to specify `Content-Type`, either `application/json` or `application/yaml`.
+Needs to specify `Content-Type`, either `application/x-signed-json` or `application/x-signed-yaml`.
 
 The actual report must be prefixed by an SSH signature, plus an ampersand character. The full body can
 be created and sent as follows:
