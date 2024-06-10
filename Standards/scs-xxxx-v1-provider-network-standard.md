@@ -44,7 +44,7 @@ This standard identifies some of these options and defines a baseline setup that
 
 ## Design Considerations
 
-This section will provide some general background on OpenStack provider networks before considering specific options to standardize. 
+This section will provide some general background on OpenStack provider networks before considering specific options to standardize.
 
 ### Provider Network Access Control
 
@@ -53,6 +53,7 @@ This is also true for CSP-managed resources, such as provider networks, which ha
 
 The Network API's Role Based Access Control (RBAC) extension can then be used to share it with other projects.
 RBAC rules for networks support the two actions `access_as_external` and `access_as_shared`, and can be created automatically on `openstack network create` with the options `--external` and `--share`.
+
 * `access_as_external` allows networks to be used as external gateway for virtual routers in the target projects. Such networks are in the following referred to as _external networks_.
   External networks have some special properties, such as allowing the creation of floating IPs, which will be discussed in the next section.
 * `access_as_shared` allows networks to be attached directly to servers in the target projects. Such networks are in the following referred to as _shared networks_.
@@ -196,7 +197,7 @@ By default, users **SHOULD** be prohibited by policy from creating RBAC rules fo
 
 ## References
 
-[^bgp]: https://docs.openstack.org/neutron/2024.1/admin/config-bgp-dynamic-routing.html
-[^pd]: https://docs.openstack.org/neutron/2024.1/admin/config-ipv6.html#prefix-delegation
-[^pf]: https://docs.openstack.org/api-ref/network/v2/index.html#floating-ips-port-forwarding
-[^ds]: https://docs.openstack.org/neutron/2024.1/admin/config-ipv6.html
+[^bgp]: <https://docs.openstack.org/neutron/2024.1/admin/config-bgp-dynamic-routing.html>
+[^pd]: <https://docs.openstack.org/neutron/2024.1/admin/config-ipv6.html#prefix-delegation>
+[^pf]: <https://docs.openstack.org/api-ref/network/v2/index.html#floating-ips-port-forwarding>
+[^ds]: <https://docs.openstack.org/neutron/2024.1/admin/config-ipv6.html>
