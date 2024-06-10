@@ -259,14 +259,22 @@ async def get_reports(
         return db_get_reports(cur, subject, limit, skip)
 
 
-def add_period(dt: datetime, period: str):
+def add_period(dt: datetime, period: str) -> datetime:
+    """
+    Given a `datetime` instance `dt` and a `str` instance `period`, compute the `datetime` when this period
+    expires, where period is one of: "day", "week", "month", or "quarter". For instance, with a period
+    of (calendar) "week", this period expires on midnight the next monday after `dt` + 7 days. This
+    computation is used to implement Regulations 2 and 3 of the standard scs-0004 -- see
+
+    https://docs.scs.community/standards/scs-0004-v1-achieving-certification#regulations
+    """
     # compute the moment of expiry (so we are valid before that point, but not on that point)
     if period == 'day':
         dt += timedelta(days=2)
-        return datetime(dt.year, dt.month, dt.day)
+        return datetime(dt.year, dt.month, dt.day)  # omit time so as to arrive at midnight
     if period == 'week':
         dt += timedelta(days=14 - dt.weekday())
-        return datetime(dt.year, dt.month, dt.day)
+        return datetime(dt.year, dt.month, dt.day)  # omit time so as to arrive at midnight
     if period == 'month':
         if dt.month == 11:
             return datetime(dt.year + 1, 1, 1)
