@@ -1,9 +1,9 @@
-name: "Compliance IaaS v3 of poc-wgcloud.osba"
+name: "Compliance IaaS v4 of pco-prod1"
 
 on:
-  # Trigger compliance check every day at 4:12 UTC
+  # Trigger compliance check every day at 4:30 UTC
   schedule:
-    - cron:  '12 4 * * *'
+    - cron:  '30 4 * * *'
   # Trigger compliance check after Docker image has been built
   workflow_run:
     workflows: [Build and publish scs-compliance-check Docker image]
@@ -11,13 +11,13 @@ on:
       - completed
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-
+  
 jobs:
-  check-poc-wgcloud:
-    uses: ./.github/workflows/scs-compliance-check-with-application-credential.yml
+  check-pco-prod1:
+    uses: ./.github/workflows/scs-compliance-check.yml
     with:
-      version: v3
+      version: v4
       layer: iaas
-      cloud: "poc-wgcloud"
-      secret_name: "OS_PASSWORD_POC_WGCLOUD"
+      cloud: "pco-prod1"
+      secret_name: "OS_PASSWORD_PCOPROD1"
     secrets: inherit
