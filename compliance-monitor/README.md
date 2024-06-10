@@ -57,8 +57,10 @@ docker run --network=host --rm -v $(pwd)/data:/var/lib/postgresql/data -it --nam
 Run the service as follows:
 
 ```shell
-./monitor.py --psqlpw mysecretpassword --port 8080 --bootstrap bootstrap.yaml
+SCM_DB_PASSWORD=mysecretpassword ./monitor.py --port 8080 --bootstrap bootstrap.yaml
 ```
+
+(Alternatively, you may set `SCM_DB_PASSWORD_FILE` to point to a file containing the password.)
 
 The service will automatically create or update the database schema as needed, and it will load any records
 from the given bootstrap file into the database; this file should at least contain credentials for one user,
