@@ -17,7 +17,7 @@
     - name: sign result YAML and upload to compliance monitor
       ansible.builtin.shell: |
         ssh-keygen -Y sign -f ~/id_subject -n report report.yaml
-        curl --data-binary @report.yaml.sig --data-binary @report.yaml -H "Content-Type: application/yaml" -H "Authorization: Basic {{ clouds_conf.zuul_ci_basic_auth }}" https://compliance.sovereignit.cloud/reports      
+        curl --data-binary @report.yaml.sig --data-binary @report.yaml -H "Content-Type: application/x-signed-yaml" -H "Authorization: Basic {{ clouds_conf.zuul_ci_basic_auth }}" https://compliance.sovereignit.cloud/reports
 
     - name: Copy result YAML
       ansible.builtin.synchronize:

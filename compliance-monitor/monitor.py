@@ -316,8 +316,9 @@ async def post_report(
     # check_role call further below because we need the subject from the document
     # (we could expect the subject in the path or query and then later only check equality)
     content_type = request.headers['content-type']
-    if content_type not in ('application/yaml', 'application/json'):
-        raise HTTPException(status_code=500, detail="Unsupported content type")
+    if content_type not in ('application/x-signed-yaml', 'application/x-signed-json'):
+        # see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/415
+        raise HTTPException(status_code=415, detail="Unsupported Media Type")
     body = await request.body()
     body_text = body.decode("utf-8")
     sep = body_text.find(SEP)
@@ -327,11 +328,11 @@ async def post_report(
     signature = body_text[:sep - 1]  # do away with the ampersand!
     body_text = body_text[sep:]
     json_text = None
-    if content_type.endswith('/yaml'):
+    if content_type.endswith('-yaml'):
         yaml = ruamel.yaml.YAML(typ='safe')
         document = yaml.load(body_text)
         json_text = json.dumps(document, cls=TimestampEncoder)
-    elif content_type.endswith("/json"):
+    elif content_type.endswith("-json"):
         document = json.loads(body_text)
         json_text = body_text
     else:

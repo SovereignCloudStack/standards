@@ -111,7 +111,7 @@ ssh-keygen \
   -Y sign -f ~/.ssh/id_ed25519 -n report myreport.yaml
 curl \
   --data-binary @myreport.yaml.sig --data-binary @myreport.yaml \
-  -H "Content-Type: application/yaml" -H "Authorization: Basic $BASICAUTH" \
+  -H "Content-Type: application/x-signed-yaml" -H "Authorization: Basic $BASICAUTH" \
   http://127.0.0.1:8080/reports
 ```
 
