@@ -34,7 +34,7 @@ The following terms are used throughout this document:
 | RBAC | Role-based Access Control: A mechanism in the Network API to give projects limited access to resources owned by other projects. Typically used by CSPs to create provider networks. |
 | Shared Network | Virtual network that is shared between projects in a way that allows direct attachment of servers. |
 | External Network | Virtual network that is shared between projects in a way that only allows virtual routers to use it as external gateway. Typically used by CSPs to provide access to networks outside of the cloud environment. |
-| Provider Network | Any shared or external network that is managed by the CSP. |
+| Provider Network | A CSP-managed virtual network made available to projects as either shared or external, typically connected to non-virtualized infrastructure. |
 
 ## Motivation
 
@@ -54,6 +54,7 @@ This is also true for CSP-managed resources, such as provider networks, which ha
 The Network API's Role Based Access Control (RBAC) extension can then be used to share it with other projects.
 RBAC rules for networks support the two actions `access_as_external` and `access_as_shared`, and can be created automatically on `openstack network create` with the options `--external` and `--share`.
 * `access_as_external` allows networks to be used as external gateway for virtual routers in the target projects. Such networks are in the following referred to as _external networks_.
+  External networks have some special properties, such as allowing the creation of floating IPs, which will be discussed in the next section.
 * `access_as_shared` allows networks to be attached directly to servers in the target projects. Such networks are in the following referred to as _shared networks_.
 
 The rules can be created with either a specific target project ID, or with a wild card (`*`) to target all projects.
@@ -80,8 +81,9 @@ There is also a set of API extensions that allow more fine grained port-forwardi
 
 ### Port Security and Spoofing
 
-OpenStack networks have the flag `port_security_enabled`, that is set to true by default and can only be changed by it's owner.
-In Neutron, besides enabling security groups for ports in this network, it also enables a number of built-in spoofing protections.
+OpenStack ports have the flag `port_security_enabled`, that is set to true by default and can only be changed by the owner of the corresponding network.
+The default value of that flag is controlled by a `port_security_enabled` flag on the network.
+Besides enabling security groups for a port, it also enables a number of built-in spoofing protections.
 
 Whether this flag is set is primarily of concern for shared provider networks, as users only have limited control over the gateway ports of virtual routers.
 A lack of spoofing protection in a shared network, however, does enable a number of attacks that a malicious user or compromised server could perform against other servers in the network, such as DHCP-spoofing or ARP-Poisoning.
