@@ -10,7 +10,15 @@ The first two sections have been adapted from
 
 ### Python dependencies
 
-On your Linux machine, please ensure you have installed the dependencies
+This program uses the Python library `psycopg2`. As a [prerequisite for its build and
+installation](https://www.psycopg.org/docs/install.html#build-prerequisites),
+the following command is needed (on distributions based on Debian):
+
+```shell
+sudo apt install build-essential libpq-dev python3-dev
+```
+
+Please ensure you have installed the dependencies
 from `requirements.txt`. We recommended using Python >= 3.10 and to install the
 requirements into a virtualenv as follows:
 
