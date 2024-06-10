@@ -124,7 +124,14 @@ def ssh_validate(keys, signature, data):
             raise ValueError
 
 
-def get_current_account(credentials: Optional[HTTPBasicCredentials], conn: connection):
+def get_current_account(
+    credentials: Optional[HTTPBasicCredentials],
+    conn: connection,
+) -> Optional[tuple[str, str]]:
+    """Extract account info from `credentials`.
+
+    Returns `None` if unauthorized, otherwise a tuple `(current_subject, present_roles)`.
+    """
     if credentials is None:
         return
     try:
@@ -229,6 +236,14 @@ async def optional_auth(request: Request, conn: Annotated[connection, Depends(ge
 
 
 def check_role(account: Optional[tuple[str, str]], subject: str = None, roles: int = 0):
+    """Raise an HTTPException with code 401 if `account` has insufficient permissions.
+
+    The `account` is expected as returned by `get_current_account` -- either `None` if unauthorized, or
+    a tuple `(current_subject, present_roles)`.
+
+    Here, we assume that the account has full access to its own data, i.e., if `account[0] == subject`.
+    Otherwise, the account must at least have the roles given, i.e., `roles & account[1] == roles`.
+    """
     if account is None:
         raise HTTPException(status_code=401, detail="Permission denied")
     current_subject, present_roles = account
