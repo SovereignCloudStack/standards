@@ -239,6 +239,9 @@ def check_role(account: Optional[tuple[str, str]], subject: str = None, roles: i
 
 @app.get("/")
 async def root():
+    # we might use the following redirect in the future:
+    # return RedirectResponse("/pages")
+    # but keep this silly message for the time being, so as not to expose the work in progress too much
     return {"message": "Hello World"}
 
 
