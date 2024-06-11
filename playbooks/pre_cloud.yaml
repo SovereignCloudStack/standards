@@ -3,6 +3,7 @@
   hosts: all
   roles:
     - role: ensure-pip  # https://zuul-ci.org/docs/zuul-jobs/latest/python-roles.html#role-ensure-pip
+    - role: bindep # https://zuul-ci.org/docs/zuul-jobs/latest/general-roles.html#role-bindep
   tasks:
     - name: Create cloud config dir
       ansible.builtin.file:
