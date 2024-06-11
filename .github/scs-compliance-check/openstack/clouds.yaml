@@ -89,3 +89,19 @@ clouds:
     auth:
       auth_url: https://identity.l1a.cloudandheat.com/v3
       application_credential_id: "7ab4e3339ea04255bc131868974cfe63"
+  syseleven-dus2:
+    interface: public
+    identity_api_verion: 3
+    auth_type: "v3applicationcredential"
+    region_name: dus2
+    auth:
+      auth_url: https://identity.l1a.cloudandheat.com/v3
+      application_credential_id: s11auth
+  syseleven-ham1:
+    interface: public
+    identity_api_verion: 3
+    auth_type: "v3applicationcredential"
+    region_name: ham1
+    auth:
+      auth_url: https://identity.l1a.cloudandheat.com/v3
+      application_credential_id: s11auth
