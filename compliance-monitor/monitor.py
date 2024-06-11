@@ -214,7 +214,7 @@ def import_templates(template_dir, env, templates):
     for fn in os.listdir(template_dir):
         if fn.startswith("."):
             continue
-        name = fn  # used to be fn.rsplit(".", 1)[0]
+        name = fn.removesuffix('.j2')
         if name not in templates:
             continue
         with open(os.path.join(template_dir, fn), "r") as fileobj:
