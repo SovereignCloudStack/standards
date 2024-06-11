@@ -20,7 +20,7 @@
 
     - name: Create ssh key file
       ansible.builtin.copy:
-        content: "{{ secret_key }}"
+        content: "{{ clouds_conf[secret_key] }}"
         dest: "~/id_subject"
 
     - name: Clean up any lingering resources from previous run
