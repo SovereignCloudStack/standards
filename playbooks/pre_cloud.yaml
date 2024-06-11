@@ -21,7 +21,8 @@
 
     - name: Create ssh key file
       ansible.builtin.copy:
-        content: "{{ clouds_conf[secret_key] }}"
+        # the secrets are usually stripped of whitespace, but the final newline is essential here
+        content: "{{ clouds_conf[secret_key] + '\n' }}"
         dest: "~/id_subject"
         mode: "0600"
 
