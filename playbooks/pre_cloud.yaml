@@ -22,6 +22,7 @@
       ansible.builtin.copy:
         content: "{{ clouds_conf[secret_key] }}"
         dest: "~/id_subject"
+        mode: "0600"
 
     - name: Clean up any lingering resources from previous run
       ansible.builtin.shell: python3 ~/Tests/cleanup.py -c {{ cloud }} --prefix _scs-
