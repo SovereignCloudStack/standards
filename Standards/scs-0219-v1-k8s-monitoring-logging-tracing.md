@@ -41,7 +41,7 @@ Therefore, it includes the collection and visualization of the corresponding met
 Optionally, an alerting mechanism COULD also be standardized.
 This SHOULD contain a minimal set of important metrics that signal problematic conditions of a cluster in any case. 
 
-> Describe one examples here in more detail
+> TODO: Describe one examples here in more detail
 
 
 #### Kubernetes Metric Server 
@@ -49,7 +49,7 @@ This SHOULD contain a minimal set of important metrics that signal problematic c
 Kubernetes provides a source for container resource metrics. 
 The main purpose of this source is to be used for Kubernetes' built-in auto-scaling [kubernetes-metrics-server][kubernetes-metrics-server-repo].
 However, it could also be used as a source of metrics for monitoring. 
-Therefore, this metrics server MUST also be readily accessible for the mono-monitoring setup.
+Therefore, this metrics server MUST also be readily accessible for the monitoring setup.
 
 Furthermore, end users rely on certain metrics to debug their applications.
 More specifically, an end user wants to have access to all metrics defined by Kubernetes itself.
@@ -58,9 +58,22 @@ The content of the metrics to be provided by the [kubernetes-metrics-server][kub
 In order for an end user to be sure that these metrics are accessible, a cluster MUST provide the metrics in the respective version.
 
 
+#### Prometheus Operator
 
+One of the most commonly used monitoring tools in connection with Kubernetes is Prometheus
+Therefore, every k8s cluster CLOUD have a [prometheus-operator][prometheus-operator] deployed to all control plane clusters as an optional default.
+The operator SHOULD at least be rolled out to all control plane nodes.
+
+
+#### Security
+
+Communication between the Prometheus services (expoter, database, federation, etc.) SHOULD be accomplished using "[mutual][mutual-auth] TLS" (mTLS).
 
 ### Logging
+
+In Kubernetes clusters, log data is not persistent and is discarded after a container is stopped or destroyed.
+This makes it difficult to debug crashed pods of a deployment after they have been destroyed.
+Therefore, the SCS stack SHOULD also optionally provide a logging stack that solves this problem by storing the log file in a self-managed database beyond the lifetime of a container.
 
 > see: [Logging Architecture][k8s-logging]
 
@@ -82,3 +95,4 @@ In order for an end user to be sure that these metrics are accessible, a cluster
 [system-logs]: https://kubernetes.io/docs/concepts/cluster-administration/system-logs/
 [monitor-node-health]: https://kubernetes.io/docs/tasks/debug/debug-cluster/monitor-node-health/
 [k8s-logging]: https://kubernetes.io/docs/concepts/cluster-administration/logging/
+[mutual-auth]: https://en.wikipedia.org/wiki/Mutual_authentication
