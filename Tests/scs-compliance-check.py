@@ -19,6 +19,7 @@ would split these tests out.)
 
 import os
 import os.path
+import uuid
 import sys
 import shlex
 import getopt
@@ -31,7 +32,7 @@ import yaml
 
 # valid keywords for various parts of the spec, to be checked using `check_keywords`
 KEYWORDS = {
-    'spec': ('name', 'url', 'versions', 'prerequisite', 'variables'),
+    'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables'),
     'version': ('version', 'standards', 'stabilized_at', 'deprecated_at'),
     'standard': ('checks', 'url', 'name', 'condition'),
     'check': ('executable', 'env', 'args', 'condition', 'lifetime', 'id', 'section'),
@@ -223,6 +224,7 @@ def main(argv):
     report = {
         # these fields are essential:
         "spec": {
+            "uuid": spec['uuid'],
             "name": spec['name'],
             "url": spec['url'],
         },
@@ -232,6 +234,7 @@ def main(argv):
         "versions": {},
         # this field is mostly for debugging:
         "run": {
+            "uuid": str(uuid.uuid4()),
             "argv": argv,
             "assignment": config.assignment,
             "sections": config.sections,

@@ -3,6 +3,7 @@
   hosts: all
   roles:
     - role: ensure-pip  # https://zuul-ci.org/docs/zuul-jobs/latest/python-roles.html#role-ensure-pip
+    - role: bindep # https://zuul-ci.org/docs/zuul-jobs/latest/general-roles.html#role-bindep
   tasks:
     - name: Create cloud config dir
       ansible.builtin.file:
@@ -17,6 +18,12 @@
         dest: "~/.config/openstack/clouds.yaml"
         mode: "0600"
       no_log: true
+
+    - name: Create ssh key file
+      ansible.builtin.copy:
+        content: "{{ clouds_conf[secret_key] }}"
+        dest: "~/id_subject"
+        mode: "0600"
 
     - name: Clean up any lingering resources from previous run
       ansible.builtin.shell: python3 ~/Tests/cleanup.py -c {{ cloud }} --prefix _scs-
