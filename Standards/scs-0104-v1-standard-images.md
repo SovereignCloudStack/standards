@@ -1,6 +1,6 @@
 ---
 title: SCS Standard Images
-type: Standard
+type: Procedural
 status: Stable
 stabilized_at: 2024-02-21
 track: IaaS
