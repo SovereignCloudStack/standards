@@ -157,6 +157,9 @@ create all standard, mandatory SCS flavors for you. It takes input that can be g
 
 ## Previous standard versions
 
+[Version 1](scs-0103-v1-standard-flavors.md) allowed the property `scs:name-vN`
+for standard flavors only, and it didn't recognize nor require `scs:name-v3`.
+
 The list of standard flavors used to be part of the flavor naming standard up until
 [version 3](scs-0100-v3-flavor-naming.md). The following changes have been made to
 the list in comparison with said standard:
