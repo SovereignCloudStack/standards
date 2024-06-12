@@ -1,4 +1,4 @@
-name: "Compliance IaaS v4 of syseleveni dus2 region"
+name: "Compliance IaaS v4 of syseleven dus2 region"
 
 on:
   # Trigger compliance check every day at 4:10 UTC

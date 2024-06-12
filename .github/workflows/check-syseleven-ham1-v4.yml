@@ -18,6 +18,6 @@ jobs:
     with:
       version: v4
       layer: iaas
-      cloud: "syseleveni-ham1"
+      cloud: "syseleven-ham1"
       secret_name: "OS_PASSWORD_SYSELEVEN_HAM1"
     secrets: inherit
