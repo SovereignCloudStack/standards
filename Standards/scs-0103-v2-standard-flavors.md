@@ -16,7 +16,7 @@ description: |
 
 This document is a revision of [scs-0103-v1](scs-0103-v1-standard-flavors.md) that lifts the following
 restriction regarding the property `scs:name-vN`: this property may now be used on any flavor, rather than
-standard flavors only.
+standard flavors only. In addition, the new property `scs:name-v3` is now required for every standard flavor.
 
 ## Motivation
 
