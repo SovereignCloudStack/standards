@@ -48,6 +48,12 @@
       cloud: artcodix
       secret_key: cnds_key
 - job:
+    name: scs-check-pco-prod4
+    parent: scs-check-gx-scs-main
+    vars:
+      cloud: pco-prod4
+      secret_key: pco_prod4_key
+- job:
     name: scs-check-pco-prod3
     parent: scs-check-gx-scs-main
     vars:
@@ -66,11 +72,35 @@
       cloud: pco-prod1
       secret_key: pco_prod1_key
 - job:
+    name: scs-check-poc-kdo
+    parent: scs-check-gx-scs-main
+    vars:
+      cloud: poc-kdo
+      secret_key: poc_kdo_key
+- job:
+    name: scs-check-poc-wgcloud
+    parent: scs-check-gx-scs-main
+    vars:
+      cloud: poc-wgcloud
+      secret_key: poc_wgcloud_key
+- job:
     name: scs-check-regio-a
     parent: scs-check-gx-scs-main
     vars:
       cloud: regio-a
       secret_key: regio_a_key
+- job:
+    name: scs-check-syseleven-dus2
+    parent: scs-check-gx-scs-main
+    vars:
+      cloud: syseleven-dus2
+      secret_key: syseleven_dus2_key
+- job:
+    name: scs-check-syseleven-ham1
+    parent: scs-check-gx-scs-main
+    vars:
+      cloud: syseleven-ham1
+      secret_key: syseleven_ham1_key
 - job:
     name: scs-check-wavestack
     parent: scs-check-gx-scs-main
