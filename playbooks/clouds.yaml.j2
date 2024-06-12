@@ -74,6 +74,25 @@ clouds:
       application_credential_id: "{{ clouds_conf.regio_a_ac_id }}"
       application_credential_secret: "{{ clouds_conf.regio_a_ac_secret }}"
     auth_type: "v3applicationcredential"
+  syseleven-dus2:
+    interface: public
+    identity_api_verion: 3
+    auth_type: "v3applicationcredential"
+    region_name: dus2
+    auth:
+      auth_url: https://keystone.cloud.syseleven.net:5000/v3
+      application_credential_id: "{{ clouds_conf.syseleven_dus2_ac_id }}"
+      application_credential_secret: "{{ clouds_conf.syseleven_dus2_ac_secret }}"
+  syseleven-ham1:
+    interface: public
+    identity_api_verion: 3
+    auth_type: "v3applicationcredential"
+    region_name: ham1
+    auth:
+      auth_url: https://keystone.cloud.syseleven.net:5000/v3
+      application_credential_id: s11auth
+      application_credential_id: "{{ clouds_conf.syseleven_ham1_ac_id }}"
+      application_credential_secret: "{{ clouds_conf.syseleven_ham1_ac_secret }}"
   wavestack:
     interface: "public"
     identity_api_version: 3
