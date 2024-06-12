@@ -103,5 +103,5 @@ clouds:
     auth_type: "v3applicationcredential"
     region_name: ham1
     auth:
-      auth_url: https://identity.l1a.cloudandheat.com/v3
+      auth_url: https://keystone.cloud.syseleven.net:5000/v3
       application_credential_id: s11auth
