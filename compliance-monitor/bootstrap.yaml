@@ -1,0 +1,118 @@
+accounts:
+  - subject: admin
+    api_keys:
+      - "$2b$12$02j2DtlOXdT/MTVmWG60Yu.MNIJOGxRGKvE3DdA5DylCaHXxAY1Om"
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "primary"
+    roles:
+      - read_any
+      - append_any
+      - approve
+      - admin
+  - subject: zuul_ci
+    api_keys:
+      - "$argon2id$v=19$m=65536,t=3,p=4$m3OOcQ4BoNR6L0VoDUFIyQ$Y/cCKggkIuyHHFGv1Ng5ijMIIJjyvfkjvdASL2LFiPA"
+    roles:
+      - append_any
+  - subject: gx-scs
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIBgla2bdGVztsncJNoAEVdAUiZaOW9Lwvf2yCt5GcI1J"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "auxiliary"
+  - subject: artcodix
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIN06QZq0dbCk4C4s2Gm1EtB47E8KGY6iLeOdjnEkY29V"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+  - subject: pco-prod1
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAICDpHZkrbLAbmO6XD83VzV9oCEjT8hW3EBWpPp2b5sMC"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+  - subject: pco-prod2
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIG5ceonQYybVcibYteMKqvBkyVo+fDPgcXhe+kfUq3ab"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+  - subject: pco-prod3
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIA51kSpR6GX7Gi1oHAKPAIpoBUJE/XLARg3CmUszaMDv"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+  - subject: pco-prod4
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIF4/B21gkWDTjoVdaw26TMYG34+IOFGEw77N2n3dXWGa"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+  - subject: poc-kdo
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIE/rox61EobYkrMr8Kz31XEmfEWp79oNiwphgeAl9Lzn"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+  - subject: poc-wgcloud
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIG/u4YdurqIdtrQHcbyLD+taGoIi8sQccYTsWCZ24uew"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+  - subject: regio-a
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIHpECmihjsuyhMf8pmg3Rqbi7KXszIBoVrgrLi5V6QmX"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "auxiliary"
+  - subject: wavestack
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIKkNLjCCHP2H84nyRD8sZ66HdPzmFr7nlcitFPkEjr/D"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "auxiliary"
+subjects:
+  gx-scs:
+    active: true
+    name: gx-scs
+    provider: plusserver GmbH
+  artcodix:
+    active: true
+    name: CNDS
+    provider: artcodix UG
+  pco-prod1:
+    active: true
+    name: pluscloud open prod1
+    provider: plusserver GmbH
+  pco-prod2:
+    active: true
+    name: pluscloud open prod2
+    provider: plusserver GmbH
+  pco-prod3:
+    active: true
+    name: pluscloud open prod3
+    provider: plusserver GmbH
+  pco-prod4:
+    active: true
+    name: pluscloud open prod4
+    provider: plusserver GmbH
+  poc-kdo:
+    active: true
+    name: PoC KDO
+    provider: KDO Service GmbH / OSISM GmbH
+  poc-wgcloud:
+    active: true
+    name: PoC WG-Cloud OSBA
+    provider: Cloud&Heat Technologies GmbH
+  regio-a:
+    active: true
+    name: REGIO.cloud
+    provider: OSISM GmbH
+  wavestack:
+    active: true
+    name: Wavestack
+    provider: noris network AG/Wavecon GmbH

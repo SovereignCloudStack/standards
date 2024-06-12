@@ -1,4 +1,5 @@
 name: SCS Compatible KaaS
+uuid: 1fffebe6-fd4b-44d3-a36c-fc58b4bb0180
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-kaas.yaml
 variables:
   - kubeconfig
