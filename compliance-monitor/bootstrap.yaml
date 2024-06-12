@@ -67,6 +67,16 @@ accounts:
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
         public_key_type: "ssh-ed25519"
         public_key_name: "auxiliary"
+  - subject: syseleven-dus2
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIMDZ/mR1+6NLdf6GfbTRCShRzLWD9yjrSNKKs+vovolO"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
+  - subject: syseleven-ham1
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIOrtlmrpAYoZ6iLySfMUFhPEGj6PSzWbke6HrmubZZ72"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "zuul_ci"
   - subject: wavestack
     keys:
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIKkNLjCCHP2H84nyRD8sZ66HdPzmFr7nlcitFPkEjr/D"
@@ -108,6 +118,14 @@ subjects:
     active: true
     name: PoC WG-Cloud OSBA
     provider: Cloud&Heat Technologies GmbH
+  syseleven-dus2:
+    active: true
+    name: SysEleven dus2
+    provider: SysEleven GmbH
+  syseleven-ham1:
+    active: true
+    name: SysEleven ham1
+    provider: SysEleven GmbH
   regio-a:
     active: true
     name: REGIO.cloud
