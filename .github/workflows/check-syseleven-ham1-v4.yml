@@ -1,9 +1,9 @@
 name: "Compliance IaaS v4 of syseleven ham1 region"
 
 on:
-  # Trigger compliance check every day at 4:14 UTC
+  # Trigger compliance check every day at 4:15 UTC
   schedule:
-    - cron:  '14 4 * * *'
+    - cron:  '15 4 * * *'
   # Trigger compliance check after Docker image has been built
   workflow_run:
     workflows: [Build and publish scs-compliance-check Docker image]
