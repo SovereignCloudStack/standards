@@ -9,7 +9,11 @@ track: IaaS
 ## Abstract
 
 When talking about redundancy and backups in the context of cloud infrastructures, the scope under which circumstances these concepts apply to various ressources is neither homogenous nor intuitive.
-This decision record aims to define different levels of failure-safety.
+There does exist very detailed list of risks and what consequences there are for each risk, but this Decision Record should give a high-level view on the topic.
+So that in each standard that referenced redundancy, it can easily be seen how far this redundancy goes in that certain circumstance.
+Readery of such standards should be able to know at one glance, whether the achieved failure safeness is on a basic level or a higher one and whether there would be additional actions needed to protect the data.
+
+This is why this decision record aims to define different levels of failure-safety.
 These levels can then be used in standards to clearly set the scope that certain procedures in e.g. OpenStack offer.
 
 ## Glossary
