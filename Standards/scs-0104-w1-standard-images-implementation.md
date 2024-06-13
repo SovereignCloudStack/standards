@@ -18,6 +18,27 @@ step-by-step guide on how to comply with the SCS certificate scope.
 
 ## Step-by-step walkthrough
 
+### Option A: pragmatic
+
+Run the test script on your environment and check the error messages :)
+
+1. Check out the [standards repository](https://github.com/SovereignCloudStack/standards).
+2. Install requirements:
+
+   ```shell
+   python3 -m venv .venv && source .venv/bin/activate
+   pip install -r requirements.txt 
+   ```
+3. Make sure that your `OS_CLOUD` environment variable is set.
+4. Execute the following command in the root directory of the repository:
+
+   ```shell
+   python3 ./Tests/scs-compliance-check.py ./Tests/scs-compatible-iaas.yaml -s $OS_CLOUD -a os_cloud=$OS_CLOUD -o report.yaml -C
+   ```
+5. Inspect stderr for error messages; it will show you all problems, not just those related to your images.
+
+### Option B: principled
+
 1. Find your intended version of the certificate scope in the [overview table](https://docs.scs.community/standards/scs-compatible-iaas). It will most likely be one whose 'State' is 'Effective' or 'Stable'.
 2. In (or below) the row labeled 'scs-0104: Standard images', you find a link to the YAML file that lists mandatory and recommended images, such as [scs-0104-v1-images.yaml](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/scs-0104-v1-images.yaml) for v4 of the certificate scope.
 3. For each entry under `images`, ensure the following (either manually or by using the OpenStack Image Manager described in the section "Operational Tooling"):
