@@ -19,7 +19,7 @@ step-by-step guide on how to comply with the SCS certificate scope.
 ## Step-by-step walkthrough
 
 1. Find your intended version of the certificate scope in the [overview table](https://docs.scs.community/standards/scs-compatible-iaas). It will most likely be one whose 'State' is 'Effective' or 'Stable'.
-2. In (or below) the row labeled 'scs-0104: Standard images', you find a link to the YAML file that lists mandatory and recommended images, such as  [scs-0104-v1-images.yaml](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/scs-0104-v1-images.yaml) for v4 of the certificate scope.
+2. In (or below) the row labeled 'scs-0104: Standard images', you find a link to the YAML file that lists mandatory and recommended images, such as [scs-0104-v1-images.yaml](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/scs-0104-v1-images.yaml) for v4 of the certificate scope.
 3. For each entry under `images`, ensure the following (either manually or by using the OpenStack Image Manager described in the section "Operational Tooling"):
    - if the entry says `status: mandatory`, your environment MUST provide this image, i.e., an image whose name matches the `name_scheme` or (in absence of a name scheme) the `name`.
    - every actual image in your environment _that matches the `name_scheme` or (in absence of a name scheme) the `name`_ has the correct `image_source` property: its value MUST start with one of the prefixes listed under `source`.
