@@ -29,12 +29,14 @@ Run the test script on your environment and check the error messages :)
    python3 -m venv .venv && source .venv/bin/activate
    pip install -r requirements.txt 
    ```
+
 3. Make sure that your `OS_CLOUD` environment variable is set.
 4. Execute the following command in the root directory of the repository:
 
    ```shell
    python3 ./Tests/scs-compliance-check.py ./Tests/scs-compatible-iaas.yaml -s $OS_CLOUD -a os_cloud=$OS_CLOUD -o report.yaml -C
    ```
+
 5. Inspect stderr for error messages; it will show you all problems, not just those related to your images.
 
 ### Option B: principled
