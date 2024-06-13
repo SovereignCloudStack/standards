@@ -10,7 +10,7 @@
         - scs-check-pco-prod2
         - scs-check-pco-prod3
         - scs-check-pco-prod4
-        - scs-check-pco-kdo
+        - scs-check-poc-kdo
         - scs-check-poc-wgcloud
         - scs-check-regio-a
         - scs-check-syseleven-dus2
