@@ -116,13 +116,13 @@ then a certificate of that prerequisite scope has to be presented before the cer
 | `version`       | String        | Mandatory: Version of the particular list of standards                          | _v3_         |
 | `standards`     | Array of maps | Mandatory: List of standard descriptors for this particular layer               |              |
 | `stabilized_at` | Date          | (ISO formatted) from then on, this version is considered stable (see remarks)   | _2022-11-09_ |
-| `obsoleted_at`  | Date          | (ISO formatted) from then on, this version is considered obsolete (see remarks) | _2023-03-01_ |
+| `warn_at`       | Date          | (ISO formatted) from then on, this version is phased out (see remarks)          | _2023-03-01_ |
 | `deprecated_at` | Date          | (ISO formatted) from then on, this version is considered deprecated (see remarks) | _2023-04-09_ |
 
 Once a version has a `stabilized_at` field, this field MAY NOT be changed.
-The same holds true for the fields `obsoleted_at` and `deprecated_at`.
+The same holds true for the fields `warn_at` and `deprecated_at`.
 
-The following list MUST be in chronological order: `stabilized_at` (if present), `obsoleted_at` (if present), `deprecated_at` (if present).
+The following list MUST be in chronological order: `stabilized_at` (if present), `warn_at` (if present), `deprecated_at` (if present).
 
 A version is deemed _effective_ at a given date (and thus eligible for certification) if the following conditions are satisfied:
 
@@ -132,12 +132,12 @@ A version is deemed _effective_ at a given date (and thus eligible for certifica
 This means that more than one version may be eligible at a certain point in time. Tooling SHOULD default
 to use the newest allowable version (the one with the most recent `stabilized_at` date) then.
 
-A version is deemed _obsolete_ at a given date if
+A version is deemed in _warning phase_ at a given date if
 
-- `obsoleted_at` is before or at the given date.
+- `warn_at` is before or at the given date.
 
-Any conformance test result that refers to an obsolete, yet effective version MUST be accompanied by a notice that
-this version is obsolete. This case is meant to be used to implement a formal grace period to encourage
+Any conformance test result that refers to an effective version in warning phase MUST be accompanied by a warning that
+this version will soon be deprecated. This case is meant to be used to implement a formal grace period to encourage
 providers to switch to the next version.
 
 Note: At any given date, we intend to have at most two effective versions,
