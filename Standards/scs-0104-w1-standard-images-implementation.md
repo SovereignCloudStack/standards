@@ -23,6 +23,12 @@ step-by-step guide on how to comply with the SCS certificate scope.
 Run the test script on your environment and check the error messages :)
 
 1. Check out the [standards repository](https://github.com/SovereignCloudStack/standards).
+
+   ```shell
+   git clone https://github.com/SovereignCloudStack/standards.git
+   cd standards
+   ```
+
 2. Install requirements:
 
    ```shell
@@ -31,7 +37,7 @@ Run the test script on your environment and check the error messages :)
    ```
 
 3. Make sure that your `OS_CLOUD` environment variable is set.
-4. Execute the following command in the root directory of the repository:
+4. Run the main check script:
 
    ```shell
    python3 ./Tests/scs-compliance-check.py ./Tests/scs-compatible-iaas.yaml -s $OS_CLOUD -a os_cloud=$OS_CLOUD -o report.yaml -C
