@@ -7,9 +7,9 @@ track: IaaS
 
 ## Introduction
 
-To encrypt user data like volumes or in the future also Images and ephemeral storage for VMs, the key is needed to be present in the infrastructure.
-Therefore a key-manager is needed to store the keys and apply authorization policies on requests.
-The OpenStack key-manager implemenation that can bu utilized for this is named Barbican.
+To encrypt user data like volumes or in the future also Images and ephemeral storage for VMs, the key is need to be known in the infrastructure.
+To provide the key to those operations without includign the user every time a key-manager within the infrastructure can be utilized to store the keys and apply authorization policies on requests.
+OpenStack offers a key-manager implementation that is named Barbican, which provides these features.
 This standard aims to provide a base level of security for Cloud Service Providers that integrate a key-manager into their deployments.
 
 ## Terminology
@@ -17,6 +17,7 @@ This standard aims to provide a base level of security for Cloud Service Provide
 | Term | Meaning |
 |---|---|
 | API | Application Programming Interface, often referring to the REST API interfaces provided by OpenStack and related services |
+| Barbican | The key-manager implementation in OpenStack |
 | CSP | Cloud Service Provider, provider managing the OpenStack infrastructure |
 | IaaS | Infrastructure-as-a-Service |
 | HSM | Hardware Security Module |
@@ -24,15 +25,16 @@ This standard aims to provide a base level of security for Cloud Service Provide
 
 ## Motivation
 
-When user data is encrypted the keys need to be stored securely in the Infrastructure to be present, when a possible encryption or decryption needs to take place.
+User data encryption requires an encryption key to be known during encryption and decryption processes.
 Key-managers like Barbican provide this functionality on the IaaS-Level.
-Using such a key-manger and thus provide to customers the possibility to encrypt user data is not yet implemented everywhere in IaaS deployments.
-A first step towards more security is to encourage CSPs to use this service and provide the feature of using encrypted resources to customers.
+Not every IaaS deployment currently offers user data encryption as part of their standard offering.
+A first step towards more security is to encourage CSPs to provide a better data security by offering data encryption to the customers.
 It is also important to take a closer look into the key-manager and to apply aim for an appropiate level of security there.
-The Key-Manager is responsible for storing the keys securely, which can be done by encrypting them with a KEK and storing them in a database and store the KEK either also encrypted in the database or to store it somewhere else.
-Barbican as the OpenStack implementation of a key-manager is relying on a Master-KEK, which encrypts project-specific KEKs, which encrypt the Keys within a project.
-All keys except for the Master-KEK are stored in a database.
-This Master-KEK is stored differently for each plugin and needs to be protected.
+The Key-Manager service manages keys in a secure manner.
+This can be achieved differently and is not primarily in scope of this standard.
+Barbican stores keys encrypted with the project specific KEK, including the KEK itself, in the database.
+The Master KEK, used to encrypt the project specific KEKs is not stored in the database and is stored differently depending on the backend storage plugin used.
+This standard also abstracts from used plugins and want to ensure that the Master-KEK is protected, too.
 
 ## Design Considerations
 
@@ -50,7 +52,7 @@ Due to these reasons this Option was disregarded.
 
 #### _Option 2_
 
-Looking into the plugins and possible attack vectors one design decision in the plugins is very important: where and how to store the Master-KEK.
+Looking into the available Barbican plugins and possible attack vectors one design decision in the plugins is very important: where and how to store the Master-KEK.
 Because the Plugins might use different technologies, but most of them increase the security level by not storing the Master-KEK in plain text on the physical machine Barbican is running on.
 This mechanism as a whole, is something that CSPs should aim to do.
 
