@@ -1,9 +1,8 @@
 """Mandatory APIs checker
 This script retrieves the endpoint catalog from Keystone using the OpenStack
-SDK and checks whether all mandatory APi endpoints, are present.
+SDK and checks whether a key manager APi endpoint is present.
 The script relies on an OpenStack SDK compatible clouds.yaml file for
 authentication with Keystone.
-As the s3 endpoint might differ, a missing one will only result in a warning.
 """
 
 import argparse
@@ -46,7 +45,7 @@ def check_presence_of_key_manager(cloud_name: str):
             return 0
 
     # we did not find the key-manager service
-    logger.warning("There is no key-manager endpoin in the cloud.")
+    logger.warning("There is no key-manager endpoint in the cloud.")
     # we do not fail, until a key-manager MUST be present
     return 0
 
