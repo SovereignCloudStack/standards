@@ -9,13 +9,18 @@ supplements:
 
 ## Implementation
 
-A Key-Manager can have different backends, for Barbican there are called Plugins.
-The standard plugin is simple crypto, which has the Master-KEK written in the Barbican config file.
-To secure that Master-KEK it is advised to protect the Barbican config e.g. through running Barbican in an enclave.
+A Key-Manager service can have different backends, for Barbican these are called Plugins.
+The standard plugin is `simple_crypto`, which has the Master-KEK written in the Barbican config file.
+To secure that Master-KEK when the `simple_crypto` plugin is used it is advised to protect the Barbican config e.g. through running Barbican in an enclave.
 
 Another option to secure the Master-KEK would be using an HSM with a corresponding plugin in Barbican.
 In that case the Master-KEK will be stored inside the HSM and encryption and decryption of the Project-KEKs will also happen in the HSM.
 There are also software HSMs available, that should be tested for their integration into the Barbican workflow.
+
+Other Plugins in Barbican are the KMIP plugin and Vault[^1].
+They are storing the keys differently and CSPs need to make sure, that the access to the keys is configured securely.
+
+[^1]:[Barbican Plugins](https://docs.openstack.org/barbican/latest/install/barbican-backend.html)
 
 ## Automated Tests
 
