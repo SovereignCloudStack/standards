@@ -8,9 +8,9 @@ track: IaaS
 ## Introduction
 
 To be SCS-compliant a Cloud Service Provider (CSP) has to fulfill all SCS standards.
-Some of those standards are broad and consider ALL services on the IaaS-Layer.
-There exist many services on that layer and they need to be limited to have a clear scope for the standards and the Cloud Service Providers following them.
-For this purpose, this standard will establish lists for mandatory services that have to be present in a SCS cloud as well as supported services, which are considered by some standards and may be tested or even implemented in the reference implementation but are optional in a sense that their omission will not violate SCS conformance.
+Some of those standards are broad and consider ALL APIs of ALL services on the IaaS-Layer.
+There exist many services on that layer and for a first step they need to be limited to have a clear scope for the standards and the Cloud Service Providers following them.
+For this purpose, this standard will establish lists for mandatory services that APIs have to be present in a SCS cloud as well as supported services, which APIS are considered by some standards and may even be tested for their integration but are optional in a sense that their omission will not violate SCS conformance.
 
 ## Motivation
 
@@ -23,20 +23,19 @@ This document will give readers insight about how the SCS classifies the OpenSta
 If a cloud provides all mandatory and any number of supported OpenStack APIs, it can be tested for SCS-compliance.
 Any unsupported services will not be tested.
 
-## Mandatory OpenStack services
+## Mandatory IaaS APIs
 
-The following OpenStack services MUST be present in SCS-compliant IaaS deployments:
+The following IaaS APIs MUST be present in SCS-compliant IaaS deployments and could be implemented with the corresponding OpenStack services:
 
-| OpenStack Service | description |
-|-----|-----|
-| **Cinder** | Block Storage service |
-| **Glance** | Image service |
-| **Keystone** | Identity service |
-| **Neutron** | Networking service |
-| **Nova** | Compute service |
-| **Octavia** | Load-balancer service |
-| **Placement** | Hardware Describing Service for Nova |
-| **S3 API object storage** | No formal standard exists, many implementations: Swift, RadosGW, minio... |
+| Mandatory API | corresponding OpenStack Service | description |
+|-----|-----|-----|
+| **block-storage** | Cinder | Block Storage service |
+| **image** | Glance | Image service |
+| **identity** | Keystone | Identity service |
+| **network** | Neutron | Networking service |
+| **compute** | Nova | Compute service |
+| **load-balancer** | Octavia | Load-balancer service |
+| **s3** or **object-store** | S3 API object storage | No formal standard exists, many implementations: Swift, RadosGW, minio... |
 
 :::caution
 
@@ -46,27 +45,25 @@ Users should always research whether a needed feature is supported in the offere
 
 :::
 
-## Supported OpenStack services
+## Supported IaaS APIs
 
-The following services MAY be present in SCS-compliant IaaS deployment and are considered in the SCS standards.
+The following IaaS APIs MAY be present in SCS-compliant IaaS deployment, e.g. implemented thorugh the corresponding OpenStack services, and are considered in the SCS standards.
 
-| OpenStack Service | description |
-|-----|-----|
-| **Barbican** | Key Manager service |
-| **Cloudkitty** | Rating/Billing service |
-| **Ceilometer** | Telemetry service |
-| **Designate** | DNS service |
-| **Gnocchi** | Time Series Database service |
-| **Heat** | Orchestration service |
-| **Horizon** | Dashboard |
-| **Ironic** | Bare Metal provisioning service |
-| **Manila** | Shared File Systems service |
-| **Masakari** | Instances High Availability service |
-| **Skyline** | Dashboard |
+| Mandatory API | corresponding OpenStack Service | description |
+|-----|-----|-----|
+| **key-manager** | Barbican | Key Manager service |
+| **billing** | Cloudkitty | Rating/Billing service |
+| **telemetry** | Ceilomete | Telemetry service |
+| **dns** | Designate | DNS service |
+| **time-series-databse** | Gnocchi | Time Series Database service |
+| **orchestration** | Heat | Orchestration service |
+| **bare-metal** | Ironic | Bare Metal provisioning service |
+| **shared-file-systems** | Manila | Shared File Systems service |
+| **ha** | Masakari | Instances High Availability service |
 
-## Unsupported OpenStack services
+## Unsupported IaaS APIs
 
-All other OpenStack services that are not mentioned in the mandatory or supported lists will not be tested for their compatibility and conformance in SCS clouds by the SCS community.
+All other OpenStack services, which APIs are not mentioned in the mandatory or supported lists will not be tested for their compatibility and conformance in SCS clouds by the SCS community.
 Those services MAY be integrated into IaaS deployments by a Cloud Service Provider on their own responsibility but the SCS will not assume they are present and potential issues that occur during deployment or usage have to be handled by the CSP on their own accord.
 The SCS standard offers no guarantees for compatibility or reliability of services categorized as unsupported in conjunction with an SCS-conformant infrastructure.
 
@@ -76,5 +73,5 @@ The SCS standard offers no guarantees for compatibility or reliability of servic
 
 ## Conformance Tests
 
-The presence of the mandatory OpenStack services (except the S3) will be tested in a test-script.
+The presence of the mandatory OpenStack APIs (except the S3) will be tested in a test-script.
 As the S3 interface is a moving target, it may be integrated into the test suite but the test result will not be taken into account to determine conformance.
