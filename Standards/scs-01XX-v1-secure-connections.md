@@ -101,7 +101,7 @@ Client certificates must be deployed additionally and libvirt configured accordi
 
 [^4]: https://wiki.libvirt.org/TLSDaemonConfiguration.html#restricting-access
 
-#### UNIX socket and SSH live migration
+#### Local UNIX socket and SSH live migration
 
 As an alternative to the TLS setup, libvirt can be configured to use a local UNIX socket and Nova can be configured to use SSH to this socket for live migrations instead.
 The regular libvirt port can then be limited to localhost (`127.0.0.1`) which will make it inaccessible from outside the host but still enables local connections to use it.
@@ -223,8 +223,8 @@ You MAY refer to [TLS proxies and HTTP services](https://docs.openstack.org/secu
 
 ### Hypervisor and Live Migration Connections
 
-- If using libvirt on compute nodes, the libvirt port (as per `listen_addr`) MUST NOT be exposed to the network in an unauthenticated and unprotected fashion. It SHOULD be bound to `127.0.0.1`.
 - If QEMU and libvirt are used as the hypervisor interface in Nova, QEMU-native TLS SHOULD be used. See [Secure live migration with QEMU-native TLS](https://docs.openstack.org/nova/latest/admin/secure-live-migration-with-qemu-native-tls.html).
+- If using libvirt on compute nodes, the libvirt port (as per `listen_addr`) SHOULD NOT be exposed to the network in an unauthenticated and unprotected fashion. It is RECOMMENDED to either to enforce TLS with client certificate authentication or limit the libvirt port/socket to the local host in conjunction with SSH-based live migration connections. See the [corresponding Design Considerations section](#libvirt-hypervisor-interface-on-compute-nodes) for details.
 
 ### External VM Connections
 
