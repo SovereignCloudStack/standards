@@ -7,17 +7,32 @@ track: IaaS
 
 ## Introduction
 
-Introduction
+On the IaaS-Level especially in OpenStack it is possible to group resources in Availability Zones.
+Such Zones often are mapped to the physical layer of a deployment, such as e.g. physical separation of hardware or redundancy of power circuits or fire zones.
+But how CSPs apply Availability Zones to the IaaS Layer in one deplyoment may differ widely.
+Therefore this standard will address the minimal requirements that need to be met, when creating Avaiability Zones.
 
 ## Terminology
 
 | Term               | Explanation                                                                                                                              |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Availability Zone  | (also: AZ) internal representation of physical grouping of service hosts, which also lead to internal grouping of resources.             |
 | Fire Zone          | A physical separation in a data center that will contain fire within it. Effectively stopping spreading of fire.                         |
+| PDU                | Power Distribution Unit, used to distribute the power to all physical machines of a single server rack.                                  |
+| Compute            | A generic name for the IaaS service, that manages virtual machines (e.g. Nova in OpenStack).                                             |
+| Network            | A generic name for the IaaS service, that manages network resources (e.g. Neutron in OpenStack).                                         |
+| Storage            | A generic name for the IaaS service, that manages the storage backends and virtual devices (e.g. Cinder in OpenStack).                   |
 
 ## Motivation
 
-Motivation
+Redundancy is a non-trivial but relevant issue for a cloud deployment.
+The IaaS layer especially as the first virtualization from the hardware has an important role in this topic, because it is possible to provide failure safety through redundancy from failures on the physical layer.
+The grouping of physical resources into Availability Zones on the IaaS level, gives customers the option to distribute their workload to different AZs which will result in a better failure safety.
+While CSPs already have some similarities in their grouping of physical resources to AZs, there are also differences.
+Availability Zones can be set up for Compute, Network and Storage while all refering to the same physical separation in a deployment.
+This standard elaborates the necessity of having Availability Zones for each of these classes.
+It will also check the requirement customers may have, when thinking about Availability Zones in regarding of the taxonomy of failure safety levels [^1].
+The result should enable CSPs to know when to create AZs to be SCS-compliant.
 
 ## Design Considerations
 
@@ -70,7 +85,7 @@ Network do not need AZs
 
 ## Related Documents
 
-Related Documents, OPTIONAL
+The taxonomy of failsafe levels (TODO: link after DR is merged.)
 
 ## Conformance Tests
 
