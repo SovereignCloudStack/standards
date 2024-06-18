@@ -1,0 +1,23 @@
+name: "Compliance IaaS v3 of syseleven ham1 region"
+
+on:
+  # Trigger compliance check every day at 4:09 UTC
+  schedule:
+    - cron:  '09 4 * * *'
+  # Trigger compliance check after Docker image has been built
+  workflow_run:
+    workflows: [Build and publish scs-compliance-check Docker image]
+    types:
+      - completed
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  check-syseleven-ham1:
+    uses: ./.github/workflows/scs-compliance-check-with-application-credential.yml
+    with:
+      version: v3
+      layer: iaas
+      cloud: "syseleven-ham1"
+      secret_name: "OS_PASSWORD_SYSELEVEN_HAM1"
+    secrets: inherit
