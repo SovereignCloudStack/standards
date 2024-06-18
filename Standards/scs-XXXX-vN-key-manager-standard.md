@@ -8,7 +8,7 @@ track: IaaS
 ## Introduction
 
 To encrypt user data like volumes or in the future also Images and ephemeral storage for VMs, the key is need to be known in the infrastructure.
-To provide the key to those operations without includign the user every time a key-manager within the infrastructure can be utilized to store the keys and apply authorization policies on requests.
+To provide the key to those operations without including the user every time a key-manager within the infrastructure can be utilized to store the keys and apply authorization policies on requests.
 OpenStack offers a key-manager implementation that is named Barbican, which provides these features.
 This standard aims to provide a base level of security for Cloud Service Providers that integrate a key-manager into their deployments.
 
@@ -28,13 +28,13 @@ This standard aims to provide a base level of security for Cloud Service Provide
 User data encryption requires an encryption key to be known during encryption and decryption processes.
 Key-managers like Barbican provide this functionality on the IaaS-Level.
 Not every IaaS deployment currently offers user data encryption as part of their standard offering.
-A first step towards more security is to encourage CSPs to provide a better data security by offering data encryption to the customers.
+A first step towards more security is to encourage CSPs to provide better data security by offering data encryption to the customers.
 It is also important to take a closer look into the key-manager and to apply aim for an appropiate level of security there.
 The Key-Manager service manages keys in a secure manner.
 This can be achieved differently and is not primarily in scope of this standard.
 Barbican stores keys encrypted with the project specific KEK, including the KEK itself, in the database.
 The Master KEK, used to encrypt the project specific KEKs is not stored in the database and is stored differently depending on the backend storage plugin used.
-This standard also abstracts from used plugins and want to ensure that the Master-KEK is protected, too.
+This standard also abstracts the used plugins and wants to ensure that the Master-KEK is protected, too.
 
 ## Design Considerations
 
@@ -48,7 +48,7 @@ To minimize the burden and enable more CSPs to step up and provide encryption, t
 
 It was considered to only recommend a certain set of plugins or backends for the key-manager, but this may be very prone to change if Barbican adds a new plugin.
 As the SCS only wants to mandate the API that can be abstracted through the Castellan library in OpenStack, integrating any other key-manager implementation is not uncommon, so this standard needs to consider other possible key-managers as well.
-Due to these reasons this Option was disregarded.
+Due to these reasons this option was disregarded.
 
 #### _Option 2_
 

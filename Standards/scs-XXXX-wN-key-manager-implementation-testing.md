@@ -24,9 +24,9 @@ They are storing the keys differently and CSPs need to make sure, that the acces
 
 ## Automated Tests
 
-The check for the presence of a Key Manager is done with an test script, that checks the presence of a key manager service in the catalog endpoint of openstack.
+The check for the presence of a Key Manager is done with a test script, that checks the presence of a Key-Manager service in the catalog endpoint of Openstack.
 This check can eventually be moved to the checks for the mandatory an supported service/API list, in case of a promotion of the key-manager to the mandatory list.
 
 ## Manual Tests
 
-There need to be a manual test that searches the physical host of the Key-Manager host for the present of a Master-KEK in Plain-Text, e.g. in the Barbican config file.
+There needs to be a manual test that searches the physical host of the Key-Manager host for the presence of a Master-KEK in Plain-Text, e.g. in the Barbican config file.
