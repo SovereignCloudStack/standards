@@ -169,6 +169,12 @@ This option would still offer improvements over arbitrary OpenStack clouds by es
 
 ## Open questions
 
+### Choosing the best protection for the libvirt hypervisor interface
+
+As described in the design considerations section, there are multiple ways of securing the libvirt interface using TLS or SSH.
+Each approach holds its own challenges and requires a robust provisioning and lifecycle mechanism for the cryptographic assets (e.g. client keys or certificates) to ensure proper configuration of all involved nodes, even if the set of nodes changes.
+Aside from extensive testing required to select the best approach, this goes beyond simple component configuration and relies on sophisticated key management which this standard alone does not provide.
+
 ### Verifying standard conformance for internal mechanisms
 
 Most of the mentioned communication channels to be secured are part of the internal IaaS infrastructure of a SCS cloud.
