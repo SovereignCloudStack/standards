@@ -8,9 +8,9 @@ track: IaaS
 ## Introduction
 
 To be SCS-compliant a Cloud Service Provider (CSP) has to fulfill all SCS standards.
-Some of those standards are broad and consider ALL APIs of ALL services on the IaaS-Layer.
+Some of those standards are broad and consider all APIs of all services on the IaaS-Layer.
 There exist many services on that layer and for a first step they need to be limited to have a clear scope for the standards and the Cloud Service Providers following them.
-For this purpose, this standard will establish lists for mandatory services that APIs have to be present in a SCS cloud as well as supported services, which APIS are considered by some standards and may even be tested for their integration but are optional in a sense that their omission will not violate SCS conformance.
+For this purpose, this standard will establish lists for mandatory services whose APIs have to be present in a SCS cloud as well as supported services, which APIs are considered by some standards and may even be tested for their integration but are optional in a sense that their omission will not violate SCS conformance.
 
 ## Motivation
 
@@ -19,9 +19,9 @@ These services have differences in the quality of their implementation and liven
 To fulfill all SCS-provided standards only a subset of these APIs are required.
 Some more but not all remaining OpenStack APIs are also supported additionally by the SCS project and may be part of its reference implementation.
 This results in different levels of support for specific services.
-This document will give readers insight about how the SCS classifies the OpenStack services accordingly.
+This document will give readers insight about how the SCS classifies the OpenStack APIs accordingly.
 If a cloud provides all mandatory and any number of supported OpenStack APIs, it can be tested for SCS-compliance.
-Any unsupported services will not be tested.
+Any unsupported APIs will not be tested.
 
 ## Mandatory IaaS APIs
 
@@ -63,9 +63,9 @@ The following IaaS APIs MAY be present in SCS-compliant IaaS deployment, e.g. im
 
 ## Unsupported IaaS APIs
 
-All other OpenStack services, which APIs are not mentioned in the mandatory or supported lists will not be tested for their compatibility and conformance in SCS clouds by the SCS community.
+All other OpenStack services, whose APIs are not mentioned in the mandatory or supported lists will not be tested for their compatibility and conformance in SCS clouds by the SCS community.
 Those services MAY be integrated into IaaS deployments by a Cloud Service Provider on their own responsibility but the SCS will not assume they are present and potential issues that occur during deployment or usage have to be handled by the CSP on their own accord.
-The SCS standard offers no guarantees for compatibility or reliability of services categorized as unsupported in conjunction with an SCS-conformant infrastructure.
+The SCS standard offers no guarantees for compatibility or reliability of services categorized as unsupported.
 
 ## Related Documents
 
