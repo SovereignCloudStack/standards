@@ -1,0 +1,107 @@
+---
+images:
+  - name: Ubuntu
+    format: qcow2
+    login: ubuntu
+    password: ubuntu
+    status: active
+    visibility: public
+    multi: false
+    min_disk: 8
+    min_ram: 512
+    tags: []
+    meta:
+      architecture: x86_64
+      hypervisor_type: qemu
+      hw_disk_bus: scsi
+      hw_rng_model: virtio
+      hw_scsi_model: virtio-scsi
+      hw_watchdog_action: reset
+      os_distro: ubuntu
+      replace_frequency: never
+      uuid_validity: none
+      provided_until: none
+      image_original_user: ubuntu
+    versions:
+    - version: '20.04'
+      os_version: '20.04'
+      image_description: "https://cloud-images.ubuntu.com/releases/focal/release/"
+      url: https://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64.img
+      checksum: "sha256:edf43eb9f4e5ededbb3606c719c98b0e14c956278da42567e907a17d8bccb571"
+      build_date: 2024-03-07
+    - version: '22.04'
+      os_version: '22.04'
+      image_description: "https://cloud-images.ubuntu.com/releases/jammy/release/"
+      url: https://cloud-images.ubuntu.com/releases/jammy/release/ubuntu-22.04-server-cloudimg-amd64.img
+      checksum: "sha256:304983616fcba6ee1452e9f38993d7d3b8a90e1eb65fb0054d672ce23294d812"
+      build_date: 2024-03-19
+  - name: ubuntu-capi-image
+    format: qcow2
+    login: ubuntu
+    password: ubuntu
+    status: active
+    visibility: public
+    multi: false
+    min_disk: 20
+    min_ram: 512
+    tags: []
+    meta:
+      architecture: x86_64
+      hypervisor_type: qemu
+      hw_disk_bus: virtio
+      hw_rng_model: virtio
+      hw_scsi_model: virtio-scsi
+      hw_watchdog_action: reset
+      os_distro: ubuntu
+      replace_frequency: never
+      uuid_validity: none
+      provided_until: none
+      image_original_user: ubuntu
+    versions:
+    - version: 'v1.29.3'
+      os_version: '22.04'
+      image_description: "https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/"
+      url: https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube-v1.29/ubuntu-2204-kube-v1.29.3.qcow2
+      checksum: "sha256:2a16b6e5f58bf1ddd3c7f4c3092aa3336905bd4eaf0cda2c8a95d704d3d98ea4"
+      build_date: 2024-03-07
+  - name: 'Debian'
+    format: qcow2
+    login: debian
+    password: debian
+    status: active
+    visibility: public
+    multi: false
+    min_disk: 8
+    min_ram: 512
+    tags: []
+    meta:
+      architecture: x86_64
+      hypervisor_type: qemu
+      hw_disk_bus: scsi
+      hw_rng_model: virtio
+      hw_scsi_model: virtio-scsi
+      hw_watchdog_action: reset
+      os_distro: debian
+      replace_frequency: never
+      uuid_validity: none
+      provided_until: none
+      image_original_user: debian
+    versions:
+    - version: '10'
+      os_version: '10'
+      image_description: "https://cloud.debian.org/images/cloud/buster/latest/"
+      url: https://cloud.debian.org/images/cloud/buster/latest/debian-10-generic-amd64.qcow2
+      checksum: "sha512:fa242e8d35f6e3fa0af624244b1fbad6ba110afb595949fd8f283356e9e868ec23349aebffd1584051a1c6fc3099fe86bb4941426f650c3b6c168b350581ddf9"
+      build_date: 2024-04-30
+    - version: '11'
+      os_version: '11'
+      image_description: "https://cloud.debian.org/images/cloud/bullseye/latest/"
+      url: https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-generic-amd64.qcow2
+      checksum: "sha512:8bc1f39a91ede83a15248de7c5b69ad6eae2094db45c7e6c22cf3a6fb774878a37f87575b829c19358389ec1f98dc4d5f12ae996977057ce2e9c29d88b871d57"
+      build_date: 2024-04-29
+    - version: '12'
+      os_version: '12'
+      image_description: "https://cloud.debian.org/images/cloud/bookworm/latest/"
+      url: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2
+      checksum: "sha512:cae81bd82490bb68aaa554f4573fecd09d19b9bf5feccdcd2c42eabba7ac507cda8b7fa53983e1a843c6334bbb684142897dda2990d2fe159261bca3308c4333"
+      build_date: 2024-04-29
