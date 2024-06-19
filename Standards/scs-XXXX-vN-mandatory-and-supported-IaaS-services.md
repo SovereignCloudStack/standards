@@ -49,7 +49,7 @@ Users should always research whether a needed feature is supported in the offere
 
 The following IaaS APIs MAY be present in SCS-compliant IaaS deployment, e.g. implemented thorugh the corresponding OpenStack services, and are considered in the SCS standards.
 
-| Mandatory API | corresponding OpenStack Service | description |
+| Supported API | corresponding OpenStack Service | description |
 |-----|-----|-----|
 | **key-manager** | Barbican | Key Manager service |
 | **billing** | Cloudkitty | Rating/Billing service |
