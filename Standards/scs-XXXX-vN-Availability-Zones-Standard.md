@@ -36,46 +36,86 @@ The result should enable CSPs to know when to create AZs to be SCS-compliant.
 
 ## Design Considerations
 
+Availability Zones should represent parts of the same deployment, that have an independency of each other.
+The maximum of physical independency is achieved through putting physical machines into different fire zones.
+In that case a failure case up to level 3 as described in the taxonomy of failure safety levels document[^1] will not lead to a complete outage of the deployment.
 
-    AZs should represent parts of the same deployment, that have an independency of each other
-    AZs should be able to take workload from another AZ in a Failure Case of Level 3 (in other words: the destruction of one AZ will not automatically include destruction of the other AZs)
+Havine Availability Zones represent fire zones will also result in AZs being to take workload from another AZ in a Failure Case of Level 3. 
+So that even the destruction of one Availability Zone will not automatically include the destruction of the other AZs.
+
+Smaller deplyoments like edge deployments may not have more than one fire zone in a single location.
+To include such deployments, it should not be required to use Availability Zones.
+
+
 
     Compute: resources are bound to one AZ, replication cannot be guaranteed, downtime or loss of resources is most likely
     Storage: highly depended on storage configuration, replication even over different AZs is part of some storage backends
     Network: network resources are also stored as configuration pattern in the DB and could be materialized in other parts of a deployment easily as long as the DB is still available.
 
-    We should not require AZs to be present (== allow small deployments and edge use cases)
-
-
-- Availability Zones are available for Compute, Storage and Network. They behave differently there
+Availability Zones are available for Compute, Storage and Network services.
+They behave differently for each of these resources and also when working across resource-based Availability Zones, e.g. attaching a volume from one AZ to a virtual machine in another AZ.
 
 ### Options considered
 
 #### AZs in Compute
 
+Compute Hosts are physical machines on which the compute service runs.
+A single virtual machine is always running on ONE compute host.
+Redundancy of virtual machines is either up to the layer above IaaS or up to the customers themself. 
+Having Availability Zones gives customers the possibility to let another virtual machine as a backup run within another Availability Zone.
 
+Customers will expect that in case of the failure of one Availability Zone all other AZs are still available.
+The highest possible failure safety here is achieved, when Availability Zones for Compute are used for different fire Zones.
 
 #### AZs in Storage
 
+There are many different backends used for the storage service with Ceph being one of the most prominent backends.
+Configuring those backends can already include to span one storage cluster over physical machines in different fire zones.
+In combination with internal replication a configuration is possible, that already distributes replicas from volumes over different fire zones.
+When a deployment has such a configured storage backend, it already can provide safety in case of a failure of level 3.
 
+Using Availability Zone is also possible for the storage service, but configuring AZs, when having a configuration like above will not increase safety.
+Nevertheless using AZs when having different backends in different fire zones will give customers a hint to backup volumes into storages of other AZs.
+
+Still it might be confusing when having deployments with compute AZs but without storage AZs.
+CSPs may need to communicate clearly up to which failure safety level their storage service can automatically have redundancy and from which level customers are responsible for the redundancy of their data.
 
 #### AZs in Network
 
+Network resources can be typically fastly and easily set up from building instruction.
+Those instructions are stored in the database of the networking service.
 
+If a physical machine, on which certain network resources are set up, is not available anymore, the resources can be rolled out on another physical machine, without being depended on the current situation of the lost resources.
+There might only be a loss of a few packages within the los network ressources.
+
+With having Compute and Storage in a good state (e.g. through having fire zones with a compute AZ each and storage being replicated over the fire zones) it would not have downsides to not have Availability Zones for the network service.
+It might even be the opposite: Having resources running in certain Availability Zones might permit them from being scheduled in other AZs[^2].
+This standard will therefore make no recommendations about Network AZs.
+
+[^2]: [Availability Zones in Neutron for OVN](https://docs.openstack.org/neutron/latest/admin/ovn/availability_zones.html)
 
 ### Open questions
 
-RECOMMENDED
+Without the networking AZs we only need to take a closer look into attaching volumes to virtual machines across AZs.
+
+It is
 
 ## Standard
+
+### Compute
+
+Compute Availability Zone MUST be in different fire zones.
+
 
 
     AZs should only occur within the same deployment and have an interconnection that represents that (we should not require specific numbers in bandwidth and latency.)
     We should separate between AZs for different resources (Compute, Storage, Network)
 
 Compute needs AZs (because VMs may be single point of failure) if failure case 3 may occur (part of the deployment is destroyed, if the deployment is small there will be no failure case three, as the whole deployment will be destroyed)
-Storage should either be replicated over different zones (e.g. fire zones) that are equivalent to compute AZs or also use AZs
-Network do not need AZs
+
+### Storage
+
+If there are more than one fire zone in a deployment, the storage SHOULD either be configured to automatically replicate volumes over different fire zones OR also have one Availability Zones for each fire zone.
 
     Power supply may be confused with power line in. Maybe a PDU is what we should talk about - those need to exist for each AZ independently.
     When we define fire zone == compute AZ, then every AZ of course has to fulfill the guidelines for a single fire zone. Maybe this should be stated implicitly rather than explicitly.
