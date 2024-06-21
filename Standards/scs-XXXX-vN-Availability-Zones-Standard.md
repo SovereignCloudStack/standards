@@ -46,16 +46,33 @@ So that even the destruction of one Availability Zone will not automatically inc
 Smaller deplyoments like edge deployments may not have more than one fire zone in a single location.
 To include such deployments, it should not be required to use Availability Zones.
 
+Other physical factors that should be considered are the power supplies, internet connection, cooling and core routing.
+Availability Zones have been also being configured to show redundancy in e.g. Power Supply as in the PDU.
+There are deployments, which have Availability Zones per rack as each rack has it's own PDU and this was considered to be the single point of failure and AZ should represent.
+While this is also a possible measurement of independency it only provides failure safty for level 2.
+Therefore this standard should be very clear about which independency an AZ should represent and it should not be allowed to have different deployments with their Availability Zones representing different levels of failure safety.
 
+There are recommendations from the BSI for physical redundancy within a cloud deployment.
+This standard considers these recommendation as a basis for all data centers.
+This means that the destruction of one fire zone will not lead to an outage of all power lines, internet connections, core routers or cooling systems.
 
-    Compute: resources are bound to one AZ, replication cannot be guaranteed, downtime or loss of resources is most likely
-    Storage: highly depended on storage configuration, replication even over different AZs is part of some storage backends
-    Network: network resources are also stored as configuration pattern in the DB and could be materialized in other parts of a deployment easily as long as the DB is still available.
+For the setup of Availability Zone this means, that within every AZ, there needs to be redundancy in core routers, internet connection, power lines and at least two separate cooling systems.
+But all this physical infrastructure can be the same over all Availability Zones in a deployment, when it is possible to survive the destruction of one fire zone.
 
-Availability Zones are available for Compute, Storage and Network services.
+Additionally Availability Zones are available for Compute, Storage and Network services.
 They behave differently for each of these resources and also when working across resource-based Availability Zones, e.g. attaching a volume from one AZ to a virtual machine in another AZ.
 
 ### Options considered
+
+#### Physical-based Availability Zones
+
+It is possible standardize the Usage of Availability Zones over all IaaS resources.
+The downside from this is, that the IaaS resources behave so differently, that they have different requirements for redundancy and thus Availability Zones.
+This is not the way to go.
+
+The question that remains is, what an Availability Zone should consist of?
+Having one Availability Zone per fire zone gives the best level of failure safety, that can be achieved by CSPs.
+When building up on the relation between fire zone and physical redundancy recommendations as from the BSI, this combination is a good starting point, but need to be checked for the validity for the different IaaS resources.
 
 #### AZs in Compute
 
@@ -105,7 +122,15 @@ It is
 ### Compute
 
 Compute Availability Zone MUST be in different fire zones.
+Availabilty Zones for Storage SHOULD be setup, if there is no storage backend used that can span over different fire zones and automatically replicate the data.
 
+ -- Cross- attaching: If Availability Zones for Storage are used, the attaching of volumes from one Storage Availability 
+
+Within each Availability Zone:
+- there MUST be redundancy in power supply, as in line into the deployment
+- there MUST be redundancy in external connection (e.g. internet connection or WAN-connection)
+- there MUST be redundancy in core routers
+- there SHOULD be at least two cooling systems, that are independent of each other
 
 
     AZs should only occur within the same deployment and have an interconnection that represents that (we should not require specific numbers in bandwidth and latency.)
