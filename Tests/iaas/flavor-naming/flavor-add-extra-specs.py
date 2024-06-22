@@ -4,11 +4,11 @@
 flavor-add-extra-specs.py
 
 Cycles through all openstack flavors and adds metadata specified in
-scs-0104-v1 <https://docs.scs.community/standards/scs-0104-v1-standard-images>.
+scs-0104-v1 <https://docs.scs.community/standards/scs-0103-v1-standard-flavors>.
 
 Usage: flavor-add-extra-specs.py [-d|--debug] [-a|--all] [-c|--os-cloud CLOUD] [FLAVORS]
 CLOUD defaults to env["OS_CLOUD"], FLAVORS default to all found SCS- flavors.
--t|--disk-type0= allows to set the disk type (default = networked aka n.
+-t|--disk-type0= allows to set the disk type (default = none).
 
 (c) Kurt Garloff <garloff@osb-alliance.com>, 6/2024
 SPDX-License-Identifier: CC-BY-SA-4.0
@@ -34,7 +34,7 @@ def min_max_check(real, claim, valnm, flvnm):
        Prints ERROR is lower and returns False
        Prints WARNING if higher (and returns True)
        Returns True if no problem detected."""
-    # 1% tolerance for floats
+    # 1% tolerance for floats (RAM)
     if claim is float:
         chkval = real*1.01
         chkval2 = real*0.99
@@ -100,6 +100,7 @@ def main(argv):
                       file=sys.stderr)
                 errors += 1
                 continue
+
         # Now do sanity checks (std properties)
         #  vcpus
         if not min_max_check(flavor.vcpus, flvnm.cpuram.cpus, "CPUs", flavor.name):
@@ -117,8 +118,8 @@ def main(argv):
             errors += 1
             continue
 
-        # Generate namev1 and namev2
-        # Generate CPU and disk types
+        # Parse and Generate name-v1 and name-v2
+        # Parse and Generate cpu-type and disk0-type
 
 
 if __name__ == "__main__":
