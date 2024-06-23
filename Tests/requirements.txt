@@ -118,7 +118,7 @@ stevedore==5.2.0
     #   keystoneauth1
 typing-extensions==4.12.2
     # via dogpile-cache
-urllib3==2.2.1
+urllib3==2.2.2
     # via
     #   kubernetes-asyncio
     #   requests
