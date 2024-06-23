@@ -3,12 +3,22 @@
 """
 flavor-add-extra-specs.py
 
-Cycles through all openstack flavors and adds metadata specified in
-scs-0104-v1 <https://docs.scs.community/standards/scs-0103-v1-standard-flavors>.
+Cycles through all SCS- openstack flavors and adds metadata specified in
+scs-0103-v1 <https://docs.scs.community/standards/scs-0103-v1-standard-flavors>.
 
-Usage: flavor-add-extra-specs.py [-d|--DEBUG] [-a|--all] [-c|--os-cloud CLOUD] [FLAVORS]
-CLOUD defaults to env["OS_CLOUD"], FLAVORS default to all found SCS- flavors.
--t|--disk-type0= allows to set the disk type (default = none).
+Usage: flavor-add-extra-specs.py [options] [FLAVORS]
+Options:
+    -h|--help:  Print usage information
+    -d|--debug: Output verbose debugging info
+    -t|--disk0-type TYPE:   Assumes disk TYPE for flavors w/ unspec disk0-type
+    -c|--os-cloud CLOUD:    Cloud to work on (default: OS_CLOUD env)
+By default, all SCS- flavors are processed; by passing flavor names FLAVORS as
+arguments, only those are processed.
+(Currently, only SCS- flavors are supported; this may be lifted in the future.)
+
+On most clouds, to add properties (extra_specs) to flavors, you need to have
+admin power; this program will otherwise report the failed settings. This can
+be used for testing, best in conjunction with -d|--debug.
 
 (c) Kurt Garloff <garloff@osb-alliance.com>, 6/2024
 SPDX-License-Identifier: CC-BY-SA-4.0
@@ -37,7 +47,9 @@ def min_max_check(real, claim, valnm, flvnm):
     """Check whether property valnm real is at least claim.
        Prints ERROR is lower and returns False
        Prints WARNING if higher (and returns True)
-       Returns True if no problem detected."""
+       Returns True if no problem detected.
+       For floats, we allow for 1% tolerance in both directions.
+       """
     # 1% tolerance for floats (RAM)
     if claim is float:
         chkval = real*1.01
@@ -56,7 +68,11 @@ def min_max_check(real, claim, valnm, flvnm):
 
 
 def check_name_extra(flavor, ver, match):
-    "Check for existence and consistency of scs names in extra specs"
+    """Check for existence and consistency of scs names in extra specs
+    This assumes that a v1 or v2 name is used as main flavor name and should
+    match. If match is not set an v1->v2 or v2->v1 translation is neeed.
+    ver needs to be set to 'v1' or 'v2'.
+    """
     spec = f"scs:name-{ver}"
     errs = 0
     need_name_set = True
@@ -65,6 +81,7 @@ def check_name_extra(flavor, ver, match):
         if match and name != flavor.name:
             print(f"WARNING: {spec} {name} != flavor name {flavor.name}",
                   file=sys.stderr)
+        # Existing names must be parseable SCS names, check
         try:
             if ver == "v2":
                 parser_v2(name)
@@ -72,10 +89,9 @@ def check_name_extra(flavor, ver, match):
                 parser_v1(name)
             need_name_set = False
         except ValueError as exc:
-            print(f"ERROR parsing {spec} {name}: {str(exc)}",
+            print(f"ERROR parsing {spec} {name}: {exc!r}",
                   file=sys.stderr)
-            # Correct this
-            # To Do: Check consistency
+        # To Do: Check consistency
     if need_name_set:
         errs += 1
         if match:
@@ -102,23 +118,28 @@ def revert_dict(value, dct, extra=""):
 
 
 def update_flavor_extra(compute, flavor, prop):
-    "Update flavor extra_spec property"
+    """Update flavor extra_spec property prop with the value in the
+    dict flavor.extra_specs[prop]. Delete the property if it is None.
+    Return 1 if there was an error."""
     try:
-        if flavor.extra_specs[prop]:
+        if prop in flavor.extra_specs and flavor.extra_specs[prop]:
             flavor.update_extra_specs_property(compute, prop,
                                                flavor.extra_specs[prop])
         else:
             flavor.delete_extra_specs_property(compute, prop)
+            if prop in flavor.extra_specs:
+                del flavor.extra_specs[prop]
         return 0
     except openstack.exceptions.ForbiddenException as exc:
-        print(f"ERROR: Could not set {prop} for {flavor.name}: {str(exc)}",
+        print(f"ERROR: Could not set {prop} for {flavor.name}: {exc!r}",
               file=sys.stderr)
         return 1
 
 
 def check_extra_type(flavor, prop, val, dct):
     """Check extra_specs['scs:prop'] for flavor
-    It should be set and consistent with val, translated with dct"""
+    It should be set and consistent with val, translated with dct.
+    Returns 1 is the extra_spec needs to change"""
     spec = f"scs:{prop}"
     if val:
         expected = dct[val]
@@ -149,17 +170,19 @@ def main(argv):
     if "OS_CLOUD" in os.environ:
         cloud = os.environ["OS_CLOUD"]
     try:
-        opts, flvs = getopt.gnu_getopt(argv, "dt:c:",
-                                       ("DEBUG", "disk-type0=", "os-cloud="))
+        opts, flvs = getopt.gnu_getopt(argv, "hdt:c:",
+                                       ("help", "debug", "disk0-type=", "os-cloud="))
     except getopt.GetoptError as exc:
         print(f"CRITICAL: {exc!r}", file=sys.stderr)
         usage(1)
     for opt in opts:
-        if opt[0] == "-d" or opt[0] == "--DEBUG":
+        if opt[0] == "-h" or opt[0] == "--help":
+            usage(0)
+        if opt[0] == "-d" or opt[0] == "--debug":
             DEBUG = True
         if opt[0] == "-c" or opt[0] == "--os-cloud":
             cloud = opt[1]
-        if opt[0] == "-t" or opt[0] == "--disk-typo0":
+        if opt[0] == "-t" or opt[0] == "--disk0-type":
             disk0_type = opt[1]
             if disk0_type not in DISKTYPE_KEY:
                 disk0_type = revert_dict(disk0_type, DISKTYPE_KEY)
@@ -168,7 +191,7 @@ def main(argv):
 
     if not cloud:
         print("ERROR: Need to pass -c|--os-cloud|OS_CLOUD env", file=sys.stderr)
-        usage(2)
+        usage(3)
 
     conn = openstack.connect(cloud)
     conn.authorize()
@@ -190,7 +213,7 @@ def main(argv):
                 flvnm = parser_v1(flavor.name)
                 is_v1 = True
             except ValueError:
-                print(f"ERROR with flavor {flavor.name}: {str(exc)}, skipping ...",
+                print(f"ERROR with flavor {flavor.name}: {exc!r}, skipping ...",
                       file=sys.stderr)
                 errors += 1
                 continue
@@ -234,10 +257,6 @@ def main(argv):
         upd = check_extra_type(flavor, "disk0-type", dtp, DISKTYPE_KEY)
         if upd:
             errors += update_flavor_extra(compute, flavor, "scs:disk0-type")
-
-        # errors += upd
-        # if upd:
-        #    flavor.update(extra_specs=flavor.extra_specs)
 
     return errors
 
