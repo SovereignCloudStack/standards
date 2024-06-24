@@ -18,10 +18,20 @@ These levels can then be used in standards to clearly set the scope that certain
 
 ## Glossary
 
+### General Terms
+
 | Term               | Explanation                                                                                                                              |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Disk               | A physical disk drive (e.g. HDD, SSD) in the infrastructure.                                                                             |
+| Host               | A physical machine in the infrastructure providing computational, storage and/or network connectivity capabilities.                      |
+| Cyber threat       | Attacks on the infrastructure through the means of electronic access.                                                                    |
+
+### OpenStack Resources
+
+| Resource           | Explanation                                                                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | Virtual Machine    | Equals the `server` resource in Nova.                                                                                                    |
-| Ironic Machine     | A physical node managed by Ironic or as a `server` resource in Nova.                                                                     |
+| Ironic Machine     | A physical host managed by Ironic or as a `server` resource in Nova.                                                                     |
 | Ephemeral Storage  | Disk storage directly supplied to a virtual machine by Nova. Different from volumes.                                                     |
 | (Glance) Image     | IaaS resource usually storing raw disk data. Managed by the Glance service.                                                              |
 | (Cinder) Volume    | IaaS resource representing block storage disk that can be attached as a virtual disk to virtual machines. Managed by the Cinder service. |
@@ -30,9 +40,19 @@ These levels can then be used in standards to clearly set the scope that certain
 | (Barbican) Secret  | IaaS resource storing cryptographic assets such as encryption keys. Managed by the Barbican service.                                     |
 | Key Encryption Key | IaaS resource, used to encrypt other keys to be able to store them encrypted in a database.                                              |
 | Floating IP        | IaaS resource, an IP that is usually routed and accessible from external networks.                                                       |
-| Disk               | A physical disk drive (e.g. HDD, SSD) in the infrastructure.                                                                             |
-| Node               | A physical machine in the infrastructure providing computational, storage and/or network connectivity capabilities.                      |
-| Cyber threat       | Attacks on the infrastructure through the means of electronic access.                                                                    |
+
+### Kubernetes Resources
+
+| Resource           | Explanation                                                                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Node               | A physical or virtual machine that runs workloads (Pods) managed by the Kubernetes control plane.                                        |
+| Kubelet            | An agent that runs on each node in the cluster. It makes sure that containers are running in a Pod.                                      |
+| API Server         | The Kubernetes control plane component which exposes the Kubernetes Application Programming Interface (API).                             |
+| Pod                | Kubernetes object that represents a workload to be executed, consisting of one or more containers.                                       |
+| Container          | A lightweight and portable executable image that contains software and all of its dependencies.                                          |
+| Persistent Volume Claim (PVC) | Persistent storage that can be bound and mounted to a pod.                                                                    |
+
+Source: https://kubernetes.io/docs/reference/glossary/
 
 ## Context
 
