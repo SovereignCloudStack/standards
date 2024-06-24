@@ -15,7 +15,7 @@ on:
       secret_name:
         required: true
         type: string
-  
+
 jobs:
   scs-compliance-check:
     runs-on: ubuntu-latest
@@ -35,7 +35,7 @@ jobs:
       - name: "Run scs-compliance-check"
         run: "cd /scs-compliance && ./scs-compliance-check.py scs-compatible-${{ inputs.layer }}.yaml --version ${{ inputs.version }} -o result.yaml -s ${{ inputs.cloud }} -a os_cloud=${{ inputs.cloud }}"
       - name: "Upload results"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: result
           path: /scs-compliance/result.yaml

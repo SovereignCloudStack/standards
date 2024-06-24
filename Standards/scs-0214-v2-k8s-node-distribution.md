@@ -1,8 +1,8 @@
 ---
 title: Kubernetes Node Distribution and Availability
 type: Standard
-status: Stable
-stabilized_at: 2024-02-08
+status: Draft
+replaces: scs-0214-v1-k8s-node-distribution.md
 track: KaaS
 ---
 
@@ -65,59 +65,65 @@ shouldn't be defined further in this document.
 
 This standard formulates the requirement for the distribution of Kubernetes nodes in order
 to provide a fault-tolerant and available Kubernetes cluster infrastructure.
-Since some providers only have small environments to work with and therefore couldn't
-comply with this standard, it will be treated as a RECOMMENDED standard, where providers
-can OPT OUT.
 
-If the standard is used by a provider, the following decisions are binding and valid:
+The control plane nodes MUST be distributed over multiple physical machines.
+Kubernetes provides [best-practices][k8s-zones] on this topic, which are also RECOMMENDED by SCS.
 
-- The control plane nodes MUST be distributed over multiple physical machines. Kubernetes
-  provides best-practices on this topic, which are also RECOMMENDED by SCS.
-- At least one control plane instance MUST be run in each "failure zone", more are
-  RECOMMENDED in each "failure zone" to provide fault-tolerance for each zone.
-- Worker nodes are RECOMMENDED to be distributed over multiple zones. This policy makes
-  it OPTIONAL to provide a worker node in each "failure zone", meaning that worker nodes
-  can also be scaled vertically first before scaling horizontally.
-- Worker node distribution MUST be indicated to the user through some kind of labeling
-  in order to enable (anti)-affinity for workloads over "failure zones".
-- To provide metadata about the node distribution, which also enables testing of this standard,
-  providers MUST label their K8s nodes with the labels listed below.
-  - `topology.kubernetes.io/zone`
+At least one control plane instance MUST be run in each "failure zone" used for the cluster,
+more instances per "failure zone" are possible to provide fault-tolerance inside a zone.
 
-    Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
-    It provides a logical zone of failure on the side of the provider, e.g. a server rack
-    in the same electrical circuit or multiple machines bound to the internet through a
-    singular network structure. How this is defined exactly is up to the plans of the provider.
-    The field gets autopopulated most of the time by either the kubelet or external mechanisms
-    like the cloud controller.
+Worker nodes are RECOMMENDED to be distributed over multiple zones. This policy makes
+it OPTIONAL to provide a worker node in each "failure zone", meaning that worker nodes
+can also be scaled vertically first before scaling horizontally.
 
-  - `topology.kubernetes.io/region`
+To provide metadata about the node distribution and possibly provide the ability
+to schedule workloads efficiently, which also enables testing of this standard,
+providers MUST annotate their K8s nodes with the labels listed below.
+These labels MUST be kept up to date with the current state of the deployment.
 
-    Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
-    It describes the combination of one or more failure zones into a region or domain, therefore
-    showing a larger entity of logical failure zone. An example for this could be a building
-    containing racks that are put into such a zone, since they're all prone to failure, if e.g.
-    the power for the building is cut. How this is defined exactly is also up to the provider.
-    The field gets autopopulated most of the time by either the kubelet or external mechanisms
-    like the cloud controller.
+- `topology.kubernetes.io/zone`
 
-  - `topology.scs.community/host-id`
+  Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
+  It provides a logical zone of failure on the side of the provider, e.g. a server rack
+  in the same electrical circuit or multiple machines bound to the internet through a
+  singular network structure. How this is defined exactly is up to the plans of the provider.
+  The field gets autopopulated most of the time by either the kubelet or external mechanisms
+  like the cloud controller.
 
-    This is an SCS-specific label; it MUST contain the hostID of the physical machine running
-    the hypervisor (NOT: the hostID of a virtual machine). Here, the hostID is an arbitrary identifier,
-    which need not contain the actual hostname, but it should nonetheless be unique to the host.
-    This helps identify the distribution over underlying physical machines,
-    which would be masked if VM hostIDs were used.
+- `topology.kubernetes.io/region`
+
+  Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
+  It describes the combination of one or more failure zones into a region or domain, therefore
+  showing a larger entity of logical failure zone. An example for this could be a building
+  containing racks that are put into such a zone, since they're all prone to failure, if e.g.
+  the power for the building is cut. How this is defined exactly is also up to the provider.
+  The field gets autopopulated most of the time by either the kubelet or external mechanisms
+  like the cloud controller.
+
+- `topology.scs.community/host-id`
+
+  This is an SCS-specific label; it MUST contain the hostID of the physical machine running
+  the hypervisor (NOT: the hostID of a virtual machine). Here, the hostID is an arbitrary identifier,
+  which need not contain the actual hostname, but it should nonetheless be unique to the host.
+  This helps identify the distribution over underlying physical machines,
+  which would be masked if VM hostIDs were used.
 
 ## Conformance Tests
 
 The script `k8s-node-distribution-check.py` checks the nodes available with a user-provided
-kubeconfig file. It then determines based on the labels `kubernetes.io/hostname`, `topology.kubernetes.io/zone`,
-`topology.kubernetes.io/region` and `node-role.kubernetes.io/control-plane`, if a distribution
-of the available nodes is present. If this isn't the case, the script produces an error.
-If also produces warnings and informational outputs, if e.g. labels don't seem to be set.
+kubeconfig file. Based on the labels `topology.scs.community/host-id`,
+`topology.kubernetes.io/zone`, `topology.kubernetes.io/region` and `node-role.kubernetes.io/control-plane`,
+the script then determines whether the nodes are distributed according to this standard.
+If this isn't the case, the script produces an error.
+It also produces warnings and informational outputs, e.g., if labels don't seem to be set.
+
+## Previous standard versions
+
+This is version 2 of the standard; it extends [version 1](scs-0214-v1-k8s-node-distribution.md) with the
+requirements regarding node labeling.
 
 [k8s-ha]: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/
 [k8s-large-clusters]: https://kubernetes.io/docs/setup/best-practices/cluster-large/
 [scs-0213-v1]: https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0213-v1-k8s-nodes-anti-affinity.md
 [k8s-labels-docs]: https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone
+[k8s-zones]: https://kubernetes.io/docs/setup/best-practices/multiple-zones/

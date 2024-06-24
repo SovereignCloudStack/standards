@@ -329,7 +329,7 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
     )
     server = env.conn.create_server(
         server_name, image=image, flavor=flavor, key_name=env.keypair.name, network=env.network,
-        security_groups=[env.sec_group.id], userdata=userdata, wait=True, timeout=360, auto_ip=True,
+        security_groups=[env.sec_group.id], userdata=userdata, wait=True, timeout=500, auto_ip=True,
         boot_from_volume=True, terminate_volume=True, volume_size=image.min_disk,
     )
     logger.debug(f"Server '{server_name}' ('{server.id}') has been created")
@@ -350,17 +350,21 @@ def retry(func, exc_type, timeouts=(8, 7, 15, 10, 20, 30, 60)):
     timeout_iter = iter(timeouts)
     # do an initial sleep because func is known fail at first anyway
     time.sleep(next(timeout_iter))
+    retries = 0
     while True:
         try:
             func()
         except Exception as e:
+            retries += 1
             timeout = next(timeout_iter, None)
             if timeout is None or e.__class__.__name__ not in exc_type:
                 raise
-            logger.debug(f"Caught {e!r} while {func!r}; waiting {timeout} s before retry")
+            logger.debug(f"Initiating retry in {timeout} s due to {e!r} during {func!r}")
             time.sleep(timeout)
         else:
             break
+    if retries:
+        logger.debug(f"Operation {func!r} successful after {retries} retries")
 
 
 class CountingHandler(logging.Handler):
