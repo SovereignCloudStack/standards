@@ -52,7 +52,7 @@ These levels can then be used in standards to clearly set the scope that certain
 | Container          | A lightweight and portable executable image that contains software and all of its dependencies.                                          |
 | Persistent Volume Claim (PVC) | Persistent storage that can be bound and mounted to a pod.                                                                    |
 
-Source: https://kubernetes.io/docs/reference/glossary/
+Source: [Kubernetes Glossary](https://kubernetes.io/docs/reference/glossary/)
 
 ## Context
 
