@@ -40,7 +40,7 @@ Availability Zones should represent parts of the same deployment, that have an i
 The maximum of physical independency is achieved through putting physical machines into different fire zones.
 In that case a failure case up to level 3 as described in the taxonomy of failure safety levels document[^1] will not lead to a complete outage of the deployment.
 
-Having Availability Zones represent fire zones will also result in AZs being to take workload from another AZ in a Failure Case of Level 3. 
+Having Availability Zones represent fire zones will also result in AZs being to take workload from another AZ in a Failure Case of Level 3.
 So that even the destruction of one Availability Zone will not automatically include the destruction of the other AZs.
 
 Smaller deplyoments like edge deployments may not have more than one fire zone in a single location.
@@ -86,7 +86,7 @@ With such requirements it is very clear that AZs should only reside within one (
 
 Compute Hosts are physical machines on which the compute service runs.
 A single virtual machine is always running on ONE compute host.
-Redundancy of virtual machines is either up to the layer above IaaS or up to the customers themself. 
+Redundancy of virtual machines is either up to the layer above IaaS or up to the customers themself.
 Having Availability Zones gives customers the possibility to let another virtual machine as a backup run within another Availability Zone.
 
 Customers will expect that in case of the failure of one Availability Zone all other AZs are still available.
@@ -152,6 +152,7 @@ Availabilty Zones for Storage SHOULD be setup, if there is no storage backend us
 [TO BE DISCUSSED:] If Availability Zones for Storage are used, the attaching of volumes from one Storage Availability Zone to another Compute Availability Zone (cross-attach) SHOULD be allowed.
 
 Within each Availability Zone:
+
 - there MUST be redundancy in power supply, as in line into the deployment
 - there MUST be redundancy in external connection (e.g. internet connection or WAN-connection)
 - there MUST be redundancy in core routers
@@ -171,4 +172,3 @@ As this standard will not require Availability Zones to be present, we cannot au
 The other parts of the standard are physical or internal and could only be tested through an audit.
 Whether there are fire zones physically available is a criteria that will never change for a single deployment - this only needs to be audited once.
 It might be possible to also use Gaia-X Credentials to provide such information, which then could be tested.
-
