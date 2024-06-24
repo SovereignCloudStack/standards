@@ -8,10 +8,10 @@ track: IaaS
 
 ## Abstract
 
-When talking about redundancy and backups in the context of cloud infrastructures, the scope under which circumstances these concepts apply to various ressources is neither homogenous nor intuitive.
-There does exist very detailed list of risks and what consequences there are for each risk, but this Decision Record should give a high-level view on the topic.
+When talking about redundancy and backups in the context of cloud infrastructures, the scope under which circumstances these concepts apply to various resources is neither homogenous nor intuitive.
+There does exist very detailed lists of risks and what consequences there are for each risk, but this Decision Record should give a high-level view on the topic.
 So that in each standard that referenced redundancy, it can easily be seen how far this redundancy goes in that certain circumstance.
-Readery of such standards should be able to know at one glance, whether the achieved failure safeness is on a basic level or a higher one and whether there would be additional actions needed to protect the data.
+Readers of such standards should be able to know at one glance, whether the achieved failure safeness is on a basic level or a higher one and whether there would be additional actions needed to protect the data.
 
 This is why this decision record aims to define different levels of failure-safety.
 These levels can then be used in standards to clearly set the scope that certain procedures in e.g. OpenStack offer.
@@ -36,13 +36,13 @@ These levels can then be used in standards to clearly set the scope that certain
 
 ## Context
 
-Some standards provided by the SCS project will talk about or require procedures to backup resources or have redundancy for resources.
+Some standards provided by the SCS project will talk about or require procedures to back up resources or have redundancy for resources.
 This decision record should discuss, which failure threats are CSP-facing and will classify them into several levels.
 In consequence these levels should be used in standards concerning redundancy or failure-safety.
 
 ## Decision
 
-First there needs to be an overview about possible failure cases in infrastructures as well as their probability of occurance and the damage they may cause:
+First there needs to be an overview about possible failure cases in infrastructures as well as their probability of occurrence and the damage they may cause:
 
 | Failure Case | Probability | Consequences |
 |----|-----|----|
@@ -58,8 +58,23 @@ First there needs to be an overview about possible failure cases in infrastructu
 | Cyber threat | High | permanent loss or compromise of data on affected Disk and Node |
 | Software Bug | High | permanent loss or compromise of data that trigger the bug up to data on the whole physical machine |
 
+A similar overview can be provided for Kubernetes infrastructures. These also include the things mentioned for infrastructure failure cases, since a Kubernetes cluster
+would most likely be deployed on top of this infrastructure or face similar problems on a bare-metal installation.
+Part of this list comes directly from the official [Kubernetes docs](https://kubernetes.io/docs/tasks/debug/debug-cluster/).
+
+| Failure case                                 | Probability | Consequences                                                                                                                                                         |
+|----------------------------------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| API server VM shutdown or apiserver crashing | Medium      | Unable to stop, update, or start new pods, services, replication controller                                                                                          |
+| API server backing storage lost              | Medium      | kube-apiserver component fails to start successfully and become healthy                                                                                              |
+| Supporting services VM shutdown or crashing  | Medium      | Colocated with the apiserver, and their unavailability has similar consequences as apiserver                                                                         |
+| Individual node shuts down                   | Medium      | Pods on that Node stop running                                                                                                                                       |
+| Network partition / Network problems         | Medium      | Partition A thinks the nodes in partition B are down; partition B thinks the apiserver is down                                                                       |
+| Kubelet software fault                       | Medium      | Crashing kubelet cannot start new pods on the node / kubelet might delete the pods or not / node marked unhealthy / replication controllers start new pods elsewhere |
+| Cluster operator error                       | Medium      | Loss of pods, services, etc. / lost of apiserver backing store / users unable to read API                                                                            |
+| Failure of multiple nodes or underlying DB   | Low         | Possible loss of all data depending on the amount of nodes lost compared to the cluster size, otherwise costly rebuild                                               |
+
 These failure cases can result in temporary (T) or permanent (P) loss of the resource or data within.
-Additionally there are a lot of resources in IaaS alone that are more or less affected by these Failure Cases.
+Additionally, there are a lot of resources in IaaS alone that are more or less affected by these Failure Cases.
 The following table shows the impact when no redundancy or failure safety measure is in place:
 
 | Resource | Disk Loss | Node Loss | Rack Loss | Power Loss | natural catastrophy | Cyber threat | Software Bug |
@@ -75,10 +90,10 @@ The following table shows the impact when no redundancy or failure safety measur
 | network connectivity (materialization) | | T (if on node) | T/P | T | P (T if lucky) | T/P | T |
 | floating IP | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | T |
 
-For some cases, this only results in temporary unavailabilities and cloud infrastructures usually have certain mechanisms in place to avoid data loss, like redundancy in storage backends and databases.
+For some cases, this only results in temporary unavailability and cloud infrastructures usually have certain mechanisms in place to avoid data loss, like redundancy in storage backends and databases.
 So some of these outages are easier to mitigate than others.
 A possible way to classify the failure cases into levels considering the matrix of impact would be, to classify the failure cases from small to big ones.
-The following table shows such a classification, the occurance probability of a failure case of each class and what resources with user data might be affected.
+The following table shows such a classification, the occurrence probability of a failure case of each class and what resources with user data might be affected.
 
 :::caution
 
