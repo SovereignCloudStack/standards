@@ -114,11 +114,13 @@ Part of this list comes directly from the official [Kubernetes docs](https://kub
 | Cluster operator error                       | Medium      | Loss of pods, services, etc. / lost of apiserver backing store / users unable to read API                                                                            |
 | Failure of multiple nodes or underlying DB   | Low         | Possible loss of all data depending on the amount of nodes lost compared to the cluster size, otherwise costly rebuild                                               |
 
-These failure cases can result in temporary (T) or permanent (P) loss of the resource or data within.
-Additionally, there are a lot of resources in IaaS alone that are more or less affected by these Failure Cases.
-The following table shows the impact when no redundancy or failure safety measure is in place:
+These failure scenarios can result in temporary (T) or permanent (P) loss of the resource or data within.
+Additionally, there are a lot of resources in IaaS alone that are more or less affected by these failure scenarios.
+The following tables shows the impact **when no redundancy or failure safety measure is in place**:
 
-| Resource | Disk Loss | Node Loss | Rack Loss | Power Loss | natural catastrophy | Cyber threat | Software Bug |
+### Impact on OpenStack Resources (IaaS layer)
+
+| Resource | Disk Loss | Node Loss | Rack Loss | Power Loss | Natural Catastrophy | Cyber Threat | Software Bug |
 |----|----|----|----|----|----|----|----|
 | Image | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | P |
 | Volume | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | P |
@@ -130,6 +132,22 @@ The following table shows the impact when no redundancy or failure safety measur
 | network configuration (DB objects) | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | P |
 | network connectivity (materialization) | | T (if on node) | T/P | T | P (T if lucky) | T/P | T |
 | floating IP | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | T |
+
+### Impact on Kubernetes Resources (KaaS layer)
+
+:::note
+
+In case the KaaS layer runs on top of IaaS layer, the impacts described in the above table apply for the KaaS layer as well.
+
+:::
+
+| Resource | Disk Loss | Node Loss | Rack Loss | Power Loss | Natural Catastrophy | Cyber Threat | Software Bug |
+|----|----|----|----|----|----|----|----|
+|Node|P| | | | | |T/P|
+|Kubelet|T| | | | | |T/P|
+|Pod|T| | | | | |T/P|
+|PVC|P| | | | | |P|
+|API Server|T| | | | | |T/P|
 
 For some cases, this only results in temporary unavailability and cloud infrastructures usually have certain mechanisms in place to avoid data loss, like redundancy in storage backends and databases.
 So some of these outages are easier to mitigate than others.
@@ -148,7 +166,7 @@ Customers should always check, what they can do to protect their data and not re
 
 :::
 
-| Level/Class | Probability | Failure Causes | loss in IaaS | User Hints |
+| Level/Class | Probability | Failure Causes | Loss in IaaS | User Hints |
 |---|---|---|-----|-----|
 | 1. Level | Very High | small Hardware or Software Failures (e.g. Disk/Node Failure, Software Bug,...) | individual volumes, VMs... | CSPs MUST operate replicas for important components (e.g. replicated volume back-end, uninterruptible power supply, ...). Users SHOULD backup their data themself and place it on an other host. |
 | 2. Level | High | important Hardware or Software Failures (e.g. Rack outage, small Fire, Power outage, ...) | limited number of resources, sometimes recoverable | CSPs MUST operate replicas for important components (e.g. replicated volume back-end, uninterruptible power supply, ...) OR users MUST backup their data themselves and place it on an other host. |
