@@ -62,27 +62,48 @@ In consequence these levels should be used in standards concerning redundancy or
 
 ## Decision
 
-First there needs to be an overview about possible failure cases in infrastructures as well as their probability of occurrence and the damage they may cause:
+### Failure Scenarios
 
-| Failure Case | Probability | Consequences |
+First there needs to be an overview about possible failure scenarios in infrastructures as well as their probability of occurrence and the damage they may cause:
+
+#### Hardware Related
+
+| Failure Scenario | Probability | Consequences |
 |----|-----|----|
 | Disk Failure/Loss | High | Permanent data loss in this disk. Impact depends on type of lost data (data base, user data) |
-| Node Failure/Loss (without disks) | Medium to High | Permanent loss of functionality and connectivity of node (impact depends on type of node) |
-| Node Outage | Medium to High | Data loss in RAM and temporary loss of functionality and connectivity of node (impact depends on type of node) |
+| Host Failure/Loss (without disks) | Medium to High | Permanent loss of functionality and connectivity of host (impact depends on type of host) |
+| Host Outage | Medium to High | Data loss in RAM and temporary loss of functionality and connectivity of host (impact depends on type of host) |
 | Rack Outage | Medium | Outage of all nodes in rack |
+| Network router/switch outage | High/Medium/Low | ... |
+| Loss of network uplink | High/Medium/Low | |
 | Power Outage (Data Center supply) | Medium | temporary outage of all nodes in all racks |
-| Fire | Medium | permanent Disk and Node loss in the affected zone |
-| Flood | Low | permanent Disk and Node loss in the affected zone |
-| Earthquake | Very Low | permanent Disk and Node loss in the affected zone |
-| Storm/Tornado | Low | permanent Disk and Node loss in the affected fire zone |
-| Cyber threat | High | permanent loss or compromise of data on affected Disk and Node |
+
+#### Environmental
+
+Note that probability for these scenarios is dependent on the location.
+
+| Failure Scenario | Probability | Consequences |
+|----|-----|----|
+| Fire | Medium | permanent Disk and Host loss in the affected zone |
+| Flood | Low | permanent Disk and Host loss in the affected zone |
+| Earthquake | Very Low | permanent Disk and Host loss in the affected zone |
+| Storm/Tornado | Low | permanent Disk and Host loss in the affected fire zone |
+
+#### Others
+
+| Failure Scenario | Probability | Consequences |
+|----|-----|----|
+| Cyber threat | High | permanent loss or compromise of data on affected Disk and Host |
+| Cluster operator error | High/Medium/Low | ... |
 | Software Bug | High | permanent loss or compromise of data that trigger the bug up to data on the whole physical machine |
 
-A similar overview can be provided for Kubernetes infrastructures. These also include the things mentioned for infrastructure failure cases, since a Kubernetes cluster
+#### Kubernetes Specific
+
+A similar overview can be provided for Kubernetes infrastructures. These also include the things mentioned for infrastructure failure scenario, since a Kubernetes cluster
 would most likely be deployed on top of this infrastructure or face similar problems on a bare-metal installation.
 Part of this list comes directly from the official [Kubernetes docs](https://kubernetes.io/docs/tasks/debug/debug-cluster/).
 
-| Failure case                                 | Probability | Consequences                                                                                                                                                         |
+| Failure Scenario                             | Probability | Consequences                                                                                                                                                         |
 |----------------------------------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | API server VM shutdown or apiserver crashing | Medium      | Unable to stop, update, or start new pods, services, replication controller                                                                                          |
 | API server backing storage lost              | Medium      | kube-apiserver component fails to start successfully and become healthy                                                                                              |
@@ -112,6 +133,9 @@ The following table shows the impact when no redundancy or failure safety measur
 
 For some cases, this only results in temporary unavailability and cloud infrastructures usually have certain mechanisms in place to avoid data loss, like redundancy in storage backends and databases.
 So some of these outages are easier to mitigate than others.
+
+### Classification by Severity
+
 A possible way to classify the failure cases into levels considering the matrix of impact would be, to classify the failure cases from small to big ones.
 The following table shows such a classification, the occurrence probability of a failure case of each class and what resources with user data might be affected.
 
