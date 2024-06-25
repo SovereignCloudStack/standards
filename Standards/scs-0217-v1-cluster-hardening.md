@@ -424,8 +424,8 @@ consisting of either ABAC, RBAC or Webhook authorization depending on the requir
 We RECOMMEND RBAC due to it fitting most use cases and being very well documented, but your setup might require another solution.
 
 In order to harden Kubelet access control, a Kubelet SHOULD only be accessible internally via HTTPS. This is already the
-case for the Kubelet API, but the read-only port is only available as HTTP. It is up to the provider to decide if this
-read-only port is required or if it can be deactivated.
+case for the Kubelet API, except for the read-only port, which is only available as HTTP. As mentioned earlier, this port
+should be disabled.
 Kubelets MUST disable anonymous request authentication to disallow non-rejected requests to go through as anonymous requests.
 OPTIONALLY, X509 client certificate authentication or API bearer token authentication can be enabled.
 Request authorization for the Kubelet MUST be delegated to the API server via `Webhook` authorization as it is recommended
