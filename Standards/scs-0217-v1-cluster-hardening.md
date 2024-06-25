@@ -444,14 +444,14 @@ Conformance Tests will be written within another issue.
 
 ## Related Documents
 
-[OWASP Kubernetes Security Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Kubernetes_Security_Cheat_Sheet.html)
-[Kubernetes security concepts](https://kubernetes.io/docs/concepts/security/)
-[Securing a cluster](https://kubernetes.io/docs/tasks/administer-cluster/securing-a-cluster/)
-[Controlling access](https://kubernetes.io/docs/concepts/security/controlling-access/)
-[Pod security standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/)
-[NSA CISA Kubernetes hardening](https://kubernetes.io/blog/2021/10/05/nsa-cisa-kubernetes-hardening-guidance/)
-[Configure etcd](https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/)
-[Google Kubernetes cluster trust](https://cloud.google.com/kubernetes-engine/docs/concepts/cluster-trust)
+- [OWASP Kubernetes Security Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Kubernetes_Security_Cheat_Sheet.html)
+- [Kubernetes security concepts](https://kubernetes.io/docs/concepts/security/)
+- [Securing a cluster](https://kubernetes.io/docs/tasks/administer-cluster/securing-a-cluster/)
+- [Controlling access](https://kubernetes.io/docs/concepts/security/controlling-access/)
+- [Pod security standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/)
+- [NSA CISA Kubernetes hardening](https://kubernetes.io/blog/2021/10/05/nsa-cisa-kubernetes-hardening-guidance/)
+- [Configure etcd](https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/)
+- [Google Kubernetes cluster trust](https://cloud.google.com/kubernetes-engine/docs/concepts/cluster-trust)
 
 [kubernetes-releases]: https://kubernetes.io/releases/
 [kubernetes-version-skew]: https://kubernetes.io/releases/version-skew-policy/
