@@ -7,8 +7,10 @@ track: IaaS
 
 ## Introduction
 
-To encrypt user data like volumes or in the future also Images and ephemeral storage for VMs, the key is need to be known in the infrastructure.
-To provide the key to those operations without including the user every time a Key Manager within the infrastructure can be utilized to store the keys and apply authorization policies on requests.
+To encrypt user data like volumes or in the future also Images and ephemeral storage for VMs, the key has to be present in the infrastructure.
+A Key Manager service within the infrastructure can be utilized to store keys.
+Consequently providing keys for every encryption or decryption is possible without including the user.
+Also authorization policies can be applied on every request to the Key Manager servicer.
 OpenStack offers a Key Manager implementation that is named Barbican, which provides these features.
 This standard aims to provide a base level of security for Cloud Service Providers that integrate a Key Manager into their deployments.
 
@@ -28,11 +30,11 @@ This standard aims to provide a base level of security for Cloud Service Provide
 User data encryption requires an encryption key to be known during encryption and decryption processes.
 Key Managers like Barbican provide this functionality on the IaaS-Level.
 Not every IaaS deployment currently offers user data encryption as part of their standard offering.
-A first step towards more security is to encourage CSPs to provide better data security by offering data encryption to the customers.
-It is also important to take a closer look into the Key Manager and to apply aim for an appropiate level of security there.
-The Key Manager service manages keys in a secure manner.
-This can be achieved differently and is not primarily in scope of this standard.
-Barbican stores keys encrypted with the project specific KEK, including the KEK itself, in the database.
+This standard should encourage CSPs to integrate a Key Manager and thus increase the amount of Clouds witch offerings of data encryption.
+It is also important to take a closer look into the Key Manager and analyze how such a service can be configured securely.
+
+A Key Manager service manages keys in a secure manner, but this can be achieved differently and is not primarily in scope of this standard.
+The OpenStack Key Manager Barbican stores keys encrypted with the project specific KEK, including the KEK itself, in the database.
 The Master-KEK, used to encrypt the project specific KEKs is not stored in the database and is stored differently depending on the backend storage plugin used.
 This standard also abstracts the used plugins and wants to ensure that the Master-KEK is protected, too.
 
@@ -53,12 +55,14 @@ Due to these reasons this option was disregarded.
 #### _Option 2_
 
 Looking into the available Barbican plugins and possible attack vectors one design decision in the plugins is very important: where and how to store the Master-KEK.
-Because the Plugins might use different technologies, but most of them increase the security level by not storing the Master-KEK in plain text on the physical machine Barbican is running on.
+Because the Plugins might use different technologies there are many locations for the Master KEK possible.
+Most of the Plugins increase the security level by not storing the Master-KEK in plain text on the physical machine Barbican is running on.
 This mechanism as a whole, is something that CSPs should aim to do.
 
 ## Standard
 
-To increase the level of security and overall user data encryption CSPs SHOULD implement the Key Manager API (e.g. implemented by Barbican) with a security level of storing Keys encrypted and storing the Master-KEK in another place than the Keys.
+To increase security and allow user data encryption, CSPs SHOULD implement the Key Manager API (e.g. implemented by Barbican).
+The Keys managed by this Key Manager MUST be stored encrypted and the Master-KEK of the Key Manager MUST be stored in another place than the Keys.
 
 If possible CSPs SHOULD NOT store the Master-KEK in plain-text on the physical host the Key Manager is running on.
 
