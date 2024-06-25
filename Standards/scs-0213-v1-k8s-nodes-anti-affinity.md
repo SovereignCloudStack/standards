@@ -45,7 +45,7 @@ Kubernetes into two features:
   It is defined in the PodSpec using the nodeAffinity field in the affinity section.
 
 - Pod Affinity
-  
+
   Pod Affinity or Pod Anti Affinity allows the constraint of pod scheduling based on the
   labels of pods already running on a node.
   This means the constraint will match other pods on a node according to their labels key-value-pairs
