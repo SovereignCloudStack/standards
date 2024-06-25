@@ -40,10 +40,11 @@ Run the test script on your environment and check the error messages :)
 4. Run the main check script:
 
    ```shell
-   python3 ./Tests/scs-compliance-check.py ./Tests/scs-compatible-iaas.yaml -s $OS_CLOUD -a os_cloud=$OS_CLOUD -o report.yaml -C
+   python3 ./Tests/scs-compliance-check.py ./Tests/scs-compatible-iaas.yaml -t standard-images-check \
+     -s $OS_CLOUD -a os_cloud=$OS_CLOUD -o report.yaml -C
    ```
 
-5. Inspect stderr for error messages; it will show you all problems, not just those related to your images.
+5. Inspect console output (stderr) for error messages.
 
 ### Option B: principled
 
