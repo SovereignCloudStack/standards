@@ -9,9 +9,11 @@ supplements:
 
 ## Implementation
 
-A Key Manager service can have different backends, for Barbican these are called Plugins.
+A Key Manager service can have different backends.
+For Barbican these are called Plugins.
 The standard plugin is `simple_crypto`, which has the Master-KEK written in the Barbican config file.
-To secure that Master-KEK when the `simple_crypto` plugin is used it is advised to protect the Barbican config e.g. through running Barbican in an enclave.
+In that case the Master-KEK needs additional protection.
+When the `simple_crypto` plugin is used, securing the Master-KEK can be achieved through protection of the Barbican config e.g. through running Barbican in an enclave.
 
 Another option to secure the Master-KEK would be using an HSM with a corresponding plugin in Barbican.
 In that case the Master-KEK will be stored inside the HSM and encryption and decryption of the Project-KEKs will also happen in the HSM.
@@ -29,4 +31,6 @@ This check can eventually be moved to the checks for the mandatory an supported 
 
 ## Manual Tests
 
-There needs to be a manual test that searches the physical host of the Key Manager host for the presence of a Master-KEK in Plain-Text, e.g. in the Barbican config file.
+It is not possible to check a deployment for a correctly protected Master KEK automatically from the outside.
+Even audits would need to check the complete host for plain-text keys.
+CSPs are responsible for ensuring the protection of the Master KEK and they have to make at least their architecture for that protection auditable.
