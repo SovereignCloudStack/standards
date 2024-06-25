@@ -18,7 +18,7 @@ Security Group (abbr. SG)
   Set of ip table rules, used for tenant network security.
 
 Security Group Rule (abbr. SG Rule)
-  A single ip table rule, that is part of an SG.
+    A single ip table rule, that is part of a Security Group.
 
 Administrator (abbr. Admin)
   Operator = User of an OpenStack cloud with the admin role.
@@ -46,10 +46,10 @@ In recent OpenStack releases, both presets can be adjusted independently by admi
 ## Motivation
 
 The rules of a Security Group can be edited by default by any user with the member role within a project.
-But when a Security Group is created it automatically incorporates a few SG rules that are configured as default rules.
+But when a Security Group is created it automatically incorporates a few Security Group rules that are configured as default rules.
 Since the 2023.2 release, the default set of Security Group rules can be adjusted.
 This functionality is only available to administrators[^1][^2].
-In combination with the OpenStack behavior that when a VM is created with no Security Group specified, the default SG of the project is automatically applied to the ports of the VM,
+In combination with the OpenStack behavior that when a VM is created with no Security Group specified, the default Security Group of the project is automatically applied to the ports of the VM,
 a user cannot be sure which firewall rules are applied to such a VM.
 
 Therefore, this standard proposes default Security Group rules that MUST be set by administrators to avoid divergence in default network security between different IaaS environments.
@@ -92,13 +92,13 @@ And it would make it necessary for users to check and change the rules of their 
 
 This standard should only be applied onto versions of OpenStack that implement the new endpoint for the default Security Group rules, which would only include 2023.2 or higher releases.
 
-It is possible to have different default Security Group rules for the default SG and custom SGs.
+It is possible to have different default Security Group rules for the default Security Group and custom Security Groups.
 And it is arguable to have a more strict standard for default rules for the default Security Group than for the custom Security Groups.
 Because the latter ones are not automatically applied to a VM but are always edited by the users to apply to their requirements.
 
 The allowlisting concept of Security Group rules makes it hard to allow traffic with an exception to certain ports.
 It would be possible to just define many rules to achieve what a blocklist would achieve.
-But having many rules may confuse users, and they may not disable unnecessary default rules in their SGs.
+But having many rules may confuse users, and they may not disable unnecessary default rules in their Security Groups.
 
 ## Standard
 

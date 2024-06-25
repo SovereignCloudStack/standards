@@ -93,7 +93,7 @@ openstack volume type show LUKS
 
 ### Replication
 
-Replication states whether or not there are multiple replicas of a volume. Thus, it answers whether the data could survive a node outage. Unfortunately there are two ways replication can be achieved:
+Replication states whether or not there are multiple replicas of a volume, i.e., whether the data could survive a node outage. Unfortunately, there are two ways replication can be achieved:
 
 1. In the configuration of a volume type. It then is visible as extra_spec in the properties of a volume type.
 2. Via the used backend. Ceph for example provides automatic replication, that does not need to be specified in the volume type. This is currently not visible for users.

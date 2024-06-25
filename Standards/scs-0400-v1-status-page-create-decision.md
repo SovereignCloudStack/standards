@@ -153,7 +153,7 @@ With those requirements in mind the projects that initially were found, were eva
 | user management | ✅ | ❌ | ❌ | ❌ | ✅ by OIDC | ⁇ through github? | ❌ |
 | different output format on notification | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ |
 | external hosting | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ looks like you are limited to github | ✅ |
-| project healthy | ❌ last commit 17 months | ❌ last commit 3 years | ❌ last commit 5 months | ✅ last commit 2 months | ✅ recent activities | ✅ recent activities | ❌ archived and abndend by the owner |
+| project healthy | ❌ last commit 17 months | ❌ last commit 3 years | ❌ last commit 5 months | ✅ last commit 2 months | ✅ recent activities | ✅ recent activities | ❌ archived and abandoned by the owner |
 | documentation | ✅ API ❌ User Documentation | ❌ | ❌ | ❌ | ✅ | ⁇u | ❌ not reachable anymore |
 | git based | ❌ | ✅ | ❌ | ✅ | ❌ | ✅ | ⁇ a netlify based installation is able to communicate with github |
 | project page | [project page](https://cachethq.io/) | [project page](https://github.com/weeblrpress/clearstatus) | [project page](https://www.brotandgames.com/ciao/) | [project page](https://cstate.netlify.app/) | [project page](https://gatus.io/) | [project page](https://github.com/tadhglewis/issue-status) | [project page](https://marquez.co/statusfy) |

@@ -145,7 +145,7 @@ In most cases the new resource won't be used directly after creation. Most often
 
 Payloads to POST requests SHALL NOT include ID or `Incremental` typed fields, it lies in the responsibility of the API server to assign IDs and `Incremental`s to objects.
 
-### Return of `PATCH` requisites
+### Return of `PATCH` requests
 
 Most commonly `PATCH` requests are used to partially or fully change a resource. These requests do not respond with the changed resource, nor an identifier.
 

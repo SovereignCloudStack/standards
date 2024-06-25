@@ -7,8 +7,8 @@ track: KaaS
 
 ## Introduction
 
-A Kubernetes instance is provided as a cluster, which consists of a set of worker machines,
-so-called nodes. A cluster is composed of a control plane and at least one worker node.
+A Kubernetes instance is provided as a cluster, which consists of a set of worker machines, also called nodes.
+A cluster is composed of a control plane and at least one worker node.
 The control plane manages the worker nodes and therefore the pods in the cluster by making
 decisions about scheduling, event detection and global decisions. Inside the control plane,
 multiple components exist, which can be duplicated and distributed over multiple machines
