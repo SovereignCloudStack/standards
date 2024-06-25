@@ -44,7 +44,6 @@ Kubernetes into two features:
   selection of nodes. The feature works similar to the Kubernetes nodeSelector.
   It is defined in the PodSpec using the nodeAffinity field in the affinity section.
 
-
 - Pod Affinity
   
   Pod Affinity or Pod Anti Affinity allows the constraint of pod scheduling based on the
@@ -131,11 +130,11 @@ of them. This should provide at least the minimum requirements for a fault-toler
 For the standard, there is also a possibility to define multiple stages of distributed infrastructure
 and only make sensible ones a requirement and the rest optional, e.g.
 
-* non-distributed clusters
-* High-Availability clusters that are
-  * distributed over multiple machines/availability zones
-  * distributed over multiple clouds
-  * distributed over multiple physical locations/datacenters
+- non-distributed clusters
+- High-Availability clusters that are
+  - distributed over multiple machines/availability zones
+  - distributed over multiple clouds
+  - distributed over multiple physical locations/datacenters
 
 The worker nodes are RECOMMENDED to be distributed over different machines. In order to
 provide clear information to the users, the nodes should be labeled to reflect the
