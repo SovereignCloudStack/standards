@@ -7,13 +7,6 @@ supplements:
   - scs-0101-v1-entropy.md
 ---
 
-## Introduction
-
-The entropy standard mainly defines recommended flavor attributes to be available and
-also requires a high enough and consistent entropy to be available for all possible flavors.
-This is primarily tested with "FIPS 140-2 failures" as well as the entropy count available
-under `/proc/sys/kernel/random/entropy_avail`.
-
 ## Implementation notes
 
 We presume that almost nothing has to be done (or indeed can be done), as

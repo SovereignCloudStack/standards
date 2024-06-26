@@ -8,12 +8,6 @@ supplements:
   - scs-0214-v2-k8s-node-distribution.md
 ---
 
-## Introduction
-
-The standard [SCS K8s Node Distribution and Availability](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0214-v2-k8s-node-distribution.md)
-tries to define requirements for the distribution of Kubernetes nodes in order to provide
-a fault-tolerant and (highly) available Kubernetes cluster.
-
 ## Implementation notes
 
 A Kubernetes clusters control plane must be distributed over multiple physical machines, as well
@@ -35,14 +29,6 @@ additional setup and maintenance costs.
 The test for the [SCS K8s Node Distribution and Availability](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0214-v2-k8s-node-distribution.md)
 checks if control-plane nodes are distributed over different failure zones (distributed into
 physical machines, zones and regions) by observing their labels defined by the standard.
-
-### Errors and warnings
-
-The test will return 0 precisely when it could be verified that the standard is satisfied.
-If no distribution can be detected, a 2 will be returned instead.
-The test mentions if labels are missing, which would hinder the ability to detect node distribution,
-if no distribution is available on specific levels or if not enough nodes are available for
-a distribution to be feasible.
 
 ### Implementation
 
