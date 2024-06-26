@@ -40,15 +40,10 @@ on the syntax compliance of the flavor names of the cloud environment.
 
 #### Flavor creation
 
-The [OpenStack Flavor Manager from osism](https://github.com/osism/openstack-flavor-manager)
-will create a set of flavors.
-The manager provides different options for flavor creation; either the standard mandatory and
-possibly recommended flavors can be created or the user can set a file containing his flavors.
-
-If a CSP wants to provide their own flavors with the `SCS` naming schema, a tool like
-the ["Flavor Site"](https://flavors.scs.community) could be used to reduce time spent on creating
-flavors with the correct naming. These names could then be transferred to the Openstack Flavor Manager
-for easier creation.
+The [OpenStack Flavor Manager from OSISM](https://github.com/osism/openstack-flavor-manager)
+will create a whole set of flavors in one go.
+To that end, it provides different options: either the standard mandatory and
+possibly recommended flavors can be created, or the user can set a file containing his flavors.
 
 ## Automated tests
 
