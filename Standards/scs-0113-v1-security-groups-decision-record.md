@@ -40,7 +40,7 @@ By design of OpenStack and when not changed, default rules in the default securi
 
 ### Reasons for and against a standard for security groups
 
-Considering having most likely similiar security groups within different projects, it might make sense to standardize a few security groups for often used cases like ssh, http, https and maybe icmp.
+Considering having most likely similar security groups within different projects, it might make sense to standardize a few security groups for often used cases like ssh, http, https and maybe icmp.
 What speaks for standardizing a certain set of security groups:
 
 1. Having a set of correctly configured security groups could reduce misconfiguration from users
@@ -53,7 +53,7 @@ What are the downsides of having a set of standardized security groups:
 1. A bug or misconfiguration is a single point of failure for ALL customers
 2. Users might apply the wrong security group to their port or VM because they lack the domain knowledge, unknowingly opening themselves to attacks
 3. Users will not inspect such default security groups: this may result in applying a wrong group and opening traffic too much
-4. the central authority managing the groups does not necessarily know the usecase of the user, the user/operator must know best what kind of security their workload needs. What is a necessary port for 99% of deployments might be a security disaster for my deployment
+4. the central authority managing the groups does not necessarily know the use case of the user, the user/operator must know best what kind of security their workload needs. What is a necessary port for 99% of deployments might be a security disaster for my deployment
 5. Providing default groups could have the effect of stopping customers to think about their specific security needs and instead just copying default groups and or rules
 
 This leads to a conclusion, that a set of default security groups is only more valuable than harmful for users:
@@ -91,12 +91,12 @@ stack@devstack:~/devstack$ openstack default security group rule list
 ```
 
 Those rules can be edited, which may pose a security risk for customers consuming the default security group.
-This should be adressed as a pre-requirement [here](https://github.com/SovereignCloudStack/standards/issues/521).
+This should be addressed as a pre-requirement [here](https://github.com/SovereignCloudStack/standards/issues/521).
 
 ### Option 1: operator usage of network rbac
 
-The `network rbac` endpoint[^2] manages the possibitity to share and access certain network-specific resources such as security groups.
-For admins it is possible to use this endpoint to share a security group with ALL projects within the the cloud including ALL projects of ALL domains:
+The `network rbac` endpoint[^2] manages the possibility to share and access certain network-specific resources such as security groups.
+For admins, it is possible to use this endpoint to share a security group with ALL projects within the cloud including ALL projects of ALL domains:
 
 ```bash
 stack@devstack:~/devstack$ openstack network rbac create --target-all-projects --action access_as_shared --type security_group group-for-everyone
@@ -112,7 +112,7 @@ stack@devstack:~/devstack$ openstack network rbac create --target-all-projects -
 +-------------------+--------------------------------------+
 ```
 
-This would fulfill our goal to grant access to predefined security groups for all projects and all groups recieved as shared do not count into the projects quota for security groups.
+This would fulfill our goal to grant access to predefined security groups for all projects and all groups received as shared do not count into the projects quota for security groups.
 But there are a few downsides to this:
 
 1. This should be strictly bound to the admin: no other user should be able to share security groups so to not confuse user.
@@ -158,7 +158,7 @@ The biggest downside: As soon as a security group is shared, everyone from every
 Using and adhering the project scope of the security groups has the consequence, that:
 
 1. either an admin has to set up security groups for each project
-2. or the SCS project only provides a guide on how to setup and use some recommended security groups.
+2. or the SCS project only provides a guide on how to set up and use some recommended security groups.
 
 As users are allowed to, will and should edit their security groups, there is no way to ensure, that a certain set of security groups with certain rules is always present in a project.
 So packing an extra burden on admins is unreasonable.
@@ -174,7 +174,7 @@ That would include identifying what kind of network permission a single VM needs
 The default Security Group Rules should be standardized as a pre-requirement (Option 0).
 
 Using the `network rbac` endpoint (Option 1) would not solve the idea of having pre-defined and administrator audited Security Groups, because it is possible for any user to edit the rules of shared Security Groups.
-Instead the project-scope of the Security Groups should by focused and a guide prepared, that gives insight about creating and using Security Groups with a few examples but with a clear security focus (Mix of Option 2 and 3).
+Instead, the project-scope of the Security Groups should by focused and a guide prepared, that gives insight about creating and using Security Groups with a few examples but with a clear security focus (Mix of Option 2 and 3).
 
 ## Consequences
 

@@ -19,7 +19,7 @@ when it is supposed to be used for billing purposes.
 
 This document discusses how such metering data should be stored
 within the SCS.
-In partiuclar,
+In particular,
 it provides rationale for the choice of Gnocchi
 as time-series database for metering data
 within SCS.

@@ -62,7 +62,7 @@ requires write latencies in the range of a single-digit ms (or better).
 
 #### One-node etcd (backed by redundant storage)
 
-If k8s uses only one control plane node, there will only be only one etcd node,
+If k8s uses only one control plane node, there will only be one etcd node,
 avoiding timed out heartbeats. Single node control planes are typically not
 recommended for production workloads though. They are limited with respect
 to control plane performance, have a higher chance to fail (as a single node failure
@@ -107,7 +107,7 @@ which is not typically critical if done within reasonable limits.
 This change however does not fully address the issue — occasional write latencies
 above 100ms will still cause failed heartbeats, just less often.
 
-This change has been implemented in SCS's
+This change has been implemented in the
 [k8s-cluster-api-provider](https://etcd.io/docs/v3.5/op-guide/hardware/#example-hardware-configurations)
 reference implementation: The heartbeat has been changed from 1/100ms (10/s)
 to 1/250ms (4/s) and the reelection timeout from 1s to 2.5s.
@@ -145,7 +145,7 @@ written out. Recovery from such a scenario can range from smooth to impossible.
 In a multi-node cluster, this may not be as bad as it sounds — if only one
 node is affected by a disruption, the crashed node can be recovered by resyncing
 the data from other nodes. In practice an inconsistent state would be considered
-too risky and it should be preferred to set up a fresh node to join the
+too risky, and it should be preferred to set up a fresh node to join the
 existing etcd cluster. This would need to be implemented to make this option
 less risky.
 
@@ -222,9 +222,9 @@ Disk IO QoS is not part of this spec but may be considered in another one.
 Live-migration with local storage is significantly more difficult than with
 networked storage: The contents of the local disks also need to be replicated
 over to the new host. Live-migration for these VMs may thus take significantly
-longer or not be possible at all, depending the configuration from the provider.
+longer or not be possible at all, depending on the configuration from the provider.
 Not supporting live-migration is OK for flavors with local disks according
-to the flavor naming spec — a capability to indicate whether or not
+to the flavor naming spec — a capability to indicate whether
 live-migration is supported will be subject to a flavor-metadata discoverability
 spec that is planned for the future.
 
@@ -252,7 +252,7 @@ to solve the latency requirements for databases and etcd may emerge.
 When we standardize QoS features there, we may amend this standard with
 QoS recommendations or possibly requirements.
 
-A future flavor metadata discoverability standard will indicate whether or not
+A future flavor metadata discoverability standard will indicate whether
 these flavors can be live-migrated. A future VM metadata standard will allow
 users to request live-migration and/or cold migration or restart to be or to
 not be performed.

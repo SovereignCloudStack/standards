@@ -9,13 +9,13 @@ enhances: status-page-comparison.md
 ## Introduction
 
 Creating and maintaining IT infrastructure is a complex task.
-Any kind of consumer (e.g. operators, cutsomers) can
+Any kind of consumer (e.g. operators, customers) can
 be supported by presenting the status of all possible parts of the
 serving infrastructure. Whether a service is not reachable or
 the used hardware is having an outage we want the consumers to be easily informed
 by using a "Status Page" application. The need for a "Status Page"
 came up early in the SCS project and the requirements a "Status Page" application
-has to fulfill were defined and written down on 2022-06-02 as a
+has to fulfill were defined and written down on 2022-06-02 as the
 [MVP-0 epic](https://github.com/SovereignCloudStack/issues/issues/123).
 The upcoming research on existing solutions came to the conclusion that we want to
 create a new "Status Page" application.
@@ -48,7 +48,7 @@ we pick up an existing project and try to get it in shape for our use case. It w
 own additional patches.
 
 So there will be a reference implementation that will match the requirements we have.
-In addition there will be an architecture design documentation. So if the reference
+In addition, there will be an architecture design documentation. So if the reference
 implementation may not fit to you, it will be possible to create your own application.
 
 ## Status Page Requirements
@@ -60,7 +60,7 @@ implementation may not fit to you, it will be possible to create your own applic
   - support that components are only visible to a subset of users
     - implies that there is a role that is read-only
     - On-Prem use case might be handled by having an authenticating reverse proxy in front
-- The status page applicaton should allow for simple and easy theming
+- The status page application should allow for simple and easy theming
 
   - Page = (Possibly simple) Web-UI
 
@@ -101,15 +101,15 @@ implementation may not fit to you, it will be possible to create your own applic
   - to minimize the probability of making errors, updating the status of a component should not be
     hard brainwork
   - updates can be both machine generated status changes (triggered e.g. by health monitoring)
-    as well as updates from human operators
+    and updates from human operators
   - updating a status should allow the CSP Operator to do that in a fashion that either pushes
     infos to the subscribers or just updates the status on the status page
   - updating the status can either be toggling the status of the component or can be
     accompanied by additional textual information.
   - When updating a status with textual information the status page application should make it
-    easy for me as the CSP Operator to do in a way that if different people submit infos over time
-    they are presented in a similar way (eg. the status page application should guide so that the
-    resulting infos are presented in a identical way. Example: when updating infos of an incident
+    easy for me as the CSP Operator to do in a way, that if different people submit infos over time,
+    they are presented in a similar way (e.g. the status page application should guide so that the
+    resulting infos are presented in an identical way). Example: when updating infos of an incident
     over time the timeline should automatically be sorted by the status page application so that it
     does not depend on the Operator whether the newest info is on top or at the bottom. This is
     typical thing that varies if several people update items
@@ -153,7 +153,7 @@ With those requirements in mind the projects that initially were found, were eva
 | user management | ✅ | ❌ | ❌ | ❌ | ✅ by OIDC | ⁇ through github? | ❌ |
 | different output format on notification | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ |
 | external hosting | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ looks like you are limited to github | ✅ |
-| project healthy | ❌ last commit 17 months | ❌ last commit 3 years | ❌ last commit 5 months | ✅ last commit 2 months | ✅ recent activities | ✅ recent activities | ❌ archived and abondend by the owner |
+| project healthy | ❌ last commit 17 months | ❌ last commit 3 years | ❌ last commit 5 months | ✅ last commit 2 months | ✅ recent activities | ✅ recent activities | ❌ archived and abandoned by the owner |
 | documentation | ✅ API ❌ User Documentation | ❌ | ❌ | ❌ | ✅ | ⁇u | ❌ not reachable anymore |
 | git based | ❌ | ✅ | ❌ | ✅ | ❌ | ✅ | ⁇ a netlify based installation is able to communicate with github |
 | project page | [project page](https://cachethq.io/) | [project page](https://github.com/weeblrpress/clearstatus) | [project page](https://www.brotandgames.com/ciao/) | [project page](https://cstate.netlify.app/) | [project page](https://gatus.io/) | [project page](https://github.com/tadhglewis/issue-status) | [project page](https://marquez.co/statusfy) |

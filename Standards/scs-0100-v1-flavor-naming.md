@@ -94,7 +94,7 @@ the lack of workload management that would prevent worst case performance < 20% 
 #### Insufficient microcode
 
 Not using these mitigations must be indicated by an additional `i suffix` for insecure
-(weak protection against CPU vulns through insufficient microcode, lack of disabled hyperthreading
+(weak protection against CPU vulnerabilities through insufficient microcode, lack of disabled hyperthreading
 on L1TF susceptible CPUs w/o effective core scheduling or disabled protections on the host/hypervisor).
 
 #### Examples
@@ -299,22 +299,22 @@ The optional `h` suffix to the comput unit count indicates high-performance (e.g
 high bandwidth gfx memory such as HBM);
 `h` can be duplicated for even higher performance.
 
-`-ib` indicates Inifinband networking.
+`-ib` indicates Infiniband networking.
 
 More extensions will be forthcoming.
 
-Extensions need to be specified in the above mentioned order.
+Extensions need to be specified in the above-mentioned order.
 
 ## Proposal Examples
 
-| Example                   | Decoding                                                                                        |
-| ------------------------- | ----------------------------------------------------------------------------------------------- |
-| SCS-2C:4:10n              | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk                                         |
-| SCS-8Ti:32:50p-i1         | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe                        |
-| SCS-1L:1u:5               | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)                       |
-| SCS-16T:64:200s-GNa:64-ib | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Inifiniband, 64 Passthrough nVidia Ampere SMs |
-| SCS-4C:16:2x200p-a1       | 4 dedicated Arm64 cores (A78 class), 16GiB RAM, 2x200GB local NVMe drives                       |
-| SCS-1V:0.5                | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)                                           |
+| Example                   | Decoding                                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------------------------- |
+| SCS-2C:4:10n              | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk                                        |
+| SCS-8Ti:32:50p-i1         | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe                       |
+| SCS-1L:1u:5               | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)                      |
+| SCS-16T:64:200s-GNa:64-ib | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Infiniband, 64 Passthrough nVidia Ampere SMs |
+| SCS-4C:16:2x200p-a1       | 4 dedicated Arm64 cores (A78 class), 16GiB RAM, 2x200GB local NVMe drives                      |
+| SCS-1V:0.5                | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)                                          |
 
 ## Standard SCS flavors
 
@@ -376,14 +376,14 @@ for usability and easier portability, even beyond the mandated flavors.
 You must be very careful to expose low vCPU guarantees (`L` instead ov `V`), insecure
 hyperthreading/microcode `i`, non-ECC-RAM `u`, memory oversubscription `o`. Note that omitting these qualifiers is
 overstating your security, reliability or performance properties and may be reason for
-clients to feel betrayed or claim damages. It might in extreme cases also cause SCS to withdraw certification
+clients to feel betrayed or claim damages. It might, in extreme cases, also cause SCS to withdraw certification
 along with public statements.
 
-You may offer additional SCS- flavors, following the naming scheme outlined here.
+You may offer additional `SCS-` flavors, following the naming scheme outlined here.
 
 You may offer additional flavors, not following above scheme.
 
-You must not offer flavors with the SCS- prefix which do not follow this naming scheme.
+You must not offer flavors with the `SCS-` prefix which do not follow this naming scheme.
 You must not extend the SCS naming scheme with your own suffices; you are encouraged however
 to suggest extensions that we can discuss and add to the official scheme.
 
@@ -434,8 +434,8 @@ on the flavor list compliance of the cloud environment.
 
 Some providers might offer VM services ("IaaS") without trying to adhere to SCS standards,
 yet still finding the flavor naming standards useful. The Gaia-X Technical Committee's
-Provider Working Group (WG) would seem like a logical place for such dicussions then.
+Provider Working Group (WG) would seem like a logical place for such discussions then.
 If so, we could
-replace the SCS- prefix with a GX- prefix and transfer the naming scheme governance from
+replace the `SCS-` prefix with a GX- prefix and transfer the naming scheme governance from
 the SCS project to the Gaia-X Provider WG (where we participate). SCS certification would
 then reference the Gaia-X flavor naming standard as a requirement.

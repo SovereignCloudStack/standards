@@ -21,7 +21,7 @@ SCS plans to offer six kinds of certificates with varying scope. These scopes ca
    - SCS-open
    - SCS-sovereign
 2. _cloud layer_, of which there are two:
-   - infastructure as a service (IaaS)
+   - infrastructure as a service (IaaS)
    - Kubernetes as a service (KaaS)
 
 So, for instance, a certificate can have the scope _SCS-compatible IaaS_ or _SCS-sovereign KaaS_.
@@ -245,13 +245,13 @@ must be announced 14 days in advance via the corresponding mailing list.
 
 ### File format
 
-In order to have a document that can be processed by a wide range of tools, we need to opt for a simple but yet well supported format.
+In order to have a document that can be processed by a wide range of tools, we need to opt for a simple but yet well-supported format.
 YAML offers readability for humans as well as good support by many frameworks. Since YAML is heavily used in the cloud and container
 domain, the choice is obvious.
 
 ### Dependency graph for certifications
 
-This standard only allows exactly one depending certification, otherwise we would need to use a list of mappings. Since this is
+This standard only allows depending on exactly one certification, otherwise we would need to use a list of mappings. Since this is
 in accordance to the current plan of the SIG Standardization & Certification, we can safely ignore multiple dependency of
 certification for now.
 

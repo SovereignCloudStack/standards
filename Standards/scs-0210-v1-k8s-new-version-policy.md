@@ -17,7 +17,7 @@ description: |
 
 Here we will describe how fast providers need to keep up with the upstream Kubernetes version.
 
-To create a informed decision we summarize here the Kubernetes rules regarding versioning at the time of writing (2023-01-16):
+To create an informed decision we summarize here the Kubernetes rules regarding versioning at the time of writing (2023-01-16):
 
 Kubernetes usually provides about **3 minor** releases per year (see [Kubernetes Release Cycle][k8s-release-cycle]).
 
@@ -37,7 +37,7 @@ The remaining 2 months are only for:
 
 Kubernetes is a fast-paced project.
 We want to achieve that providers keep up to date with upstream and do not fall behind Kubernetes releases.
-This ensures that users are able to upgrade their clusters to address security issues, bug fixes and new features when using SCS compliant clusters in regards of Kubernetes.
+This ensures that users are able to upgrade their clusters to address security issues, bug fixes and new features when using SCS compliant clusters in regard to Kubernetes.
 However, providers should have reasonable time to implement the new Kubernetes versions and test them.
 
 ## Decision

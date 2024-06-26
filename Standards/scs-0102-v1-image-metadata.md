@@ -16,7 +16,7 @@ description: |
 ## Motivation
 
 Many clouds offer standard Operating System images for their users' convenience.
-To make them really useful, they should contain meta data (properties) to allow
+To make them really useful, they should contain metadata (properties) to allow
 users to understand what they can expect using these images.
 
 The specification is targeting images that are managed by the service provider,
@@ -164,13 +164,13 @@ The provider makes an effort to replace images upon critical security issues out
 - Mandatory: `image_source` needs to be a URL to point to a place from which the image can be downloaded.
   (Note: This may be set to the string "private" to indicate that the image can not be freely
   downloaded.)
-- Mandatory: `image_description` needs to be an URL (or text) with release notes and other human readable
+- Mandatory: `image_description` needs to be a URL (or text) with release notes and other human-readable
   data about the image.
 
 - Recommended _tag_: `managed_by_VENDOR`
 
 Note that for most images that come straight from an upstream source, `image_description` should point
-to a an upstream web page where these images are described. If download links are available as well
+to an upstream web page where these images are described. If download links are available as well
 on that page, `image_source` can point to the same page, otherwise a more direct link to the image
 should be used, e.g. directly linking the `.qcow2` or `.img` file.
 If providers have their own image building machinery or do some post-processing on top of
@@ -187,7 +187,7 @@ upstream images, they should point to the place where they document and offer th
   the patch status.
 - Mandatory: `image_original_user` is the default login user for the operating system which can connect
   to the image via the injected SSH key or provided password. (This can be set to `none` if no default
-  user name exists for the operating system.)
+  username exists for the operating system.)
 - Optional: `patchlevel` can be set to an operating specific patch level that describes the
   patch status — typically we would expect the `image_build_date` to be sufficient.
 
@@ -208,10 +208,10 @@ might not use any of these properties, except maybe `maintained_until`. Note tha
 Windows images would typically require `license_included`, `subscription_included`.
 A boolean property that is not present is considered to be `false`.
 
-- Optional: `license_included` (boolean) indicates whether or not the flavor fee
+- Optional: `license_included` (boolean) indicates whether the flavor fee
   includes the licenses required to use this image. This field is mandatory for
   images that contain software that requires commercial licenses.
-- Optional: `license_required` (boolean) indicates whether or not a customer must bring
+- Optional: `license_required` (boolean) indicates whether a customer must bring
   its own license to be license compliant. This can not be true at the same time as the
   previous setting. This field is mandatory IF customers need to bring their own
   license to use the image.

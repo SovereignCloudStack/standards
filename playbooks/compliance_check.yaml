@@ -15,6 +15,7 @@
         msg: "{{ result.stdout }} {{ result.stderr }}"
 
     - name: sign result YAML and upload to compliance monitor
+      no_log: true  # do not leak the secret in the shell part below
       ansible.builtin.shell: |
         ssh-keygen -Y sign -f ~/id_subject -n report report.yaml
         curl --data-binary @report.yaml.sig --data-binary @report.yaml -H "Content-Type: application/x-signed-yaml" -H "Authorization: Basic {{ clouds_conf.zuul_ci_basic_auth }}" https://compliance.sovereignit.cloud/reports

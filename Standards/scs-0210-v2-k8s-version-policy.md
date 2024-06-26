@@ -24,14 +24,14 @@ More information can be found under [Kubernetes Support Period].
 The [Kubernetes release cycle][k8s-release-cycle] is set around 4 months, which
 usually results in about **3 minor** releases per year.
 
-Patches to these releases are provided monthly, with the exception of the first patch,
+Patches to these releases are provided monthly, except for the first patch,
 which is usually provided 1-2 weeks after the initial release (see [Patch Release
 Cadence][k8s-release-cadence]).
 
 ## Motivation
 
 Kubernetes is a living, fast-paced project, which follows a pre-defined release cycle.
-This enables forward planning with regards to releases and patches, but also implies a
+This enables forward planning with regard to releases and patches, but also implies a
 necessity to upgrade to newer versions quickly, since these often include new features,
 important security updates or especially if a previous version falls out of the support
 period window.
@@ -40,7 +40,7 @@ We want to achieve an up-to-date policy, meaning that providers should be mostly
 sync with the upstream and don't fall behind the official Kubernetes releases.
 This is achievable, since new versions are released periodical on a well communicated
 schedule, enabling providers and users to set up processes around it.
-Being up to date ensures that security issues and bugs are addressed and new features
+Being up-to-date ensures that security issues and bugs are addressed and new features
 are made available when using SCS compliant clusters.
 
 It is nevertheless important to at least support all Kubernetes versions that are still
@@ -60,7 +60,7 @@ the provided Kubernetes versions should be kept up-to-date with new upstream rel
 - This time period MUST be even shorter for patches that fix critical CVEs.
   In this context, a critical CVE is a CVE with a CVSS base score >= 8 according
   to the CVSS version used in the original CVE record (e.g., CVSSv3.1).
-  It is RECOMMENDED to provide a new patch version in a 2 day time period after their release.
+  It is RECOMMENDED to provide a new patch version in a 2-day time period after their release.
 - New versions MUST be tested before being rolled out on productive infrastructure;
   at least the [CNCF E2E tests][cncf-conformance] should be passed beforehand.
 

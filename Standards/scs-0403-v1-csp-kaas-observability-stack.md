@@ -83,7 +83,7 @@ Use a mix of [kubernetes-mixin alerts](https://github.com/kubernetes-monitoring/
         - S3 compatible bucket as a storage for long term metrics is configured
         - thanos query-frontend is deployed and configured
         - thanos query is deployed and configured
-        - thanos reciever is deployed and configured (simple deployment, non HA, without router)
+        - thanos receiver is deployed and configured (simple deployment, non HA, without router)
         - thanos ruler is deployed and configured
         - thanos compactor is deployed and configured
         - thanos bucket-web is deployed and configured
@@ -97,7 +97,7 @@ Use a mix of [kubernetes-mixin alerts](https://github.com/kubernetes-monitoring/
     - There exist Dashboards for KaaS Cluster Health
         - KaaS L0 dashboard counters are working correctly
         - Dedicated L0 dashboards are deployed for KaaS and for IaaS monitoring layers
-    - There exist Dashboards for SCS services endpoinds health (BlackBox exporter)
+    - There exist Dashboards for SCS services endpoints health (BlackBox exporter)
     - There exist Dashboards for IaaS layer health
     - Automatic Setup of Exporters for Observability of managed K8s clusters
         - KaaS service is mocked
@@ -117,13 +117,13 @@ Use a mix of [kubernetes-mixin alerts](https://github.com/kubernetes-monitoring/
 A survey was conducted to gather the needs and requirements of a CSP when providing Kubernetes as a Service. The results of the Survey (Questions with answers) were the following:
 
 1. What is your understanding of a managed Kubernetes Offering:
-    - Hassle-Free Installation and Maintainance (customer viewpoint); Providing Controlplane and worker nodes and responsibility for correct function but agnostic to workload
-    - Day0, 1 and 2 (~planning, provisioning, operations) full lifecyle management or let customer manages some parts of that, depending on customer contract
+    - Hassle-Free Installation and Maintenance (customer viewpoint); Providing control plane and worker nodes and responsibility for correct function but agnostic to workload
+    - Day0, 1 and 2 (~planning, provisioning, operations) full lifecycle management or let customer manages some parts of that, depending on customer contract
 
 2. What Type and Depth of observability is needed
-    - CPU, RAM, HDD and Network usage, Health and Function of Cluster Nodes, Controlplane and if desired Customer Workload
+    - CPU, RAM, HDD and Network usage, Health and Function of Cluster Nodes, control plane and if desired Customer Workload
 
-3. Do you have an observabiltiy infrastructure, if yes, how it is built
+3. Do you have an observability infrastructure, if yes, how it is built
     - Grafana/Thanos/Prometheus/Loki/Promtail/Alertmanger Stack, i.e. [Example Infrastructure](https://raw.githubusercontent.com/dNationCloud/kubernetes-monitoring-stack/main/thanos-deployment-architecture.svg)
 
 4. Data Must haves
