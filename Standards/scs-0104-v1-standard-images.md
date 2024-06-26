@@ -107,7 +107,7 @@ The YAML file is generally located under
 [https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/).
 
 Any change that could render existing installations non-conformant (i.e., when new
-specifications are added, when the name scheme of a specification is changed so as to
+specifications are added, when the name scheme of a specification is changed to
 match more names than before, when the status of an existing specification changes to
 mandatory, or when some source prefix is removed) requires a new YAML file to be created.
 As a consequence, any currently valid certificates stay valid; the change can only take

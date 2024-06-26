@@ -155,7 +155,7 @@ Docusaurus' robust toolkit assists in crafting and maintaining quality documenta
 
 #### Special Implementation Details
 
-SCS's unique architecture necessitates a unique approach to documentation. To ensure seamless integration of reference documentation for Components and components developed for SCS, we have created a custom workflow. This workflow automatically syncs upstream repositories, pulling the most recent documentation at regular intervals.
+The unique architecture of SCS necessitates a unique approach to documentation. To ensure seamless integration of reference documentation for Components and components developed for SCS, we have created a custom workflow. This workflow automatically syncs upstream repositories, pulling the most recent documentation at regular intervals.
 
 We have accomplished this by utilizing a Node.js post-install script found [here](https://github.com/SovereignCloudStack/docs-page/blob/main/getDocs.js).
 
