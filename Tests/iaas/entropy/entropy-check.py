@@ -350,17 +350,21 @@ def retry(func, exc_type, timeouts=(8, 7, 15, 10, 20, 30, 60)):
     timeout_iter = iter(timeouts)
     # do an initial sleep because func is known fail at first anyway
     time.sleep(next(timeout_iter))
+    retries = 0
     while True:
         try:
             func()
         except Exception as e:
+            retries += 1
             timeout = next(timeout_iter, None)
             if timeout is None or e.__class__.__name__ not in exc_type:
                 raise
-            logger.debug(f"Caught {e!r} while {func!r}; waiting {timeout} s before retry")
+            logger.debug(f"Initiating retry in {timeout} s due to {e!r} during {func!r}")
             time.sleep(timeout)
         else:
             break
+    if retries:
+        logger.debug(f"Operation {func!r} successful after {retries} retries")
 
 
 class CountingHandler(logging.Handler):

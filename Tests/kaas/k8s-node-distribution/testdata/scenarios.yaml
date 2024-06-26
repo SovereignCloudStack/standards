@@ -1,0 +1,128 @@
+# Success Scenario 1:
+# All nodes have distinct host-ids and zones, but share the region.
+success-1:
+  control-0:
+    node-role.kubernetes.io/control-plane: ""
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone1"
+    topology.scs.community/host-id: "vm0"
+  control-1:
+    node-role.kubernetes.io/control-plane: ""
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone2"
+    topology.scs.community/host-id: "vm1"
+  control-2:
+    node-role.kubernetes.io/control-plane: ""
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone3"
+    topology.scs.community/host-id: "vm2"
+  worker-0:
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone1"
+    topology.scs.community/host-id: "vm3"
+  worker-1:
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone2"
+    topology.scs.community/host-id: "vm4"
+  worker-2:
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone3"
+    topology.scs.community/host-id: "vm5"
+
+# Success Scenario 2:
+# Nodes share the host-id and region, but are in different zones.
+success-2:
+  control-0:
+    node-role.kubernetes.io/control-plane: ""
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone1"
+    topology.scs.community/host-id: "vm0"
+  control-1:
+    node-role.kubernetes.io/control-plane: ""
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone2"
+    topology.scs.community/host-id: "vm0"
+  control-2:
+    node-role.kubernetes.io/control-plane: ""
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone3"
+    topology.scs.community/host-id: "vm0"
+  worker-0:
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone1"
+    topology.scs.community/host-id: "vm1"
+  worker-1:
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone2"
+    topology.scs.community/host-id: "vm1"
+  worker-2:
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone3"
+    topology.scs.community/host-id: "vm1"
+
+# Failure Scenario:
+# No distribution detectable because of too few nodes
+no-distribution-1:
+  control-0:
+    node-role.kubernetes.io/control-plane: ""
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone1"
+    topology.scs.community/host-id: "vm0"
+  worker-0:
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone1"
+    topology.scs.community/host-id: "vm0"
+
+# Failure Scenario:
+# No distribution detectable because all nodes are in the same zone
+no-distribution-2:
+  control-0:
+    node-role.kubernetes.io/control-plane: ""
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone1"
+    topology.scs.community/host-id: "vm0"
+  control-1:
+    node-role.kubernetes.io/control-plane: ""
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone1"
+    topology.scs.community/host-id: "vm0"
+  control-2:
+    node-role.kubernetes.io/control-plane: ""
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone1"
+    topology.scs.community/host-id: "vm0"
+  worker-0:
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone1"
+    topology.scs.community/host-id: "vm1"
+  worker-1:
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone1"
+    topology.scs.community/host-id: "vm1"
+  worker-2:
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone1"
+    topology.scs.community/host-id: "vm1"
+
+# Failure Scenario:
+# A host-id label is missing on a control node
+missing-labels:
+  control-0:
+    node-role.kubernetes.io/control-plane: ""
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone1"
+    topology.scs.community/host-id: "vm0"
+  control-1:
+    node-role.kubernetes.io/control-plane: ""
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone1"
+    # host-id missing
+
+# Failure Scenario:
+# Not enough nodes available, so no distribution is detectable
+not-enough-nodes:
+  node-0:
+    node-role.kubernetes.io/control-plane: ""
+    topology.kubernetes.io/region: "region"
+    topology.kubernetes.io/zone: "zone1"
+    topology.scs.community/host-id: "vm0"
