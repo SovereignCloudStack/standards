@@ -26,22 +26,34 @@ Therefore this standard will address the minimal requirements that need to be me
 ## Motivation
 
 Redundancy is a non-trivial but relevant issue for a cloud deployment.
-The IaaS layer especially as the first abstraction layer from the hardware has an important role in this topic, because it is possible to increase failure safety through redundancy on the physical layer.
-The grouping of physical resources into Availability Zones on the IaaS level, gives customers the option to distribute their workload to different AZs which will result in a better failure safety.
+First and foremost it is necessary to increase failure safety through redundancy on the physical layer.
+The IaaS layer as the first abstraction layer from the hardware has an important role in this topic, too.
+The grouping of redundant physical resources into Availability Zones on the IaaS level, gives customers the option to distribute their workload to different AZs which will result in a better failure safety.
 While CSPs already have some similarities in their grouping of physical resources to AZs, there are also differences.
-Availability Zones can be set up for Compute, Network and Storage while all refering to the same physical separation in a deployment.
+This standard aims to reduce thos differences and will clarify, what customers can expect from Availability Zones in IaaS.
+
+Availability Zones in IaaS can be set up for Compute, Network and Storage while all refering to the same physical separation in a deployment.
 This standard elaborates the necessity of having Availability Zones for each of these classes.
 It will also check the requirements customers may have, when thinking about Availability Zones in relation to the taxonomy of failure safety levels [^1].
 The result should enable CSPs to know when to create AZs to be SCS-compliant.
 
 ## Design Considerations
 
-Availability Zones should represent parts of the same deployment that are independent of each other.
+Availability Zones should represent parts of the same physical deployment that are independent of each other.
 The maximum of physical independence is achieved through putting physical machines into different fire zones.
 In that case a failure case up to level 3 as described in the taxonomy of failure safety levels document[^1] will not lead to a complete outage of the deployment.
 
 Having Availability Zones represent fire zones will also result in AZs being able to take workload from another AZ in a Failure Case of Level 3.
 So that even the destruction of one Availability Zone will not automatically include the destruction of the other AZs.
+
+:::caution
+
+Even with fire zones being physically designed to protect parts of a data center from severe destruction in case of a fire, this will not always succeed.
+Availability Zones in Clouds are most of the time within the same physical data center.
+In case of a big catastrophe like a huge fire or a flood the whole data center could be destroyed.
+Availability Zones will not protect customers against these failure cases of level 4 of the taxonomy of failure safety[^1].
+
+:::
 
 Smaller deplyoments like edge deployments may not have more than one fire zone in a single location.
 To include such deployments, it should not be required to use Availability Zones.
@@ -52,15 +64,21 @@ That means there are deployments, which have Availability Zones per rack as each
 While this is also a possible measurement of independency it only provides failure safty for level 2.
 Therefore this standard should be very clear about which independency an AZ should represent and it should not be allowed to have different deployments with their Availability Zones representing different levels of failure safety.
 
-There are recommendations from the BSI for physical redundancy within a cloud deployment [^2].
-This standard considers these recommendation ar followed by most CSPs and will thus be a basis for all data centers.
-From this recommendations this standard assumes that the destruction of one fire zone will not lead to an outage of all power lines (not PDUs), internet connections, core routers or cooling systems.
-
-For the setup of Availability Zone this means, that within every AZ, there needs to be redundancy in core routers, internet connection, power lines and at least two separate cooling systems to avoid single points of failure in Availability Zones.
-But all this physical infrastructure can be the same over all Availability Zones in a deployment, when it is possible to survive the destruction of one fire zone.
-
 Additionally Availability Zones are available for Compute, Storage and Network services.
 They behave differently for each of these resources and also when working across resource-based Availability Zones, e.g. attaching a volume from one AZ to a virtual machine in another AZ.
+For each of these IaaS resource classes, it should be defined, under which circumstances Availablitiy Zones should be used.
+
+### Scope of tha Availability Zone Standard
+
+When elaborating redundancy and failure safety in data centers, it is necessary to also define redundancy on the physical level.
+There are already recommendations from the BSI for physical redundancy within a cloud deployment [^2].
+This standard considers these recommendation as a basis, that is followed by most CSPs.
+So this standard will not go into details, already provided by the CSP, but will rather concentrate on the IaaS layer and only have a coarse view on the physical layer.
+The first assumtion from the recommendations of the BSI is that the destruction of one fire zone will not lead to an outage of all power lines (not PDUs), internet connections, core routers or cooling systems.
+
+For the setup of Availability Zone this means, that within every AZ, there needs to be redundancy in core routers, internet connection, power lines and at least two separate cooling systems.
+This should avoid having single points of failure within the Availability Zones.
+But all this physical infrastructure can be the same over all Availability Zones in a deployment, when it is possible to survive the destruction of one fire zone.
 
 [^2]: [Availability recommendations from the BSI](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/RZ-Sicherheit/RZ-Verfuegbarkeitsmassnahmen.pdf?__blob=publicationFile&v=9)
 
@@ -71,6 +89,7 @@ They behave differently for each of these resources and also when working across
 It is possible standardize the Usage of Availability Zones over all IaaS resources.
 The downside from this is, that the IaaS resources behave so differently, that they have different requirements for redundancy and thus Availability Zones.
 This is not the way to go.
+Besides that, it is already possible to create two physically separated deployments close to each other, connect them with each other and use regions to differ between the IaaS on both deployments.
 
 The question that remains is, what an Availability Zone should consist of?
 Having one Availability Zone per fire zone gives the best level of failure safety, that can be achieved by CSPs.
@@ -131,25 +150,28 @@ This standard will therefore make no recommendations about Network AZs.
 
 [^3]: [Availability Zones in Neutron for OVN](https://docs.openstack.org/neutron/latest/admin/ovn/availability_zones.html)
 
-### Open questions
+### Cross-Attaching volumes from one AZ to another compute AZ
 
 Without the networking AZs we only need to take a closer look into attaching volumes to virtual machines across AZs.
 
-It is possible to allow or forbid cross-attaching volumes from one AZ to virtual machines in another AZ.
-If it is not allowed, then the creation of volume-based virtual machines will fail, in case of an outage of a complete Availability Zone.
-This does not seem to be a good option in regard for the failure safety level, as transfering a virtual machine from one AZ to another in a failure case will get way more complex.
-A replication of the volume has to be present in another storage Availability Zone that can be attached to the corresponding compute Availability Zone, which is not the AZ, that has an outage.
-Then this replication - maybe a snapshot - can be used to create a new virtual machine.
+When there is more than one Storage Availability Zone, those AZs do normally align with the Compute Availability Zones.
+This means that in fire zone 1 exist compute AZ 1 and storage AZ 1, in fire zone 2 are compute AZ 2 and storage AZ 2 and the same for fire zone 3.
+It is possible to allow or forbid cross-attaching volumes from one storage Availability Zone to virtual machines in another AZ.
+If it is not allowed, then the creation of volume-based virtual machines will fail, if there is no space left for VMs in the corresponding Availability Zone.
+While this may be unfortunate, it gives customers a very clear picture of an Availability Zone.
+It clarifies that having a virtual machine in another AZ also requires have a backup or replication of volumes in the other storage AZ.
+Then this backup or replication can be used to create a new virtual machine in the other AZ.
 
-While it seems to be a good decision to allow cross-attach, CSPs currently do not seem to widely use it.
-The reasons for and against this configuration may need to be discussed further to decide, whether this standard should make any recommendations regarding cross-attach.
+It seems to be a good decision to not encourage CSPs to allow cross-attach.
+Currently CSPs also do not seem to widely use it.
 
 ## Standard
 
 If Compute Availability Zone are used, they MUST be in different fire zones.
 Availabilty Zones for Storage SHOULD be setup, if there is no storage backend used that can span over different fire zones and automatically replicate the data.
+Otherwise a single Availabilty Zone for Storage SHOULD be configured.
 
-[TO BE DISCUSSED:] If Availability Zones for Storage are used, the attaching of volumes from one Storage Availability Zone to another Compute Availability Zone (cross-attach) SHOULD be allowed.
+If more than one Availability Zone for Storage is set up, the attaching of volumes from one Storage Availability Zone to another Compute Availability Zone (cross-attach) SHOULD NOT be possible.
 
 Within each Availability Zone:
 
