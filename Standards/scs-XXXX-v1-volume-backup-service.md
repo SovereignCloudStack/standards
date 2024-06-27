@@ -16,7 +16,7 @@ It is important for users to have the ability to create backups of this data in 
 
 The [volume backup functionality of OpenStack](https://docs.openstack.org/cinder/latest/admin/volume-backups.html) is a feature that is not available in all OpenStack clouds per default.
 The feature requires a backend to be prepared and configured correctly before it can be used.
-In Cinder this is a separate configuration to the general storage backend of the volume service and is not mandatory.
+In Cinder, this is a separate configuration to the general storage backend of the volume service and is not mandatory.
 Thus, an arbitrary OpenStack cloud may or may not offer this feature.
 
 This standard aims to make this functionality the default in SCS clouds so that customers can expect the feature to be usable.
