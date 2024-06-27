@@ -12,6 +12,12 @@ A prime example of these resources are volumes which are attached to virtual mac
 As such they carry potentially large amounts of user data which is constantly changing at runtime.
 It is important for users to have the ability to create backups of this data in a reliable and effifcient manner.
 
+## Terminology
+
+| Term | Meaning |
+|---|---|
+| CSP | Cloud Service Provider, provider managing the OpenStack infrastructure |
+
 ## Motivation
 
 The [volume backup functionality of OpenStack](https://docs.openstack.org/cinder/latest/admin/volume-backups.html) is a feature that is not available in all OpenStack clouds per default.
@@ -41,13 +47,25 @@ Although users are able to download images and transfer them to a different stor
 Furthermore, incremental backups are not possible when creating Glance images from volumes either.
 This results in time-consuming backup operations of fully copying a volume everytime a backup is created.
 
-#### Mandate the availability of the volume backup feature
+#### Focus on feature availability, make feature mandatory
 
 This option is pretty straightforward.
 It would make the volume backup feature mandatory for SCS clouds.
 This way users can expect the feature to be available and usable.
 
 With this, users can leverage functionalities like incremental backups and benefit from optimized performance of the backup process due to the tight integration with the volume service.
+
+However, it does not seem feasible to also mandate having a separate storage backend for volume backups at the same time due to potential infrastructure limitations at CSP-side making it hard or even impossible to offer.
+As such, the actual benefit of backups in terms of reliability and security aspects would be questionable if a separate storage backend is not mandated and therefore not guaranteed.
+
+This approach would focus on feature availability rather than backup reliability.
+
+#### Focus on backup reliability, make separate backend mandatory
+
+As an alternative, the volume backup feature availability could be made optional but in case a CSP chooses to offer it, the standard would mandate a separate storage backend to be used for volume backups.
+This way, failures of the volume storage backend would not directly impact the availability and safety of volume backups, making them actually live up to their name.
+
+In contrast to the above, this approach would focus on backup reliability rather than feature availability.
 
 ## Decision
 
