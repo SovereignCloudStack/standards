@@ -7,18 +7,26 @@ supplements:
   - scs-0101-v1-entropy.md
 ---
 
-## Implementation
+## Implementation notes
 
 We presume that almost nothing has to be done (or indeed can be done), as
-long as the CPUs and VM images are reasonably recent; only the flavor and
-image attributes have to be set:
+long as the CPUs and VM images are reasonably recent.
+The already mentioned failure testing and entropy count is available
+on modern linux kernels (especially on 5.18 or higher),
+but if older kernels are made available, the CSP needs to provide entropy
+by offering CPU instructions that provide entropy without being filtered by the hypervisor.
+All newer CPUs offer instructions for this kind of use-case (e.g. Intel introduced RDRAND
+in 2014 in their Broadwell architecture) and the expectation is,
+that most CSPs don't use older processors.
+
+Most times, only the flavor and image attributes required by the standard have to be set:
 
 - flavor: `hw_rng:allowed=True` ,
 - image: `hw_rng_model: virtio` .
 
-## Automated Tests
+## Automated tests
 
-### Images Sample
+### Images sample
 
 Some checks need to be performed on a live instance. For these checks, it is
 necessary to choose a sample of VM images to test on.
@@ -59,6 +67,6 @@ as ensured by the image metadata standard.
 The script [`entropy-check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/entropy/entropy-check.py)
 connects to OpenStack and performs the checks described in this section.
 
-## Manual Tests
+## Manual tests
 
 None.
