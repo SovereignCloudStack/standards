@@ -28,8 +28,71 @@ from sslyze.mozilla_tls_profile.mozilla_config_checker import (
     MozillaTlsConfigurationEnum, ServerNotCompliantWithMozillaTlsConfiguration,
     _MozillaTlsProfileAsJson)
 
-# The Mozilla recommendation preset to use
-MOZILLA_TLS_PRESET = MozillaTlsConfigurationEnum.INTERMEDIATE
+
+class MozillaTlsValidator(object):
+    """Configurable wrapper for MozillaTlsConfigurationChecker
+
+    Configures the MozillaTlsConfigurationChecker of SSLyze according
+    to given parameters concerning the Mozilla TLS Profile JSON to use
+    and configuration level to select (old, intermediate, modern).
+
+    For reference see: https://wiki.mozilla.org/Security/Server_Side_TLS
+    """
+
+    def __init__(self, configuration_level: str,
+                 json_path: typing.Optional[str]) -> None:
+        """Create a connection to an OpenStack cloud
+
+        :param string configuration_level:
+            Name of the Mozilla TLS configuration level to select.
+
+        :param string json_path:
+            Optional path to a JSON file containing the Mozilla TLS
+            recommendations.
+
+        :returns: MozillaTlsValidator
+        """
+        if json_path:
+            print(f"INFO: Loading custom Mozilla TLS Profile JSON from "
+                  f"{json_path}")
+            if not os.path.exists(json_path) or not os.path.isfile(json_path):
+                raise Exception(
+                    f"No such file '{json_path}'"
+                )
+            with open(json_path, 'r') as json_file:
+                json_content = json.load(json_file)
+                self.profile = _MozillaTlsProfileAsJson(**json_content)
+        else:
+            self.profile = None
+
+        for level in MozillaTlsConfigurationEnum:
+            if level.value == configuration_level:
+                self.config_level = level
+                print(f"INFO: Using profile level '{level.value}' of the "
+                      f"Mozilla TLS configuration")
+                break
+        else:
+            valid_levels = [
+                level.value for level in MozillaTlsConfigurationEnum
+            ]
+            raise Exception(
+                f"Mozilla TLS configuration profile level "
+                f"'{configuration_level}' is invalid, valid "
+                f"options are: {valid_levels}"
+            )
+
+    def check_scan_result(self, result: sslyze.ServerScanResult):
+        """
+        Validate the given ServerScanResult against the Mozilla TLS Profile.
+
+        Will raise a ServerNotCompliantWithMozillaTlsConfiguration exception
+        if any violations of the TLS profile are detected.
+        """
+        if self.profile:
+            mozilla_checker = MozillaTlsConfigurationChecker(self.profile)
+        else:
+            mozilla_checker = MozillaTlsConfigurationChecker.get_default()
+        mozilla_checker.check_server(self.config_level, result)
 
 
 def connect(cloud_name: str, password: typing.Optional[str] = None
@@ -92,7 +155,7 @@ def retrieve_endpoints(conn: openstack.connection.Connection) \
 
 
 def verify_tls(service: str, host: str, port: int,
-               mozilla_json_preset: typing.Optional[dict] = None) -> bool:
+               mozilla_tls: MozillaTlsValidator) -> bool:
     """Use SSLyze library to scan the SSL/TLS interface of the server.
 
     Evaluates the SSL/TLS configurations the server reports as supported.
@@ -114,20 +177,13 @@ def verify_tls(service: str, host: str, port: int,
     request = sslyze.ServerScanRequest(server, scan_commands=scans)
     scanner = sslyze.Scanner()
     scanner.queue_scans([request])
-    if mozilla_json_preset:
-        # Load a specific Mozilla TLS Profile JSON file; this mimicks the
-        # internal behavior of MozillaTlsConfigurationChecker.get_default()
-        parsed_profile = _MozillaTlsProfileAsJson(**mozilla_json_preset)
-        mozilla_checker = MozillaTlsConfigurationChecker(parsed_profile)
-    else:
-        mozilla_checker = MozillaTlsConfigurationChecker.get_default()
     for result in scanner.get_results():
         assert result.scan_result, (
             f"Service '{service}' at {host}:{port} did not respond to "
             f"TLS connection"
         )
         try:
-            mozilla_checker.check_server(MOZILLA_TLS_PRESET, result)
+            mozilla_tls.check_scan_result(result)
             print(
                 f"Service '{service}' at {host}:{port} complies to "
                 f"TLS recommendations: PASS"
@@ -146,7 +202,7 @@ def verify_tls(service: str, host: str, port: int,
 
 def check_endpoints(endpoints: dict[str, str],
                     ignore: typing.Optional[str],
-                    mozilla_json_preset: typing.Optional[dict]) -> None:
+                    mozilla_tls: MozillaTlsValidator) -> None:
     ignore_list = ignore.split(',') if ignore else []
     error_count = 0
     for service in endpoints:
@@ -178,7 +234,7 @@ def check_endpoints(endpoints: dict[str, str],
         # more useful since all endpoints are checked in one run and the
         # printed output will cover all of them, logging all issues at once
         error_count = error_count if verify_tls(
-            service, host, int(port), mozilla_json_preset
+            service, host, int(port), mozilla_tls
         ) else error_count + 1
 
     print(
@@ -217,6 +273,13 @@ def main():
         help="Path to the Mozilla TLS Profile JSON to be used as the basis "
         "for the checks (optional)",
     )
+    moz_tls_default_level = "intermediate"
+    parser.add_argument(
+        "--mozilla-preset-level", type=str,
+        default=moz_tls_default_level,
+        help=f"Name of the Mozilla TLS Profile configuration level name "
+             f"(default: {moz_tls_default_level})",
+    )
     args = parser.parse_args()
     openstack.enable_logging(debug=args.debug)
 
@@ -239,15 +302,13 @@ def main():
     )
     endpoints = endpoints_catalog["public"]
 
-    # load the Mozilla TLS Profile from JSON if specified
-    mozilla_json = None
-    if args.mozilla_json:
-        print(f"INFO: Loading custom Mozilla TLS Profile JSON from "
-              f"{args.mozilla_json}")
-        with open(args.mozilla_json, 'r') as json_file:
-            mozilla_json = json.load(json_file)
+    mozilla_tls = MozillaTlsValidator(
+        args.mozilla_preset_level,
+        # load the Mozilla TLS Profile from JSON if specified
+        args.mozilla_json if args.mozilla_json else None
+    )
 
-    check_endpoints(endpoints, args.ignore, mozilla_json)
+    check_endpoints(endpoints, args.ignore, mozilla_tls)
 
 
 if __name__ == "__main__":
