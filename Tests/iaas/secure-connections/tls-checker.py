@@ -269,13 +269,13 @@ def main():
         help="Enable OpenStack SDK debug logging"
     )
     parser.add_argument(
-        "--mozilla-json", type=str,
+        "--mozilla-profile-json", type=str,
         help="Path to the Mozilla TLS Profile JSON to be used as the basis "
         "for the checks (optional)",
     )
     moz_tls_default_level = "intermediate"
     parser.add_argument(
-        "--mozilla-preset-level", type=str,
+        "--mozilla-profile-level", type=str,
         default=moz_tls_default_level,
         help=f"Name of the Mozilla TLS Profile configuration level name "
              f"(default: {moz_tls_default_level})",
@@ -303,9 +303,9 @@ def main():
     endpoints = endpoints_catalog["public"]
 
     mozilla_tls = MozillaTlsValidator(
-        args.mozilla_preset_level,
+        args.mozilla_profile_level,
         # load the Mozilla TLS Profile from JSON if specified
-        args.mozilla_json if args.mozilla_json else None
+        args.mozilla_profile_json if args.mozilla_profile_json else None
     )
 
     check_endpoints(endpoints, args.ignore, mozilla_tls)
