@@ -46,10 +46,13 @@ The API policy library used by OpenStack (oslo.policy) introduced two new [confi
 - `enforce_new_defaults`
 
 Using those new defaults and scope-enforcing options [will currently break](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html#the-issues-we-are-facing-with-scope-concept) orchestration tooling such as **OpenStack Heat** and Tacker.
-Due to OpenStack Heat being a service supported by the SCS project, those conflicting options cannot be mandated by a SCS standard.
+This must be considered when making decisions in this standard.
+Careful evaluation of benefits as well as implications of adopting these changes is necessary.
+The new options are not adopted equally across all OpenStack services yet in context of the ongoing rework.
 
 Some service-specific role sets currently found in OpenStack services can only be eliminated and streamlined with the general roles (reader, member etc.) when those new options are enabled.
-Due to their currently unresolved compatibility issues, this standard cannot consider role models dependent on the those oslo.policy options and must keep incorporating the service-specific role sets for the time being.
+Due to their currently unresolved compatibility issues, they cannot be freely adopted without consequences.
+If adoption proves to be unfeasible, role models dependent on the those oslo.policy options could not be considered and the service-specific role sets would need to be preserved for the time being.
 The affected services and roles are documented below.
 
 #### Core Role Set
@@ -60,9 +63,8 @@ The proper distinction between reader, member and manager roles is only fully im
 Otherwise the OpenStack APIs will oftentimes fall back to their earlier policy implementations which do not fully differentiate between reader, member and manager.
 
 This results in more elevated permissions for users possessing the reader role than its role description suggests.
-Since this standard cannot mandate or expect the use of the aforementioned oslo.policy options due to their current compatibility issues as stated above, this reduces the usefulness of the reader role and will introduce unexpected behavior when using it.
-
-Due to this, the standard will omit the reader role in its current state.
+If this standard cannot mandate or expect the use of the aforementioned oslo.policy options due to their current compatibility issues as stated above, the usefulness of the reader role would be limited and unexpected behavior would be introduced when using it.
+In such case, the standard should omit the reader role in its current state.
 
 #### Barbican Role Set
 
@@ -77,7 +79,7 @@ This set of roles is Barbican-specific and not used by any other API.
 It became deprecated during the RBAC rework of OpenStack[^2] but is still included per default in recent OpenStack releases (as of the 2024.1 release).
 
 Due to its deprecation it is possible to enable Barbican's use of the already established reader, member and admin roles instead.
-This however requires the olso.policy options `enforce_scope` and `enforce_new_default` to be enabled, which are currently non-defaults and break compatibility with orchestration tooling, see above.
+This however requires the olso.policy options `enforce_scope` and `enforce_new_default` to be enabled.
 
 #### Octavia Role Set
 
@@ -95,7 +97,7 @@ However, Octavia also [officially supports alternative policy configurations](ht
 Using the alternative configurations would streamline Octavia's policies with the rest of the services and reduce complexity as well as ambiguity in the global role model of this standard.
 
 However, both of the alternative policy files that omit the Octavia-specific roles currently state "The [oslo_policy] `enforce_scope` and `enforce_new_defaults` must be `True`.".
-This would mean enabling the new defaults and scope-enforcing options that currently break compatibility with orchestration tooling like explained above.
+This would require the new defaults and scope-enforcing options.
 
 ### Key Manager Role Model
 
@@ -143,8 +145,8 @@ enforce_new_defaults = True
 enforce_scope = True
 ```
 
-As of the time of writing this standard, those options currently default to `False`[^3] for all OpenStack services.
-Once those options default to `True` in a future OpenStack release, this standard must be updated to properly account for the resulting changes in policy and role defaults.
+Not all OpenStack services enable these options yet.
+Once those options default to `True` for additional services in a future OpenStack release, this standard must be updated to properly account for the resulting changes in policy and role defaults.
 Due to the fact that the details on how the remaining compatibility issues will be addressed upstream are still unknown, the full implications on when and how this standard will need to be updated specifically remains an open question.
 However, at the very least this will most likely result in the following changes to this standard:
 
