@@ -262,6 +262,7 @@ See the [corresponding Design Considerations section](#libvirt-hypervisor-interf
 ## Conformance Tests
 
 Conformance tests are limited to communication channels exposed to users, such as the public API interfaces.
+Internal channels and APIs are currently not part of the automated conformance tests because they are not exposed and cannot be audited without direct access to the infrastructure.
 
 There is a test suite in [`tls-checker.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/secure-connections/tls-checker.py).
 The test suite connects to the OpenStack API and retrieves all public API endpoints from the service catalog.
