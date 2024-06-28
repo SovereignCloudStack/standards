@@ -1,6 +1,55 @@
 name: SCS Compatible
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible.yaml
+variables:
+  - os_cloud
 versions:
+  - version: v5
+    standards:
+      - name: Secure Connections
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-01XX-v1-secure-connections.md
+        parameters:
+          - mozilla_tls_profile_version: "5.7"
+          - mozilla_tls_profile_preset: "intermediate"
+        checks:
+          - executable: ./iaas/secure-connections/tls-checker.py
+            args: --os-cloud {os_cloud} --mozilla-profile-json ./iaas/secure-connections/mozilla-tls-profiles/{mozilla_tls_profile_version}.json --mozilla-profile-level {mozilla_tls_profile_preset}
+            id: tls-configuration-check
+      - name: OpenStack Powered Compute v2022.11
+        url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
+        # Unfortunately, no wrapper to run refstack yet, needs to be added
+      - name: Flavor naming
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v3-flavor-naming.md
+        checks:
+          - executable: ./iaas/flavor-naming/flavor-names-openstack.py
+            args: -c {os_cloud} --mand=./iaas/scs-0100-v3-flavors.yaml
+            # Note: --v2plus would outlaw the v1 flavor names. Don't do this yet.
+            id: flavor-name-check
+      - name: Entropy
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0101-v1-entropy.md
+        checks:
+          - executable: ./iaas/entropy/entropy-check.py
+            args: -c {os_cloud} -d
+            id: entropy-check
+      - name: Image metadata
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
+        checks:
+          - executable: ./iaas/image-metadata/image-md-check.py
+            args: -c {os_cloud} -s -v
+            id: image-metadata-check
+      - name: Standard flavors
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0103-v1-standard-flavors.md
+        checks:
+          - executable: ./iaas/standard-flavors/flavors-openstack.py
+            args: -c {os_cloud} -d ./iaas/scs-0103-v1-flavors.yaml
+            id: standard-flavors-check
+      - name: Standard images
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0104-v1-standard-images.md
+        parameters:
+          image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images.yaml
+        checks:
+          - executable: ./iaas/standard-images/images-openstack.py
+            args: -c {os_cloud} -d {image_spec}
+            id: standard-images-check
   - version: v4
     standards:
       - name: Standard flavors
