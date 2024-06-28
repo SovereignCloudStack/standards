@@ -79,6 +79,7 @@ The volume backup target storage SHOULD be a separate storage system from the on
 ## Related Documents
 
 - [OpenStack Block Storage v3 Backup API reference](https://docs.openstack.org/api-ref/block-storage/v3/index.html#backups-backups)
+- [OpenStack Volume Backup Drivers](https://docs.openstack.org/cinder/latest/configuration/block-storage/backup-drivers.html)
 
 ## Conformance Tests
 
