@@ -30,11 +30,11 @@ The following IaaS APIs MUST be present in SCS-compliant IaaS deployments and co
 | Mandatory API | corresponding OpenStack Service | description |
 |-----|-----|-----|
 | **block-storage** | Cinder | Block Storage service |
-| **image** | Glance | Image service |
-| **identity** | Keystone | Identity service |
-| **network** | Neutron | Networking service |
 | **compute** | Nova | Compute service |
+| **identity** | Keystone | Identity service |
+| **image** | Glance | Image service |
 | **load-balancer** | Octavia | Load-balancer service |
+| **network** | Neutron | Networking service |
 | **s3** or **object-store** | S3 API object storage | No formal standard exists, many implementations: Swift, RadosGW, minio... |
 
 :::caution
@@ -51,15 +51,15 @@ The following IaaS APIs MAY be present in SCS-compliant IaaS deployment, e.g. im
 
 | Supported API | corresponding OpenStack Service | description |
 |-----|-----|-----|
-| **key-manager** | Barbican | Key Manager service |
-| **billing** | Cloudkitty | Rating/Billing service |
-| **telemetry** | Ceilometer | Telemetry service |
-| **dns** | Designate | DNS service |
-| **time-series-databse** | Gnocchi | Time Series Database service |
-| **orchestration** | Heat | Orchestration service |
 | **bare-metal** | Ironic | Bare Metal provisioning service |
-| **shared-file-systems** | Manila | Shared File Systems service |
+| **billing** | Cloudkitty | Rating/Billing service |
+| **dns** | Designate | DNS service |
 | **ha** | Masakari | Instances High Availability service |
+| **key-manager** | Barbican | Key Manager service |
+| **orchestration** | Heat | Orchestration service |
+| **shared-file-systems** | Manila | Shared File Systems service |
+| **telemetry** | Ceilometer | Telemetry service |
+| **time-series-databse** | Gnocchi | Time Series Database service |
 
 ## Unsupported IaaS APIs
 
