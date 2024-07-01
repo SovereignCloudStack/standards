@@ -53,7 +53,7 @@ The following IaaS APIs MAY be present in SCS-compliant IaaS deployment, e.g. im
 |-----|-----|-----|
 | **key-manager** | Barbican | Key Manager service |
 | **billing** | Cloudkitty | Rating/Billing service |
-| **telemetry** | Ceilomete | Telemetry service |
+| **telemetry** | Ceilometer | Telemetry service |
 | **dns** | Designate | DNS service |
 | **time-series-databse** | Gnocchi | Time Series Database service |
 | **orchestration** | Heat | Orchestration service |
