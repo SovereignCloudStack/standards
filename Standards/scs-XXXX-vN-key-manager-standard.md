@@ -1,5 +1,5 @@
 ---
-title: Key-Manager Standard
+title: Key Manager Standard
 type: Standard
 status: Draft
 track: IaaS
@@ -24,6 +24,7 @@ This standard aims to provide a base level of security for Cloud Service Provide
 | IaaS | Infrastructure-as-a-Service |
 | HSM | Hardware Security Module |
 | KEK | Key Encryption Key |
+| RBAC | Role Based Access Control |
 
 ## Motivation
 
@@ -46,25 +47,50 @@ To minimize the burden and enable more CSPs to step up and provide encryption, t
 
 ### Options considered
 
-#### _Option 1_
+#### Recommend or even mandate specific Key Manager plugins
 
 It was considered to only recommend a certain set of plugins or backends for the Key Manager, but this may be very prone to change if e.g. Barbican adds a new plugin.
 As the SCS only wants to mandate the API that can be abstracted through the Castellan library in OpenStack, integrating any other Key Manager implementation is not uncommon, so this standard needs to consider other possible Key Managers as well.
 Due to these reasons this option was disregarded.
 
-#### _Option 2_
+#### Recommendation regarding the handling of the Master KEK
 
 Looking into the available Barbican plugins and possible attack vectors one design decision in the plugins is very important: where and how to store the Master-KEK.
 Because the Plugins might use different technologies there are many locations for the Master KEK possible.
 Most of the Plugins increase the security level by not storing the Master-KEK in plain text on the physical machine Barbican is running on.
 This mechanism as a whole, is something that CSPs should aim to do.
 
-## Standard
+#### Standardization of the Key Manager Policy
+
+Because this standards recommends or even eventually mandates the presence of a Key Manager, the situation about the policy of the Key Manager needs to be discussed.
+The policy of an IaaS service should use the same roles as the other IaaS services.
+Unfortunately this does not apply to the Key Manager implementation Barbican.
+It has the roles 'reader', 'audit' and 'creator', which are not present in the Keystone role concept.
+The roles a customer usually gets through the Identity API is 'member'.
+Leaving it this way will prevent users from creating and using secrets even when a Key Manager is integrated.
+
+To unify the roles among all IaaS services, there is currently work done in the OpenStack Community.
+This initiative is called secure RBAC[^1].
+Also the SCS is discussing a standard concerning the roles[^2].
+When this is done, there is no further work needed.
+But as of the 2024.1 release, this is still under development.
+
+In conclusion this standard should mandate everyone who uses a Key Manager that does not include the secure RBAC, to adjust the policies to have a mapping between the internal 'creator' and the identity-based 'member' role.
+This will result in a 'member' being allowed to do everything a 'creator' can do.
+
+[^1]: [Secure RBAC work in OpenStack](https://etherpad.opendev.org/p/rbac-goal-tracking)
+[^2]: [Issue for a role standard in SCS](https://github.com/SovereignCloudStack/issues/issues/396)
+ 
+## Key Manager Standard
 
 To increase security and allow user data encryption, CSPs SHOULD implement the Key Manager API (e.g. implemented by Barbican).
 The Keys managed by this Key Manager MUST be stored encrypted and the Master-KEK of the Key Manager MUST be stored in another place than the Keys.
 
 If possible CSPs SHOULD NOT store the Master-KEK in plain-text on the physical host the Key Manager is running on.
+
+### Key Manager Policies
+
+If a Key Manager without secure RBAC enabled is used, the policies MUST be adjusted to let the 'member' role of the Identity service be equivalent to the Key Manager internal 'creator' role.
 
 ## Related Documents
 
