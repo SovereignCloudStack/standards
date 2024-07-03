@@ -65,8 +65,8 @@ This mechanism as a whole, is something that CSPs should aim to do.
 Because this standards recommends or even eventually mandates the presence of a Key Manager, the situation about the policy of the Key Manager needs to be discussed.
 The policy of an IaaS service should use the same roles as the other IaaS services.
 Unfortunately this does not apply to the Key Manager implementation Barbican.
-It has the roles 'reader', 'audit' and 'creator', which are not present in the Keystone role concept.
-The roles a customer usually gets through the Identity API is 'member'.
+It has the roles `reader`, `audit` and `creator`, which are not present in the Keystone role concept.
+The roles a customer usually gets through the Identity API is `member`.
 Leaving it this way will prevent users from creating and using secrets even when a Key Manager is integrated.
 
 To unify the roles among all IaaS services, there is currently work done in the OpenStack Community.
@@ -75,8 +75,8 @@ Also the SCS is discussing a standard concerning the roles[^2].
 When this is done, there is no further work needed.
 But as of the 2024.1 release, this is still under development.
 
-In conclusion this standard should mandate everyone who uses a Key Manager that does not include the secure RBAC, to adjust the policies to have a mapping between the internal 'creator' and the identity-based 'member' role.
-This will result in a 'member' being allowed to do everything a 'creator' can do.
+In conclusion this standard should mandate everyone who uses a Key Manager that does not include the secure RBAC, to adjust the policies to have a mapping between the internal `creator` and the identity-based `member` role.
+This will result in a `member` being allowed to do everything a `creator` can do.
 
 [^1]: [Secure RBAC work in OpenStack](https://etherpad.opendev.org/p/rbac-goal-tracking)
 [^2]: [Issue for a role standard in SCS](https://github.com/SovereignCloudStack/issues/issues/396)
@@ -90,7 +90,7 @@ If possible CSPs SHOULD NOT store the Master-KEK in plain-text on the physical h
 
 ### Key Manager Policies
 
-If a Key Manager without secure RBAC enabled is used, the policies MUST be adjusted to let the 'member' role of the Identity service be equivalent to the Key Manager internal 'creator' role.
+If a Key Manager without secure RBAC enabled is used, the policies MUST be adjusted to let the `member` role of the Identity service be equivalent to the Key Manager internal `creator` role.
 
 ## Related Documents
 
