@@ -29,7 +29,7 @@ They are storing the keys differently and CSPs need to make sure, that the acces
 When a Key Manager is used, but it uses the old policies and does not enforce the new secure RBAC work, the roles between Barbican and the other IaaS services differ.
 This can be done with a small change in the policy.yaml file. The `creator` has to be defined like this:
 
-```
+```yaml
 "creator": "role:member"
 ```
 
