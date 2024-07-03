@@ -80,7 +80,7 @@ This will result in a 'member' being allowed to do everything a 'creator' can do
 
 [^1]: [Secure RBAC work in OpenStack](https://etherpad.opendev.org/p/rbac-goal-tracking)
 [^2]: [Issue for a role standard in SCS](https://github.com/SovereignCloudStack/issues/issues/396)
- 
+
 ## Key Manager Standard
 
 To increase security and allow user data encryption, CSPs SHOULD implement the Key Manager API (e.g. implemented by Barbican).
