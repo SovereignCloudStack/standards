@@ -24,6 +24,15 @@ They are storing the keys differently and CSPs need to make sure, that the acces
 
 [^1]:[Barbican Plugins](https://docs.openstack.org/barbican/latest/install/barbican-backend.html)
 
+### Policies
+
+When a Key Manager is used, but it uses the old policies and does not enforce the new secure RBAC work, the roles between Barbican and the other IaaS services differ.
+This can be done with a small change in the policy.yaml file. The `creator` has to be defined like this:
+
+```
+"creator": "role:member"
+```
+
 ## Automated Tests
 
 The check for the presence of a Key Manager is done with a test script, that checks the presence of a Key Manager service in the catalog endpoint of Openstack.
