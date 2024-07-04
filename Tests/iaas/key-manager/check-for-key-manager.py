@@ -42,12 +42,16 @@ def check_presence_of_key_manager(cloud_name: str):
         svc_type = svc['type']
         if svc_type == "key-manager":
             # key-manager is present
+            # now we want to check whether a user with member role
+            # can create and access secrets
+            check_key_manager_permissions(connection)
             return 0
 
     # we did not find the key-manager service
     logger.warning("There is no key-manager endpoint in the cloud.")
     # we do not fail, until a key-manager MUST be present
     return 0
+
 
 def check_key_manager_permissions(conn: openstack.connection.Connection
                                   ) -> None:
@@ -97,8 +101,6 @@ def check_key_manager_permissions(conn: openstack.connection.Connection
             f"ERROR: {str(e)}"
         )
         exit(1)
-    finally:
-        delete_application_credential(conn, APP_CREDENTIAL_NAME)
     print(
         "Users of the 'member' role can use Key Manager API: PASS"
     )
