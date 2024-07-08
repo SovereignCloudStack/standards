@@ -89,7 +89,7 @@ Note that probability for these scenarios is dependent on the location.
 | Earthquake | Very Low | permanent Disk and Host loss in the affected zone |
 | Storm/Tornado | Low | permanent Disk and Host loss in the affected fire zone |
 
-#### Others
+#### Software Related
 
 | Failure Scenario | Probability | Consequences |
 |----|-----|----|
@@ -114,11 +114,13 @@ Part of this list comes directly from the official [Kubernetes docs](https://kub
 | Cluster operator error                       | Medium      | Loss of pods, services, etc. / lost of apiserver backing store / users unable to read API                                                                            |
 | Failure of multiple nodes or underlying DB   | Low         | Possible loss of all data depending on the amount of nodes lost compared to the cluster size, otherwise costly rebuild                                               |
 
+### Impact of the Failure Scenarios
+
 These failure scenarios can result in temporary (T) or permanent (P) loss of the resource or data within.
 Additionally, there are a lot of resources in IaaS alone that are more or less affected by these failure scenarios.
 The following tables shows the impact **when no redundancy or failure safety measure is in place**:
 
-### Impact on OpenStack Resources (IaaS layer)
+#### Impact on OpenStack Resources (IaaS layer)
 
 | Resource | Disk Loss | Node Loss | Rack Loss | Power Loss | Natural Catastrophy | Cyber Threat | Software Bug |
 |----|----|----|----|----|----|----|----|
@@ -133,7 +135,10 @@ The following tables shows the impact **when no redundancy or failure safety mea
 | network connectivity (materialization) | | T (if on node) | T/P | T | P (T if lucky) | T/P | T |
 | floating IP | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | T |
 
-### Impact on Kubernetes Resources (KaaS layer)
+For some cases, this only results in temporary unavailability and cloud infrastructures usually have certain mechanisms in place to avoid data loss, like redundancy in storage backends and databases.
+So some of these outages are easier to mitigate than others.
+
+#### Impact on Kubernetes Resources (KaaS layer)
 
 :::note
 
@@ -149,8 +154,6 @@ In case the KaaS layer runs on top of IaaS layer, the impacts described in the a
 |PVC|P| | | | | |P|
 |API Server|T| | | | | |T/P|
 
-For some cases, this only results in temporary unavailability and cloud infrastructures usually have certain mechanisms in place to avoid data loss, like redundancy in storage backends and databases.
-So some of these outages are easier to mitigate than others.
 
 ### Classification by Severity
 
