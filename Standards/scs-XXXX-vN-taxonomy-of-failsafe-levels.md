@@ -13,10 +13,126 @@ There does exist very detailed lists of risks and what consequences there are fo
 So that in each standard that referenced redundancy, it can easily be seen how far this redundancy goes in that certain circumstance.
 Readers of such standards should be able to know at one glance, whether the achieved failure safeness is on a basic level or a higher one and whether there would be additional actions needed to protect the data.
 
-This is why this decision record aims to define different levels of failure-safety.
+This is why this decision record aims to define different levels of failure safety.
 These levels can then be used in standards to clearly set the scope that certain procedures in e.g. OpenStack offer.
 
+<!--
+TODO: goals vs. non-goals
+TODO: Resolve confusion between high availability vs. disaster recovery vs. redundancy vs. backups
+TODO: What time frame do we look at? (so called Recovery Time Objecte aka RTO)
+TODO: how does this relate to Business Continuity Planning (BCP)
+-->
+
+## Context
+
+Some standards provided by the SCS project will talk about or require procedures to back up resources or have redundancy for resources.
+This decision record should discuss, which failure threats are CSP-facing and will classify them into several levels.
+In consequence these levels should be used in standards concerning redundancy or failure safety.
+
+Based on our research, no similar standardized classification scheme seems to exist currently.
+Something close but also very detailed is the [BSI-Standard 200-3 (german)][bsi-200-3] published by the German Federal Office for Information Security.
+As we want to focus on IaaS and K8s resources and also have an easily understandable structure that can be applied in standards covering replication, redundancy and backups, this document is too detailed.
+
+[bsi-200-3]: https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Grundschutz/BSI_Standards/standard_200_3.pdf?__blob=publicationFile&v=2
+
+## Decision
+
+### Failsafe Levels
+
+This Decision Record defines **four** failsafe levels, each of which describe what kind of failures have to
+be tolerated by a provided service.
+
+In general, the lowest, **level 1**, describes isolated/local failures which can occur very frequently, whereas
+the highest, **level 4**, describes relatively unlikely failures that impact a whole or even multiple datacenter(s):
+
+| Level | Probability | Impact      | Examples |
+| -     | -           | -           | -       |
+| 1     | Very High   | Local       | Disk failure, RAM failure, software bug |
+| 2     | High        | Moderate    | Rack outage, power outage, small fire |
+| 3     | Medium      | High        | Regional power outage, huge fire, orchestrated cyber attack |
+| 4     | Low         | Very high   | Natural disaster |
+
+<!--
+TODO: find better categories for impact (maybe site-wide, regional, and so on?) also: scale vs. impact?
+-->
+
+For example, a provided service with failsafe level 2 tolerates a rack outage (because there is some kind of
+redundancy in place.)
+
+From a cloud service provider (CSP) perspective, supporting these failure levels has the following *general*
+consequences:
+
+* **Level 1**: CSPs MUST operate replicas for important components (e.g., RAID, replicated volume backend, uninterruptible power supply).
+* **Level 2**: CSPs SHOULD operate hardware in dedicated availability zones (AZs).
+* **Level 3**: CSPs SHOULD operate hardware in dedicated regions.
+* **Level 4**: Depending on the regions, CSPs may not be able to save user data from such catastrophes.
+
+More specific guidance on what these levels mean on the IaaS and KaaS layers will be provided in the sections
+further down.
+But beforehand, we will describe the considered failure scenarios and the resources that may be affected.
+
+### Failure Scenarios
+
+The following failure scenarios have been considered for the proposed failsafe levels.
+For each failure scenario, we estimate the probability of occurence and the (worst case) damage caused by the scenario.
+Furthermore, the corresponding minimum failsafe level covering that failure scenario is given.
+
+<!--
+TODO: define the meaning of our probabilities
+-->
+
+#### Hardware Related
+
+| Failure Scenario | Probability | Consequences | Failsafe Level Coverage |
+|----|-----|----|----|
+| Disk Failure | High | Permanent data loss in this disk. Impact depends on type of lost data (data base, user data) | L1 |
+| Host Failure (without disks) | Medium to High | Permanent loss of functionality and connectivity of host (impact depends on type of host) | L1 |
+| Host Failure | Medium to High | Data loss in RAM and temporary loss of functionality and connectivity of host (impact depends on type of host) | L1 |
+| Rack Outage | Medium | Outage of all nodes in rack | L2 |
+| Network router/switch outage | Medium | Temporary loss of service, loss of connectivity, network partitioning | L2 |
+| Loss of network uplink | Medium | Temporary loss of service, loss of connectivity | L3 |
+| Power Outage (Data Center supply) | Medium | Temporary outage of all nodes in all racks | L3 |
+
+#### Software Related
+
+| Failure Scenario | Probability | Consequences | Failsafe Level Coverage |
+|----|-----|----|----|
+| Cyber threat | High | permanent loss or compromise of data on affected Disk and Host | L1 |
+| Software bug (major) | Low | permanent loss or compromise of data that trigger the bug up to data on the whole physical machine | L1 |
+| Software bug (minor) | High | temporary or partial loss or compromise of data | L1 |
+
+<!--
+TODO: how do we arrive at these probabilities?
+-->
+
+#### Environmental
+
+Note that probability for these scenarios is dependent on the location.
+
+| Failure Scenario | Probability | Consequences | Failsafe Level Coverage |
+|----|-----|----|----|
+| Fire | Medium | permanent Disk and Host loss in the affected zone | L3 |
+| Flood | Low | permanent Disk and Host loss in the affected region | L4 |
+| Earthquake | Very Low | permanent Disk and Host loss in the affected region | L4 |
+| Storm/Tornado | Low | permanent Disk and Host loss in the affected region | L4 |
+
+#### Human Interference
+
+| Failure Scenario | Probability | Consequences | Failsafe Level Coverage |
+|----|-----|----|----|
+| Minor operating error | High | Temporary outage | L1 |
+| Major operating error | Low | Permanent loss of data | L3 |
+
+
+## Consequences
+
+Using the definition of levels established in this decision record throughout all SCS standards would allow readers to understand up to which level certain procedures or aspects of resources (e.g. volume types or a backend requiring redundancy) would protect their data and/or resource availability.
+
 ## Glossary
+
+<!--
+TODO: define AZs and regions
+-->
 
 ### General Terms
 
@@ -26,7 +142,9 @@ These levels can then be used in standards to clearly set the scope that certain
 | Host               | A physical machine in the infrastructure providing computational, storage and/or network connectivity capabilities.                      |
 | Cyber threat       | Attacks on the infrastructure through the means of electronic access.                                                                    |
 
-### OpenStack Resources
+### Affected Resources
+
+#### IaaS Layer (OpenStack Resources)
 
 | Resource           | Explanation                                                                                                                              |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
@@ -41,86 +159,36 @@ These levels can then be used in standards to clearly set the scope that certain
 | Key Encryption Key | IaaS resource, used to encrypt other keys to be able to store them encrypted in a database.                                              |
 | Floating IP        | IaaS resource, an IP that is usually routed and accessible from external networks.                                                       |
 
-### Kubernetes Resources
+#### KaaS Layer (Kubernetes Resources)
 
-| Resource           | Explanation                                                                                                                              |
+| Resource(s)        | Explanation                                                                                                                              |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Node               | A physical or virtual machine that runs workloads (Pods) managed by the Kubernetes control plane.                                        |
-| Kubelet            | An agent that runs on each node in the cluster. It makes sure that containers are running in a Pod.                                      |
-| API Server         | The Kubernetes control plane component which exposes the Kubernetes Application Programming Interface (API).                             |
 | Pod                | Kubernetes object that represents a workload to be executed, consisting of one or more containers.                                       |
 | Container          | A lightweight and portable executable image that contains software and all of its dependencies.                                          |
-| Persistent Volume Claim (PVC) | Persistent storage that can be bound and mounted to a pod.                                                                    |
+| Deployment, StatefulSet | Kubernetes objects that manage a set of Pods. |
+| Job                | Application workload that runs once. |
+| CronJob            | Application workload that runs once, but repeatedly at specific intervals. |
+| ConfigMap, Secret  | Objects holding static application configuration data. |
+| Service            | Makes a Pod's network service accessible inside a cluster. |
+| Ingress            | Makes a Service externally accessible. |
+| PersistentVolumeClaim (PVC) | Persistent storage that can be bound and mounted to a pod.                                                                    |
 
-Source: [Kubernetes Glossary](https://kubernetes.io/docs/reference/glossary/)
+Also see [Kubernetes Glossary](https://kubernetes.io/docs/reference/glossary/).
 
-## Context
-
-Some standards provided by the SCS project will talk about or require procedures to back up resources or have redundancy for resources.
-This decision record should discuss, which failure threats are CSP-facing and will classify them into several levels.
-In consequence these levels should be used in standards concerning redundancy or failure-safety.
-
-## Decision
-
-### Failure Scenarios
-
-First there needs to be an overview about possible failure scenarios in infrastructures as well as their probability of occurrence and the damage they may cause:
-
-#### Hardware Related
-
-| Failure Scenario | Probability | Consequences |
-|----|-----|----|
-| Disk Failure/Loss | High | Permanent data loss in this disk. Impact depends on type of lost data (data base, user data) |
-| Host Failure/Loss (without disks) | Medium to High | Permanent loss of functionality and connectivity of host (impact depends on type of host) |
-| Host Outage | Medium to High | Data loss in RAM and temporary loss of functionality and connectivity of host (impact depends on type of host) |
-| Rack Outage | Medium | Outage of all nodes in rack |
-| Network router/switch outage | High/Medium/Low | ... |
-| Loss of network uplink | High/Medium/Low | |
-| Power Outage (Data Center supply) | Medium | temporary outage of all nodes in all racks |
-
-#### Environmental
-
-Note that probability for these scenarios is dependent on the location.
-
-| Failure Scenario | Probability | Consequences |
-|----|-----|----|
-| Fire | Medium | permanent Disk and Host loss in the affected zone |
-| Flood | Low | permanent Disk and Host loss in the affected zone |
-| Earthquake | Very Low | permanent Disk and Host loss in the affected zone |
-| Storm/Tornado | Low | permanent Disk and Host loss in the affected fire zone |
-
-#### Software Related
-
-| Failure Scenario | Probability | Consequences |
-|----|-----|----|
-| Cyber threat | High | permanent loss or compromise of data on affected Disk and Host |
-| Cluster operator error | High/Medium/Low | ... |
-| Software Bug | High | permanent loss or compromise of data that trigger the bug up to data on the whole physical machine |
-
-#### Kubernetes Specific
-
-A similar overview can be provided for Kubernetes infrastructures. These also include the things mentioned for infrastructure failure scenario, since a Kubernetes cluster
-would most likely be deployed on top of this infrastructure or face similar problems on a bare-metal installation.
-Part of this list comes directly from the official [Kubernetes docs](https://kubernetes.io/docs/tasks/debug/debug-cluster/).
-
-| Failure Scenario                             | Probability | Consequences                                                                                                                                                         |
-|----------------------------------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| API server VM shutdown or apiserver crashing | Medium      | Unable to stop, update, or start new pods, services, replication controller                                                                                          |
-| API server backing storage lost              | Medium      | kube-apiserver component fails to start successfully and become healthy                                                                                              |
-| Supporting services VM shutdown or crashing  | Medium      | Colocated with the apiserver, and their unavailability has similar consequences as apiserver                                                                         |
-| Individual node shuts down                   | Medium      | Pods on that Node stop running                                                                                                                                       |
-| Network partition / Network problems         | Medium      | Partition A thinks the nodes in partition B are down; partition B thinks the apiserver is down                                                                       |
-| Kubelet software fault                       | Medium      | Crashing kubelet cannot start new pods on the node / kubelet might delete the pods or not / node marked unhealthy / replication controllers start new pods elsewhere |
-| Cluster operator error                       | Medium      | Loss of pods, services, etc. / lost of apiserver backing store / users unable to read API                                                                            |
-| Failure of multiple nodes or underlying DB   | Low         | Possible loss of all data depending on the amount of nodes lost compared to the cluster size, otherwise costly rebuild                                               |
+## Old sections
 
 ### Impact of the Failure Scenarios
 
 These failure scenarios can result in temporary (T) or permanent (P) loss of the resource or data within.
 Additionally, there are a lot of resources in IaaS alone that are more or less affected by these failure scenarios.
-The following tables shows the impact **when no redundancy or failure safety measure is in place**:
+The following tables shows the impact **when no redundancy or failure safety measure is in place**, i.e., when
+**not even failsafe level 1 is fulfilled**.
+
+TODO: why should we do that?
 
 #### Impact on OpenStack Resources (IaaS layer)
+
+TODO: this table is getting difficult to maintain
 
 | Resource | Disk Loss | Node Loss | Rack Loss | Power Loss | Natural Catastrophy | Cyber Threat | Software Bug |
 |----|----|----|----|----|----|----|----|
@@ -154,7 +222,6 @@ In case the KaaS layer runs on top of IaaS layer, the impacts described in the a
 |PVC|P| | | | | |P|
 |API Server|T| | | | | |T/P|
 
-
 ### Classification by Severity
 
 A possible way to classify the failure cases into levels considering the matrix of impact would be, to classify the failure cases from small to big ones.
@@ -176,10 +243,21 @@ Customers should always check, what they can do to protect their data and not re
 | 3. Level | Medium | small catastrophes or major Failures (e.g. fire, regional Power Outage, orchestrated cyber attacks,...) | lots of resources / user data + potentially not recoverable | CPSs SHOULD operate hardware in dedicated Availability Zones. Users SHOULD backup their data, themself. |
 | 4. Level | Low | whole deployment loss (e.g. natural disaster,...) | entire infrastructure, not recoverable | CSPs may not be able to save user data from such catastrophes. Users are responsible for saving their data from natural disasters. |
 
-Based on our research, no similar standardized classification scheme seems to exist currently.
-Something close but also very detailed can be found in [this (german)](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Grundschutz/BSI_Standards/standard_200_3.pdf?__blob=publicationFile&v=2) from the German Federal Office for Information Security.
-As we want to focus on IaaS and K8s resources and also have an easily understandable structure that can be applied in standards covering replication, redundancy and backups, this document is too detailed.
+### Kubernetes Specific
 
-## Consequences
+TODO: merge this with new sections
 
-Using the definition of levels established in this decision record throughout all SCS standards would allow readers to understand up to which level certain procedures or aspects of resources (e.g. volume types or a backend requiring redundancy) would protect their data and/or resource availability.
+A similar overview can be provided for Kubernetes infrastructures. These also include the things mentioned for infrastructure failure scenario, since a Kubernetes cluster
+would most likely be deployed on top of this infrastructure or face similar problems on a bare-metal installation.
+Part of this list comes directly from the official [Kubernetes docs](https://kubernetes.io/docs/tasks/debug/debug-cluster/).
+
+| Failure Scenario                             | Probability | Consequences                                                                                                                                                         |
+|----------------------------------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| API server VM shutdown or apiserver crashing | Medium      | Unable to stop, update, or start new pods, services, replication controller                                                                                          |
+| API server backing storage lost              | Medium      | kube-apiserver component fails to start successfully and become healthy                                                                                              |
+| Supporting services VM shutdown or crashing  | Medium      | Colocated with the apiserver, and their unavailability has similar consequences as apiserver                                                                         |
+| Individual node shuts down                   | Medium      | Pods on that Node stop running                                                                                                                                       |
+| Network partition / Network problems         | Medium      | Partition A thinks the nodes in partition B are down; partition B thinks the apiserver is down                                                                       |
+| Kubelet software fault                       | Medium      | Crashing kubelet cannot start new pods on the node / kubelet might delete the pods or not / node marked unhealthy / replication controllers start new pods elsewhere |
+| Cluster operator error                       | Medium      | Loss of pods, services, etc. / lost of apiserver backing store / users unable to read API                                                                            |
+| Failure of multiple nodes or underlying DB   | Low         | Possible loss of all data depending on the amount of nodes lost compared to the cluster size, otherwise costly rebuild                                               |
