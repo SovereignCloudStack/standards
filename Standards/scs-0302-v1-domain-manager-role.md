@@ -44,8 +44,8 @@ Omitting the provisioning of any Domain Manager users (i.e. not assigning the ne
 ## Motivation
 
 In the default configuration of Keystone, only users with the `admin` role may manage the IAM resources such as projects, groups and users and their relation through role assignments.
-The `admin` role in OpenStack Keystone is not properly scoped when assigned within a domain or project only as due to hard-coded architectural limitations in OpenStack, a user with the `admin` role may escalate their privileges outside of their assigned project or domain boundaries.
-Thus, it is not possible to properly give customers a self-service functionality in regards to project, group and user management with the default configuration.
+The `admin` role in OpenStack Keystone is not properly scoped when assigned within a domain or project only as due to hard-coded architectural limitations in OpenStack, a user with the `admin` role may escalate their privileges outside their assigned project or domain boundaries.
+Thus, it is not possible to properly give customers a self-service functionality in regard to project, group and user management with the default configuration.
 
 To address this, this standard defines a new Domain Manager persona implemented using a domain-scoped `manager` role in conjunction with appropriate Keystone API policy adjustments to establish a standardized extension to the default Keystone configuration allowing for IAM self-service capabilities for customers within domains.
 
@@ -59,7 +59,7 @@ To address this, this standard defines a new Domain Manager persona implemented 
 ## Design Considerations
 
 - the Domain Manager persona MUST support managing projects, groups and users within a specific domain
-- the Domain Manager persona MUST be properly scoped to a domain, it MUST NOT gain access to resources outside of its owning domain
+- the Domain Manager persona MUST be properly scoped to a domain, it MUST NOT gain access to resources outside its owning domain
 - the Domain Manager persona MUST NOT be able to manipulate existing roles or create new roles
 - the Domain Manager persona MUST only be able to assign specific non-administrative\* roles to their managed users where the applicable roles are defined by the CSP
 - Domain Managers MUST NOT be able to abuse the role assignment functionalities to escalate their own privileges or those of other users beyond the roles defined by the CSP
@@ -78,7 +78,7 @@ This results in special permissions being granted to users possessing the role w
 This poses severe security risks as the proper scoping of the `admin` role is impossible.
 **Due to this, this approach was discarded early.**
 
-Upstream (OpenStack) is in the process of addressing this across the services but it has not been fully implemented yet, especially for domains[^3].
+Upstream (OpenStack) is in the process of addressing this across the services, but it has not been fully implemented yet, especially for domains[^3].
 
 [^2]: [Launchpad bug: "admin"-ness not properly scoped](https://bugs.launchpad.net/keystone/+bug/968696)
 
@@ -124,7 +124,7 @@ The only parts of the policy definitions that may be changed are:
 ```yaml
 # SCS Domain Manager policy configuration
 
-# Section A: OpenStack base definitons
+# Section A: OpenStack base definitions
 # The entries beginning with "base_<rule>" should be exact copies of the
 # default "identity:<rule>" definitions for the target OpenStack release.
 # They will be extended upon for the manager role below this section.
@@ -240,7 +240,7 @@ They are used as a basis for the domain-manager-specific changes which are imple
 The section of "`base_*`" rules is meant for easy maintenance/update of default rules while keeping the domain-manager-specific rules separate.
 
 > **Note:**
-> The "`or rule:admin_required`" appendix to the rule defintions in "Section B" is included for backwards compatibility with environments not yet fully configured for the new secure RBAC standard[^6].
+> The "`or rule:admin_required`" appendix to the rule definitions in "Section B" is included for backwards compatibility with environments not yet fully configured for the new secure RBAC standard[^6].
 
 [^6]: [OpenStack Technical Committee Governance Documents: Consistent and Secure Default RBAC](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html)
 
@@ -374,4 +374,4 @@ Rationale:
 Links / Comments / References:
 
 - [SIG IAM meeting protocol entry](https://input.scs.community/2023-scs-sig-iam#Domain-Admin-rights-for-SCS-IaaS-Customers-184)
-- [issue commment about decision](https://github.com/SovereignCloudStack/issues/issues/184#issuecomment-1670985934)
+- [issue comment about decision](https://github.com/SovereignCloudStack/issues/issues/184#issuecomment-1670985934)

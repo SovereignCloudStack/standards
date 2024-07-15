@@ -6,6 +6,8 @@ name: Run Python unit and regression tests
     paths:
       - '**.py'
       - .github/workflows/test-python.yml
+      - Tests/requirements.txt
+      - Tests/test-requirements.txt
 
 jobs:
   run-pytest-tests:
