@@ -59,6 +59,8 @@ FREQ_TO_SEC = {
 }
 STRICT_FORMATS = ("%Y-%m-%dT%H:%M:%SZ", )
 DATE_FORMATS = STRICT_FORMATS + ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d")
+MARKER_DATE_FORMATS = ("%Y-%m-%d", "%Y%m%d")
+OUTDATED_MARKERS = ("old", "prev")
 KIB, MIB, GIB = (1024 ** n for n in (1, 2, 3))
 
 
@@ -176,14 +178,18 @@ def is_outdated(img, bdate):
     # So we found an outdated image that should have been updated
     # (5a1) Check whether we are past the provided_until date
     until_str = img.properties["provided_until"]
-    until = parse_date(img.properties["provided_until"])
-    if not until and not until_str == "none" and not until_str == "notice":
+    if until_str in ("none", "notice"):
+        return 0
+    until = parse_date(until_str)
+    if not until:
         return 3
     if time.time() > until:
         return 0
-    if img.is_hidden or img.name[-3:] == "old" or img.name[-4:] == "prev" or img.name[-8:].isdecimal():
+    if img.is_hidden:
         return 1
-    if parse_date(img.name[-10:]):
+    parts = img.name.rsplit(" ", 1)
+    marker = parts[1] if len(parts) >= 2 else ""
+    if marker in OUTDATED_MARKERS or parse_date(marker, formats=MARKER_DATE_FORMATS):
         return 1
     return 2
 
