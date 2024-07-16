@@ -7,14 +7,13 @@ track: IaaS
 
 ## Introduction
 
-Connecting a virtual machine to the internet requires a virtual network that is also connected to the non-virtualised network infrastructure outside of the cloud environment.
-Because such networks break the isolation of the cloud environment, they must be created and managed by the CSP and made available to projects only in a controlled manner.
+Many use-cases of IaaS require virtual servers to be able to connect to network resources outside of the cloud environment, often to the internet.
+Openstack supports this by allowing CSPs to map non-virtualized networks onto specific virtual networks, such that virtual routers and servers can connect to them.
 
-In OpenStack, such CSP-managed networks are called _provider networks_, though providing access to the internet is not their only use case.
-Depending on the configuration, they may impose different usage restrictions and offer different methods of allocating IP addresses.
+Such networks will usually be created in a CSP-managed project and then shared to user projects using the network API's role-based access control feature.
+Because they have to be set up by the cloud provider, networks of this type are generally referred to as _provider networks_, though that term can also be used to refer to other types of CSP-managed virtual networks.
 
-External access to and from virtualised resources is a fundamental feature of IaaS, and providing this access is a hard requirement for any cloud provider.
-However, OpenStack provider networks offer some design space regarding usage restrictions and IP address allocation.
+When setting up provider networks for external access, CSPs have a number of different options regarding usage restrictions and the allocation of IP addresses.
 This document defines a standardized setup for provider networks that offers external access in a way that is portable across SCS clouds.
 
 ### Glossary
@@ -29,7 +28,7 @@ The following terms are used throughout this document:
 | Virtual Router | OpenStack resource that can be used to route and bridge between virtual networks and provide other features such as NAT |
 | Subnet | Subdivision of available IP address space using address prefixes. In OpenStack also an abstraction for controlling IP address allocation in a virtual network. |
 | DHCP | Dynamic Host Configuration Protocol: Used to automatically configure hosts in a network with IP addresses, default routes, and other information such as DNS servers. |
-| Prefix | IP address prefix of a given bit-length N, written _/N_. Divides addresses into a network and a host part, a shorter prefix allows more hosts but takes up more address space. |
+| Prefix | IP address prefix of a given bit-length N, written as _<ADDRESS>/<N>_. Divides addresses into a network and a host part, a shorter prefix allows more hosts but takes up more address space. |
 | NAT | Network Address Translation: mapping (usually public) IPv4 addresses onto a different (usually private) address space. May allows multiple hosts to share a public address by multiplexing TCP/UDP ports. |
 | RBAC | Role-based Access Control: A mechanism in the Network API to give projects limited access to resources owned by other projects. Typically used by CSPs to create provider networks. |
 | Shared Network | Virtual network that is shared between projects in a way that allows direct attachment of servers. |
@@ -38,7 +37,7 @@ The following terms are used throughout this document:
 
 ## Motivation
 
-The ability to interface virtualised resources with networks outside of the cloud environment, such as the internet, is an integral part of IaaS.
+The ability to interface virtualised resources with networks outside of the cloud environment, such as the internet, is an important part of IaaS.
 Providing external access in an OpenStack cloud requires a number of configuration choices from the CSP, some of which have direct implications on how users interact with the cloud.
 This standard identifies some of these options and defines a baseline setup that provides flexibility and consistency to users but is also realistic to implement for CSPs.
 
@@ -63,16 +62,16 @@ They can also overlap, allowing a network to be both external and shared to the 
 
 ### Address Allocation and Routing
 
-CSPs can assign a subnet to a provider network to supply connected servers or virtual routers with public IP addresses, making them externally accessible.
-This works well for shared networks, where servers can be attached directly, although there is no quota option to limit the number of allocated addresses per project.
+CSPs can assign a subnet to a provider network to supply connected servers or virtual routers with externally routable (e.g. public) IP addresses.
+This works well for shared networks, where servers can be attached directly, but there is no quota option to limit the number of allocated addresses per project.
 
 Making servers in a project-internal network externally accessible through a virtual router is a bit more complicated, though.
-One option is for the user to create a subnet with a public IP range for the internal network, and then ask the CSP to configure a static route to the subnet via the gateway IP of a virtual router.
-This is cumbersome to set up manually, but can be automated with the `bgp` extension of the Network API, which is implemented by the `neutron-dynamic-routing` project [^bgp].
-For users, this takes the form of a CSP-managed shared subnet pool that they can create externally routable subnets from, limited by a per-project quota.
+One option is for the user to create a subnet with an external IP range for the internal network, and then ask the CSP to configure a static route to the subnet via the gateway IP of a virtual router.
+This is cumbersome to set up manually, but can be automated using the `bgp` extension of the Network API, which is implemented by the `neutron-dynamic-routing` project [^bgp].
+For users, this takes the form of a CSP-managed shared subnet pool, which they can use to create externally routable subnets, limited by a per-project quota.
 
 For IPv6, there is also the option of prefix delegation, where a DHCPv6 server automatically assigns an IPv6 prefix to a subnet when it connects to the external provider network [^pd].
-However, this also means that ports in the subnet can lose their addresses and get assigned new ones if the subnet is removed from the external network and later reattached.
+This means that ports in the subnet can lose their addresses and get assigned new ones if the subnet is removed from the external network and later reattached.
 The documentation at [^pd] still marks prefix delegation as an experimental feature in Neutron and notes low test coverage.
 
 For IPv4, OpenStack virtual routers support source NAT, allowing all servers in the internal subnet to access the external network with the gateway IP of the virtual router.
@@ -94,6 +93,18 @@ This seems to be more of a niche use-case, however, and may warrant the creation
 
 ### Options considered
 
+#### Internet Access
+
+For public clouds, external access generally means access to (and from) the internet, with allocation of public IP addresses.
+Providing a standardized approach for internet access is the main motivation for this standard.
+
+However, the SCS Standards are intended to be applicable not just to public clouds, but also to private or even air-gaped cloud environments.
+One way to reconcile these requirements would be to mandate internet access, but limit the scope of this standard to only cover public clouds.
+
+However, private clouds may also profit from a standardized approach to external access, even when external in this context may be a private network or VPN of an organization.
+Even air-gaped environments may have use for standardized provider networks, e.g. to provide local network-based services such as NTP.
+So, rather than scope all requirements to a specific type of cloud environment, this standard will scope individual requirements where necessary.
+
 #### IPv6
 
 The OpenStack Network API allows the creation of subnets with either IPv4 or IPv6 address ranges, as indicated by the `ip_version` field.
@@ -108,11 +119,11 @@ In principle, CSPs can create multiple provider networks for a number of reasons
 Servers can be connected to multiple networks, and connecting to additional provider networks would not interfere with their ability be externally accessible.
 
 CSPs may also create multiple provider networks with different options for external access, such as separate networks for IPv4 and IPv6, or one external network for use with virtual routers and a separate shared network for direct connection.
-This mostly just adds complexity to the setup, though, as a provider network can be both external and shared at the same time, and can even provide both IPv4 and IPv6 subnets in a dual stack setup [^ds].
+This mostly just adds complexity to the setup, however, as a provider network can be both external and shared at the same time, and can even provide both IPv4 and IPv6 subnets in a dual stack setup [^ds].
 
-Another problem with multiple provider networks is, that users may only be able to distinguish their respective function by their name.
+Another problem with multiple provider networks is that users may only be able to distinguish their respective function by their name.
 
-A single default provider network leaves no ambiguity by the user in this regard and is thus preferable from a standardisation perspective.
+A single default provider network leaves no ambiguity by the user in this regard and is thus preferable from a standardization perspective.
 
 #### Shared Provider Network
 
@@ -130,7 +141,7 @@ Creating a project-internal network to connect to an external provider network w
 In an internal network, users have greater control over IP allocation and may also choose to disable port security.
 With the FWaaS API extensions, they can also assign firewall rules to the virtual router, to control which traffic can pass between internal and provider networks.
 
-As described above, there are multiple methods for allocating public IP addresses to project-internal networks.
+As described above, there are multiple methods for allocating external IP addresses to project-internal networks.
 For IPv6, the currently best option seems to be subnet allocation from a CSP-managed subnet pool, because support for Prefix Delegation is still experimental.
 For IPv4, NAT and floating IPs are generally preferred over subnet allocation because of scarcity of IPv4 address space.
 
