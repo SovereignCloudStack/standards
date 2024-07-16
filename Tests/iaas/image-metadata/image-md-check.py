@@ -39,11 +39,6 @@ def usage(ret):
 verbose = False
 private = False
 skip = False
-conn = None
-if "OS_CLOUD" in os.environ:
-    cloud = os.environ["OS_CLOUD"]
-else:
-    cloud = None
 
 # Image list
 mand_images = ["Ubuntu 22.04", "Ubuntu 20.04", "Debian 11"]
@@ -74,15 +69,6 @@ def recommended_name(nm, os_list=OS_LIST):
         if nm[:osln].casefold() == osnm.casefold():
             return osnm + nm[osln:]
     return nm[0].upper() + nm[1:]
-
-
-def get_imagelist(priv):
-    "Retrieve list of public images (optionally also private images)"
-    if priv:
-        imgs = conn.image.images()
-    else:
-        imgs = conn.image.images(visibility='public')
-    return list(map(lambda x: x.name, imgs))
 
 
 class Property:
@@ -206,17 +192,10 @@ def is_outdated(img, bdate):
     return 2
 
 
-def validate_imageMD(imgnm):
+def validate_imageMD(img):
     """Retrieve image properties and test for compliance with spec"""
     # global OUTDATED_IMAGES
-    try:
-        img = conn.image.find_image(imgnm)
-    except openstack.exceptions.DuplicateResource as exc:
-        print(f'Error with duplicate name "{imgnm}": {str(exc)}', file=sys.stderr)
-        return 1
-    if not img:
-        print(f'Image "{imgnm}" not found' % imgnm, file=sys.stderr)
-        return 1
+    imgnm = img.name
     # Now the hard work: Look at properties ....
     errors = 0
     warnings = 0
@@ -329,37 +308,26 @@ def report_stdimage_coverage(imgs):
     return err
 
 
-def miss_replacement_images(images, outd_list):
+def miss_replacement_images(by_name, outd_list):
     """Go over list of images to find replacement imgs for outd_list, return the ones that are left missing"""
     rem_list = []
     for outd in outd_list:
-        success = False
-        last_spc = outd.rfind(" ")
-        shortnm = outd
-        if last_spc != -1:
-            shortnm = outd[:last_spc]
-        for imgnm in images:
-            # Skip over other images
-            if imgnm != outd and imgnm != shortnm:
-                continue
-            # Skip over itself
-            if imgnm == outd:  # or success:
-                continue
-            img = conn.image.find_image(imgnm)
+        img = None
+        shortnm = outd.rsplit(" ", 1)[0]
+        if shortnm != outd:
+            img = by_name.get(shortnm)
+        if img is not None:
             bdate = 0
             if "build_date" in img.properties:
                 bdate = parse_date(img.properties["build_date"])
             if not bdate:
                 bdate = parse_date(img.created_at, formats=STRICT_FORMATS)
             if is_outdated(img, bdate):
-                continue
-            if verbose:
-                print(f'INFO: Image "{imgnm}" is a valid replacement for outdated "{outd}"', file=sys.stderr)
-            success = True
-            break
-        if not success:
+                img = None
+        if img is None:
             rem_list.append(outd)
-    # FIXME: To be implemented
+        elif verbose:
+            print(f'INFO: Image "{img.name}" is a valid replacement for outdated "{outd}"', file=sys.stderr)
     return rem_list
 
 
@@ -367,7 +335,7 @@ def main(argv):
     "Main entry point"
     # Option parsing
     global verbose, private, skip
-    global cloud, conn
+    cloud = os.environ.get("OS_CLOUD")
     err = 0
     try:
         opts, args = getopt.gnu_getopt(argv[1:], "phvc:s",
@@ -392,12 +360,15 @@ def main(argv):
         usage(1)
     try:
         conn = openstack.connect(cloud=cloud, timeout=24)
-        # Do work
+        all_images = list(conn.image.images())
+        by_name = {img.name: img for img in all_images}
+        if len(by_name) != len(all_images):
+            print(f'WARNING: duplicate names detected', file=sys.stderr)
         if not images:
-            images = get_imagelist(private)
+            images = [img.name for img in all_images if private or img.visibility == 'public']
         # Analyse image metadata
-        for image in images:
-            err += validate_imageMD(image)
+        for imgnm in images:
+            err += validate_imageMD(by_name[imgnm])
         if not skip:
             err += report_stdimage_coverage(images)
         if OUTDATED_IMAGES:
