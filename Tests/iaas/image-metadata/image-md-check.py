@@ -198,7 +198,9 @@ def validate_imageMD(img, outd_list):
     errors = 0
     warnings = 0
     # (1) recommended os_* and hw_*
-    for prop in (*os_props, *arch_props, *hw_props):
+    # (4) image_build_date, image_original_user, image_source (opt image_description)
+    # (5) maintained_until, provided_until, uuid_validity, replace_frequency
+    for prop in (*os_props, *arch_props, *hw_props, *build_props, *maint_props):
         if not prop.is_ok(img, imgnm):
             errors += 1
     constr_name = f"{img.os_distro} {img.os_version}"
@@ -207,12 +209,6 @@ def validate_imageMD(img, outd_list):
         print(f'WARNING: Image "{imgnm}": no valid hash algorithm {img.hash_algo}', file=sys.stderr)
         # errors += 1
         warnings += 1
-
-    # (4) image_build_date, image_original_user, image_source (opt image_description)
-    # (5) maintained_until, provided_until, uuid_validity, replace_frequency
-    for prop in (*build_props, *maint_props):
-        if not prop.is_ok(img.properties, imgnm):
-            errors += 1
     # Some more sanity checks:
     #  - Dateformat for image_build_date
     rdate = parse_date(img.created_at, formats=STRICT_FORMATS)
