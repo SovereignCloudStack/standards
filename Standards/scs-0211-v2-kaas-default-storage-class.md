@@ -43,7 +43,6 @@ The provisioned storage class MAY support volume expansion (`allowVolumeExpansio
 
 TBD
 
-[k8s-pv]: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 [k8s-pvc]: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
 [k8s-default-sc]: https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/
 [k8s-accessmode]: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes
