@@ -6,6 +6,7 @@ authentication with Keystone.
 """
 
 import argparse
+import json
 import logging
 import os
 
@@ -24,6 +25,54 @@ def connect(cloud_name: str) -> openstack.connection.Connection:
     return openstack.connect(
         cloud=cloud_name,
     )
+
+
+def check_for_member_role(conn: openstack.connection.Connection
+                          ) -> None:
+    """Method to check whether the current user has the member role.
+    :param connection:
+        The current connection to an OpenStack cloud.
+    :returns: boolean, when role with most priviledges is member
+    """
+
+    auth_data = conn.auth
+    auth_dict = {
+                 "identity" : {
+                  "methods" : ["password"],
+                    "password": {
+                        "user" : {
+                            "name"  : auth_data['username'],
+                            "domain": { "name": auth_data['project_domain_name'] },
+                            "password": auth_data['password']
+                        }
+                    },
+                  },
+                "scope":{
+                    "project":{
+                        "domain": {"name": auth_data['project_domain_name']},
+                        "name": auth_data['project_name']
+                    }
+                 }
+                }
+
+    has_member_role = False
+    if ident_endpoint:
+        request = conn.session.request(auth_data['auth_url'] + '/v3/auth/tokens',
+                                       'POST',
+                                       json={'auth':auth_dict})
+        for role in json.loads(request.content)["token"]["roles"]:
+            role_name = role["name"]
+            if role_name == "admin" or role_name == "manager":
+                return False
+            elif role_name == "member":
+                print("User has member role.")
+                has_member_role = True
+            elif role_name == "reader":
+                print("User has reader role.")
+            else:
+                print("User has custom role.")
+                return False
+    return has_member_role
 
 
 def check_presence_of_key_manager(cloud_name: str):
@@ -56,11 +105,15 @@ def check_presence_of_key_manager(cloud_name: str):
 def check_key_manager_permissions(conn: openstack.connection.Connection
                                   ) -> None:
     """
-    Limits the authentication to the "member" role using an application
-    credentials restricted to that role and verifies that the member role
+    After checking that the current user only has the member and maybe the
+    reader role, this method verifies that the user with a member role
     has sufficient access to the Key Manager API functionality.
     """
     secret_name = "scs-member-role-test-secret"
+    if not check_for_member_role(conn):
+        logger.warning(f"Cannot test key-manager permissions. "
+                       f"User has wrong roles")
+        return None
 
     def _find_secret(secret_name_or_id: str):
         """Replacement method for finding secrets.
