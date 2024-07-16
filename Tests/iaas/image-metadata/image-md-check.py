@@ -38,8 +38,6 @@ def usage(ret):
 
 # global options
 verbose = False
-private = False
-skip = False
 
 # Image list
 mand_images = ["Ubuntu 22.04", "Ubuntu 20.04", "Debian 11"]
@@ -61,6 +59,7 @@ FREQ_TO_SEC = {
 }
 STRICT_FORMATS = ("%Y-%m-%dT%H:%M:%SZ", )
 DATE_FORMATS = STRICT_FORMATS + ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d")
+KIB, MIB, GIB = (1024 ** n for n in (1, 2, 3))
 
 
 def recommended_name(nm, os_list=OS_LIST):
@@ -272,11 +271,11 @@ def validate_imageMD(img):
         warnings += (outd-1)
     # (2) sanity min_ram (>=64), min_disk (>= size)
     if img.min_ram < 64:
-        print(f'WARNING: Image "{imgnm}": min_ram == {img.min_ram} MB', file=sys.stderr)
+        print(f'WARNING: Image "{imgnm}": min_ram == {img.min_ram} MiB < 64 MiB', file=sys.stderr)
         warnings += 1
         # errors += 1
-    if img.min_disk < img.size/1073741824:
-        print(f'WARNING: Image "{imgnm}" has img size of {img.size/1048576}MiB, but min_disk {img.min_disk*1024}MiB',
+    if img.min_disk * GIB < img.size:
+        print(f'WARNING: Image "{imgnm}": img size == {img.size / MIB:.0f} MiB, but min_disk == {img.min_disk * GIB / MIB:.0f} MiB',
               file=sys.stderr)
         warnings += 1
         # errors += 1
@@ -335,7 +334,9 @@ def miss_replacement_images(by_name, outd_list):
 def main(argv):
     "Main entry point"
     # Option parsing
-    global verbose, private, skip
+    global verbose
+    private = False
+    skip = False
     cloud = os.environ.get("OS_CLOUD")
     err = 0
     try:
