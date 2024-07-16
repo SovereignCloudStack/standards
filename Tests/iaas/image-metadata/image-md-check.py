@@ -17,6 +17,7 @@ import time
 import calendar
 import getopt
 import openstack
+from collections import Counter
 
 
 def usage(ret):
@@ -363,7 +364,9 @@ def main(argv):
         all_images = list(conn.image.images())
         by_name = {img.name: img for img in all_images}
         if len(by_name) != len(all_images):
-            print(f'WARNING: duplicate names detected', file=sys.stderr)
+            counter = Counter([img.name for img in all_images])
+            duplicates = [name for name, count in counter.items() if count > 1]
+            print(f'WARNING: duplicate names detected: {", ".join(duplicates)}', file=sys.stderr)
         if not images:
             images = [img.name for img in all_images if private or img.visibility == 'public']
         # Analyse image metadata
