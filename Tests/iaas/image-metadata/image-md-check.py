@@ -164,9 +164,6 @@ def freq2secs(stg):
     return secs
 
 
-OUTDATED_IMAGES = []
-
-
 def is_outdated(img, bdate):
     """return 1 if img (with build/regdate bdate) is outdated,
        2 if it's not hidden or marked, 3 if error"""
@@ -194,9 +191,8 @@ def is_outdated(img, bdate):
     return 2
 
 
-def validate_imageMD(img):
+def validate_imageMD(img, outd_list):
     """Retrieve image properties and test for compliance with spec"""
-    # global OUTDATED_IMAGES
     imgnm = img.name
     # Now the hard work: Look at properties ....
     errors = 0
@@ -223,15 +219,15 @@ def validate_imageMD(img):
     bdate = rdate
     if "image_build_date" in img.properties:
         bdate = parse_date(img.properties["image_build_date"])
-        if bdate > rdate:
-            print(f'ERROR: Image "{imgnm}" with build date {img.properties["image_build_date"]} after registration date {img.created_at}',
-                  file=sys.stderr)
-            errors += 1
         if not bdate:
             print(f'ERROR: Image "{imgnm}": no valid image_build_date '
                   f'{img.properties["image_build_date"]}', file=sys.stderr)
             errors += 1
             bdate = rdate
+        elif bdate > rdate:
+            print(f'ERROR: Image "{imgnm}" with build date {img.properties["image_build_date"]} after registration date {img.created_at}',
+                  file=sys.stderr)
+            errors += 1
     if bdate > time.time():
         print(f'ERROR: Image "{imgnm}" has build time in the future: {bdate}')
         errors += 1
@@ -245,17 +241,16 @@ def validate_imageMD(img):
         print(f'ERROR: Image "{imgnm}": image_source should be a URL or "private"', file=sys.stderr)
         errors += 1
     #  - uuid_validity has a distinct set of options (none, last-X, DATE, notice, forever)
-    if "uuid_validity" in img.properties:
-        img_uuid_val = img.properties["uuid_validity"]
-        if img_uuid_val in ("none", "notice", "forever"):
-            pass
-        elif img_uuid_val[:5] == "last-" and img_uuid_val[5:].isdecimal():
-            pass
-        elif parse_date(img_uuid_val):
-            pass
-        else:
-            print(f'ERROR: Image "{imgnm}": invalid uuid_validity {img_uuid_val}', file=sys.stderr)
-            errors += 1
+    img_uuid_val = img.properties.get("uuid_validity")
+    if img_uuid_val in (None, "none", "notice", "forever"):
+        pass
+    elif img_uuid_val[:5] == "last-" and img_uuid_val[5:].isdecimal():
+        pass
+    elif parse_date(img_uuid_val):
+        pass
+    else:
+        print(f'ERROR: Image "{imgnm}": invalid uuid_validity {img_uuid_val}', file=sys.stderr)
+        errors += 1
     #  - hotfix hours (if set!) should be numeric
     if "hotfix_hours" in img.properties:
         if not img.properties["hotfix_hours"].isdecimal():
@@ -274,9 +269,9 @@ def validate_imageMD(img):
         print(f'WARNING: Image "{imgnm}" seems outdated (acc. to its repl freq) but is not hidden or otherwise marked',
               file=sys.stderr)
         warnings += 1
-        OUTDATED_IMAGES.append(imgnm)
+        outd_list.append(imgnm)
     elif outd:
-        OUTDATED_IMAGES.append(imgnm)
+        outd_list.append(imgnm)
     # (2) sanity min_ram (>=64), min_disk (>= size)
     if img.min_ram < 64:
         print(f'WARNING: Image "{imgnm}": min_ram == {img.min_ram} MiB < 64 MiB', file=sys.stderr)
@@ -379,15 +374,16 @@ def main(argv):
         if not images:
             images = [img.name for img in all_images if private or img.visibility == 'public']
         # Analyse image metadata
+        outdated_images = []
         for imgnm in images:
-            err += validate_imageMD(by_name[imgnm])
+            err += validate_imageMD(by_name[imgnm], outdated_images)
         if not skip:
             err += report_stdimage_coverage(images)
-        if OUTDATED_IMAGES:
+        if outdated_images:
             if verbose:
-                print(f'INFO: The following outdated images have been detected: {OUTDATED_IMAGES}',
+                print(f'INFO: The following outdated images have been detected: {outdated_images}',
                       file=sys.stderr)
-            rem_list = miss_replacement_images(images, OUTDATED_IMAGES)
+            rem_list = miss_replacement_images(images, outdated_images)
             if rem_list:
                 print(f'ERROR: Outdated images without replacement: {rem_list}', file=sys.stderr)
                 err += len(rem_list)
