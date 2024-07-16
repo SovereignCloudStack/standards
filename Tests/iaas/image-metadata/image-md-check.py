@@ -178,8 +178,6 @@ def is_outdated(img, bdate):
     until_str = img.properties["provided_until"]
     until = parse_date(img.properties["provided_until"])
     if not until and not until_str == "none" and not until_str == "notice":
-        print(f'ERROR: Image "{img.name}" does not provide a valid provided until date',
-              file=sys.stderr)
         return 3
     if time.time() > until:
         return 0
@@ -187,8 +185,6 @@ def is_outdated(img, bdate):
         return 1
     if parse_date(img.name[-10:]):
         return 1
-    print(f'WARNING: Image "{img.name}" seems outdated (acc. to its repl freq) but is not hidden or otherwise marked',
-          file=sys.stderr)
     return 2
 
 
@@ -265,10 +261,16 @@ def validate_imageMD(img):
     #  - A name with a date stamp or old or prev (and a newer exists)
     outd = is_outdated(img, bdate)
     if outd == 3:
+        print(f'ERROR: Image "{imgnm}" does not provide a valid provided until date',
+              file=sys.stderr)
         errors += 1
+    elif outd == 2:
+        print(f'WARNING: Image "{imgnm}" seems outdated (acc. to its repl freq) but is not hidden or otherwise marked',
+              file=sys.stderr)
+        warnings += 1
+        OUTDATED_IMAGES.append(imgnm)
     elif outd:
         OUTDATED_IMAGES.append(imgnm)
-        warnings += (outd-1)
     # (2) sanity min_ram (>=64), min_disk (>= size)
     if img.min_ram < 64:
         print(f'WARNING: Image "{imgnm}": min_ram == {img.min_ram} MiB < 64 MiB', file=sys.stderr)
