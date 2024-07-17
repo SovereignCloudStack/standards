@@ -1,13 +1,13 @@
-name: Check links for modified files
+name: Check links in Markdown files
 
-on:
+"on":
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
   push:
     branches:
       - main
-  pull_request:   # Add this section
+  pull_request:
     branches:
       - main
 
@@ -20,6 +20,6 @@ jobs:
       with:
         use-quiet-mode: 'yes'
         use-verbose-mode: 'yes'
-        check-modified-files-only: 'yes'
+        check-modified-files-only: ${{ contains(fromJSON('["push", "pull_request"]'), github.event_name) }}
         config-file: 'mlc_config.json'
         base-branch: 'main'
