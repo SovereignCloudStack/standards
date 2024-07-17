@@ -37,9 +37,11 @@ versions:
             id: standard-flavors-check
       - name: Standard images
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0104-v1-standard-images.md
+        parameters:
+          image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images.yaml
         checks:
           - executable: ./iaas/standard-images/images-openstack.py
-            args: -c {os_cloud} -d ./iaas/scs-0104-v1-images.yaml
+            args: -c {os_cloud} -d {image_spec}
             id: standard-images-check
   - version: v3
     stabilized_at: 2023-06-15

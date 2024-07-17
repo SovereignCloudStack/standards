@@ -35,7 +35,7 @@ import yaml
 KEYWORDS = {
     'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables'),
     'version': ('version', 'standards', 'stabilized_at', 'deprecated_at'),
-    'standard': ('checks', 'url', 'name', 'condition'),
+    'standard': ('checks', 'url', 'name', 'condition', 'parameters'),
     'check': ('executable', 'env', 'args', 'condition', 'lifetime', 'id', 'section'),
 }
 
@@ -309,8 +309,11 @@ def main(argv):
                 if config.sections and section not in config.sections:
                     print(f"skipping check '{id_}': not in selected sections")
                     continue
-                args = check.get('args', '').format(**config.assignment)
-                env = {key: value.format(**config.assignment) for key, value in check.get('env', {}).items()}
+                assignment = config.assignment
+                if "parameters" in standard:
+                    assignment = {**assignment, **standard['parameters']}
+                args = check.get('args', '').format(**assignment)
+                env = {key: value.format(**assignment) for key, value in check.get('env', {}).items()}
                 env_str = " ".join(f"{key}={value}" for key, value in env.items())
                 memo_key = f"{env_str} {check['executable']} {args}".strip()
                 invokation = memo.get(memo_key)

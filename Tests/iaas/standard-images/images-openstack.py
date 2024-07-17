@@ -87,6 +87,15 @@ def main(argv):
         logger.critical("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.")
         return 1
 
+    # we only support local files; but we allow specifying the following URLs for the sake of
+    # better documentation
+    prefix = next(p for p in (
+        'https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/',
+        'https://github.com/SovereignCloudStack/standards/blob/main/Tests/',
+        '',  # sentinel (do not remove!)
+    ) if yaml_path.startswith(p))
+    if prefix:
+        yaml_path = yaml_path[len(prefix):]
     try:
         with open(yaml_path, "rb") as fileobj:
             image_data = yaml.safe_load(fileobj)

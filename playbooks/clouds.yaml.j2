@@ -46,6 +46,15 @@ clouds:
       application_credential_id: "{{ clouds_conf.pco_prod3_ac_id }}"
       application_credential_secret: "{{ clouds_conf.pco_prod3_ac_secret }}"
     auth_type: "v3applicationcredential"
+  pco-prod4:
+    region_name: "prod4"
+    interface: "public"
+    identity_api_version: 3
+    auth:
+      auth_url: https://prod4.api.pco.get-cloud.io:5000
+      application_credential_id: "{{ clouds_conf.pco_prod4_ac_id }}"
+      application_credential_secret: "{{ clouds_conf.pco_prod4_ac_secret }}"
+    auth_type: "v3applicationcredential"
   poc-kdo:
     interface: public
     identity_api_verion: 3

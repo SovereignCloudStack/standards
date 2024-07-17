@@ -31,6 +31,6 @@ versions:
       - name: Kubernetes node distribution and availability
         url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0214-v1-k8s-node-distribution.md
         checks:
-          - executable: ./kaas/k8s-node-distribution/k8s-node-distribution-check.py
+          - executable: ./kaas/k8s-node-distribution/k8s_node_distribution_check.py
             args: -k {kubeconfig}
             id: node-distribution-check

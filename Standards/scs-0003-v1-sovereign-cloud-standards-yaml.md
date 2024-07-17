@@ -137,7 +137,12 @@ Every list of standards consists of several standards that – altogether – de
 | `name`                   | String | Full name of the particular standard                                                                   | _Flavor naming_                                                                                                                |
 | `url`                    | String | Valid URL to the latest raw version of the particular standard                                         | _[Flavor naming](https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v2-flavor-naming.md)_ |
 | `condition`              | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory`   | _mandatory_                                                                                                                    |
+| `parameters`             | Map    | Maps parameter names to parameter values                                                               |                                                                                                                                |
 | `checks`                 | Array  | List of all checks that must pass; each entry being a check descriptor                                 |                                                                                                                                |
+
+The parameters specified here will be added to the variable assignment for all check tools that belong to this standard, so they will be substituted in the same way.
+The advantage is that these parameters may show up in the automatically generated documentation, whereas the check tools themselves probably won't.
+See the "Standard images" standard in the larger basic example below for a possible use case.
 
 ### Check descriptor
 
@@ -194,7 +199,7 @@ versions:
             id: flavor-name-check
             lifetime: day
       - name: Image metadata
-        url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
         condition: mandatory
         checks:
           - executable: image-md-check.py
@@ -205,6 +210,14 @@ versions:
             condition: optional
             id: image-md-check-2
             lifetime: day
+      - name: Standard images
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0104-v1-standard-images.md
+        parameters:
+          image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images.yaml
+        checks:
+          - executable: ./iaas/standard-images/images-openstack.py
+            args: -c {os_cloud} -d {image_spec}
+            id: standard-images-check
   - version: v4 # This is the upcoming version with a given target date. No further changes should be done to this set of standards
     stabilized_at: 2022-04-01
     standards:
