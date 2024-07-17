@@ -10,16 +10,8 @@ supplements:
 ## Implementation notes
 
 We presume that almost nothing has to be done (or indeed can be done), as
-long as the CPUs and VM images are reasonably recent.
-The already mentioned failure testing and entropy count is available
-on modern linux kernels (especially on 5.18 or higher),
-but if older kernels are made available, the CSP needs to provide entropy
-by offering CPU instructions that provide entropy without being filtered by the hypervisor.
-All newer CPUs offer instructions for this kind of use-case (e.g. Intel introduced RDRAND
-in 2014 in their Broadwell architecture) and the expectation is,
-that most CSPs don't use older processors.
-
-Most times, only the flavor and image attributes required by the standard have to be set:
+long as the CPUs and VM images are reasonably recent; only the flavor and
+image attributes required by the standard have to be set:
 
 - flavor: `hw_rng:allowed=True` ,
 - image: `hw_rng_model: virtio` .

@@ -7,10 +7,6 @@ supplements:
   - scs-0102-v1-image-metadata.md
 ---
 
-## Introduction
-
-The standard defines a set of metadata properties for public images, that need to be set in order
-to have an SCS-compliant IaaS setup.
 
 ## Implementation notes
 
