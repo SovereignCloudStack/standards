@@ -37,41 +37,40 @@ def check_for_member_role(conn: openstack.connection.Connection
 
     auth_data = conn.auth
     auth_dict = {
-                 "identity" : {
-                  "methods" : ["password"],
-                    "password": {
-                        "user" : {
-                            "name"  : auth_data['username'],
-                            "domain": { "name": auth_data['project_domain_name'] },
-                            "password": auth_data['password']
-                        }
-                    },
-                  },
-                "scope":{
-                    "project":{
+        "identity": {
+            "methods": ["password"],
+                "password": {
+                    "user": {
+                        "name" : auth_data['username'],
                         "domain": {"name": auth_data['project_domain_name']},
-                        "name": auth_data['project_name']
+                        "password": auth_data['password']
                     }
-                 }
-                }
+                },
+            },
+        "scope": {
+            "project": {
+                "domain": {"name": auth_data['project_domain_name']},
+                "name": auth_data['project_name']
+            }
+        }
+    }
 
     has_member_role = False
-    if ident_endpoint:
-        request = conn.session.request(auth_data['auth_url'] + '/v3/auth/tokens',
-                                       'POST',
-                                       json={'auth':auth_dict})
-        for role in json.loads(request.content)["token"]["roles"]:
-            role_name = role["name"]
-            if role_name == "admin" or role_name == "manager":
-                return False
-            elif role_name == "member":
-                print("User has member role.")
-                has_member_role = True
-            elif role_name == "reader":
-                print("User has reader role.")
-            else:
-                print("User has custom role.")
-                return False
+    request = conn.session.request(auth_data['auth_url'] + '/v3/auth/tokens',
+                                   'POST',
+                                   json={'auth':auth_dict})
+    for role in json.loads(request.content)["token"]["roles"]:
+        role_name = role["name"]
+        if role_name == "admin" or role_name == "manager":
+            return False
+        elif role_name == "member":
+            print("User has member role.")
+            has_member_role = True
+        elif role_name == "reader":
+            print("User has reader role.")
+        else:
+            print("User has custom role.")
+            return False
     return has_member_role
 
 
@@ -111,8 +110,8 @@ def check_key_manager_permissions(conn: openstack.connection.Connection
     """
     secret_name = "scs-member-role-test-secret"
     if not check_for_member_role(conn):
-        logger.warning(f"Cannot test key-manager permissions. "
-                       f"User has wrong roles")
+        logger.warning("Cannot test key-manager permissions. "
+                       "User has wrong roles")
         return None
 
     def _find_secret(secret_name_or_id: str):
