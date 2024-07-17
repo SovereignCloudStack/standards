@@ -39,14 +39,14 @@ def check_for_member_role(conn: openstack.connection.Connection
     auth_dict = {
         "identity": {
             "methods": ["password"],
-                "password": {
-                    "user": {
-                        "name" : auth_data['username'],
-                        "domain": {"name": auth_data['project_domain_name']},
-                        "password": auth_data['password']
-                    }
-                },
+            "password": {
+                "user": {
+                    "name": auth_data['username'],
+                    "domain": {"name": auth_data['project_domain_name']},
+                    "password": auth_data['password']
+                }
             },
+        },
         "scope": {
             "project": {
                 "domain": {"name": auth_data['project_domain_name']},
@@ -58,7 +58,7 @@ def check_for_member_role(conn: openstack.connection.Connection
     has_member_role = False
     request = conn.session.request(auth_data['auth_url'] + '/v3/auth/tokens',
                                    'POST',
-                                   json={'auth':auth_dict})
+                                   json={'auth': auth_dict})
     for role in json.loads(request.content)["token"]["roles"]:
         role_name = role["name"]
         if role_name == "admin" or role_name == "manager":
