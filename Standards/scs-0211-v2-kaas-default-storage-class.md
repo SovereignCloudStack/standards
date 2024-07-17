@@ -28,8 +28,6 @@ object that is annotated with `storageclass.kubernetes.io/is-default-class=true`
 [Kubernetes documentation][k8s-default-sc].
 The name of this storage class is not standardized.
 
-Users MUST be able to change the default storage class.
-
 The persistent volumes (PV) provisioned by the provided default storage class MUST fulfill all
 of the following properties:
 
