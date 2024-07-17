@@ -20,6 +20,7 @@ jobs:
       with:
         use-quiet-mode: 'yes'
         use-verbose-mode: 'yes'
-        check-modified-files-only: ${{ contains(fromJSON('["push", "pull_request"]'), github.event_name) }}
+        # https://github.com/orgs/community/discussions/26738#discussioncomment-3253176
+        check-modified-files-only: ${{ contains(fromJSON('["push", "pull_request"]'), github.event_name) && 'yes' || 'no' }}
         config-file: 'mlc_config.json'
         base-branch: 'main'
