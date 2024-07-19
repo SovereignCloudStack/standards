@@ -53,4 +53,12 @@ This will be done in another document which is yet to be created.
 
 ## Conformance Tests
 
-TBD
+The script `k8s-default-storage-class-check.py` requires a kubeconfig file with connection
+details for the Kubernetes cluster that should be checked for conformance.
+It will check for a default storage class and use the associated storage provider to
+try to create and mount a PersistentVolumeClaim with the aforementioned properties to
+a container in a Pod.
+After it is done, it cleans up the resources.
+Rule violations will be reported on various logging channels: ERROR for mandatory rules
+and INFO for recommended rules.
+An exit code of zero indicates that the standard has been met.
