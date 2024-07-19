@@ -11,6 +11,7 @@ description: |
 ## Introduction
 
 This is the standard v2 for SCS Release 7.
+
 Cluster consumers can request persistent storage via [`PersistentVolumeClaims`][k8s-pvc], which is provisioned
 automatically by cloud-provided automation.
 Storage requirements may vary across use cases, so there is the concept of storage classes (`StorageClass`).
