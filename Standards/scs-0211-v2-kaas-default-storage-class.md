@@ -10,6 +10,7 @@ description: |
 
 ## Introduction
 
+This is the standard v2 for SCS Release 7.
 Cluster consumers can request persistent storage via [`PersistentVolumeClaims`][k8s-pvc], which is provisioned
 automatically by cloud-provided automation.
 Storage requirements may vary across use cases, so there is the concept of storage classes (`StorageClass`).
@@ -36,6 +37,17 @@ of the following properties:
 - MUST NOT be bound to the lifecycle of a Kubernetes node.
 
 The provisioned storage class MAY support volume expansion (`allowVolumeExpansion=true`).
+
+## Previous standard versions
+
+[Version v1 of this standard](scs-0211-v1-kaas-default-storage-class.md) did not enforce the
+existence of a default storage class in a newly created cluster.
+
+Previously, the backing storage of the default storage class was required to be protected
+against data loss caused by a physical disk or host failure.
+It also contained recommendations (MAY) with regard to redundant storage across hosts
+or availability zones.
+In this revision, these requirements and recommendations have been dropped.
 
 ## Conformance Tests
 
