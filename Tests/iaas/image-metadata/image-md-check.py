@@ -389,6 +389,7 @@ def main(argv):
     except BaseException as exc:
         print(f"CRITICAL: {exc!r}", file=sys.stderr)
         return 1 + err
+    print("image-metadata-check: " + ('PASS', 'FAIL')[int(bool(err))])
     return err
 
 

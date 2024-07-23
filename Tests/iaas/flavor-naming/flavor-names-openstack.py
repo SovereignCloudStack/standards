@@ -251,6 +251,7 @@ def main(argv):
         Report[cloud]["SCSFlavorReport"] = flvSCSList
         Report[cloud]["OtherFlavorReport"] = flvOthList
     print(f"{yaml.dump(Report, default_flow_style=False)}")
+    print("flavor-name-check: " + ('PASS', 'FAIL')[int(bool(errors))])
     return errors
 
 

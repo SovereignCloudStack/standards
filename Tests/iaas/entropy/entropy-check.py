@@ -485,6 +485,10 @@ def main(argv):
         "Total critical / error / warning: "
         f"{c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.WARNING]}"
     )
+    if c[logging.CRITICAL]:
+        print("entropy-check: DNF")
+    else:
+        print("entropy-check: " + ('PASS', 'FAIL')[int(bool(c[logging.ERROR]))])
     return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 

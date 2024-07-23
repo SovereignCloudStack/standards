@@ -185,6 +185,10 @@ def main(argv):
 
     c = counting_handler.bylevel
     logger.debug(f"Total critical / error / info: {c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.INFO]}")
+    if c[logging.CRITICAL]:
+        print("standard-flavors-check: DNF")
+    else:
+        print("standard-flavors-check: " + ('PASS', 'FAIL')[int(bool(c[logging.ERROR]))])
     return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 
