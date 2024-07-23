@@ -26,6 +26,7 @@ import shlex
 import getopt
 import datetime
 import subprocess
+from collections import Counter
 from functools import partial
 from itertools import chain
 import yaml
@@ -33,10 +34,12 @@ import yaml
 
 # valid keywords for various parts of the spec, to be checked using `check_keywords`
 KEYWORDS = {
-    'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables'),
-    'version': ('version', 'standards', 'stabilized_at', 'deprecated_at'),
-    'standard': ('checks', 'url', 'name', 'condition', 'parameters'),
-    'check': ('executable', 'env', 'args', 'condition', 'lifetime', 'id', 'section'),
+    'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables', 'modules', 'timeline'),
+    'version': ('version', 'include', 'targets', 'stabilized_at'),
+    'module': ('id', 'run', 'checks', 'url', 'name', 'parameters'),
+    'run': ('executable', 'env', 'args', 'section'),
+    'check': ('lifetime', 'id'),
+    'include': ('id', 'parameters'),
 }
 
 
@@ -194,13 +197,21 @@ def invoke_check_tool(exe, args, env, cwd):
     return invokation
 
 
-def compute_result(num_abort, num_error):
-    """compute check result given number of abort messages and number of error messages"""
-    if num_error:
-        return -1  # equivalent to FAIL
-    if num_abort:
-        return 0  # equivalent to DNF
-    return 1  # equivalent to PASS
+VERDICTS = {'PASS': 1, 'FAIL': -1}
+
+
+def compute_results(stdout):
+    """pick out test results from stdout lines"""
+    result = {}
+    for line in stdout:
+        parts = line.rsplit(':', 1)
+        if len(parts) != 2:
+            continue
+        value = VERDICTS.get(parts[1].strip().upper())
+        if value is None:
+            continue
+        result[parts[0].strip()] = value
+    return result
 
 
 def main(argv):
@@ -218,10 +229,20 @@ def main(argv):
     printnq = suppress if config.quiet else partial(print, file=sys.stderr)
     with open(config.arg0, "r", encoding="UTF-8") as specfile:
         spec = yaml.load(specfile, Loader=yaml.SafeLoader)
+    check_keywords('spec', spec)
     missing_vars = [v for v in spec.get("variables", ()) if v not in config.assignment]
     if missing_vars:
         print(f"Missing variable assignments (via -a) for: {', '.join(missing_vars)}")
         return 1
+    module_lookup = {module["id"]: module for module in spec["modules"]}
+    version_lookup = {version["version"]: version for version in spec["versions"]}
+    if config.version is None:
+        versions = max(
+            (entry for entry in spec["timeline"] if entry["date"] <= config.checkdate),
+            key=lambda entry: entry["date"],
+        )["versions"]
+    else:
+        versions = {config.version: "effective"}
     check_cwd = os.path.dirname(config.arg0) or os.getcwd()
     allaborts = 0
     allerrors = 0
@@ -248,104 +269,85 @@ def main(argv):
             "invocations": {},
         },
     }
-    check_keywords('spec', spec)
-    if config.version:
-        spec["versions"] = [vd for vd in spec["versions"] if vd["version"] == config.version]
     if "prerequisite" in spec:
         print("WARNING: prerequisite not yet implemented!", file=sys.stderr)
     vrs = report["versions"]
     memo = report["run"]["invocations"]  # memoize check tool results
-    matches = 0
-    for vd in spec["versions"]:
+    for vname, validity in versions.items():
+        vd = version_lookup[vname]
         check_keywords('version', vd)
-        stb_date = vd.get("stabilized_at")
-        dep_date = vd.get("deprecated_at")
-        futuristic = not stb_date or config.checkdate < stb_date
-        outdated = dep_date and dep_date < config.checkdate
-        if outdated and not config.version:
-            continue
-        vr = vrs[vd["version"]] = {}
-        matches += 1
-        if config.version and outdated:
-            print(f"WARNING: Forced version {config.version} outdated", file=sys.stderr)
-        if config.version and futuristic:
-            print(f"INFO: Forced version {config.version} not (yet) stable", file=sys.stderr)
-        printnq(f"Testing {spec['name']} version {vd['version']}")
-        if "standards" not in vd:
-            print(f"WARNING: No standards defined yet for {spec['name']} version {vd['version']}",
-                  file=sys.stderr)
+        # each include can be given as a mere string (its id) or as an object with id and parameters
+        includes = [{"id": inc} if isinstance(inc, str) else inc for inc in vd["include"]]
+        # sanity check: ids must be unique within one version
+        ids = Counter(check["id"] for inc in includes for check in module_lookup[inc["id"]].get("checks", ()))
+        duplicates = [key for key, value in ids.items() if value > 1]
+        if duplicates:
+            print(f"duplicate ids in version {vname}: {', '.join(duplicates)}", file=sys.stderr)
+        vr = vrs[vname] = {}
+        printnq(f"Testing {spec['name']} version {vname} ({validity})")
         seen_ids = set()
         errors = 0
         aborts = 0
-        for standard in vd.get("standards", ()):
-            check_keywords('standard', standard)
-            optional = condition_optional(standard)
-            if config.tests is None:
-                printnq("*******************************************************")
-                printnq(f"Testing {'optional ' * optional}standard {standard['name']} ...")
-                printnq(f"Reference: {standard['url']} ...")
-            checks = standard.get("checks", ())
-            if not checks and config.tests is None:
-                printnq(f"WARNING: No check tool specified for {standard['name']}", file=sys.stderr)
-            for check in checks:
-                check_keywords('check', check)
-                if 'id' not in check:
-                    raise RuntimeError(f"check descriptor missing id field: {check}")
-                id_ = check['id']
-                if id_ in seen_ids:
-                    raise RuntimeError(f"duplicate id: {id_}")
-                seen_ids.add(id_)
-                if config.tests is not None:
-                    if not config.tests.match(id_):
-                        # print(f"skipping check '{id_}': doesn't match tests selector")
-                        continue
-                    printnq("*******************************************************")
-                    print(f"running check {id_}")
-                if 'executable' not in check:
-                    # most probably a manual check
-                    print(f"skipping check '{id_}': no executable given")
+        for include in includes:
+            include.setdefault("parameters", {})  # default value to reduce number of possible cases
+            module = module_lookup[include['id']]
+            check_keywords('module', module)
+            if config.tests is not None:
+                matches = [ch for ch in module.get('checks', ()) if config.tests.match(ch['id'])]
+                if not matches:
                     continue
-                section = check.get('section', check.get('lifetime', 'day'))
+            checks = module.get('run', ())
+            if not checks and config.tests is None:
+                printnq(f"WARNING: No check tool specified for {module['id']}", file=sys.stderr)
+            for check in checks:
+                check_keywords('run', check)
+                section = check.get('section')
                 if config.sections and section not in config.sections:
-                    print(f"skipping check '{id_}': not in selected sections")
+                    print(f"skipping run: not in selected sections")
                     continue
                 assignment = config.assignment
-                if "parameters" in standard:
-                    assignment = {**assignment, **standard['parameters']}
+                missing = set(include['parameters']) - set(module.get('parameters', ()))
+                if missing:
+                    print(f"skipping run: missing parameters {', '.join(missing)}")
+                if "parameters" in include:
+                    assignment = {**assignment, **include['parameters']}
                 args = check.get('args', '').format(**assignment)
                 env = {key: value.format(**assignment) for key, value in check.get('env', {}).items()}
                 env_str = " ".join(f"{key}={value}" for key, value in env.items())
                 memo_key = f"{env_str} {check['executable']} {args}".strip()
+                printnq(f"invoking {memo_key}...")
                 invokation = memo.get(memo_key)
                 if invokation is None:
                     check_env = {**os.environ, **env}
                     invokation = invoke_check_tool(check["executable"], args, check_env, check_cwd)
-                    result = compute_result(invokation["critical"], invokation["error"])
-                    if result == 1 and invokation['rc']:
-                        print(f"CRITICAL: check {id_} reported neither error nor abort, but had non-zero rc", file=sys.stderr)
-                        critical += 1
-                        result = 0
-                    invokation['result'] = result
+                    invokation["results"] = compute_results(invokation['stdout'])
                     printv("\n".join(invokation["stdout"]))
                     printnq("\n".join(invokation["stderr"]))
                     memo[memo_key] = invokation
+                if invokation["results"]:
+                    printnq(f"... returned results:")
+                for id_, value in invokation["results"].items():
+                    if id_ not in ids:
+                        print(f"invalid id in check {memo_key}: {id_}")
+                    if id_ in vr:
+                        print(f"id already seen in check {memo_key}: {id_}")
+                    vr[id_] = {'result': value, 'invocation': memo_key}
+                    print(f"{config.subject} {vname} {id_} = {value}")
                 abort = invokation["critical"]
                 error = invokation["error"]
-                vr[check['id']] = {'result': invokation['result'], 'invocation': memo_key}
                 printnq(f"... returned {error} errors, {abort} aborts")
-                if not condition_optional(check, optional):
-                    aborts += abort
-                    errors += error
+                aborts += abort
+                errors += error
         # NOTE: the following verdict may be tentative, depending on whether
         # all tests have been run (which in turn depends on chosen sections);
         # the logic to compute the ultimate verdict should be place further downstream,
         # namely where the reports are gathered and evaluated
         printnq("*******************************************************")
         printnq(f"Verdict for subject {config.subject}, {spec['name']}, "
-                f"version {vd['version']}: {errcode_to_text(aborts + errors)}")
+                f"version {vname}: {errcode_to_text(aborts + errors)}")
         allaborts += aborts
         allerrors += errors
-    if not matches:
+    if not versions:
         print(f"CRITICAL: No valid version found for {config.checkdate}", file=sys.stderr)
         critical += 1
     allaborts += critical  # note: this is after we put the number into the report, so only for return code
