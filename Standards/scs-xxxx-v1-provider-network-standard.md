@@ -10,11 +10,11 @@ track: IaaS
 Many use-cases of IaaS require virtual servers to be able to connect to network resources outside of the cloud environment, often to the internet.
 Openstack supports this by allowing CSPs to map non-virtualized networks onto specific virtual networks, such that virtual routers and servers can connect to them.
 
-Such networks will usually be created in a CSP-managed project and then shared to user projects using the network API's role-based access control feature.
-Because they have to be set up by the cloud provider, networks of this type are generally referred to as _provider networks_, though that term can also be used to refer to other types of CSP-managed virtual networks.
+Such networks will usually be created in a provider-managed project and then shared to user projects using the RBAC-feature of the network API.
+Because they have to be set up by the cloud provider, networks of this type are generally referred to as _provider networks_, though that term can also be used in a broader senseto refer to other types of CSP-managed virtual networks.
 
 When setting up provider networks for external access, CSPs have a number of different options regarding usage restrictions and the allocation of IP addresses.
-This document defines a standardized setup for provider networks that offers external access in a way that is portable across SCS clouds.
+This document defines a standardized approach for using provider networks to allocate public IP addresses and provide external access in a way that is portable across SCS clouds.
 
 ### Glossary
 
@@ -28,7 +28,7 @@ The following terms are used throughout this document:
 | Virtual Router | OpenStack resource that can be used to route and bridge between virtual networks and provide other features such as NAT |
 | Subnet | Subdivision of available IP address space using address prefixes. In OpenStack also an abstraction for controlling IP address allocation in a virtual network. |
 | DHCP | Dynamic Host Configuration Protocol: Used to automatically configure hosts in a network with IP addresses, default routes, and other information such as DNS servers. |
-| Prefix | IP address prefix of a given bit-length N, written as _<ADDRESS>/<N>_. Divides addresses into a network and a host part, a shorter prefix allows more hosts but takes up more address space. |
+| Prefix | IP address prefix of a given bit-length N, written as _ADDRESS/N_. Divides addresses into a network and a host part, a shorter prefix allows more hosts but takes up more address space. |
 | NAT | Network Address Translation: mapping (usually public) IPv4 addresses onto a different (usually private) address space. May allows multiple hosts to share a public address by multiplexing TCP/UDP ports. |
 | RBAC | Role-based Access Control: A mechanism in the Network API to give projects limited access to resources owned by other projects. Typically used by CSPs to create provider networks. |
 | Shared Network | Virtual network that is shared between projects in a way that allows direct attachment of servers. |
@@ -93,17 +93,17 @@ This seems to be more of a niche use-case, however, and may warrant the creation
 
 ### Options considered
 
-#### Internet Access
+#### Public IP Address Allocation
 
 For public clouds, external access generally means access to (and from) the internet, with allocation of public IP addresses.
-Providing a standardized approach for internet access is the main motivation for this standard.
+Providing a standardized approach for the allocation of public IP addresses is the main motivation for this standard.
 
 However, the SCS Standards are intended to be applicable not just to public clouds, but also to private or even air-gaped cloud environments.
-One way to reconcile these requirements would be to mandate internet access, but limit the scope of this standard to only cover public clouds.
+One way to reconcile these requirements would be to find a common basis between public and private clouds, and then build the standard around that, scoping individual rules where necessary.
 
-However, private clouds may also profit from a standardized approach to external access, even when external in this context may be a private network or VPN of an organization.
-Even air-gaped environments may have use for standardized provider networks, e.g. to provide local network-based services such as NTP.
-So, rather than scope all requirements to a specific type of cloud environment, this standard will scope individual requirements where necessary.
+However, private and public clouds may have quite different requirements.
+Public IPv4 addresses, for example, are sparse and expensive, so having tight quotas and support for NAT makes a lot of sense in a public cloud, but may be completely unnecessary in a private environment without public IPs.
+So, rather than trying to find common ground between the networking requirements of all SCS clouds, the requirements of this standard will be scoped to only apply to cloud environment that support the allocation of public IP addresses.
 
 #### IPv6
 
@@ -154,7 +154,7 @@ Each subnet also has a broadcast and a network address, which for small subnets 
 Source NAT, combined with selective use of floating IPs can significantly reduce the number of required addresses over a public IPv4 subnet.
 The floating IP quota also offers a finer granularity for distributing IPs among projects, though it is important to note that the routers external gateway IP which is used for the source NAT is not subject to any quotas.
 
-IPv4 NAT can also be used in a dual stack setup alongside a routed IPv6 subnet (source?).
+IPv4 NAT can also be used in a dual stack setup alongside a routed IPv6 subnet.
 
 #### Disable RBAC for Users
 
@@ -183,28 +183,26 @@ So, just specifying mandatory features rather than a certain set of extensions m
 
 ## Standard
 
-CSPs **MUST** provide a provider network to every project to access to the internet.
+If CSPs offer public IP addresses to projects, they **MUST** provide a provider network to every project to allocate public addresses.
 This provider network will in the following be referred to as the _standard provider network_.
-To avoid ambiguity, the standard provider network **SHOULD** be the only provider networks available to projects by default.
+To avoid ambiguity, the standard provider network **SHOULD** be the only provider network available to projects by default.
 
 The standard provider network **MUST** be an external network, allowing it to be used as external gateway by virtual routers.
-The standard provider network **MAY** be a shared network, allowing direct attachment of servers.
+The standard provider network **MAY** be a shared network, allowing direct attachment of virtual servers.
 If the standard provider network is a shared network, it **MUST** enable port security to prevent projects from interfering with each other.
 
-The standard provider network **MUST** have an IPv6 subnet.
-CSPs **MUST** provide a subnet pool for the allocation of at least one public /64 IPv6 prefix per project.
+If CSPs offer public IP addresses at all, they **MUST** provide a subnet pool for the allocation of at least one public /64 IPv6 prefix per project.
+If CSPs offer public IP addresses, they **SHOULD** also offer public IPv4 addresses.
+If they do offer public IPv4 addresses, they **MUST** provide at least one public Floating IP per project, but **MAY** also provide a subnet pool for the allocation of public IPv4 prefixes to project networks.
 
-The standard provider network **SHOULD** have an IPv4 subnet.
-If CSPs provide an IPv4 subnet, then CSPs **MUST** provide at least one public Floating IP per project.
-They **MAY** also provide a subnet pool for the allocation of public IPv4 prefixes to project networks.
-
-CSPs **MUST** provide dynamic routing for all project-allocated public IP-prefixes.
+CSPs **MUST** externally route any public IP addresses allocated from subnets of the standard provider network.
+CSPs **MUST** provide dynamic routing for all project-allocated public IP-prefixes via the standard provider network.
 
 By default, users **SHOULD** be prohibited by policy from creating RBAC rules for networks in their projects, to prevent the creation of faux provider networks.
 
 ## Conformance Tests
 
-(TBD, current requirements should all be testable by API, though dynamic routing might be a bit tricky)
+(TBD, current requirements should mostly be testable by API. Testing external routing is more tricky and will require external testing infrastructure of some sort)
 
 ## References
 
