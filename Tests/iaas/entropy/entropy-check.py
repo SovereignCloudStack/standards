@@ -83,18 +83,25 @@ Options:
 
 
 def check_image_attributes(images, attributes=IMAGE_ATTRIBUTES):
-    for image in images:
-        wrong = [f"{key}={value}" for key, value in attributes.items() if image.get(key) != value]
-        if wrong:
-            logger.warning(f"Image '{image.name}' missing recommended attributes: {', '.join(wrong)}")
+    candidates = [
+      (image.name, [f"{key}={value}" for key, value in attributes.items() if image.get(key) != value])
+      for image in images
+    ]
+    # drop those candidates that are fine
+    offenders = [candidate for candidate in candidates if candidate[1]]
+    for name, wrong in offenders:
+        logger.warning(f"Image '{name}' missing recommended attributes: {', '.join(wrong)}")
+    return not offenders
 
 
 def check_flavor_attributes(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAVOR_OPTIONAL):
+    offenses = 0
     for flavor in flavors:
         extra_specs = flavor['extra_specs']
         wrong = [f"{key}={value}" for key, value in attributes.items() if extra_specs.get(key) != value]
         miss_opt = [key for key in optional if extra_specs.get(key) is None]
         if wrong:
+            offenses += 1
             message = f"Flavor '{flavor.name}' missing recommended attributes: {', '.join(wrong)}"
             # only report missing optional attributes if recommended are missing as well
             # reasoning here is that these optional attributes are merely a hint for implementers
@@ -102,6 +109,7 @@ def check_flavor_attributes(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAV
             if miss_opt:
                 message += f"; additionally, missing optional attributes: {', '.join(miss_opt)}"
             logger.warning(message)
+    return not offenses
 
 
 def install_test_requirements(fconn):
@@ -132,37 +140,48 @@ def install_test_requirements(fconn):
     logger.debug("No package manager worked; proceeding anyway as rng-utils might be present nonetheless.")
 
 
-def check_vm_requirements(fconn, image_name):
-    try:
-        entropy_avail = fconn.run('cat /proc/sys/kernel/random/entropy_avail', hide=True).stdout.strip()
-        if entropy_avail != "256":
-            logger.error(
-                f"VM '{image_name}' didn't have a fixed amount of entropy available. "
-                f"Expected 256, got {entropy_avail}."
-            )
+def check_entropy_avail(fconn, image_name):
+    entropy_avail = fconn.run('cat /proc/sys/kernel/random/entropy_avail', hide=True).stdout.strip()
+    if entropy_avail != "256":
+        logger.error(
+            f"VM '{image_name}' didn't have a fixed amount of entropy available. "
+            f"Expected 256, got {entropy_avail}."
+        )
+        return False
+    return True
 
+
+def check_rngd(fconn, image_name):
+    result = fconn.run('sudo systemctl status rngd', hide=True, warn=True)
+    if "could not be found" in result.stdout or "could not be found" in result.stderr:
+        logger.warning(f"VM '{image_name}' doesn't provide the recommended service rngd")
+        return False
+    return True
+
+
+def check_fips_test(fconn, image_name):
+    try:
         install_test_requirements(fconn)
         fips_data = fconn.run('cat /dev/random | rngtest -c 1000', hide=True, warn=True).stderr
         failure_re = re.search(r'failures:\s\d+', fips_data, flags=re.MULTILINE)
         if failure_re:
             fips_failures = failure_re.string[failure_re.regs[0][0]:failure_re.regs[0][1]].split(" ")[1]
-            if int(fips_failures) > 3:
-                logger.error(
-                    f"VM '{image_name}' didn't pass the FIPS 140-2 testing. "
-                    f"Expected a maximum of 3 failures, got {fips_failures}."
-                )
+            if int(fips_failures) <= 3:
+                return True  # this is the single 'successful' code path
+            logger.error(
+                f"VM '{image_name}' didn't pass the FIPS 140-2 testing. "
+                f"Expected a maximum of 3 failures, got {fips_failures}."
+            )
         else:
             logger.error(f"VM '{image_name}': failed to determine fips failures")
             logger.debug(f"stderr following:\n{fips_data}")
     except BaseException:
         logger.critical(f"Couldn't check VM '{image_name}' requirements", exc_info=True)
+    return False  # any unsuccessful path should end up here
 
 
 def check_vm_recommends(fconn, image, flavor):
     try:
-        result = fconn.run('sudo systemctl status rngd', hide=True, warn=True)
-        if "could not be found" in result.stdout or "could not be found" in result.stderr:
-            logger.warning(f"VM '{image.name}' doesn't provide the recommended service rngd")
         # Check the existence of the HRNG -- can actually be skipped if the flavor
         # or the image doesn't have the corresponding attributes anyway!
         if image.hw_rng_model != "virtio" or flavor.extra_specs.get("hw_rng:allowed") != "True":
@@ -397,6 +416,10 @@ def select_deb_image(images):
     return None
 
 
+def print_result(check_id, passed):
+    print(check_id + ": " + ('FAIL', 'PASS')[bool(passed)])
+
+
 def main(argv):
     # configure logging, disable verbose library logging
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
@@ -453,8 +476,8 @@ def main(argv):
                 logger.debug(f"Selected image: {images[0].name} ({images[0].id})")
 
             logger.debug("Checking images and flavors for recommended attributes")
-            check_image_attributes(all_images)
-            check_flavor_attributes(all_flavors)
+            print_result('entropy-check-image-properties', check_image_attributes(all_images))
+            print_result('entropy-check-flavor-properties', check_flavor_attributes(all_flavors))
 
             logger.debug("Checking dynamic instance properties")
             with TestEnvironment(conn) as env:
@@ -473,7 +496,9 @@ def main(argv):
                             # need to retry because it takes time for sshd to come up
                             retry(fconn.open, exc_type="NoValidConnectionsError,TimeoutError")
                             check_vm_recommends(fconn, image, server.flavor)
-                            check_vm_requirements(fconn, image.name)
+                            print_result('entropy-check-entropy-avail', check_entropy_avail(fconn, image.name))
+                            print_result('entropy-check-rngd', check_rngd(fconn, image.name))
+                            print_result('entropy-check-fips-test', check_fips_test(fconn, image.name))
                     finally:
                         delete_vm(conn)
     except BaseException as e:
@@ -485,10 +510,6 @@ def main(argv):
         "Total critical / error / warning: "
         f"{c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.WARNING]}"
     )
-    if c[logging.CRITICAL]:
-        print("entropy-check: DNF")
-    else:
-        print("entropy-check: " + ('PASS', 'FAIL')[int(bool(c[logging.ERROR]))])
     return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 

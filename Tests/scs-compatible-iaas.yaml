@@ -55,7 +55,17 @@ modules:
       - executable: ./iaas/entropy/entropy-check.py
         args: -c {os_cloud} -d
     checks:
-      - id: entropy-check
+      # the following list of checks is in line with the "testing notes" found in
+      # https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0101-w1-entropy-implementation-testing.md
+      - id: entropy-check-flavor-properties
+        tags: [recommended]
+      - id: entropy-check-image-properties
+        tags: [recommended]
+      - id: entropy-check-rngd
+        tags: [mandatory]
+      - id: entropy-check-entropy-avail
+        tags: [mandatory]
+      - id: entropy-check-fips-test
         tags: [mandatory]
   - id: scs-0102-v1
     name: Image metadata v1
