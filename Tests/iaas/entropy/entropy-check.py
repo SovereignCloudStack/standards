@@ -84,8 +84,8 @@ Options:
 
 def check_image_attributes(images, attributes=IMAGE_ATTRIBUTES):
     candidates = [
-      (image.name, [f"{key}={value}" for key, value in attributes.items() if image.get(key) != value])
-      for image in images
+        (image.name, [f"{key}={value}" for key, value in attributes.items() if image.get(key) != value])
+        for image in images
     ]
     # drop those candidates that are fine
     offenders = [candidate for candidate in candidates if candidate[1]]
