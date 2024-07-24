@@ -285,7 +285,6 @@ def main(argv):
             print(f"duplicate ids in version {vname}: {', '.join(duplicates)}", file=sys.stderr)
         vr = vrs[vname] = {}
         printnq(f"Testing {spec['name']} version {vname} ({validity})")
-        seen_ids = set()
         errors = 0
         aborts = 0
         for include in includes:
@@ -303,7 +302,7 @@ def main(argv):
                 check_keywords('run', check)
                 section = check.get('section')
                 if config.sections and section not in config.sections:
-                    print(f"skipping run: not in selected sections")
+                    print("skipping run: not in selected sections")
                     continue
                 assignment = config.assignment
                 missing = set(include['parameters']) - set(module.get('parameters', ()))
@@ -325,7 +324,7 @@ def main(argv):
                     printnq("\n".join(invokation["stderr"]))
                     memo[memo_key] = invokation
                 if invokation["results"]:
-                    printnq(f"... returned results:")
+                    printnq("... returned results:")
                 for id_, value in invokation["results"].items():
                     if id_ not in ids:
                         print(f"invalid id in check {memo_key}: {id_}")
