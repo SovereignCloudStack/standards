@@ -3,7 +3,7 @@
 """
 flavor-add-extra-specs.py
 
-Cycles through all SCS- openstack flavors and adds metadata specified in
+Cycles through all SCS- openstack flavors and adds properties specified in
 scs-0103-v1 <https://docs.scs.community/standards/scs-0103-v1-standard-flavors>.
 
 Usage: flavor-add-extra-specs.py [options] [FLAVORS]
@@ -112,8 +112,8 @@ def generate_name_v2(flavor, cpu_type, disk0_type):
 def check_name_extra(flavor, ver, match, flname):
     """Check for existence and consistency of scs names in extra specs
     This assumes that a v1 or v2 name is used as main flavor name and should
-    match. If match is not set an v1->v2 or v2->v1 translation is neeed.
-    ver needs to be set to 'v1' or 'v2'.
+    match. If match is not set an v1->v2 or v2->v1 translation is needed.
+    ver needs to be set to 'v1' or 'v2'/'v3'/'v4'
     flname is the SCS flavor name (may have been generated)
     """
     spec = f"scs:name-{ver}"
@@ -126,10 +126,10 @@ def check_name_extra(flavor, ver, match, flname):
                   file=sys.stderr)
         # Existing names must be parseable SCS names, check
         try:
-            if ver == "v2":
-                parsed = parser_v2(name)
-            else:
+            if ver == "v1":
                 parsed = parser_v1(name)
+            else:
+                parsed = parser_v2(name)
             need_name_set = False
             # To Do: Check consistency
             if check_std_props(flavor, parsed, f" by {spec}"):
@@ -143,13 +143,19 @@ def check_name_extra(flavor, ver, match, flname):
         if match:
             flavor.extra_specs[spec] = flname
         else:
-            if ver == "v2":
-                flavor.extra_specs[spec] = SyntaxV2.from_v1(flname)
-            else:
+            if ver == "v1":
                 flavor.extra_specs[spec] = SyntaxV1.from_v2(flname)
+            else:
+                flavor.extra_specs[spec] = SyntaxV2.from_v1(flname)
         # flavor.update_extra_specs_property(spec, flavor.extra_specs[spec])
         if not QUIET:
             print(f"INFO {flavor.name}: Update extra_spec {spec} to {flavor.extra_specs[spec]}")
+
+    # Set v3 to v2
+    if (ver == "v3" or ver == "v4") and not spec in flavor.extra_specs:
+        flavor.extra_specs[spec] = flavor.extra_specs["scs:name-v2"]
+        errs += 1
+
     return errs
 
 
@@ -296,6 +302,9 @@ def main(argv):
         upd = check_name_extra(flavor, "v2", not is_v1, flname)
         if upd:
             errors += update_flavor_extra(compute, flavor, "scs:name-v2")
+        upd = check_name_extra(flavor, "v3", not is_v1, flname)
+        if upd:
+            errors += update_flavor_extra(compute, flavor, "scs:name-v3")
         upd = check_name_extra(flavor, "v1", is_v1, flname)
         if upd:
             errors += update_flavor_extra(compute, flavor, "scs:name-v1")
