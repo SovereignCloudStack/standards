@@ -152,7 +152,7 @@ def check_name_extra(flavor, ver, match, flname):
             print(f"INFO {flavor.name}: Update extra_spec {spec} to {flavor.extra_specs[spec]}")
 
     # Set v3 to v2
-    if (ver == "v3" or ver == "v4") and not spec in flavor.extra_specs:
+    if (ver == "v3" or ver == "v4") and spec not in flavor.extra_specs:
         flavor.extra_specs[spec] = flavor.extra_specs["scs:name-v2"]
         errs += 1
 
