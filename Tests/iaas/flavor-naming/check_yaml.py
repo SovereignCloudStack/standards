@@ -17,7 +17,7 @@ import yaml
 from flavor_names import parser_v2, flavorname_to_dict
 
 
-REQUIRED_FIELDS = ['name-v1', 'name-v2', 'name', 'cpus', 'ram', 'cpu-type']
+REQUIRED_FIELDS = ['name-v1', 'name-v2', 'name-v3', 'name', 'cpus', 'ram', 'cpu-type']
 DEFAULTS = {'disk0-type': 'network'}
 
 
