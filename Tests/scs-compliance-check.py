@@ -20,6 +20,7 @@ would split these tests out.)
 import os
 import os.path
 import uuid
+import re
 import sys
 import shlex
 import getopt
@@ -34,7 +35,7 @@ import yaml
 KEYWORDS = {
     'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables'),
     'version': ('version', 'standards', 'stabilized_at', 'deprecated_at'),
-    'standard': ('checks', 'url', 'name', 'condition'),
+    'standard': ('checks', 'url', 'name', 'condition', 'parameters'),
     'check': ('executable', 'env', 'args', 'condition', 'lifetime', 'id', 'section'),
 }
 
@@ -48,6 +49,7 @@ Options: -v/--verbose: More verbose output
  -V/--version VERS: Force version VERS of the standard (instead of deriving from date)
  -s/--subject SUBJECT: Name of the subject (cloud) under test, for the report
  -S/--sections SECTION_LIST: comma-separated list of sections to test (default: all sections)
+ -t/--tests REGEX: regular expression to select individual tests
  -o/--output REPORT_PATH: Generate yaml report of compliance check under given path
  -C/--critical-only: Only return critical errors in return code
  -a/--assign KEY=VALUE: assign variable to be used for the run (as required by yaml file)
@@ -91,13 +93,14 @@ class Config:
         self.output = None
         self.sections = None
         self.critical_only = False
+        self.tests = None
 
     def apply_argv(self, argv):
         """Parse options. May exit the program."""
         try:
-            opts, args = getopt.gnu_getopt(argv, "hvqd:V:s:o:S:Ca:", (
+            opts, args = getopt.gnu_getopt(argv, "hvqd:V:s:o:S:Ca:t:", (
                 "help", "verbose", "quiet", "date=", "version=",
-                "subject=", "output=", "sections=", "critical-only", "assign",
+                "subject=", "output=", "sections=", "critical-only", "assign", "tests",
             ))
         except getopt.GetoptError as exc:
             print(f"Option error: {exc}", file=sys.stderr)
@@ -128,6 +131,8 @@ class Config:
                 if key in self.assignment:
                     raise ValueError(f"Double assignment for {key!r}")
                 self.assignment[key] = value
+            elif opt[0] == "-t" or opt[0] == "--tests":
+                self.tests = re.compile(opt[1])
             else:
                 print(f"Error: Unknown argument {opt[0]}", file=sys.stderr)
         if len(args) < 1:
@@ -239,6 +244,7 @@ def main(argv):
             "assignment": config.assignment,
             "sections": config.sections,
             "forced_version": config.version or None,
+            "forced_tests": None if config.tests is None else config.tests.pattern,
             "invocations": {},
         },
     }
@@ -274,11 +280,12 @@ def main(argv):
         for standard in vd.get("standards", ()):
             check_keywords('standard', standard)
             optional = condition_optional(standard)
-            printnq("*******************************************************")
-            printnq(f"Testing {'optional ' * optional}standard {standard['name']} ...")
-            printnq(f"Reference: {standard['url']} ...")
+            if config.tests is None:
+                printnq("*******************************************************")
+                printnq(f"Testing {'optional ' * optional}standard {standard['name']} ...")
+                printnq(f"Reference: {standard['url']} ...")
             checks = standard.get("checks", ())
-            if not checks:
+            if not checks and config.tests is None:
                 printnq(f"WARNING: No check tool specified for {standard['name']}", file=sys.stderr)
             for check in checks:
                 check_keywords('check', check)
@@ -288,6 +295,12 @@ def main(argv):
                 if id_ in seen_ids:
                     raise RuntimeError(f"duplicate id: {id_}")
                 seen_ids.add(id_)
+                if config.tests is not None:
+                    if not config.tests.match(id_):
+                        # print(f"skipping check '{id_}': doesn't match tests selector")
+                        continue
+                    printnq("*******************************************************")
+                    print(f"running check {id_}")
                 if 'executable' not in check:
                     # most probably a manual check
                     print(f"skipping check '{id_}': no executable given")
@@ -296,8 +309,11 @@ def main(argv):
                 if config.sections and section not in config.sections:
                     print(f"skipping check '{id_}': not in selected sections")
                     continue
-                args = check.get('args', '').format(**config.assignment)
-                env = {key: value.format(**config.assignment) for key, value in check.get('env', {}).items()}
+                assignment = config.assignment
+                if "parameters" in standard:
+                    assignment = {**assignment, **standard['parameters']}
+                args = check.get('args', '').format(**assignment)
+                env = {key: value.format(**assignment) for key, value in check.get('env', {}).items()}
                 env_str = " ".join(f"{key}={value}" for key, value in env.items())
                 memo_key = f"{env_str} {check['executable']} {args}".strip()
                 invokation = memo.get(memo_key)

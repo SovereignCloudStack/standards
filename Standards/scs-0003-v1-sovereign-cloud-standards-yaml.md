@@ -21,7 +21,7 @@ SCS plans to offer six kinds of certificates with varying scope. These scopes ca
    - SCS-open
    - SCS-sovereign
 2. _cloud layer_, of which there are two:
-   - infastructure as a service (IaaS)
+   - infrastructure as a service (IaaS)
    - Kubernetes as a service (KaaS)
 
 So, for instance, a certificate can have the scope _SCS-compatible IaaS_ or _SCS-sovereign KaaS_.
@@ -137,7 +137,12 @@ Every list of standards consists of several standards that – altogether – de
 | `name`                   | String | Full name of the particular standard                                                                   | _Flavor naming_                                                                                                                |
 | `url`                    | String | Valid URL to the latest raw version of the particular standard                                         | _[Flavor naming](https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v2-flavor-naming.md)_ |
 | `condition`              | String | State of the particular standard, currently either `mandatory` or `optional`, default is `mandatory`   | _mandatory_                                                                                                                    |
+| `parameters`             | Map    | Maps parameter names to parameter values                                                               |                                                                                                                                |
 | `checks`                 | Array  | List of all checks that must pass; each entry being a check descriptor                                 |                                                                                                                                |
+
+The parameters specified here will be added to the variable assignment for all check tools that belong to this standard, so they will be substituted in the same way.
+The advantage is that these parameters may show up in the automatically generated documentation, whereas the check tools themselves probably won't.
+See the "Standard images" standard in the larger basic example below for a possible use case.
 
 ### Check descriptor
 
@@ -194,7 +199,7 @@ versions:
             id: flavor-name-check
             lifetime: day
       - name: Image metadata
-        url: https://raw.githubusercontent.com/SovereignCloudStack/Docs/main/Standards/SCS-0004-v1-image-metadata.md
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
         condition: mandatory
         checks:
           - executable: image-md-check.py
@@ -205,6 +210,14 @@ versions:
             condition: optional
             id: image-md-check-2
             lifetime: day
+      - name: Standard images
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0104-v1-standard-images.md
+        parameters:
+          image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images.yaml
+        checks:
+          - executable: ./iaas/standard-images/images-openstack.py
+            args: -c {os_cloud} -d {image_spec}
+            id: standard-images-check
   - version: v4 # This is the upcoming version with a given target date. No further changes should be done to this set of standards
     stabilized_at: 2022-04-01
     standards:
@@ -245,13 +258,13 @@ must be announced 14 days in advance via the corresponding mailing list.
 
 ### File format
 
-In order to have a document that can be processed by a wide range of tools, we need to opt for a simple but yet well supported format.
+In order to have a document that can be processed by a wide range of tools, we need to opt for a simple but yet well-supported format.
 YAML offers readability for humans as well as good support by many frameworks. Since YAML is heavily used in the cloud and container
 domain, the choice is obvious.
 
 ### Dependency graph for certifications
 
-This standard only allows exactly one depending certification, otherwise we would need to use a list of mappings. Since this is
+This standard only allows depending on exactly one certification, otherwise we would need to use a list of mappings. Since this is
 in accordance to the current plan of the SIG Standardization & Certification, we can safely ignore multiple dependency of
 certification for now.
 

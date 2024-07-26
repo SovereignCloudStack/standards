@@ -70,7 +70,7 @@ Two potential approaches for testing cluster stacks are the use of an IaaS provi
 - Challenges with monitoring and debugging.
 - Potential downtime and difficulty in running concurrent tests.
 
-### Local Environment (Docker, Kubevirt)
+### Local Environment (Docker, KubeVirt)
 
 #### Pros
 

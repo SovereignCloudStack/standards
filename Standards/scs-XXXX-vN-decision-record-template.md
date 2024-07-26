@@ -1,7 +1,7 @@
 ---
 title: _Descriptive title_
 type: Decision Record
-status: Draft
+status: Proposal
 track: Global  # | IaaS | Ops | KaaS | IAM
 ---
 

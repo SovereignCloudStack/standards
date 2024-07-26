@@ -52,7 +52,7 @@ a HRNG, they are not treated as such by the kernel, i.e., they _do not_
 appear as `/dev/hwrng`!
 
 The Linux kernel combines multiple sources of entropy into a pool. To this
-end, it will use all of the sources discussed so far with one exception:
+end, it will use all the sources discussed so far with one exception:
 the HRNG must be fed into the pool (if so desired) via the daemon `rngd`.
 The kernel converts the entropy from the pool into cryptographically
 secure random numbers that appear under `/dev/random` and `/dev/urandom`.
@@ -78,7 +78,7 @@ be used to feed it into the kernel's entropy pool.
 
 On a side note, the kernel exposes available HRNGs via the special
 directory `/sys/devices/virtual/misc/hw_random`. In particular, the
-file `rng_available` lists availabe HRNGs while the file `rng_current`
+file `rng_available` lists available HRNGs while the file `rng_current`
 contains the HRNG currently used.
 
 In summary, with current kernels and CPUs entropy in virtual instances
