@@ -72,27 +72,45 @@ Some IaaS providers, such as AWS and GCP, will provide their own NTP servers to 
 
 ### PTP
 
-(TBD)
+The Precision Time Protocol (PTP) is, like NTP, a network-based time synchronization protocol, that supports both UDP and ethernet transports.
+PTP is designed to offer higher precision than NTP, particularly in local area networks, e.g. by measuring the timing of synchronization messages directly at the network interface, if supported.
+Master clocks will also continually broadcast synchronization messages to their network, making them discoverable for clients, but also generating more traffic than NTP.
+
+Linux has a kernel-based driver for PTP, which will provide the synchronized time through a device file, which can then be used by services such as _phc2sys_ or _chrony_ to update the system time.
+
+It is unclear if PTP would have offer any better precision than NTP in tunneled networks with virtual interfaces, and it does not seem to get any use in IaaS at all.
 
 ### Paravirtualization
 
-(TBD)
+Unlike PTP as a protocol, it's driver interface in Linux seems to be a popular choice for time synchronization in the form of paravirtualization.
+The _ptp\_kvm_ kernel module will communicate directly with the KVM hypervisor to provide a PTP device file that follows the system time of the host.
+Hyper-V also offers time synchronization through a PTP device file managed by its _Linux Integration Services_.
+
+Paravirtualized time synchronization has the benefit of generally offering the highest precision.
+Like RTC clock emulation, it also works independently of the guest system's network connectivity.
+The main drawback is the dependency on a specific hypervisor, even more so than emulated RTC hardware, because it actually requires hypervisor-specific code to run in the guest system.
 
 ## Decision
 
-(TODO: discuss different approaches for provider images and user images)
+From looking at the available options, it becomes apparent that there is no single optimal solution for time synchronization.
+The most precise option is the least portable, but the most widely supported option also requires the most provider-specific configuration.
 
-Independently of the choosen method of clock synchronization, CSPs should make sure that they are available to VMs with as little user interaction as possible.
-This is of course somewhat dependent on the guest operating system, and CSPs should validate that the provided methods of clock synchronization cloud are compatible with the provided cloud images.
-
-The great benefit of Hypervisor-based clock synchronisation is that it works independent of network connectivity.
-If this feature is well supported by the used hypervisor, it should be enabled by the CSP, though CSPs must take care that the time source of the hypervisor is itself synchronized to a precise time source.
-
-CSPs should also provide a local static NTP server that is reachable via a default external network, and should be provided to VMs as vendordata via metadata service or config drive.
-The NTP server can optionally also be provided via DHCP, but not all standard cloud images enable NTP configuration via DHCP.
-
-Injecting NTP servers into subnets is not something that is currently supported by OpenStack, but should be possible to implement in a similar fashion to subnet-DHCP, or the metadata service.
-If this feature becomes available at a later date, CSPs should prefer it to a static local NTP server, as it also supports isolated subnets.
+<!--
+* used method of time sync depends on the available options, but also on the image
+* which option best to target when building a cloud image depends on who is building the image
+  * CSPs can target whichever mechanism their cloud supports best
+  * users may want images that are as portable as possible, so they can reuse them across SCS clouds
+* since interoperability between clouds is the primary motivation for SCS, standardization should focus on portability
+* the most portable option is NTP, so we should standardize an NTP setup!
+* CSPs should still be free to support additionally support more precise methods, like ptp_kvm, and pre-configure them in the images they offer
+* challenges for NTP:
+  * local NTP server must be reachable by guests
+  * advertising NTP servers to customers and instances
+    * should we work on upstream support for providing NTP through the metadata IP
+    * should we work on OVN DHCPv6 support for NTP?
+    * should we standardize a vendor data key for NTP?
+    * should local NTP server IPs be part of a CSP self description?
+-->
 
 ## Consequences
 
