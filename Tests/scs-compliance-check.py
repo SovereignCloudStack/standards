@@ -36,9 +36,9 @@ import yaml
 KEYWORDS = {
     'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables', 'modules', 'timeline'),
     'version': ('version', 'include', 'targets', 'stabilized_at'),
-    'module': ('id', 'run', 'checks', 'url', 'name', 'parameters'),
+    'module': ('id', 'run', 'testcases', 'url', 'name', 'parameters'),
     'run': ('executable', 'env', 'args', 'section'),
-    'check': ('lifetime', 'id'),
+    'testcase': ('lifetime', 'id', 'description'),
     'include': ('id', 'parameters'),
 }
 
@@ -77,11 +77,6 @@ def run_check_tool(executable, args, env=None, cwd=None):
         exe, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         encoding='UTF-8', check=False, env=env, cwd=cwd,
     )
-
-
-def errcode_to_text(err):
-    "translate error code to text"
-    return f"{err} ERRORS" if err else "PASSED"
 
 
 class Config:
@@ -197,6 +192,16 @@ def invoke_check_tool(exe, args, env, cwd):
     return invokation
 
 
+def test_atom(atom: str, tags: list[str]):
+    if atom.startswith("!"):
+        return atom[1:] not in tags
+    return atom in tags
+
+
+def test_selector(selector: list[list[str]], tags: list[str]):
+    return all(any(test_atom(atom, tags) for atom in term) for term in selector)
+
+
 VERDICTS = {'PASS': 1, 'FAIL': -1}
 
 
@@ -279,7 +284,11 @@ def main(argv):
         # each include can be given as a mere string (its id) or as an object with id and parameters
         includes = [{"id": inc} if isinstance(inc, str) else inc for inc in vd["include"]]
         # sanity check: ids must be unique within one version
-        ids = Counter(check["id"] for inc in includes for check in module_lookup[inc["id"]].get("checks", ()))
+        ids = Counter(
+            testcase["id"]
+            for inc in includes
+            for testcase in module_lookup[inc["id"]].get("testcases", ())
+        )
         duplicates = [key for key, value in ids.items() if value > 1]
         if duplicates:
             print(f"duplicate ids in version {vname}: {', '.join(duplicates)}", file=sys.stderr)
@@ -292,7 +301,7 @@ def main(argv):
             module = module_lookup[include['id']]
             check_keywords('module', module)
             if config.tests is not None:
-                matches = [ch for ch in module.get('checks', ()) if config.tests.match(ch['id'])]
+                matches = [ch for ch in module.get('testcases', ()) if config.tests.match(ch['id'])]
                 if not matches:
                     continue
             checks = module.get('run', ())
@@ -327,23 +336,53 @@ def main(argv):
                     printnq("... returned results:")
                 for id_, value in invokation["results"].items():
                     if id_ not in ids:
-                        print(f"invalid id in check {memo_key}: {id_}")
+                        print(f"invalid id in module {include['id']}: {id_}")
                     if id_ in vr:
-                        print(f"id already seen in check {memo_key}: {id_}")
+                        print(f"id already seen in module {include['id']}: {id_}")
                     vr[id_] = {'result': value, 'invocation': memo_key}
-                    print(f"{config.subject} {vname} {id_} = {value}")
+                    printnq(f"{config.subject} {vname} {id_} [{include['id']}] = {value}")
                 abort = invokation["critical"]
                 error = invokation["error"]
                 printnq(f"... returned {error} errors, {abort} aborts")
                 aborts += abort
                 errors += error
+        # a selector is a list of terms,
+        # a term is a list of atoms,
+        # an atom is a string that optionally starts with "!"
+        selectors = [
+          [term_str.split('/') for term_str in sel_str.strip().split()]
+          for sel_str in vd['targets']['main'].split(',')
+        ]
+        selected = [
+          testcase
+          for inc in includes
+          for testcase in module_lookup[inc["id"]].get("testcases", ())
+          if any(test_selector(selector, testcase['tags']) for selector in selectors)
+        ]
+        missing = []
+        failed = []
+        for testcase in selected:
+            id_ = testcase['id']
+            if id_ not in vr:
+                missing.append(testcase)
+            if vr[id_]['result'] != 1:
+                failed.append(testcase)
         # NOTE: the following verdict may be tentative, depending on whether
         # all tests have been run (which in turn depends on chosen sections);
         # the logic to compute the ultimate verdict should be place further downstream,
         # namely where the reports are gathered and evaluated
         printnq("*******************************************************")
-        printnq(f"Verdict for subject {config.subject}, {spec['name']}, "
-                f"version {vname}: {errcode_to_text(aborts + errors)}")
+        print(f"{config.subject} {spec['name']} {vname}: {'FAIL' if failed else 'PASS'}")
+        for testcase in failed:
+            print(f"- FAILED {testcase['id']}")
+            if 'description' in testcase:
+                printnq('  ' + testcase['description'])
+        for testcase in missing:
+            print(f"- MISSING {testcase['id']}")
+            if 'description' in testcase:
+                printnq('  ' + testcase['description'])
+        if missing:
+            print(f"Verdict TENTATIVE!")
         allaborts += aborts
         allerrors += errors
     if not versions:
