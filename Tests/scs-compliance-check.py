@@ -41,6 +41,8 @@ KEYWORDS = {
     'testcase': ('lifetime', 'id', 'description'),
     'include': ('id', 'parameters'),
 }
+TESTCASE_VERDICTS = {'PASS': 1, 'FAIL': -1}
+NIL_RESULT = {'result': 0}
 
 
 def usage(file=sys.stdout):
@@ -197,10 +199,6 @@ def test_selectors(selectors: list[list[list[str]]], tags: list[str]):
     return any(test_selector(selector, tags) for selector in selectors)
 
 
-NIL_RESULT = {'result': 0}
-VERDICTS = {'PASS': 1, 'FAIL': -1}
-
-
 def compute_results(stdout):
     """pick out test results from stdout lines"""
     result = {}
@@ -208,11 +206,89 @@ def compute_results(stdout):
         parts = line.rsplit(':', 1)
         if len(parts) != 2:
             continue
-        value = VERDICTS.get(parts[1].strip().upper())
+        value = TESTCASE_VERDICTS.get(parts[1].strip().upper())
         if value is None:
             continue
         result[parts[0].strip()] = value
     return result
+
+
+def invoke(memo, check, check_cwd, assignment):
+    args = check.get('args', '').format(**assignment)
+    env = {key: value.format(**assignment) for key, value in check.get('env', {}).items()}
+    env_str = " ".join(f"{key}={value}" for key, value in env.items())
+    memo_key = f"{env_str} {check['executable']} {args}".strip()
+    print(f"DEBUG: running {memo_key!r}...", file=sys.stderr)
+    invocation = memo.get(memo_key)
+    if invocation is None:
+        check_env = {**os.environ, **env}
+        invocation = invoke_check_tool(check["executable"], args, check_env, check_cwd)
+        invocation = {
+            'id': str(uuid.uuid4()),
+            'cmdline': memo_key,
+            'results': compute_results(invocation['stdout']),
+            **invocation
+        }
+        # if not config.output:
+        #     printv("\n".join(invocation["stdout"]))
+        #     printnq("\n".join(invocation["stderr"]))
+        memo[memo_key] = invocation
+    return invocation
+
+
+class TestSuite:
+    def __init__(self, name):
+        self.name = name
+        self.checks = []
+        self.testcases = []
+        self.results = {}
+        self.aborts = 0
+
+    def include_module(self, module, parameters, sections=None):
+        self.testcases.extend(module.get('testcases', ()))
+        missing_params = set(module.get('parameters', ())) - set(parameters)
+        if missing_params:
+            print(f"module {module['id']}: missing parameters {', '.join(missing)}")
+            return
+        self.checks.extend(
+            {**check, 'parameters': parameters}
+            for check in module.get('run', ())
+            if sections is None or check.get('section') in sections
+        )
+
+    def run_checks(self, memo, check_cwd, assignment):
+        # sanity check: ids must be unique
+        ids = Counter(testcase["id"] for testcase in self.testcases)
+        duplicates = [key for key, value in ids.items() if value > 1]
+        if duplicates:
+            print(f"duplicate ids in {self.name}: {', '.join(duplicates)}", file=sys.stderr)
+        self.results = {testcase['id']: dict(NIL_RESULT) for testcase in self.testcases}
+        for check in self.checks:
+            invocation = invoke(memo, check, check_cwd, {**check['parameters'], **assignment})
+            # if invocation["results"]:
+            #     printnq("... returned results:")
+            for id_, value in invocation["results"].items():
+                res = self.results.get(id_)
+                if res is None:
+                    print(f"ignoring result invalid id in module {include['id']}: {id_}")
+                    continue
+                if res['result']:
+                    print(f"duplicate result id in module {include['id']}: {id_}")
+                    continue
+                res.update({'result': value, 'invocation': invocation['id']})
+                # printnq(f"{self.name} {id_} = {value}")
+            abort = invocation["critical"]
+            # printnq(f"... returned {abort} aborts")
+            self.aborts += abort
+    
+    def evaluate(self, selectors):
+        by_result = defaultdict(list)
+        for testcase in self.testcases:
+            if not test_selectors(selectors, testcase['tags']):
+                continue
+            result = self.results.get(testcase['id'], NIL_RESULT)['result']
+            by_result[result].append(testcase)
+        return by_result
 
 
 def main(argv):
@@ -247,7 +323,6 @@ def main(argv):
     check_cwd = os.path.dirname(config.arg0) or os.getcwd()
     allaborts = 0
     allerrors = 0
-    critical = 0
     report = {
         # these fields are essential:
         "spec": {
@@ -267,115 +342,65 @@ def main(argv):
             "sections": config.sections,
             "forced_version": config.version or None,
             "forced_tests": None if config.tests is None else config.tests.pattern,
-            "invocations": {},
+            "invocations": [],
         },
     }
     if "prerequisite" in spec:
         print("WARNING: prerequisite not yet implemented!", file=sys.stderr)
     vrs = report["versions"]
-    memo = report["run"]["invocations"]  # memoize check tool results
+    memo = {}  # memoize check tool results
     for vname, validity in versions.items():
+        suite = TestSuite(f"{spec['name']} {vname} ({validity})")
+        if config.sections:
+            suite.name += f" [sections {', '.join(config.sections)}]"
+        if config.tests:
+            suite.name += f" [tests '{config.tests.pattern}']"
+        printnq(f"Testing {suite.name}")
         vd = version_lookup[vname]
         check_keywords('version', vd)
-        # each include can be given as a mere string (its id) or as an object with id and parameters
         includes = [{"id": inc} if isinstance(inc, str) else inc for inc in vd["include"]]
-        testcases = [
-            testcase
-            for inc in includes
-            for testcase in module_lookup[inc["id"]].get("testcases", ())
-        ]
-        # sanity check: ids must be unique within one version
-        ids = Counter(testcase["id"] for testcase in testcases)
-        duplicates = [key for key, value in ids.items() if value > 1]
-        if duplicates:
-            print(f"duplicate ids in version {vname}: {', '.join(duplicates)}", file=sys.stderr)
-        vr = vrs[vname] = {}
-        printnq(f"Testing {spec['name']} version {vname} ({validity})")
-        errors = 0
-        aborts = 0
-        for include in includes:
-            include.setdefault("parameters", {})  # default value to reduce number of possible cases
-            module = module_lookup[include['id']]
-            check_keywords('module', module)
-            if config.tests is not None:
-                matches = [ch for ch in module.get('testcases', ()) if config.tests.match(ch['id'])]
-                if not matches:
-                    continue
+        for inc in vd["include"]:
+            if isinstance(inc, str):
+                inc = {'id': inc}
+            module = module_lookup[inc['id']]
+            # basic sanity
+            testcases = module.get('testcases', ())
             checks = module.get('run', ())
-            if not checks and config.tests is None:
-                printnq(f"WARNING: No check tool specified for {module['id']}", file=sys.stderr)
-            for check in checks:
-                check_keywords('run', check)
-                section = check.get('section')
-                if config.sections and section not in config.sections:
-                    print("skipping run: not in selected sections")
-                    continue
-                assignment = config.assignment
-                missing = set(include['parameters']) - set(module.get('parameters', ()))
-                if missing:
-                    print(f"skipping run: missing parameters {', '.join(missing)}")
-                    continue
-                if "parameters" in include:
-                    assignment = {**assignment, **include['parameters']}
-                args = check.get('args', '').format(**assignment)
-                env = {key: value.format(**assignment) for key, value in check.get('env', {}).items()}
-                env_str = " ".join(f"{key}={value}" for key, value in env.items())
-                memo_key = f"{env_str} {check['executable']} {args}".strip()
-                printnq(f"invoking {memo_key}...")
-                invokation = memo.get(memo_key)
-                if invokation is None:
-                    check_env = {**os.environ, **env}
-                    invokation = invoke_check_tool(check["executable"], args, check_env, check_cwd)
-                    invokation["results"] = compute_results(invokation['stdout'])
-                    if not config.output:
-                        printv("\n".join(invokation["stdout"]))
-                        printnq("\n".join(invokation["stderr"]))
-                    memo[memo_key] = invokation
-                if invokation["results"]:
-                    printnq("... returned results:")
-                for id_, value in invokation["results"].items():
-                    if id_ not in ids:
-                        print(f"invalid id in module {include['id']}: {id_}")
-                    if id_ in vr:
-                        print(f"id already seen in module {include['id']}: {id_}")
-                    vr[id_] = {'result': value, 'invocation': memo_key}
-                    printnq(f"{config.subject} {vname} {id_} [{include['id']}] = {value}")
-                abort = invokation["critical"]
-                error = invokation["error"]
-                printnq(f"... returned {error} errors, {abort} aborts")
-                aborts += abort
-                errors += error
-        # NOTE: the following verdict may be tentative, depending on whether
-        # all tests have been run (which in turn depends on chosen sections);
-        # the logic to compute the ultimate verdict should be place further downstream,
-        # namely where the reports are gathered and evaluated
+            if not testcases or not checks:
+                print(f"NOTE: module {module['id']} missing checks or test cases")
+                continue
+            # Only add checks if they contain desired testcases; however, we need to add the
+            # testcases either way (otherwise we may get a PASS instead of a TENTATIVE pass);
+            # we achieve this by using the `sections` argument in a clever way.
+            sections = config.sections
+            if config.tests and not [ch for ch in testcases if config.tests.match(ch['id'])]:
+                sections = ()
+            suite.include_module(module, inc.get('parameters', {}), sections=sections)
+        suite.run_checks(memo, check_cwd, config.assignment)
+        allaborts += suite.aborts
+        vrs[vname] = suite.results
         printnq("*******************************************************")
         print(f"{config.subject} {spec['name']} {vname}:")
         for tname, target_spec in vd['targets'].items():
-            match_fn = partial(test_selectors, [
-                parse_selector(sel_str)
-                for sel_str in target_spec.split(',')
-            ])
-            selected = [testcase for testcase in testcases if match_fn(testcase['tags'])]
-            by_result = defaultdict(list)
-            for testcase in selected:
-                id_ = testcase['id']
-                result = vr.get(id_, NIL_RESULT)['result']
-                by_result[result].append(testcase)
-            print(f"- {tname}: {'FAIL' if by_result[-1] else 'PASS'}")
-            for result, category in ((-1, 'FAILED'), (0, 'MISSING')):
-                for testcase in by_result[result]:
+            selectors = [parse_selector(sel_str) for sel_str in target_spec.split(',')]
+            by_result = suite.evaluate(selectors)
+            missing, failed = by_result[0], by_result[-1]
+            verdict = 'FAIL' if failed else 'TENTATIVE pass' if missing else 'PASS'
+            if failed or missing:
+                verdict += f" ({len(failed)} failed, {len(missing)} missing)"
+            print(f"- {tname}: {verdict}")
+            allerrors += len(failed)
+            for offenders, category in ((failed, 'FAILED'), (missing, 'MISSING')):
+                if category == 'MISSING' and config.tests:
+                    continue  # do not report missing testcases if a filter was used
+                for testcase in offenders:
                     print(f"  - {category} {testcase['id']}")
                     if 'description' in testcase:
                         printnq('    ' + testcase['description'])
-            if by_result[0]:
-                print("  Verdict TENTATIVE due to missing test cases!")
-        allaborts += aborts
-        allerrors += errors
+    report['run']['invocations'] = list(memo.values())
     if not versions:
         print(f"CRITICAL: No valid version found for {config.checkdate}", file=sys.stderr)
-        critical += 1
-    allaborts += critical  # note: this is after we put the number into the report, so only for return code
+        allaborts += 1  # note: this is after we put the number into the report, so only for return code
     if config.output:
         with open(config.output, 'w', encoding='UTF-8') as file:
             yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)
