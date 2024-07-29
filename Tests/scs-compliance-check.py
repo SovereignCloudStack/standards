@@ -334,14 +334,14 @@ def main(argv):
         # a term is a list of atoms,
         # an atom is a string that optionally starts with "!"
         selectors = [
-          [term_str.split('/') for term_str in sel_str.strip().split()]
-          for sel_str in vd['targets']['main'].split(',')
+            [term_str.split('/') for term_str in sel_str.strip().split()]
+            for sel_str in vd['targets']['main'].split(',')
         ]
         selected = [
-          testcase
-          for inc in includes
-          for testcase in module_lookup[inc["id"]].get("testcases", ())
-          if any(test_selector(selector, testcase['tags']) for selector in selectors)
+            testcase
+            for inc in includes
+            for testcase in module_lookup[inc["id"]].get("testcases", ())
+            if any(test_selector(selector, testcase['tags']) for selector in selectors)
         ]
         missing = []
         failed = []
@@ -366,7 +366,7 @@ def main(argv):
             if 'description' in testcase:
                 printnq('  ' + testcase['description'])
         if missing:
-            print(f"Verdict TENTATIVE!")
+            print("Verdict TENTATIVE!")
         allaborts += aborts
         allerrors += errors
     if not versions:
