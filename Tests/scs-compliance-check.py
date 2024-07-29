@@ -139,22 +139,6 @@ class Config:
         self.arg0 = args[0]
 
 
-def condition_optional(cond, default=False):
-    """
-    check whether condition is in dict cond
-       - If set to mandatory, return False
-       - If set to optional, return True
-       - If set to something else, error out
-       - If unset, return default
-    """
-    value = cond.get("condition")
-    value = {None: default, "optional": True, "mandatory": False}.get(value)
-    if value is None:
-        print(f"ERROR in spec parsing condition: {cond['condition']}", file=sys.stderr)
-        value = default
-    return value
-
-
 def check_keywords(ctx, d):
     valid = KEYWORDS[ctx]
     invalid = [k for k in d if k not in valid]
