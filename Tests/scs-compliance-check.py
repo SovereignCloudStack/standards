@@ -26,7 +26,7 @@ import shlex
 import getopt
 import datetime
 import subprocess
-from collections import Counter
+from collections import Counter, defaultdict
 from functools import partial
 from itertools import chain
 import yaml
@@ -176,6 +176,13 @@ def invoke_check_tool(exe, args, env, cwd):
     return invokation
 
 
+def parse_selector(selector_str: str) -> list[list[str]]:
+    # a selector is a list of terms,
+    # a term is a list of atoms,
+    # an atom is a string that optionally starts with "!"
+    return [term_str.strip().split('/') for term_str in selector_str.split()]
+
+
 def test_atom(atom: str, tags: list[str]):
     if atom.startswith("!"):
         return atom[1:] not in tags
@@ -186,6 +193,11 @@ def test_selector(selector: list[list[str]], tags: list[str]):
     return all(any(test_atom(atom, tags) for atom in term) for term in selector)
 
 
+def test_selectors(selectors: list[list[list[str]]], tags: list[str]):
+    return any(test_selector(selector, tags) for selector in selectors)
+
+
+NIL_RESULT = {'result': 0}
 VERDICTS = {'PASS': 1, 'FAIL': -1}
 
 
@@ -267,12 +279,13 @@ def main(argv):
         check_keywords('version', vd)
         # each include can be given as a mere string (its id) or as an object with id and parameters
         includes = [{"id": inc} if isinstance(inc, str) else inc for inc in vd["include"]]
-        # sanity check: ids must be unique within one version
-        ids = Counter(
-            testcase["id"]
+        testcases = [
+            testcase
             for inc in includes
             for testcase in module_lookup[inc["id"]].get("testcases", ())
-        )
+        ]
+        # sanity check: ids must be unique within one version
+        ids = Counter(testcase["id"] for testcase in testcases)
         duplicates = [key for key, value in ids.items() if value > 1]
         if duplicates:
             print(f"duplicate ids in version {vname}: {', '.join(duplicates)}", file=sys.stderr)
@@ -301,6 +314,7 @@ def main(argv):
                 missing = set(include['parameters']) - set(module.get('parameters', ()))
                 if missing:
                     print(f"skipping run: missing parameters {', '.join(missing)}")
+                    continue
                 if "parameters" in include:
                     assignment = {**assignment, **include['parameters']}
                 args = check.get('args', '').format(**assignment)
@@ -313,8 +327,9 @@ def main(argv):
                     check_env = {**os.environ, **env}
                     invokation = invoke_check_tool(check["executable"], args, check_env, check_cwd)
                     invokation["results"] = compute_results(invokation['stdout'])
-                    printv("\n".join(invokation["stdout"]))
-                    printnq("\n".join(invokation["stderr"]))
+                    if not config.output:
+                        printv("\n".join(invokation["stdout"]))
+                        printnq("\n".join(invokation["stderr"]))
                     memo[memo_key] = invokation
                 if invokation["results"]:
                     printnq("... returned results:")
@@ -330,43 +345,31 @@ def main(argv):
                 printnq(f"... returned {error} errors, {abort} aborts")
                 aborts += abort
                 errors += error
-        # a selector is a list of terms,
-        # a term is a list of atoms,
-        # an atom is a string that optionally starts with "!"
-        selectors = [
-            [term_str.split('/') for term_str in sel_str.strip().split()]
-            for sel_str in vd['targets']['main'].split(',')
-        ]
-        selected = [
-            testcase
-            for inc in includes
-            for testcase in module_lookup[inc["id"]].get("testcases", ())
-            if any(test_selector(selector, testcase['tags']) for selector in selectors)
-        ]
-        missing = []
-        failed = []
-        for testcase in selected:
-            id_ = testcase['id']
-            if id_ not in vr:
-                missing.append(testcase)
-            if vr[id_]['result'] != 1:
-                failed.append(testcase)
         # NOTE: the following verdict may be tentative, depending on whether
         # all tests have been run (which in turn depends on chosen sections);
         # the logic to compute the ultimate verdict should be place further downstream,
         # namely where the reports are gathered and evaluated
         printnq("*******************************************************")
-        print(f"{config.subject} {spec['name']} {vname}: {'FAIL' if failed else 'PASS'}")
-        for testcase in failed:
-            print(f"- FAILED {testcase['id']}")
-            if 'description' in testcase:
-                printnq('  ' + testcase['description'])
-        for testcase in missing:
-            print(f"- MISSING {testcase['id']}")
-            if 'description' in testcase:
-                printnq('  ' + testcase['description'])
-        if missing:
-            print("Verdict TENTATIVE!")
+        print(f"{config.subject} {spec['name']} {vname}:")
+        for tname, target_spec in vd['targets'].items():
+            match_fn = partial(test_selectors, [
+                parse_selector(sel_str)
+                for sel_str in target_spec.split(',')
+            ])
+            selected = [testcase for testcase in testcases if match_fn(testcase['tags'])]
+            by_result = defaultdict(list)
+            for testcase in selected:
+                id_ = testcase['id']
+                result = vr.get(id_, NIL_RESULT)['result']
+                by_result[result].append(testcase)
+            print(f"- {tname}: {'FAIL' if by_result[-1] else 'PASS'}")
+            for result, category in ((-1, 'FAILED'), (0, 'MISSING')):
+                for testcase in by_result[result]:
+                    print(f"  - {category} {testcase['id']}")
+                    if 'description' in testcase:
+                        printnq('    ' + testcase['description'])
+            if by_result[0]:
+                print("  Verdict TENTATIVE due to missing test cases!")
         allaborts += aborts
         allerrors += errors
     if not versions:
