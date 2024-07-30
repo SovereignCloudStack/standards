@@ -345,6 +345,30 @@ class TestSuite:
         return by_result
 
 
+def compile_suite(suite: TestSuite, include: list, module_lookup, sections: tuple, tests: re.Pattern):
+    if sections:
+        suite.name += f" [sections: {', '.join(sections)}]"
+        suite.partial = True
+    if tests:
+        suite.name += f" [tests: '{tests.pattern}']"
+        suite.partial = True
+    for inc in include:
+        if isinstance(inc, str):
+            inc = {'id': inc}
+        module = module_lookup[inc['id']]
+        # basic sanity
+        testcases = module.get('testcases', ())
+        checks = module.get('run', ())
+        if not testcases or not checks:
+            logger.info(f"module {module['id']} missing checks or test cases")
+            continue
+        # always include all testcases (necessary for assessing partial results)
+        suite.include_testcases(module)
+        # only add checks if they contain desired testcases
+        if not tests or any(tests.match(ch['id']) for ch in testcases):
+            suite.include_checks(module, inc.get('parameters', {}), sections=sections)
+
+
 def run_suite(suite: TestSuite, runner: CheckRunner, results: ResultBuilder):
     """run all checks of `suite` using `runner`, collecting `results`"""
     suite.check_sanity()
@@ -375,6 +399,31 @@ def print_report(subject: str, suite: TestSuite, targets: dict, results: dict, v
                     print('    ' + testcase['description'])
 
 
+def create_report(argv, config, spec, versions, invocations):
+    return {
+        # these fields are essential:
+        "spec": {
+            "uuid": spec['uuid'],
+            "name": spec['name'],
+            "url": spec['url'],
+        },
+        "checked_at": datetime.datetime.now(),
+        "reference_date": config.checkdate,
+        "subject": config.subject,
+        "versions": versions,
+        # this field is mostly for debugging:
+        "run": {
+            "uuid": str(uuid.uuid4()),
+            "argv": argv,
+            "assignment": config.assignment,
+            "sections": config.sections,
+            "forced_version": config.version or None,
+            "forced_tests": None if config.tests is None else config.tests.pattern,
+            "invocations": invocations,
+        },
+    }
+
+
 def main(argv):
     """Entry point for the checker"""
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
@@ -396,74 +445,34 @@ def main(argv):
         return 1
     module_lookup = {module["id"]: module for module in spec["modules"]}
     version_lookup = {version["version"]: version for version in spec["versions"]}
+    validity_lookup = max(
+        (entry for entry in spec["timeline"] if entry["date"] <= config.checkdate),
+        key=lambda entry: entry["date"],
+    )["versions"]
     if config.version is None:
-        versions = max(
-            (entry for entry in spec["timeline"] if entry["date"] <= config.checkdate),
-            key=lambda entry: entry["date"],
-        )["versions"]
+        versions = [version_lookup[name] for name in validity_lookup]
     else:
-        versions = {config.version: "effective"}
+        versions = [version_lookup[config.version]]
     check_cwd = os.path.dirname(config.arg0) or os.getcwd()
     runner = CheckRunner(check_cwd, config.assignment, verbosity=config.verbose and 2 or not config.quiet)
-    report = {
-        # these fields are essential:
-        "spec": {
-            "uuid": spec['uuid'],
-            "name": spec['name'],
-            "url": spec['url'],
-        },
-        "checked_at": datetime.datetime.now(),
-        "reference_date": config.checkdate,
-        "subject": config.subject,
-        "versions": {},
-        # this field is mostly for debugging:
-        "run": {
-            "uuid": str(uuid.uuid4()),
-            "argv": argv,
-            "assignment": config.assignment,
-            "sections": config.sections,
-            "forced_version": config.version or None,
-            "forced_tests": None if config.tests is None else config.tests.pattern,
-            "invocations": [],
-        },
-    }
     if "prerequisite" in spec:
         logger.warning("prerequisite not yet implemented!")
-    for vname, validity in versions.items():
+    version_report = {}
+    for version in versions:
+        vname = version['version']
+        validity = validity_lookup.get(vname, 'deprecated')
         suite = TestSuite(f"{spec['name']} {vname} ({validity})")
-        if config.sections:
-            suite.name += f" [sections: {', '.join(config.sections)}]"
-            suite.partial = True
-        if config.tests:
-            suite.name += f" [tests: '{config.tests.pattern}']"
-            suite.partial = True
-        # printnq(f"Testing {suite.name}")
-        vd = version_lookup[vname]
-        for inc in vd["include"]:
-            if isinstance(inc, str):
-                inc = {'id': inc}
-            module = module_lookup[inc['id']]
-            # basic sanity
-            testcases = module.get('testcases', ())
-            checks = module.get('run', ())
-            if not testcases or not checks:
-                logger.info(f"module {module['id']} missing checks or test cases")
-                continue
-            # always include all testcases (necessary for assessing partial results)
-            suite.include_testcases(module)
-            # only add checks if they contain desired testcases
-            if not config.tests or any(config.tests.match(ch['id']) for ch in testcases):
-                suite.include_checks(module, inc.get('parameters', {}), sections=config.sections)
+        compile_suite(suite, version['include'], module_lookup, config.sections, config.tests)
         builder = ResultBuilder(suite.name)
         run_suite(suite, runner, builder)
-        results = report["versions"][vname] = builder.finalize(permissible_ids=suite.ids)
+        results = version_report[vname] = builder.finalize(permissible_ids=suite.ids)
         if not config.quiet:
-            print_report(config.subject, suite, vd['targets'], results, verbose=config.verbose)
-    report['run']['invocations'] = runner.get_invocations()
+            print_report(config.subject, suite, version['targets'], results, verbose=config.verbose)
     if not versions:
         logger.critical(f"No valid version found for {config.checkdate}", file=sys.stderr)
         runner.num_abort += 1
     if config.output:
+        report = create_report(argv, config, spec, version_report, runner.get_invocations())
         with open(config.output, 'w', encoding='UTF-8') as fileobj:
             yaml.safe_dump(report, fileobj, default_flow_style=False, sort_keys=False)
     return min(127, runner.num_abort + (0 if config.critical_only else runner.num_error))
