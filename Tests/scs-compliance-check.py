@@ -301,7 +301,7 @@ class TestSuite:
     def include_checks(self, module, parameters, sections=None):
         missing_params = set(module.get('parameters', ())) - set(parameters)
         if missing_params:
-            logger.warning(f"module {module['id']}: missing parameters {', '.join(missing)}")
+            logger.warning(f"module {module['id']}: missing parameters {', '.join(missing_params)}")
             return
         self.checks.extend(
             {**check, 'parameters': parameters}
@@ -400,7 +400,6 @@ def main(argv):
         # printnq(f"Testing {suite.name}")
         vd = version_lookup[vname]
         check_keywords('version', vd)
-        includes = [{"id": inc} if isinstance(inc, str) else inc for inc in vd["include"]]
         for inc in vd["include"]:
             if isinstance(inc, str):
                 inc = {'id': inc}
