@@ -27,7 +27,6 @@ import getopt
 import datetime
 import subprocess
 from collections import Counter, defaultdict
-from functools import partial
 from itertools import chain
 import logging
 import yaml
@@ -38,10 +37,10 @@ logger = logging.getLogger(__name__)
 # valid keywords for various parts of the spec, to be checked using `check_keywords`
 KEYWORDS = {
     'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables', 'modules', 'timeline'),
-    'version': ('version', 'include', 'targets', 'stabilized_at'),
-    'module': ('id', 'run', 'testcases', 'url', 'name', 'parameters'),
+    'versions': ('version', 'include', 'targets', 'stabilized_at'),
+    'modules': ('id', 'run', 'testcases', 'url', 'name', 'parameters'),
     'run': ('executable', 'env', 'args', 'section'),
-    'testcase': ('lifetime', 'id', 'description'),
+    'testcases': ('lifetime', 'id', 'description', 'tags'),
     'include': ('id', 'parameters'),
 }
 TESTCASE_VERDICTS = {'PASS': 1, 'FAIL': -1}
@@ -149,11 +148,28 @@ class Config:
         self.arg0 = args[0]
 
 
-def check_keywords(ctx, d):
-    valid = KEYWORDS[ctx]
+def check_keywords(ctx, d, keywords=KEYWORDS):
+    """
+    Recursively check `d` (usually a `dict`, but maybe a `list` or a `tuple`) for correctness.
+
+    Here, correctness means that the dict may only use keywords as given via `keywords`.
+    """
+    valid = keywords.get(ctx)
+    if valid is None:
+        return  # stop recursion
+    if isinstance(d, (list, tuple)):
+        for v in d:
+            check_keywords(ctx, v, keywords=keywords)
+        return
+    if not isinstance(d, dict):
+        return
     invalid = [k for k in d if k not in valid]
     if invalid:
-        logger.error(f"{ctx} uses unknown keywords: {','.join(invalid)}", file=sys.stderr)
+        logger.error(f"{ctx} uses unknown keywords: {','.join(invalid)}")
+    for k, v in d.items():
+        if k not in keywords:
+            continue
+        check_keywords(k, v, keywords=keywords)
     return len(invalid)
 
 
@@ -227,6 +243,7 @@ class CheckRunner:
         self.assignment = assignment
         self.memo = {}
         self.num_abort = 0
+        self.num_error = 0
         self.verbosity = verbosity
 
     def run(self, check):
@@ -248,11 +265,15 @@ class CheckRunner:
             }
             if self.verbosity > 1 and invocation["stdout"]:
                 print("\n".join(invocation["stdout"]))
-            if self.verbosity > 0 and invocation["stderr"]:
+            # the following check used to be "> 0", but this is quite verbose...
+            if self.verbosity > 1 and invocation["stderr"]:
                 print("\n".join(invocation["stderr"]))
             self.memo[memo_key] = invocation
         logger.debug(f".. rc {invocation['rc']}, {invocation['critical']} critical, {invocation['error']} error")
         self.num_abort += invocation["critical"]
+        self.num_error += invocation["error"]
+        # count failed testcases because they need not be reported redundantly on the error channel
+        self.num_error + len([value for value in invocation['results'].values() if value < 0])
         return invocation
 
     def get_invocations(self):
@@ -290,7 +311,7 @@ class TestSuite:
         self.testcases = []
         self.ids = Counter()
         self.results = {}
-        self.aborts = 0
+        self.partial = False
 
     def check_sanity(self):
         # sanity check: ids must be unique
@@ -333,6 +354,27 @@ def run_suite(suite: TestSuite, runner: CheckRunner, results: ResultBuilder):
             results.record(id_, result=value, invocation=invocation['id'])
 
 
+def print_report(subject: str, suite: TestSuite, targets: dict, results: dict, verbose=False):
+    if verbose:
+        print("********" * 10)
+    print(f"{subject} {suite.name}:")
+    for tname, target_spec in targets.items():
+        selectors = [parse_selector(sel_str) for sel_str in target_spec.split(',')]
+        by_result = suite.evaluate(results, selectors)
+        missing, failed = by_result[0], by_result[-1]
+        verdict = 'FAIL' if failed else 'TENTATIVE pass' if missing else 'PASS'
+        if failed or missing:
+            verdict += f" ({len(failed)} failed, {len(missing)} missing)"
+        print(f"- {tname}: {verdict}")
+        for offenders, category in ((failed, 'FAILED'), (missing, 'MISSING')):
+            if category == 'MISSING' and suite.partial:
+                continue  # do not report each missing testcase if a filter was used
+            for testcase in offenders:
+                print(f"  - {category} {testcase['id']}")
+                if verbose and 'description' in testcase:
+                    print('    ' + testcase['description'])
+
+
 def main(argv):
     """Entry point for the checker"""
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
@@ -345,11 +387,9 @@ def main(argv):
     if not config.subject:
         logger.critical("You need pass --subject=SUBJECT.")
         return 1
-    printv = suppress if not config.verbose else partial(print, file=sys.stderr)
-    printnq = suppress if config.quiet else partial(print, file=sys.stderr)
     with open(config.arg0, "r", encoding="UTF-8") as specfile:
         spec = yaml.load(specfile, Loader=yaml.SafeLoader)
-    check_keywords('spec', spec)
+    check_keywords('spec', spec)  # super simple syntax check (recursive)
     missing_vars = [v for v in spec.get("variables", ()) if v not in config.assignment]
     if missing_vars:
         logger.critical(f"Missing variable assignments (via -a) for: {', '.join(missing_vars)}")
@@ -389,17 +429,16 @@ def main(argv):
     }
     if "prerequisite" in spec:
         logger.warning("prerequisite not yet implemented!")
-    vrs = report["versions"]
-    num_error = 0
     for vname, validity in versions.items():
         suite = TestSuite(f"{spec['name']} {vname} ({validity})")
         if config.sections:
             suite.name += f" [sections: {', '.join(config.sections)}]"
+            suite.partial = True
         if config.tests:
             suite.name += f" [tests: '{config.tests.pattern}']"
+            suite.partial = True
         # printnq(f"Testing {suite.name}")
         vd = version_lookup[vname]
-        check_keywords('version', vd)
         for inc in vd["include"]:
             if isinstance(inc, str):
                 inc = {'id': inc}
@@ -417,35 +456,17 @@ def main(argv):
                 suite.include_checks(module, inc.get('parameters', {}), sections=config.sections)
         builder = ResultBuilder(suite.name)
         run_suite(suite, runner, builder)
-        results = vrs[vname] = builder.finalize(permissible_ids=suite.ids)
-        printv("********" * 10)
-        printnq(f"{config.subject} {suite.name}:")
-        for tname, target_spec in vd['targets'].items():
-            selectors = [parse_selector(sel_str) for sel_str in target_spec.split(',')]
-            by_result = suite.evaluate(results, selectors)
-            missing, failed = by_result[0], by_result[-1]
-            verdict = 'FAIL' if failed else 'TENTATIVE pass' if missing else 'PASS'
-            if failed or missing:
-                verdict += f" ({len(failed)} failed, {len(missing)} missing)"
-            printnq(f"- {tname}: {verdict}")
-            if tname == 'main':
-                num_error += len(failed)
-            for offenders, category in ((failed, 'FAILED'), (missing, 'MISSING')):
-                if category == 'MISSING' and (config.sections or config.tests):
-                    continue  # do not report missing testcases if a filter was used
-                for testcase in offenders:
-                    printnq(f"  - {category} {testcase['id']}")
-                    if 'description' in testcase:
-                        printv('    ' + testcase['description'])
+        results = report["versions"][vname] = builder.finalize(permissible_ids=suite.ids)
+        if not config.quiet:
+            print_report(config.subject, suite, vd['targets'], results, verbose=config.verbose)
     report['run']['invocations'] = runner.get_invocations()
-    num_abort = runner.num_abort
     if not versions:
         logger.critical(f"No valid version found for {config.checkdate}", file=sys.stderr)
-        num_abort += 1
+        runner.num_abort += 1
     if config.output:
-        with open(config.output, 'w', encoding='UTF-8') as file:
-            yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)
-    return min(127, num_abort + (0 if config.critical_only else num_error))
+        with open(config.output, 'w', encoding='UTF-8') as fileobj:
+            yaml.safe_dump(report, fileobj, default_flow_style=False, sort_keys=False)
+    return min(127, runner.num_abort + (0 if config.critical_only else runner.num_error))
 
 
 if __name__ == "__main__":
