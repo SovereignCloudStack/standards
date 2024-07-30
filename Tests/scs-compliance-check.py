@@ -388,7 +388,7 @@ def main(argv):
         },
     }
     if "prerequisite" in spec:
-        print("WARNING: prerequisite not yet implemented!", file=sys.stderr)
+        logger.warning("prerequisite not yet implemented!")
     vrs = report["versions"]
     num_error = 0
     for vname, validity in versions.items():
@@ -418,7 +418,7 @@ def main(argv):
                 suite.include_checks(module, inc.get('parameters', {}), sections=config.sections)
         builder = ResultBuilder(suite.name)
         run_suite(suite, runner, builder)
-        results = vrs[vname] = builder.finalize()
+        results = vrs[vname] = builder.finalize(permissible_ids=suite.ids)
         printv("********" * 10)
         printnq(f"{config.subject} {suite.name}:")
         for tname, target_spec in vd['targets'].items():
@@ -437,7 +437,7 @@ def main(argv):
                 for testcase in offenders:
                     printnq(f"  - {category} {testcase['id']}")
                     if 'description' in testcase:
-                        printnq('    ' + testcase['description'])
+                        printv('    ' + testcase['description'])
     report['run']['invocations'] = runner.get_invocations()
     num_abort = runner.num_abort
     if not versions:
