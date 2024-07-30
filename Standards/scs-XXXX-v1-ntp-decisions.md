@@ -88,21 +88,22 @@ Hyper-V also offers time synchronization through a PTP device file managed by it
 
 Paravirtualized time synchronization has the benefit of generally offering the highest precision.
 Like RTC clock emulation, it also works independently of the guest system's network connectivity.
-The main drawback is the dependency on a specific hypervisor, even more so than emulated RTC hardware, because it actually requires hypervisor-specific code to run in the guest system.
+The main drawback is the dependency on a specific combination of hypervisor and guest operating system, because it requires hypervisor-specific drivers to run in the guest.
 
 ## Decision
 
 From looking at the available options, it becomes apparent that there is no single optimal solution for time synchronization.
 The most precise option is the least portable, but the most widely supported option also requires the most provider-specific configuration.
 
+The aim of SCS is to improve interoperability between Openstack clouds, so the preferable standard solution is one that works across a wide range of setups.
+This perspective clearly favours NTP as a standardized method of time synchronization, because of it's wide support in cloud images and it's independence from other components, such as the hypervisor.
+
+However it is still useful for a CSP to offer less portable, but more precise methods of time synchronization, especially if they are integrated into the default cloud images offered by the CSP.
+
+So, we should standardize a portable NTP setup, that users can develop images against which will work well in any SCS cloud.
+We should not try to prevent CSPs from supporting paravirtualized, or other methods of time synchronization which may offer significant benefits over NTP.
+
 <!--
-* used method of time sync depends on the available options, but also on the image
-* which option best to target when building a cloud image depends on who is building the image
-  * CSPs can target whichever mechanism their cloud supports best
-  * users may want images that are as portable as possible, so they can reuse them across SCS clouds
-* since interoperability between clouds is the primary motivation for SCS, standardization should focus on portability
-* the most portable option is NTP, so we should standardize an NTP setup!
-* CSPs should still be free to support additionally support more precise methods, like ptp_kvm, and pre-configure them in the images they offer
 * challenges for NTP:
   * local NTP server must be reachable by guests
   * advertising NTP servers to customers and instances
@@ -111,6 +112,7 @@ The most precise option is the least portable, but the most widely supported opt
     * should we standardize a vendor data key for NTP?
     * should local NTP server IPs be part of a CSP self description?
 -->
+<!-- https://docs.openstack.org/nova/latest/admin/configuration/hypervisors.html -->
 
 ## Consequences
 
