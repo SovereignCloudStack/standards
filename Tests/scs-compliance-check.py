@@ -443,6 +443,8 @@ def main(argv):
     if missing_vars:
         logger.critical(f"Missing variable assignments (via -a) for: {', '.join(missing_vars)}")
         return 1
+    if "prerequisite" in spec:
+        logger.warning("prerequisite not yet implemented!")
     module_lookup = {module["id"]: module for module in spec["modules"]}
     version_lookup = {version["version"]: version for version in spec["versions"]}
     validity_lookup = max(
@@ -455,8 +457,6 @@ def main(argv):
         versions = [version_lookup[config.version]]
     check_cwd = os.path.dirname(config.arg0) or os.getcwd()
     runner = CheckRunner(check_cwd, config.assignment, verbosity=config.verbose and 2 or not config.quiet)
-    if "prerequisite" in spec:
-        logger.warning("prerequisite not yet implemented!")
     version_report = {}
     for version in versions:
         vname = version['version']
