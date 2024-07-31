@@ -68,8 +68,28 @@ modules:
       - executable: ./iaas/entropy/entropy-check.py
         args: -c {os_cloud} -d
     testcases:
-      # the following list of checks is in line with the "testing notes" found in
-      # https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing
+      - id: entropy-check-flavor-properties
+        tags: []  # don't use this testcase, but list it anyway because the script will output a result
+      - id: entropy-check-image-properties
+        tags: []  # don't use this testcase, but list it anyway because the script will output a result
+      - id: entropy-check-rngd
+        tags: []  # don't use this testcase, but list it anyway because the script will output a result
+      - id: entropy-check-entropy-avail
+        tags: []  # don't use this testcase, but list it anyway because the script will output a result
+      - id: entropy-check-fips-test
+        tags: []  # don't use this testcase, but list it anyway because the script will output a result
+      - id: entropy-check
+        tags: [mandatory]
+        description: |
+          The environment fulfills all requirements of
+          https://docs.scs.community/standards/scs-0101-v1-entropy
+  - id: scs-0101-v1.1
+    name: Entropy v1
+    url: https://docs.scs.community/standards/scs-0101-v1-entropy
+    run:
+      - executable: ./iaas/entropy/entropy-check.py
+        args: -c {os_cloud} -d
+    testcases:
       - id: entropy-check-flavor-properties
         tags: [recommended]
         description: |
@@ -95,6 +115,8 @@ modules:
         description: |
           A test instance passes the "FIPS test"; see
           https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors
+      - id: entropy-check
+        tags: []  # don't use this testcase, but list it anyway because the script will output a result
   - id: scs-0102-v1
     name: Image metadata v1
     url: https://docs.scs.community/standards/scs-0102-v1-image-metadata
