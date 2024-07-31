@@ -197,17 +197,22 @@ async def main(argv):
     try:
         config = initialize_config(parse_arguments(argv))
     except (OSError, ConfigException, HelpException) as e:
-        if hasattr(e, 'message'):
-            logger.error(e.message)
+        logger.critical("%s", e)
         print_usage()
         return 1
 
-    nodes = await get_k8s_cluster_labelled_nodes(
-        config.kubeconfig,
-        LABELS + ("node-role.kubernetes.io/control-plane", )
-    )
+    try:
+        nodes = await get_k8s_cluster_labelled_nodes(
+            config.kubeconfig,
+            LABELS + ("node-role.kubernetes.io/control-plane", )
+        )
+    except BaseException as e:
+        logger.critical("%s", e)
+        return 1        
 
-    return check_nodes(nodes)
+    return_code = check_nodes(nodes)
+    print("node-distribution-check: " + ('PASS', 'FAIL')[int(bool(return_code))])
+    return return_code
 
 
 if __name__ == "__main__":
