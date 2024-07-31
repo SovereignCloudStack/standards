@@ -208,7 +208,7 @@ async def main(argv):
         )
     except BaseException as e:
         logger.critical("%s", e)
-        return 1        
+        return 1
 
     return_code = check_nodes(nodes)
     print("node-distribution-check: " + ('PASS', 'FAIL')[int(bool(return_code))])
