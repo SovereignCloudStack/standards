@@ -54,7 +54,7 @@ backwards compatible with the previous minor version of this standard, where `sc
 "name according to naming standard vN". We abandon this former interpretation for two reasons:
 
 1. the naming standards admit multiple (even many) names for the same flavor, and we want to provide a means
-   of advertising more than one of them (said standards recommend using two),
+   of advertising more than one of them (said standards recommend using two: a short one and a long one),
 2. the same flavor name may be valid according to multiple versions at the same time; for instance,
    `SCS-4V-16` is valid for both [scs-0100-v2](scs-0100-v2-flavor-naming.md) and
    [scs-0100-v3](scs-0100-v3-flavor-naming.md), and, since it does not use any extension, it will be valid
