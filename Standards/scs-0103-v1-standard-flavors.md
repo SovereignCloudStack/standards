@@ -33,8 +33,8 @@ to have a guaranteed set of flavors available on all SCS clouds, so these need n
 The following extra specs are recognized, together with the respective semantics:
 
 - `scs:name-vN=NAME` (where `N` is a positive integer, and `NAME` is some string) means that
-  `NAME` is a valid name for this flavor according to (any) one of the SCS standards `scs-0100-vM`, i.e.,
-  the major version `M` of the standard on flavor naming.
+  `NAME` is a valid name for this flavor according to any major version of the [SCS standard on
+  flavor naming](https://docs.scs.community/standards/iaas/scs-0100).
 - `scs:cpu-type=shared-core` means that _at least 20% of a core in >99% of the time_,
   measured over the course of one month (1% is 7,2 h/month). The `cpu-type=shared-core`
   corresponds to the `V` cpu modifier in the [flavor-naming spec](./scs-0100-v3-flavor-naming.md),
