@@ -14,7 +14,7 @@ description: |
 
 ## Introduction
 
-This is v1.1 of the standard that lifts the following restriction regarding the property `scs:name-vN`:
+This is v1.1 of the standard, which lifts the following restriction regarding the property `scs:name-vN`:
 this property may now be used on any flavor, rather than standard flavors only. In addition, the "vN" is
 now interpreted as "name variant N" instead of "version N of the naming standard". Note that this change
 is indeed compliance-preserving.
