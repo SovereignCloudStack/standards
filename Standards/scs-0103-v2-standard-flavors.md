@@ -16,7 +16,8 @@ description: |
 
 This document is a revision of [scs-0103-v1](scs-0103-v1-standard-flavors.md) that lifts the following
 restriction regarding the property `scs:name-vN`: this property may now be used on any flavor, rather than
-standard flavors only. In addition, the new property `scs:name-v3` is now required for every standard flavor.
+standard flavors only. In addition, the "vN" is now interpreted as "name variant N" instead of "version N
+of the naming standard".
 
 ## Motivation
 
@@ -31,9 +32,9 @@ to have a guaranteed set of flavors available on all SCS clouds, so these need n
 
 The following extra specs are recognized, together with the respective semantics:
 
-- `scs:name-vN=NAME` (where `N` is `1`, `2`, or `3`, and `NAME` is some string) means that
-  `NAME` is a valid name for this flavor according to the SCS standard `scs-0100-vN`, i.e.,
-  the major version `N` of the standard on flavor naming.
+- `scs:name-vN=NAME` (where `N` is a natural number, and `NAME` is some string) means that
+  `NAME` is a valid name for this flavor according to (any) one of the SCS standards `scs-0100-vM`, i.e.,
+  the major version `M` of the standard on flavor naming.
 - `scs:cpu-type=shared-core` means that _at least 20% of a core in >99% of the time_,
   measured over the course of one month (1% is 7,2 h/month). The `cpu-type=shared-core`
   corresponds to the `V` cpu modifier in the [flavor-naming spec](./scs-0100-v3-flavor-naming.md),
@@ -47,15 +48,17 @@ The following extra specs are recognized, together with the respective semantics
 
 Whenever ANY of these are present on ANY flavor, the corresponding semantics must be satisfied.
 
-When `scs:name-vN` is present for some `N`, then also `scs:name-vM` MUST be present for all `M`.
-For example, if we have `scs:name-v3=SCS-4V-16`, then we must also have `scs:name-v2=SCS-4V-16` and
-`scs:name-v1=SCS-4V:16`; see [scs-0100-v3](scs-0100-v3-flavor-naming.md),
-[scs-0100-v2](scs-0100-v2-flavor-naming.md), and [scs-0100-v1](scs-0100-v1-flavor-naming.md) for reference.
+The property `scs:name-vN` is to be interpreted as "name variant N", and if the property is present for
+some value N, then `scs:name-vM` must also be present for 1 <= M < N. This name scheme
+is meant to be backwards compatible with the previous version of this standard, where `scs:name-vN` is
+interpreted as "name according to naming standard vN". We abandon this interpretation here for two reasons:
 
-We note that this list of properties is not exhaustive; other SCS standards my introduce further properties.
-For instance, the `scs:name-vN` property here is restricted to those major versions of the naming standard
-that precede this text. When we create a new major version, we shall have it introduce `scs:name-vN` for
-suitable `N`, rather than relying on an update to this standard.
+1. these standards admit multiple (even many) names for the same flavor, and we want to provide a means of
+   advertising more than one of them (said standards recommend using two),
+2. the same flavor name may be valid according to multiple versions at the same time; for instance,
+   `SCS-4V-16` is valid for both [scs-0100-v2](scs-0100-v2-flavor-naming.md) and
+   [scs-0100-v3](scs-0100-v3-flavor-naming.md), and, since it does not use any extension, it will be valid
+   for any future version that only changes the extensions, such as the GPU vendor and architecture.
 
 ## Standard SCS flavors
 
@@ -108,7 +111,7 @@ precisely the corresponding figures in the flavor.
 In addition, the following properties must be set (in the `extra_specs`):
 
 - `scs:name-v1` to the recommended name, but with each dash AFTER the first one replaced by a colon,
-- `scs:name-v2` and `scs:name-v3` to the recommended name,
+- `scs:name-v2` to the recommended name,
 - `scs:cpu-type` to `shared-core` or `crowded-core`, reflecting the vCPU type,
 - `scs:disk0-type` not set if no disk is provided, otherwise set to `ssd` or some other
   value, reflecting the disk type.
@@ -158,7 +161,8 @@ create all standard, mandatory SCS flavors for you. It takes input that can be g
 ## Previous standard versions
 
 [Version 1](scs-0103-v1-standard-flavors.md) allowed the property `scs:name-vN`
-for standard flavors only, and it didn't recognize nor require `scs:name-v3`.
+for standard flavors only, and it interpreted "vN" as "version N of the naming standard"
+instead of just "name variant N".
 
 The list of standard flavors used to be part of the flavor naming standard up until
 [version 3](scs-0100-v3-flavor-naming.md). The following changes have been made to
