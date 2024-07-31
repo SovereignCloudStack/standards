@@ -48,9 +48,8 @@ The following extra specs are recognized, together with the respective semantics
 
 Whenever ANY of these are present on ANY flavor, the corresponding semantics must be satisfied.
 
-The property `scs:name-vN` is to be interpreted as "name variant N", and if the property is present for
-some value N, then `scs:name-vM` must also be present for 1 <= M < N. This name scheme is meant to be
-backwards compatible with the previous minor version of this standard, where `scs:name-vN` is interpreted as
+The property `scs:name-vN` is to be interpreted as "name variant N". This name scheme is designed to be
+backwards compatible with v1.0 of this standard, where `scs:name-vN` is interpreted as
 "name according to naming standard vN". We abandon this former interpretation for two reasons:
 
 1. the naming standards admit multiple (even many) names for the same flavor, and we want to provide a means
@@ -59,6 +58,9 @@ backwards compatible with the previous minor version of this standard, where `sc
    `SCS-4V-16` is valid for both [scs-0100-v2](scs-0100-v2-flavor-naming.md) and
    [scs-0100-v3](scs-0100-v3-flavor-naming.md), and, since it does not use any extension, it will be valid
    for any future version that only changes the extensions, such as the GPU vendor and architecture.
+
+It is not required to use consecutive numbers to number the name variants. This way, it becomes easier
+to remove a single variant (the others wouldn't need to be renamed to "close the gap").
 
 ## Standard SCS flavors
 
