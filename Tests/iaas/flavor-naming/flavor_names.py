@@ -554,7 +554,6 @@ def flavorname_to_dict(flavorname: Flavorname) -> dict:
         'ram': flavorname.cpuram.ram,
         'name-v1': SyntaxV1.from_v2(name_v2),
         'name-v2': name_v2,
-        'name-v3': name_v2,
     }
     if flavorname.disk:
         result['disk'] = flavorname.disk.disksize
