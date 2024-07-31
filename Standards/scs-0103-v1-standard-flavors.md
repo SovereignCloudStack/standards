@@ -14,6 +14,11 @@ description: |
 
 ## Introduction
 
+This is v1.1 of the standard that lifts the following restriction regarding the property `scs:name-vN`:
+this property may now be used on any flavor, rather than standard flavors only. In addition, the "vN" is
+now interpreted as "name variant N" instead of "version N of the naming standard". Note that this change
+is indeed compliance-preserving.
+
 ## Motivation
 
 In OpenStack environments there is a need to define different flavors for instances.
@@ -27,9 +32,9 @@ to have a guaranteed set of flavors available on all SCS clouds, so these need n
 
 The following extra specs are recognized, together with the respective semantics:
 
-- `scs:name-vN=NAME` (where `N` is `1` or `2`, and `NAME` is some string) means that the
-  flavor is one of the
-  standard SCS flavors, and the requirements of Section "Standard SCS flavors" below apply.
+- `scs:name-vN=NAME` (where `N` is a natural number, and `NAME` is some string) means that
+  `NAME` is a valid name for this flavor according to (any) one of the SCS standards `scs-0100-vM`, i.e.,
+  the major version `M` of the standard on flavor naming.
 - `scs:cpu-type=shared-core` means that _at least 20% of a core in >99% of the time_,
   measured over the course of one month (1% is 7,2 h/month). The `cpu-type=shared-core`
   corresponds to the `V` cpu modifier in the [flavor-naming spec](./scs-0100-v3-flavor-naming.md),
@@ -42,6 +47,18 @@ The following extra specs are recognized, together with the respective semantics
   those with `diskN-type=network` can be expected to support live-migration.
 
 Whenever ANY of these are present on ANY flavor, the corresponding semantics must be satisfied.
+
+The property `scs:name-vN` is to be interpreted as "name variant N", and if the property is present for
+some value N, then `scs:name-vM` must also be present for 1 <= M < N. This name scheme is meant to be
+backwards compatible with the previous minor version of this standard, where `scs:name-vN` is interpreted as
+"name according to naming standard vN". We abandon this former interpretation for two reasons:
+
+1. the naming standards admit multiple (even many) names for the same flavor, and we want to provide a means
+   of advertising more than one of them (said standards recommend using two),
+2. the same flavor name may be valid according to multiple versions at the same time; for instance,
+   `SCS-4V-16` is valid for both [scs-0100-v2](scs-0100-v2-flavor-naming.md) and
+   [scs-0100-v3](scs-0100-v3-flavor-naming.md), and, since it does not use any extension, it will be valid
+   for any future version that only changes the extensions, such as the GPU vendor and architecture.
 
 ## Standard SCS flavors
 
