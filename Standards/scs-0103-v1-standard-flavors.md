@@ -54,13 +54,14 @@ backwards compatible with v1.0 of this standard, where `scs:name-vN` is interpre
 
 1. the naming standards admit multiple (even many) names for the same flavor, and we want to provide a means
    of advertising more than one of them (said standards recommend using two: a short one and a long one),
-2. the same flavor name may be valid according to multiple versions at the same time; for instance,
+2. the same flavor name may be valid according to multiple versions at the same time, which would lead to
+   a pollution of the extra specs with redundant properties; for instance, the name
    `SCS-4V-16` is valid for both [scs-0100-v2](scs-0100-v2-flavor-naming.md) and
    [scs-0100-v3](scs-0100-v3-flavor-naming.md), and, since it does not use any extension, it will be valid
    for any future version that only changes the extensions, such as the GPU vendor and architecture.
 
-It is not required to use consecutive numbers to number the name variants. This way, it becomes easier
-to remove a single variant (the others wouldn't need to be renamed to "close the gap").
+Note that it is not required to use consecutive numbers to number the name variants.
+This way, it becomes easier to remove a single variant (no "closing the gap" required).
 
 ## Standard SCS flavors
 
