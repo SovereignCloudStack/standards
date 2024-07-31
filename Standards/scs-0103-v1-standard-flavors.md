@@ -144,13 +144,18 @@ instance life cycle.)
 
 ## Conformance Tests
 
-The script `flavors-openstack.py` will read the lists of mandatory and recommended flavors
+The script [`flavors-openstack.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/standard-flavors/flavors-openstack.py)
+will read the lists of mandatory and recommended flavors
 from a yaml file provided as command-line argument, connect to an OpenStack installation,
-and check whether the flavors are present and their extra specs are correct. Missing
-flavors will be reported on various logging channels: error for mandatory, info for
+and check whether the flavors are present and their extra specs are correct.
+
+Missing flavors will be reported on various logging channels: error for mandatory, warning for
 recommended flavors. Incorrect extra specs will be reported as error in any case.
 The return code will be non-zero if the test could not be performed or if any error was
 reported.
+
+The script does not check whether a name given via `scs:name-vN` is indeed valid according
+to any major version of the SCS standard on flavor naming.
 
 ## Operational tooling
 
