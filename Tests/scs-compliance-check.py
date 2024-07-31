@@ -361,7 +361,6 @@ def compile_suite(suite: TestSuite, include: list, module_lookup, sections: tupl
         checks = module.get('run', ())
         if not testcases or not checks:
             logger.info(f"module {module['id']} missing checks or test cases")
-            continue
         # always include all testcases (necessary for assessing partial results)
         suite.include_testcases(module)
         # only add checks if they contain desired testcases
