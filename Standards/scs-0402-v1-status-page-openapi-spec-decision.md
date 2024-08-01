@@ -64,6 +64,12 @@ Requests to updating operations SHOULD contain the minimum of the changed fields
 
 The endpoints are named in plural form, even when handling single objects, to keep uniform paths.
 
+### Incidents
+
+Incidents are the main information bearer at the status page. They hold data to describe an incident, that is happening or has happened, all stages the incident progresses through and all updates related to the resolution of the incident.
+
+An incident is considered active, while no endpoint was set.
+
 ### Phase list
 
 The list of phases that an incident can go through has a crucial order. So it MUST be handled as the given list.
