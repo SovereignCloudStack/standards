@@ -1,9 +1,8 @@
 # Testsuite for SCS standards
 
 The tool `scs-compliance-check.py` parses a
-[compliance definition file](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0003-v1-sovereign-cloud-standards-yaml.md)
-and executes the test executables referenced in there for
-the specified layer (`iaas` or `kaas`).
+[certificate scope specification](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0003-v1-sovereign-cloud-standards-yaml.md)
+and executes the test executables referenced in there.
 
 ## Local execution (Linux, BSD, ...)
 
@@ -26,7 +25,7 @@ With a cloud environment configured in your `~/.config/openstack/clouds.yaml`
 and `secure.yaml`, then run
 
 ```shell
-./scs-compliance-check.py  -a os_cloud=CLOUDNAME -s CLOUDNAME scs-compatible-iaas.yaml
+./scs-compliance-check.py -s CLOUDNAME -a os_cloud=CLOUDNAME scs-compatible-iaas.yaml
 ```
 
 Replace `CLOUDNAME` with the name of your cloud environment as
@@ -47,17 +46,23 @@ fail if it isn't set.
 ## Usage information (help output)
 
 ```text
-Usage: scs-compliance-check.py [options] compliance-spec.yaml
-Options: -v/--verbose: More verbose output
- -q/--quiet: Don't output anything but errors
- -d/--date YYYY-MM-DD: Check standards valid on specified date instead of today
- -V/--version VERS: Force version VERS of the standard (instead of deriving from date)
- -s/--subject SUBJECT: Name of the subject (cloud) under test, for the report
- -S/--sections SECTION_LIST: comma-separated list of sections to test (default: all sections)
- -t/--tests REGEX: regular expression to select individual tests
- -o/--output REPORT_PATH: Generate yaml report of compliance check under given path
- -C/--critical-only: Only return critical errors in return code
- -a/--assign KEY=VALUE: assign variable to be used for the run (as required by yaml file)
+Usage: scs-compliance-check.py [options] SPEC_YAML
+
+Arguments:
+  SPEC_YAML: yaml file specifying the certificate scope
+
+Options:
+  -v/--verbose: More verbose output
+  -q/--quiet: Don't output anything but errors
+     --debug: enables DEBUG logging channel
+  -d/--date YYYY-MM-DD: Check standards valid on specified date instead of today
+  -V/--version VERS: Force version VERS of the standard (instead of deriving from date)
+  -s/--subject SUBJECT: Name of the subject (cloud) under test, for the report
+  -S/--sections SECTION_LIST: comma-separated list of sections to test (default: all sections)
+  -t/--tests REGEX: regular expression to select individual tests
+  -o/--output REPORT_PATH: Generate yaml report of compliance check under given path
+  -C/--critical-only: Only return critical errors in return code
+  -a/--assign KEY=VALUE: assign variable to be used for the run (as required by yaml file)
 
 With -C, the return code will be nonzero precisely when the tests couldn't be run to completion.
 ```
