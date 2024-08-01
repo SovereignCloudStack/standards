@@ -135,7 +135,7 @@ A severity with the value of 100 MUST always be supplied. This is the highest se
 
 Components list their impacts, which they are affected by, as read only. Only an incident creates an impact on a component. Components MUST only list their currently active impacts.
 
-An optional `now` parameter can be supplied, to set a reference time to show all incidents, active at that time, even when they are inactive currently.
+An optional `at` parameter can be supplied, to set a reference time to show all incidents, active at that time, even when they are inactive currently.
 
 ### Maintenance
 
