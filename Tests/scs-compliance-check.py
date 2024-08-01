@@ -155,25 +155,21 @@ def check_keywords(ctx, d, keywords=KEYWORDS):
     """
     Recursively check `d` (usually a `dict`, but maybe a `list` or a `tuple`) for correctness.
 
+    Returns number of errors.
+
     Here, correctness means that the dict may only use keywords as given via `keywords`.
     """
     valid = keywords.get(ctx)
     if valid is None:
-        return  # stop recursion
+        return 0  # stop recursion
     if isinstance(d, (list, tuple)):
-        for v in d:
-            check_keywords(ctx, v, keywords=keywords)
-        return
+        return sum(check_keywords(ctx, v, keywords=keywords) for v in d)
     if not isinstance(d, dict):
-        return
+        return 0
     invalid = [k for k in d if k not in valid]
     if invalid:
         logger.error(f"{ctx} uses unknown keywords: {','.join(invalid)}")
-    for k, v in d.items():
-        if k not in keywords:
-            continue
-        check_keywords(k, v, keywords=keywords)
-    return len(invalid)
+    return len(invalid) + sum(check_keywords(k, v, keywords=keywords) for k, v in d.items())
 
 
 def resolve_spec(spec: dict):
@@ -484,7 +480,9 @@ def main(argv):
         raise RuntimeError("You need pass --subject=SUBJECT.")
     with open(config.arg0, "r", encoding="UTF-8") as specfile:
         spec = yaml.load(specfile, Loader=yaml.SafeLoader)
-    check_keywords('spec', spec)  # super simple syntax check (recursive)
+    if check_keywords('spec', spec):
+        # super simple syntax check (recursive)
+        raise RuntimeError('syntax problems in spec file. bailing')
     resolve_spec(spec)
     missing_vars = [v for v in spec.get("variables", ()) if v not in config.assignment]
     if missing_vars:
