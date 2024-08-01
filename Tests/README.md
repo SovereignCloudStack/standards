@@ -59,7 +59,7 @@ Options:
   -V/--version VERS: Force version VERS of the standard (instead of deriving from date)
   -s/--subject SUBJECT: Name of the subject (cloud) under test, for the report
   -S/--sections SECTION_LIST: comma-separated list of sections to test (default: all sections)
-  -t/--tests REGEX: regular expression to select individual tests
+  -t/--tests REGEX: regular expression to select individual testcases based on their ids
   -o/--output REPORT_PATH: Generate yaml report of compliance check under given path
   -C/--critical-only: Only return critical errors in return code
   -a/--assign KEY=VALUE: assign variable to be used for the run (as required by yaml file)
