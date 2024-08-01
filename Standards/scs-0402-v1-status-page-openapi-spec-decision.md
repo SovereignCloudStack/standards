@@ -139,7 +139,7 @@ An optional `now` parameter can be supplied, to set a reference time to show all
 
 ### Maintenance
 
-An `impact`, having the special `SeverityValue` of 0 indicates a maintenance time slot, as such it MUST include a start and end time.
+Any `impact` that has the reserved `SeverityValue` of 0 is a maintenance time slot. As such it MUST include a start and end time. However, both are allowed to be set in the future.
 
 ### Return of `POST` requests
 
