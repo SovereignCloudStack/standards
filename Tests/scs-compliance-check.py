@@ -108,7 +108,7 @@ class Config:
         try:
             opts, args = getopt.gnu_getopt(argv, "hvqd:V:s:o:S:Ca:t:", (
                 "help", "verbose", "quiet", "date=", "version=", "debug",
-                "subject=", "output=", "sections=", "critical-only", "assign", "tests",
+                "subject=", "output=", "sections=", "critical-only", "assign=", "tests=",
             ))
         except getopt.GetoptError:
             usage(file=sys.stderr)
