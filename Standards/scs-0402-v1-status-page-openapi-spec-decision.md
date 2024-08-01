@@ -43,7 +43,7 @@ An `Incremental` is used in combination with other identifiers to identify a sub
 
 #### SeverityValue
 
-A `SeverityValue` is an unsigned integer ranging from 0 to 100 inclusively. It MUST be utilized by an `Impact` when referenced by a requested `Component` to gauge the severity of the impact on that component. It MUST be added to an `Impact` when referenced by an `Incident`, when its created. While being described as an unsigned integer, implementing this value MAY not require it to be an uint data type in any form, because its range even fits in a signed int8 (byte) data type.
+A `SeverityValue` is an unsigned integer ranging from 0 to 100 inclusively. It MUST be utilized by an `Impact` when referenced by a requested `Component` to gauge the severity of the impact on that component. It MUST be added to an `Impact` when referenced by an `Incident`, when its created. While being described as an unsigned integer, implementing this value MAY not require it to be an uint data type in any form, because its range even fits in a signed int8 (byte) data type. Each severity value SHOULD be unique, as multiple severities with the same value will be ambiguous.
 
 ### API objects
 
@@ -105,15 +105,11 @@ Example:
 [
   {
     "displayName": "operational",
-    "value": 25
-  },
-  {
-    "displayName": "maintenance",
-    "value": 50
+    "value": 33
   },
   {
     "displayName": "limited",
-    "value": 75
+    "value": 66
   },
   {
     "displayName": "broken",
@@ -122,12 +118,14 @@ Example:
 ]
 ```
 
+A special severity of type "maintenance" is given the exact value of 0.
+
 This means:
 
-- operational from 0 to 25
-- maintenance from 26 to 50
-- limited from 51 to 75
-- broken from 76 to 100.
+- maintenance at 0
+- operational from 1 to 33
+- limited from 34 to 66
+- broken from 67 to 100.
 
 A value of 100 is the maximum of the severity value.
 
@@ -136,6 +134,12 @@ A severity with the value of 100 MUST always be supplied. This is the highest se
 ### Component impacts
 
 Components list their impacts, which they are affected by, as read only. Only an incident creates an impact on a component. Components MUST only list their currently active impacts.
+
+An optional `now` parameter can be supplied, to set a reference time to show all incidents, active at that time, even when they are inactive currently.
+
+### Maintenance
+
+An `impact`, having the special `SeverityValue` of 0 indicates a maintenance time slot, as such it MUST include a start and end time.
 
 ### Return of `POST` requests
 
