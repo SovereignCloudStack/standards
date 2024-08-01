@@ -49,22 +49,26 @@ NIL_RESULT = {'result': 0}
 
 def usage(file=sys.stdout):
     """Output usage information"""
-    print("""Usage: scs-compliance-check.py [options] compliance-spec.yaml
+    print("""Usage: scs-compliance-check.py [options] SPEC_YAML
+
+Arguments:
+  SPEC_YAML: yaml file specifying the certificate scope
+
 Options:
- -v/--verbose: More verbose output
- -q/--quiet: Don't output anything but errors
-    --debug: enables DEBUG logging channel
- -d/--date YYYY-MM-DD: Check standards valid on specified date instead of today
- -V/--version VERS: Force version VERS of the standard (instead of deriving from date)
- -s/--subject SUBJECT: Name of the subject (cloud) under test, for the report
- -S/--sections SECTION_LIST: comma-separated list of sections to test (default: all sections)
- -t/--tests REGEX: regular expression to select individual tests
- -o/--output REPORT_PATH: Generate yaml report of compliance check under given path
- -C/--critical-only: Only return critical errors in return code
- -a/--assign KEY=VALUE: assign variable to be used for the run (as required by yaml file)
+  -v/--verbose: More verbose output
+  -q/--quiet: Don't output anything but errors
+     --debug: enables DEBUG logging channel
+  -d/--date YYYY-MM-DD: Check standards valid on specified date instead of today
+  -V/--version VERS: Force version VERS of the standard (instead of deriving from date)
+  -s/--subject SUBJECT: Name of the subject (cloud) under test, for the report
+  -S/--sections SECTION_LIST: comma-separated list of sections to test (default: all sections)
+  -t/--tests REGEX: regular expression to select individual tests
+  -o/--output REPORT_PATH: Generate yaml report of compliance check under given path
+  -C/--critical-only: Only return critical errors in return code
+  -a/--assign KEY=VALUE: assign variable to be used for the run (as required by yaml file)
 
 With -C, the return code will be nonzero precisely when the tests couldn't be run to completion.
-""".strip(), file=file)
+""", file=file)
 
 
 def run_check_tool(executable, args, env=None, cwd=None):
@@ -106,10 +110,9 @@ class Config:
                 "help", "verbose", "quiet", "date=", "version=", "debug",
                 "subject=", "output=", "sections=", "critical-only", "assign", "tests",
             ))
-        except getopt.GetoptError as exc:
-            logger.critical(f"Option error: {exc}", file=sys.stderr)
-            usage()
-            sys.exit(1)
+        except getopt.GetoptError:
+            usage(file=sys.stderr)
+            raise
         for opt in opts:
             if opt[0] == "-h" or opt[0] == "--help":
                 usage()
@@ -141,10 +144,10 @@ class Config:
             elif opt[0] == "-t" or opt[0] == "--tests":
                 self.tests = re.compile(opt[1])
             else:
-                logger.error(f"Unknown argument {opt[0]}", file=sys.stderr)
-        if len(args) < 1:
+                logger.error(f"Unknown argument {opt[0]}")
+        if len(args) != 1:
             usage(file=sys.stderr)
-            sys.exit(1)
+            raise RuntimeError("need precisely one argument")
         self.arg0 = args[0]
 
 
@@ -171,6 +174,57 @@ def check_keywords(ctx, d, keywords=KEYWORDS):
             continue
         check_keywords(k, v, keywords=keywords)
     return len(invalid)
+
+
+def resolve_spec(spec: dict):
+    """rewire `spec` so as to make most lookups via name unnecessary, and to find name errors early"""
+    if isinstance(spec['versions'], dict):
+        raise RuntimeError('spec dict already in resolved form')
+    # there are currently two types of objects that are being referenced by name or id
+    # - modules, referenced by id
+    # - versions, referenced by name (unfortunately, the field is called "version")
+    # step 1. build lookups
+    module_lookup = {module['id']: module for module in spec['modules']}
+    version_lookup = {version['version']: version for version in spec['versions']}
+    # step 2. check for duplicates:
+    if len(module_lookup) != len(spec['modules']):
+        raise RuntimeError("spec contains duplicate module ids")
+    if len(version_lookup) != len(spec['versions']):
+        raise RuntimeError("spec contains duplicate version ids")
+    # step 3. replace fields 'modules' and 'versions' by respective lookups
+    spec['modules'] = module_lookup
+    spec['versions'] = version_lookup
+    # step 4. resolve references
+    # step 4a. resolve references to modules in includes
+    # in this step, we also normalize the include form
+    for version in spec['versions'].values():
+        version['include'] = [
+            {'module': module_lookup[inc], 'parameters': {}} if isinstance(inc, str) else
+            {'module': module_lookup[inc['id']], 'parameters': inc.get('parameters', {})}
+            for inc in version['include']
+        ]
+    # step 4b. resolve references to versions in timeline
+    # on second thought, let's not go there: it's a canonical extension map, and it should remain that way.
+    # however, we still have to look for name errors
+    for entry in spec['timeline']:
+        for vname in entry['versions']:
+            # trigger KeyError
+            _ = version_lookup[vname]
+
+
+def annotate_validity(timeline: list, versions: dict, checkdate: datetime.date):
+    """annotate `versions` with validity info from `timeline` (note that this depends on `checkdate`)"""
+    validity_lookup = max(
+        (entry for entry in timeline if entry['date'] <= checkdate),
+        key=lambda entry: entry['date'],
+        default={},
+    ).get('versions', {})
+    for vname, version in versions.items():
+        version['validity'] = validity_lookup.get(vname, 'deprecated')
+
+
+def select_valid(versions: list, valid=('effective', 'warn', 'draft')) -> list:
+    return [version for version in versions if version['validity'] in valid]
 
 
 def suppress(*args, **kwargs):
@@ -345,7 +399,7 @@ class TestSuite:
         return by_result
 
 
-def compile_suite(suite: TestSuite, include: list, module_lookup, sections: tuple, tests: re.Pattern):
+def compile_suite(suite: TestSuite, include: list, sections: tuple, tests: re.Pattern):
     if sections:
         suite.name += f" [sections: {', '.join(sections)}]"
         suite.partial = True
@@ -353,9 +407,7 @@ def compile_suite(suite: TestSuite, include: list, module_lookup, sections: tupl
         suite.name += f" [tests: '{tests.pattern}']"
         suite.partial = True
     for inc in include:
-        if isinstance(inc, str):
-            inc = {'id': inc}
-        module = module_lookup[inc['id']]
+        module = inc['module']
         # basic sanity
         testcases = module.get('testcases', ())
         checks = module.get('run', ())
@@ -365,7 +417,7 @@ def compile_suite(suite: TestSuite, include: list, module_lookup, sections: tupl
         suite.include_testcases(module)
         # only add checks if they contain desired testcases
         if not tests or any(tests.match(ch['id']) for ch in testcases):
-            suite.include_checks(module, inc.get('parameters', {}), sections=sections)
+            suite.include_checks(module, inc['parameters'], sections=sections)
 
 
 def run_suite(suite: TestSuite, runner: CheckRunner, results: ResultBuilder):
@@ -427,49 +479,39 @@ def main(argv):
     """Entry point for the checker"""
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
     config = Config()
-    try:
-        config.apply_argv(argv)
-    except Exception as exc:
-        logger.critical(f"{exc}")
-        return 1
+    config.apply_argv(argv)
     if not config.subject:
-        logger.critical("You need pass --subject=SUBJECT.")
-        return 1
+        raise RuntimeError("You need pass --subject=SUBJECT.")
     with open(config.arg0, "r", encoding="UTF-8") as specfile:
         spec = yaml.load(specfile, Loader=yaml.SafeLoader)
     check_keywords('spec', spec)  # super simple syntax check (recursive)
+    resolve_spec(spec)
     missing_vars = [v for v in spec.get("variables", ()) if v not in config.assignment]
     if missing_vars:
-        logger.critical(f"Missing variable assignments (via -a) for: {', '.join(missing_vars)}")
-        return 1
+        raise RuntimeError(f"Missing variable assignments (via -a) for: {', '.join(missing_vars)}")
     if "prerequisite" in spec:
         logger.warning("prerequisite not yet implemented!")
-    module_lookup = {module["id"]: module for module in spec["modules"]}
-    version_lookup = {version["version"]: version for version in spec["versions"]}
-    validity_lookup = max(
-        (entry for entry in spec["timeline"] if entry["date"] <= config.checkdate),
-        key=lambda entry: entry["date"],
-    )["versions"]
+    annotate_validity(spec['timeline'], spec['versions'], config.checkdate)
     if config.version is None:
-        versions = [version_lookup[name] for name in validity_lookup]
+        versions = select_valid(spec['versions'].values())
     else:
-        versions = [version_lookup[config.version]]
+        versions = [spec['versions'].get(config.version)]
+        if versions[0] is None:
+            raise RuntimeError(f"Requested version '{config.version}' not found")
+    if not versions:
+        raise RuntimeError(f"No valid version found for {config.checkdate}")
     check_cwd = os.path.dirname(config.arg0) or os.getcwd()
     runner = CheckRunner(check_cwd, config.assignment, verbosity=config.verbose and 2 or not config.quiet)
     version_report = {}
     for version in versions:
         vname = version['version']
-        validity = validity_lookup.get(vname, 'deprecated')
-        suite = TestSuite(f"{spec['name']} {vname} ({validity})")
-        compile_suite(suite, version['include'], module_lookup, config.sections, config.tests)
+        suite = TestSuite(f"{spec['name']} {vname} ({version['validity']})")
+        compile_suite(suite, version['include'], config.sections, config.tests)
         builder = ResultBuilder(suite.name)
         run_suite(suite, runner, builder)
         results = version_report[vname] = builder.finalize(permissible_ids=suite.ids)
         if not config.quiet:
             print_report(config.subject, suite, version['targets'], results, verbose=config.verbose)
-    if not versions:
-        logger.critical(f"No valid version found for {config.checkdate}", file=sys.stderr)
-        runner.num_abort += 1
     if config.output:
         report = create_report(argv, config, spec, version_report, runner.get_invocations())
         with open(config.output, 'w', encoding='UTF-8') as fileobj:
@@ -478,4 +520,10 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except SystemExit:
+        raise
+    except BaseException as exc:
+        logger.critical(f"{str(exc) or repr(exc)}")
+        sys.exit(1)
