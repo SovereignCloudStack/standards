@@ -316,7 +316,7 @@ class CheckRunner:
             if self.verbosity > 1 and invocation["stdout"]:
                 print("\n".join(invocation["stdout"]))
             # the following check used to be "> 0", but this is quite verbose...
-            if self.verbosity > 1 and invocation["stderr"]:
+            if invocation['rc'] or self.verbosity > 1 and invocation["stderr"]:
                 print("\n".join(invocation["stderr"]))
             self.memo[memo_key] = invocation
         logger.debug(f".. rc {invocation['rc']}, {invocation['critical']} critical, {invocation['error']} error")
