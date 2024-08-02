@@ -218,10 +218,15 @@ def main(argv):
     }
     flvSCSRep = {
         "TotalAmount": len(MSCSFlv) + len(SCSFlv) + len(wrongFlv),
-        "MandatoryFlavorsPresent": len(MSCSFlv),
-        "MandatoryFlavorsMissing": len(scsMandatory),
     }
-    if v3mode:
+    # skip the following if no mandatory flavors are given (useful for v3.2 onward)
+    if len(MSCSFlv) + len(scsMandatory):
+        flvSCSRep.update({
+            "MandatoryFlavorsPresent": len(MSCSFlv),
+            "MandatoryFlavorsMissing": len(scsMandatory),
+        })
+    # skip the following if no recommended flavors are given (useful for v1, v2, and v3.2 onward)
+    if len(RSCSFlv) + len(scsRecommended):
         flvSCSRep.update({
             "RecommendedFlavorsPresent": len(RSCSFlv),
             "RecommendedFlavorsMissing": len(scsRecommended),
