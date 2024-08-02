@@ -78,24 +78,31 @@ that checks environments against all described standards.
 ## Basic concepts
 
 The introduction stated that a certificate scope amounts to a set of standards that have to be fulfilled by the cloud service in question in order for a certificate to be issued.
-While instructive, this view is still a bit simplified. Let's get more precise now.
+While instructive, this view is still a bit simplified. Let's get more precise now by defining the following concepts.
 
-1. _(Test) subject_: the cloud under test.
+1. _(Test) subject_:
+   The cloud under test.
 2. _Test case_ (also spelled testcase in code):
-   A statement about the subject that can be evaluated unambiguously to be either satisfied or not. The result is `PASS`, `FAIL`, or `DNF` (did not finish) if the test could not be performed.
+   A statement about the subject that can be evaluated unambiguously to be either satisfied or not. The result is either `PASS` or `FAIL`, or -- if the test could not be performed -- `DNF` (did not finish).
    A test case can be as simple as "the subject conforms to standard X", but a standard can also be decomposed into multiple test cases, which can then be reported on (also to the customers) individually.
    This latter option has the advantage that we can show explicitly if the subject complies with optional parts of the standard.
 3. _Check_:
-   A script that is meant to determine and report the results of certain test cases. The report is to be printed to stdout, and each test case is to be reported on a single line of the form `testcase-id: [PASS/FAIL/DNF]` (other lines are possible).
+   A script that determines and reports the results of certain test cases. The report is printed to stdout, and each test case is reported as a single line of the form `testcase-id: [PASS/FAIL]`. The result `DNF` is not reported. Lines of other forms are permissible and will be ignored.
    We also occasionally extend the concept of _check_ to manual audits.
-4. _Module_: A collection of test cases and corresponding checks, together with additional meta information such as the result lifetime, description, and a list of tags for a test case.
-   Ultimately, we aim to specify one module for each version of each standard: the module translates the standard into something measurable and, ideally, executable.
-5. _Selector (expression)_: An expression used to select test cases by referring to the tags that must be present.
-6. _Target_: a named collection of test cases specified using selector expressions.
+4. _Module_:
+   A collection of test cases and corresponding checks, together with additional meta information such as the result lifetime, description, and a list of tags for a test case.
+   Ultimately, we aim to specify one module for each version of each standard: the module translates the standard into something measurable and, ideally, executable to be used for certification.
+5. _Selector (expression)_:
+   An expression used to select test cases by referring to the tags that must (or must not) be present.
+6. _Target_:
+   A named collection of test cases specified using selector expressions.
    Ultimately, the certification of a subject always depends on a designated "main" target; all its test cases must be passed for the certificate to be awarded.
    Further targets can be used to report on optional aspects of the certificate, such as particularly good security and encryption measures.
-7. _(Certificate-scope) version_: A collection of modules and a collection of targets, one of them being "main".
+7. _(Certificate-scope) version_:
+   A collection of modules and a collection of targets, one of them being "main".
    Note that a collection of modules can again be construed as a (larger) module. We opt use one module per standard version, as mentioned above, in order to make commonalities between certificate-scope versions explicit.
+8. _Certificate scope_:
+   A list of certificate-scope versions.
 
 Having introduced these concepts, we can now get even more precise by defining the actual specification in YAML format.
 
