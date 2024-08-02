@@ -100,7 +100,7 @@ While instructive, this view is still a bit simplified. Let's get more precise n
    Further targets can be used to report on optional aspects of the certificate, such as particularly good security and encryption measures.
 7. _(Certificate-scope) version_:
    A collection of modules and a collection of targets, one of them being "main".
-   Note that a collection of modules can again be construed as a (larger) module. We opt use one module per standard version, as mentioned above, in order to make commonalities between certificate-scope versions explicit.
+   Note that a collection of modules can again be construed as a (larger) module. We opt to use one module per standard version, as mentioned above, in order to make commonalities between certificate-scope versions explicit.
 8. _Certificate scope_:
    A list of certificate-scope versions.
 
