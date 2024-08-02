@@ -66,9 +66,16 @@ The endpoints are named in plural form, even when handling single objects, to ke
 
 ### Incidents
 
-Incidents are the main information bearer at the status page. They hold data to describe an incident, that is happening or has happened, all stages the incident progresses through and all updates related to the resolution of the incident.
+Incidents are the main information bearer at the status page. They hold most of the data that describes an incident:
 
-An incident is considered active, while no endpoint was set.
+ - when it happened
+ - when it completed or if it is still ongoing
+ - which components it affected
+ - the stages the incident progressed through
+ - all updates related to the resolution of the incident
+ 
+
+An incident is considered *active* while no end time has been set. Incidents whose end time has been set are considered to be *inactive* or *resolved*.
 
 ### Phase list
 
