@@ -195,6 +195,12 @@ A list of tags _satisfies_ the selector if it satisfies all the terms.
 
 Examples: `mandatory`, `iaas mandatory`, `iaas !mandatory/encryption`.
 
+In the map `targets` above, it is possible to specify a list of selectors that are joined by comma.
+(Note that this is still a string, not a YAML list.)
+A list of tags satisfies this list of selectors if it satisfies at least one of the expressions.
+
+Examples: `mandatory iaas, recommended kaas` (NOT: `[mandatory iaas, recommended kaas]`)
+
 ### Module descriptor
 
 | Key                      | Type   | Description                                                                 | Example                                                           |
