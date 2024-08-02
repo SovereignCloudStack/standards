@@ -1,0 +1,30 @@
+images:
+- name: "Ubuntu 24.04"
+  source:
+  - https://cloud-images.ubuntu.com/releases/noble/
+  - https://cloud-images.ubuntu.com/noble/
+  status: mandatory
+- name: "Ubuntu 22.04"
+  source:
+  - https://cloud-images.ubuntu.com/releases/jammy/
+  - https://cloud-images.ubuntu.com/jammy/
+- name: "ubuntu-capi-image"
+  name_scheme: "ubuntu-capi-image v[0-9]\\.[0-9]+(\\.[0-9]+)?"
+  source: https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube
+  status: recommended
+- name: "Ubuntu 20.04"
+  source:
+  - https://cloud-images.ubuntu.com/releases/focal/
+  - https://cloud-images.ubuntu.com/focal/
+- name: "Debian 12"
+  source:
+  - https://cloud.debian.org/images/cloud/bookworm/
+  - https://cdimage.debian.org/cdimage/cloud/bookworm/
+- name: "Debian 11"
+  source:
+  - https://cloud.debian.org/images/cloud/bullseye/
+  - https://cdimage.debian.org/cdimage/cloud/bullseye/
+- name: "Debian 10"
+  source:
+  - https://cloud.debian.org/images/cloud/buster/
+  - https://cdimage.debian.org/cdimage/cloud/buster/
