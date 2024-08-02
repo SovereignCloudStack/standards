@@ -83,7 +83,7 @@ While instructive, this view is still a bit simplified. Let's get more precise n
 1. _(Test) subject_:
    The cloud under test.
 2. _Test case_ (also spelled testcase in code):
-   A statement about the subject that can be evaluated unambiguously to be either satisfied or not. The result is either `PASS` or `FAIL`, or -- if the test could not be performed -- `DNF` (did not finish).
+   A statement about the subject that can be evaluated unambiguously to be either satisfied or not. The result is either `PASS` or `FAIL`, or—if the test could not be performed—`DNF` (did not finish).
    A test case can be as simple as "the subject conforms to standard X", but a standard can also be decomposed into multiple test cases, which can then be reported on (also to the customers) individually.
    This latter option has the advantage that we can show explicitly if the subject complies with optional parts of the standard.
 3. _Check_:
