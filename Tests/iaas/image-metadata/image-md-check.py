@@ -312,7 +312,7 @@ def miss_replacement_images(by_name, outd_list):
     rem_list = []
     for outd in outd_list:
         img = None
-        shortnm = outd.rsplit(" ", 1)[0]
+        shortnm = outd.rsplit(" ", 1)[0].rstrip()
         if shortnm != outd:
             img = by_name.get(shortnm)
         if img is not None:
