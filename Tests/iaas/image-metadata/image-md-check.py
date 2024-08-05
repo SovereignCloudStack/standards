@@ -201,7 +201,7 @@ def validate_imageMD(img, outd_list):
     # (4) image_build_date, image_original_user, image_source (opt image_description)
     # (5) maintained_until, provided_until, uuid_validity, replace_frequency
     for prop in (*os_props, *arch_props, *hw_props, *build_props, *maint_props):
-        if not prop.is_ok(img, imgnm):
+        if not prop.is_ok(img.properties, imgnm):
             errors += 1
     constr_name = f"{img.os_distro} {img.os_version}"
     # (3) os_hash
