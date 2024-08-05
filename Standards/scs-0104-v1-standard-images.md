@@ -37,12 +37,12 @@ The YAML file MUST contain the key `images`, whose value is a list of objects. E
 
 ### Image specification, single image
 
-| Key       | Type                 | Description                                        | Example                                              |
-| --------- | -------------------- | -------------------------------------------------- | ---------------------------------------------------- |
-| `name`    | String               | Name of the image                                  | `"Debian 12"`                                        |
-| `status`  | String (_optional_)  | `optional` (default), `mandatory` or `recommended` | `"recommended"`                                      |
-| `source`  | String               | Prefix of the source URL                           | `"https://cloud.debian.org/images/cloud/bookworm/"`  |
-|           | OR: List of strings  | multiple possible prefixes                         | (see full example below)                             |
+| Key       | Type                 | Description                                          | Example                                              |
+| --------- | -------------------- | ---------------------------------------------------- | ---------------------------------------------------- |
+| `name`    | String               | Name of the image                                    | `"Debian 12"`                                        |
+| `status`  | String (_optional_)  | `optional` (default), `mandatory` or `recommended`   | `"recommended"`                                      |
+| `source`  | String               | Prefix of the source URL                             | `"https://cloud.debian.org/images/cloud/bookworm/"`  |
+|           | OR: List of strings  | multiple possible prefixes                           | (see full example below)                             |
 
 The meaning of this specification is as follows.
 
@@ -55,13 +55,13 @@ The meaning of this specification is as follows.
 
 ### Image specification, class of images
 
-| Key           | Type                 | Description                                        | Example                                          |
-| ------------- | -------------------- | -------------------------------------------------- | ------------------------------------------------ |
-| `name`        | String               | Name of the class of images                        | `"ubuntu-2204-kube"`                             |
-| `name_scheme` | String (regex)       | Regular expression for the image name              | `"ubuntu-2204-kube-v[0-9].[0-9]+(.[0-9]+)?"`     |
-| `status`      | String (_optional_)  | `optional` (default), `mandatory` or `recommended` | `"recommended"`                                  |
-| `source`      | String               | Prefix of the source URL                           | `"https://swift.services.a.regiocloud.tech"`     |
-|               | OR: List of strings  | multiple possible prefixes                         | (see full example below)                         |
+| Key           | Type                 | Description                                          | Example                                          |
+| ------------- | -------------------- | ---------------------------------------------------- | ------------------------------------------------ |
+| `name`        | String               | Name of the class of images                          | `"ubuntu-2204-kube"`                             |
+| `name_scheme` | String (regex)       | Regular expression for the image name                | `"ubuntu-2204-kube-v[0-9].[0-9]+(.[0-9]+)?"`     |
+| `status`      | String (_optional_)  | `optional` (default), `mandatory` or `recommended`   | `"recommended"`                                  |
+| `source`      | String               | Prefix of the source URL                             | `"https://swift.services.a.regiocloud.tech"`     |
+|               | OR: List of strings  | multiple possible prefixes                           | (see full example below)                         |
 
 The meaning of this specification is as follows:
 
