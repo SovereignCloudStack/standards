@@ -374,6 +374,7 @@ async def post_report(
                 result = rdata['result']
                 approval = 1 == result  # pre-approve good result
                 db_insert_result(cur, reportid, invocationid, checkid, result, approval, expiration)
+                db_insert_result2(cur, checked_at, subject, scopeuuid, version, check, result, approval, reportid)
     conn.commit()
 
 

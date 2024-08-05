@@ -141,6 +141,24 @@ def db_ensure_schema(cur: cursor):
         -- therefore let's also put reportid here (added bonus: simplify queries)
         reportid integer NOT NULL REFERENCES report ON DELETE CASCADE ON UPDATE CASCADE
     );
+    -- make a way simpler version that doesn't put that much background knowledge into the schema
+    -- therefore let's hope the schema will be more robust against change
+    CREATE TABLE IF NOT EXISTS result2 (
+        resultid SERIAL PRIMARY KEY,
+        -- some Python code to show how simple it is to fill this from a yaml report
+        -- (using member access syntax instead of array access syntax for the dict fields)
+        -- for vname, vres in report.versions.items():
+        --    for tcid, tcres in vres.items():
+        checked_at timestamp NOT NULL,  -- = report.checked_at
+        subject text NOT NULL,          -- = report.subject
+        scopeuuid text NOT NULL,        -- = report.spec.uuid
+        version text NOT NULL,          -- = vname
+        checkid text NOT NULL,          -- = tcid
+        result int,                     -- = tcres.result
+        approval boolean,               -- = tcres.result == 1
+        -- the following is FYI only, for the most data is literally copied to this table
+        reportid integer NOT NULL REFERENCES report ON DELETE CASCADE ON UPDATE CASCADE
+    );
     CREATE TABLE IF NOT EXISTS subject (
         subject text PRIMARY KEY,
         active boolean,
@@ -343,6 +361,18 @@ def db_insert_result(cur: cursor, reportid, invocationid, checkid, result, appro
     return resultid
 
 
+def db_insert_result2(
+    cur: cursor, checked_at, subject, scopeuuid, version, testcase, result, approval, reportid
+):
+    # this is an exception in that we don't use a record parameter (it's just not as practical here)
+    cur.execute('''
+    INSERT INTO result2 (checked_at, subject, scopeuuid, version, testcase, result, approval, reportid)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    RETURNING resultid;''', (checked_at, subject, scopeuuid, version, testcase, result, approval, reportid))
+    resultid, = cur.fetchone()
+    return resultid
+
+
 def db_get_relevant_results(
     cur: cursor,
     subject=None, scopeuuid=None, version=None, approved_only=True, grace_period_days=None, active_only=None,
@@ -381,6 +411,29 @@ def db_get_relevant_results(
             None if active_only is None else sql.SQL('subject.active = %(active)s'),
         ),
     ), {"subject": subject, "scopeuuid": scopeuuid, "version": version, "active": active_only})
+    return cur.fetchall()
+
+
+def db_get_relevant_results2(
+    cur: cursor,
+    subject=None, scopeuuid=None, version=None, approved_only=True,
+):
+    """for each combination of scope/version/check, get the most recent test result that is still valid"""
+    # find the latest result per subject/scopeuuid/version/checkid for this subject
+    # DISTINCT ON is a Postgres-specific construct that comes in very handy here :)
+    cur.execute(sql.SQL('''
+    SELECT DISTINCT ON (subject, scopeuuid, version, testcase)
+    subject, scopeuuid, version, testcase, result, checked_at FROM result2
+    {filter_condition}
+    ORDER BY subject, scopeuuid, version, checkid, checked_at DESC;
+    ''').format(
+        filter_condition=make_where_clause(
+            sql.SQL('approval') if approved_only else None,
+            None if scopeuuid is None else sql.SQL('scopeuuid = %(scopeuuid)s'),
+            None if version is None else sql.SQL('version = %(version)s'),
+            None if subject is None else sql.SQL('subject = %(subject)s'),
+        ),
+    ), {"subject": subject, "scopeuuid": scopeuuid, "version": version})
     return cur.fetchall()
 
 
