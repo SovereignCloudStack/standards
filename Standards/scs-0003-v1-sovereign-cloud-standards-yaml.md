@@ -117,11 +117,14 @@ The certification YAML _MUST_ contain the following keys:
 
 | Key        | Type          | Description                                          | Example                                                                                         |
 | ---------- | ------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `uuid`     | String        | Universally unique identifier                        | `d912d0a5-826a-4b01-bafd-b48f65f76f43`                                                          |
 | `name`     | String        | Full name of this certificate scope                  | `SCS-open KaaS`                                                                                 |
 | `url`      | String        | Valid URL to the latest raw version of this document | `https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-open-kaas.yaml` |
 | `modules`  | Array of maps | List of module descriptors (described below)         | (see below)                                                                                     |
 | `timeline` | Array of maps | List of timeline entries (described below)           | (see below)                                                                                     |
 | `versions` | Array of maps | List of version descriptors (described below)        | (see below)                                                                                     |
+
+A uuid may be generated on the command line using the tool `uuidgen` or using Python as follows: `python3 -c "import uuid; print(uuid.uuid4())"`
 
 The certification YAML _MAY_ contain the following keys:
 
