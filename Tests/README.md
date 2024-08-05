@@ -16,30 +16,50 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+At the moment, there are two cloud layers that can be checked: IaaS and KaaS.
+For both types of checks, the exit code indicates success (0) or failure (!= 0).
+You can also request a YAML report using the option `-o OUTPUT.yaml`
+
+### IaaS checks
+
 With a cloud environment configured in your `~/.config/openstack/clouds.yaml`
 and `secure.yaml`, then run
 
 ```shell
-./scs-compliance-check.py scs-compatible.yaml iaas --os-cloud CLOUDNAME
+./scs-compliance-check.py  -a os_cloud=CLOUDNAME -s CLOUDNAME scs-compatible-iaas.yaml
 ```
 
 Replace `CLOUDNAME` with the name of your cloud environment as
 specified in `clouds.yaml`.
 
-The exit code indicates success (0) or failure (!= 0).
-You can also request a YAML report using the option `-o OUTPUT.yaml`
+### KaaS checks
+
+Given a kubeconfig file `path/to/kubeconfig.yaml`, run
+
+```shell
+./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml -s SUBJECT scs-compatible-kaas.yaml
+```
+
+Replace `SUBJECT` with an arbitrary, but meaningful subject name.
+Also, please note that the check will always use the `current-context` of the kubeconfig and will
+fail if it isn't set.
 
 ## Usage information (help output)
 
 ```text
-Usage: scs-compliance-check.py [options] compliance-spec.yaml layer [layer [layer]]
+Usage: scs-compliance-check.py [options] compliance-spec.yaml
 Options: -v/--verbose: More verbose output
  -q/--quiet: Don't output anything but errors
- -s/--single-layer: Don't perform required checks for dependant layers
  -d/--date YYYY-MM-DD: Check standards valid on specified date instead of today
  -V/--version VERS: Force version VERS of the standard (instead of deriving from date)
- -c/--os-cloud CLOUD: Use specified cloud env (instead of OS_CLOUD env var)
- -o/--output path: Generate yaml report of compliance check under given path
+ -s/--subject SUBJECT: Name of the subject (cloud) under test, for the report
+ -S/--sections SECTION_LIST: comma-separated list of sections to test (default: all sections)
+ -t/--tests REGEX: regular expression to select individual tests
+ -o/--output REPORT_PATH: Generate yaml report of compliance check under given path
+ -C/--critical-only: Only return critical errors in return code
+ -a/--assign KEY=VALUE: assign variable to be used for the run (as required by yaml file)
+
+With -C, the return code will be nonzero precisely when the tests couldn't be run to completion.
 ```
 
 ## Testing in docker containers
@@ -52,22 +72,27 @@ docker build --tag scs-compliance-check .
 
 ### Run tests in a docker container
 
-```shell
-docker run -it --env OS_CLOUD=CLOUDNAME -v ~/.config/openstack:/root/.config/openstack:ro scs-compliance-check
-```
+You'll have to bind mount your respective config(s), pass required parameters and the specification file.
 
-The Docker entrypoint uses [scs-compatible-iaas.yaml](scs-compatible-iaas.yaml)
-on the `iaas` layer by default. You can use an alternative spec file by simply
-appending it to the above call, e.g.
+For IaaS:
 
 ```shell
-docker run -it --env OS_CLOUD=CLOUDNAME -v ~/.config/openstack:/root/.config/openstack:ro scs-compliance-check my-own-certification.yaml iaas
+docker run -v ~/.config/openstack:/root/.config/openstack:ro scs-compliance-check -a os_cloud=CLOUDNAME -s CLOUDNAME scs-compatible-iaas.yaml
 ```
+
+For KaaS:
+
+```shell
+docker run -v /path/to/kubeconfig.yaml:/root/kubeconfig.yaml:ro scs-compliance-check -a kubeconfig=/root/kubeconfig.yaml -s SUBJECT scs-compatible-kaas.yaml
+```
+
+If you want to test against a cluster running on localhost (e.g., kind cluster), replace
+`docker run` with `docker run --net=host` in the above invocation.
 
 ### Debugging
 
 ```shell
-docker run -it --env OS_CLOUD=CLOUDNAME -v ~/.config/openstack:/root/.config/openstack:ro --entrypoint /bin/bash scs-compliance-check
+docker run -it -v ~/.config/openstack:/root/.config/openstack:ro --entrypoint /bin/bash scs-compliance-check
 ```
 
 ## Information for developers

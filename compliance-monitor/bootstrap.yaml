@@ -93,7 +93,7 @@ subjects:
   artcodix:
     active: true
     name: CNDS
-    provider: artcodix UG
+    provider: artcodix GmbH
   pco-prod1:
     active: true
     name: pluscloud open prod1
