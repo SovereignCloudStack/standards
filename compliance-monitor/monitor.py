@@ -25,7 +25,7 @@ from sql import (
     db_filter_versions, db_get_reports, db_get_keys, db_get_scopeid, db_insert_report, db_insert_invocation,
     db_get_versionid, db_get_checkdata, db_insert_result, db_get_relevant_results, db_get_recent_results,
     db_patch_approval, db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys,
-    db_patch_subject, db_get_subjects,
+    db_patch_subject, db_get_subjects, db_insert_result2,
 )
 
 
