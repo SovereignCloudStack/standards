@@ -1,0 +1,23 @@
+---
+- name: Copy scripts+data and install Python dependencies
+  hosts: all
+  roles:
+    - role: ensure-pip  # https://zuul-ci.org/docs/zuul-jobs/latest/python-roles.html#role-ensure-pip
+  tasks:
+    - name: Copy ADRs on the node
+      ansible.builtin.copy:
+        src: "../Standards"
+        dest: "~/"
+        mode: 0500
+      no_log: false
+
+    - name: Copy Tests on the node
+      ansible.builtin.copy:
+        src: "../Tests"
+        dest: "~/"
+        mode: 0500
+      no_log: false
+
+    - name: Install dependencies
+      ansible.builtin.pip:
+        requirements: "~/Tests/requirements.txt"
