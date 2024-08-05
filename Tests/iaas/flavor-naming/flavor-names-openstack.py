@@ -232,8 +232,8 @@ def main(argv):
             "RecommendedFlavorsMissing": len(scsRecommended),
         })
     flvSCSRep.update({
-        "OptionalFlavorsValid": len(SCSFlv),
-        "OptionalFlavorsWrong": len(wrongFlv),
+        "FlavorsValid": len(SCSFlv) + len(MSCSFlv) + len(RSCSFlv),
+        "FlavorsWrong": len(wrongFlv),
         "FlavorsWithWarnings": len(warnFlv),
     })
     flvOthRep = {
