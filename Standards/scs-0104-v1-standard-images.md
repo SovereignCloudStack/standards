@@ -46,11 +46,12 @@ The YAML file MUST contain the key `images`, whose value is a list of objects. E
 
 The meaning of this specification is as follows.
 
-1. If the status is `mandatory`, then the image MUST be present.
-2. If an image by the name given is present, then its `image_source` property
+1. If the status is `mandatory`, then an image with the name given via `name` MUST be present.
+2. If the status is `recommended`, then an image with the name given via `name` SHOULD be present.
+3. If an image by the name given is present, then its `image_source` property
    (as described in the [Image Metadata standard](scs-0102-v1-image-metadata.md))
    MUST start with one of the prefixes given via `source`.
-   Note that this is enforced even if the status is unset or `recommended`.
+   Note that this is enforced regardless of the status.
 
 ### Image specification, class of images
 
@@ -66,9 +67,11 @@ The meaning of this specification is as follows:
 
 1. If the status is `mandatory`, then at least one image MUST be present whose name
    matches the regular expression given via `name_scheme`.
-2. For any image whose name matches the regular expression given via `name_scheme`,
+2. If the status is `recommended`, then at least one image SHOULD be present whose name
+   matches the regular expression given via `name_scheme`.
+3. For any image whose name matches the regular expression given via `name_scheme`,
    its `image_source` property MUST start with one of the prefixes given via `source`.
-   Note that this is enforced even if the status is unset or `recommended`.
+   Note that this is enforced regardless of the status.
 
 ## Full example
 
