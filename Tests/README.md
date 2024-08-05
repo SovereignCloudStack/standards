@@ -17,6 +17,8 @@ pip install -r requirements.txt
 ```
 
 At the moment, there are two cloud layers that can be checked: IaaS and KaaS.
+For both types of checks, the exit code indicates success (0) or failure (!= 0).
+You can also request a YAML report using the option `-o OUTPUT.yaml`
 
 ### IaaS checks
 
@@ -41,9 +43,6 @@ Given a kubeconfig file `path/to/kubeconfig.yaml`, run
 Replace `SUBJECT` with an arbitrary, but meaningful subject name.
 Also, please note that the check will always use the `current-context` of the kubeconfig and will
 fail if it isn't set.
-
-For both types of checks, the exit code indicates success (0) or failure (!= 0).
-You can also request a YAML report using the option `-o OUTPUT.yaml`
 
 ## Usage information (help output)
 
