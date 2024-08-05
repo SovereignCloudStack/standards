@@ -382,7 +382,7 @@ def main(argv):
             if verbose:
                 print(f'INFO: The following outdated images have been detected: {outdated_images}',
                       file=sys.stderr)
-            rem_list = miss_replacement_images(images, outdated_images)
+            rem_list = miss_replacement_images(by_name, outdated_images)
             if rem_list:
                 print(f'ERROR: Outdated images without replacement: {rem_list}', file=sys.stderr)
                 err += len(rem_list)
