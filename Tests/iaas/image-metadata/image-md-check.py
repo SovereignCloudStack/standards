@@ -14,8 +14,10 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 import os
 import sys
 import time
+import calendar
 import getopt
 import openstack
+from collections import Counter
 
 
 def usage(ret):
@@ -36,13 +38,6 @@ def usage(ret):
 
 # global options
 verbose = False
-private = False
-skip = False
-conn = None
-if "OS_CLOUD" in os.environ:
-    cloud = os.environ["OS_CLOUD"]
-else:
-    cloud = None
 
 # Image list
 mand_images = ["Ubuntu 22.04", "Ubuntu 20.04", "Debian 11"]
@@ -50,14 +45,32 @@ rec1_images = ["CentOS 8", "Rocky 8", "AlmaLinux 8", "Debian 10", "Fedora 36"]
 rec2_images = ["SLES 15SP4", "RHEL 9", "RHEL 8", "Windows Server 2022", "Windows Server 2019"]
 sugg_images = ["openSUSE Leap 15.4", "Cirros 0.5.2", "Alpine", "Arch"]
 
+# Just for nice formatting of image naming hints -- otherwise we capitalize the 1st letter
+OS_LIST = ("CentOS", "AlmaLinux", "Windows Server", "RHEL", "SLES", "openSUSE")
+# Auxiliary mapping for `freq2secs` (note that values are rounded up a bit on purpose)
+FREQ_TO_SEC = {
+    "never": 0,
+    "critical_bug": 0,
+    "yearly": 365 * 24 * 3600,
+    "quarterly": 92 * 24 * 3600,
+    "monthly": 31 * 24 * 3600,
+    "weekly": 7 * 25 * 3600,
+    "daily": 25 * 3600,
+}
+STRICT_FORMATS = ("%Y-%m-%dT%H:%M:%SZ", )
+DATE_FORMATS = STRICT_FORMATS + ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d")
+MARKER_DATE_FORMATS = ("%Y-%m-%d", "%Y%m%d")
+OUTDATED_MARKERS = ("old", "prev")
+KIB, MIB, GIB = (1024 ** n for n in (1, 2, 3))
 
-def get_imagelist(priv):
-    "Retrieve list of public images (optionally also private images)"
-    if priv:
-        imgs = conn.image.images()
-    else:
-        imgs = conn.image.images(visibility='public')
-    return list(map(lambda x: x.name, imgs))
+
+def recommended_name(nm, os_list=OS_LIST):
+    """Return capitalized name"""
+    for osnm in os_list:
+        osln = len(osnm)
+        if nm[:osln].casefold() == osnm.casefold():
+            return osnm + nm[osln:]
+    return nm[0].upper() + nm[1:]
 
 
 class Property:
@@ -76,27 +89,26 @@ class Property:
         if self.name in props:
             if self.values and not props[self.name] in self.values:
                 if warn:
-                    print(f'Error: Image "{warn}": value "{props[self.name]}" for property '
+                    print(f'ERROR: Image "{warn}": value "{props[self.name]}" for property '
                           f'"{self.name}" not allowed', file=sys.stderr)
                 return False
+            if not props[self.name] and not self.values:
+                err = "ERROR"
+                ret = False
             else:
-                if not props[self.name] and not self.values:
-                    err = "Error"
-                    ret = False
-                else:
-                    err = "Warning"
-                    ret = True
-                if not props[self.name] and (verbose or not self.values) and warn:
-                    print(f'{err}: Image "{warn}": empty value for property "{self.name}" not recommended',
-                          file=sys.stderr)
-                return ret
-        elif self.ismand:
+                err = "WARNING"
+                ret = True
+            if not props[self.name] and (verbose or not self.values) and warn:
+                print(f'{err}: Image "{warn}": empty value for property "{self.name}" not recommended',
+                      file=sys.stderr)
+            return ret
+        if self.ismand:
             if warn:
-                print(f'Error: Image "{warn}": Mandatory property "{self.name}" is missing',
+                print(f'ERROR: Image "{warn}": Mandatory property "{self.name}" is missing',
                       file=sys.stderr)
             return False
-        elif warn and verbose:
-            print(f'Info: Image "{warn}": Optional property "{self.name}" is missing')  # , file=sys.stderr)
+        if warn and verbose:
+            print(f'INFO: Image "{warn}": Optional property "{self.name}" is missing')  # , file=sys.stderr)
         return True
 
 
@@ -121,80 +133,158 @@ maint_props = (Property("replace_frequency", True, ("yearly", "quarterly", "mont
 
 
 def is_url(stg):
-    "Is string stg a URL?"
+    """Is string stg a URL?"""
     idx = stg.find("://")
-    if idx < 0:
-        return False
-    if stg[:idx] in ("http", "https", "ftp", "ftps"):
-        return True
-    return False
+    return idx >= 0 and stg[:idx] in ("http", "https", "ftp", "ftps")
 
 
-def validate_imageMD(imgnm):
-    "Retrieve image properties and test for compliance with spec"
-    try:
-        img = conn.image.find_image(imgnm)
-    except openstack.exceptions.DuplicateResource as exc:
-        print(f'Error with duplicate name "{imgnm}": {str(exc)}', file=sys.stderr)
+def parse_date(stg, formats=DATE_FORMATS):
+    """
+    Return time in Unix seconds or 0 if stg is not a valid date.
+    We recognize: %Y-%m-%dT%H:%M:%SZ, %Y-%m-%d %H:%M[:%S], and %Y-%m-%d
+    """
+    bdate = 0
+    for fmt in formats:
+        try:
+            tmdate = time.strptime(stg, fmt)
+            bdate = calendar.timegm(tmdate)
+            break
+        except ValueError:  # as exc:
+            # print(f'date {stg} does not match {fmt}\n{exc}', file=sys.stderr)
+            pass
+    return bdate
+
+
+def freq2secs(stg):
+    """Convert frequency to seconds (round up a bit), return 0 if not applicable"""
+    secs = FREQ_TO_SEC.get(stg)
+    if secs is None:
+        print(f'ERROR: replace frequency {stg}?', file=sys.stderr)
+        secs = 0
+    return secs
+
+
+def is_outdated(img, bdate):
+    """return 1 if img (with build/regdate bdate) is outdated,
+       2 if it's not hidden or marked, 3 if error"""
+    max_age = 0
+    if "replace_frequency" in img.properties:
+        max_age = 1.1 * (freq2secs(img.properties["replace_frequency"]))
+    if not max_age or time.time() <= max_age + bdate:
+        return 0
+    # So we found an outdated image that should have been updated
+    # (5a1) Check whether we are past the provided_until date
+    until_str = img.properties["provided_until"]
+    if until_str in ("none", "notice"):
+        return 0
+    until = parse_date(until_str)
+    if not until:
+        return 3
+    if time.time() > until:
+        return 0
+    if img.is_hidden:
         return 1
-    if not img:
-        print(f'Image "{imgnm}" not found' % imgnm, file=sys.stderr)
+    parts = img.name.rsplit(" ", 1)
+    marker = parts[1] if len(parts) >= 2 else ""
+    if marker in OUTDATED_MARKERS or parse_date(marker, formats=MARKER_DATE_FORMATS):
         return 1
+    return 2
+
+
+def validate_imageMD(img, outd_list):
+    """Retrieve image properties and test for compliance with spec"""
+    imgnm = img.name
     # Now the hard work: Look at properties ....
     errors = 0
     warnings = 0
     # (1) recommended os_* and hw_*
-    for prop in (*os_props, *arch_props, *hw_props):
+    # (4) image_build_date, image_original_user, image_source (opt image_description)
+    # (5) maintained_until, provided_until, uuid_validity, replace_frequency
+    for prop in (*os_props, *arch_props, *hw_props, *build_props, *maint_props):
         if not prop.is_ok(img, imgnm):
             errors += 1
     constr_name = f"{img.os_distro} {img.os_version}"
     # (3) os_hash
     if img.hash_algo not in ('sha256', 'sha512'):
-        print(f'Warning: Image "{imgnm}": no valid hash algorithm {img.hash_algo}', file=sys.stderr)
+        print(f'WARNING: Image "{imgnm}": no valid hash algorithm {img.hash_algo}', file=sys.stderr)
         # errors += 1
         warnings += 1
-
-    # (4) image_build_date, image_original_user, image_source (opt image_description)
-    # (5) maintained_until, provided_until, uuid_validity, update_frequency
-    for prop in (*build_props, *maint_props):
-        if not prop.is_ok(img.properties, imgnm):
-            errors += 1
-    # TODO: Some more sanity checks:
+    # Some more sanity checks:
     #  - Dateformat for image_build_date
-    bdate = time.strptime(img.created_at, "%Y-%m-%dT%H:%M:%SZ")
+    rdate = parse_date(img.created_at, formats=STRICT_FORMATS)
+    bdate = rdate
     if "image_build_date" in img.properties:
-        try:
-            bdate = time.strptime(img.properties["image_build_date"][:10], "%Y-%m-%d")
-            # This never evals to True, but makes bdate used for flake8
-            if verbose and False:
-                print(f'Info: Image "{imgnm}" with build date {bdate}')
-        except Exception:
-            print(f'Error: Image "{imgnm}": no valid image_build_date '
+        bdate = parse_date(img.properties["image_build_date"])
+        if not bdate:
+            print(f'ERROR: Image "{imgnm}": no valid image_build_date '
                   f'{img.properties["image_build_date"]}', file=sys.stderr)
             errors += 1
+            bdate = rdate
+        elif bdate > rdate:
+            print(f'ERROR: Image "{imgnm}" with build date {img.properties["image_build_date"]} after registration date {img.created_at}',
+                  file=sys.stderr)
+            errors += 1
+    if bdate > time.time():
+        print(f'ERROR: Image "{imgnm}" has build time in the future: {bdate}')
+        errors += 1
     # - image_source should be a URL
     if "image_source" not in img.properties:
         pass  # we have already noted this as error, no need to do it again
     elif img.properties["image_source"] == "private":
         if verbose:
-            print(f'Info: Image {imgnm} has image_source set to private', file=sys.stderr)
+            print(f'INFO: Image {imgnm} has image_source set to private', file=sys.stderr)
     elif not is_url(img.properties["image_source"]):
-        print(f'Error: Image "{imgnm}": image_source should be a URL or "private"', file=sys.stderr)
+        print(f'ERROR: Image "{imgnm}": image_source should be a URL or "private"', file=sys.stderr)
         errors += 1
     #  - uuid_validity has a distinct set of options (none, last-X, DATE, notice, forever)
+    img_uuid_val = img.properties.get("uuid_validity")
+    if img_uuid_val in (None, "none", "notice", "forever"):
+        pass
+    elif img_uuid_val[:5] == "last-" and img_uuid_val[5:].isdecimal():
+        pass
+    elif parse_date(img_uuid_val):
+        pass
+    else:
+        print(f'ERROR: Image "{imgnm}": invalid uuid_validity {img_uuid_val}', file=sys.stderr)
+        errors += 1
     #  - hotfix hours (if set!) should be numeric
-    # (5a) Sanity: Are we actually in violation of update_frequency?
+    if "hotfix_hours" in img.properties:
+        if not img.properties["hotfix_hours"].isdecimal():
+            print(f'ERROR: Image "{imgnm}" has non-numeric hotfix_hours set', file=sys.stderr)
+            errors += 1
+    # (5a) Sanity: Are we actually in violation of replace_frequency?
     #  This is a bit tricky: We need to disregard images that have been rotated out
     #  - os_hidden = True is a safe sign for this
     #  - A name with a date stamp or old or prev (and a newer exists)
+    outd = is_outdated(img, bdate)
+    if outd == 3:
+        print(f'ERROR: Image "{imgnm}" does not provide a valid provided until date',
+              file=sys.stderr)
+        errors += 1
+    elif outd == 2:
+        print(f'WARNING: Image "{imgnm}" seems outdated (acc. to its repl freq) but is not hidden or otherwise marked',
+              file=sys.stderr)
+        warnings += 1
+        outd_list.append(imgnm)
+    elif outd:
+        outd_list.append(imgnm)
     # (2) sanity min_ram (>=64), min_disk (>= size)
+    if img.min_ram < 64:
+        print(f'WARNING: Image "{imgnm}": min_ram == {img.min_ram} MiB < 64 MiB', file=sys.stderr)
+        warnings += 1
+        # errors += 1
+    if img.min_disk * GIB < img.size:
+        print(f'WARNING: Image "{imgnm}": img size == {img.size / MIB:.0f} MiB, but min_disk == {img.min_disk * GIB / MIB:.0f} MiB',
+              file=sys.stderr)
+        warnings += 1
+        # errors += 1
     # (6) tags os:*, managed_by_*
-    #
+    # Nothing to do here ... we could do a warning if those are missing ...
+
     # (7) Recommended naming
     if imgnm[:len(constr_name)].casefold() != constr_name.casefold():  # and verbose
-        # FIXME: There could be a more clever heuristic for displayed recommended names
-        rec_name = constr_name[0].upper()+constr_name[1:]
-        print(f'Warning: Image "{imgnm}" does not start with recommended name "{rec_name}"',
+        rec_name = recommended_name(constr_name)
+        print(f'WARNING: Image "{imgnm}" does not start with recommended name "{rec_name}"',
               file=sys.stderr)
         warnings += 1
 
@@ -217,11 +307,37 @@ def report_stdimage_coverage(imgs):
     return err
 
 
+def miss_replacement_images(by_name, outd_list):
+    """Go over list of images to find replacement imgs for outd_list, return the ones that are left missing"""
+    rem_list = []
+    for outd in outd_list:
+        img = None
+        shortnm = outd.rsplit(" ", 1)[0].rstrip()
+        if shortnm != outd:
+            img = by_name.get(shortnm)
+        if img is not None:
+            bdate = 0
+            if "build_date" in img.properties:
+                bdate = parse_date(img.properties["build_date"])
+            if not bdate:
+                bdate = parse_date(img.created_at, formats=STRICT_FORMATS)
+            if is_outdated(img, bdate):
+                img = None
+        if img is None:
+            rem_list.append(outd)
+        elif verbose:
+            print(f'INFO: Image "{img.name}" is a valid replacement for outdated "{outd}"', file=sys.stderr)
+    return rem_list
+
+
 def main(argv):
     "Main entry point"
     # Option parsing
-    global verbose, private, skip
-    global cloud, conn
+    global verbose
+    private = False
+    skip = False
+    cloud = os.environ.get("OS_CLOUD")
+    err = 0
     try:
         opts, args = getopt.gnu_getopt(argv[1:], "phvc:s",
                                        ("private", "help", "os-cloud=", "verbose", "skip-completeness"))
@@ -245,18 +361,31 @@ def main(argv):
         usage(1)
     try:
         conn = openstack.connect(cloud=cloud, timeout=24)
-        # Do work
+        all_images = list(conn.image.images())
+        by_name = {img.name: img for img in all_images}
+        if len(by_name) != len(all_images):
+            counter = Counter([img.name for img in all_images])
+            duplicates = [name for name, count in counter.items() if count > 1]
+            print(f'WARNING: duplicate names detected: {", ".join(duplicates)}', file=sys.stderr)
         if not images:
-            images = get_imagelist(private)
-        err = 0
+            images = [img.name for img in all_images if private or img.visibility == 'public']
         # Analyse image metadata
-        for image in images:
-            err += validate_imageMD(image)
+        outdated_images = []
+        for imgnm in images:
+            err += validate_imageMD(by_name[imgnm], outdated_images)
         if not skip:
             err += report_stdimage_coverage(images)
-    except BaseException as e:
-        print(f"CRITICAL: {e!r}")
-        return 1  # just return 1 because `err` need not be assigned yet
+        if outdated_images:
+            if verbose:
+                print(f'INFO: The following outdated images have been detected: {outdated_images}',
+                      file=sys.stderr)
+            rem_list = miss_replacement_images(images, outdated_images)
+            if rem_list:
+                print(f'ERROR: Outdated images without replacement: {rem_list}', file=sys.stderr)
+                err += len(rem_list)
+    except BaseException as exc:
+        print(f"CRITICAL: {exc!r}", file=sys.stderr)
+        return 1 + err
     return err
 
 
