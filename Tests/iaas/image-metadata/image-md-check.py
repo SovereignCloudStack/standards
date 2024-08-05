@@ -384,7 +384,7 @@ def main(argv):
                 print(f'ERROR: Outdated images without replacement: {rem_list}', file=sys.stderr)
                 err += len(rem_list)
     except BaseException as exc:
-        print(f"CRITICAL: {exc!r}")
+        print(f"CRITICAL: {exc!r}", file=sys.stderr)
         return 1 + err
     return err
 
