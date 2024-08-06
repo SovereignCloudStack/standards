@@ -7,6 +7,7 @@ import os.path
 from shutil import which
 from subprocess import run
 from tempfile import NamedTemporaryFile
+from _thread import allocate_lock, get_ident
 from typing import Annotated, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
@@ -20,13 +21,22 @@ import ruamel.yaml
 import uvicorn
 
 from sql import (
-    db_find_account, db_update_account, db_update_publickey, db_filter_publickeys, db_update_scope,
-    db_update_version, db_update_standard, db_update_check, db_filter_checks, db_filter_standards,
-    db_filter_versions, db_get_reports, db_get_keys, db_get_scopeid, db_insert_report, db_insert_invocation,
-    db_get_versionid, db_get_checkdata, db_insert_result, db_get_relevant_results, db_get_recent_results,
+    db_find_account, db_update_account, db_update_publickey, db_filter_publickeys, db_get_reports,
+    db_get_keys, db_insert_report, db_get_recent_results,
     db_patch_approval, db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys,
-    db_patch_subject, db_get_subjects, db_insert_result2,
+    db_patch_subject, db_get_subjects, db_insert_result2, db_copy_results, db_get_relevant_results2,
 )
+
+
+try:
+    from scs_cert_lib import load_spec, annotate_validity, compile_suite
+except ImportError:
+    # the following course of action is not unproblematic because the Tests directory will be
+    # mounted to the Docker instance, hence it's hard to tell what version we are gonna get;
+    # however, unlike the reloading of the config, the import only happens once, and at that point
+    # in time, both monitor.py and scs_cert_lib.py should come from the same git checkout
+    import sys; sys.path.insert(0, os.path.abspath('../Tests'))  # noqa: E702
+    from scs_cert_lib import load_spec, annotate_validity, compile_suite
 
 
 class Settings:
@@ -74,11 +84,15 @@ cryptctx = CryptContext(
 )
 env = Environment()
 env.filters.update(
-    passed=lambda scopedata: ", ".join(key for key, val in scopedata['versions'].items() if val == 1),
+    passed=lambda scopedata:
+        ", ".join(key for key, val in scopedata['versions'].items() if val == 1) if scopedata else "",
 )
 templates_map = {
     k: None for k in REQUIRED_TEMPLATES
 }
+# map thread id (cf. `get_ident`) to a dict that maps scope uuids to scope documents
+_scopes = defaultdict(dict)
+_scopes_lock = allocate_lock()
 
 
 class TimestampEncoder(json.JSONEncoder):
@@ -176,38 +190,50 @@ def import_bootstrap(bootstrap_path, conn):
         conn.commit()
 
 
-def import_cert_yaml(yaml_path, conn):
+def precompute_targets(version):
+    suite = compile_suite(f"{version['version']}", version['include'])
+    return {
+        'suite': suite,
+        'targets': {
+            tname: suite.select(tname, target_spec)
+            for tname, target_spec in version['targets'].items()
+        }
+    }
+
+
+def import_cert_yaml(yaml_path, target_dict):
     yaml = ruamel.yaml.YAML(typ='safe')
     with open(yaml_path, "r") as fileobj:
-        document = yaml.load(fileobj.read())
-    # The following will also delete entries that are not present in the given yaml.
-    # It is paramount that all extant primary keys be kept because the reports refer to them, and
-    # deletions will cascade! But we should only ever delete entries for non-stable versions; stable versions
-    # are deemed immutable except maybe for checks, and for those, at least the ids are immutable.
-    with conn.cursor() as cur:
-        scopeid = db_update_scope(cur, document)
-        all_versions = set()
-        for vdata in document['versions']:
-            versionid = db_update_version(cur, scopeid, vdata)
-            all_versions.add(versionid)
-            all_standards = set()
-            for sdata in vdata['standards']:
-                standardid = db_update_standard(cur, versionid, sdata)
-                all_standards.add(standardid)
-                all_checks = set()
-                for cdata in sdata.get('checks', ()):
-                    checkid = db_update_check(cur, versionid, standardid, cdata)
-                    all_checks.add(checkid)
-                db_filter_checks(cur, standardid, lambda checkid, *_: checkid in all_checks)
-            db_filter_standards(cur, versionid, lambda standardid, *_: standardid in all_standards)
-        db_filter_versions(cur, scopeid, lambda versionid, *_: versionid in all_versions)
-        conn.commit()
+        spec = load_spec(yaml.load(fileobj.read()))
+    annotate_validity(spec['timeline'], spec['versions'], date.today())
+    target_dict[spec['uuid']] = {
+        'spec': spec,
+        'versions': {
+            version['version']: precompute_targets(version)
+            for version in spec['versions'].values()
+        }
+    }
 
 
-def import_cert_yaml_dir(yaml_path, conn):
+def import_cert_yaml_dir(yaml_path, target_dict):
     for fn in sorted(os.listdir(yaml_path)):
         if fn.startswith('scs-') and fn.endswith('.yaml'):
-            import_cert_yaml(os.path.join(yaml_path, fn), conn)
+            import_cert_yaml(os.path.join(yaml_path, fn), target_dict)
+
+
+def get_scopes():
+    """returns thread-local copy of the scopes dict"""
+    ident = get_ident()
+    with _scopes_lock:
+        yaml_path = _scopes['_yaml_path']
+        counter = _scopes['_counter']
+        current = _scopes.get(ident)
+        if current is None:
+            _scopes[ident] = current = {'_counter': -1}
+    if current['_counter'] != counter:
+        import_cert_yaml_dir(yaml_path, current)
+        current['_counter'] = counter
+    return current
 
 
 def import_templates(template_dir, env, templates):
@@ -274,38 +300,6 @@ async def get_reports(
         return db_get_reports(cur, subject, limit, skip)
 
 
-def add_period(dt: datetime, period: str) -> datetime:
-    """
-    Given a `datetime` instance `dt` and a `str` instance `period`, compute the `datetime` when this period
-    expires, where period is one of: "day", "week", "month", or "quarter". For instance, with a period
-    of (calendar) "week", this period expires on midnight the next monday after `dt` + 7 days. This
-    computation is used to implement Regulations 2 and 3 of the standard scs-0004 -- see
-
-    https://docs.scs.community/standards/scs-0004-v1-achieving-certification#regulations
-    """
-    # compute the moment of expiry (so we are valid before that point, but not on that point)
-    if period == 'day':
-        dt += timedelta(days=2)
-        return datetime(dt.year, dt.month, dt.day)  # omit time so as to arrive at midnight
-    if period == 'week':
-        dt += timedelta(days=14 - dt.weekday())
-        return datetime(dt.year, dt.month, dt.day)  # omit time so as to arrive at midnight
-    if period == 'month':
-        if dt.month == 11:
-            return datetime(dt.year + 1, 1, 1)
-        if dt.month == 12:
-            return datetime(dt.year + 1, 2, 1)
-        return datetime(dt.year, dt.month + 2, 1)
-    if period == 'quarter':
-        if dt.month >= 10:
-            return datetime(dt.year + 1, 4, 1)
-        if dt.month >= 7:
-            return datetime(dt.year + 1, 1, 1)
-        if dt.month >= 4:
-            return datetime(dt.year, 10, 1)
-        return datetime(dt.year, 7, 1)
-
-
 @app.post("/reports")
 async def post_report(
     request: Request,
@@ -346,66 +340,47 @@ async def post_report(
         ssh_validate(keys, signature, body_text)
     except ValueError:
         raise HTTPException(status_code=401)
-    expiration_lookup = {
-        period: add_period(checked_at, period)
-        for period in ('day', 'week', 'month', 'quarter')
-    }
-    default_expiration = expiration_lookup['day']
     scopeuuid = document['spec']['uuid']
     with conn.cursor() as cur:
-        try:
-            scopeid = db_get_scopeid(cur, scopeuuid)
-        except KeyError:
-            raise HTTPException(status_code=500, detail=f"Unknown scope: {scopeuuid}")
         try:
             reportid = db_insert_report(cur, uuid, checked_at, subject, json_text, content_type, body)
         except UniqueViolation:
             raise HTTPException(status_code=409, detail="Conflict: report already present")
-        invocation_ids = {}
-        for invocation, idata in rundata['invocations'].items():
-            invocationid = db_insert_invocation(cur, reportid, invocation, idata)
-            invocation_ids[invocation] = invocationid
         for version, vdata in document['versions'].items():
-            versionid = db_get_versionid(cur, scopeid, version)
             for check, rdata in vdata.items():
-                checkid, lifetime = db_get_checkdata(cur, versionid, check)
-                expiration = expiration_lookup.get(lifetime, default_expiration)
-                invocationid = invocation_ids[rdata['invocation']]
                 result = rdata['result']
                 approval = 1 == result  # pre-approve good result
-                db_insert_result(cur, reportid, invocationid, checkid, result, approval, expiration)
                 db_insert_result2(cur, checked_at, subject, scopeuuid, version, check, result, approval, reportid)
     conn.commit()
 
 
-def convert_result_rows_to_dict(rows):
-    # collect pass, DNF, fail per scope/version
-    num_pass, num_dnf, num_fail = defaultdict(set), defaultdict(set), defaultdict(set)
-    scopes = {}  # also collect some ancillary information
+def convert_result_rows_to_dict2(rows, scopes_lookup, grace_period_days):
+    # collect result per subject/scope/version
+    by_context = defaultdict(dict)
+    scopes = set()  # also collect some ancillary information
     subjects = set()
-    for subject, scopeuuid, scope, version, condition, check, ccondition, result in rows:
-        scopes.setdefault(scopeuuid, scope)
+    for subject, scopeuuid, version, testcase, result, checked_at in rows:
+        scopes.add(scopeuuid)
         subjects.add(subject)
-        if result is not None and (condition == "optional" or ccondition == "optional"):
-            # count optional as 'pass' so long as a result is available;
-            # otherwise a version without mandatory checks wouldn't be counted at all
-            num_pass[(subject, scopeuuid, version)].add(check)
-        elif result == 1:
-            num_pass[(subject, scopeuuid, version)].add(check)
-        elif result == -1:
-            num_fail[(subject, scopeuuid, version)].add(check)
-        else:
-            num_dnf[(subject, scopeuuid, version)].add(check)
+        by_context[(subject, scopeuuid, version)][testcase] = {'result': result, 'checked_at': checked_at}
     results = defaultdict(dict)
     for subject in subjects:
-        for scopeuuid, scope in scopes.items():
-            results[subject][scopeuuid] = {"name": scope, "versions": defaultdict(dict), "result": 0}
-    keys = sorted(set(num_pass) | set(num_dnf) | set(num_fail))
-    for key in keys:
-        result = -1 if key in num_fail else 0 if key in num_dnf else 1
-        subject, scopeuuid, version = key
-        results[subject][scopeuuid]["versions"][version] = result
-        if result == 1:
+        for scopeuuid in scopes:
+            results[subject][scopeuuid] = {"versions": defaultdict(dict), "result": 0}
+    now = datetime.now()
+    if grace_period_days:
+        now -= timedelta(days=grace_period_days)
+    for context, scenario_results in by_context.items():
+        subject, scopeuuid, version = context
+        precomputed = scopes_lookup.get(scopeuuid)
+        if precomputed is None:
+            continue
+        main_suite = precomputed['versions'][version]['targets']['main']
+        by_result = main_suite.evaluate(scenario_results, now=now)
+        missing, failed = by_result[0], by_result[-1]
+        total_result = -1 if failed else 0 if missing else 1
+        results[subject][scopeuuid]["versions"][version] = total_result
+        if total_result == 1:
             # FIXME also check that the version is valid
             results[subject][scopeuuid]["result"] = 1
     return results
@@ -428,13 +403,12 @@ async def get_status(
         # see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/406
         raise HTTPException(status_code=406, detail="client needs to accept application/json")
     with conn.cursor() as cur:
-        rows = db_get_relevant_results(
+        rows2 = db_get_relevant_results2(
             cur, subject, scopeuuid, version,
-            active_only=True,
             approved_only=not privileged_view,
-            grace_period_days=None if privileged_view else GRACE_PERIOD_DAYS,
         )
-    return convert_result_rows_to_dict(rows)
+    grace_period_days = None if privileged_view else GRACE_PERIOD_DAYS
+    return convert_result_rows_to_dict2(rows2, get_scopes(), grace_period_days=grace_period_days)
 
 
 @app.get("/table")
@@ -444,11 +418,9 @@ async def get_table(
     conn: Annotated[connection, Depends(get_conn)],
 ):
     with conn.cursor() as cur:
-        rows = db_get_relevant_results(
-            cur, active_only=True, approved_only=True, grace_period_days=GRACE_PERIOD_DAYS,
-        )
-    results = convert_result_rows_to_dict(rows)
-    result = templates_map[TEMPLATE_OVERVIEW_MD].render(results=results)
+        rows2 = db_get_relevant_results2(cur, approved_only=True)
+    results2 = convert_result_rows_to_dict2(rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS)
+    result = templates_map[TEMPLATE_OVERVIEW_MD].render(results=results2)
     return Response(
         content=result,
         media_type='text/markdown',
@@ -463,11 +435,9 @@ async def get_pages(
     part: str = "full",
 ):
     with conn.cursor() as cur:
-        rows = db_get_relevant_results(
-            cur, active_only=True, approved_only=True, grace_period_days=GRACE_PERIOD_DAYS,
-        )
-    results = convert_result_rows_to_dict(rows)
-    result = templates_map[TEMPLATE_OVERVIEW_FRAGMENT].render(results=results)
+        rows2 = db_get_relevant_results2(cur, approved_only=True)
+    results2 = convert_result_rows_to_dict2(rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS)
+    result = templates_map[TEMPLATE_OVERVIEW_FRAGMENT].render(results=results2)
     if part == "full":
         result = templates_map[TEMPLATE_OVERVIEW].render(fragment=result)
     return Response(
@@ -546,9 +516,18 @@ if __name__ == "__main__":
     with mk_conn(settings=settings) as conn:
         with conn.cursor() as cur:
             db_ensure_schema(cur)
+        # begin test
+        with conn.cursor() as cur:
+            db_copy_results(cur)
+        conn.commit()
+        # end test
         del cur
         import_bootstrap(settings.bootstrap_path, conn=conn)
-        import_cert_yaml_dir(settings.yaml_path, conn=conn)
+        _scopes.update({
+            '_yaml_path': settings.yaml_path,
+            '_counter': 0,
+        })
+        _ = get_scopes()  # make sure they can be read
         import_templates(settings.template_path, env=env, templates=templates_map)
         validate_templates(templates=templates_map)
     uvicorn.run(app, host='0.0.0.0', port=8080, log_level="info", workers=1)
