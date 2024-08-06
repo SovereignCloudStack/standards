@@ -7,18 +7,18 @@ supplements:
   - scs-0101-v1-entropy.md
 ---
 
-## Implementation
+## Implementation notes
 
 We presume that almost nothing has to be done (or indeed can be done), as
 long as the CPUs and VM images are reasonably recent; only the flavor and
-image attributes have to be set:
+image attributes required by the standard have to be set:
 
 - flavor: `hw_rng:allowed=True` ,
 - image: `hw_rng_model: virtio` .
 
-## Automated Tests
+## Automated tests
 
-### Images Sample
+### Images sample
 
 Some checks need to be performed on a live instance. For these checks, it is
 necessary to choose a sample of VM images to test on.
@@ -59,6 +59,6 @@ as ensured by the image metadata standard.
 The script [`entropy-check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/entropy/entropy-check.py)
 connects to OpenStack and performs the checks described in this section.
 
-## Manual Tests
+## Manual tests
 
 None.
