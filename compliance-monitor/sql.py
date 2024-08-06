@@ -4,11 +4,6 @@ from psycopg2.extensions import cursor
 # use ... (Ellipsis) here to indicate that no default value exists (will lead to error if no value is given)
 ACCOUNT_DEFAULTS = {'subject': ..., 'api_key': ..., 'roles': ...}
 PUBLIC_KEY_DEFAULTS = {'public_key': ..., 'public_key_type': ..., 'public_key_name': ...}
-SCOPE_DEFAULTS = {'uuid': ..., 'name': ..., 'url': ...}
-VERSION_DEFAULTS = {'version': ..., 'stabilized_at': None, 'deprecated_at': None}
-STANDARD_DEFAULTS = {'name': ..., 'url': ..., 'condition': None}
-CHECK_DEFAULTS = {'id': ..., 'lifetime': None, 'condition': None}
-INVOCATION_DEFAULTS = {'critical': ..., 'error': ..., 'warning': ..., 'result': ...}
 SUBJECT_DEFAULTS = {'subject': ..., 'name': ..., 'provider': None, 'active': False}
 
 
@@ -153,7 +148,7 @@ def db_ensure_schema(cur: cursor):
         subject text NOT NULL,          -- = report.subject
         scopeuuid text NOT NULL,        -- = report.spec.uuid
         version text NOT NULL,          -- = vname
-        checkid text NOT NULL,          -- = tcid
+        testcase text NOT NULL,         -- = tcid
         result int,                     -- = tcres.result
         approval boolean,               -- = tcres.result == 1
         -- the following is FYI only, for the most data is literally copied to this table
@@ -225,82 +220,6 @@ def db_filter_publickeys(cur: cursor, accountid, predicate: callable):
         del removeids[:10]
 
 
-def db_update_scope(cur: cursor, record: dict):
-    sanitized = sanitize_record(record, SCOPE_DEFAULTS)
-    cur.execute('''
-    INSERT INTO scope (scopeuuid, scope, url)
-    VALUES (%(uuid)s, %(name)s, %(url)s)
-    ON CONFLICT (scopeuuid)
-    DO UPDATE
-    SET scope = EXCLUDED.scope, url = EXCLUDED.url
-    RETURNING scopeid;''', sanitized)
-    scopeid, = cur.fetchone()
-    return scopeid
-
-
-def db_update_version(cur: cursor, scopeid, record: dict):
-    sanitized = sanitize_record(record, VERSION_DEFAULTS, scopeid=scopeid)
-    cur.execute('''
-    INSERT INTO version (scopeid, version, stabilized_at, deprecated_at)
-    VALUES (%(scopeid)s, %(version)s, %(stabilized_at)s, %(deprecated_at)s)
-    ON CONFLICT (scopeid, version)
-    DO UPDATE
-    SET stabilized_at = EXCLUDED.stabilized_at, deprecated_at = EXCLUDED.deprecated_at
-    RETURNING versionid;''', sanitized)
-    versionid, = cur.fetchone()
-    return versionid
-
-
-def db_update_standard(cur: cursor, versionid, record: dict):
-    sanitized = sanitize_record(record, STANDARD_DEFAULTS, versionid=versionid)
-    cur.execute('''
-    INSERT INTO standardentry (versionid, standard, surl, condition)
-    VALUES (%(versionid)s, %(name)s, %(url)s, %(condition)s)
-    ON CONFLICT (versionid, surl)
-    DO UPDATE
-    SET condition = EXCLUDED.condition, standard = EXCLUDED.standard
-    RETURNING standardid;''', sanitized)
-    standardid, = cur.fetchone()
-    return standardid
-
-
-def db_update_check(cur: cursor, versionid, standardid, record: dict):
-    sanitized = sanitize_record(record, CHECK_DEFAULTS, versionid=versionid, standardid=standardid)
-    cur.execute('''
-    INSERT INTO "check" (versionid, standardid, id, lifetime, ccondition)
-    VALUES (%(versionid)s, %(standardid)s, %(id)s, %(lifetime)s, %(condition)s)
-    ON CONFLICT (versionid, id)
-    DO UPDATE
-    SET ccondition = EXCLUDED.ccondition, lifetime = EXCLUDED.lifetime
-    RETURNING checkid;''', sanitized)
-    checkid, = cur.fetchone()
-    return checkid
-
-
-def db_filter_checks(cur: cursor, standardid, predicate: callable):
-    cur.execute('SELECT checkid, id FROM "check" WHERE standardid = %s;', (standardid, ))
-    removeids = [row[0] for row in cur.fetchall() if not predicate(*row)]
-    while removeids:
-        cur.execute('DELETE FROM "check" WHERE checkid IN %s', (tuple(removeids[:10]), ))
-        del removeids[:10]
-
-
-def db_filter_standards(cur: cursor, versionid, predicate: callable):
-    cur.execute('SELECT standardid, surl FROM standardentry WHERE versionid = %s;', (versionid, ))
-    removeids = [row[0] for row in cur.fetchall() if not predicate(*row)]
-    while removeids:
-        cur.execute('DELETE FROM standardentry WHERE standardid IN %s', (tuple(removeids[:10]), ))
-        del removeids[:10]
-
-
-def db_filter_versions(cur: cursor, scopeid, predicate: callable):
-    cur.execute('SELECT versionid, version FROM version WHERE scopeid = %s;', (scopeid, ))
-    removeids = [row[0] for row in cur.fetchall() if not predicate(*row)]
-    while removeids:
-        cur.execute('DELETE FROM version WHERE versionid IN %s', (tuple(removeids[:10]), ))
-        del removeids[:10]
-
-
 def db_get_reports(cur: cursor, subject, limit, skip):
     cur.execute(
         sql.SQL("SELECT data FROM report {} LIMIT %(limit)s OFFSET %(skip)s;")
@@ -312,14 +231,6 @@ def db_get_reports(cur: cursor, subject, limit, skip):
     return [row[0] for row in cur.fetchall()]
 
 
-def db_get_scopeid(cur: cursor, scopeuuid):
-    cur.execute('SELECT scopeid FROM scope WHERE scopeuuid = %s;', (scopeuuid, ))
-    if not cur.rowcount:
-        raise KeyError(scopeuuid)
-    scopeid, = cur.fetchone()
-    return scopeid
-
-
 def db_insert_report(cur: cursor, uuid, checked_at, subject, json_text, content_type, body):
     # this is an exception in that we don't use a record parameter (it's just not as practical here)
     cur.execute('''
@@ -328,37 +239,6 @@ def db_insert_report(cur: cursor, uuid, checked_at, subject, json_text, content_
     RETURNING reportid;''', (uuid, checked_at, subject, json_text, content_type, body))
     reportid, = cur.fetchone()
     return reportid
-
-
-def db_insert_invocation(cur: cursor, reportid, invocation, record):
-    sanitized = sanitize_record(record, INVOCATION_DEFAULTS, reportid=reportid, invocation=invocation)
-    cur.execute('''
-    INSERT INTO invocation (reportid, invocation, critical, error, warning, result)
-    VALUES (%(reportid)s, %(invocation)s, %(critical)s, %(error)s, %(warning)s, %(result)s)
-    RETURNING invocationid;''', sanitized)
-    invocationid, = cur.fetchone()
-    return invocationid
-
-
-def db_get_versionid(cur: cursor, scopeid, version):
-    cur.execute('SELECT versionid FROM version WHERE scopeid = %s AND version = %s;', (scopeid, version))
-    versionid, = cur.fetchone()
-    return versionid
-
-
-def db_get_checkdata(cur: cursor, versionid, check):
-    cur.execute('SELECT checkid, lifetime FROM "check" WHERE versionid = %s AND id = %s;', (versionid, check))
-    return cur.fetchone()
-
-
-def db_insert_result(cur: cursor, reportid, invocationid, checkid, result, approval, expiration):
-    # this is an exception in that we don't use a record parameter (it's just not as practical here)
-    cur.execute('''
-    INSERT INTO result (reportid, invocationid, checkid, result, approval, expiration)
-    VALUES (%s, %s, %s, %s, %s, %s)
-    RETURNING resultid;''', (reportid, invocationid, checkid, result, approval, expiration))
-    resultid, = cur.fetchone()
-    return resultid
 
 
 def db_insert_result2(
@@ -373,45 +253,20 @@ def db_insert_result2(
     return resultid
 
 
-def db_get_relevant_results(
-    cur: cursor,
-    subject=None, scopeuuid=None, version=None, approved_only=True, grace_period_days=None, active_only=None,
-):
-    """for each combination of scope/version/check, get the most recent test result that is still valid"""
-    cur.execute(sql.SQL('''
-    SELECT subject.subject, scope.scopeuuid, scope.scope, version.version, standardentry.condition
-    , "check".id, "check".ccondition, latest.result
-    FROM "check"
-    CROSS JOIN subject
-    NATURAL JOIN standardentry
+def db_copy_results(cur):
+    cur.execute('''TRUNCATE TABLE result2;''')
+    cur.execute('''
+    INSERT INTO result2 (checked_at, subject, scopeuuid, version, testcase, result, approval, reportid)
+    SELECT
+        report.checked_at, report.subject,
+        scope.scopeuuid, version.version, "check".id,
+        result.result, result.approval, result.reportid
+    FROM result
+    NATURAL JOIN report
+    NATURAL JOIN "check"
     NATURAL JOIN version
     NATURAL JOIN scope
-    LEFT OUTER JOIN (
-        -- find the latest result per checkid for this subject
-        -- DISTINCT ON is a Postgres-specific construct that comes in very handy here :)
-        SELECT DISTINCT ON (subject, checkid) *
-        FROM result
-        NATURAL JOIN report
-        {report_filter}
-        ORDER BY subject, checkid, checked_at DESC
-    ) latest
-    ON "check".checkid = latest.checkid AND subject.subject = latest.subject
-    {filter_condition};''').format(
-        report_filter=make_where_clause(
-            sql.SQL('approval') if approved_only else None,
-            sql.SQL(
-                'expiration > NOW()' if grace_period_days is None else
-                f"expiration > NOW() - interval '{grace_period_days:d} days'"
-            ),
-        ),
-        filter_condition=make_where_clause(
-            None if scopeuuid is None else sql.SQL('scope.scopeuuid = %(scopeuuid)s'),
-            None if version is None else sql.SQL('version.version = %(version)s'),
-            None if subject is None else sql.SQL('subject.subject = %(subject)s'),
-            None if active_only is None else sql.SQL('subject.active = %(active)s'),
-        ),
-    ), {"subject": subject, "scopeuuid": scopeuuid, "version": version, "active": active_only})
-    return cur.fetchall()
+    ;''')
 
 
 def db_get_relevant_results2(
@@ -425,7 +280,7 @@ def db_get_relevant_results2(
     SELECT DISTINCT ON (subject, scopeuuid, version, testcase)
     subject, scopeuuid, version, testcase, result, checked_at FROM result2
     {filter_condition}
-    ORDER BY subject, scopeuuid, version, checkid, checked_at DESC;
+    ORDER BY subject, scopeuuid, version, testcase, checked_at DESC;
     ''').format(
         filter_condition=make_where_clause(
             sql.SQL('approval') if approved_only else None,

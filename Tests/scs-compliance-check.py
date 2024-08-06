@@ -26,23 +26,16 @@ import shlex
 import getopt
 import datetime
 import subprocess
-from collections import Counter, defaultdict
+from collections import defaultdict
 from itertools import chain
 import logging
 import yaml
 
+from scs_cert_lib import load_spec, annotate_validity, compile_suite, TestSuite
+
 
 logger = logging.getLogger(__name__)
 
-# valid keywords for various parts of the spec, to be checked using `check_keywords`
-KEYWORDS = {
-    'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables', 'modules', 'timeline'),
-    'versions': ('version', 'include', 'targets', 'stabilized_at'),
-    'modules': ('id', 'run', 'testcases', 'url', 'name', 'parameters'),
-    'run': ('executable', 'env', 'args', 'section'),
-    'testcases': ('lifetime', 'id', 'description', 'tags'),
-    'include': ('id', 'parameters'),
-}
 TESTCASE_VERDICTS = {'PASS': 1, 'FAIL': -1}
 NIL_RESULT = {'result': 0}
 
@@ -151,74 +144,6 @@ class Config:
         self.arg0 = args[0]
 
 
-def check_keywords(ctx, d, keywords=KEYWORDS):
-    """
-    Recursively check `d` (usually a `dict`, but maybe a `list` or a `tuple`) for correctness.
-
-    Returns number of errors.
-
-    Here, correctness means that the dict may only use keywords as given via `keywords`.
-    """
-    valid = keywords.get(ctx)
-    if valid is None:
-        return 0  # stop recursion
-    if isinstance(d, (list, tuple)):
-        return sum(check_keywords(ctx, v, keywords=keywords) for v in d)
-    if not isinstance(d, dict):
-        return 0
-    invalid = [k for k in d if k not in valid]
-    if invalid:
-        logger.error(f"{ctx} uses unknown keywords: {','.join(invalid)}")
-    return len(invalid) + sum(check_keywords(k, v, keywords=keywords) for k, v in d.items())
-
-
-def resolve_spec(spec: dict):
-    """rewire `spec` so as to make most lookups via name unnecessary, and to find name errors early"""
-    if isinstance(spec['versions'], dict):
-        raise RuntimeError('spec dict already in resolved form')
-    # there are currently two types of objects that are being referenced by name or id
-    # - modules, referenced by id
-    # - versions, referenced by name (unfortunately, the field is called "version")
-    # step 1. build lookups
-    module_lookup = {module['id']: module for module in spec['modules']}
-    version_lookup = {version['version']: version for version in spec['versions']}
-    # step 2. check for duplicates:
-    if len(module_lookup) != len(spec['modules']):
-        raise RuntimeError("spec contains duplicate module ids")
-    if len(version_lookup) != len(spec['versions']):
-        raise RuntimeError("spec contains duplicate version ids")
-    # step 3. replace fields 'modules' and 'versions' by respective lookups
-    spec['modules'] = module_lookup
-    spec['versions'] = version_lookup
-    # step 4. resolve references
-    # step 4a. resolve references to modules in includes
-    # in this step, we also normalize the include form
-    for version in spec['versions'].values():
-        version['include'] = [
-            {'module': module_lookup[inc], 'parameters': {}} if isinstance(inc, str) else
-            {'module': module_lookup[inc['id']], 'parameters': inc.get('parameters', {})}
-            for inc in version['include']
-        ]
-    # step 4b. resolve references to versions in timeline
-    # on second thought, let's not go there: it's a canonical extension map, and it should remain that way.
-    # however, we still have to look for name errors
-    for entry in spec['timeline']:
-        for vname in entry['versions']:
-            # trigger KeyError
-            _ = version_lookup[vname]
-
-
-def annotate_validity(timeline: list, versions: dict, checkdate: datetime.date):
-    """annotate `versions` with validity info from `timeline` (note that this depends on `checkdate`)"""
-    validity_lookup = max(
-        (entry for entry in timeline if entry['date'] <= checkdate),
-        key=lambda entry: entry['date'],
-        default={},
-    ).get('versions', {})
-    for vname, version in versions.items():
-        version['validity'] = validity_lookup.get(vname, 'deprecated')
-
-
 def select_valid(versions: list, valid=('effective', 'warn', 'draft')) -> list:
     return [version for version in versions if version['validity'] in valid]
 
@@ -250,27 +175,6 @@ def invoke_check_tool(exe, args, env, cwd):
             if line.lower().startswith(signal)
         ])
     return invokation
-
-
-def parse_selector(selector_str: str) -> list[list[str]]:
-    # a selector is a list of terms,
-    # a term is a list of atoms,
-    # an atom is a string that optionally starts with "!"
-    return [term_str.strip().split('/') for term_str in selector_str.split()]
-
-
-def test_atom(atom: str, tags: list[str]):
-    if atom.startswith("!"):
-        return atom[1:] not in tags
-    return atom in tags
-
-
-def test_selector(selector: list[list[str]], tags: list[str]):
-    return all(any(test_atom(atom, tags) for atom in term) for term in selector)
-
-
-def test_selectors(selectors: list[list[list[str]]], tags: list[str]):
-    return any(test_selector(selector, tags) for selector in selectors)
 
 
 def compute_results(stdout):
@@ -354,68 +258,6 @@ class ResultBuilder:
         return final
 
 
-class TestSuite:
-    def __init__(self, name):
-        self.name = name
-        self.checks = []
-        self.testcases = []
-        self.ids = Counter()
-        self.results = {}
-        self.partial = False
-
-    def check_sanity(self):
-        # sanity check: ids must be unique
-        duplicates = [key for key, value in self.ids.items() if value > 1]
-        if duplicates:
-            logger.warning(f"duplicate ids in {self.name}: {', '.join(duplicates)}")
-
-    def include_checks(self, module, parameters, sections=None):
-        missing_params = set(module.get('parameters', ())) - set(parameters)
-        if missing_params:
-            logger.warning(f"module {module['id']}: missing parameters {', '.join(missing_params)}")
-            return
-        self.checks.extend(
-            {**check, 'parameters': parameters}
-            for check in module.get('run', ())
-            if sections is None or check.get('section') in sections
-        )
-
-    def include_testcases(self, module):
-        testcases = module.get('testcases', ())
-        self.testcases.extend(testcases)
-        self.ids.update(testcase["id"] for testcase in testcases)
-
-    def evaluate(self, results, selectors):
-        by_result = defaultdict(list)
-        for testcase in self.testcases:
-            if not test_selectors(selectors, testcase['tags']):
-                continue
-            result = results.get(testcase['id'], NIL_RESULT)['result']
-            by_result[result].append(testcase)
-        return by_result
-
-
-def compile_suite(suite: TestSuite, include: list, sections: tuple, tests: re.Pattern):
-    if sections:
-        suite.name += f" [sections: {', '.join(sections)}]"
-        suite.partial = True
-    if tests:
-        suite.name += f" [tests: '{tests.pattern}']"
-        suite.partial = True
-    for inc in include:
-        module = inc['module']
-        # basic sanity
-        testcases = module.get('testcases', ())
-        checks = module.get('run', ())
-        if not testcases or not checks:
-            logger.info(f"module {module['id']} missing checks or test cases")
-        # always include all testcases (necessary for assessing partial results)
-        suite.include_testcases(module)
-        # only add checks if they contain desired testcases
-        if not tests or any(tests.match(ch['id']) for ch in testcases):
-            suite.include_checks(module, inc['parameters'], sections=sections)
-
-
 def run_suite(suite: TestSuite, runner: CheckRunner, results: ResultBuilder):
     """run all checks of `suite` using `runner`, collecting `results`"""
     suite.check_sanity()
@@ -430,8 +272,7 @@ def print_report(subject: str, suite: TestSuite, targets: dict, results: dict, v
         print("********" * 10)
     print(f"{subject} {suite.name}:")
     for tname, target_spec in targets.items():
-        selectors = [parse_selector(sel_str) for sel_str in target_spec.split(',')]
-        by_result = suite.evaluate(results, selectors)
+        by_result = suite.select(tname, target_spec).evaluate(results)
         missing, failed = by_result[0], by_result[-1]
         verdict = 'FAIL' if failed else 'TENTATIVE pass' if missing else 'PASS'
         if failed or missing:
@@ -479,11 +320,7 @@ def main(argv):
     if not config.subject:
         raise RuntimeError("You need pass --subject=SUBJECT.")
     with open(config.arg0, "r", encoding="UTF-8") as specfile:
-        spec = yaml.load(specfile, Loader=yaml.SafeLoader)
-    if check_keywords('spec', spec):
-        # super simple syntax check (recursive)
-        raise RuntimeError('syntax problems in spec file. bailing')
-    resolve_spec(spec)
+        spec = load_spec(yaml.load(specfile, Loader=yaml.SafeLoader))
     missing_vars = [v for v in spec.get("variables", ()) if v not in config.assignment]
     if missing_vars:
         raise RuntimeError(f"Missing variable assignments (via -a) for: {', '.join(missing_vars)}")
@@ -503,8 +340,12 @@ def main(argv):
     version_report = {}
     for version in versions:
         vname = version['version']
-        suite = TestSuite(f"{spec['name']} {vname} ({version['validity']})")
-        compile_suite(suite, version['include'], config.sections, config.tests)
+        suite = compile_suite(
+            f"{spec['name']} {vname} ({version['validity']})",
+            version['include'],
+            config.sections,
+            config.tests,
+        )
         builder = ResultBuilder(suite.name)
         run_suite(suite, runner, builder)
         results = version_report[vname] = builder.finalize(permissible_ids=suite.ids)
@@ -524,4 +365,4 @@ if __name__ == "__main__":
         raise
     except BaseException as exc:
         logger.critical(f"{str(exc) or repr(exc)}")
-        sys.exit(1)
+        raise
