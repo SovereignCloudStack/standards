@@ -1,10 +1,17 @@
 from psycopg2 import sql
-from psycopg2.extensions import cursor
+from psycopg2.extensions import cursor, connection
 
+# list schema versions in ascending order
+SCHEMA_VERSION_KEY = 'version'
+SCHEMA_VERSIONS = ['v1', 'v2']
 # use ... (Ellipsis) here to indicate that no default value exists (will lead to error if no value is given)
 ACCOUNT_DEFAULTS = {'subject': ..., 'api_key': ..., 'roles': ...}
 PUBLIC_KEY_DEFAULTS = {'public_key': ..., 'public_key_type': ..., 'public_key_name': ...}
 SUBJECT_DEFAULTS = {'subject': ..., 'name': ..., 'provider': None, 'active': False}
+
+
+class SchemaVersionError(Exception):
+    pass
 
 
 def sanitize_record(record, defaults, **kwargs):
@@ -48,7 +55,7 @@ def db_get_keys(cur: cursor, subject):
     return cur.fetchall()
 
 
-def db_ensure_schema(cur: cursor):
+def db_ensure_schema_common(cur: cursor):
     # strive to make column names unique across tables so that selects become simple, such as:
     # select * from "check" natural join standardentry natural join version natural join scope;
     cur.execute('''
@@ -71,71 +78,18 @@ def db_ensure_schema(cur: cursor):
         accountid integer NOT NULL REFERENCES account ON DELETE CASCADE ON UPDATE CASCADE,
         UNIQUE (accountid, keyname)
     );
-    CREATE TABLE IF NOT EXISTS scope (
-        scopeid SERIAL PRIMARY KEY,
-        scopeuuid text UNIQUE,
-        scope text,
-        url text
+    CREATE TABLE IF NOT EXISTS subject (
+        subject text PRIMARY KEY,
+        active boolean,
+        name text,
+        provider text
     );
-    CREATE TABLE IF NOT EXISTS version (
-        versionid SERIAL PRIMARY KEY,
-        scopeid integer NOT NULL REFERENCES scope ON DELETE CASCADE ON UPDATE CASCADE,
-        version text,
-        stabilized_at date,
-        deprecated_at date,
-        UNIQUE (scopeid, version)
-    );
-    CREATE TABLE IF NOT EXISTS standardentry (
-        standardid SERIAL PRIMARY KEY,
-        versionid integer NOT NULL REFERENCES version ON DELETE CASCADE ON UPDATE CASCADE,
-        standard text,
-        surl text,  -- don't name it url to avoid clash with scope.url
-        condition text,
-        UNIQUE (versionid, surl)
-    );
-    CREATE TABLE IF NOT EXISTS "check" (
-        checkid SERIAL PRIMARY KEY,
-        -- the versionid field is redundant given the standardid field, but we need it for
-        -- the constraint at the bottom :(
-        versionid integer NOT NULL REFERENCES version ON DELETE CASCADE ON UPDATE CASCADE,
-        standardid integer NOT NULL REFERENCES standardentry ON DELETE CASCADE ON UPDATE CASCADE,
-        id text,
-        lifetime text,
-        ccondition text,  -- don't name it condition to avoid clash with standardentry.condition
-        UNIQUE (versionid, id)
-    );
-    CREATE TABLE IF NOT EXISTS report (
-        reportid SERIAL PRIMARY KEY,
-        reportuuid text UNIQUE,
-        checked_at timestamp,
-        subject text,
-        -- scopeid integer NOT NULL REFERENCES scope ON DELETE CASCADE ON UPDATE CASCADE,
-        -- let's omit the scope here because it is determined via the results, and it
-        -- is possible that future reports refer to multiple scopes
-        data jsonb,
-        rawformat text,
-        raw bytea
-    );
-    CREATE TABLE IF NOT EXISTS invocation (
-        invocationid SERIAL PRIMARY KEY,
-        reportid integer NOT NULL REFERENCES report ON DELETE CASCADE ON UPDATE CASCADE,
-        invocation text,
-        critical integer,
-        error integer,
-        warning integer,
-        result integer
-    );
-    CREATE TABLE IF NOT EXISTS result (
-        resultid SERIAL PRIMARY KEY,
-        checkid integer NOT NULL REFERENCES "check" ON DELETE CASCADE ON UPDATE CASCADE,
-        result int,
-        approval boolean,  -- whether a result <> 1 has manual approval
-        expiration timestamp,  -- precompute when this result would be expired
-        invocationid integer REFERENCES invocation ON DELETE CASCADE ON UPDATE CASCADE,
-        -- note that invocation is more like an implementation detail
-        -- therefore let's also put reportid here (added bonus: simplify queries)
-        reportid integer NOT NULL REFERENCES report ON DELETE CASCADE ON UPDATE CASCADE
-    );
+    ''')
+
+
+def db_ensure_schema_v2(cur: cursor):
+    db_ensure_schema_common(cur)
+    cur.execute('''
     -- make a way simpler version that doesn't put that much background knowledge into the schema
     -- therefore let's hope the schema will be more robust against change
     CREATE TABLE IF NOT EXISTS result2 (
@@ -154,13 +108,87 @@ def db_ensure_schema(cur: cursor):
         -- the following is FYI only, for the most data is literally copied to this table
         reportid integer NOT NULL REFERENCES report ON DELETE CASCADE ON UPDATE CASCADE
     );
-    CREATE TABLE IF NOT EXISTS subject (
-        subject text PRIMARY KEY,
-        active boolean,
-        name text,
-        provider text
-    );
     ''')
+
+
+def db_upgrade_data_v1_v2(cur):
+    # we are going to drop table result, but use delete anyway to have the transaction safety
+    cur.execute('''
+    INSERT INTO result2 (checked_at, subject, scopeuuid, version, testcase, result, approval, reportid)
+    SELECT
+        report.checked_at, report.subject,
+        scope.scopeuuid, version.version, "check".id,
+        result.result, result.approval, result.reportid
+    FROM result
+    NATURAL JOIN report
+    NATURAL JOIN "check"
+    NATURAL JOIN version
+    NATURAL JOIN scope
+    ;
+    DELETE FROM result
+    ;''')
+
+
+def db_post_upgrade_v1_v2(cur: cursor):
+    cur.execute('''
+    DROP TABLE IF EXISTS result;
+    DROP TABLE IF EXISTS "check";
+    DROP TABLE IF EXISTS standardentry;
+    DROP TABLE IF EXISTS version;
+    DROP TABLE IF EXISTS scope;
+    ''')
+
+
+def db_get_schema_version(cur: cursor):
+    cur.execute('''SELECT value FROM meta WHERE key = %s;''', (SCHEMA_VERSION_KEY, ))
+    return cur.rowcount and cur.fetchone()[0] or None
+
+
+def db_set_schema_version(cur: cursor, version: str):
+    cur.execute('''
+    UPDATE meta SET value = %s WHERE key = %s
+    ;''', (version, SCHEMA_VERSION_KEY))
+
+
+def db_upgrade_schema(conn: connection, cur: cursor):
+    # the ensure_* and post_upgrade_* functions must be idempotent
+    # ditto for the data transfer (ideally insert/delete transaction)
+    # -- then, in case we get interrupted when setting the new version, the upgrade can be repeated
+    while True:
+        current = db_get_schema_version(cur)
+        if current == SCHEMA_VERSIONS[-1]:
+            break
+        if current is None:
+            # this is an empty db, but it also used to be the case with v1
+            # I (mbuechse) made sure manually that the value v1 is set on running installations
+            db_ensure_schema_v2(cur)
+            db_set_schema_version(cur, 'v2')
+            conn.commit()
+        elif current == 'v1':
+            db_ensure_schema_v2(cur)
+            db_upgrade_data_v1_v2(cur)
+            db_set_schema_version(cur, 'v1-v2')
+            conn.commit()
+        elif current == 'v1-v2':
+            db_post_upgrade_v1_v2(cur)
+            db_set_schema_version(cur, 'v2')
+            conn.commit()
+
+
+def db_ensure_schema(conn: connection):
+    with conn.cursor() as cur:
+        cur.execute('''
+        CREATE TABLE IF NOT EXISTS meta (
+            key text PRIMARY KEY,
+            value text NOT NULL
+        );
+        ''')
+        db_upgrade_schema(conn, cur)
+    # the following could at some point be more adequate than the call to db_upgrade_schema above
+    # -- namely, if the service is run as multiple processes and the upgrade must be done in advance --:
+    # current, expected = db_get_schema_version(cur), SCHEMA_VERSIONS[-1]
+    # if current != expected:
+    #     raise SchemaVersionError(f"Database schema outdated! Expected {expected!r}, got {current!r}")
 
 
 def db_update_account(cur: cursor, record: dict):
@@ -251,22 +279,6 @@ def db_insert_result2(
     RETURNING resultid;''', (checked_at, subject, scopeuuid, version, testcase, result, approval, reportid))
     resultid, = cur.fetchone()
     return resultid
-
-
-def db_copy_results(cur):
-    cur.execute('''TRUNCATE TABLE result2;''')
-    cur.execute('''
-    INSERT INTO result2 (checked_at, subject, scopeuuid, version, testcase, result, approval, reportid)
-    SELECT
-        report.checked_at, report.subject,
-        scope.scopeuuid, version.version, "check".id,
-        result.result, result.approval, result.reportid
-    FROM result
-    NATURAL JOIN report
-    NATURAL JOIN "check"
-    NATURAL JOIN version
-    NATURAL JOIN scope
-    ;''')
 
 
 def db_get_relevant_results2(
