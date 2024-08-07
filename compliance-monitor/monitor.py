@@ -24,7 +24,7 @@ from sql import (
     db_find_account, db_update_account, db_update_publickey, db_filter_publickeys, db_get_reports,
     db_get_keys, db_insert_report, db_get_recent_results,
     db_patch_approval, db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys,
-    db_patch_subject, db_get_subjects, db_insert_result2, db_copy_results, db_get_relevant_results2,
+    db_patch_subject, db_get_subjects, db_insert_result2, db_get_relevant_results2,
 )
 
 
@@ -514,14 +514,7 @@ async def post_subjects(
 
 if __name__ == "__main__":
     with mk_conn(settings=settings) as conn:
-        with conn.cursor() as cur:
-            db_ensure_schema(cur)
-        # begin test
-        with conn.cursor() as cur:
-            db_copy_results(cur)
-        conn.commit()
-        # end test
-        del cur
+        db_ensure_schema(conn)
         import_bootstrap(settings.bootstrap_path, conn=conn)
         _scopes.update({
             '_yaml_path': settings.yaml_path,
