@@ -22,8 +22,8 @@ import uvicorn
 
 from sql import (
     db_find_account, db_update_account, db_update_publickey, db_filter_publickeys, db_get_reports,
-    db_get_keys, db_insert_report, db_get_recent_results,
-    db_patch_approval, db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys,
+    db_get_keys, db_insert_report, db_get_recent_results2, db_patch_approval2,
+    db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys,
     db_patch_subject, db_get_subjects, db_insert_result2, db_get_relevant_results2,
 )
 
@@ -456,7 +456,7 @@ async def get_results(
     """get recent results, potentially filtered by approval status"""
     check_role(account, roles=ROLES['read_any'])
     with conn.cursor() as cur:
-        return db_get_recent_results(cur, approved, limit, skip, grace_period_days=GRACE_PERIOD_DAYS)
+        return db_get_recent_results2(cur, approved, limit, skip, max_age_days=GRACE_PERIOD_DAYS)
 
 
 @app.post("/results")
@@ -475,7 +475,7 @@ async def post_results(
     records = [document] if isinstance(document, dict) else document
     with conn.cursor() as cur:
         for record in records:
-            db_patch_approval(cur, record)
+            db_patch_approval2(cur, record)
     conn.commit()
 
 
