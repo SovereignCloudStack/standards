@@ -304,25 +304,20 @@ def db_get_relevant_results2(
     return cur.fetchall()
 
 
-def db_get_recent_results(cur: cursor, approved, limit, skip, grace_period_days=None):
+def db_get_recent_results2(cur: cursor, approved, limit, skip, max_age_days=None):
     """list recent test results without grouping by scope/version/check"""
     columns = ('reportuuid', 'subject', 'checked_at', 'scopeuuid', 'version', 'check', 'result', 'approval')
     cur.execute(sql.SQL('''
-    SELECT report.reportuuid, report.subject, report.checked_at, scope.scopeuuid, version.version
-    , "check".id, result.result, result.approval
-    FROM result
+    SELECT report.reportuuid, result2.subject, result2.checked_at, result2.scopeuuid, result2.version
+    , result2.testcase, result2.result, result2.approval
+    FROM result2
     NATURAL JOIN report
-    NATURAL JOIN "check"
-    NATURAL JOIN standardentry
-    NATURAL JOIN version
-    NATURAL JOIN scope
     {where_clause}
     ORDER BY checked_at
     LIMIT %(limit)s OFFSET %(skip)s;''').format(
         where_clause=make_where_clause(
-            sql.SQL(
-                'expiration > NOW()' if grace_period_days is None else
-                f"expiration > NOW() - interval '{grace_period_days:d} days'"
+            None if max_age_days is None else sql.SQL(
+                f"checked_at > NOW() - interval '{max_age_days:d} days'"
             ),
             None if approved is None else sql.SQL('approval = %(approved)s'),
         ),
@@ -330,19 +325,16 @@ def db_get_recent_results(cur: cursor, approved, limit, skip, grace_period_days=
     return [{col: val for col, val in zip(columns, row)} for row in cur.fetchall()]
 
 
-def db_patch_approval(cur: cursor, record):
+def db_patch_approval2(cur: cursor, record):
     cur.execute('''
-    UPDATE result
+    UPDATE result2
     SET approval = %(approval)s
-    FROM report, scope, version, "check"
+    FROM report
     WHERE report.reportuuid = %(reportuuid)s
-      AND result.reportid = report.reportid
-      AND scope.scopeuuid = %(scopeuuid)s
-      AND version.scopeid = scope.scopeid
-      AND version.version = %(version)s
-      AND "check".versionid = version.versionid
-      AND "check".id = %(check)s
-      AND result.checkid = "check".checkid
+      AND result2.reportid = report.reportid
+      AND result2.scopeuuid = %(scopeuuid)s
+      AND result2.version = %(version)s
+      AND result2.testcase = %(check)s
     RETURNING resultid;''', record)
     resultid, = cur.fetchone()
     return resultid
