@@ -19,6 +19,14 @@ this property may now be used on any flavor, rather than standard flavors only. 
 now interpreted as "name variant N" instead of "version N of the naming standard". Note that this change
 indeed preserves compliance, i.e., compliance with v1.0 implies compliance with v1.1.
 
+## Terminology
+
+extra_specs
+  Additional properties on an OpenStack flavor, see
+  https://docs.openstack.org/nova/2024.1/user/flavors.html#extra-specs
+  and
+  https://docs.openstack.org/nova/2024.1/configuration/extra-specs.html
+
 ## Motivation
 
 In OpenStack environments there is a need to define different flavors for instances.
@@ -28,9 +36,9 @@ OpenStack providers thus typically offer a large selection of flavors.
 While flavors can be discovered (`openstack flavor list`), it is helpful for users (DevOps teams),
 to have a guaranteed set of flavors available on all SCS clouds, so these need not be discovered.
 
-## Properties (extra specs)
+## Properties (extra_specs)
 
-The following extra specs are recognized, together with the respective semantics:
+The following extra_specs are recognized, together with the respective semantics:
 
 - `scs:name-vN=NAME` (where `N` is a positive integer, and `NAME` is some string) means that
   `NAME` is a valid name for this flavor according to any major version of the [SCS standard on
@@ -48,14 +56,14 @@ The following extra specs are recognized, together with the respective semantics
 
 Whenever ANY of these are present on ANY flavor, the corresponding semantics must be satisfied.
 
-The property `scs:name-vN` is to be interpreted as "name variant N". This name scheme is designed to be
+The extra_spec `scs:name-vN` is to be interpreted as "name variant N". This name scheme is designed to be
 backwards compatible with v1.0 of this standard, where `scs:name-vN` is interpreted as
 "name according to naming standard vN". We abandon this former interpretation for two reasons:
 
 1. the naming standards admit multiple (even many) names for the same flavor, and we want to provide a means
    of advertising more than one of them (said standards recommend using two: a short one and a long one),
 2. the same flavor name may be valid according to multiple versions at the same time, which would lead to
-   a pollution of the extra specs with redundant properties; for instance, the name
+   a pollution of the extra_specs with redundant properties; for instance, the name
    `SCS-4V-16` is valid for both [scs-0100-v2](scs-0100-v2-flavor-naming.md) and
    [scs-0100-v3](scs-0100-v3-flavor-naming.md), and, since it does not use any extension, it will be valid
    for any future version that only changes the extensions, such as the GPU vendor and architecture.
@@ -150,14 +158,14 @@ instance life cycle.)
 The script [`flavors-openstack.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/standard-flavors/flavors-openstack.py)
 will read the lists of mandatory and recommended flavors
 from a yaml file provided as command-line argument, connect to an OpenStack installation,
-and check whether the flavors are present and their extra specs are correct.
+and check whether the flavors are present and their extra_specs are correct.
 
 Missing flavors will be reported on various logging channels: error for mandatory, warning for
-recommended flavors. Incorrect extra specs will be reported as error in any case.
+recommended flavors. Incorrect extra_specs will be reported as error in any case.
 The return code will be non-zero if the test could not be performed or if any error was
 reported.
 
-The script does not check whether a name given via `scs:name-vN` is indeed valid according
+The script does not check whether a name given via the extra_spec `scs:name-vN` is indeed valid according
 to any major version of the SCS standard on flavor naming.
 
 ## Operational tooling
