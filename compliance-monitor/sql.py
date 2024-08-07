@@ -154,6 +154,8 @@ def db_upgrade_schema(conn: connection, cur: cursor):
     # the ensure_* and post_upgrade_* functions must be idempotent
     # ditto for the data transfer (ideally insert/delete transaction)
     # -- then, in case we get interrupted when setting the new version, the upgrade can be repeated
+    # -- addendum: DDL is transactional with Postgres, so this effort was a bit in vain, but I keep it
+    # that way just in case we want to use another database at some point
     while True:
         current = db_get_schema_version(cur)
         if current == SCHEMA_VERSIONS[-1]:
@@ -183,6 +185,7 @@ def db_ensure_schema(conn: connection):
             value text NOT NULL
         );
         ''')
+        conn.commit()  # apparently, DDL is transactional with Postgres, so be sure to relieve the journal
         db_upgrade_schema(conn, cur)
     # the following could at some point be more adequate than the call to db_upgrade_schema above
     # -- namely, if the service is run as multiple processes and the upgrade must be done in advance --:
