@@ -122,7 +122,9 @@ modules:
     url: https://docs.scs.community/standards/scs-0102-v1-image-metadata
     run:
       - executable: ./iaas/image-metadata/image-md-check.py
-        args: -c {os_cloud} -v
+        args: -c {os_cloud} -v -s
+        # skip check of mand/recc/sugg images, for these were never authoritative, and they have been
+        # superseded by scs-0104-v1
     testcases:
       - id: image-metadata-check
         tags: [mandatory]
