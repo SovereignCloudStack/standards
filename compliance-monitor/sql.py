@@ -1,15 +1,17 @@
 from psycopg2 import sql
-from psycopg2.extensions import cursor
+from psycopg2.extensions import cursor, connection
 
+# list schema versions in ascending order
+SCHEMA_VERSION_KEY = 'version'
+SCHEMA_VERSIONS = ['v1', 'v2']
 # use ... (Ellipsis) here to indicate that no default value exists (will lead to error if no value is given)
 ACCOUNT_DEFAULTS = {'subject': ..., 'api_key': ..., 'roles': ...}
 PUBLIC_KEY_DEFAULTS = {'public_key': ..., 'public_key_type': ..., 'public_key_name': ...}
-SCOPE_DEFAULTS = {'uuid': ..., 'name': ..., 'url': ...}
-VERSION_DEFAULTS = {'version': ..., 'stabilized_at': None, 'deprecated_at': None}
-STANDARD_DEFAULTS = {'name': ..., 'url': ..., 'condition': None}
-CHECK_DEFAULTS = {'id': ..., 'lifetime': None, 'condition': None}
-INVOCATION_DEFAULTS = {'critical': ..., 'error': ..., 'warning': ..., 'result': ...}
 SUBJECT_DEFAULTS = {'subject': ..., 'name': ..., 'provider': None, 'active': False}
+
+
+class SchemaVersionError(Exception):
+    pass
 
 
 def sanitize_record(record, defaults, **kwargs):
@@ -53,7 +55,7 @@ def db_get_keys(cur: cursor, subject):
     return cur.fetchall()
 
 
-def db_ensure_schema(cur: cursor):
+def db_ensure_schema_common(cur: cursor):
     # strive to make column names unique across tables so that selects become simple, such as:
     # select * from "check" natural join standardentry natural join version natural join scope;
     cur.execute('''
@@ -76,71 +78,6 @@ def db_ensure_schema(cur: cursor):
         accountid integer NOT NULL REFERENCES account ON DELETE CASCADE ON UPDATE CASCADE,
         UNIQUE (accountid, keyname)
     );
-    CREATE TABLE IF NOT EXISTS scope (
-        scopeid SERIAL PRIMARY KEY,
-        scopeuuid text UNIQUE,
-        scope text,
-        url text
-    );
-    CREATE TABLE IF NOT EXISTS version (
-        versionid SERIAL PRIMARY KEY,
-        scopeid integer NOT NULL REFERENCES scope ON DELETE CASCADE ON UPDATE CASCADE,
-        version text,
-        stabilized_at date,
-        deprecated_at date,
-        UNIQUE (scopeid, version)
-    );
-    CREATE TABLE IF NOT EXISTS standardentry (
-        standardid SERIAL PRIMARY KEY,
-        versionid integer NOT NULL REFERENCES version ON DELETE CASCADE ON UPDATE CASCADE,
-        standard text,
-        surl text,  -- don't name it url to avoid clash with scope.url
-        condition text,
-        UNIQUE (versionid, surl)
-    );
-    CREATE TABLE IF NOT EXISTS "check" (
-        checkid SERIAL PRIMARY KEY,
-        -- the versionid field is redundant given the standardid field, but we need it for
-        -- the constraint at the bottom :(
-        versionid integer NOT NULL REFERENCES version ON DELETE CASCADE ON UPDATE CASCADE,
-        standardid integer NOT NULL REFERENCES standardentry ON DELETE CASCADE ON UPDATE CASCADE,
-        id text,
-        lifetime text,
-        ccondition text,  -- don't name it condition to avoid clash with standardentry.condition
-        UNIQUE (versionid, id)
-    );
-    CREATE TABLE IF NOT EXISTS report (
-        reportid SERIAL PRIMARY KEY,
-        reportuuid text UNIQUE,
-        checked_at timestamp,
-        subject text,
-        -- scopeid integer NOT NULL REFERENCES scope ON DELETE CASCADE ON UPDATE CASCADE,
-        -- let's omit the scope here because it is determined via the results, and it
-        -- is possible that future reports refer to multiple scopes
-        data jsonb,
-        rawformat text,
-        raw bytea
-    );
-    CREATE TABLE IF NOT EXISTS invocation (
-        invocationid SERIAL PRIMARY KEY,
-        reportid integer NOT NULL REFERENCES report ON DELETE CASCADE ON UPDATE CASCADE,
-        invocation text,
-        critical integer,
-        error integer,
-        warning integer,
-        result integer
-    );
-    CREATE TABLE IF NOT EXISTS result (
-        resultid SERIAL PRIMARY KEY,
-        checkid integer NOT NULL REFERENCES "check" ON DELETE CASCADE ON UPDATE CASCADE,
-        result int,
-        approval boolean,  -- whether a result <> 1 has manual approval
-        expiration timestamp,  -- precompute when this result would be expired
-        invocationid integer REFERENCES invocation ON DELETE CASCADE ON UPDATE CASCADE,
-        -- note that invocation is more like an implementation detail
-        -- therefore let's also put reportid here (added bonus: simplify queries)
-        reportid integer NOT NULL REFERENCES report ON DELETE CASCADE ON UPDATE CASCADE
-    );
     CREATE TABLE IF NOT EXISTS subject (
         subject text PRIMARY KEY,
         active boolean,
@@ -148,6 +85,113 @@ def db_ensure_schema(cur: cursor):
         provider text
     );
     ''')
+
+
+def db_ensure_schema_v2(cur: cursor):
+    db_ensure_schema_common(cur)
+    cur.execute('''
+    -- make a way simpler version that doesn't put that much background knowledge into the schema
+    -- therefore let's hope the schema will be more robust against change
+    CREATE TABLE IF NOT EXISTS result2 (
+        resultid SERIAL PRIMARY KEY,
+        -- some Python code to show how simple it is to fill this from a yaml report
+        -- (using member access syntax instead of array access syntax for the dict fields)
+        -- for vname, vres in report.versions.items():
+        --    for tcid, tcres in vres.items():
+        checked_at timestamp NOT NULL,  -- = report.checked_at
+        subject text NOT NULL,          -- = report.subject
+        scopeuuid text NOT NULL,        -- = report.spec.uuid
+        version text NOT NULL,          -- = vname
+        testcase text NOT NULL,         -- = tcid
+        result int,                     -- = tcres.result
+        approval boolean,               -- = tcres.result == 1
+        -- the following is FYI only, for the most data is literally copied to this table
+        reportid integer NOT NULL REFERENCES report ON DELETE CASCADE ON UPDATE CASCADE
+    );
+    ''')
+
+
+def db_upgrade_data_v1_v2(cur):
+    # we are going to drop table result, but use delete anyway to have the transaction safety
+    cur.execute('''
+    INSERT INTO result2 (checked_at, subject, scopeuuid, version, testcase, result, approval, reportid)
+    SELECT
+        report.checked_at, report.subject,
+        scope.scopeuuid, version.version, "check".id,
+        result.result, result.approval, result.reportid
+    FROM result
+    NATURAL JOIN report
+    NATURAL JOIN "check"
+    NATURAL JOIN version
+    NATURAL JOIN scope
+    ;
+    DELETE FROM result
+    ;''')
+
+
+def db_post_upgrade_v1_v2(cur: cursor):
+    cur.execute('''
+    DROP TABLE IF EXISTS result;
+    DROP TABLE IF EXISTS "check";
+    DROP TABLE IF EXISTS standardentry;
+    DROP TABLE IF EXISTS version;
+    DROP TABLE IF EXISTS scope;
+    ''')
+
+
+def db_get_schema_version(cur: cursor):
+    cur.execute('''SELECT value FROM meta WHERE key = %s;''', (SCHEMA_VERSION_KEY, ))
+    return cur.rowcount and cur.fetchone()[0] or None
+
+
+def db_set_schema_version(cur: cursor, version: str):
+    cur.execute('''
+    UPDATE meta SET value = %s WHERE key = %s
+    ;''', (version, SCHEMA_VERSION_KEY))
+
+
+def db_upgrade_schema(conn: connection, cur: cursor):
+    # the ensure_* and post_upgrade_* functions must be idempotent
+    # ditto for the data transfer (ideally insert/delete transaction)
+    # -- then, in case we get interrupted when setting the new version, the upgrade can be repeated
+    # -- addendum: DDL is transactional with Postgres, so this effort was a bit in vain, but I keep it
+    # that way just in case we want to use another database at some point
+    while True:
+        current = db_get_schema_version(cur)
+        if current == SCHEMA_VERSIONS[-1]:
+            break
+        if current is None:
+            # this is an empty db, but it also used to be the case with v1
+            # I (mbuechse) made sure manually that the value v1 is set on running installations
+            db_ensure_schema_v2(cur)
+            db_set_schema_version(cur, 'v2')
+            conn.commit()
+        elif current == 'v1':
+            db_ensure_schema_v2(cur)
+            db_upgrade_data_v1_v2(cur)
+            db_set_schema_version(cur, 'v1-v2')
+            conn.commit()
+        elif current == 'v1-v2':
+            db_post_upgrade_v1_v2(cur)
+            db_set_schema_version(cur, 'v2')
+            conn.commit()
+
+
+def db_ensure_schema(conn: connection):
+    with conn.cursor() as cur:
+        cur.execute('''
+        CREATE TABLE IF NOT EXISTS meta (
+            key text PRIMARY KEY,
+            value text NOT NULL
+        );
+        ''')
+        conn.commit()  # apparently, DDL is transactional with Postgres, so be sure to relieve the journal
+        db_upgrade_schema(conn, cur)
+    # the following could at some point be more adequate than the call to db_upgrade_schema above
+    # -- namely, if the service is run as multiple processes and the upgrade must be done in advance --:
+    # current, expected = db_get_schema_version(cur), SCHEMA_VERSIONS[-1]
+    # if current != expected:
+    #     raise SchemaVersionError(f"Database schema outdated! Expected {expected!r}, got {current!r}")
 
 
 def db_update_account(cur: cursor, record: dict):
@@ -207,82 +251,6 @@ def db_filter_publickeys(cur: cursor, accountid, predicate: callable):
         del removeids[:10]
 
 
-def db_update_scope(cur: cursor, record: dict):
-    sanitized = sanitize_record(record, SCOPE_DEFAULTS)
-    cur.execute('''
-    INSERT INTO scope (scopeuuid, scope, url)
-    VALUES (%(uuid)s, %(name)s, %(url)s)
-    ON CONFLICT (scopeuuid)
-    DO UPDATE
-    SET scope = EXCLUDED.scope, url = EXCLUDED.url
-    RETURNING scopeid;''', sanitized)
-    scopeid, = cur.fetchone()
-    return scopeid
-
-
-def db_update_version(cur: cursor, scopeid, record: dict):
-    sanitized = sanitize_record(record, VERSION_DEFAULTS, scopeid=scopeid)
-    cur.execute('''
-    INSERT INTO version (scopeid, version, stabilized_at, deprecated_at)
-    VALUES (%(scopeid)s, %(version)s, %(stabilized_at)s, %(deprecated_at)s)
-    ON CONFLICT (scopeid, version)
-    DO UPDATE
-    SET stabilized_at = EXCLUDED.stabilized_at, deprecated_at = EXCLUDED.deprecated_at
-    RETURNING versionid;''', sanitized)
-    versionid, = cur.fetchone()
-    return versionid
-
-
-def db_update_standard(cur: cursor, versionid, record: dict):
-    sanitized = sanitize_record(record, STANDARD_DEFAULTS, versionid=versionid)
-    cur.execute('''
-    INSERT INTO standardentry (versionid, standard, surl, condition)
-    VALUES (%(versionid)s, %(name)s, %(url)s, %(condition)s)
-    ON CONFLICT (versionid, surl)
-    DO UPDATE
-    SET condition = EXCLUDED.condition, standard = EXCLUDED.standard
-    RETURNING standardid;''', sanitized)
-    standardid, = cur.fetchone()
-    return standardid
-
-
-def db_update_check(cur: cursor, versionid, standardid, record: dict):
-    sanitized = sanitize_record(record, CHECK_DEFAULTS, versionid=versionid, standardid=standardid)
-    cur.execute('''
-    INSERT INTO "check" (versionid, standardid, id, lifetime, ccondition)
-    VALUES (%(versionid)s, %(standardid)s, %(id)s, %(lifetime)s, %(condition)s)
-    ON CONFLICT (versionid, id)
-    DO UPDATE
-    SET ccondition = EXCLUDED.ccondition, lifetime = EXCLUDED.lifetime
-    RETURNING checkid;''', sanitized)
-    checkid, = cur.fetchone()
-    return checkid
-
-
-def db_filter_checks(cur: cursor, standardid, predicate: callable):
-    cur.execute('SELECT checkid, id FROM "check" WHERE standardid = %s;', (standardid, ))
-    removeids = [row[0] for row in cur.fetchall() if not predicate(*row)]
-    while removeids:
-        cur.execute('DELETE FROM "check" WHERE checkid IN %s', (tuple(removeids[:10]), ))
-        del removeids[:10]
-
-
-def db_filter_standards(cur: cursor, versionid, predicate: callable):
-    cur.execute('SELECT standardid, surl FROM standardentry WHERE versionid = %s;', (versionid, ))
-    removeids = [row[0] for row in cur.fetchall() if not predicate(*row)]
-    while removeids:
-        cur.execute('DELETE FROM standardentry WHERE standardid IN %s', (tuple(removeids[:10]), ))
-        del removeids[:10]
-
-
-def db_filter_versions(cur: cursor, scopeid, predicate: callable):
-    cur.execute('SELECT versionid, version FROM version WHERE scopeid = %s;', (scopeid, ))
-    removeids = [row[0] for row in cur.fetchall() if not predicate(*row)]
-    while removeids:
-        cur.execute('DELETE FROM version WHERE versionid IN %s', (tuple(removeids[:10]), ))
-        del removeids[:10]
-
-
 def db_get_reports(cur: cursor, subject, limit, skip):
     cur.execute(
         sql.SQL("SELECT data FROM report {} LIMIT %(limit)s OFFSET %(skip)s;")
@@ -292,14 +260,6 @@ def db_get_reports(cur: cursor, subject, limit, skip):
         {"subject": subject, "limit": limit, "skip": skip},
     )
     return [row[0] for row in cur.fetchall()]
-
-
-def db_get_scopeid(cur: cursor, scopeuuid):
-    cur.execute('SELECT scopeid FROM scope WHERE scopeuuid = %s;', (scopeuuid, ))
-    if not cur.rowcount:
-        raise KeyError(scopeuuid)
-    scopeid, = cur.fetchone()
-    return scopeid
 
 
 def db_insert_report(cur: cursor, uuid, checked_at, subject, json_text, content_type, body):
@@ -312,97 +272,55 @@ def db_insert_report(cur: cursor, uuid, checked_at, subject, json_text, content_
     return reportid
 
 
-def db_insert_invocation(cur: cursor, reportid, invocation, record):
-    sanitized = sanitize_record(record, INVOCATION_DEFAULTS, reportid=reportid, invocation=invocation)
-    cur.execute('''
-    INSERT INTO invocation (reportid, invocation, critical, error, warning, result)
-    VALUES (%(reportid)s, %(invocation)s, %(critical)s, %(error)s, %(warning)s, %(result)s)
-    RETURNING invocationid;''', sanitized)
-    invocationid, = cur.fetchone()
-    return invocationid
-
-
-def db_get_versionid(cur: cursor, scopeid, version):
-    cur.execute('SELECT versionid FROM version WHERE scopeid = %s AND version = %s;', (scopeid, version))
-    versionid, = cur.fetchone()
-    return versionid
-
-
-def db_get_checkdata(cur: cursor, versionid, check):
-    cur.execute('SELECT checkid, lifetime FROM "check" WHERE versionid = %s AND id = %s;', (versionid, check))
-    return cur.fetchone()
-
-
-def db_insert_result(cur: cursor, reportid, invocationid, checkid, result, approval, expiration):
+def db_insert_result2(
+    cur: cursor, checked_at, subject, scopeuuid, version, testcase, result, approval, reportid
+):
     # this is an exception in that we don't use a record parameter (it's just not as practical here)
     cur.execute('''
-    INSERT INTO result (reportid, invocationid, checkid, result, approval, expiration)
-    VALUES (%s, %s, %s, %s, %s, %s)
-    RETURNING resultid;''', (reportid, invocationid, checkid, result, approval, expiration))
+    INSERT INTO result2 (checked_at, subject, scopeuuid, version, testcase, result, approval, reportid)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    RETURNING resultid;''', (checked_at, subject, scopeuuid, version, testcase, result, approval, reportid))
     resultid, = cur.fetchone()
     return resultid
 
 
-def db_get_relevant_results(
+def db_get_relevant_results2(
     cur: cursor,
-    subject=None, scopeuuid=None, version=None, approved_only=True, grace_period_days=None, active_only=None,
+    subject=None, scopeuuid=None, version=None, approved_only=True,
 ):
     """for each combination of scope/version/check, get the most recent test result that is still valid"""
+    # find the latest result per subject/scopeuuid/version/checkid for this subject
+    # DISTINCT ON is a Postgres-specific construct that comes in very handy here :)
     cur.execute(sql.SQL('''
-    SELECT subject.subject, scope.scopeuuid, scope.scope, version.version, standardentry.condition
-    , "check".id, "check".ccondition, latest.result
-    FROM "check"
-    CROSS JOIN subject
-    NATURAL JOIN standardentry
-    NATURAL JOIN version
-    NATURAL JOIN scope
-    LEFT OUTER JOIN (
-        -- find the latest result per checkid for this subject
-        -- DISTINCT ON is a Postgres-specific construct that comes in very handy here :)
-        SELECT DISTINCT ON (subject, checkid) *
-        FROM result
-        NATURAL JOIN report
-        {report_filter}
-        ORDER BY subject, checkid, checked_at DESC
-    ) latest
-    ON "check".checkid = latest.checkid AND subject.subject = latest.subject
-    {filter_condition};''').format(
-        report_filter=make_where_clause(
-            sql.SQL('approval') if approved_only else None,
-            sql.SQL(
-                'expiration > NOW()' if grace_period_days is None else
-                f"expiration > NOW() - interval '{grace_period_days:d} days'"
-            ),
-        ),
+    SELECT DISTINCT ON (subject, scopeuuid, version, testcase)
+    subject, scopeuuid, version, testcase, result, checked_at FROM result2
+    {filter_condition}
+    ORDER BY subject, scopeuuid, version, testcase, checked_at DESC;
+    ''').format(
         filter_condition=make_where_clause(
-            None if scopeuuid is None else sql.SQL('scope.scopeuuid = %(scopeuuid)s'),
-            None if version is None else sql.SQL('version.version = %(version)s'),
-            None if subject is None else sql.SQL('subject.subject = %(subject)s'),
-            None if active_only is None else sql.SQL('subject.active = %(active)s'),
+            sql.SQL('approval') if approved_only else None,
+            None if scopeuuid is None else sql.SQL('scopeuuid = %(scopeuuid)s'),
+            None if version is None else sql.SQL('version = %(version)s'),
+            None if subject is None else sql.SQL('subject = %(subject)s'),
         ),
-    ), {"subject": subject, "scopeuuid": scopeuuid, "version": version, "active": active_only})
+    ), {"subject": subject, "scopeuuid": scopeuuid, "version": version})
     return cur.fetchall()
 
 
-def db_get_recent_results(cur: cursor, approved, limit, skip, grace_period_days=None):
+def db_get_recent_results2(cur: cursor, approved, limit, skip, max_age_days=None):
     """list recent test results without grouping by scope/version/check"""
     columns = ('reportuuid', 'subject', 'checked_at', 'scopeuuid', 'version', 'check', 'result', 'approval')
     cur.execute(sql.SQL('''
-    SELECT report.reportuuid, report.subject, report.checked_at, scope.scopeuuid, version.version
-    , "check".id, result.result, result.approval
-    FROM result
+    SELECT report.reportuuid, result2.subject, result2.checked_at, result2.scopeuuid, result2.version
+    , result2.testcase, result2.result, result2.approval
+    FROM result2
     NATURAL JOIN report
-    NATURAL JOIN "check"
-    NATURAL JOIN standardentry
-    NATURAL JOIN version
-    NATURAL JOIN scope
     {where_clause}
     ORDER BY checked_at
     LIMIT %(limit)s OFFSET %(skip)s;''').format(
         where_clause=make_where_clause(
-            sql.SQL(
-                'expiration > NOW()' if grace_period_days is None else
-                f"expiration > NOW() - interval '{grace_period_days:d} days'"
+            None if max_age_days is None else sql.SQL(
+                f"checked_at > NOW() - interval '{max_age_days:d} days'"
             ),
             None if approved is None else sql.SQL('approval = %(approved)s'),
         ),
@@ -410,19 +328,16 @@ def db_get_recent_results(cur: cursor, approved, limit, skip, grace_period_days=
     return [{col: val for col, val in zip(columns, row)} for row in cur.fetchall()]
 
 
-def db_patch_approval(cur: cursor, record):
+def db_patch_approval2(cur: cursor, record):
     cur.execute('''
-    UPDATE result
+    UPDATE result2
     SET approval = %(approval)s
-    FROM report, scope, version, "check"
+    FROM report
     WHERE report.reportuuid = %(reportuuid)s
-      AND result.reportid = report.reportid
-      AND scope.scopeuuid = %(scopeuuid)s
-      AND version.scopeid = scope.scopeid
-      AND version.version = %(version)s
-      AND "check".versionid = version.versionid
-      AND "check".id = %(check)s
-      AND result.checkid = "check".checkid
+      AND result2.reportid = report.reportid
+      AND result2.scopeuuid = %(scopeuuid)s
+      AND result2.version = %(version)s
+      AND result2.testcase = %(check)s
     RETURNING resultid;''', record)
     resultid, = cur.fetchone()
     return resultid
