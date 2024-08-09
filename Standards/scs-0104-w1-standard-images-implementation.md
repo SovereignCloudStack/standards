@@ -1,5 +1,5 @@
 ---
-title: "SCS Standard Images Standard: Implementation Notes"
+title: "SCS Standard Images: Implementation Notes"
 type: Supplement
 track: IaaS
 status: Proposal
