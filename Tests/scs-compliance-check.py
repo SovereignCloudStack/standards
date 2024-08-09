@@ -214,6 +214,8 @@ class CheckRunner:
             invocation = invoke_check_tool(check["executable"], args, check_env, self.cwd)
             invocation = {
                 'id': str(uuid.uuid4()),
+                'cmd': memo_key,
+                'result': 0,  # keep this for backwards compatibility
                 'results': compute_results(invocation['stdout']),
                 **invocation
             }
@@ -231,7 +233,7 @@ class CheckRunner:
         return invocation
 
     def get_invocations(self):
-        return dict(self.memo)
+        return {invocation['id']: invocation for invocation in self.memo.values()}
 
 
 class ResultBuilder:
