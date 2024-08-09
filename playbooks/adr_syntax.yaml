@@ -3,15 +3,19 @@
   hosts: all
   tasks:
     - name: Run ADR syntax check script
-      ansible.builtin.shell: |
-        python3 ~/Tests/chk_adrs.py ~/Standards
+      ansible.builtin.command: |
+        python3 Tests/chk_adrs.py Standards
+      args:
+        chdir: "{{ ansible_user_dir }}/{{ zuul_work_dir }}"
       register: result
       changed_when: true
       failed_when: result.rc != 0
 
     - name: Run test script consistency check script
-      ansible.builtin.shell: |
-        python3 ~/Tests/iaas/flavor-naming/check_yaml.py ~/Tests/iaas
+      ansible.builtin.command: |
+        python3 Tests/iaas/flavor-naming/check_yaml.py Tests/iaas
+      args:
+        chdir: "{{ ansible_user_dir }}/{{ zuul_work_dir }}"
       register: result
       changed_when: true
       failed_when: result.rc != 0
