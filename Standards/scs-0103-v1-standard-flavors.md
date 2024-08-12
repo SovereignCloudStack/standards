@@ -71,6 +71,9 @@ backwards compatible with v1.0 of this standard, where `scs:name-vN` is interpre
 Note that it is not required to use consecutive numbers to number the name variants.
 This way, it becomes easier to remove a single variant (no "closing the gap" required).
 
+If extra_specs of the form `scs:name-vN` are used to specify SCS flavor names, it is RECOMMENDED to include
+names for the latest stable major version of the standard on flavor naming.
+
 ## Standard SCS flavors
 
 Following are flavors that must exist on standard SCS clouds (x86-64).
