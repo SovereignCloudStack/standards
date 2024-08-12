@@ -23,9 +23,9 @@ indeed preserves compliance, i.e., compliance with v1.0 implies compliance with 
 
 extra_specs
   Additional properties on an OpenStack flavor, see
-  https://docs.openstack.org/nova/2024.1/user/flavors.html#extra-specs
+  [OpenStack Nova user documentation](https://docs.openstack.org/nova/2024.1/user/flavors.html#extra-specs)
   and
-  https://docs.openstack.org/nova/2024.1/configuration/extra-specs.html
+  [OpenStack Nova configuration documentation](https://docs.openstack.org/nova/2024.1/configuration/extra-specs.html).
 
 ## Motivation
 
