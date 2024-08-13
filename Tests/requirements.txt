@@ -75,7 +75,7 @@ multidict==6.0.5
     #   yarl
 netifaces==0.11.0
     # via openstacksdk
-openstacksdk==3.3.0
+openstacksdk==3.1.0
     # via -r requirements.in
 os-service-types==1.7.0
     # via
