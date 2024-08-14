@@ -167,7 +167,7 @@ Each include may be specified by means of a module id (i.e., a string) or by an 
 
 | Key                      | Type   | Description                                    | Example                                                           |
 | ------------------------ | ------ | ---------------------------------------------- | ----------------------------------------------------------------- |
-| `id`                     | String | id of the module to be included                | `scs-0100-v3`                                                     |
+| `ref`                    | String | id of the module to be included                | `scs-0100-v3`                                                     |
 | `parameters`             | Map    | Maps parameter names to parameter values       | `image_spec: https://raw.github...s/scs-0104-v1-images.yaml`      |
 
 When the referenced module uses parameters, then these parameters must be assigned values here.
@@ -222,8 +222,6 @@ Using parameters offers two advantages:
 
 - they may show up in the automatically generated documentation, whereas the check tools themselves probably won't.
 - multiple versions of a standard can be represented using the same module, if everything that changes between versions can be captured by the parameters.
-
-See the "Standard images" standard in the larger basic example below for a possible use case.
 
 ### Check descriptor
 

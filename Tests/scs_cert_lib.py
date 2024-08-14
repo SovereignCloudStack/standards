@@ -21,7 +21,7 @@ KEYWORDS = {
     'modules': ('id', 'run', 'testcases', 'url', 'name', 'parameters'),
     'run': ('executable', 'env', 'args', 'section'),
     'testcases': ('lifetime', 'id', 'description', 'tags'),
-    'include': ('id', 'parameters'),
+    'include': ('ref', 'parameters'),
 }
 NIL_RESULT = {'result': 0}
 
@@ -71,7 +71,7 @@ def _resolve_spec(spec: dict):
     for version in spec['versions'].values():
         version['include'] = [
             {'module': module_lookup[inc], 'parameters': {}} if isinstance(inc, str) else
-            {'module': module_lookup[inc['id']], 'parameters': inc.get('parameters', {})}
+            {'module': module_lookup[inc['ref']], 'parameters': inc.get('parameters', {})}
             for inc in version['include']
         ]
     # step 4b. resolve references to versions in timeline

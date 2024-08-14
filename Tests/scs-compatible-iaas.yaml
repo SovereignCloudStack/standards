@@ -194,7 +194,7 @@ versions:
       - scs-0101-v1
       - scs-0102-v1
       - scs-0103-v1
-      - id: scs-0104-v1
+      - ref: scs-0104-v1
         parameters:
           image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images.yaml
     targets:
