@@ -180,18 +180,20 @@ def check_fips_test(fconn, image_name):
     return False  # any unsuccessful path should end up here
 
 
-def check_vm_recommends(fconn, image, flavor):
+def check_virtio_rng(fconn, image, flavor):
     try:
         # Check the existence of the HRNG -- can actually be skipped if the flavor
         # or the image doesn't have the corresponding attributes anyway!
         if image.hw_rng_model != "virtio" or flavor.extra_specs.get("hw_rng:allowed") != "True":
             logger.debug("Not looking for virtio-rng because required attributes are missing")
-        else:
-            # `cat` can fail with return code 1 if special file does not exist
-            hw_device = fconn.run('cat /sys/devices/virtual/misc/hw_random/rng_available', hide=True, warn=True).stdout
-            result = fconn.run("sudo su -c 'od -vAn -N2 -tu2 < /dev/hwrng'", hide=True, warn=True)
-            if not hw_device.strip() or "No such device" in result.stdout or "No such " in result.stderr:
-                logger.warning(f"VM '{image.name}' doesn't provide a hardware device.")
+            return False
+        # `cat` can fail with return code 1 if special file does not exist
+        hw_device = fconn.run('cat /sys/devices/virtual/misc/hw_random/rng_available', hide=True, warn=True).stdout
+        result = fconn.run("sudo su -c 'od -vAn -N2 -tu2 < /dev/hwrng'", hide=True, warn=True)
+        if not hw_device.strip() or "No such device" in result.stdout or "No such " in result.stderr:
+            logger.warning(f"VM '{image.name}' doesn't provide a hardware device.")
+            return False
+        return True
     except BaseException:
         logger.critical(f"Couldn't check VM '{image.name}' recommends", exc_info=True)
 
@@ -495,7 +497,9 @@ def main(argv):
                         ) as fconn:
                             # need to retry because it takes time for sshd to come up
                             retry(fconn.open, exc_type="NoValidConnectionsError,TimeoutError")
-                            check_vm_recommends(fconn, image, server.flavor)
+                            # virtio-rng is not an official test case according to testing notes,
+                            # but for some reason we check it nonetheless (call it informative)
+                            check_virtio_rng(fconn, image, server.flavor)
                             print_result('entropy-check-entropy-avail', check_entropy_avail(fconn, image.name))
                             print_result('entropy-check-rngd', check_rngd(fconn, image.name))
                             print_result('entropy-check-fips-test', check_fips_test(fconn, image.name))
