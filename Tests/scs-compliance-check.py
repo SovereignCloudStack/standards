@@ -275,10 +275,14 @@ def print_report(subject: str, suite: TestSuite, targets: dict, results: dict, v
     print(f"{subject} {suite.name}:")
     for tname, target_spec in targets.items():
         by_result = suite.select(tname, target_spec).evaluate(results)
-        missing, failed = by_result[0], by_result[-1]
+        passed, missing, failed = by_result[1], by_result[0], by_result[-1]
         verdict = 'FAIL' if failed else 'TENTATIVE pass' if missing else 'PASS'
-        if failed or missing:
-            verdict += f" ({len(failed)} failed, {len(missing)} missing)"
+        summary_parts = [f"{len(passed)} passed"]
+        if failed:
+            summary_parts.append(f"{len(failed)} failed")
+        if missing:
+            summary_parts.append(f"{len(missing)} missing")
+        verdict += f" ({', '.join(summary_parts)})"
         print(f"- {tname}: {verdict}")
         for offenders, category in ((failed, 'FAILED'), (missing, 'MISSING')):
             if category == 'MISSING' and suite.partial:
