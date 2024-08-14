@@ -334,7 +334,12 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
         boot_from_volume=True, terminate_volume=True, volume_size=volume_size,
     )
     logger.debug(f"Server '{server_name}' ('{server.id}') has been created")
-    return server
+    # next, do an explicit get_server because, beginning with version 3.2.0, the openstacksdk no longer
+    # sets the interface attributes such as `public_v4`
+    # I (mbuechse) consider this a bug in openstacksdk; it was introduced with
+    # https://opendev.org/openstack/openstacksdk/commit/a8adbadf0c4cdf1539019177fb1be08e04d98e82
+    # I also consider openstacksdk architecture with the Mixins etc. smelly to say the least
+    return env.conn.get_server(server.id)
 
 
 def delete_vm(conn, server_name=SERVER_NAME):

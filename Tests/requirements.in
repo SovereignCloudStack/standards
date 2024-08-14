@@ -4,5 +4,5 @@ fabric
 kubernetes_asyncio
 python-dateutil
 PyYAML
-openstacksdk < 3.2.0
+openstacksdk
 requests
