@@ -516,7 +516,7 @@ def main(argv):
     )
     # include this one for backwards compatibility
     if not c[logging.CRITICAL]:
-        print("entropy-check: " + ('PASS', 'FAIL')[int(bool(c[logging.ERROR]))])
+        print("entropy-check: " + ('PASS', 'FAIL')[min(1, c[logging.ERROR])])
     return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 

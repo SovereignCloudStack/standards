@@ -211,7 +211,7 @@ async def main(argv):
         return 1
 
     return_code = check_nodes(nodes)
-    print("node-distribution-check: " + ('PASS', 'FAIL')[int(bool(return_code))])
+    print("node-distribution-check: " + ('PASS', 'FAIL')[min(1, return_code)])
     return return_code
 
 
