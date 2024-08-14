@@ -159,7 +159,7 @@ then a certificate of that prerequisite scope has to be presented before the cer
 
 The ids of the test cases of all the modules specified via `include` MUST be pairwise different.
 
-Once a version has a `stabilized_at` field, the version is deemed _stable_ and may no longer be changed.
+Once a version descriptor has a `stabilized_at` field, the version is deemed _stable_, and the descriptor may no longer be changed.
 
 #### Include descriptor
 
@@ -200,7 +200,7 @@ Examples: `mandatory`, `iaas mandatory`, `iaas !mandatory/encryption`.
 
 In the map `targets` above, it is possible to specify a list of selectors that are joined by comma.
 (Note that this is still a string, not a YAML list.)
-A list of tags satisfies this list of selectors if it satisfies at least one of the expressions.
+A list of tags satisfies this list of selectors if it satisfies at least one of the selectors.
 
 Examples: `mandatory iaas, recommended kaas` (NOT: `[mandatory iaas, recommended kaas]`)
 
@@ -255,13 +255,12 @@ TBD
 
 ### Test-case descriptor
 
-The following fields are valid for every check descriptor:
-
 | Key               | Type            | Description                                                                                                       | Example           |
 | ----------------- | --------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------- |
 | `id`              | String          | Identifier for this test case (immutable and unique within this module)                                           | `image-md-check`  |
 | `lifetime`        | String          | One of: `day` (_default_), `week`, `month`, `quarter`; the test result is valid until the end of the next period  | `week`            |
 | `tags`            | List of strings | A tag is a keyword that will be used to select this test case using a selector expression                         | `[mandatory]`     |
+| `description`     | String          | Short description of the test case                                                                                |                   |
 
 A tag MUST NOT contain any of these characters: space, comma, exclamation mark, forward slash.
 
