@@ -7,6 +7,8 @@ import os.path
 from shutil import which
 from subprocess import run
 from tempfile import NamedTemporaryFile
+# _thread: low-level library, but (contrary to the name) not private
+# https://docs.python.org/3/library/_thread.html
 from _thread import allocate_lock, get_ident
 from typing import Annotated, Optional
 
@@ -91,8 +93,9 @@ templates_map = {
     k: None for k in REQUIRED_TEMPLATES
 }
 # map thread id (cf. `get_ident`) to a dict that maps scope uuids to scope documents
-_scopes = defaultdict(dict)
-_scopes_lock = allocate_lock()
+# -- access this using function `get_scopes`
+_scopes = defaultdict(dict)  # thread-local storage (similar to threading.local, but more efficient)
+_scopes_lock = allocate_lock()  # mutex lock so threads can add their local storage without races
 
 
 class TimestampEncoder(json.JSONEncoder):
