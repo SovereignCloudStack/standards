@@ -145,6 +145,8 @@ def main(argv):
 
     c = counting_handler.bylevel
     logger.debug(f"Total critical / error / warning: {c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.WARNING]}")
+    if not c[logging.CRITICAL]:
+        print("standard-images-check: " + ('PASS', 'FAIL')[min(1, c[logging.ERROR])])
     return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 
