@@ -10,7 +10,7 @@ track: IaaS
 To encrypt user data like volumes or in the future also Images and ephemeral storage for VMs, the key has to be present in the infrastructure.
 A Key Manager service within the infrastructure can be utilized to store keys.
 Consequently providing keys for every encryption or decryption is possible without including the user.
-Also authorization policies can be applied on every request to the Key Manager servicer.
+Also authorization policies can be applied on every request to the Key Manager service.
 OpenStack offers a Key Manager implementation that is named Barbican, which provides these features.
 This standard aims to provide a base level of security for Cloud Service Providers that integrate a Key Manager into their deployments.
 
@@ -31,19 +31,20 @@ This standard aims to provide a base level of security for Cloud Service Provide
 User data encryption requires an encryption key to be known during encryption and decryption processes.
 Key Managers like Barbican provide this functionality on the IaaS-Level.
 Not every IaaS deployment currently offers user data encryption as part of their standard offering.
-This standard should encourage CSPs to integrate a Key Manager and thus increase the amount of Clouds witch offerings of data encryption.
+This standard should encourage CSPs to integrate a Key Manager and thus increase the amount of Clouds with offerings of data encryption.
 It is also important to take a closer look into the Key Manager and analyze how such a service can be configured securely.
 
 A Key Manager service manages keys in a secure manner, but this can be achieved differently and is not primarily in scope of this standard.
-The OpenStack Key Manager Barbican stores keys encrypted with the project specific KEK, including the KEK itself, in the database.
+The OpenStack Key Manager Barbican stores keys encrypted with a project specific KEK in the database.
+The KEKs are also stored encrypted in the same database.
 The Master-KEK, used to encrypt the project specific KEKs is not stored in the database and is stored differently depending on the backend storage plugin used.
 This standard also abstracts the used plugins and wants to ensure that the Master-KEK is protected, too.
 
 ## Design Considerations
 
 While discussing what this standard should aim for it was discovered that some CSPs don't use Barbican or another Key Manager at all and do not provide the feature to encrypt user data to their customers.
-This should change, but the exact change comes with financial burden, when choosing a plugin in Barbican to store the Master-KEK.
-To minimize the burden and enable more CSPs to step up and provide encryption, this standard will only make recommendations about plugins.
+This should change, but the exact change comes with financial burden, when choosing a plugin in Barbican to store the Master-KEK or choosing to integrate another Key Manager service instead.
+To minimize the burden and enable more CSPs to step up and provide encryption, this standard will only make recommendations about plugins from Barbican.
 
 ### Options considered
 
