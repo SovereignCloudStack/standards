@@ -402,6 +402,11 @@ class CountingHandler(logging.Handler):
         self.bylevel[record.levelno] += 1
 
 
+# the following functions are used to map any OpenStack Image to a pair of integers
+# used for sorting the images according to fitness for our test
+# - debian take precedence over ubuntu
+# - higher versions take precedence over lower ones
+
 # only list stable versions here
 DEBIAN_CODENAMES = {
     "buster": 10,
@@ -410,52 +415,51 @@ DEBIAN_CODENAMES = {
 }
 
 
-def _deduce_deb_version(name, debian_ver=re.compile(r"\d+\Z")):
-    name = name.lower().strip()
+def _deduce_sort_debian(name, debian_ver=re.compile(r"\d+\Z")):
     if debian_ver.match(name):
-        return int(name)
-    return DEBIAN_CODENAMES.get(name, 0)
+        return 2, int(name)
+    return 2, DEBIAN_CODENAMES.get(name.lower(), 0)
 
 
-def _deduce_ubu_version(name, ubuntu_ver=re.compile(r"\d\d\.\d\d\Z")):
-    name = name.lower().strip()
+def _deduce_sort_ubuntu(name, ubuntu_ver=re.compile(r"\d\d\.\d\d\Z")):
     if ubuntu_ver.match(name):
-        return int(name[:2] + name[3:])
-    return 0
+        return 1, int(name.replace(".", ""))
+    return 1, 0
 
 
-# map lower-case distro name to tuple (sort order, version deducing function)
+def _deduce_sort_other(name):
+    return 0, 0
+
+
+# map lower-case distro name to version deducing function
 DISTROS = {
-    "ubuntu": (1, _deduce_ubu_version),
-    "debian": (2, _deduce_deb_version),
-    None: (0, lambda _: 0),  # use this as fallback
+    "ubuntu": _deduce_sort_ubuntu,
+    "debian": _deduce_sort_debian,
 }
 
 
-def _deduce_version(img):
-    """helper for `select_deb_image`: return pair (distro sort order, version) of int"""
+def _deduce_sort(img):
     if img.os_distro and img.os_version:
-        d_idx, deducer = DISTROS.get(img.os_distro.lower(), DISTROS[None])
-        return d_idx, deducer(img.os_version)
+        deducer = DISTROS.get(img.os_distro.lower(), _deduce_sort_other)
+        return deducer(img.os_version)
     # os_distro not set; this could mean that the image in question is not a plain OS image.
     # Try to parse the name, assuming that distro comes first so we don't need to scan twice
     logger.debug(f"img {img.name!r} missing os_distro or os_version")
     canonicalized = [part.strip() for part in img.name.lower().split()]
-    d_idx, deducer = DISTROS[None]
+    deducer = None
     for part in canonicalized:
-        if d_idx == 0:
-            d_idx, deducer = DISTROS.get(part, DISTROS[None])
-            continue
-        version = deducer(part)
-        if not version:
-            continue
-        return d_idx, version
-    return d_idx, deducer("")
+        if deducer is not None:
+            version = deducer(part)
+            if version != (0, 0):
+                return version
+        else:
+            deducer = DISTROS.get(part)
+    return 0, 0
 
 
 def select_deb_image(images):
     """From a list of OpenStack image objects, select a recent Debian derivative."""
-    return max(images, key=_deduce_version, default=None)
+    return max(images, key=_deduce_sort, default=None)
 
 
 def print_result(check_id, passed):
