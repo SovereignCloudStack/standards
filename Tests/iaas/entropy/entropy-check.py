@@ -15,7 +15,6 @@ restrictions); for further information, see the log messages on various channels
 from collections import Counter
 import getopt
 import logging
-from operator import attrgetter
 import os
 import re
 import sys
@@ -83,18 +82,25 @@ Options:
 
 
 def check_image_attributes(images, attributes=IMAGE_ATTRIBUTES):
-    for image in images:
-        wrong = [f"{key}={value}" for key, value in attributes.items() if image.get(key) != value]
-        if wrong:
-            logger.warning(f"Image '{image.name}' missing recommended attributes: {', '.join(wrong)}")
+    candidates = [
+        (image.name, [f"{key}={value}" for key, value in attributes.items() if image.get(key) != value])
+        for image in images
+    ]
+    # drop those candidates that are fine
+    offenders = [candidate for candidate in candidates if candidate[1]]
+    for name, wrong in offenders:
+        logger.warning(f"Image '{name}' missing recommended attributes: {', '.join(wrong)}")
+    return not offenders
 
 
 def check_flavor_attributes(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAVOR_OPTIONAL):
+    offenses = 0
     for flavor in flavors:
         extra_specs = flavor['extra_specs']
         wrong = [f"{key}={value}" for key, value in attributes.items() if extra_specs.get(key) != value]
         miss_opt = [key for key in optional if extra_specs.get(key) is None]
         if wrong:
+            offenses += 1
             message = f"Flavor '{flavor.name}' missing recommended attributes: {', '.join(wrong)}"
             # only report missing optional attributes if recommended are missing as well
             # reasoning here is that these optional attributes are merely a hint for implementers
@@ -102,6 +108,7 @@ def check_flavor_attributes(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAV
             if miss_opt:
                 message += f"; additionally, missing optional attributes: {', '.join(miss_opt)}"
             logger.warning(message)
+    return not offenses
 
 
 def install_test_requirements(fconn):
@@ -132,47 +139,60 @@ def install_test_requirements(fconn):
     logger.debug("No package manager worked; proceeding anyway as rng-utils might be present nonetheless.")
 
 
-def check_vm_requirements(fconn, image_name):
-    try:
-        entropy_avail = fconn.run('cat /proc/sys/kernel/random/entropy_avail', hide=True).stdout.strip()
-        if entropy_avail != "256":
-            logger.error(
-                f"VM '{image_name}' didn't have a fixed amount of entropy available. "
-                f"Expected 256, got {entropy_avail}."
-            )
+def check_entropy_avail(fconn, image_name):
+    entropy_avail = fconn.run('cat /proc/sys/kernel/random/entropy_avail', hide=True).stdout.strip()
+    if entropy_avail != "256":
+        logger.error(
+            f"VM '{image_name}' didn't have a fixed amount of entropy available. "
+            f"Expected 256, got {entropy_avail}."
+        )
+        return False
+    return True
 
+
+def check_rngd(fconn, image_name):
+    result = fconn.run('sudo systemctl status rngd', hide=True, warn=True)
+    if "could not be found" in result.stdout or "could not be found" in result.stderr:
+        logger.warning(f"VM '{image_name}' doesn't provide the recommended service rngd")
+        return False
+    return True
+
+
+def check_fips_test(fconn, image_name):
+    try:
         install_test_requirements(fconn)
         fips_data = fconn.run('cat /dev/random | rngtest -c 1000', hide=True, warn=True).stderr
         failure_re = re.search(r'failures:\s\d+', fips_data, flags=re.MULTILINE)
         if failure_re:
             fips_failures = failure_re.string[failure_re.regs[0][0]:failure_re.regs[0][1]].split(" ")[1]
-            if int(fips_failures) > 3:
-                logger.error(
-                    f"VM '{image_name}' didn't pass the FIPS 140-2 testing. "
-                    f"Expected a maximum of 3 failures, got {fips_failures}."
-                )
+            if int(fips_failures) <= 3:
+                return True  # this is the single 'successful' code path
+            logger.error(
+                f"VM '{image_name}' didn't pass the FIPS 140-2 testing. "
+                f"Expected a maximum of 3 failures, got {fips_failures}."
+            )
         else:
             logger.error(f"VM '{image_name}': failed to determine fips failures")
             logger.debug(f"stderr following:\n{fips_data}")
     except BaseException:
         logger.critical(f"Couldn't check VM '{image_name}' requirements", exc_info=True)
+    return False  # any unsuccessful path should end up here
 
 
-def check_vm_recommends(fconn, image, flavor):
+def check_virtio_rng(fconn, image, flavor):
     try:
-        result = fconn.run('sudo systemctl status rngd', hide=True, warn=True)
-        if "could not be found" in result.stdout or "could not be found" in result.stderr:
-            logger.warning(f"VM '{image.name}' doesn't provide the recommended service rngd")
         # Check the existence of the HRNG -- can actually be skipped if the flavor
         # or the image doesn't have the corresponding attributes anyway!
         if image.hw_rng_model != "virtio" or flavor.extra_specs.get("hw_rng:allowed") != "True":
             logger.debug("Not looking for virtio-rng because required attributes are missing")
-        else:
-            # `cat` can fail with return code 1 if special file does not exist
-            hw_device = fconn.run('cat /sys/devices/virtual/misc/hw_random/rng_available', hide=True, warn=True).stdout
-            result = fconn.run("sudo su -c 'od -vAn -N2 -tu2 < /dev/hwrng'", hide=True, warn=True)
-            if not hw_device.strip() or "No such device" in result.stdout or "No such " in result.stderr:
-                logger.warning(f"VM '{image.name}' doesn't provide a hardware device.")
+            return False
+        # `cat` can fail with return code 1 if special file does not exist
+        hw_device = fconn.run('cat /sys/devices/virtual/misc/hw_random/rng_available', hide=True, warn=True).stdout
+        result = fconn.run("sudo su -c 'od -vAn -N2 -tu2 < /dev/hwrng'", hide=True, warn=True)
+        if not hw_device.strip() or "No such device" in result.stdout or "No such " in result.stderr:
+            logger.warning(f"VM '{image.name}' doesn't provide a hardware device.")
+            return False
+        return True
     except BaseException:
         logger.critical(f"Couldn't check VM '{image.name}' recommends", exc_info=True)
 
@@ -321,19 +341,25 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
     # try to pick a frugal flavor
     flavor = min(flavors, key=lambda flv: flv.vcpus + flv.ram / 3.0 + flv.disk / 10.0)
     userdata = next((value for key, value in SERVER_USERDATA.items() if image.name.lower().startswith(key)), None)
+    volume_size = max(image.min_disk, 8)  # sometimes, the min_disk property is not set correctly
     # create a server with the image and the flavor as well as
     # the previously created keys and security group
     logger.debug(
         f"Creating instance of image '{image.name}' using flavor '{flavor.name}' and "
-        f"{image.min_disk} GiB ephemeral boot volume"
+        f"{volume_size} GiB ephemeral boot volume"
     )
     server = env.conn.create_server(
         server_name, image=image, flavor=flavor, key_name=env.keypair.name, network=env.network,
         security_groups=[env.sec_group.id], userdata=userdata, wait=True, timeout=500, auto_ip=True,
-        boot_from_volume=True, terminate_volume=True, volume_size=image.min_disk,
+        boot_from_volume=True, terminate_volume=True, volume_size=volume_size,
     )
     logger.debug(f"Server '{server_name}' ('{server.id}') has been created")
-    return server
+    # next, do an explicit get_server because, beginning with version 3.2.0, the openstacksdk no longer
+    # sets the interface attributes such as `public_v4`
+    # I (mbuechse) consider this a bug in openstacksdk; it was introduced with
+    # https://opendev.org/openstack/openstacksdk/commit/a8adbadf0c4cdf1539019177fb1be08e04d98e82
+    # I also consider openstacksdk architecture with the Mixins etc. smelly to say the least
+    return env.conn.get_server(server.id)
 
 
 def delete_vm(conn, server_name=SERVER_NAME):
@@ -376,6 +402,25 @@ class CountingHandler(logging.Handler):
         self.bylevel[record.levelno] += 1
 
 
+def _deduce_version(name, ubuntu_ver=re.compile(r"\d\d\.\d\d\Z"), debian_ver=re.compile(r"\d+\Z")):
+    """helper for `select_deb_image` to deduce a version even if its only given via codename"""
+    canonicalized = [part.strip() for part in name.lower().split()]
+    if "debian" in canonicalized:
+        # don't even consider "stretch" (9) here
+        codenames = ("buster", "bullseye", "bookworm")
+        for idx, name in enumerate(codenames):
+            if name in canonicalized:
+                return idx + 10
+        for part in canonicalized:
+            if debian_ver.match(part):
+                return int(part)
+    elif "ubuntu" in canonicalized:
+        for part in canonicalized:
+            if ubuntu_ver.match(part):
+                return int(part[:2] + part[3:])
+    return -1
+
+
 def select_deb_image(images):
     """From a list of OpenStack image objects, select a recent Debian derivative.
 
@@ -384,11 +429,15 @@ def select_deb_image(images):
     for prefix in ("Debian ", "Ubuntu "):
         imgs = sorted(
             [img for img in images if img.name.startswith(prefix)],
-            key=attrgetter("name"),
+            key=lambda img: _deduce_version(img.name),
         )
         if imgs:
             return imgs[-1]
     return None
+
+
+def print_result(check_id, passed):
+    print(check_id + ": " + ('FAIL', 'PASS')[bool(passed)])
 
 
 def main(argv):
@@ -447,8 +496,8 @@ def main(argv):
                 logger.debug(f"Selected image: {images[0].name} ({images[0].id})")
 
             logger.debug("Checking images and flavors for recommended attributes")
-            check_image_attributes(all_images)
-            check_flavor_attributes(all_flavors)
+            print_result('entropy-check-image-properties', check_image_attributes(all_images))
+            print_result('entropy-check-flavor-properties', check_flavor_attributes(all_flavors))
 
             logger.debug("Checking dynamic instance properties")
             with TestEnvironment(conn) as env:
@@ -466,8 +515,12 @@ def main(argv):
                         ) as fconn:
                             # need to retry because it takes time for sshd to come up
                             retry(fconn.open, exc_type="NoValidConnectionsError,TimeoutError")
-                            check_vm_recommends(fconn, image, server.flavor)
-                            check_vm_requirements(fconn, image.name)
+                            # virtio-rng is not an official test case according to testing notes,
+                            # but for some reason we check it nonetheless (call it informative)
+                            check_virtio_rng(fconn, image, server.flavor)
+                            print_result('entropy-check-entropy-avail', check_entropy_avail(fconn, image.name))
+                            print_result('entropy-check-rngd', check_rngd(fconn, image.name))
+                            print_result('entropy-check-fips-test', check_fips_test(fconn, image.name))
                     finally:
                         delete_vm(conn)
     except BaseException as e:
@@ -479,6 +532,9 @@ def main(argv):
         "Total critical / error / warning: "
         f"{c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.WARNING]}"
     )
+    # include this one for backwards compatibility
+    if not c[logging.CRITICAL]:
+        print("entropy-check: " + ('PASS', 'FAIL')[min(1, c[logging.ERROR])])
     return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 
