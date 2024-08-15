@@ -8,7 +8,7 @@ track: IaaS
 ## Introduction
 
 To be SCS-compliant a Cloud Service Provider (CSP) has to fulfill all SCS standards.
-Some of those standards are broad and consider all APIs of all services on the IaaS-Layer.
+Some of those standards are broad and consider all APIs of all services on the IaaS-Layer like the consideration of a [role standard](https://github.com/SovereignCloudStack/issues/issues/396).
 There exist many services on that layer and for a first step they need to be limited to have a clear scope for the standards and the Cloud Service Providers following them.
 For this purpose, this standard will establish lists for mandatory services whose APIs have to be present in a SCS cloud as well as supported services, which APIs are considered by some standards and may even be tested for their integration but are optional in a sense that their omission will not violate SCS conformance.
 
