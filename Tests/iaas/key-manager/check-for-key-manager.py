@@ -29,7 +29,8 @@ def connect(cloud_name: str) -> openstack.connection.Connection:
 
 def check_for_member_role(conn: openstack.connection.Connection
                           ) -> None:
-    """Method to check whether the current user has the member role.
+    """Checks whether the current user has at maximum privileges
+    of the member role.
     :param connection:
         The current connection to an OpenStack cloud.
     :returns: boolean, when role with most priviledges is member
