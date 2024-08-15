@@ -15,7 +15,6 @@ restrictions); for further information, see the log messages on various channels
 from collections import Counter
 import getopt
 import logging
-from operator import attrgetter
 import os
 import re
 import sys
@@ -403,6 +402,25 @@ class CountingHandler(logging.Handler):
         self.bylevel[record.levelno] += 1
 
 
+def _deduce_version(name, ubuntu_ver=re.compile(r"\d\d\.\d\d\Z"), debian_ver=re.compile(r"\d+\Z")):
+    """helper for `select_deb_image` to deduce a version even if its only given via codename"""
+    canonicalized = [part.strip() for part in name.lower().split()]
+    if "debian" in canonicalized:
+        # don't even consider "stretch" (9) here
+        codenames = ("buster", "bullseye", "bookworm")
+        for idx, name in enumerate(codenames):
+            if name in canonicalized:
+                return idx + 10
+        for part in canonicalized:
+            if debian_ver.match(part):
+                return int(part)
+    elif "ubuntu" in canonicalized:
+        for part in canonicalized:
+            if ubuntu_ver.match(part):
+                return int(part[:2] + part[3:])
+    return -1
+
+
 def select_deb_image(images):
     """From a list of OpenStack image objects, select a recent Debian derivative.
 
@@ -411,7 +429,7 @@ def select_deb_image(images):
     for prefix in ("Debian ", "Ubuntu "):
         imgs = sorted(
             [img for img in images if img.name.startswith(prefix)],
-            key=attrgetter("name"),
+            key=lambda img: _deduce_version(img.name),
         )
         if imgs:
             return imgs[-1]
