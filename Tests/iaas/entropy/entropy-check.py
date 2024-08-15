@@ -453,8 +453,6 @@ def _deduce_version(img):
     return d_idx, deducer("")
 
 
-
-
 def select_deb_image(images):
     """From a list of OpenStack image objects, select a recent Debian derivative."""
     return max(images, key=_deduce_version, default=None)
