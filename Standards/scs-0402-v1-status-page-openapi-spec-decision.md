@@ -43,7 +43,7 @@ An `Incremental` is used in combination with other identifiers to identify a sub
 
 #### SeverityValue
 
-A `SeverityValue` is an unsigned integer ranging from 0 to 100 inclusively. It MUST be utilized by an `Impact` when referenced by a requested `Component` to gauge the severity of the impact on that component. It MUST be added to an `Impact` when referenced by an `Incident`, when its created. While being described as an unsigned integer, implementing this value MAY not require it to be an uint data type in any form, because its range even fits in a signed int8 (byte) data type.
+A `SeverityValue` is an unsigned integer ranging from 0 to 100 inclusively. It MUST be utilized by an `Impact` when referenced by a requested `Component` to gauge the severity of the impact on that component. It MUST be added to an `Impact` when referenced by an `Incident`, when its created. While being described as an unsigned integer, implementing this value MAY not require it to be an uint data type in any form, because its range even fits in a signed int8 (byte) data type. Each severity value SHOULD be unique, as multiple severities with the same value will be ambiguous.
 
 ### API objects
 
@@ -63,6 +63,18 @@ Requests to updating operations SHOULD contain the minimum of the changed fields
 ### Endpoint naming
 
 The endpoints are named in plural form, even when handling single objects, to keep uniform paths.
+
+### Incidents
+
+Incidents are the main information bearer at the status page. They hold most of the data that describes an incident:
+
+- when it happened
+- when it completed or if it is still ongoing
+- which components it affected
+- the stages the incident progressed through
+- all updates related to the resolution of the incident
+
+An incident is considered _active_ while no end time has been set. Incidents whose end time has been set are considered to be _inactive_ or _resolved_.
 
 ### Phase list
 
@@ -105,15 +117,11 @@ Example:
 [
   {
     "displayName": "operational",
-    "value": 25
-  },
-  {
-    "displayName": "maintenance",
-    "value": 50
+    "value": 33
   },
   {
     "displayName": "limited",
-    "value": 75
+    "value": 66
   },
   {
     "displayName": "broken",
@@ -122,12 +130,14 @@ Example:
 ]
 ```
 
+A special severity of type "maintenance" is given the exact value of 0.
+
 This means:
 
-- operational from 0 to 25
-- maintenance from 26 to 50
-- limited from 51 to 75
-- broken from 76 to 100.
+- maintenance at 0
+- operational from 1 to 33
+- limited from 34 to 66
+- broken from 67 to 100.
 
 A value of 100 is the maximum of the severity value.
 
@@ -136,6 +146,12 @@ A severity with the value of 100 MUST always be supplied. This is the highest se
 ### Component impacts
 
 Components list their impacts, which they are affected by, as read only. Only an incident creates an impact on a component. Components MUST only list their currently active impacts.
+
+An optional `at` parameter can be supplied, to set a reference time to show all incidents, active at that time, even when they are inactive currently.
+
+### Maintenance
+
+Any `impact` that has the reserved `SeverityValue` of 0 is a maintenance time slot. As such it MUST include a start and end time. However, both are allowed to be set in the future.
 
 ### Return of `POST` requests
 
