@@ -15,7 +15,6 @@ restrictions); for further information, see the log messages on various channels
 from collections import Counter
 import getopt
 import logging
-from operator import attrgetter
 import os
 import re
 import sys
