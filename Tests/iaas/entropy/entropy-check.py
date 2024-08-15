@@ -403,7 +403,7 @@ class CountingHandler(logging.Handler):
         self.bylevel[record.levelno] += 1
 
 
-def _deduce_version(name, ubuntu_ver=re.compile(r"\d\d\.\d\d"), debian_ver=re.compile(r"\d+")):
+def _deduce_version(name, ubuntu_ver=re.compile(r"\d\d\.\d\d\Z"), debian_ver=re.compile(r"\d+\Z")):
     """helper for `select_deb_image` to deduce a version even if its only given via codename"""
     canonicalized = [part.strip() for part in name.lower().split()]
     if "debian" in canonicalized:
