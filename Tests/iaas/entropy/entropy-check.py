@@ -402,38 +402,62 @@ class CountingHandler(logging.Handler):
         self.bylevel[record.levelno] += 1
 
 
-def _deduce_version(name, ubuntu_ver=re.compile(r"\d\d\.\d\d\Z"), debian_ver=re.compile(r"\d+\Z")):
-    """helper for `select_deb_image` to deduce a version even if its only given via codename"""
-    canonicalized = [part.strip() for part in name.lower().split()]
-    if "debian" in canonicalized:
-        # don't even consider "stretch" (9) here
-        codenames = ("buster", "bullseye", "bookworm")
-        for idx, name in enumerate(codenames):
-            if name in canonicalized:
-                return idx + 10
-        for part in canonicalized:
-            if debian_ver.match(part):
-                return int(part)
-    elif "ubuntu" in canonicalized:
-        for part in canonicalized:
-            if ubuntu_ver.match(part):
-                return int(part[:2] + part[3:])
-    return -1
+# only list stable versions here
+DEBIAN_CODENAMES = {
+    "buster": 10,
+    "bullseye": 11,
+    "bookworm": 12,
+}
+
+
+def _deduce_deb_version(name, debian_ver=re.compile(r"\d+\Z")):
+    name = name.lower().strip()
+    if debian_ver.match(name):
+        return int(name)
+    return DEBIAN_CODENAMES.get(name, 0)
+
+
+def _deduce_ubu_version(name, ubuntu_ver=re.compile(r"\d\d\.\d\d\Z")):
+    name = name.lower().strip()
+    if ubuntu_ver.match(name):
+        return int(name[:2] + name[3:])
+    return 0
+
+
+# map lower-case distro name to tuple (sort order, version deducing function)
+DISTROS = {
+    "ubuntu": (1, _deduce_ubu_version),
+    "debian": (2, _deduce_deb_version),
+    None: (0, lambda _: 0),  # use this as fallback
+}
+
+
+def _deduce_version(img):
+    """helper for `select_deb_image`: return pair (distro sort order, version) of int"""
+    if img.os_distro and img.os_version:
+        d_idx, deducer = DISTROS.get(img.os_distro.lower(), DISTROS[None])
+        return d_idx, deducer(img.os_version)
+    # os_distro not set; this could mean that the image in question is not a plain OS image.
+    # Try to parse the name, assuming that distro comes first so we don't need to scan twice
+    logger.debug(f"img {img.name!r} missing os_distro or os_version")
+    canonicalized = [part.strip() for part in img.name.lower().split()]
+    d_idx, deducer = DISTROS[None]
+    for part in canonicalized:
+        if d_idx == 0:
+            d_idx, deducer = DISTROS.get(part, DISTROS[None])
+            continue
+        version = deducer(part)
+        if not version:
+            continue
+        return d_idx, version
+    return d_idx, deducer("")
+
+
 
 
 def select_deb_image(images):
-    """From a list of OpenStack image objects, select a recent Debian derivative.
-
-    Try Debian first, then Ubuntu.
-    """
-    for prefix in ("Debian ", "Ubuntu "):
-        imgs = sorted(
-            [img for img in images if img.name.startswith(prefix)],
-            key=lambda img: _deduce_version(img.name),
-        )
-        if imgs:
-            return imgs[-1]
-    return None
+    """From a list of OpenStack image objects, select a recent Debian derivative."""
+    return max(images, key=_deduce_version, default=None)
 
 
 def print_result(check_id, passed):
