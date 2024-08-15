@@ -4,35 +4,32 @@
   tasks:
     - name: Run compliance script
       ansible.builtin.shell: |
-        python3 ~/Tests/scs-compliance-check.py ~/Tests/scs-compatible-iaas.yaml -s {{ cloud }} -a os_cloud={{ cloud }} -o report.yaml -C
-      register: result
+        python3 ~/Tests/scs-compliance-check.py ~/Tests/scs-compatible-iaas.yaml -s {{ item }} -a os_cloud={{ item }} -o report-{{ item }}.yaml -C
+        ssh-keygen -Y sign -f ~/id_subject -n report report-{{ item }}.yaml
+        curl --data-binary @report-{{ item }}.yaml.sig --data-binary @report-{{ item }}.yaml -H "Content-Type: application/x-signed-yaml" -H "Authorization: Basic $auth" https://compliance.sovereignit.cloud/reports
       changed_when: true
       failed_when: false
       # ^^^ this task does not fail; the only failure would be if `report.yaml` didn't get produced,
       # but then the subsequent tasks would fail anyway
-
-    - ansible.builtin.debug:
-        msg: "{{ result.stdout }} {{ result.stderr }}"
-
-    - name: sign result YAML and upload to compliance monitor
-      no_log: true  # do not leak the secret in the shell part below
-      ansible.builtin.shell: |
-        ssh-keygen -Y sign -f ~/id_subject -n report report.yaml
-        curl --data-binary @report.yaml.sig --data-binary @report.yaml -H "Content-Type: application/x-signed-yaml" -H "Authorization: Basic {{ clouds_conf.zuul_ci_basic_auth }}" https://compliance.sovereignit.cloud/reports
+      environment:
+        auth: "{{ clouds_conf.zuul_ci_basic_auth }}"
+      loop: {{ clouds }}
 
     - name: Copy result YAML
       ansible.builtin.synchronize:
-        dest: "{{ zuul.executor.log_root }}/{{ cloud }}-iaas.yaml"
+        dest: "{{ zuul.executor.log_root }}/{{ item }}-iaas.yaml"
         mode: pull
-        src: "report.yaml"
+        src: "report-{{ item }}.yaml"
         verify_host: true
         owner: no
         group: no
+      loop: {{ clouds }}
 
     - name: Return artifact URL
       zuul_return:
         data:
           zuul:
             artifacts:
-              - name: "{{ cloud }}-iaas.yaml"
-                url: "{{ cloud }}-iaas.yaml"
+              - name: "{{ item }}-iaas.yaml"
+                url: "{{ item }}-iaas.yaml"
+      loop: {{ clouds }}

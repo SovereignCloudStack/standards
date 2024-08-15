@@ -22,10 +22,11 @@
     - name: Create ssh key file
       ansible.builtin.copy:
         # the secrets are usually stripped of whitespace, but the final newline is essential here
-        content: "{{ clouds_conf[secret_key] + '\n' }}"
+        content: "{{ clouds_conf.zuul_ci_signing_key + '\n' }}"
         dest: "~/id_subject"
         mode: "0600"
 
     - name: Clean up any lingering resources from previous run
-      ansible.builtin.shell: python3 ~/Tests/cleanup.py -c {{ cloud }} --prefix _scs- --ipaddr 10.1.0. --debug
+      ansible.builtin.shell: python3 ~/Tests/cleanup.py -c {{ item }} --prefix _scs- --ipaddr 10.1.0. --debug
+      loop: {{ clouds }}
       changed_when: true
