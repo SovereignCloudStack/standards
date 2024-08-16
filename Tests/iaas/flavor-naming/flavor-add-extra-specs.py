@@ -14,14 +14,16 @@ Options:
     -t|--disk0-type TYPE:   Assumes disk TYPE for flavors w/ unspec disk0-type
     -p|--cpu-type TYPE:     Assumes CPU TYPE for flavors w/o SCS name
     -c|--os-cloud CLOUD:    Cloud to work on (default: OS_CLOUD env)
+    -n|--no-changes:        Do not perform any change
 By default, all SCS- flavors are processed; by passing flavor names FLAVORS as
 arguments, only those are processed.
 You can pass non-SCS FLAVORS and specify --cpu-type to generate SCS names and
 set the SCS extra_specs.
 
 On most clouds, to add properties (extra_specs) to flavors, you need to have
-admin power; this program will otherwise report the failed settings. This can
-be used for testing, best in conjunction with -d|--debug.
+admin power; this program will otherwise report the failed settings.
+You can can use this for testing, better use =n|--no-change.
+Add -d|--debug for more verbose output.
 
 (c) Kurt Garloff <garloff@osb-alliance.com>, 6/2024
 SPDX-License-Identifier: CC-BY-SA-4.0
@@ -40,6 +42,7 @@ from flavor_names import Flavorname, Main, Disk, outname
 # globals
 DEBUG = False
 QUIET = False
+NOCHANGE = False
 
 
 def usage(out):
@@ -149,7 +152,7 @@ def check_name_extra(flavor, ver, match, flname):
                 flavor.extra_specs[spec] = SyntaxV2.from_v1(flname)
         # flavor.update_extra_specs_property(spec, flavor.extra_specs[spec])
         if not QUIET:
-            print(f"INFO {flavor.name}: Update extra_spec {spec} to {flavor.extra_specs[spec]}")
+            print(f"INFO  {flavor.name}: Update extra_spec {spec} to {flavor.extra_specs[spec]}")
 
     # Set v3 to v2
     if (ver == "v3" or ver == "v4") and spec not in flavor.extra_specs:
@@ -173,6 +176,15 @@ def update_flavor_extra(compute, flavor, prop):
     """Update flavor extra_spec property prop with the value in the
     dict flavor.extra_specs[prop]. Delete the property if it is None.
     Return 1 if there was an error."""
+    if NOCHANGE:
+        if DEBUG:
+            if prop in flavor.extra_specs and flavor.extra_specs[prop]:
+                print(f"DEBUG {flavor.name}: Would set property {prop} to {flavor.extra_specs[prop]}",
+                      file=sys.stderr)
+            else:
+                print(f"DEBUG {flavor.name}: Would delete property {prop}",
+                      file=sys.stderr)
+        return 0
     try:
         if prop in flavor.extra_specs and flavor.extra_specs[prop]:
             flavor.update_extra_specs_property(compute, prop,
@@ -208,13 +220,13 @@ def check_extra_type(flavor, prop, val, dct):
         return 0
     flavor.extra_specs[spec] = expected
     if not QUIET:
-        print(f"INFO {flavor.name}:  Update extra_spec {spec} to {flavor.extra_specs[spec]}")
+        print(f"INFO  {flavor.name}: Update extra_spec {spec} to {flavor.extra_specs[spec]}")
     return 1
 
 
 def main(argv):
     "Entry point"
-    global DEBUG, QUIET
+    global DEBUG, QUIET, NOCHANGE
     errors = 0
     cloud = None
     disk0_type = None
@@ -223,9 +235,9 @@ def main(argv):
     if "OS_CLOUD" in os.environ:
         cloud = os.environ["OS_CLOUD"]
     try:
-        opts, flvs = getopt.gnu_getopt(argv, "hdqt:p:c:",
+        opts, flvs = getopt.gnu_getopt(argv, "hdqt:p:c:n",
                                        ("help", "debug", "quiet", "disk0-type=",
-                                        "cpu-type=", "os-cloud="))
+                                        "cpu-type=", "os-cloud=", "no-change"))
     except getopt.GetoptError as exc:
         print(f"CRITICAL: {exc!r}", file=sys.stderr)
         usage(1)
@@ -236,6 +248,8 @@ def main(argv):
             DEBUG = True
         if opt[0] == "-q" or opt[0] == "--quiet":
             QUIET = True
+        if opt[0] == "-n" or opt[0] == "--no-change":
+            NOCHANGE = True
         if opt[0] == "-c" or opt[0] == "--os-cloud":
             cloud = opt[1]
         if opt[0] == "-t" or opt[0] == "--disk0-type":
