@@ -218,17 +218,22 @@ def main(argv):
     }
     flvSCSRep = {
         "TotalAmount": len(MSCSFlv) + len(SCSFlv) + len(wrongFlv),
-        "MandatoryFlavorsPresent": len(MSCSFlv),
-        "MandatoryFlavorsMissing": len(scsMandatory),
     }
-    if v3mode:
+    # skip the following if no mandatory flavors are given (useful for v3.2 onward)
+    if len(MSCSFlv) + len(scsMandatory):
+        flvSCSRep.update({
+            "MandatoryFlavorsPresent": len(MSCSFlv),
+            "MandatoryFlavorsMissing": len(scsMandatory),
+        })
+    # skip the following if no recommended flavors are given (useful for v1, v2, and v3.2 onward)
+    if len(RSCSFlv) + len(scsRecommended):
         flvSCSRep.update({
             "RecommendedFlavorsPresent": len(RSCSFlv),
             "RecommendedFlavorsMissing": len(scsRecommended),
         })
     flvSCSRep.update({
-        "OptionalFlavorsValid": len(SCSFlv),
-        "OptionalFlavorsWrong": len(wrongFlv),
+        "FlavorsValid": len(SCSFlv) + len(MSCSFlv) + len(RSCSFlv),
+        "FlavorsWrong": len(wrongFlv),
         "FlavorsWithWarnings": len(warnFlv),
     })
     flvOthRep = {
@@ -246,6 +251,7 @@ def main(argv):
         Report[cloud]["SCSFlavorReport"] = flvSCSList
         Report[cloud]["OtherFlavorReport"] = flvOthList
     print(f"{yaml.dump(Report, default_flow_style=False)}")
+    print("flavor-name-check: " + ('PASS', 'FAIL')[min(1, errors)])
     return errors
 
 
