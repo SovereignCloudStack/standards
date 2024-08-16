@@ -6,13 +6,13 @@
       ansible.builtin.shell: |
         python3 ~/Tests/scs-compliance-check.py ~/Tests/scs-compatible-iaas.yaml -s {{ item }} -a os_cloud={{ item }} -o report-{{ item }}.yaml -C
         ssh-keygen -Y sign -f ~/id_subject -n report report-{{ item }}.yaml
-        curl --data-binary @report-{{ item }}.yaml.sig --data-binary @report-{{ item }}.yaml -H "Content-Type: application/x-signed-yaml" -H "Authorization: Basic $auth" https://compliance.sovereignit.cloud/reports
+        curl --data-binary @report-{{ item }}.yaml.sig --data-binary @report-{{ item }}.yaml -H "Content-Type: application/x-signed-yaml" -H "Authorization: Basic $AUTH_TOKEN" https://compliance.sovereignit.cloud/reports
       changed_when: true
       failed_when: false
       # ^^^ this task does not fail; the only failure would be if `report.yaml` didn't get produced,
       # but then the subsequent tasks would fail anyway
       environment:
-        auth: "{{ clouds_conf.zuul_ci_basic_auth }}"
+        AUTH_TOKEN: "{{ clouds_conf.zuul_ci_basic_auth }}"
       loop: "{{ clouds }}"
 
     - name: Copy result YAML
