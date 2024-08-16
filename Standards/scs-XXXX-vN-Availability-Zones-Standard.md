@@ -22,7 +22,8 @@ Therefore this standard will address the minimal requirements that need to be me
 | Compute            | A generic name for the IaaS service, that manages virtual machines (e.g. Nova in OpenStack).                                             |
 | Network            | A generic name for the IaaS service, that manages network resources (e.g. Neutron in OpenStack).                                         |
 | Storage            | A generic name for the IaaS service, that manages the storage backends and virtual devices (e.g. Cinder in OpenStack).                   |
-| CSP                | Cloud Service Provider, provider managing the OpenStack infrastructure.                                                              |
+| BSI                | German Federal Office for Information Security (Bundesamt für Sicherheit in der Informationstechnik)                                     |
+| CSP                | Cloud Service Provider, provider managing the OpenStack infrastructure.                                                                  |
 
 ## Motivation
 
@@ -60,7 +61,7 @@ Smaller deplyoments like edge deployments may not have more than one fire zone i
 To include such deployments, it should not be required to use Availability Zones.
 
 Other physical factors that should be considered are the power supplies, internet connection, cooling and core routing.
-Availability Zones have been also being configured to show redundancy in e.g. Power Supply as in the PDU.
+Availability Zones were also used by CSPs as a representations of redundant PDUs.
 That means there are deployments, which have Availability Zones per rack as each rack has it's own PDU and this was considered to be the single point of failure an AZ should represent.
 While this is also a possible measurement of independency it only provides failure safety for level 2.
 Therefore this standard should be very clear about which independency an AZ should represent and it should not be allowed to have different deployments with their Availability Zones representing different levels of failure safety.
@@ -68,6 +69,8 @@ Therefore this standard should be very clear about which independency an AZ shou
 Additionally Availability Zones are available for Compute, Storage and Network services.
 They behave differently for each of these resources and also when working across resource-based Availability Zones, e.g. attaching a volume from one AZ to a virtual machine in another AZ.
 For each of these IaaS resource classes, it should be defined, under which circumstances Availability Zones should be used.
+
+[^1]: [Taxonomy of Failsafe Levels in SCS (TODO: change link as soon as taxonomy is merged)](https://github.com/SovereignCloudStack/standards/pull/579)
 
 ### Scope of the Availability Zone Standard
 
@@ -146,8 +149,12 @@ If a physical machine, on which certain network resources are set up, is not ava
 There might only be a loss of a few packets within the affected network resources.
 
 With having Compute and Storage in a good state (e.g. through having fire zones with a compute AZ each and storage being replicated over the fire zones) there would be no downsides to omitting Availability Zones for the network service.
-It might even be the opposite: Having resources running in certain Availability Zones might permit them from being scheduled in other AZs[^3].
-This standard will therefore make no recommendations about Network AZs.
+It might even be the opposite: Having resources running in certain Availability Zones might prevent them from being scheduled in other AZs[^3].
+As the network resources like routers are bound to an AZ, in a failure case of one AZ all resource definitions might still be there in the database, while the implementation of those resources is gone.
+Trying to rebuild them in another AZ is not possible, because the scheduler will not allow them to be implemented in another AZ, then the one thats present in their definition.
+In a failure case of one AZ this might lead to a lot of manual work to rebuild the SDN from scratch instead of just re-using the definitions.
+
+Because of this severe sideeffect, this standard will make no recommendations about Network AZs.
 
 [^3]: [Availability Zones in Neutron for OVN](https://docs.openstack.org/neutron/latest/admin/ovn/availability_zones.html)
 
