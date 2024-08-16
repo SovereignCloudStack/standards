@@ -59,7 +59,7 @@ def min_max_check(real, claim, valnm, flvnm, extra):
        For floats, we allow for 1% tolerance in both directions.
        """
     # 1% tolerance for floats (RAM)
-    if claim is float:
+    if isinstance(claim, float):
         chkval = real*1.01
         chkval2 = real*0.99
     else:
