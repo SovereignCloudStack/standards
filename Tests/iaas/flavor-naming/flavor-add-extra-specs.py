@@ -228,12 +228,10 @@ def main(argv):
     "Entry point"
     global DEBUG, QUIET, NOCHANGE
     errors = 0
-    cloud = None
     disk0_type = None
     cpu_type = None
 
-    if "OS_CLOUD" in os.environ:
-        cloud = os.environ["OS_CLOUD"]
+    cloud = os.environ.get("OS_CLOUD")
     try:
         opts, flvs = getopt.gnu_getopt(argv, "hdqt:p:c:n",
                                        ("help", "debug", "quiet", "disk0-type=",
