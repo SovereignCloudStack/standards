@@ -23,6 +23,17 @@ TODO: What time frame do we look at? (so called Recovery Time Objecte aka RTO)
 TODO: how does this relate to Business Continuity Planning (BCP)
 -->
 
+## Glossary
+
+| Term               | Explanation                                                                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Availability Zone  | (also: AZ) internal representation of physical grouping of service hosts, which also lead to internal grouping of resources.             |
+| BSI                | German Federal Office for Information Security (Bundesamt für Sicherheit in der Informationstechnik).                                    |
+| CSP                | Cloud Service Provider, provider managing the OpenStack infrastructure.                                                                  |
+| Compute            | A generic name for the IaaS service, that manages virtual machines (e.g. Nova in OpenStack).                                             |
+| Network            | A generic name for the IaaS service, that manages network resources (e.g. Neutron in OpenStack).                                         |
+| Storage            | A generic name for the IaaS service, that manages the storage backends and virtual devices (e.g. Cinder in OpenStack).                   |
+
 ## Context
 
 Some standards provided by the SCS project will talk about or require procedures to back up resources or have redundancy for resources.
@@ -45,16 +56,12 @@ be tolerated by a provided service.
 In general, the lowest, **level 1**, describes isolated/local failures which can occur very frequently, whereas
 the highest, **level 4**, describes relatively unlikely failures that impact a whole or even multiple datacenter(s):
 
-| Level | Probability | Impact      | Examples |
-| -     | -           | -           | -       |
-| 1     | Very High   | Local       | Disk failure, RAM failure, software bug |
-| 2     | High        | Moderate    | Rack outage, power outage, small fire |
-| 3     | Medium      | High        | Regional power outage, huge fire, orchestrated cyber attack |
-| 4     | Low         | Very high   | Natural disaster |
-
-<!--
-TODO: find better categories for impact (maybe site-wide, regional, and so on?) also: scale vs. impact?
--->
+| Level | Probability | Impact                | Examples |
+| -     | -           | -                     | -       |
+| 1     | Very High   | small Hardware Issue  | Disk failure, RAM failure, small software bug |
+| 2     | High        | Rack-wide             | Rack outage, power outage, small fire |
+| 3     | Medium      | site-wide (temporary) | Regional power outage, huge fire, orchestrated cyber attack |
+| 4     | Low         | site destruction      | Natural disaster |
 
 For example, a provided service with failsafe level 2 tolerates a rack outage (because there is some kind of
 redundancy in place.)
@@ -127,12 +134,6 @@ Note that probability for these scenarios is dependent on the location.
 ## Consequences
 
 Using the definition of levels established in this decision record throughout all SCS standards would allow readers to understand up to which level certain procedures or aspects of resources (e.g. volume types or a backend requiring redundancy) would protect their data and/or resource availability.
-
-## Glossary
-
-<!--
-TODO: define AZs and regions
--->
 
 ### General Terms
 
