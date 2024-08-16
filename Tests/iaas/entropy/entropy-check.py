@@ -427,10 +427,6 @@ def _deduce_sort_ubuntu(name, ubuntu_ver=re.compile(r"\d\d\.\d\d\Z")):
     return 1, 0
 
 
-def _deduce_sort_other(name):
-    return 0, 0
-
-
 # map lower-case distro name to version deducing function
 DISTROS = {
     "ubuntu": _deduce_sort_ubuntu,
@@ -439,22 +435,14 @@ DISTROS = {
 
 
 def _deduce_sort(img):
-    if img.os_distro and img.os_version:
-        deducer = DISTROS.get(img.os_distro.lower(), _deduce_sort_other)
-        return deducer(img.os_version)
-    # os_distro not set; this could mean that the image in question is not a plain OS image.
-    # Try to parse the name, assuming that distro comes first so we don't need to scan twice
-    logger.debug(f"img {img.name!r} missing os_distro or os_version")
-    canonicalized = [part.strip() for part in img.name.lower().split()]
-    deducer = None
-    for part in canonicalized:
-        if deducer is not None:
-            version = deducer(part)
-            if version != (0, 0):
-                return version
-        else:
-            deducer = DISTROS.get(part)
-    return 0, 0
+    # avoid private images here
+    # (note that with SCS, public images MUST have os_distro and os_version, but we check nonetheless)
+    if img.visibility != 'public' or not img.os_distro or not img.os_version:
+        return 0, 0
+    deducer = DISTROS.get(img.os_distro.lower())
+    if deducer is None:
+        return 0, 0
+    return deducer(img.os_version)
 
 
 def select_deb_image(images):
