@@ -290,7 +290,7 @@ def print_report(subject: str, suite: TestSuite, targets: dict, results: dict, v
             for testcase in offenders:
                 print(f"  - {category} {testcase['id']}")
                 if 'description' in testcase:  # used to be `verbose and ...`, but users need the URL!
-                    print('    ' + testcase['description'])
+                    print('           ' + testcase['description'])
 
 
 def create_report(argv, config, spec, versions, invocations):
