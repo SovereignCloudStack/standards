@@ -415,15 +415,15 @@ DEBIAN_CODENAMES = {
 }
 
 
-def _deduce_sort_debian(name, debian_ver=re.compile(r"\d+\Z")):
-    if debian_ver.match(name):
-        return 2, int(name)
-    return 2, DEBIAN_CODENAMES.get(name.lower(), 0)
+def _deduce_sort_debian(os_version, debian_ver=re.compile(r"\d+\Z")):
+    if debian_ver.match(os_version):
+        return 2, int(os_version)
+    return 2, DEBIAN_CODENAMES.get(os_version, 0)
 
 
-def _deduce_sort_ubuntu(name, ubuntu_ver=re.compile(r"\d\d\.\d\d\Z")):
-    if ubuntu_ver.match(name):
-        return 1, int(name.replace(".", ""))
+def _deduce_sort_ubuntu(os_version, ubuntu_ver=re.compile(r"\d\d\.\d\d\Z")):
+    if ubuntu_ver.match(os_version):
+        return 1, int(os_version.replace(".", ""))
     return 1, 0
 
 
@@ -439,10 +439,10 @@ def _deduce_sort(img):
     # (note that with SCS, public images MUST have os_distro and os_version, but we check nonetheless)
     if img.visibility != 'public' or not img.os_distro or not img.os_version:
         return 0, 0
-    deducer = DISTROS.get(img.os_distro.lower())
+    deducer = DISTROS.get(img.os_distro.strip().lower())
     if deducer is None:
         return 0, 0
-    return deducer(img.os_version)
+    return deducer(img.os_version.strip().lower())
 
 
 def select_deb_image(images):
