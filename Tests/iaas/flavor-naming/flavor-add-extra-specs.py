@@ -126,22 +126,6 @@ def revert_dict(value, dct, extra=""):
     return None
 
 
-def filter_flavors(compute, flvlist):
-    """Queries OpenStack compute for a a list of flavors, returns only those that are
-       either in the specified flvlist OR for an empty flvlist all the ones starting with SCS-
-       Returns a list of openstack.flavor instances.
-    """
-    flavors = []
-    for flv in compute.flavors():
-        if flvlist:
-            if flv.name in flvlist:
-                flavors.append(flv)
-        else:
-            if flv.name[0:4] == "SCS-":
-                flavors.append(flv)
-    return flavors
-
-
 def _extract_core_items(flavorname: Flavorname):
     cputype = flavorname.cpuram.cputype
     disktype = None if flavorname.disk is None else flavorname.disk.disktype
@@ -202,10 +186,13 @@ def main(argv):
     conn.authorize()
     compute = conn.compute
 
-    flavors = filter_flavors(compute, flvs)
-    # This is likely a user error, so make him aware
+    # select relevant flavors: either given via name, or all SCS flavors
+    predicate = (lambda fn: fn in flvs) if flvs else (lambda fn: fn.startswith('SCS-'))
+    flavors = [flavor for flavor in compute.flavors() if predicate(flavor.name)]
+    # This is likely a user error, so make them aware
     if len(flavors) < len(flvs):
-        print("WARNING: Not all specified flavors exist", file=sys.stderr)
+        missing = set(flvs) - set(flavor.name for flavor in flavors)
+        logger.warning("Flavors not found: " + ", ".join(missing))
 
     for flavor in flavors:
         extra_names_to_check = [
