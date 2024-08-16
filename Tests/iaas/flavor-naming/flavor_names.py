@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import logging
 import os
 import os.path
 import re
@@ -8,6 +9,8 @@ from typing import Optional
 
 import yaml
 
+
+logger = logging.getLogger(__name__)
 
 CPUTYPE_KEY = {'L': 'crowded-core', 'V': 'shared-core', 'T': 'dedicated-thread', 'C': 'dedicated-core'}
 DISKTYPE_KEY = {'n': 'network', 'h': 'hdd', 's': 'ssd', 'p': 'nvme'}
@@ -437,6 +440,46 @@ class Parser:
         return flavorname
 
 
+class ParsingStrategy:
+    """
+    Composite parser that accepts multiple versions of the syntax in different ways
+
+    Follows the contract of class `Parser`
+    """
+
+    def __init__(self, vstr, parsers=(), tolerated_parsers=(), invalid_parsers=()):
+        self.vstr = vstr
+        self.parsers = parsers
+        self.tolerated_parsers = tolerated_parsers
+        self.invalid_parsers = invalid_parsers
+
+    def __call__(self, namestr: str) -> Flavorname:
+        exc = None
+        for parser in self.parsers:
+            try:
+                return parser(namestr)
+            except Exception as e:
+                if exc is None:
+                    exc = e
+        # at this point, if `self.parsers` is not empty, then `exc` is not `None`
+        for parser in self.tolerated_parsers:
+            try:
+                result = parser(namestr)
+            except Exception:
+                pass
+            else:
+                logger.warning(f"Name is merely tolerated {parser.vstr}: {namestr}")
+                return result
+        for parser in self.invalid_parsers:
+            try:
+                result = parser(namestr)
+            except Exception:
+                pass
+            else:
+                raise ValueError(f"Name is non-tolerable {parser.vstr}")
+        raise exc
+
+
 def _convert_user_input(idx, attr, target, val):
     """auxiliary function that converts user-input string `val` to the target attribute type"""
     fdesc = attr.name
@@ -542,23 +585,30 @@ class Inputter:
 parser_v1 = Parser("v1", SyntaxV1)
 parser_v2 = Parser("v2", SyntaxV2)
 parser_v3 = Parser("v3", SyntaxV2)  # this is the same as parser_v2 except for the vstr
+parser_vN = ParsingStrategy(vstr="vN", parsers=(parser_v2, parser_v1))
 outname = outputter = Outputter()
 inputflavor = inputter = Inputter()
 
 
 def flavorname_to_dict(flavorname: Flavorname) -> dict:
     name_v2 = outputter(flavorname)
+    name_v4 = outputter(flavorname.shorten())
     result = {
         'cpus': flavorname.cpuram.cpus,
-        'cpu-type': CPUTYPE_KEY[flavorname.cpuram.cputype],
+        'scs:cpu-type': CPUTYPE_KEY[flavorname.cpuram.cputype],
         'ram': flavorname.cpuram.ram,
-        'name-v1': SyntaxV1.from_v2(name_v2),
-        'name-v2': name_v2,
+        'scs:name-v1': SyntaxV1.from_v2(name_v2),
+        'scs:name-v2': name_v2,
     }
+    if name_v4 != name_v2:
+        result.update({
+            'scs:name-v3': SyntaxV1.from_v2(name_v4),
+            'scs:name-v4': name_v4,
+        })
     if flavorname.disk:
         result['disk'] = flavorname.disk.disksize
         for i in range(flavorname.disk.nrdisks):
-            result[f'disk{i}-type'] = DISKTYPE_KEY[flavorname.disk.disktype or 'n']
+            result[f'scs:disk{i}-type'] = DISKTYPE_KEY[flavorname.disk.disktype or 'n']
     return result
 
 

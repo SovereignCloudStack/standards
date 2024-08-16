@@ -29,13 +29,20 @@ Add -d|--debug for more verbose output.
 SPDX-License-Identifier: CC-BY-SA-4.0
 """
 
-import os
-import sys
 import getopt
+import logging
+import os
+import re
+import sys
+
+from flavor_names import parser_vN, CPUTYPE_KEY, DISKTYPE_KEY, Flavorname, Main, Disk, flavorname_to_dict
+
 import openstack
 
-from flavor_names import parser_v2, parser_v1, SyntaxV1, SyntaxV2, CPUTYPE_KEY, DISKTYPE_KEY
-from flavor_names import Flavorname, Main, Disk, outname
+
+logger = logging.getLogger(__name__)
+scs_name_pattern = re.compile(r"scs:name-v\d+\Z")
+DEFAULTS = {'scs:disk0-type': 'network'}
 
 # globals
 DEBUG = False
@@ -92,7 +99,7 @@ def check_std_props(flavor, flvnm, extra=""):
     return errors
 
 
-def generate_name_v2(flavor, cpu_type, disk0_type):
+def generate_flavorname(flavor, cpu_type, disk0_type):
     """Generate an SCS- v2 name for flavor,
     using cpu_type (and disk0_type if needed).
     Returns string."""
@@ -100,70 +107,13 @@ def generate_name_v2(flavor, cpu_type, disk0_type):
     cpuram.cpus = flavor.vcpus
     cpuram.cputype = cpu_type
     cpuram.ram = int((flavor.ram+12)/512)/2.0
+    flavorname = Flavorname(main)
     if flavor.disk:
         disk = Disk()
         disk.disksize = flavor.disk
         disk.disktype = disk0_type
-        flv = Flavorname(cpuram, disk)
-    else:
-        flv = Flavorname(cpuram)
-    return outname(flv)
-
-
-def check_name_extra(flavor, ver, match, flname):
-    """Check for existence and consistency of scs names in extra specs
-    This assumes that a v1 or v2 name is used as main flavor name and should
-    match. If match is not set an v1->v2 or v2->v1 translation is needed.
-    ver needs to be set to 'v1' or 'v2'/'v3'/'v4'
-    flname is the SCS flavor name (may have been generated)
-    Returns non-zero if we need to perform an API call to perform a change.
-    """
-    spec = f"scs:name-{ver}"
-    errs = 0
-    need_name_set = True
-    if spec in flavor.extra_specs:
-        # Get name from scs:name-vN property
-        name = flavor.extra_specs[spec]
-        # If match=True has been passed, we expect it to match flname
-        # produces a warning on mismatch
-        if match and name != flname:
-            print(f"WARNING: {spec} {name} != flavor name {flname}",
-                  file=sys.stderr)
-        # Existing names must be parseable SCS names, check
-        # If we can parse the name AND there is no inconsistency
-        # we don't need to update the name.
-        try:
-            parsed = parser_v2(name)
-        except ValueError as exc:
-            try:
-                parsed = parser_v1(name)
-            except ValueError as exc2:
-                print(f"ERROR parsing {spec} {name}: {exc!r} {exc2!r}",
-                      file=sys.stderr)
-                need_name_set = False
-        # Check consistency
-        if need_name_set and not check_std_props(flavor, parsed, f" by {spec}"):
-            need_name_set = False
-
-    # FIXME: name might contain more details than the flname, use them
-    # TODO: determine whether we want to generate additional names in that case
-    # e.g.: scs:name-v1 -> detailed v1 name, -v2: detailed v2 name,
-    #               -v3 -> shortened v1 name (if different), -v4 shortened v2 name (if ...)
-    if need_name_set:
-        errs += 1
-        if match:
-            flavor.extra_specs[spec] = flname
-        else:
-            if ver == "v1":
-                flavor.extra_specs[spec] = SyntaxV1.from_v2(flname)
-            else:
-                flavor.extra_specs[spec] = SyntaxV2.from_v1(flname)
-        # flavor.update_extra_specs_property(spec, flavor.extra_specs[spec])
-        if not QUIET:
-            print(f"INFO  {flavor.name}: Update extra_spec {spec} to {flavor.extra_specs[spec]}")
-
-    # FIXME: Spec 0103 has changed, no point in creating additional literal copies
-    return errs
+        flavorname.disk = disk
+    return flavorname
 
 
 def revert_dict(value, dct, extra=""):
@@ -174,58 +124,6 @@ def revert_dict(value, dct, extra=""):
     print(f"ERROR: {extra} {value} should be in {dct.items()}",
           file=sys.stderr)
     return None
-
-
-def update_flavor_extra(compute, flavor, prop):
-    """Update flavor extra_spec property prop with the value in the
-    dict flavor.extra_specs[prop]. Delete the property if it is None.
-    Return 1 if there was an error."""
-    if NOCHANGE:
-        if DEBUG:
-            if prop in flavor.extra_specs and flavor.extra_specs[prop]:
-                print(f"DEBUG {flavor.name}: Would set property {prop} to {flavor.extra_specs[prop]}",
-                      file=sys.stderr)
-            else:
-                print(f"DEBUG {flavor.name}: Would delete property {prop}",
-                      file=sys.stderr)
-        return 0
-    try:
-        if prop in flavor.extra_specs and flavor.extra_specs[prop]:
-            flavor.update_extra_specs_property(compute, prop,
-                                               flavor.extra_specs[prop])
-        else:
-            flavor.delete_extra_specs_property(compute, prop)
-            if prop in flavor.extra_specs:
-                del flavor.extra_specs[prop]
-        return 0
-    except openstack.exceptions.SDKException as exc:
-        print(f"ERROR: Could not set {prop} for {flavor.name}: {exc!r}",
-              file=sys.stderr)
-        return 1
-
-
-def check_extra_type(flavor, prop, val, dct):
-    """Check extra_specs['scs:prop'] for flavor
-    It should be set and consistent with val, translated with dct.
-    Returns 1 is the extra_spec needs to change"""
-    spec = f"scs:{prop}"
-    if val:
-        expected = dct[val]
-    else:
-        expected = None
-    if spec in flavor.extra_specs:
-        setting = flavor.extra_specs[spec]
-        if setting != expected:
-            print(f"ERROR: flavor {flavor.name} has {spec} set to {setting}, expect {expected}",
-                  file=sys.stderr)
-        else:
-            return 0
-    elif not expected:
-        return 0
-    flavor.extra_specs[spec] = expected
-    if not QUIET:
-        print(f"INFO  {flavor.name}: Update extra_spec {spec} to {flavor.extra_specs[spec]}")
-    return 1
 
 
 def filter_flavors(compute, flvlist):
@@ -242,6 +140,17 @@ def filter_flavors(compute, flvlist):
             if flv.name[0:4] == "SCS-":
                 flavors.append(flv)
     return flavors
+
+
+def _extract_core_items(flavorname: Flavorname):
+    cputype = flavorname.cpuram.cputype
+    disktype = None if flavorname.disk is None else flavorname.disk.disktype
+    return cputype, disktype
+
+
+def _extract_core(flavorname: Flavorname):
+    cputype, disktype = _extract_core_items(flavorname)
+    return f"cputype={cputype}, disktype={disktype}"
 
 
 def main(argv):
@@ -265,6 +174,7 @@ def main(argv):
             usage(0)
         if opt[0] == "-d" or opt[0] == "--debug":
             DEBUG = True
+            logging.getLogger().setLevel(logging.DEBUG)
         if opt[0] == "-q" or opt[0] == "--quiet":
             QUIET = True
         if opt[0] == "-n" or opt[0] == "--no-change":
@@ -298,64 +208,77 @@ def main(argv):
         print("WARNING: Not all specified flavors exist", file=sys.stderr)
 
     for flavor in flavors:
-        is_v1 = False
-        flname = flavor.name
-        if flname[0:4] != "SCS-":
-            # Set flname by looking at extra_spec scs:name-v2
-            if "scs:name-v2" in flavor.extra_specs:
-                flname = flavor.extra_specs["scs:name-v2"]
-            else:
-                # In generation case, we'd need a cpu-type spec
-                if not cpu_type:
-                    print(f"WARNING: Need to specify cpu-type for generating name for {flname}, skipping",
-                          file=sys.stderr)
-                    continue
-                flname = generate_name_v2(flavor, cpu_type, disk0_type)
-        if DEBUG:
-            print(f"DEBUG: Inspecting flavor {flavor.name}/{flname} ...")
-        try:
-            flvnm = parser_v2(flname)
-        except ValueError as exc:
+        extra_names_to_check = [
+            (key, value)
+            for key, value in flavor.extra_specs.items()
+            if scs_name_pattern.match(key)
+        ]
+        names_to_check = [('name', flavor.name)] if flavor.name.startswith('SCS-') else []
+        names_to_check.extend(extra_names_to_check)
+
+        # syntax check: compute flavorname instances
+        flavornames = {}
+        for key, name_str in names_to_check:
             try:
-                flvnm = parser_v1(flname)
-                is_v1 = True
-            except ValueError:
-                print(f"ERROR with flavor {flavor.name}: {exc!r}, skipping ...",
-                      file=sys.stderr)
+                flavornames[key] = parser_vN(name_str)
+            except ValueError as exc:
+                logger.error(f"could not parse {key}={name_str}: {exc!r}")
                 errors += 1
-                continue
 
-        # Now do sanity checks (std properties)
-        stderrs = check_std_props(flavor, flvnm, " by name")
-        errors += stderrs
-        if stderrs:
-            continue
-
-        # Parse and Generate name-v1 and name-v2
-        upd = check_name_extra(flavor, "v2", not is_v1, flname)
-        if upd:
-            errors += update_flavor_extra(compute, flavor, "scs:name-v2")
-            chg += 1
-        upd = check_name_extra(flavor, "v1", is_v1, flname)
-        if upd:
-            errors += update_flavor_extra(compute, flavor, "scs:name-v1")
-            chg += 1
-        # Parse and Generate cpu-type and disk0-type
-        upd = check_extra_type(flavor, "cpu-type", flvnm.cpuram.cputype, CPUTYPE_KEY)
-        if upd:
-            errors += update_flavor_extra(compute, flavor, "scs:cpu-type")
-            chg += 1
-
-        # We may not have a disk (or the type is unknown)
-        if flvnm.disk:
-            dtp = flvnm.disk.disktype
-            if not dtp:
-                dtp = disk0_type
+        # select a reference flavorname, check flavornames
+        if flavornames:
+            flavorname_items = iter(flavornames.items())
+            reference_key, reference = next(flavorname_items)
+            reference_core = _extract_core(reference)
+            # sanity check: claims must be true wrt actual flavor
+            errors += check_std_props(flavor, reference, " by name")
+            # sanity check: claims must coincide (check remaining flavornames)
+            for key, flavorname in flavorname_items:
+                errors += check_std_props(flavor, flavorname, " by name")
+                core = _extract_core(flavorname)
+                if core != reference_core:
+                    logger.error(f"Inconsistent {key} vs. {reference_key}: {core} vs. {reference_core}")
         else:
-            dtp = None
-        upd = check_extra_type(flavor, "disk0-type", dtp, DISKTYPE_KEY)
-        if upd:
-            errors += update_flavor_extra(compute, flavor, "scs:disk0-type")
+            # we need cputype and disktype from user
+            if not cpu_type:
+                logger.warning(f"Need to specify cpu-type for generating name for {flavor.name}, skipping")
+                continue
+            if flavor.disk and not disk0_type:
+                logger.warning(f"Need to specify disk0-type for generating name for {flavor.name}, skipping")
+                continue
+            reference_key = None
+            reference = generate_flavorname(flavor, cpu_type, disk0_type)
+
+        expected = flavorname_to_dict(reference)
+        # set value for any unexpected, but present key to default value
+        # this will help us find necessary removals
+        for key in flavor.extra_specs:
+            expected.setdefault(key, DEFAULTS.get(key))
+
+        # generate default name-vN (ONLY if none present)
+        if not extra_names_to_check:
+            for key, value in expected.items():
+                if not key.startswith("scs:name-v"):
+                    continue
+                # TODO do the API call
+                logger.debug(f"{flavor.name}: SET {key}={value}")
+                chg += 1
+
+        # generate or rectify other extra_specs
+        for key, value in expected.items():
+            if key.startswith("scs:name-v") or not key.startswith("scs:"):
+                continue
+            current = flavor.extra_specs.get(key, DEFAULTS.get(key))
+            if current == value:
+                continue
+            if current is not None:
+                logger.warning(f"resetting {key} because {current} != expected {value}")
+            if value is None:
+                # TODO do the API call
+                logger.debug(f"{flavor.name}: DELETE {key}")
+            else:
+                # TODO do the API call
+                logger.debug(f"{flavor.name}: SET {key}={value}")
             chg += 1
 
     if (DEBUG):
@@ -364,4 +287,6 @@ def main(argv):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
+    openstack.enable_logging(debug=False)
     sys.exit(main(sys.argv[1:]))
