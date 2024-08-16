@@ -13,7 +13,7 @@ accounts:
       - admin
   - subject: zuul_ci
     api_keys:
-      - "$argon2id$v=19$m=65536,t=3,p=4$m3OOcQ4BoNR6L0VoDUFIyQ$Y/cCKggkIuyHHFGv1Ng5ijMIIJjyvfkjvdASL2LFiPA"
+      - "$argon2id$v=19$m=65536,t=3,p=4$1/o/RwihlFIKAaAUolQKAQ$4MAuy6myIaVNofSW9KLlf81/y7WotHCfRl8dxKJ2rjQ"
     roles:
       - append_any
   - subject: gx-scs
@@ -93,7 +93,7 @@ subjects:
   artcodix:
     active: true
     name: CNDS
-    provider: artcodix UG
+    provider: artcodix GmbH
   pco-prod1:
     active: true
     name: pluscloud open prod1

@@ -41,8 +41,8 @@ Note that not all relevant properties of flavors can be discovered; creating a s
 to address this is a separate but related effort to the name standardization.
 Commonly used infrastructure-as-code tools do not provide a way to use discoverability
 features to express something like "I want a flavor with 2 vCPUs, 8GiB of RAM, a local
-20GB SSD disk and Infiniband support but I don't care whether it's AMD or intel" in a
-reasonable manner. Using flavor names to express this will thus continue to be useful
+20GB SSD disk and Infiniband support, but I don't care whether it's AMD or intel" in a
+reasonable manner. Using flavor names to express this will thus continue to be useful,
 and we don't expect the need for standardization of flavor names to go away until
 the commonly used IaC tools work on a higher abstraction layer than they currently do.
 
@@ -76,7 +76,7 @@ encoding all details) as well as very detailed longer names.
 | `SCS-` | N`L/V/T/C`\[`i`\] | `-`N\[`u`\]\[`o`\] | \[`-`\[M`x`\]N\[`n/h/s/p`\]\] | \[`_`EXT\]      |
 
 Note that N and M are placeholders for numbers here.
-The optional fields are denoted in brackets (and have opt: in the header.
+The optional fields are denoted in brackets (and have `opt:` in the header).
 See below for extensions.
 
 Note that all letters are case-sensitive.
@@ -131,7 +131,7 @@ the lack of workload management that would prevent worst case performance < 20% 
 #### Insufficient microcode
 
 Not using these mitigations must be indicated by an additional `i` suffix for insecure
-(weak protection against CPU vulns through insufficient microcode, lack of disabled hyperthreading
+(weak protection against CPU vulnerabilities through insufficient microcode, lack of disabled hyperthreading
 on L1TF susceptible CPUs w/o effective core scheduling or disabled protections on the host/hypervisor).
 
 #### Examples
@@ -150,7 +150,7 @@ on L1TF susceptible CPUs w/o effective core scheduling or disabled protections o
 
 Cloud providers should use ECC memory.
 Memory oversubscription should not be used.
-It is allowed to specify half GiBs (e.g. 3.5), though this is should not be done for larger memory sizes (>= 10GiB).
+It is allowed to specify half GiBs (e.g. 3.5), though this should not be done for larger memory sizes (>= 10GiB).
 
 #### No ECC
 
@@ -541,7 +541,7 @@ However, we have been reaching out to the OpenStack Public Cloud SIG and the ALA
 members to seek further alignment.
 
 Getting upstream OpenStack support for flavor aliases would provide more flexibility
-and ease migrations between providers, also providers that don't offer the SCS-
+and ease migrations between providers, also providers that don't offer the `SCS-`
 flavors.
 
 We also would like to see upstream `extra_specs` standardizing the discoverability of some

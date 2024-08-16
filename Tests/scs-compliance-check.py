@@ -20,40 +20,48 @@ would split these tests out.)
 import os
 import os.path
 import uuid
+import re
 import sys
 import shlex
 import getopt
 import datetime
 import subprocess
-from functools import partial
+from collections import defaultdict
 from itertools import chain
+import logging
 import yaml
 
+from scs_cert_lib import load_spec, annotate_validity, compile_suite, TestSuite
 
-# valid keywords for various parts of the spec, to be checked using `check_keywords`
-KEYWORDS = {
-    'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables'),
-    'version': ('version', 'standards', 'stabilized_at', 'deprecated_at'),
-    'standard': ('checks', 'url', 'name', 'condition'),
-    'check': ('executable', 'env', 'args', 'condition', 'lifetime', 'id', 'section'),
-}
+
+logger = logging.getLogger(__name__)
+
+TESTCASE_VERDICTS = {'PASS': 1, 'FAIL': -1}
+NIL_RESULT = {'result': 0}
 
 
 def usage(file=sys.stdout):
     """Output usage information"""
-    print("""Usage: scs-compliance-check.py [options] compliance-spec.yaml
-Options: -v/--verbose: More verbose output
- -q/--quiet: Don't output anything but errors
- -d/--date YYYY-MM-DD: Check standards valid on specified date instead of today
- -V/--version VERS: Force version VERS of the standard (instead of deriving from date)
- -s/--subject SUBJECT: Name of the subject (cloud) under test, for the report
- -S/--sections SECTION_LIST: comma-separated list of sections to test (default: all sections)
- -o/--output REPORT_PATH: Generate yaml report of compliance check under given path
- -C/--critical-only: Only return critical errors in return code
- -a/--assign KEY=VALUE: assign variable to be used for the run (as required by yaml file)
+    print("""Usage: scs-compliance-check.py [options] SPEC_YAML
+
+Arguments:
+  SPEC_YAML: yaml file specifying the certificate scope
+
+Options:
+  -v/--verbose: More verbose output
+  -q/--quiet: Don't output anything but errors
+     --debug: enables DEBUG logging channel
+  -d/--date YYYY-MM-DD: Check standards valid on specified date instead of today
+  -V/--version VERS: Force version VERS of the standard (instead of deriving from date)
+  -s/--subject SUBJECT: Name of the subject (cloud) under test, for the report
+  -S/--sections SECTION_LIST: comma-separated list of sections to test (default: all sections)
+  -t/--tests REGEX: regular expression to select individual testcases based on their ids
+  -o/--output REPORT_PATH: Generate yaml report of compliance check under given path
+  -C/--critical-only: Only return critical errors in return code
+  -a/--assign KEY=VALUE: assign variable to be used for the run (as required by yaml file)
 
 With -C, the return code will be nonzero precisely when the tests couldn't be run to completion.
-""".strip(), file=file)
+""", file=file)
 
 
 def run_check_tool(executable, args, env=None, cwd=None):
@@ -74,11 +82,6 @@ def run_check_tool(executable, args, env=None, cwd=None):
     )
 
 
-def errcode_to_text(err):
-    "translate error code to text"
-    return f"{err} ERRORS" if err else "PASSED"
-
-
 class Config:
     def __init__(self):
         self.arg0 = None
@@ -91,26 +94,29 @@ class Config:
         self.output = None
         self.sections = None
         self.critical_only = False
+        self.tests = None
 
     def apply_argv(self, argv):
         """Parse options. May exit the program."""
         try:
-            opts, args = getopt.gnu_getopt(argv, "hvqd:V:s:o:S:Ca:", (
-                "help", "verbose", "quiet", "date=", "version=",
-                "subject=", "output=", "sections=", "critical-only", "assign",
+            opts, args = getopt.gnu_getopt(argv, "hvqd:V:s:o:S:Ca:t:", (
+                "help", "verbose", "quiet", "date=", "version=", "debug",
+                "subject=", "output=", "sections=", "critical-only", "assign=", "tests=",
             ))
-        except getopt.GetoptError as exc:
-            print(f"Option error: {exc}", file=sys.stderr)
-            usage()
-            sys.exit(1)
+        except getopt.GetoptError:
+            usage(file=sys.stderr)
+            raise
         for opt in opts:
             if opt[0] == "-h" or opt[0] == "--help":
                 usage()
                 sys.exit(0)
             elif opt[0] == "-v" or opt[0] == "--verbose":
                 self.verbose = True
+            elif opt[0] == "--debug":
+                logging.getLogger().setLevel(logging.DEBUG)
             elif opt[0] == "-q" or opt[0] == "--quiet":
                 self.quiet = True
+                logging.getLogger().setLevel(logging.ERROR)
             elif opt[0] == "-d" or opt[0] == "--date":
                 self.checkdate = datetime.date.fromisoformat(opt[1])
             elif opt[0] == "-V" or opt[0] == "--version":
@@ -128,36 +134,18 @@ class Config:
                 if key in self.assignment:
                     raise ValueError(f"Double assignment for {key!r}")
                 self.assignment[key] = value
+            elif opt[0] == "-t" or opt[0] == "--tests":
+                self.tests = re.compile(opt[1])
             else:
-                print(f"Error: Unknown argument {opt[0]}", file=sys.stderr)
-        if len(args) < 1:
+                logger.error(f"Unknown argument {opt[0]}")
+        if len(args) != 1:
             usage(file=sys.stderr)
-            sys.exit(1)
+            raise RuntimeError("need precisely one argument")
         self.arg0 = args[0]
 
 
-def condition_optional(cond, default=False):
-    """
-    check whether condition is in dict cond
-       - If set to mandatory, return False
-       - If set to optional, return True
-       - If set to something else, error out
-       - If unset, return default
-    """
-    value = cond.get("condition")
-    value = {None: default, "optional": True, "mandatory": False}.get(value)
-    if value is None:
-        print(f"ERROR in spec parsing condition: {cond['condition']}", file=sys.stderr)
-        value = default
-    return value
-
-
-def check_keywords(ctx, d):
-    valid = KEYWORDS[ctx]
-    invalid = [k for k in d if k not in valid]
-    if invalid:
-        print(f"ERROR in spec: {ctx} uses unknown keywords: {','.join(invalid)}", file=sys.stderr)
-    return len(invalid)
+def select_valid(versions: list, valid=('effective', 'warn', 'draft')) -> list:
+    return [version for version in versions if version['validity'] in valid]
 
 
 def suppress(*args, **kwargs):
@@ -189,39 +177,124 @@ def invoke_check_tool(exe, args, env, cwd):
     return invokation
 
 
-def compute_result(num_abort, num_error):
-    """compute check result given number of abort messages and number of error messages"""
-    if num_error:
-        return -1  # equivalent to FAIL
-    if num_abort:
-        return 0  # equivalent to DNF
-    return 1  # equivalent to PASS
+def compute_results(stdout):
+    """pick out test results from stdout lines"""
+    result = {}
+    for line in stdout:
+        parts = line.rsplit(':', 1)
+        if len(parts) != 2:
+            continue
+        value = TESTCASE_VERDICTS.get(parts[1].strip().upper())
+        if value is None:
+            continue
+        result[parts[0].strip()] = value
+    return result
 
 
-def main(argv):
-    """Entry point for the checker"""
-    config = Config()
-    try:
-        config.apply_argv(argv)
-    except Exception as exc:
-        print(f"CRITICAL: {exc}", file=sys.stderr)
-        return 1
-    if not config.subject:
-        print("You need pass --subject=SUBJECT.", file=sys.stderr)
-        return 1
-    printv = suppress if not config.verbose else partial(print, file=sys.stderr)
-    printnq = suppress if config.quiet else partial(print, file=sys.stderr)
-    with open(config.arg0, "r", encoding="UTF-8") as specfile:
-        spec = yaml.load(specfile, Loader=yaml.SafeLoader)
-    missing_vars = [v for v in spec.get("variables", ()) if v not in config.assignment]
-    if missing_vars:
-        print(f"Missing variable assignments (via -a) for: {', '.join(missing_vars)}")
-        return 1
-    check_cwd = os.path.dirname(config.arg0) or os.getcwd()
-    allaborts = 0
-    allerrors = 0
-    critical = 0
-    report = {
+class CheckRunner:
+    def __init__(self, cwd, assignment, verbosity=0):
+        self.cwd = cwd
+        self.assignment = assignment
+        self.memo = {}
+        self.num_abort = 0
+        self.num_error = 0
+        self.verbosity = verbosity
+
+    def run(self, check):
+        parameters = check.get('parameters')
+        assignment = {**self.assignment, **parameters} if parameters else self.assignment
+        args = check.get('args', '').format(**assignment)
+        env = {key: value.format(**assignment) for key, value in check.get('env', {}).items()}
+        env_str = " ".join(f"{key}={value}" for key, value in env.items())
+        memo_key = f"{env_str} {check['executable']} {args}".strip()
+        logger.debug(f"running {memo_key!r}...")
+        invocation = self.memo.get(memo_key)
+        if invocation is None:
+            check_env = {**os.environ, **env}
+            invocation = invoke_check_tool(check["executable"], args, check_env, self.cwd)
+            invocation = {
+                'id': str(uuid.uuid4()),
+                'cmd': memo_key,
+                'result': 0,  # keep this for backwards compatibility
+                'results': compute_results(invocation['stdout']),
+                **invocation
+            }
+            if self.verbosity > 1 and invocation["stdout"]:
+                print("\n".join(invocation["stdout"]))
+            # the following check used to be "> 0", but this is quite verbose...
+            if invocation['rc'] or self.verbosity > 1 and invocation["stderr"]:
+                print("\n".join(invocation["stderr"]))
+            self.memo[memo_key] = invocation
+        logger.debug(f".. rc {invocation['rc']}, {invocation['critical']} critical, {invocation['error']} error")
+        self.num_abort += invocation["critical"]
+        self.num_error += invocation["error"]
+        # count failed testcases because they need not be reported redundantly on the error channel
+        self.num_error + len([value for value in invocation['results'].values() if value < 0])
+        return invocation
+
+    def get_invocations(self):
+        return {invocation['id']: invocation for invocation in self.memo.values()}
+
+
+class ResultBuilder:
+    def __init__(self, name):
+        self.name = name
+        self._raw = defaultdict(list)
+
+    def record(self, id_, **kwargs):
+        self._raw[id_].append(kwargs)
+
+    def finalize(self, permissible_ids=None):
+        final = {}
+        for id_, ls in self._raw.items():
+            if permissible_ids is not None and id_ not in permissible_ids:
+                logger.warning(f"ignoring invalid result id: {id_}")
+                continue
+            # just in case: sort by value (worst first)
+            ls.sort(key=lambda item: item['result'])
+            winner, runnerups = ls[0], ls[1:]
+            if runnerups:
+                logger.warning(f"multiple result values for {id_}")
+                winner = {**winner, 'runnerups': runnerups}
+            final[id_] = winner
+        return final
+
+
+def run_suite(suite: TestSuite, runner: CheckRunner, results: ResultBuilder):
+    """run all checks of `suite` using `runner`, collecting `results`"""
+    suite.check_sanity()
+    for check in suite.checks:
+        invocation = runner.run(check)
+        for id_, value in invocation["results"].items():
+            results.record(id_, result=value, invocation=invocation['id'])
+
+
+def print_report(subject: str, suite: TestSuite, targets: dict, results: dict, verbose=False):
+    if verbose:
+        print("********" * 10)
+    print(f"{subject} {suite.name}:")
+    for tname, target_spec in targets.items():
+        by_result = suite.select(tname, target_spec).evaluate(results)
+        passed, missing, failed = by_result[1], by_result[0], by_result[-1]
+        verdict = 'FAIL' if failed else 'TENTATIVE pass' if missing else 'PASS'
+        summary_parts = [f"{len(passed)} passed"]
+        if failed:
+            summary_parts.append(f"{len(failed)} failed")
+        if missing:
+            summary_parts.append(f"{len(missing)} missing")
+        verdict += f" ({', '.join(summary_parts)})"
+        print(f"- {tname}: {verdict}")
+        for offenders, category in ((failed, 'FAILED'), (missing, 'MISSING')):
+            if category == 'MISSING' and suite.partial:
+                continue  # do not report each missing testcase if a filter was used
+            for testcase in offenders:
+                print(f"  - {category} {testcase['id']}")
+                if 'description' in testcase:  # used to be `verbose and ...`, but users need the URL!
+                    print('    ' + testcase['description'])
+
+
+def create_report(argv, config, spec, versions, invocations):
+    return {
         # these fields are essential:
         "spec": {
             "uuid": spec['uuid'],
@@ -231,7 +304,7 @@ def main(argv):
         "checked_at": datetime.datetime.now(),
         "reference_date": config.checkdate,
         "subject": config.subject,
-        "versions": {},
+        "versions": versions,
         # this field is mostly for debugging:
         "run": {
             "uuid": str(uuid.uuid4()),
@@ -239,105 +312,63 @@ def main(argv):
             "assignment": config.assignment,
             "sections": config.sections,
             "forced_version": config.version or None,
-            "invocations": {},
+            "forced_tests": None if config.tests is None else config.tests.pattern,
+            "invocations": invocations,
         },
     }
-    check_keywords('spec', spec)
-    if config.version:
-        spec["versions"] = [vd for vd in spec["versions"] if vd["version"] == config.version]
+
+
+def main(argv):
+    """Entry point for the checker"""
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
+    config = Config()
+    config.apply_argv(argv)
+    if not config.subject:
+        raise RuntimeError("You need pass --subject=SUBJECT.")
+    with open(config.arg0, "r", encoding="UTF-8") as specfile:
+        spec = load_spec(yaml.load(specfile, Loader=yaml.SafeLoader))
+    missing_vars = [v for v in spec.get("variables", ()) if v not in config.assignment]
+    if missing_vars:
+        raise RuntimeError(f"Missing variable assignments (via -a) for: {', '.join(missing_vars)}")
     if "prerequisite" in spec:
-        print("WARNING: prerequisite not yet implemented!", file=sys.stderr)
-    vrs = report["versions"]
-    memo = report["run"]["invocations"]  # memoize check tool results
-    matches = 0
-    for vd in spec["versions"]:
-        check_keywords('version', vd)
-        stb_date = vd.get("stabilized_at")
-        dep_date = vd.get("deprecated_at")
-        futuristic = not stb_date or config.checkdate < stb_date
-        outdated = dep_date and dep_date < config.checkdate
-        if outdated and not config.version:
-            continue
-        vr = vrs[vd["version"]] = {}
-        matches += 1
-        if config.version and outdated:
-            print(f"WARNING: Forced version {config.version} outdated", file=sys.stderr)
-        if config.version and futuristic:
-            print(f"INFO: Forced version {config.version} not (yet) stable", file=sys.stderr)
-        printnq(f"Testing {spec['name']} version {vd['version']}")
-        if "standards" not in vd:
-            print(f"WARNING: No standards defined yet for {spec['name']} version {vd['version']}",
-                  file=sys.stderr)
-        seen_ids = set()
-        errors = 0
-        aborts = 0
-        for standard in vd.get("standards", ()):
-            check_keywords('standard', standard)
-            optional = condition_optional(standard)
-            printnq("*******************************************************")
-            printnq(f"Testing {'optional ' * optional}standard {standard['name']} ...")
-            printnq(f"Reference: {standard['url']} ...")
-            checks = standard.get("checks", ())
-            if not checks:
-                printnq(f"WARNING: No check tool specified for {standard['name']}", file=sys.stderr)
-            for check in checks:
-                check_keywords('check', check)
-                if 'id' not in check:
-                    raise RuntimeError(f"check descriptor missing id field: {check}")
-                id_ = check['id']
-                if id_ in seen_ids:
-                    raise RuntimeError(f"duplicate id: {id_}")
-                seen_ids.add(id_)
-                if 'executable' not in check:
-                    # most probably a manual check
-                    print(f"skipping check '{id_}': no executable given")
-                    continue
-                section = check.get('section', check.get('lifetime', 'day'))
-                if config.sections and section not in config.sections:
-                    print(f"skipping check '{id_}': not in selected sections")
-                    continue
-                args = check.get('args', '').format(**config.assignment)
-                env = {key: value.format(**config.assignment) for key, value in check.get('env', {}).items()}
-                env_str = " ".join(f"{key}={value}" for key, value in env.items())
-                memo_key = f"{env_str} {check['executable']} {args}".strip()
-                invokation = memo.get(memo_key)
-                if invokation is None:
-                    check_env = {**os.environ, **env}
-                    invokation = invoke_check_tool(check["executable"], args, check_env, check_cwd)
-                    result = compute_result(invokation["critical"], invokation["error"])
-                    if result == 1 and invokation['rc']:
-                        print(f"CRITICAL: check {id_} reported neither error nor abort, but had non-zero rc", file=sys.stderr)
-                        critical += 1
-                        result = 0
-                    invokation['result'] = result
-                    printv("\n".join(invokation["stdout"]))
-                    printnq("\n".join(invokation["stderr"]))
-                    memo[memo_key] = invokation
-                abort = invokation["critical"]
-                error = invokation["error"]
-                vr[check['id']] = {'result': invokation['result'], 'invocation': memo_key}
-                printnq(f"... returned {error} errors, {abort} aborts")
-                if not condition_optional(check, optional):
-                    aborts += abort
-                    errors += error
-        # NOTE: the following verdict may be tentative, depending on whether
-        # all tests have been run (which in turn depends on chosen sections);
-        # the logic to compute the ultimate verdict should be place further downstream,
-        # namely where the reports are gathered and evaluated
-        printnq("*******************************************************")
-        printnq(f"Verdict for subject {config.subject}, {spec['name']}, "
-                f"version {vd['version']}: {errcode_to_text(aborts + errors)}")
-        allaborts += aborts
-        allerrors += errors
-    if not matches:
-        print(f"CRITICAL: No valid version found for {config.checkdate}", file=sys.stderr)
-        critical += 1
-    allaborts += critical  # note: this is after we put the number into the report, so only for return code
+        logger.warning("prerequisite not yet implemented!")
+    annotate_validity(spec['timeline'], spec['versions'], config.checkdate)
+    if config.version is None:
+        versions = select_valid(spec['versions'].values())
+    else:
+        versions = [spec['versions'].get(config.version)]
+        if versions[0] is None:
+            raise RuntimeError(f"Requested version '{config.version}' not found")
+    if not versions:
+        raise RuntimeError(f"No valid version found for {config.checkdate}")
+    check_cwd = os.path.dirname(config.arg0) or os.getcwd()
+    runner = CheckRunner(check_cwd, config.assignment, verbosity=config.verbose and 2 or not config.quiet)
+    version_report = {}
+    for version in versions:
+        vname = version['version']
+        suite = compile_suite(
+            f"{spec['name']} {vname} ({version['validity']})",
+            version['include'],
+            config.sections,
+            config.tests,
+        )
+        builder = ResultBuilder(suite.name)
+        run_suite(suite, runner, builder)
+        results = version_report[vname] = builder.finalize(permissible_ids=suite.ids)
+        if not config.quiet:
+            print_report(config.subject, suite, version['targets'], results, verbose=config.verbose)
     if config.output:
-        with open(config.output, 'w', encoding='UTF-8') as file:
-            yaml.safe_dump(report, file, default_flow_style=False, sort_keys=False)
-    return min(127, allaborts + (0 if config.critical_only else allerrors))
+        report = create_report(argv, config, spec, version_report, runner.get_invocations())
+        with open(config.output, 'w', encoding='UTF-8') as fileobj:
+            yaml.safe_dump(report, fileobj, default_flow_style=False, sort_keys=False)
+    return min(127, runner.num_abort + (0 if config.critical_only else runner.num_error))
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except SystemExit:
+        raise
+    except BaseException as exc:
+        logger.critical(f"{str(exc) or repr(exc)}")
+        raise

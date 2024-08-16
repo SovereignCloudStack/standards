@@ -41,7 +41,7 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
 
 6. Once the certificate is granted by the SCS certification assessment body, the operator SHOULD use the corresponding logo and publicly state the certified "SCS compatibility" on the respective layer for the time of the validity of the certification. In case of a public cloud, this public display is even REQUIRED. In any case, the logo MUST be accompanied by a hyperlink (a QR code for printed assets) to the respective certificate status page.
 
-7. If the certificate is to be revoked for any reason, it will be included in a publicly available Certificate Revokation List (CRL). This fact will also be reflected in the certificate status page.
+7. If the certificate is to be revoked for any reason, it will be included in a publicly available Certificate Revocation List (CRL). This fact will also be reflected in the certificate status page.
 
 8. If any of the automated tests or manual checks fail after the certificate has been issued, the certificate is not immediately revoked. Rather, the automated tests MUST pass 99.x % of the runs, and the operator SHALL be notified at the second failed attempt in a row at the latest. In case a manual check fails, it has to be repeated at a date to be negotiated with SCS. It MAY NOT fail more than two times in a row.
 
