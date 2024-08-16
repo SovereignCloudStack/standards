@@ -19,8 +19,8 @@ modules:
     testcases:
       - id: flavor-name-check
         tags: [mandatory]
-        description: |
-          The environment fulfills all requirements of
+        description: >
+          Must fulfill all requirements of
           https://docs.scs.community/standards/scs-0100-v1-flavor-naming
   - id: scs-0100-v2
     name: Flavor naming v2
@@ -31,8 +31,8 @@ modules:
     testcases:
       - id: flavor-name-check
         tags: [mandatory]
-        description: |
-          The environment fulfills all requirements of
+        description: >
+          Must fulfill all requirements of
           https://docs.scs.community/standards/scs-0100-v2-flavor-naming
   - id: scs-0100-v3.1
     name: Flavor naming v3.1
@@ -44,8 +44,8 @@ modules:
     testcases:
       - id: flavor-name-check
         tags: [mandatory]
-        description: |
-          The environment fulfills all requirements of
+        description: >
+          Must fulfill all requirements of
           https://docs.scs.community/standards/scs-0100-v3-flavor-naming -- plus the list of mandatory
           and recommended flavors found in https://docs.scs.community/standards/scs-0100-v2-flavor-naming#standard-scs-flavors
   - id: scs-0100-v3.2
@@ -58,8 +58,8 @@ modules:
     testcases:
       - id: flavor-name-check
         tags: [mandatory]
-        description: |
-          The environment fulfills all requirements of
+        description: >
+          Must fulfill all requirements of
           https://docs.scs.community/standards/scs-0100-v3-flavor-naming
   - id: scs-0101-v1
     name: Entropy v1
@@ -80,8 +80,8 @@ modules:
         tags: []  # don't use this testcase, but list it anyway because the script will output a result
       - id: entropy-check
         tags: [mandatory]
-        description: |
-          The environment fulfills all requirements of
+        description: >
+          Must fulfill all requirements of
           https://docs.scs.community/standards/scs-0101-v1-entropy
   - id: scs-0101-v1.1
     name: Entropy v1
@@ -92,28 +92,28 @@ modules:
     testcases:
       - id: entropy-check-flavor-properties
         tags: [recommended]
-        description: |
-          The environment has all flavor properties recommended in
+        description: >
+          Must have all flavor properties recommended in
           https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings
       - id: entropy-check-image-properties
         tags: [recommended]
-        description: |
-          The environment has all image properties recommended in
+        description: >
+          Must have all image properties recommended in
           https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings
       - id: entropy-check-rngd
         tags: [mandatory]
-        description: |
-          The images of the test sample have the service `rngd`; see
+        description: >
+          Images of the test sample must have the service `rngd`; see
           https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors
       - id: entropy-check-entropy-avail
         tags: [mandatory]
-        description: |
-          A test instance has the correct `entropy_avail`; see
+        description: >
+          A test instance must have the correct `entropy_avail`; see
           https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors
       - id: entropy-check-fips-test
         tags: [mandatory]
-        description: |
-          A test instance passes the "FIPS test"; see
+        description: >
+          A test instance must pass the "FIPS test"; see
           https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors
       - id: entropy-check
         tags: []  # don't use this testcase, but list it anyway because the script will output a result
@@ -128,8 +128,8 @@ modules:
     testcases:
       - id: image-metadata-check
         tags: [mandatory]
-        description: |
-          The environment fulfills all requirements of https://docs.scs.community/standards/scs-0102-v1-image-metadata
+        description: >
+          Must fulfill all requirements of https://docs.scs.community/standards/scs-0102-v1-image-metadata
   - id: scs-0103-v1
     name: Standard flavors
     url: https://docs.scs.community/standards/scs-0103-v1-standard-flavors
@@ -139,8 +139,8 @@ modules:
     testcases:
       - id: standard-flavors-check
         tags: [mandatory]
-        description: |
-          The environment fulfills all requirements of https://docs.scs.community/standards/scs-0103-v1-standard-flavors
+        description: >
+          Must fulfill all requirements of https://docs.scs.community/standards/scs-0103-v1-standard-flavors
   - id: scs-0104-v1
     name: Standard images
     url: https://docs.scs.community/standards/scs-0104-v1-standard-images
@@ -152,8 +152,8 @@ modules:
     testcases:
       - id: standard-images-check
         tags: [mandatory]
-        description: |
-          The environment fulfills all requirements of https://docs.scs.community/standards/scs-0104-v1-standard-images
+        description: >
+          Must fulfill all requirements of https://docs.scs.community/standards/scs-0104-v1-standard-images
 timeline:
   - date: 2024-07-31
     versions:
