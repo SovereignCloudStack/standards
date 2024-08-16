@@ -289,7 +289,7 @@ def print_report(subject: str, suite: TestSuite, targets: dict, results: dict, v
                 continue  # do not report each missing testcase if a filter was used
             for testcase in offenders:
                 print(f"  - {category} {testcase['id']}")
-                if verbose and 'description' in testcase:
+                if 'description' in testcase:  # used to be `verbose and ...`, but users need the URL!
                     print('    ' + testcase['description'])
 
 
