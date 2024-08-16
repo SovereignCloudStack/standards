@@ -116,29 +116,39 @@ def check_name_extra(flavor, ver, match, flname):
     match. If match is not set an v1->v2 or v2->v1 translation is needed.
     ver needs to be set to 'v1' or 'v2'/'v3'/'v4'
     flname is the SCS flavor name (may have been generated)
+    Returns non-zero if we need to perform an API call to perform a change.
     """
     spec = f"scs:name-{ver}"
     errs = 0
     need_name_set = True
     if spec in flavor.extra_specs:
+        # Get name from scs:name-vN property
         name = flavor.extra_specs[spec]
+        # If match=True has been passed, we expect it to match flname
+        # produces a warning on mismatch
         if match and name != flname:
             print(f"WARNING: {spec} {name} != flavor name {flname}",
                   file=sys.stderr)
         # Existing names must be parseable SCS names, check
+        # If we can parse the name AND there is no inconsistency
+        # we don't need to update the name.
         try:
-            if ver == "v1":
-                parsed = parser_v1(name)
-            else:
-                parsed = parser_v2(name)
-            need_name_set = False
-            # To Do: Check consistency
-            if check_std_props(flavor, parsed, f" by {spec}"):
-                need_name_set = True
+            parsed = parser_v2(name)
         except ValueError as exc:
-            print(f"ERROR parsing {spec} {name}: {exc!r}",
-                  file=sys.stderr)
+            try:
+                parsed = parser_v1(name)
+            except ValueError as exc2:
+                print(f"ERROR parsing {spec} {name}: {exc!r} {exc2!r}",
+                      file=sys.stderr)
+                need_name_set = False
+        # Check consistency
+        if need_name_set and not check_std_props(flavor, parsed, f" by {spec}"):
+            need_name_set = False
 
+    # FIXME: name might contain more details than the flname, use them
+    # TODO: determine whether we want to generate additional names in that case
+    # e.g.: scs:name-v1 -> detailed v1 name, -v2: detailed v2 name,
+    #               -v3 -> shortened v1 name (if different), -v4 shortened v2 name (if ...)
     if need_name_set:
         errs += 1
         if match:
@@ -152,11 +162,7 @@ def check_name_extra(flavor, ver, match, flname):
         if not QUIET:
             print(f"INFO  {flavor.name}: Update extra_spec {spec} to {flavor.extra_specs[spec]}")
 
-    # Set v3/v4 to v2 (currently unused, keep it for future usage)
-    if (ver == "v3" or ver == "v4") and spec not in flavor.extra_specs:
-        flavor.extra_specs[spec] = flavor.extra_specs["scs:name-v2"]
-        errs += 1
-
+    # FIXME: Spec 0103 has changed, no point in creating additional literal copies
     return errs
 
 
