@@ -16,13 +16,6 @@ Readers of such standards should be able to know at one glance, whether the achi
 This is why this decision record aims to define different levels of failure safety.
 These levels can then be used in standards to clearly set the scope that certain procedures in e.g. OpenStack offer.
 
-<!--
-TODO: goals vs. non-goals
-TODO: Resolve confusion between high availability vs. disaster recovery vs. redundancy vs. backups
-TODO: What time frame do we look at? (so called Recovery Time Objecte aka RTO)
-TODO: how does this relate to Business Continuity Planning (BCP)
--->
-
 ## Glossary
 
 | Term               | Explanation                                                                                                                              |
@@ -33,16 +26,55 @@ TODO: how does this relate to Business Continuity Planning (BCP)
 | Compute            | A generic name for the IaaS service, that manages virtual machines (e.g. Nova in OpenStack).                                             |
 | Network            | A generic name for the IaaS service, that manages network resources (e.g. Neutron in OpenStack).                                         |
 | Storage            | A generic name for the IaaS service, that manages the storage backends and virtual devices (e.g. Cinder in OpenStack).                   |
+| RTO                | Recovery Time Objective.                                                                                                                 |
 
 ## Context
 
 Some standards provided by the SCS project will talk about or require procedures to back up resources or have redundancy for resources.
-This decision record should discuss, which failure threats are CSP-facing and will classify them into several levels.
+This decision record should discuss, which failure threats exist within an IaaS and KaaS deployment and will classify them into several levels according to their impact and possible handling mechanisms.
 In consequence these levels should be used in standards concerning redundancy or failure safety.
 
 Based on our research, no similar standardized classification scheme seems to exist currently.
 Something close but also very detailed is the [BSI-Standard 200-3 (german)][bsi-200-3] published by the German Federal Office for Information Security.
 As we want to focus on IaaS and K8s resources and also have an easily understandable structure that can be applied in standards covering replication, redundancy and backups, this document is too detailed.
+
+<!--
+TODO: goals vs. non-goals
+TODO: Resolve confusion between high availability vs. disaster recovery vs. redundancy vs. backups
+TODO: What time frame do we look at? (so called Recovery Time Objecte aka RTO)
+TODO: how does this relate to Business Continuity Planning (BCP)
+-->
+
+### Goal of this Decision Record
+
+The SCS wants to classify levels of failure cases according to their impact and the respective measures CSPs can implement to prepare for each level.
+Standards that deal with redundancy or backups or recovery SHOULD refer to the levels of this standard.
+Thus every reader knows, up to which level of failsafeness the implementation of the standard works.
+Reader then should be able to abstract what kind of other measures they have to apply, to reach the failsafe lavel they want to reach.
+
+### Differentiation between failsafe levels and high availability, disaster recovery, redundancy and backups
+
+The levels auf failsafeness that are defined in this decision record are classifying the possibilities and impacts of failure cases (such as data loss) and possible measures.
+High Availability, disaster recovery, redundancy and backups are all measures that can and should be applied to IaaS and KaaS deployments by both CSPs and Users to reduce the possibility and impact of data loss.
+So with this document every reader can see to what level of failsafeness their measures protect user data.
+
+To differentiate also between the named measures the following table can be used:
+
+| Term               | Explanation                                                                                                                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| High Availability  | Refers to the availability of resources over an extended period of time unaffected by smaller hardware issues. E.g. achievable through having several instances of resources.      |
+| Disaster Recovery  | Measures taken after an incident to recover data, IaaS resource and maybe even physical resources.                                                                                 |
+| Redundancy         | Having more than one (or two) instances of each resource, to be able to switch to the second resource (could also be a data mirror) in case of a failure.                          |
+| Backup             | A specific copy of user data, that presents all data points at a givne time. Usually managed by users themself, read only and never stored in the same place as the original data. |
+
+### Failsafe Levels and RTO
+
+As this documents classifies failure case with very broad impacts and it is written in regards of mostly IaaS and KaaS, there cannot be one simple RTO set.
+It should be taken into consideration that the RTO for IaaS and KaaS means to make user data available again through measures within the infrastructure.
+But this will not be effective, when there is no backup of the user data or a redundancy of it already in place.
+The different failsafe levels, measures and impacts will lead to very different RTOs.
+For example a storage disk that has a failure will result in an RTO of 0 seconds, when the storage backend uses internal replication and still has two replicas of the user data.
+While in the worst case of a natural disaster, most likely a severe fire, the whole deployment will be lost and if there were no off-site backups done by users there will be no RTO, because the data cannot be recovered anymore.
 
 [bsi-200-3]: https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Grundschutz/BSI_Standards/standard_200_3.pdf?__blob=publicationFile&v=2
 
@@ -66,13 +98,14 @@ the highest, **level 4**, describes relatively unlikely failures that impact a w
 For example, a provided service with failsafe level 2 tolerates a rack outage (because there is some kind of
 redundancy in place.)
 
-From a cloud service provider (CSP) perspective, supporting these failure levels has the following *general*
-consequences:
+There are some *general* consequences, that can be addressed by CSPs and users in the following ways:
 
-* **Level 1**: CSPs MUST operate replicas for important components (e.g., RAID, replicated volume backend, uninterruptible power supply).
-* **Level 2**: CSPs SHOULD operate hardware in dedicated availability zones (AZs).
-* **Level 3**: CSPs SHOULD operate hardware in dedicated regions.
-* **Level 4**: Depending on the regions, CSPs may not be able to save user data from such catastrophes.
+| Level | consequences for CSPs | consequences for Users |
+|---|-----|-----|
+| 1. Level | CSPs MUST operate replicas for important components (e.g. replicated volume back-end, uninterruptible power supply, ...). | Users SHOULD backup their data themself and place it on an other host. |
+| 2. Level | CSPs MUST operate replicas for important components (e.g. replicated volume back-end, uninterruptible power supply, ...) | Users MUST backup their data themselves and place it on an other host. |
+| 3. Level | CPSs SHOULD operate hardware in dedicated Availability Zones. | Users SHOULD backup their data, in different AZs or even other deployments. |
+| 4. Level | CSPs may not be able to save user data from such catastrophes. | Users are responsible for saving their data from natural disasters. |
 
 More specific guidance on what these levels mean on the IaaS and KaaS layers will be provided in the sections
 further down.
@@ -104,7 +137,6 @@ TODO: define the meaning of our probabilities
 
 | Failure Scenario | Probability | Consequences | Failsafe Level Coverage |
 |----|-----|----|----|
-| Cyber threat | High | permanent loss or compromise of data on affected Disk and Host | L1 |
 | Software bug (major) | Low | permanent loss or compromise of data that trigger the bug up to data on the whole physical machine | L1 |
 | Software bug (minor) | High | temporary or partial loss or compromise of data | L1 |
 
@@ -123,13 +155,23 @@ Note that probability for these scenarios is dependent on the location.
 | Earthquake | Very Low | permanent Disk and Host loss in the affected region | L4 |
 | Storm/Tornado | Low | permanent Disk and Host loss in the affected region | L4 |
 
+As we consider mainly deployments in central Europe, the probability of earthquakes is low and in the rare case of such an event the severity is also low compared to other regions in the world (e.g. the pacific ring of fire).
+The event of a flood will most likely come from overflowing rivers instead of storm floods from a sea.
+There can be measures taken, to reduce the probability and severity of a flooding event in central Europe due to simply choosing a different location for a deployment.
+
 #### Human Interference
 
 | Failure Scenario | Probability | Consequences | Failsafe Level Coverage |
 |----|-----|----|----|
 | Minor operating error | High | Temporary outage | L1 |
 | Major operating error | Low | Permanent loss of data | L3 |
+| Cyber threat | High | permanent loss or compromise of data on affected Disk and Host | L1 |
 
+Mistakes in maintaining a data center will always happen.
+To reduce the probability of such a mistake, measures are needed to reduce human error, which is more an issue of sociology and psychology instead of computer science.
+On the other side an attack on an infrastructure cannot be avoided by this.
+Instead every deployment needs to be prepared for an attack all the time, e.g. through security updates.
+The severity of Cyber attacks can also vary broadly: from denial-of-service attacks, which should only be a temporary issue, up until coordinated attacks to steal or destroy data, which could also affect a whole deployment.
 
 ## Consequences
 
