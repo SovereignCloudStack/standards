@@ -152,7 +152,7 @@ def check_name_extra(flavor, ver, match, flname):
         if not QUIET:
             print(f"INFO  {flavor.name}: Update extra_spec {spec} to {flavor.extra_specs[spec]}")
 
-    # Set v3 to v2
+    # Set v3/v4 to v2 (currently unused, keep it for future usage)
     if (ver == "v3" or ver == "v4") and spec not in flavor.extra_specs:
         flavor.extra_specs[spec] = flavor.extra_specs["scs:name-v2"]
         errs += 1
@@ -312,9 +312,6 @@ def main(argv):
         upd = check_name_extra(flavor, "v2", not is_v1, flname)
         if upd:
             errors += update_flavor_extra(compute, flavor, "scs:name-v2")
-        upd = check_name_extra(flavor, "v3", not is_v1, flname)
-        if upd:
-            errors += update_flavor_extra(compute, flavor, "scs:name-v3")
         upd = check_name_extra(flavor, "v1", is_v1, flname)
         if upd:
             errors += update_flavor_extra(compute, flavor, "scs:name-v1")
