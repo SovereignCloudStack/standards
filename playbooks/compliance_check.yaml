@@ -13,7 +13,7 @@
       # but then the subsequent tasks would fail anyway
       environment:
         auth: "{{ clouds_conf.zuul_ci_basic_auth }}"
-      loop: {{ clouds }}
+      loop: "{{ clouds }}"
 
     - name: Copy result YAML
       ansible.builtin.synchronize:
@@ -23,7 +23,7 @@
         verify_host: true
         owner: no
         group: no
-      loop: {{ clouds }}
+      loop: "{{ clouds }}"
 
     - name: Return artifact URL
       zuul_return:
@@ -32,4 +32,4 @@
             artifacts:
               - name: "{{ item }}-iaas.yaml"
                 url: "{{ item }}-iaas.yaml"
-      loop: {{ clouds }}
+      loop: "{{ clouds }}"

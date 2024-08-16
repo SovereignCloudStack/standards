@@ -28,5 +28,5 @@
 
     - name: Clean up any lingering resources from previous run
       ansible.builtin.shell: python3 ~/Tests/cleanup.py -c {{ item }} --prefix _scs- --ipaddr 10.1.0. --debug
-      loop: {{ clouds }}
+      loop: "{{ clouds }}"
       changed_when: true
