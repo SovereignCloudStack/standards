@@ -36,8 +36,6 @@ import openstack
 
 from flavor_names import parser_v2, parser_v1, SyntaxV1, SyntaxV2, CPUTYPE_KEY, DISKTYPE_KEY
 from flavor_names import Flavorname, Main, Disk, outname
-# outname, Attr, Main, Disk, Hype, HWVirt, CPUBrand, GPU, IB, Flavorname,
-# Inputter, lookup_user_input, prettyname, CompatLayer
 
 # globals
 DEBUG = False
