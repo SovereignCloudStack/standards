@@ -36,8 +36,6 @@ import openstack
 
 from flavor_names import parser_v2, parser_v1, SyntaxV1, SyntaxV2, CPUTYPE_KEY, DISKTYPE_KEY
 from flavor_names import Flavorname, Main, Disk, outname
-# outname, Attr, Main, Disk, Hype, HWVirt, CPUBrand, GPU, IB, Flavorname,
-# Inputter, lookup_user_input, prettyname, CompatLayer
 
 # globals
 DEBUG = False
@@ -59,7 +57,7 @@ def min_max_check(real, claim, valnm, flvnm, extra):
        For floats, we allow for 1% tolerance in both directions.
        """
     # 1% tolerance for floats (RAM)
-    if claim is float:
+    if isinstance(claim, float):
         chkval = real*1.01
         chkval2 = real*0.99
     else:
