@@ -287,10 +287,13 @@ def print_report(subject: str, suite: TestSuite, targets: dict, results: dict, v
         for offenders, category in ((failed, 'FAILED'), (missing, 'MISSING')):
             if category == 'MISSING' and suite.partial:
                 continue  # do not report each missing testcase if a filter was used
+            if not offenders:
+                continue
+            print(f"  - {category}:")
             for testcase in offenders:
-                print(f"  - {category} {testcase['id']}")
+                print(f"    - {testcase['id']}:")
                 if 'description' in testcase:  # used to be `verbose and ...`, but users need the URL!
-                    print('           ' + testcase['description'])
+                    print(f"      > {testcase['description'].strip()}")
 
 
 def create_report(argv, config, spec, versions, invocations):
