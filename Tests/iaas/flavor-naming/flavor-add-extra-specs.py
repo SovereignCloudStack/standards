@@ -228,13 +228,13 @@ def check_extra_type(flavor, prop, val, dct):
     return 1
 
 
-def filter_flavors(compute, flvlist):
+def filter_flavors(conn, flvlist):
     """Queries OpenStack compute for a a list of flavors, returns only those that are
        either in the specified flvlist OR for an empty flvlist all the ones starting with SCS-
        Returns a list of openstack.flavor instances.
     """
     flavors = []
-    for flv in compute.flavors():
+    for flv in conn.compute.flavors():
         if flvlist:
             if flv.name in flvlist:
                 flavors.append(flv)
@@ -290,9 +290,8 @@ def main(argv):
 
     conn = openstack.connect(cloud)
     conn.authorize()
-    compute = conn.compute
 
-    flavors = filter_flavors(compute, flvs)
+    flavors = filter_flavors(conn, flvs)
     # This is likely a user error, so make him aware
     if len(flavors) < len(flvs):
         print("WARNING: Not all specified flavors exist", file=sys.stderr)
@@ -334,16 +333,16 @@ def main(argv):
         # Parse and Generate name-v1 and name-v2
         upd = check_name_extra(flavor, "v2", not is_v1, flname)
         if upd:
-            errors += update_flavor_extra(compute, flavor, "scs:name-v2")
+            errors += update_flavor_extra(conn.compute, flavor, "scs:name-v2")
             chg += 1
         upd = check_name_extra(flavor, "v1", is_v1, flname)
         if upd:
-            errors += update_flavor_extra(compute, flavor, "scs:name-v1")
+            errors += update_flavor_extra(conn.compute, flavor, "scs:name-v1")
             chg += 1
         # Parse and Generate cpu-type and disk0-type
         upd = check_extra_type(flavor, "cpu-type", flvnm.cpuram.cputype, CPUTYPE_KEY)
         if upd:
-            errors += update_flavor_extra(compute, flavor, "scs:cpu-type")
+            errors += update_flavor_extra(conn.compute, flavor, "scs:cpu-type")
             chg += 1
 
         # We may not have a disk (or the type is unknown)
@@ -355,7 +354,7 @@ def main(argv):
             dtp = None
         upd = check_extra_type(flavor, "disk0-type", dtp, DISKTYPE_KEY)
         if upd:
-            errors += update_flavor_extra(compute, flavor, "scs:disk0-type")
+            errors += update_flavor_extra(conn.compute, flavor, "scs:disk0-type")
             chg += 1
 
     if (DEBUG):
