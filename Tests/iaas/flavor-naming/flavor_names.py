@@ -12,6 +12,7 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
+SCS_NAME_PATTERN = re.compile(r"scs:name-v\d+\Z")
 CPUTYPE_KEY = {'L': 'crowded-core', 'V': 'shared-core', 'T': 'dedicated-thread', 'C': 'dedicated-core'}
 DISKTYPE_KEY = {'n': 'network', 'h': 'hdd', 's': 'ssd', 'p': 'nvme'}
 HERE = Path(__file__).parent

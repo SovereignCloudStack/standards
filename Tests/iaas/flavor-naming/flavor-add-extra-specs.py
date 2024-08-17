@@ -32,16 +32,15 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 import getopt
 import logging
 import os
-import re
 import sys
 
-from flavor_names import parser_vN, CPUTYPE_KEY, DISKTYPE_KEY, Flavorname, Main, Disk, flavorname_to_dict
+from flavor_names import parser_vN, CPUTYPE_KEY, DISKTYPE_KEY, Flavorname, Main, Disk, flavorname_to_dict, \
+    SCS_NAME_PATTERN
 
 import openstack
 
 
 logger = logging.getLogger(__name__)
-scs_name_pattern = re.compile(r"scs:name-v\d+\Z")
 DEFAULTS = {'scs:disk0-type': 'network'}
 
 # globals
@@ -198,7 +197,7 @@ def main(argv):
         extra_names_to_check = [
             (key, value)
             for key, value in flavor.extra_specs.items()
-            if scs_name_pattern.match(key)
+            if SCS_NAME_PATTERN.match(key)
         ]
         names_to_check = [('name', flavor.name)] if flavor.name.startswith('SCS-') else []
         names_to_check.extend(extra_names_to_check)
@@ -237,33 +236,31 @@ def main(argv):
             reference = generate_flavorname(flavor, cpu_type, disk0_type)
 
         expected = flavorname_to_dict(reference)
-        # set value for any unexpected, but present key to default value
-        # this will help us find necessary removals
-        for key in flavor.extra_specs:
-            expected.setdefault(key, DEFAULTS.get(key))
+        # determine invalid keys (within scs namespace)
+        # scs:name-vN is always permissible
+        removals = [
+            key
+            for key in flavor.extra_specs
+            if key.startswith('scs:') and not SCS_NAME_PATTERN.match(key)
+            if expected.get(key, DEFAULTS.get(key)) is None
+        ]
+        
+        for key in removals:
+            # TODO do the API call
+            logger.debug(f"{flavor.name}: DELETE {key}")
+            chg += 1
 
-        # generate default name-vN (ONLY if none present)
-        if not extra_names_to_check:
-            for key, value in expected.items():
-                if not key.startswith("scs:name-v"):
-                    continue
-                # TODO do the API call
-                logger.debug(f"{flavor.name}: SET {key}={value}")
-                chg += 1
-
-        # generate or rectify other extra_specs
+        # generate or rectify extra_specs
         for key, value in expected.items():
-            if key.startswith("scs:name-v") or not key.startswith("scs:"):
+            if not key.startswith("scs:"):
                 continue
+            if key.startswith("scs:name-v") and extra_names_to_check:
+                continue  # do not generate names if names are present
             current = flavor.extra_specs.get(key, DEFAULTS.get(key))
             if current == value:
                 continue
             if current is not None:
                 logger.warning(f"resetting {key} because {current} != expected {value}")
-            if value is None:
-                # TODO do the API call
-                logger.debug(f"{flavor.name}: DELETE {key}")
-            else:
                 # TODO do the API call
                 logger.debug(f"{flavor.name}: SET {key}={value}")
             chg += 1
