@@ -244,7 +244,7 @@ def main(argv):
             if key.startswith('scs:') and not SCS_NAME_PATTERN.match(key)
             if expected.get(key, DEFAULTS.get(key)) is None
         ]
-        
+
         for key in removals:
             # TODO do the API call
             logger.debug(f"{flavor.name}: DELETE {key}")
