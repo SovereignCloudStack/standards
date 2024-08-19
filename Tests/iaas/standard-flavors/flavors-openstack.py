@@ -148,7 +148,7 @@ def main(argv):
                     logger.warning(f"Flavor '{flavor_spec['name']}' found via name only, missing property {es_name_key!r}")
                 else:
                     status = flavor_spec['_group']['status']
-                    level = {"mandatory": logging.ERROR}.get(status, logging.INFO)
+                    level = {"mandatory": logging.ERROR}.get(status, logging.WARNING)
                     logger.log(level, f"Missing {status} flavor '{flavor_spec['name']}'")
                     continue
             # this flavor has a matching spec
@@ -185,6 +185,8 @@ def main(argv):
 
     c = counting_handler.bylevel
     logger.debug(f"Total critical / error / info: {c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.INFO]}")
+    if not c[logging.CRITICAL]:
+        print("standard-flavors-check: " + ('PASS', 'FAIL')[min(1, c[logging.ERROR])])
     return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 
