@@ -9,6 +9,16 @@ clouds:
     interface: "public"
     identity_api_version: 3
     auth_type: "v3applicationcredential"
+  artcodix:
+    interface: public
+    identity_api_verion: 3
+    auth_type: "v3applicationcredential"
+    #region_name: "MUC"
+    auth:
+      auth_url: https://api.dc1.muc.cloud.cnds.io:5000/
+      application_credential_id: "{{ clouds_conf.cnds_ac_id }}"
+      application_credential_secret: "{{ clouds_conf.cnds_ac_secret }}"
+      #project_id: 225a7363dab74b69aa1e3f744aced109
   pco-prod1:
     region_name: "prod1"
     interface: "public"
@@ -36,6 +46,34 @@ clouds:
       application_credential_id: "{{ clouds_conf.pco_prod3_ac_id }}"
       application_credential_secret: "{{ clouds_conf.pco_prod3_ac_secret }}"
     auth_type: "v3applicationcredential"
+  pco-prod4:
+    region_name: "prod4"
+    interface: "public"
+    identity_api_version: 3
+    auth:
+      auth_url: https://prod4.api.pco.get-cloud.io:5000
+      application_credential_id: "{{ clouds_conf.pco_prod4_ac_id }}"
+      application_credential_secret: "{{ clouds_conf.pco_prod4_ac_secret }}"
+    auth_type: "v3applicationcredential"
+  poc-kdo:
+    interface: public
+    identity_api_verion: 3
+    auth_type: "v3applicationcredential"
+    auth:
+      auth_url: https://keystone.services.poc-kdo.fitko.sovereignit.cloud
+      application_credential_id: "{{ clouds_conf.poc_kdo_ac_id }}"
+      application_credential_secret: "{{ clouds_conf.poc_kdo_ac_secret }}"
+    region_name: "RegionOne"
+  poc-wgcloud:
+    interface: public
+    identity_api_verion: 3
+    auth_type: "v3applicationcredential"
+    #region_name: default
+    auth:
+      auth_url: https://identity.l1a.cloudandheat.com/v3
+      application_credential_id: "{{ clouds_conf.poc_wgcloud_ac_id }}"
+      application_credential_secret: "{{ clouds_conf.poc_wgcloud_ac_secret }}"
+      #project_id: 9adb8fc81ba345178654cee5cb7f1464
   regio-a:
     region_name: "RegionA"
     interface: "public"
@@ -45,6 +83,25 @@ clouds:
       application_credential_id: "{{ clouds_conf.regio_a_ac_id }}"
       application_credential_secret: "{{ clouds_conf.regio_a_ac_secret }}"
     auth_type: "v3applicationcredential"
+  syseleven-dus2:
+    interface: public
+    identity_api_verion: 3
+    auth_type: "v3applicationcredential"
+    region_name: dus2
+    auth:
+      auth_url: https://keystone.cloud.syseleven.net:5000/v3
+      application_credential_id: "{{ clouds_conf.syseleven_dus2_ac_id }}"
+      application_credential_secret: "{{ clouds_conf.syseleven_dus2_ac_secret }}"
+  syseleven-ham1:
+    interface: public
+    identity_api_verion: 3
+    auth_type: "v3applicationcredential"
+    region_name: ham1
+    auth:
+      auth_url: https://keystone.cloud.syseleven.net:5000/v3
+      application_credential_id: s11auth
+      application_credential_id: "{{ clouds_conf.syseleven_ham1_ac_id }}"
+      application_credential_secret: "{{ clouds_conf.syseleven_ham1_ac_secret }}"
   wavestack:
     interface: "public"
     identity_api_version: 3

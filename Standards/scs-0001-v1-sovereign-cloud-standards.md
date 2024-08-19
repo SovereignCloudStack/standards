@@ -18,12 +18,12 @@ It strives for interoperable and sovereign cloud stacks
 which can be deployed and used by a wide range of organizations and individuals.
 Wherever feasible,
 transparency and openness both in respect to the inner workings of the platforms standardised by SCS,
-as well as the SCS organisation itself
+as well as the SCS organization itself
 are a paradigm we intend to live.
 
 ## Requirements
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
+The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
 In addition, "FORBIDDEN" is to be interpreted equivalent to "MUST NOT".
 
@@ -118,10 +118,19 @@ embedded in the markdown header.
 
 ### Sections
 
-Each document SHOULD have the following sections:
+#### Standard
+
+Each Standard document MUST have the following sections:
 
 - An _Introduction_ providing context on the document and linking to other relevant materials.
 - A _Motivation_ section which details why this document or the thing it describes is necessary.
+- A section containing the actual standardization decision.
+- A _Conformance Tests_ section that contains hints on how to validate
+  conformance with this spec, ideally links to conformance test cases.
+
+We also RECOMMEND the following sections:
+
+- A _Terminology_ section which briefly describes terms used in the document, including possible abbreviations.
 
 In addition, the following OPTIONAL sections should be considered:
 
@@ -135,8 +144,25 @@ In addition, the following OPTIONAL sections should be considered:
   as a "table of contents" of things to work on in that context.
 - A _Related Documents_ section which references related Standards
   or Decisions, both upstream and/or other SCS documents.
-- A _Conformance Tests_ section that contains hints on how to validate
-  conformance with this spec, ideally links to conformance test cases.
+
+#### Decision Record
+
+Each Decision Record document MUST have the following sections:
+
+- An _Abstract_ providing a brief introduction on the topic of the document.
+- A _Context_ section describing the issue relevant for motivating this Decision Record.
+- A section containing the actual decision that is introduced. The section should also include
+  reasoning for this decision.
+
+We also RECOMMEND the following sections:
+
+- A _Terminology_ section which shortly describes terms used in the document, including possible abbreviations.
+- A _Related Documents_ section which references related Standards
+  or Decisions, both upstream and/or other SCS documents.
+
+In addition, the following OPTIONAL sections should be considered:
+
+- A _Consequences_ section describing outcomes from implementing the changes described.
 
 ## Process
 
@@ -271,7 +297,7 @@ it can be deprecated.
 Obsoletions SHOULD be announced ahead of their execution by setting the
 `deprecated_at` field to a future date and moving the `status` to `Deprecated`.
 This signals current and future implementors
-that the subject matter of the document
+that the subject of the document
 is not considered necessary or state of the art anymore.
 
 If one or more replacement documents for the document exists,
@@ -323,7 +349,7 @@ The advantages of such an approach are:
 The disadvantages of that approach are:
 
 - It is possible to make breaking changes after stabilization.
-  Potentially, an hypothetical SCS-1234 document might refer to something completely different
+  Potentially, a hypothetical SCS-1234 document might refer to something completely different
   in a hypothetical R15 release than what it meant in R5,
   if there have been sufficient, gradual breaking changes to the document.
 
