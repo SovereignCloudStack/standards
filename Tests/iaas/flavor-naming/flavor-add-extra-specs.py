@@ -319,8 +319,10 @@ def main(argv):
                 continue
             if key.startswith("scs:name-v") and extra_names_to_check:
                 continue  # do not generate names if names are present
-            current = flavor.extra_specs.get(key, DEFAULTS.get(key))
+            current = flavor.extra_specs.get(key)
             if current == value:
+                continue
+            if current is None and DEFAULTS.get(key) == value:
                 continue
             if current is not None:
                 logger.warning(f"{flavor.name}: resetting {key} because {current} != expected {value}")
