@@ -287,7 +287,10 @@ def main(argv):
                 errors += check_std_props(flavor, flavorname, " by name")
                 core = _extract_core(flavorname)
                 if core != reference_core:
-                    logger.error(f"Inconsistent {key} vs. {reference_key}: {core} vs. {reference_core}")
+                    # for all we know, it might just be a case of one name understating something...
+                    # (as long as we don't check things like CPU vendor)
+                    # issue a warning nonetheless, because this case shouldn't be too common
+                    logger.warning(f"Inconsistent {key} vs. {reference_key}: {core} vs. {reference_core}")
         else:
             # we need cputype and disktype from user
             if not cpu_type:
