@@ -270,22 +270,29 @@ def main(argv):
         names_to_check.extend(extra_names_to_check)
 
         # syntax check: compute flavorname instances
+        # Also select best match
+        bestln = 0
+        reference_key = None
         flavornames = {}
         for key, name_str in names_to_check:
             try:
                 flavornames[key] = parser_vN(name_str)
+                # Longest name is the most specific
+                if len(name_str) >= bestln:
+                    bestln = len(name_str)
+                    reference_key = key
             except ValueError as exc:
                 logger.error(f"could not parse {key}={name_str}: {exc!r}")
                 errors += 1
 
         # select a reference flavorname, check flavornames
         if flavornames:
-            flavorname_items = iter(flavornames.items())
-            reference_key, reference = next(flavorname_items)
+            reference = flavornames[reference_key]
             reference_core = _extract_core(reference)
             # sanity check: claims must be true wrt actual flavor
             errors += check_std_props(flavor, reference, " by name")
             # sanity check: claims must coincide (check remaining flavornames)
+            flavorname_items = iter(flavornames.items())
             for key, flavorname in flavorname_items:
                 errors += check_std_props(flavor, flavorname, " by name")
                 core = _extract_core(flavorname)
