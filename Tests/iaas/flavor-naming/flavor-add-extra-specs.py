@@ -10,11 +10,14 @@ Usage: flavor-add-extra-specs.py [options] [FLAVORS]
 Options:
     -h|--help:  Print usage information
     -d|--debug: Output verbose debugging info
-    -q|--quiet: Don't output notes on changes performed
     -t|--disk0-type TYPE:   Assumes disk TYPE for flavors w/ unspec disk0-type
     -p|--cpu-type TYPE:     Assumes CPU TYPE for flavors w/o SCS name
     -c|--os-cloud CLOUD:    Cloud to work on (default: OS_CLOUD env)
-    -n|--no-changes:        Do not perform any change
+    -a|--action ACTION:     What action to perform:
+        report:  only report what changes would be performed
+        ask:     (default) report, then ask whether to perform
+        apply:   perform changes without asking
+
 By default, all SCS- flavors are processed; by passing flavor names FLAVORS as
 arguments, only those are processed.
 You can pass non-SCS FLAVORS and specify --cpu-type to generate SCS names and
@@ -22,10 +25,10 @@ set the SCS extra_specs.
 
 On most clouds, to add properties (extra_specs) to flavors, you need to have
 admin power; this program will otherwise report the failed settings.
-You can can use this for testing, better use =n|--no-change.
 Add -d|--debug for more verbose output.
 
 (c) Kurt Garloff <garloff@osb-alliance.com>, 6/2024
+(c) Matthias Büchse <matthias.buechse@cloudandheat.com>, 8/2024
 SPDX-License-Identifier: CC-BY-SA-4.0
 """
 
@@ -42,11 +45,6 @@ import openstack
 
 logger = logging.getLogger(__name__)
 DEFAULTS = {'scs:disk0-type': 'network'}
-
-# globals
-DEBUG = False
-QUIET = False
-NOCHANGE = False
 
 
 def usage(out):
@@ -136,9 +134,75 @@ def _extract_core(flavorname: Flavorname):
     return f"cputype={cputype}, disktype={disktype}"
 
 
+class ActionReport:
+    @staticmethod
+    def set_extra_spec(flavor, key, value):
+        print(f'Flavor {flavor.name}: SET {key}={value}')
+
+    @staticmethod
+    def del_extra_spec(flavor, key):
+        print(f'Flavor {flavor.name}: DELETE {key}')
+
+
+class ActionApply:
+    def __init__(self, compute):
+        self.compute = compute
+
+    def set_extra_spec(self, flavor, key, value):
+        try:
+            flavor.update_extra_specs_property(self.compute, key, value)
+        except openstack.exceptions.SDKException as exc:
+            logger.error(f"{exc!r} while setting {key}={value} for {flavor.name}")
+
+    def del_extra_spec(self, flavor, key):
+        try:
+            flavor.delete_extra_specs_property(self.compute, key)
+        except openstack.exceptions.SDKException as exc:
+            logger.error(f"{exc!r} while deleting {key} for {flavor.name}")
+
+
+class SetCommand:
+    def __init__(self, flavor, key, value):
+        self.flavor = flavor
+        self.key = key
+        self.value = value
+
+    def apply(self, action):
+        action.set_extra_spec(self.flavor, self.key, self.value)
+
+
+class DelCommand:
+    def __init__(self, flavor, key):
+        self.flavor = flavor
+        self.key = key
+
+    def apply(self, action):
+        action.del_extra_spec(self.flavor, self.key)
+
+
+def handle_commands(action, compute, commands):
+    if not commands:
+        return
+    if action in ('ask', 'report'):
+        action_report = ActionReport()
+        print(f'Proposing the following {len(commands)} changes to extra_specs:')
+        for command in commands:
+            command.apply(action_report)
+    if action == 'ask':
+        print('Do you want to apply these changes? y/n')
+        if input() == 'y':
+            action = 'apply'
+        else:
+            print('No changes will be applied.')
+    if action == 'apply':
+        action_apply = ActionApply(compute)
+        for command in commands:
+            command.apply(action_apply)
+
+
 def main(argv):
-    "Entry point"
-    global DEBUG, QUIET, NOCHANGE
+    action = "ask"  # or "report" or "apply"
+
     errors = 0
     chg = 0
     disk0_type = None
@@ -146,9 +210,9 @@ def main(argv):
 
     cloud = os.environ.get("OS_CLOUD")
     try:
-        opts, flvs = getopt.gnu_getopt(argv, "hdqt:p:c:n",
+        opts, flvs = getopt.gnu_getopt(argv, "hdqt:p:c:a:",
                                        ("help", "debug", "quiet", "disk0-type=",
-                                        "cpu-type=", "os-cloud=", "no-change"))
+                                        "cpu-type=", "os-cloud=", "action="))
     except getopt.GetoptError as exc:
         print(f"CRITICAL: {exc!r}", file=sys.stderr)
         usage(1)
@@ -156,12 +220,9 @@ def main(argv):
         if opt[0] == "-h" or opt[0] == "--help":
             usage(0)
         if opt[0] == "-d" or opt[0] == "--debug":
-            DEBUG = True
             logging.getLogger().setLevel(logging.DEBUG)
-        if opt[0] == "-q" or opt[0] == "--quiet":
-            QUIET = True
-        if opt[0] == "-n" or opt[0] == "--no-change":
-            NOCHANGE = True
+        if opt[0] == "-a" or opt[0] == "--action":
+            action = opt[1].strip().lower()
         if opt[0] == "-c" or opt[0] == "--os-cloud":
             cloud = opt[1]
         if opt[0] == "-t" or opt[0] == "--disk0-type":
@@ -177,22 +238,26 @@ def main(argv):
                 if not cpu_type:
                     return 2
 
+    if action not in ('ask', 'report', 'apply'):
+        logger.error("action needs to be one of ask, report, apply")
+        usage(4)
+
     if not cloud:
         print("ERROR: Need to pass -c|--os-cloud|OS_CLOUD env", file=sys.stderr)
         usage(3)
 
     conn = openstack.connect(cloud)
     conn.authorize()
-    compute = conn.compute
 
     # select relevant flavors: either given via name, or all SCS flavors
     predicate = (lambda fn: fn in flvs) if flvs else (lambda fn: fn.startswith('SCS-'))
-    flavors = [flavor for flavor in compute.flavors() if predicate(flavor.name)]
+    flavors = [flavor for flavor in conn.compute.flavors() if predicate(flavor.name)]
     # This is likely a user error, so make them aware
     if len(flavors) < len(flvs):
         missing = set(flvs) - set(flavor.name for flavor in flavors)
         logger.warning("Flavors not found: " + ", ".join(missing))
 
+    commands = []
     for flavor in flavors:
         extra_names_to_check = [
             (key, value)
@@ -246,9 +311,7 @@ def main(argv):
         ]
 
         for key in removals:
-            # TODO do the API call
-            logger.debug(f"{flavor.name}: DELETE {key}")
-            chg += 1
+            commands.append(DelCommand(flavor, key))
 
         # generate or rectify extra_specs
         for key, value in expected.items():
@@ -260,13 +323,11 @@ def main(argv):
             if current == value:
                 continue
             if current is not None:
-                logger.warning(f"resetting {key} because {current} != expected {value}")
-                # TODO do the API call
-                logger.debug(f"{flavor.name}: SET {key}={value}")
-            chg += 1
+                logger.warning(f"{flavor.name}: resetting {key} because {current} != expected {value}")
+            commands.append(SetCommand(flavor, key, value))
 
-    if (DEBUG):
-        print(f"DEBUG: Processed {len(flavors)} flavors, {chg} changes")
+    handle_commands(action, conn.compute, commands)
+    logger.debug(f"Processed {len(flavors)} flavors, {len(commands)} changes")
     return errors
 
 
