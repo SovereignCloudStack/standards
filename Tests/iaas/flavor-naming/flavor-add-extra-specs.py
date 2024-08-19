@@ -206,12 +206,13 @@ def main(argv):
     errors = 0
     disk0_type = None
     cpu_type = None
+    gen_all_names = False
 
     cloud = os.environ.get("OS_CLOUD")
     try:
-        opts, flvs = getopt.gnu_getopt(argv, "hdqt:p:c:a:",
-                                       ("help", "debug", "quiet", "disk0-type=",
-                                        "cpu-type=", "os-cloud=", "action="))
+        opts, flvs = getopt.gnu_getopt(argv, "hdqAt:p:c:a:",
+                                       ("help", "debug", "quiet", "all-names",
+                                        "disk0-type=", "cpu-type=", "os-cloud=", "action="))
     except getopt.GetoptError as exc:
         print(f"CRITICAL: {exc!r}", file=sys.stderr)
         usage(1)
@@ -220,6 +221,8 @@ def main(argv):
             usage(0)
         if opt[0] == "-d" or opt[0] == "--debug":
             logging.getLogger().setLevel(logging.DEBUG)
+        if opt[0] == "-A" or opt[0] == "--all-names":
+            gen_all_names = True
         if opt[0] == "-a" or opt[0] == "--action":
             action = opt[1].strip().lower()
         if opt[0] == "-c" or opt[0] == "--os-cloud":
@@ -311,6 +314,7 @@ def main(argv):
             if key.startswith('scs:') and not SCS_NAME_PATTERN.match(key)
             if expected.get(key, DEFAULTS.get(key)) is None
         ]
+        logger.debug(f"Flavor {flavor.name}: expected={expected}, removals={removals}")
 
         for key in removals:
             commands.append(DelCommand(flavor, key))
@@ -319,7 +323,7 @@ def main(argv):
         for key, value in expected.items():
             if not key.startswith("scs:"):
                 continue
-            if key.startswith("scs:name-v") and extra_names_to_check:
+            if not gen_all_names and key.startswith("scs:name-v") and extra_names_to_check:
                 continue  # do not generate names if names are present
             current = flavor.extra_specs.get(key)
             if current == value:
