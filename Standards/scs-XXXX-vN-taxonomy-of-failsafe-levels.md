@@ -133,17 +133,6 @@ TODO: define the meaning of our probabilities
 | Loss of network uplink | Medium | Temporary loss of service, loss of connectivity | L3 |
 | Power Outage (Data Center supply) | Medium | Temporary outage of all nodes in all racks | L3 |
 
-#### Software Related
-
-| Failure Scenario | Probability | Consequences | Failsafe Level Coverage |
-|----|-----|----|----|
-| Software bug (major) | Low | permanent loss or compromise of data that trigger the bug up to data on the whole physical machine | L1 |
-| Software bug (minor) | High | temporary or partial loss or compromise of data | L1 |
-
-<!--
-TODO: how do we arrive at these probabilities?
--->
-
 #### Environmental
 
 Note that probability for these scenarios is dependent on the location.
@@ -158,6 +147,28 @@ Note that probability for these scenarios is dependent on the location.
 As we consider mainly deployments in central Europe, the probability of earthquakes is low and in the rare case of such an event the severity is also low compared to other regions in the world (e.g. the pacific ring of fire).
 The event of a flood will most likely come from overflowing rivers instead of storm floods from a sea.
 There can be measures taken, to reduce the probability and severity of a flooding event in central Europe due to simply choosing a different location for a deployment.
+
+#### Software Related
+
+| Failure Scenario | Probability | Consequences | Failsafe Level Coverage |
+|----|-----|----|----|
+| Software bug (major) | Low | permanent loss or compromise of data that trigger the bug up to data on the whole physical machine | L1 |
+| Software bug (minor) | High | temporary or partial loss or compromise of data | L1 |
+
+Many software components have lots of lines of code and cannot be proven correct in their whole functionality.
+They are tested instead with at best enough test cases to check every interaction.
+Still bugs can and will occur in software.
+Most of them are rather small issues, that might even seem like a feature to some.
+An exmple for this would be: [whether a floating IP in OpenStack could be assigned to a VM even if it is already bound to another VM](https://bugs.launchpad.net/neutron/+bug/2060808).
+Bugs like this do not affect a whole deployment, when they are triggered, but just specific data or resources.
+Nevertheless those bugs can be a daily struggle.
+This is the reason, the probability of such minor bugs may be pretty high, but the consequences would either be just temporary or would only result in small losses or compromisation.
+
+On the other hand major bugs, which might be used to compromise data, that is not in direct connection to the triggered bug, occur only a few times a year.
+This can be seen e.g. in the [OpenStack Security Advisories](https://security.openstack.org/ossalist.html), where there were only 3 major bugs found in 2023.
+While these bugs might appear only rarely their consequences are immense.
+They might be the reason for a whole deployment to be compromised or shut down.
+CSPs should be in contact with people triaging and patching such bugs, to be informed early and to be able to update their deployments, before the bug is openly announced.
 
 #### Human Interference
 
