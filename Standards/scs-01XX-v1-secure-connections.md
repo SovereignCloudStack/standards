@@ -13,7 +13,7 @@ To protect this data from both tampering and unintended disclosure, communicatio
 
 For this reason, the [SCS project](https://scs.community) standardizes the use of common protection mechanisms for communication channels in OpenStack infrastructures.
 
-### Glossary
+## Terminology
 
 | Term | Meaning |
 |---|---|
@@ -192,7 +192,7 @@ When an internal protection mechanism is implemented by the CSP it cannot be ver
 
 Thus, the SCS community is unable to fully assess a CSPs conformance to this standard without a dedicated audit of the infrastructure.
 
-## Decision
+## Standard
 
 This standard will mandate or recommend appropriate measures for securing the communication channels based on existing standards and recommendations.
 It will reference documents like the [OpenStack Security Guide](https://docs.openstack.org/security-guide/) where applicable.
