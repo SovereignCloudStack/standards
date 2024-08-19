@@ -67,7 +67,7 @@ This way, failures of the volume storage backend would not directly impact the a
 
 In contrast to the above, this approach would focus on backup reliability rather than feature availability.
 
-## Decision
+## Standard
 
 This standard decides to go with the second option and makes the volume backup feature mandatory in the following way:
 
