@@ -597,7 +597,7 @@ def flavorname_to_dict(flavorname: Flavorname) -> dict:
     result = {
         'cpus': flavorname.cpuram.cpus,
         'scs:cpu-type': CPUTYPE_KEY[flavorname.cpuram.cputype],
-        'ram': int(flavorname.cpuram.ram*1024+0.5),
+        'ram': flavorname.cpuram.ram,
         'scs:name-v1': SyntaxV1.from_v2(name_v2),
         'scs:name-v2': name_v2,
     }
