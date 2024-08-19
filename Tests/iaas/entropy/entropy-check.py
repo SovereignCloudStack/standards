@@ -15,7 +15,6 @@ restrictions); for further information, see the log messages on various channels
 from collections import Counter
 import getopt
 import logging
-from operator import attrgetter
 import os
 import re
 import sys
@@ -403,19 +402,52 @@ class CountingHandler(logging.Handler):
         self.bylevel[record.levelno] += 1
 
 
-def select_deb_image(images):
-    """From a list of OpenStack image objects, select a recent Debian derivative.
+# the following functions are used to map any OpenStack Image to a pair of integers
+# used for sorting the images according to fitness for our test
+# - debian take precedence over ubuntu
+# - higher versions take precedence over lower ones
 
-    Try Debian first, then Ubuntu.
-    """
-    for prefix in ("Debian ", "Ubuntu "):
-        imgs = sorted(
-            [img for img in images if img.name.startswith(prefix)],
-            key=attrgetter("name"),
-        )
-        if imgs:
-            return imgs[-1]
-    return None
+# only list stable versions here
+DEBIAN_CODENAMES = {
+    "buster": 10,
+    "bullseye": 11,
+    "bookworm": 12,
+}
+
+
+def _deduce_sort_debian(os_version, debian_ver=re.compile(r"\d+\Z")):
+    if debian_ver.match(os_version):
+        return 2, int(os_version)
+    return 2, DEBIAN_CODENAMES.get(os_version, 0)
+
+
+def _deduce_sort_ubuntu(os_version, ubuntu_ver=re.compile(r"\d\d\.\d\d\Z")):
+    if ubuntu_ver.match(os_version):
+        return 1, int(os_version.replace(".", ""))
+    return 1, 0
+
+
+# map lower-case distro name to version deducing function
+DISTROS = {
+    "ubuntu": _deduce_sort_ubuntu,
+    "debian": _deduce_sort_debian,
+}
+
+
+def _deduce_sort(img):
+    # avoid private images here
+    # (note that with SCS, public images MUST have os_distro and os_version, but we check nonetheless)
+    if img.visibility != 'public' or not img.os_distro or not img.os_version:
+        return 0, 0
+    deducer = DISTROS.get(img.os_distro.strip().lower())
+    if deducer is None:
+        return 0, 0
+    return deducer(img.os_version.strip().lower())
+
+
+def select_deb_image(images):
+    """From a list of OpenStack image objects, select a recent Debian derivative."""
+    return max(images, key=_deduce_sort, default=None)
 
 
 def print_result(check_id, passed):
