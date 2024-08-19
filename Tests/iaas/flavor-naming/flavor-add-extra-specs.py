@@ -10,6 +10,9 @@ Usage: flavor-add-extra-specs.py [options] [FLAVORS]
 Options:
     -h|--help:  Print usage information
     -d|--debug: Output verbose debugging info
+    -A|--all-names:         Overwrite scs:name-vN with systematic names
+                            (name-v1 and -v2 will be overwritten,
+                             often also -v3 and -v4)
     -t|--disk0-type TYPE:   Assumes disk TYPE for flavors w/ unspec disk0-type
     -p|--cpu-type TYPE:     Assumes CPU TYPE for flavors w/o SCS name
     -c|--os-cloud CLOUD:    Cloud to work on (default: OS_CLOUD env)
