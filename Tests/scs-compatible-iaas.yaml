@@ -1,98 +1,225 @@
-name: SCS Compatible IaaS
+name: SCS-compatible IaaS
 uuid: 50393e6f-2ae1-4c5c-a62c-3b75f2abef3f
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml
 variables:
   - os_cloud
+modules:
+  - id: opc-v2020.11
+    name: OpenStack Powered Compute v2020.11
+    url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2020.11.json
+  - id: opc-v2022.11
+    name: OpenStack Powered Compute v2022.11
+    url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
+  - id: scs-0100-v1
+    name: Flavor naming v1
+    url: https://docs.scs.community/standards/scs-0100-v1-flavor-naming
+    run:
+      - executable: ./iaas/flavor-naming/flavor-names-openstack.py
+        args: -c {os_cloud} --v1prefer
+    testcases:
+      - id: flavor-name-check
+        tags: [mandatory]
+        description: >
+          Must fulfill all requirements of
+          https://docs.scs.community/standards/scs-0100-v1-flavor-naming
+  - id: scs-0100-v2
+    name: Flavor naming v2
+    url: https://docs.scs.community/standards/scs-0100-v2-flavor-naming
+    run:
+      - executable: ./iaas/flavor-naming/flavor-names-openstack.py
+        args: -c {os_cloud}
+    testcases:
+      - id: flavor-name-check
+        tags: [mandatory]
+        description: >
+          Must fulfill all requirements of
+          https://docs.scs.community/standards/scs-0100-v2-flavor-naming
+  - id: scs-0100-v3.1
+    name: Flavor naming v3.1
+    url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
+    run:
+      - executable: ./iaas/flavor-naming/flavor-names-openstack.py
+        args: --v3 -c {os_cloud}
+        # Note: "--v3 --v2plus" would outlaw the v1 flavor names. Don't do this yet.
+    testcases:
+      - id: flavor-name-check
+        tags: [mandatory]
+        description: >
+          Must fulfill all requirements of
+          https://docs.scs.community/standards/scs-0100-v3-flavor-naming -- plus the list of mandatory
+          and recommended flavors found in https://docs.scs.community/standards/scs-0100-v2-flavor-naming#standard-scs-flavors
+  - id: scs-0100-v3.2
+    name: Flavor naming v3.2
+    url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
+    run:
+      - executable: ./iaas/flavor-naming/flavor-names-openstack.py
+        args: -c {os_cloud} --mand=./iaas/scs-0100-v3-flavors.yaml
+        # Note: --v2plus would outlaw the v1 flavor names. Don't do this yet.
+    testcases:
+      - id: flavor-name-check
+        tags: [mandatory]
+        description: >
+          Must fulfill all requirements of
+          https://docs.scs.community/standards/scs-0100-v3-flavor-naming
+  - id: scs-0101-v1
+    name: Entropy v1
+    url: https://docs.scs.community/standards/scs-0101-v1-entropy
+    run:
+      - executable: ./iaas/entropy/entropy-check.py
+        args: -c {os_cloud} -d
+    testcases:
+      - id: entropy-check-flavor-properties
+        tags: []  # don't use this testcase, but list it anyway because the script will output a result
+      - id: entropy-check-image-properties
+        tags: []  # don't use this testcase, but list it anyway because the script will output a result
+      - id: entropy-check-rngd
+        tags: []  # don't use this testcase, but list it anyway because the script will output a result
+      - id: entropy-check-entropy-avail
+        tags: []  # don't use this testcase, but list it anyway because the script will output a result
+      - id: entropy-check-fips-test
+        tags: []  # don't use this testcase, but list it anyway because the script will output a result
+      - id: entropy-check
+        tags: [mandatory]
+        description: >
+          Must fulfill all requirements of
+          https://docs.scs.community/standards/scs-0101-v1-entropy
+  - id: scs-0101-v1.1
+    name: Entropy v1
+    url: https://docs.scs.community/standards/scs-0101-v1-entropy
+    run:
+      - executable: ./iaas/entropy/entropy-check.py
+        args: -c {os_cloud} -d
+    testcases:
+      - id: entropy-check-flavor-properties
+        tags: [recommended]
+        description: >
+          Must have all flavor properties recommended in
+          https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings
+      - id: entropy-check-image-properties
+        tags: [recommended]
+        description: >
+          Must have all image properties recommended in
+          https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings
+      - id: entropy-check-rngd
+        tags: [mandatory]
+        description: >
+          Images of the test sample must have the service `rngd`; see
+          https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors
+      - id: entropy-check-entropy-avail
+        tags: [mandatory]
+        description: >
+          A test instance must have the correct `entropy_avail`; see
+          https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors
+      - id: entropy-check-fips-test
+        tags: [mandatory]
+        description: >
+          A test instance must pass the "FIPS test"; see
+          https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors
+      - id: entropy-check
+        tags: []  # don't use this testcase, but list it anyway because the script will output a result
+  - id: scs-0102-v1
+    name: Image metadata v1
+    url: https://docs.scs.community/standards/scs-0102-v1-image-metadata
+    run:
+      - executable: ./iaas/image-metadata/image-md-check.py
+        args: -c {os_cloud} -v -s
+        # skip check of mand/recc/sugg images, for these were never authoritative, and they have been
+        # superseded by scs-0104-v1
+    testcases:
+      - id: image-metadata-check
+        tags: [mandatory]
+        description: >
+          Must fulfill all requirements of https://docs.scs.community/standards/scs-0102-v1-image-metadata
+  - id: scs-0103-v1
+    name: Standard flavors
+    url: https://docs.scs.community/standards/scs-0103-v1-standard-flavors
+    run:
+      - executable: ./iaas/standard-flavors/flavors-openstack.py
+        args: -c {os_cloud} -d ./iaas/scs-0103-v1-flavors.yaml
+    testcases:
+      - id: standard-flavors-check
+        tags: [mandatory]
+        description: >
+          Must fulfill all requirements of https://docs.scs.community/standards/scs-0103-v1-standard-flavors
+  - id: scs-0104-v1
+    name: Standard images
+    url: https://docs.scs.community/standards/scs-0104-v1-standard-images
+    parameters:
+      image_spec: address (URL) of an image-spec (YAML) file
+    run:
+      - executable: ./iaas/standard-images/images-openstack.py
+        args: -c {os_cloud} -d {image_spec}
+    testcases:
+      - id: standard-images-check
+        tags: [mandatory]
+        description: >
+          Must fulfill all requirements of https://docs.scs.community/standards/scs-0104-v1-standard-images
+timeline:
+  - date: 2024-07-31
+    versions:
+      v4: effective
+  - date: 2024-04-30
+    versions:
+      v4: effective
+      v3: warn
+  - date: 2024-02-28
+    versions:
+      v4: effective
+      v3: effective
+  - date: 2023-11-30
+    versions:
+      v3: effective
+  - date: 2023-10-31
+    versions:
+      v3: effective
+      v2: effective
+  - date: 2023-06-15
+    versions:
+      v3: effective
+      v2: effective
+      v1: effective
+  - date: 2023-03-23
+    versions:
+      v1: effective
+      v2: effective
+  - date: 2021-01-01
+    versions:
+      v1: effective
 versions:
   - version: v4
     stabilized_at: 2024-02-28
-    standards:
-      - name: OpenStack Powered Compute v2022.11
-        url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
-        # Unfortunately, no wrapper to run refstack yet, needs to be added
-      - name: Flavor naming
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v3-flavor-naming.md
-        checks:
-          - executable: ./iaas/flavor-naming/flavor-names-openstack.py
-            args: -c {os_cloud} --mand=./iaas/scs-0100-v3-flavors.yaml
-            # Note: --v2plus would outlaw the v1 flavor names. Don't do this yet.
-            id: flavor-name-check
-      - name: Entropy
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0101-v1-entropy.md
-        checks:
-          - executable: ./iaas/entropy/entropy-check.py
-            args: -c {os_cloud} -d
-            id: entropy-check
-      - name: Image metadata
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
-        checks:
-          - executable: ./iaas/image-metadata/image-md-check.py
-            args: -c {os_cloud} -s -v
-            id: image-metadata-check
-      - name: Standard flavors
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0103-v1-standard-flavors.md
-        checks:
-          - executable: ./iaas/standard-flavors/flavors-openstack.py
-            args: -c {os_cloud} -d ./iaas/scs-0103-v1-flavors.yaml
-            id: standard-flavors-check
-      - name: Standard images
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0104-v1-standard-images.md
-        checks:
-          - executable: ./iaas/standard-images/images-openstack.py
-            args: -c {os_cloud} -d ./iaas/scs-0104-v1-images.yaml
-            id: standard-images-check
+    include:
+      - opc-v2022.11
+      - scs-0100-v3.2
+      - scs-0101-v1
+      - scs-0102-v1
+      - scs-0103-v1
+      - ref: scs-0104-v1
+        parameters:
+          image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images.yaml
+    targets:
+      main: mandatory
   - version: v3
     stabilized_at: 2023-06-15
-    deprecated_at: 2024-04-30
-    standards:
-      - name: Flavor naming
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v3-flavor-naming.md
-        checks:
-          - executable: ./iaas/flavor-naming/flavor-names-openstack.py
-            args: --v3 -c {os_cloud}
-            # Note: "--v3 --v2plus" would outlaw the v1 flavor names. Don't do this yet.
-            id: flavor-name-check
-      - name: Image metadata
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
-        checks:
-          - executable: ./iaas/image-metadata/image-md-check.py
-            args: -v -c {os_cloud}
-            id: image-metadata-check
-      - name: OpenStack Powered Compute v2022.11
-        url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
+    include:
+      - opc-v2022.11
+      - scs-0100-v3.1
+      - scs-0102-v1
+    targets:
+      main: mandatory
   - version: v2
     stabilized_at: 2023-03-23
-    deprecated_at: 2023-11-30
-    standards:
-      - name: Flavor naming
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v2-flavor-naming.md
-        checks:
-          - executable: ./iaas/flavor-naming/flavor-names-openstack.py
-            args: -c {os_cloud}
-            id: flavor-name-check
-      - name: Image metadata
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
-        checks:
-          - executable: ./iaas/image-metadata/image-md-check.py
-            args: -v -c {os_cloud}
-            id: image-metadata-check
-      - name: OpenStack Powered Compute v2022.11
-        url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
+    include:
+      - opc-v2022.11
+      - scs-0100-v2
+      - scs-0102-v1
+    targets:
+      main: mandatory
   - version: v1
     stabilized_at: 2021-01-01
-    deprecated_at: 2023-10-31
-    standards:
-      - name: Flavor naming
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v1-flavor-naming.md
-        checks:
-          - executable: ./iaas/flavor-naming/flavor-names-openstack.py
-            args: -c {os_cloud} --v1prefer
-            id: flavor-name-check
-      - name: Image metadata
-        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
-        checks:
-          - executable: ./iaas/image-metadata/image-md-check.py
-            args: -c {os_cloud} -v
-            id: image-metadata-check
-      - name: OpenStack Powered Compute v2020.11
-        url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2020.11.json
+    include:
+      - opc-v2020.11
+      - scs-0100-v1
+      - scs-0102-v1
+    targets:
+      main: mandatory
