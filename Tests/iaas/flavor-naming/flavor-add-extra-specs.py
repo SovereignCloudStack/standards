@@ -204,7 +204,6 @@ def main(argv):
     action = "ask"  # or "report" or "apply"
 
     errors = 0
-    chg = 0
     disk0_type = None
     cpu_type = None
 
@@ -336,4 +335,4 @@ def main(argv):
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
     openstack.enable_logging(debug=False)
-    sys.exit(main(sys.argv[1:]))
+    sys.exit(min(127, main(sys.argv[1:])))  # cap at 127 due to OS restrictions
