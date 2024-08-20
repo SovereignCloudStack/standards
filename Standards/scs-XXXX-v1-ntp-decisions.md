@@ -65,8 +65,9 @@ There is currently no standardized field to supply NTP servers in either Opensta
 
 Openstacks own metadata format also supports vendor data, which is an unstructured JSON document that can be used to pass CSP-specific information to servers.
 This document could be used to communicate local NTP servers, though there is currently no established format for this.
-Cloud-init does support embedding its own _cloud-config_ format into openstack vendor data, which does in fact have support for configuring NTP.
-However, this feature is rather intrusive, as cloud-init will try to install NTP client packages if it finds that none are present in the system.
+
+Cloud-init does support embedding its own _cloud-config_ format into openstack vendor data, which does have support for configuring NTP.
+This feature is rather intrusive, however, as cloud-init will attempt to install NTP client packages if it finds that none are present in the system.
 
 Some IaaS providers, such as AWS and GCP, will provide their own NTP servers to VMs under a fixed link-local IP address, which are often preconfigured in images targeting those platforms.
 
@@ -84,7 +85,7 @@ It is unclear if PTP would have offer any better precision than NTP in tunneled 
 
 Unlike PTP as a protocol, it's driver interface in Linux seems to be a popular choice for time synchronization in the form of paravirtualization.
 The _ptp\_kvm_ kernel module will communicate directly with the KVM hypervisor to provide a PTP device file that follows the system time of the host.
-Hyper-V also offers time synchronization through a PTP device file managed by its _Linux Integration Services_.
+Hyper-V also offers time synchronization through a PTP device file, managed by its _Linux Integration Services_.
 
 Paravirtualized time synchronization has the benefit of generally offering the highest precision.
 Like RTC clock emulation, it also works independently of the guest system's network connectivity.
@@ -100,23 +101,26 @@ This perspective clearly favours NTP as a standardized method of time synchroniz
 
 However it is still useful for a CSP to offer less portable, but more precise methods of time synchronization, especially if they are integrated into the default cloud images offered by the CSP.
 
-So, we should standardize a portable NTP setup, that users can develop images against which will work well in any SCS cloud.
-We should not try to prevent CSPs from supporting paravirtualized, or other methods of time synchronization which may offer significant benefits over NTP.
-
-<!--
-* challenges for NTP:
-  * local NTP server must be reachable by guests
-  * advertising NTP servers to customers and instances
-    * should we work on upstream support for providing NTP through the metadata IP
-    * should we work on OVN DHCPv6 support for NTP?
-    * should we standardize a vendor data key for NTP?
-    * should local NTP server IPs be part of a CSP self description?
--->
-<!-- https://docs.openstack.org/nova/latest/admin/configuration/hypervisors.html -->
+So, we should standardize a portable NTP setup that users can assume when developing images to work well in any SCS cloud.
+We should not try to prevent CSPs from supporting paravirtualized or other methods of time synchronization that may offer significant benefits over NTP.
 
 ## Consequences
 
-What becomes easier or more difficult to do because of this change?
+A standardized NTP setup will allow SCS users and third party image providers to develop images that support local time synchronization accross SCS clouds.
+
+As discussed in the NTP section above, there are a number of limitations in OpenStack and related projects that a standardized NTP setup has to work with:
+
+* OpenStack currently has no support for providing NTP servers to VMs under a fixed link-local address, like AWS and GCP are doing.
+  Such a feature could probably be implemented by re-using the metadata service IP (`169.254.169.254`) and the mechanisms to inject it into subnets.
+  If this feature becomes available in the future, it will be an attractive target for standardization, but until then it seems more sensible to focus on servers available through provider networks.
+* Making NTP servers accessible via provider networks will limit availability to those VMs that are connected to the provider network, either directly or via a virtual router
+* Without mandating fixed IP addresses or domain names for local NTP servers, CSPs will need a method of informing VMs of available NTP servers.
+  DHCP is the currently best supported mechanism for this, but is not guaranteed to be available to VMs, as users may disable it for their subnets.
+  Also, OVN's DHCPv6 implementation currently does not support the required option, but that seems to be a relatively straightforward feature to add.
+* The alternative to DHCP is of course the metadata service, though there is currently no standard field for providing NTP servers.
+  Cloud-init's proprietary format may not be good option because of the automatic package installation in guests, but any other option will require support to be added to whatever init tool is used.
+  A new NTP server key in OpenStack's standard metadata will require upstream changes, but is more likely to get supported by cloud-init or other init tools (though most seem to focus exclusively on the EC2 format).
+  A custom key in the vendor data could just be defined in the standard, but would be less likely to get support by any third party tools, and thus only be useful with custom scripts or init-tool plugins.
 
 ## Related Documents
 
