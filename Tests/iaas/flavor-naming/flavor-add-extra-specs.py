@@ -104,7 +104,7 @@ def generate_flavorname(flavor, cpu_type, disk0_type):
     cpuram.cpus = flavor.vcpus
     cpuram.cputype = cpu_type
     cpuram.ram = int((flavor.ram+12)/512)/2.0
-    flavorname = Flavorname(main)
+    flavorname = Flavorname(cpuram)
     if flavor.disk:
         disk = Disk()
         disk.disksize = flavor.disk
@@ -119,17 +119,6 @@ def revert_dict(value, dct, extra=""):
         if val == value:
             return key
     logger.error(f"ERROR: {extra} {value} should be in {dct.items()}")
-
-
-def _extract_core_items(flavorname: Flavorname):
-    cputype = flavorname.cpuram.cputype
-    disktype = None if flavorname.disk is None else flavorname.disk.disktype
-    return cputype, disktype
-
-
-def _extract_core(flavorname: Flavorname):
-    cputype, disktype = _extract_core_items(flavorname)
-    return f"cputype={cputype}, disktype={disktype}"
 
 
 class ActionReport:
