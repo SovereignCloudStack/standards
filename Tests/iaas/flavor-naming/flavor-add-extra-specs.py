@@ -41,10 +41,10 @@ import logging
 import os
 import sys
 
+import openstack
+
 from flavor_names import parser_vN, CPUTYPE_KEY, DISKTYPE_KEY, Flavorname, Main, Disk, flavorname_to_dict, \
     SCS_NAME_PATTERN
-
-import openstack
 
 
 logger = logging.getLogger(__name__)
