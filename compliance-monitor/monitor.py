@@ -15,6 +15,7 @@ from typing import Annotated, Optional
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from jinja2 import Environment
+from markdown import markdown
 from passlib.context import CryptContext
 import psycopg2
 from psycopg2.errors import UniqueViolation
@@ -31,14 +32,14 @@ from sql import (
 
 
 try:
-    from scs_cert_lib import load_spec, annotate_validity, compile_suite
+    from scs_cert_lib import load_spec, annotate_validity, compile_suite, prune_results
 except ImportError:
     # the following course of action is not unproblematic because the Tests directory will be
     # mounted to the Docker instance, hence it's hard to tell what version we are gonna get;
     # however, unlike the reloading of the config, the import only happens once, and at that point
     # in time, both monitor.py and scs_cert_lib.py should come from the same git checkout
     import sys; sys.path.insert(0, os.path.abspath('../Tests'))  # noqa: E702
-    from scs_cert_lib import load_spec, annotate_validity, compile_suite
+    from scs_cert_lib import load_spec, annotate_validity, compile_suite, prune_results
 
 
 class Settings:
@@ -71,7 +72,11 @@ SEP = "-----END SSH SIGNATURE-----\n&"
 TEMPLATE_OVERVIEW = 'overview.html'
 TEMPLATE_OVERVIEW_FRAGMENT = 'overview_fragment.html'
 TEMPLATE_OVERVIEW_MD = 'overview.md'
-REQUIRED_TEMPLATES = (TEMPLATE_OVERVIEW, TEMPLATE_OVERVIEW_FRAGMENT, TEMPLATE_OVERVIEW_MD)
+TEMPLATE_DETAIL = 'details.html'
+TEMPLATE_DETAIL_MD = 'details.md'
+REQUIRED_TEMPLATES = (
+    TEMPLATE_OVERVIEW, TEMPLATE_OVERVIEW_FRAGMENT, TEMPLATE_OVERVIEW_MD, TEMPLATE_DETAIL, TEMPLATE_DETAIL_MD,
+)
 
 
 # do I hate these globals, but I don't see another way with these frameworks
@@ -353,11 +358,14 @@ async def post_report(
     conn.commit()
 
 
-def convert_result_rows_to_dict2(rows, scopes_lookup, grace_period_days):
+ASTERISK_LOOKUP = {'effective': '', 'draft': '*', 'warn': '†'}
+
+
+def convert_result_rows_to_dict2(rows, scopes_lookup, grace_period_days, scopes=(), subjects=()):
     # collect result per subject/scope/version
     by_context = defaultdict(dict)
-    scopes = set()  # also collect some ancillary information
-    subjects = set()
+    scopes = set(scopes)  # also collect some ancillary information
+    subjects = set(subjects)
     for subject, scopeuuid, version, testcase, result, checked_at in rows:
         scopes.add(scopeuuid)
         subjects.add(subject)
@@ -365,7 +373,12 @@ def convert_result_rows_to_dict2(rows, scopes_lookup, grace_period_days):
     results = defaultdict(dict)
     for subject in subjects:
         for scopeuuid in scopes:
-            results[subject][scopeuuid] = {"versions": defaultdict(dict), "result": 0}
+            precomputed = scopes_lookup.get(scopeuuid)
+            results[subject][scopeuuid] = {
+                "name": scopeuuid if precomputed is None else precomputed['spec']['name'],
+                "versions": defaultdict(dict),
+                "result": 0,
+            }
     now = datetime.now()
     if grace_period_days:
         now -= timedelta(days=grace_period_days)
@@ -374,14 +387,49 @@ def convert_result_rows_to_dict2(rows, scopes_lookup, grace_period_days):
         precomputed = scopes_lookup.get(scopeuuid)
         if precomputed is None:
             continue
+        testcases = precomputed['versions'][version]['suite'].testcases
+        prune_results(testcases, scenario_results, now=now)
+        if not scenario_results:
+            continue
         validity = precomputed['spec']['versions'][version]['validity']
-        main_suite = precomputed['versions'][version]['targets']['main']
-        by_result = main_suite.evaluate(scenario_results, now=now)
-        missing, failed = by_result[0], by_result[-1]
-        total_result = -1 if failed else 0 if missing else 1
-        results[subject][scopeuuid]["versions"][version] = {'result': total_result, 'validity': validity}
-        if total_result == 1 and validity in ('effective', 'warn'):
+        target_results = {}
+        for tname, suite in precomputed['versions'][version]['targets'].items():
+            by_value = suite.evaluate(scenario_results)
+            target_results[tname] = {
+                'testcases': [testcase['id'] for testcase in suite.testcases],
+                'num_passed': len(by_value[1]),
+                'num_missing': len(by_value[0]),
+                'num_failed': len(by_value[-1]),
+                'result': -1 if by_value[-1] else 0 if by_value[0] else 1,
+            }
+        results[subject][scopeuuid]["versions"][version] = {
+            'testcases': {tc['id']: tc for tc in testcases},
+            'results': scenario_results,
+            'result': target_results['main']['result'],
+            'targets': target_results,
+            'validity': validity,
+        }
+        if target_results['main']['result'] == 1 and validity in ('effective', 'warn'):
             results[subject][scopeuuid]["result"] = 1
+    for subject, subject_result in results.items():
+        for scopeuuid, scope_result in subject_result.items():
+            # sort versions into buckets according to validity status
+            versions = scope_result['versions']
+            buckets = defaultdict(list)
+            for vname, val in versions.items():
+                buckets[val['validity']].append(vname)
+            relevant = list(buckets['effective'])
+            # only show "warn" versions if no effective ones are passed
+            if not any(versions[vname]['result'] == 1 for vname in relevant):
+                relevant.extend(buckets['warn'])
+            relevant.extend(buckets['draft'])
+            passed = [vname for fname in relevant if versions[vname]['result'] == 1]
+            scope_result['relevant'] = relevant
+            scope_result['passed'] = passed
+            scope_result['passed_str'] = ', '.join([
+                vname + ASTERISK_LOOKUP[versions[vname]['validity']]
+                for vname in passed
+            ])
     return results
 
 
@@ -410,7 +458,34 @@ async def get_status(
     return convert_result_rows_to_dict2(rows2, get_scopes(), grace_period_days=grace_period_days)
 
 
-@app.get("/table")
+@app.get("/views/detail/{subject}/{scopeuuid}")
+async def get_detail(
+    request: Request,
+    account: Annotated[Optional[tuple[str, str]], Depends(optional_auth)],
+    conn: Annotated[connection, Depends(get_conn)],
+    subject: str = None,
+    scopeuuid: str = None, version: str = None,
+    markdown: bool = False,
+    privileged_view: bool = False,
+):
+    if privileged_view:
+        check_role(account, subject, ROLES['read_any'])
+    with conn.cursor() as cur:
+        rows2 = db_get_relevant_results2(
+            cur, subject, scopeuuid, version,
+            approved_only=not privileged_view,
+        )
+    results2 = convert_result_rows_to_dict2(
+        rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS,
+        subjects=(subject, ), scopes=(scopeuuid, ),
+    )
+    template_key = TEMPLATE_DETAIL_MD if markdown else TEMPLATE_DETAIL
+    media_type = 'text/markdown' if markdown else 'text/html'
+    result = templates_map[template_key].render(results=results2, base_url='/')
+    return Response(content=result, media_type=media_type)
+
+
+@app.get("/views/table")
 async def get_table(
     request: Request,
     account: Annotated[Optional[tuple[str, str]], Depends(optional_auth)],
@@ -514,21 +589,24 @@ async def post_subjects(
 def passed_filter(scopedata):
     if not scopedata or not scopedata.get('versions'):
         return ""
-    # sort passed versions into buckets according to validity status
-    buckets = defaultdict(list)
-    for vname, val in scopedata['versions'].items():
-        if val['result'] != 1:
-            continue
-        buckets[val['validity']].append(vname)
-    # only show "warn" versions if no effective ones are passed
-    passed = buckets['effective'] or [vname + '†' for vname in buckets['warn']]
-    # append draft versions
-    passed.extend([vname + '*' for vname in buckets['draft']])
-    return ", ".join(passed)
+    return scopedata['passed_str']
+
+
+def verdict_filter(value):
+    return {1: 'PASS', -1: 'FAIL'}.get(value, 'MISS')
+
+
+def verdict_check_filter(value):
+    return {1: '✔', -1: '✘'}.get(value, '⚠')
 
 
 if __name__ == "__main__":
-    env.filters.update(passed=passed_filter)
+    env.filters.update(
+        passed=passed_filter,
+        verdict=verdict_filter,
+        verdict_check=verdict_check_filter,
+        markdown=markdown,
+    )
     with mk_conn(settings=settings) as conn:
         db_ensure_schema(conn)
         import_bootstrap(settings.bootstrap_path, conn=conn)

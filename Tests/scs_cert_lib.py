@@ -156,6 +156,26 @@ def test_selectors(selectors: list[list[list[str]]], tags: list[str]):
     return any(test_selector(selector, tags) for selector in selectors)
 
 
+def prune_results(testcases, results, checked_at=None, now=None):
+    """drop any result that is too old"""
+    testcase_lookup = {testcase['id']: testcase for testcase in testcases}
+    for tc_id in list(results):  # can't use .items because we are modifying
+        testcase = testcase_lookup.get(tc_id)
+        if testcase is None:
+            results.pop(tc_id)
+            continue
+        tc_result = results[tc_id]
+        value = tc_result['result']
+        ch_date = tc_result.get('checked_at', checked_at)
+        if ch_date is not None:
+            # invalidate value if too old, but only do so if we know the date
+            expires_at = add_period(ch_date, testcase.get('lifetime'))
+            if now is None:
+                now = datetime.now()
+            if now >= expires_at:
+                results.pop(tc_id)  # too old is equivalent with absent
+
+
 class TestSuite:
     def __init__(self, name):
         self.name = name
@@ -193,22 +213,12 @@ class TestSuite:
         suite.include_testcases([tc for tc in self.testcases if test_selectors(selectors, tc['tags'])])
         return suite
 
-    def evaluate(self, results, checked_at=None, now=None):
-        by_result = defaultdict(list)
+    def evaluate(self, results):
+        by_value = defaultdict(list)
         for testcase in self.testcases:
-            result = results.get(testcase['id'], NIL_RESULT)
-            value = result['result']
-            ch_date = result.get('checked_at', checked_at)
-            if ch_date is not None:
-                # invalidate value if too old, but only do so if we know the date
-                if now is None:
-                    now = datetime.now()
-                expires_at = add_period(ch_date, testcase.get('lifetime'))
-                if now >= expires_at:
-                    value = 0  # too old is equivalent with absent
-            # here, it's paramount that absences are recorded!
-            by_result[value].append(testcase)
-        return by_result
+            value = results.get(testcase['id'], NIL_RESULT).get('result', 0)
+            by_value[value].append(testcase)
+        return by_value
 
 
 def compile_suite(basename: str, include: list, sections: tuple = (), tests: re.Pattern = None) -> TestSuite:
