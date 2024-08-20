@@ -8,8 +8,9 @@ scs-0103-v1 <https://docs.scs.community/standards/scs-0103-v1-standard-flavors>.
 
 Usage: flavor-add-extra-specs.py [options] [FLAVORS]
 Options:
-    -h|--help:  Print usage information
-    -d|--debug: Output verbose debugging info
+    -h|--help:   Print usage information
+    -d|--debug:  Output verbose debugging info
+    -q|--quiet:  Only output warnings and errors
     -A|--all-names:         Overwrite scs:name-vN with systematic names
                             (name-v1 and -v2 will be overwritten,
                              often also -v3 and -v4)
@@ -152,12 +153,14 @@ class ActionApply:
         self.compute = compute
 
     def set_extra_spec(self, flavor, key, value):
+        logger.info(f'Flavor {flavor.name}: SET {key}={value}')
         try:
             flavor.update_extra_specs_property(self.compute, key, value)
         except openstack.exceptions.SDKException as exc:
             logger.error(f"{exc!r} while setting {key}={value} for {flavor.name}")
 
     def del_extra_spec(self, flavor, key):
+        logger.info(f'Flavor {flavor.name}: DELETE {key}')
         try:
             flavor.delete_extra_specs_property(self.compute, key)
         except openstack.exceptions.SDKException as exc:
@@ -222,6 +225,8 @@ def main(argv):
     for opt in opts:
         if opt[0] == "-h" or opt[0] == "--help":
             usage(0)
+        if opt[0] == "-q" or opt[0] == "--quiet":
+            logging.getLogger().setLevel(logging.WARNING)
         if opt[0] == "-d" or opt[0] == "--debug":
             logging.getLogger().setLevel(logging.DEBUG)
         if opt[0] == "-A" or opt[0] == "--all-names":
@@ -345,7 +350,7 @@ def main(argv):
             commands.append(SetCommand(flavor, key, value))
 
     handle_commands(action, conn.compute, commands)
-    logger.debug(f"Processed {len(flavors)} flavors, {len(commands)} changes")
+    logger.info(f"Processed {len(flavors)} flavors, {len(commands)} changes")
     return errors
 
 
