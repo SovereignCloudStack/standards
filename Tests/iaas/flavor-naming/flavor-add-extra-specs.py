@@ -296,12 +296,12 @@ def main(argv):
         if flavornames:
             reference = flavornames[reference_key]
             reference_core = _extract_core(reference)
-            # sanity check: claims must be true wrt actual flavor
-            errors += check_std_props(flavor, reference, " by name")
-            # sanity check: claims must coincide (check remaining flavornames)
-            flavorname_items = iter(flavornames.items())
-            for key, flavorname in flavorname_items:
+            for key, flavorname in flavornames.items():
+                # sanity check: claims must be true wrt actual flavor
                 errors += check_std_props(flavor, flavorname, " by name")
+                # sanity check: claims must coincide (check remaining flavornames)
+                if key == reference_key:
+                    continue
                 core = _extract_core(flavorname)
                 if core != reference_core:
                     # for all we know, it might just be a case of one name understating something...
@@ -316,7 +316,6 @@ def main(argv):
             if flavor.disk and not disk0_type:
                 logger.warning(f"Need to specify disk0-type for generating name for {flavor.name}, skipping")
                 continue
-            reference_key = None
             reference = generate_flavorname(flavor, cpu_type, disk0_type)
 
         expected = flavorname_to_dict(reference)
