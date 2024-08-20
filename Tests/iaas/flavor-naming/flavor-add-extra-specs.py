@@ -51,10 +51,9 @@ logger = logging.getLogger(__name__)
 DEFAULTS = {'scs:disk0-type': 'network'}
 
 
-def usage(out):
+def usage(file=sys.stderr):
     "Output usage information (help)"
-    print(__doc__, file=sys.stderr)
-    sys.exit(out)
+    print(__doc__.strip(), file=file)
 
 
 def min_max_check(real, claim, valnm, flvnm, extra):
@@ -72,12 +71,10 @@ def min_max_check(real, claim, valnm, flvnm, extra):
         chkval = real
         chkval2 = real
     if chkval < claim:
-        print(f"ERROR: Flavor {flvnm} claims {claim} {valnm}{extra}, but only has {real}. Needs fixing.",
-              file=sys.stderr)
+        logger.error(f"Flavor {flvnm} claims {claim} {valnm}{extra}, but only has {real}. Needs fixing.")
         return False
     if chkval2 > claim:
-        print(f"WARNING: Flavor {flvnm} claims {claim} {valnm}{extra}, but overdelivers with {real}.",
-              file=sys.stderr)
+        logger.warning(f"Flavor {flvnm} claims {claim} {valnm}{extra}, but overdelivers with {real}.")
     return True
 
 
@@ -122,9 +119,7 @@ def revert_dict(value, dct, extra=""):
     for key, val in dct.items():
         if val == value:
             return key
-    print(f"ERROR: {extra} {value} should be in {dct.items()}",
-          file=sys.stderr)
-    return None
+    logger.error(f"ERROR: {extra} {value} should be in {dct.items()}")
 
 
 def _extract_core_items(flavorname: Flavorname):
@@ -220,11 +215,13 @@ def main(argv):
                                        ("help", "debug", "quiet", "all-names",
                                         "disk0-type=", "cpu-type=", "os-cloud=", "action="))
     except getopt.GetoptError as exc:
-        print(f"CRITICAL: {exc!r}", file=sys.stderr)
-        usage(1)
+        logger.critical(repr(exc))
+        usage()
+        return 1
     for opt in opts:
         if opt[0] == "-h" or opt[0] == "--help":
-            usage(0)
+            usage(file=sys.stdout)
+            return 0
         if opt[0] == "-q" or opt[0] == "--quiet":
             logging.getLogger().setLevel(logging.WARNING)
         if opt[0] == "-d" or opt[0] == "--debug":
@@ -250,11 +247,13 @@ def main(argv):
 
     if action not in ('ask', 'report', 'apply'):
         logger.error("action needs to be one of ask, report, apply")
-        usage(4)
+        usage()
+        return 4
 
     if not cloud:
-        print("ERROR: Need to pass -c|--os-cloud|OS_CLOUD env", file=sys.stderr)
-        usage(3)
+        logger.error("Need to pass -c|--os-cloud|OS_CLOUD env")
+        usage()
+        return 3
 
     conn = openstack.connect(cloud)
     conn.authorize()
