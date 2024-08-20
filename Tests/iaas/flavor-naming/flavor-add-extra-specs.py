@@ -11,9 +11,8 @@ Options:
     -h|--help:   Print usage information
     -d|--debug:  Output verbose debugging info
     -q|--quiet:  Only output warnings and errors
-    -A|--all-names:         Overwrite scs:name-vN with systematic names
-                            (name-v1 and -v2 will be overwritten,
-                             often also -v3 and -v4)
+    -A|--all-names:         Overwrite scs:name-vN with systematic names (each
+                            name will be kept, but may appear w/another key)
     -t|--disk0-type TYPE:   Assumes disk TYPE for flavors w/ unspec disk0-type
     -p|--cpu-type TYPE:     Assumes CPU TYPE for flavors w/o SCS name
     -c|--os-cloud CLOUD:    Cloud to work on (default: OS_CLOUD env)
@@ -277,38 +276,18 @@ def main(argv):
         names_to_check.extend(extra_names_to_check)
 
         # syntax check: compute flavorname instances
-        # Also select best match
-        bestln = 0
-        reference_key = None
+        # sanity check: claims must be true wrt actual flavor
         flavornames = {}
         for key, name_str in names_to_check:
             try:
-                flavornames[key] = parser_vN(name_str)
-                # Longest name is the most specific
-                if len(name_str) >= bestln:
-                    bestln = len(name_str)
-                    reference_key = key
+                flavornames[key] = flavorname = parser_vN(name_str)
             except ValueError as exc:
                 logger.error(f"could not parse {key}={name_str}: {exc!r}")
                 errors += 1
-
-        # select a reference flavorname, check flavornames
-        if flavornames:
-            reference = flavornames[reference_key]
-            reference_core = _extract_core(reference)
-            for key, flavorname in flavornames.items():
-                # sanity check: claims must be true wrt actual flavor
+            else:
                 errors += check_std_props(flavor, flavorname, " by name")
-                # sanity check: claims must coincide (check remaining flavornames)
-                if key == reference_key:
-                    continue
-                core = _extract_core(flavorname)
-                if core != reference_core:
-                    # for all we know, it might just be a case of one name understating something...
-                    # (as long as we don't check things like CPU vendor)
-                    # issue a warning nonetheless, because this case shouldn't be too common
-                    logger.warning(f"Inconsistent {key} vs. {reference_key}: {core} vs. {reference_core}")
-        else:
+
+        if not flavornames:
             # we need cputype and disktype from user
             if not cpu_type:
                 logger.warning(f"Need to specify cpu-type for generating name for {flavor.name}, skipping")
@@ -316,9 +295,9 @@ def main(argv):
             if flavor.disk and not disk0_type:
                 logger.warning(f"Need to specify disk0-type for generating name for {flavor.name}, skipping")
                 continue
-            reference = generate_flavorname(flavor, cpu_type, disk0_type)
+            flavornames['_generated'] = generate_flavorname(flavor, cpu_type, disk0_type)
 
-        expected = flavorname_to_dict(reference)
+        expected = flavorname_to_dict(*flavornames.values(), ctx=flavor.name)
         # determine invalid keys (within scs namespace)
         # scs:name-vN is always permissible
         removals = [

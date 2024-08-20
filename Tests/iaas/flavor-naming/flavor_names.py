@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from collections import defaultdict
 import logging
 import os
 import os.path
@@ -14,7 +15,9 @@ logger = logging.getLogger(__name__)
 
 SCS_NAME_PATTERN = re.compile(r"scs:name-v\d+\Z")
 CPUTYPE_KEY = {'L': 'crowded-core', 'V': 'shared-core', 'T': 'dedicated-thread', 'C': 'dedicated-core'}
+CPUTYPE_SORT = {'crowded-core': 0, 'shared-core': 1, 'dedicated-thread': 2, 'dedicated-core': 3}
 DISKTYPE_KEY = {'n': 'network', 'h': 'hdd', 's': 'ssd', 'p': 'nvme'}
+DISKTYPE_SORT = {'network': 0, 'hdd': 1, 'ssd': 2, 'nvme': 3}
 HERE = Path(__file__).parent
 
 
@@ -591,25 +594,44 @@ outname = outputter = Outputter()
 inputflavor = inputter = Inputter()
 
 
-def flavorname_to_dict(flavorname: Flavorname) -> dict:
-    name_v2 = outputter(flavorname)
-    name_v4 = outputter(flavorname.shorten())
+def flavorname_to_dict(*flavornames: Flavorname, ctx='') -> dict:
+    if not flavornames:
+        raise RuntimeError("need to supply at least one Flavorname instance!")
+    if ctx:
+        ctx = ctx + ': '  # used for logging warnings
+    name_collection = set()
+    collection = defaultdict(set)
+    for flavorname in flavornames:
+        collection['cpus'].add(flavorname.cpuram.cpus)
+        collection['ram'].add(flavorname.cpuram.ram)
+        collection['scs:cpu-type'].add(CPUTYPE_KEY[flavorname.cpuram.cputype])
+        if flavorname.disk:
+            collection['disk'].add(flavorname.disk.disksize)
+            collection['nrdisks'].add(flavorname.disk.nrdisks)  # this will need some postprocessing
+            collection['scs:disk0-type'].add(DISKTYPE_KEY[flavorname.disk.disktype or 'n'])
+        name_v2 = outputter(flavorname)
+        name_collection.add((SyntaxV1.from_v2(name_v2), "v1"))
+        name_collection.add((name_v2, "v2"))
+        short_v2 = outputter(flavorname.shorten())
+        # could check whether short_v2 != name_v2, but the set will swallow everything
+        name_collection.add((SyntaxV1.from_v2(short_v2), "v1"))
+        name_collection.add((short_v2, "v2"))
+    for key, values in collection.items():
+        if len(values) > 1:
+            logger.warning(f"{ctx}Inconsistent {key}: {', '.join(values)}")
     result = {
-        'cpus': flavorname.cpuram.cpus,
-        'scs:cpu-type': CPUTYPE_KEY[flavorname.cpuram.cputype],
-        'ram': flavorname.cpuram.ram,
-        'scs:name-v1': SyntaxV1.from_v2(name_v2),
-        'scs:name-v2': name_v2,
+        'cpus': max(collection['cpus']),
+        'scs:cpu-type': max(collection['scs:cpu-type'], key=CPUTYPE_SORT.__getitem__),
+        'ram': max(collection['ram']),
     }
-    if name_v4 != name_v2:
-        result.update({
-            'scs:name-v3': SyntaxV1.from_v2(name_v4),
-            'scs:name-v4': name_v4,
-        })
-    if flavorname.disk:
-        result['disk'] = flavorname.disk.disksize
-        for i in range(flavorname.disk.nrdisks):
-            result[f'scs:disk{i}-type'] = DISKTYPE_KEY[flavorname.disk.disktype or 'n']
+    if collection['nrdisks']:
+        result['disk'] = max(collection['disk'])
+        disktype = max(collection['scs:disk0-type'], key=DISKTYPE_SORT.__getitem__)
+        for i in range(max(collection['nrdisks'])):
+            result[f'scs:disk{i}-type'] = disktype
+    names = [item[0] for item in sorted(name_collection, key=lambda item: (-len(item[0]), item[1]))]
+    for idx, name in enumerate(names):
+        result[f'scs:name-v{idx + 1}'] = name
     return result
 
 
