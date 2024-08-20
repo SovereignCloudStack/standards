@@ -165,7 +165,6 @@ def prune_results(testcases, results, checked_at=None, now=None):
             results.pop(tc_id)
             continue
         tc_result = results[tc_id]
-        value = tc_result['result']
         ch_date = tc_result.get('checked_at', checked_at)
         if ch_date is not None:
             # invalidate value if too old, but only do so if we know the date
