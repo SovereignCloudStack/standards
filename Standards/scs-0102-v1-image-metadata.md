@@ -53,7 +53,7 @@ in the [OpenStack Image documentation](https://docs.openstack.org/glance/latest/
 The following properties are considered mandatory:
 
 - `architecture`, `hypervisor_type`
-- `min_disk_size` (in GiB), `min_ram` (in MiB)
+- `min_disk` (in GiB), `min_ram` (in MiB)
 - `os_version`, `os_distro`
 - `hw_rng_model`, `hw_disk_bus` (`scsi` recommended, and then setting `hw_scsi_model` is also recommended)
 
