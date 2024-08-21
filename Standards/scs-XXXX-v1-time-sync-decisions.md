@@ -1,5 +1,5 @@
 ---
-title: Recommendations on VM clock synchronization
+title: Decision on Standardized Time Synchronization
 type: Decision Record
 status: Draft
 track: IaaS
@@ -7,26 +7,25 @@ track: IaaS
 
 ## Abstract
 
-The system clocks of virtual machines may drift over time, and will also be affected by pausing or migrating the VM.
+System clocks of virtual machines may drift over time, and will also be affected by pausing or migrating the VM.
 Ensuring a correct system time usually requires synchronization with an external time source.
-There are multiple options for VM clock synchronization which this document will explore and evaluate for use in SCS clouds.
+There are multiple options for VM clock synchronization which this document will explore and evaluate for standardization in SCS.
 
 ## Terminology
 
-Example (abbr. Ex)
-  This is the description for an example terminology.
+(TBD)
 
 ## Context
 
 Correct system time is important for the validation of TLS certificates and correlation of log entries across multiple systems.
-To counteract drifting of the system time, it is common practice to syncronise servers to a public time server via the NTP protocol.
+To counteract drifting of the system time, it is common practice to syncronize servers to a public time server via the NTP protocol.
 This requires access to the internet, however, and the network latency encountered when connecting to a public NTP server may reduce the clock precision.
 Communicating with an external NTP server will also expose small bits of information (mainly the existence of the system) to the operator of the time server.
 
 Ideally, the CSP would provide a means of time synchronization to servers, so that no outward NTP traffic is necessary.
 Doing so comes with two challenges:
 1. Providing an apropriate method of time synchronization. This could be NTP, PTP, hardware clock emulation or para-virtualization.
-2. Getting guest servers to actually use the provided time synchronization method. This may involve preconfigured images, DHCP, cloud metadata, or user documentation.
+2. Getting guest servers to actually use the provided time synchronization method. This may involve preconfigured images, DHCP, cloud metadata, or user interaction.
 
 The options for configuring time synchronisation in guests are often dependant on the method of synchronisation, so it makes most sense to discuss them in that context.
 
@@ -79,7 +78,7 @@ Master clocks will also continually broadcast synchronization messages to their 
 
 Linux has a kernel-based driver for PTP, which will provide the synchronized time through a device file, which can then be used by services such as _phc2sys_ or _chrony_ to update the system time.
 
-It is unclear if PTP would have offer any better precision than NTP in tunneled networks with virtual interfaces, and it does not seem to get any use in IaaS at all.
+It is unclear if PTP would offer any better precision than NTP in tunneled networks with virtual interfaces, and it does not seem to get any use in IaaS at all.
 
 ### Paravirtualization
 
@@ -102,11 +101,11 @@ This perspective clearly favours NTP as a standardized method of time synchroniz
 However it is still useful for a CSP to offer less portable, but more precise methods of time synchronization, especially if they are integrated into the default cloud images offered by the CSP.
 
 So, we should standardize a portable NTP setup that users can assume when developing images to work well in any SCS cloud.
-We should not try to prevent CSPs from supporting paravirtualized or other methods of time synchronization that may offer significant benefits over NTP.
+We should not try to prevent CSPs from also supporting paravirtualized or other methods of time synchronization that may offer significant benefits over NTP.
 
 ## Consequences
 
-A standardized NTP setup will allow SCS users and third party image providers to develop images that support local time synchronization accross SCS clouds.
+A standardized NTP setup will allow SCS users and third party image providers to develop images that support local time synchronization across SCS clouds.
 
 As discussed in the NTP section above, there are a number of limitations in OpenStack and related projects that a standardized NTP setup has to work with:
 
@@ -121,7 +120,3 @@ As discussed in the NTP section above, there are a number of limitations in Open
   Cloud-init's proprietary format may not be good option because of the automatic package installation in guests, but any other option will require support to be added to whatever init tool is used.
   A new NTP server key in OpenStack's standard metadata will require upstream changes, but is more likely to get supported by cloud-init or other init tools (though most seem to focus exclusively on the EC2 format).
   A custom key in the vendor data could just be defined in the standard, but would be less likely to get support by any third party tools, and thus only be useful with custom scripts or init-tool plugins.
-
-## Related Documents
-
-Related Documents, OPTIONAL
