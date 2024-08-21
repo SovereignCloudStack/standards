@@ -84,6 +84,18 @@ def db_ensure_schema_common(cur: cursor):
         name text,
         provider text
     );
+    CREATE TABLE IF NOT EXISTS report (
+        reportid SERIAL PRIMARY KEY,
+        reportuuid text UNIQUE,
+        checked_at timestamp,
+        subject text,
+        -- scopeid integer NOT NULL REFERENCES scope ON DELETE CASCADE ON UPDATE CASCADE,
+        -- let's omit the scope here because it is determined via the results, and it
+        -- is possible that future reports refer to multiple scopes
+        data jsonb,
+        rawformat text,
+        raw bytea
+    );
     ''')
 
 
