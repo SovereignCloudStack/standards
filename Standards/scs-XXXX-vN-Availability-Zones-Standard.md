@@ -186,7 +186,7 @@ Within each Availability Zone:
 - there MUST be redundancy in power supply, as in line into the deployment
 - there MUST be redundancy in external connection (e.g. internet connection or WAN-connection)
 - there MUST be redundancy in core routers
-- there SHOULD be at least two cooling systems, that are independent of each other
+- there SHOULD be redundancy in the cooling system
 
 AZs SHOULD only occur within the same region and have a low-latency interconnection with a high bandwidth.
 
