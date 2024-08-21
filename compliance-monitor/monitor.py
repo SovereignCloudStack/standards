@@ -366,10 +366,14 @@ def convert_result_rows_to_dict2(rows, scopes_lookup, grace_period_days, scopes=
     by_context = defaultdict(dict)
     scopes = set(scopes)  # also collect some ancillary information
     subjects = set(subjects)
-    for subject, scopeuuid, version, testcase, result, checked_at in rows:
+    for subject, scopeuuid, version, testcase, result, checked_at, report_uuid in rows:
         scopes.add(scopeuuid)
         subjects.add(subject)
-        by_context[(subject, scopeuuid, version)][testcase] = {'result': result, 'checked_at': checked_at}
+        by_context[(subject, scopeuuid, version)][testcase] = {
+            'result': result,
+            'checked_at': checked_at,
+            'report': report_uuid,
+        }
     results = defaultdict(dict)
     for subject in subjects:
         for scopeuuid in scopes:

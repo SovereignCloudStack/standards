@@ -303,12 +303,11 @@ def db_get_relevant_results2(
     """for each combination of scope/version/check, get the most recent test result that is still valid"""
     # find the latest result per subject/scopeuuid/version/checkid for this subject
     # DISTINCT ON is a Postgres-specific construct that comes in very handy here :)
-    # FIXME we need more results than just the latest one; namely, if the latest one is a failure,
-    #       we could still need the latest one that passed (for the grace period)
-    # we might need to include `result` into DISTINCT ON clause (and, consequently, into ORDER BY as well)
     cur.execute(sql.SQL('''
     SELECT DISTINCT ON (subject, scopeuuid, version, testcase)
-    subject, scopeuuid, version, testcase, result, checked_at FROM result2
+    result2.subject, scopeuuid, version, testcase, result, result2.checked_at, report.reportuuid
+    FROM result2
+    JOIN report ON report.reportid = result2.reportid
     {filter_condition}
     ORDER BY subject, scopeuuid, version, testcase, checked_at DESC;
     ''').format(
@@ -316,7 +315,7 @@ def db_get_relevant_results2(
             sql.SQL('approval') if approved_only else None,
             None if scopeuuid is None else sql.SQL('scopeuuid = %(scopeuuid)s'),
             None if version is None else sql.SQL('version = %(version)s'),
-            None if subject is None else sql.SQL('subject = %(subject)s'),
+            None if subject is None else sql.SQL('result2.subject = %(subject)s'),
         ),
     ), {"subject": subject, "scopeuuid": scopeuuid, "version": version})
     return cur.fetchall()
