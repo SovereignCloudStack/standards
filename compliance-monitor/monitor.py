@@ -25,7 +25,7 @@ import uvicorn
 
 from sql import (
     db_find_account, db_update_account, db_update_publickey, db_filter_publickeys, db_get_reports,
-    db_get_keys, db_insert_report, db_get_recent_results2, db_patch_approval2,
+    db_get_keys, db_insert_report, db_get_recent_results2, db_patch_approval2, db_get_report,
     db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys,
     db_patch_subject, db_get_subjects, db_insert_result2, db_get_relevant_results2,
 )
@@ -304,6 +304,21 @@ async def get_reports(
         return db_get_reports(cur, subject, limit, skip)
 
 
+@app.get("/reports/{report_uuid}")
+async def get_report(
+    account: Annotated[tuple[str, str], Depends(auth)],
+    conn: Annotated[connection, Depends(get_conn)],
+    report_uuid: str,
+):
+    with conn.cursor() as cur:
+        specs = db_get_report(cur, report_uuid)
+        if not specs:
+            raise HTTPException(status_code=404)
+        spec = specs[0]
+        check_role(account, spec['subject'], ROLES['read_any'])
+    return Response(content=json.dumps(spec, indent=2), media_type="application/json")
+
+
 @app.post("/reports")
 async def post_report(
     request: Request,
@@ -498,7 +513,7 @@ async def get_table(
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, approved_only=True)
     results2 = convert_result_rows_to_dict2(rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS)
-    result = templates_map[TEMPLATE_OVERVIEW_MD].render(results=results2)
+    result = templates_map[TEMPLATE_OVERVIEW_MD].render(results=results2, base_url='/')
     return Response(
         content=result,
         media_type='text/markdown',
@@ -515,7 +530,7 @@ async def get_pages(
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, approved_only=True)
     results2 = convert_result_rows_to_dict2(rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS)
-    result = templates_map[TEMPLATE_OVERVIEW_FRAGMENT].render(results=results2)
+    result = templates_map[TEMPLATE_OVERVIEW_FRAGMENT].render(results=results2, base_url='/')
     if part == "full":
         result = templates_map[TEMPLATE_OVERVIEW].render(fragment=result)
     return Response(

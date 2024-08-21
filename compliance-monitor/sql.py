@@ -263,6 +263,14 @@ def db_filter_publickeys(cur: cursor, accountid, predicate: callable):
         del removeids[:10]
 
 
+def db_get_report(cur: cursor, report_uuid):
+    cur.execute(
+        "SELECT data FROM report WHERE reportuuid = %(reportuuid)s;",
+        {"reportuuid": report_uuid},
+    )
+    return [row[0] for row in cur.fetchall()]
+
+
 def db_get_reports(cur: cursor, subject, limit, skip):
     cur.execute(
         sql.SQL("SELECT data FROM report {} LIMIT %(limit)s OFFSET %(skip)s;")
