@@ -22,6 +22,12 @@ There are also software HSMs available, that should be tested for their integrat
 Other Plugins in Barbican are the KMIP plugin and Vault[^1].
 They are storing the keys differently and CSPs need to make sure, that the access to the keys is configured securely.
 
+:::tip
+
+Barbican supports deploying out-of-tree drivers what enables operators to satisfy their specific needs.
+
+:::
+
 [^1]:[Barbican Plugins](https://docs.openstack.org/barbican/latest/install/barbican-backend.html)
 
 ### Policies
