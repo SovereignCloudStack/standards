@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from collections import defaultdict
 from datetime import date, datetime, timedelta
+from enum import Enum
 import json
 import os
 import os.path
@@ -13,6 +14,7 @@ from _thread import allocate_lock, get_ident
 from typing import Annotated, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
+from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from jinja2 import Environment
 from markdown import markdown
@@ -52,6 +54,7 @@ class Settings:
                 self.db_password = fileobj.read().strip()
         else:
             self.db_password = os.getenv("SCM_DB_PASSWORD", "mysecretpassword")
+        self.base_url = os.getenv("SCM_BASE_URL", '/')
         self.bootstrap_path = os.path.abspath("./bootstrap.yaml")
         self.template_path = os.path.abspath("./templates")
         self.yaml_path = os.path.abspath("../Tests")
@@ -69,20 +72,31 @@ GRACE_PERIOD_DAYS = 7
 #       http://127.0.0.1:8080/reports
 # to achieve this!
 SEP = "-----END SSH SIGNATURE-----\n&"
-TEMPLATE_OVERVIEW = 'overview.html'
-TEMPLATE_OVERVIEW_FRAGMENT = 'overview_fragment.html'
-TEMPLATE_OVERVIEW_MD = 'overview.md'
-TEMPLATE_DETAIL = 'details.html'
-TEMPLATE_DETAIL_MD = 'details.md'
-REQUIRED_TEMPLATES = (
-    TEMPLATE_OVERVIEW, TEMPLATE_OVERVIEW_FRAGMENT, TEMPLATE_OVERVIEW_MD, TEMPLATE_DETAIL, TEMPLATE_DETAIL_MD,
-)
+
+
+class ViewType(Enum):
+    markdown = "markdown"
+    page = "page"
+    fragment = "fragment"
+
+
+VIEW_DETAIL = {
+    ViewType.markdown: 'details.md',
+    ViewType.fragment: 'details.html',
+    ViewType.page: 'overview.html',
+}
+VIEW_TABLE = {
+    ViewType.markdown: 'overview.md',
+    ViewType.fragment: 'overview_fragment.html',
+    ViewType.page: 'overview.html',
+}
+REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_DETAIL, VIEW_TABLE) for fn in view.values()))
+
 
 
 # do I hate these globals, but I don't see another way with these frameworks
 app = FastAPI()
-security = HTTPBasic(realm="Compliance monitor", auto_error=True)
-optional_security = HTTPBasic(realm="Compliance monitor", auto_error=False)
+security = HTTPBasic(realm="Compliance monitor", auto_error=True)  # use False for optional login
 settings = Settings()
 # see https://passlib.readthedocs.io/en/stable/narr/quickstart.html
 cryptctx = CryptContext(
@@ -261,10 +275,6 @@ async def auth(request: Request, conn: Annotated[connection, Depends(get_conn)])
     return get_current_account(await security(request), conn)
 
 
-async def optional_auth(request: Request, conn: Annotated[connection, Depends(get_conn)]):
-    return get_current_account(await optional_security(request), conn)
-
-
 def check_role(account: Optional[tuple[str, str]], subject: str = None, roles: int = 0):
     """Raise an HTTPException with code 401 if `account` has insufficient permissions.
 
@@ -376,7 +386,9 @@ async def post_report(
 ASTERISK_LOOKUP = {'effective': '', 'draft': '*', 'warn': '†'}
 
 
-def convert_result_rows_to_dict2(rows, scopes_lookup, grace_period_days, scopes=(), subjects=()):
+def convert_result_rows_to_dict2(
+    rows, scopes_lookup, grace_period_days=0, scopes=(), subjects=(), include_report=False,
+):
     # collect result per subject/scope/version
     by_context = defaultdict(dict)
     scopes = set(scopes)  # also collect some ancillary information
@@ -384,11 +396,10 @@ def convert_result_rows_to_dict2(rows, scopes_lookup, grace_period_days, scopes=
     for subject, scopeuuid, version, testcase, result, checked_at, report_uuid in rows:
         scopes.add(scopeuuid)
         subjects.add(subject)
-        by_context[(subject, scopeuuid, version)][testcase] = {
-            'result': result,
-            'checked_at': checked_at,
-            'report': report_uuid,
-        }
+        scenario_results = by_context[(subject, scopeuuid, version)]
+        scenario_results[testcase] = dict(result=result, checked_at=checked_at)
+        if include_report:
+            scenario_results[testcase].update(report=report_uuid)
     results = defaultdict(dict)
     for subject in subjects:
         for scopeuuid in scopes:
@@ -455,88 +466,99 @@ def convert_result_rows_to_dict2(rows, scopes_lookup, grace_period_days, scopes=
 @app.get("/status")
 async def get_status(
     request: Request,
-    account: Annotated[Optional[tuple[str, str]], Depends(optional_auth)],
+    account: Annotated[Optional[tuple[str, str]], Depends(auth)],
     conn: Annotated[connection, Depends(get_conn)],
-    subject: str = None,
-    scopeuuid: str = None, version: str = None,
-    privileged_view: bool = False,
+    subject: str = None, scopeuuid: str = None, version: str = None,
 ):
-    if privileged_view:
-        check_role(account, subject, ROLES['read_any'])
+    check_role(account, subject, ROLES['read_any'])
     # note: text/html will be the default, but let's start with json to get the logic right
     accept = request.headers['accept']
     if 'application/json' not in accept and '*/*' not in accept:
         # see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/406
         raise HTTPException(status_code=406, detail="client needs to accept application/json")
     with conn.cursor() as cur:
-        rows2 = db_get_relevant_results2(
-            cur, subject, scopeuuid, version,
-            approved_only=not privileged_view,
-        )
-    grace_period_days = None if privileged_view else GRACE_PERIOD_DAYS
-    return convert_result_rows_to_dict2(rows2, get_scopes(), grace_period_days=grace_period_days)
+        rows2 = db_get_relevant_results2(cur, subject, scopeuuid, version, approved_only=False)
+    return convert_result_rows_to_dict2(rows2, get_scopes(), include_report=True)
 
 
-@app.get("/views/detail/{subject}/{scopeuuid}")
+def render_view(view, view_type, results, base_url='/', title=None):
+    media_type = {ViewType.markdown: 'text/markdown'}.get(view_type, 'text/html')
+    stage1 = stage2 = view[view_type]
+    if view_type is ViewType.page:
+        stage1 = view[ViewType.fragment]
+    fragment = templates_map[stage1].render(results=results, base_url=base_url)
+    if stage1 != stage2:
+        fragment = templates_map[stage2].render(fragment=fragment, title=title)
+    return Response(content=fragment, media_type=media_type)
+
+
+@app.get("/{view_type}/detail/{subject}/{scopeuuid}")
 async def get_detail(
     request: Request,
-    account: Annotated[Optional[tuple[str, str]], Depends(optional_auth)],
     conn: Annotated[connection, Depends(get_conn)],
-    subject: str = None,
-    scopeuuid: str = None, version: str = None,
-    markdown: bool = False,
-    privileged_view: bool = False,
+    view_type: ViewType,
+    subject: str,
+    scopeuuid: str,
 ):
-    if privileged_view:
-        check_role(account, subject, ROLES['read_any'])
     with conn.cursor() as cur:
-        rows2 = db_get_relevant_results2(
-            cur, subject, scopeuuid, version,
-            approved_only=not privileged_view,
-        )
+        rows2 = db_get_relevant_results2(cur, subject, scopeuuid, approved_only=True)
     results2 = convert_result_rows_to_dict2(
         rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS,
         subjects=(subject, ), scopes=(scopeuuid, ),
     )
-    template_key = TEMPLATE_DETAIL_MD if markdown else TEMPLATE_DETAIL
-    media_type = 'text/markdown' if markdown else 'text/html'
-    result = templates_map[template_key].render(results=results2, base_url='/')
-    return Response(content=result, media_type=media_type)
+    return render_view(VIEW_DETAIL, view_type, results2, base_url=settings.base_url, title=f'{subject} compliance')
 
 
-@app.get("/views/table")
+@app.get("/{view_type}/detail_full/{subject}/{scopeuuid}")
+async def get_detail_full(
+    request: Request,
+    account: Annotated[Optional[tuple[str, str]], Depends(auth)],
+    conn: Annotated[connection, Depends(get_conn)],
+    view_type: ViewType,
+    subject: str,
+    scopeuuid: str,
+):
+    check_role(account, subject, ROLES['read_any'])
+    with conn.cursor() as cur:
+        rows2 = db_get_relevant_results2(cur, subject, scopeuuid, approved_only=False)
+    results2 = convert_result_rows_to_dict2(
+        rows2, get_scopes(), include_report=True, subjects=(subject, ), scopes=(scopeuuid, ),
+    )
+    return render_view(VIEW_DETAIL, view_type, results2, base_url=settings.base_url, title=f'{subject} compliance')
+
+
+@app.get("/{view_type}/table")
 async def get_table(
     request: Request,
-    account: Annotated[Optional[tuple[str, str]], Depends(optional_auth)],
     conn: Annotated[connection, Depends(get_conn)],
+    view_type: ViewType,
 ):
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, approved_only=True)
     results2 = convert_result_rows_to_dict2(rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS)
-    result = templates_map[TEMPLATE_OVERVIEW_MD].render(results=results2, base_url='/')
-    return Response(
-        content=result,
-        media_type='text/markdown',
-    )
+    return render_view(VIEW_TABLE, view_type, results2, base_url=settings.base_url, title="SCS compliance overview")
+
+
+@app.get("/{view_type}/table_full")
+async def get_table_full(
+    request: Request,
+    account: Annotated[Optional[tuple[str, str]], Depends(auth)],
+    conn: Annotated[connection, Depends(get_conn)],
+    view_type: ViewType,
+):
+    check_role(account, None, ROLES['read_any'])
+    with conn.cursor() as cur:
+        rows2 = db_get_relevant_results2(cur, approved_only=False)
+    results2 = convert_result_rows_to_dict2(rows2, get_scopes())
+    return render_view(VIEW_TABLE, view_type, results2, base_url=settings.base_url, title="SCS compliance overview")
 
 
 @app.get("/pages")
 async def get_pages(
     request: Request,
-    account: Annotated[Optional[tuple[str, str]], Depends(optional_auth)],
     conn: Annotated[connection, Depends(get_conn)],
-    part: str = "full",
 ):
-    with conn.cursor() as cur:
-        rows2 = db_get_relevant_results2(cur, approved_only=True)
-    results2 = convert_result_rows_to_dict2(rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS)
-    result = templates_map[TEMPLATE_OVERVIEW_FRAGMENT].render(results=results2, base_url='/')
-    if part == "full":
-        result = templates_map[TEMPLATE_OVERVIEW].render(fragment=result)
-    return Response(
-        content=result,
-        media_type='text/html',
-    )
+    return RedirectResponse("/page/table")
 
 
 @app.get("/results")
