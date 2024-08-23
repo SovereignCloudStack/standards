@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<title>SCS compliance details</title>
+<style>
+td.description > p {margin-top:0;margin-bottom:0;}
+</style>
+</head>
+<body>
+{% for subject, subject_result in results.items() -%}
+<h1>{{ subject }}</h1>
+
+{% for scopeuuid, scope_result in subject_result.items() -%}
+
+{% if not scope_result.relevant -%}
+<h2>{{ scope_result.name }}</h2>
+<p>No recent test results available.</p>
+{% endif -%}
+{% for version in scope_result.relevant -%}
+{% set version_result = scope_result.versions[version] -%}
+<h2>{{ scope_result.name }} {{ version }} ({{ version_result.validity }}): {{ version_result.result | verdict }}</h2>
+
+{% for target, target_result in version_result.targets.items() -%}
+<h3>Target {{ target }}: {{ target_result.result | verdict }}</h3>
+
+<table>
+<tr><th>testcase id</th><th>result</th><th>description</th></tr>
+{% for testcase_id in target_result.testcases -%}
+{% set testcase = version_result.testcases[testcase_id] -%}
+{% set res = version_result.results[testcase_id] if testcase_id in version_result.results else dict(result=0) -%}
+<tr><td>{% if res.result != 1 %}⚠️ {% endif %}{{ testcase.id }}</td><td{% if res.report %} title="{{ res.report }} ({{ res.checked_at }})"{% endif %}>{% if res.report %}<a href="{{ base_url }}reports/{{ res.report }}">{% endif %}{{ res.result | verdict_check }}{% if res.report %}</a>{% endif %}</td><td class="description">{{ testcase.description | trim | markdown }}</td></tr>
+{% endfor -%}
+</table>
+{% endfor -%}
+{% endfor -%}
+{% endfor -%}
+{% endfor -%}
+</body>
+</html>
