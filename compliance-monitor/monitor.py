@@ -395,10 +395,10 @@ def convert_result_rows_to_dict2(
     for subject, scopeuuid, version, testcase, result, checked_at, report_uuid in rows:
         scopes.add(scopeuuid)
         subjects.add(subject)
-        scenario_results = by_context[(subject, scopeuuid, version)]
-        scenario_results[testcase] = dict(result=result, checked_at=checked_at)
+        tc_result = dict(result=result, checked_at=checked_at)
         if include_report:
-            scenario_results[testcase].update(report=report_uuid)
+            tc_result.update(report=report_uuid)
+        by_context[(subject, scopeuuid, version)][testcase] = tc_result
     results = defaultdict(dict)
     for subject in subjects:
         for scopeuuid in scopes:
