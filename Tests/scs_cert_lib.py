@@ -156,25 +156,6 @@ def test_selectors(selectors: list[list[list[str]]], tags: list[str]):
     return any(test_selector(selector, tags) for selector in selectors)
 
 
-def prune_results(testcases, results, checked_at=None, now=None):
-    """drop any result that is too old"""
-    testcase_lookup = {testcase['id']: testcase for testcase in testcases}
-    for tc_id in list(results):  # can't use .items because we are modifying
-        testcase = testcase_lookup.get(tc_id)
-        if testcase is None:
-            results.pop(tc_id)
-            continue
-        tc_result = results[tc_id]
-        ch_date = tc_result.get('checked_at', checked_at)
-        if ch_date is not None:
-            # invalidate value if too old, but only do so if we know the date
-            expires_at = add_period(ch_date, testcase.get('lifetime'))
-            if now is None:
-                now = datetime.now()
-            if now >= expires_at:
-                results.pop(tc_id)  # too old is equivalent with absent
-
-
 class TestSuite:
     def __init__(self, name):
         self.name = name

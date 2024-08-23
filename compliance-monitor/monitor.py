@@ -34,14 +34,14 @@ from sql import (
 
 
 try:
-    from scs_cert_lib import load_spec, annotate_validity, compile_suite, prune_results
+    from scs_cert_lib import load_spec, annotate_validity, compile_suite, add_period
 except ImportError:
     # the following course of action is not unproblematic because the Tests directory will be
     # mounted to the Docker instance, hence it's hard to tell what version we are gonna get;
     # however, unlike the reloading of the config, the import only happens once, and at that point
     # in time, both monitor.py and scs_cert_lib.py should come from the same git checkout
     import sys; sys.path.insert(0, os.path.abspath('../Tests'))  # noqa: E702
-    from scs_cert_lib import load_spec, annotate_validity, compile_suite, prune_results
+    from scs_cert_lib import load_spec, annotate_validity, compile_suite, add_period
 
 
 class Settings:
@@ -72,6 +72,7 @@ GRACE_PERIOD_DAYS = 7
 #       http://127.0.0.1:8080/reports
 # to achieve this!
 SEP = "-----END SSH SIGNATURE-----\n&"
+ASTERISK_LOOKUP = {'effective': '', 'draft': '*', 'warn': '†'}
 
 
 class ViewType(Enum):
@@ -207,15 +208,69 @@ def import_bootstrap(bootstrap_path, conn):
         conn.commit()
 
 
-def precompute_targets(version):
-    suite = compile_suite(f"{version['version']}", version['include'])
-    return {
-        'suite': suite,
-        'targets': {
-            tname: suite.select(tname, target_spec)
+class PrecomputedVersion:
+    def __init__(self, version):
+        self.name = version['version']
+        self.suite = compile_suite(self.name, version['include'])
+        self.validity = version['validity']
+        self.targets = {
+            tname: self.suite.select(tname, target_spec)
             for tname, target_spec in version['targets'].items()
         }
-    }
+
+    def evaluate(self, scenario_results):
+        target_results = {}
+        for tname, suite in self.targets.items():
+            by_value = suite.evaluate(scenario_results)
+            target_results[tname] = {
+                'testcases': [testcase['id'] for testcase in suite.testcases],
+                'num_passed': len(by_value[1]),
+                'num_missing': len(by_value[0]),
+                'num_failed': len(by_value[-1]),
+                'result': -1 if by_value[-1] else 0 if by_value[0] else 1,
+            }
+        return {
+            'testcases': {tc['id']: tc for tc in self.suite.testcases},
+            'results': scenario_results,
+            'result': target_results['main']['result'],
+            'targets': target_results,
+            'validity': self.validity,
+        }
+
+
+class PrecomputedScope:
+    def __init__(self, spec):
+        self.name = spec['name']
+        self.spec = spec
+        self.versions = {
+            version['version']: PrecomputedVersion(version)
+            for version in spec['versions'].values()
+        }
+
+    def evaluate(self, scope_results):
+        version_results = {
+            vname: self.versions[vname].evaluate(scenario_results)
+            for vname, scenario_results in scope_results.items()
+        }
+        by_validity = defaultdict(list)
+        for vname in scope_results:
+            by_validity[self.versions[vname].validity].append(vname)
+        relevant = list(by_validity['effective'])
+        # only show "warn" versions if no effective ones are passed
+        if not any(version_results[vname]['result'] == 1 for vname in relevant):
+            relevant.extend(by_validity['warn'])
+        relevant.extend(by_validity['draft'])
+        passed = [vname for vname in relevant if version_results[vname]['result'] == 1]
+        return {
+            'name': self.name,
+            'versions': version_results,
+            'relevant': relevant,
+            'passed': passed,
+            'passed_str': ', '.join([
+                vname + ASTERISK_LOOKUP[self.versions[vname].validity]
+                for vname in passed
+            ]),
+        }
 
 
 def import_cert_yaml(yaml_path, target_dict):
@@ -223,13 +278,12 @@ def import_cert_yaml(yaml_path, target_dict):
     with open(yaml_path, "r") as fileobj:
         spec = load_spec(yaml.load(fileobj.read()))
     annotate_validity(spec['timeline'], spec['versions'], date.today())
-    target_dict[spec['uuid']] = {
-        'spec': spec,
-        'versions': {
-            version['version']: precompute_targets(version)
-            for version in spec['versions'].values()
-        }
-    }
+    scope_uuid = spec['uuid']
+    target_dict[scope_uuid] = precomputed_scope = PrecomputedScope(spec)
+    # add quick direct lookup for testcases
+    for vname, precomputed_version in precomputed_scope.versions.items():
+        for testcase in precomputed_version.suite.testcases:
+            target_dict[(scope_uuid, vname, testcase['id'])] = testcase
 
 
 def import_cert_yaml_dir(yaml_path, target_dict):
@@ -248,6 +302,7 @@ def get_scopes():
         if current is None:
             _scopes[ident] = current = {'_counter': -1}
     if current['_counter'] != counter:
+        current.clear()
         import_cert_yaml_dir(yaml_path, current)
         current['_counter'] = counter
     return current
@@ -382,89 +437,41 @@ async def post_report(
     conn.commit()
 
 
-ASTERISK_LOOKUP = {'effective': '', 'draft': '*', 'warn': '†'}
-
-
 def convert_result_rows_to_dict2(
     rows, scopes_lookup, grace_period_days=0, scopes=(), subjects=(), include_report=False,
 ):
-    # collect result per subject/scope/version
-    by_context = defaultdict(dict)
-    scopes = set(scopes)  # also collect some ancillary information
-    subjects = set(subjects)
-    for subject, scopeuuid, version, testcase, result, checked_at, report_uuid in rows:
-        scopes.add(scopeuuid)
-        subjects.add(subject)
-        tc_result = dict(result=result, checked_at=checked_at)
-        if include_report:
-            tc_result.update(report=report_uuid)
-        by_context[(subject, scopeuuid, version)][testcase] = tc_result
-    results = defaultdict(dict)
-    for subject in subjects:
-        for scopeuuid in scopes:
-            precomputed = scopes_lookup.get(scopeuuid)
-            results[subject][scopeuuid] = {
-                "name": scopeuuid if precomputed is None else precomputed['spec']['name'],
-                "versions": defaultdict(dict),
-                "result": 0,
-            }
     now = datetime.now()
     if grace_period_days:
         now -= timedelta(days=grace_period_days)
-    for context, scenario_results in by_context.items():
-        subject, scopeuuid, version = context
-        precomputed = scopes_lookup.get(scopeuuid)
-        if precomputed is None:
+    # collect result per subject/scope/version
+    preliminary = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))  # subject -> scope -> version
+    missing = set()
+    for subject, scope_uuid, version, testcase_id, result, checked_at, report_uuid in rows:
+        testcase = scopes_lookup.get((scope_uuid, version, testcase_id))
+        if testcase is None:
+            missing.add((scope_uuid, version, testcase_id))
             continue
-        precomputed_version = precomputed['versions'].get(version)
-        if precomputed_version is None:
-            # this version is missing in the specs that we have (maybe we should reload those)
-            # well, then we simply can't use these results right now
+        # drop value if too old
+        expires_at = add_period(checked_at, testcase.get('lifetime'))
+        if now >= expires_at:
             continue
-        testcases = precomputed_version['suite'].testcases
-        prune_results(testcases, scenario_results, now=now)
-        if not scenario_results:
-            continue
-        validity = precomputed_version['validity']
-        target_results = {}
-        for tname, suite in precomputed_version['targets'].items():
-            by_value = suite.evaluate(scenario_results)
-            target_results[tname] = {
-                'testcases': [testcase['id'] for testcase in suite.testcases],
-                'num_passed': len(by_value[1]),
-                'num_missing': len(by_value[0]),
-                'num_failed': len(by_value[-1]),
-                'result': -1 if by_value[-1] else 0 if by_value[0] else 1,
-            }
-        results[subject][scopeuuid]["versions"][version] = {
-            'testcases': {tc['id']: tc for tc in testcases},
-            'results': scenario_results,
-            'result': target_results['main']['result'],
-            'targets': target_results,
-            'validity': validity,
+        tc_result = dict(result=result, checked_at=checked_at)
+        if include_report:
+            tc_result.update(report=report_uuid)
+        preliminary[subject][scope_uuid][version][testcase_id] = tc_result
+    if missing:
+        logger.warning('missing objects: ' + ', '.join(missing))
+    # make sure the requested subjects and scopes are present (facilitates writing jinja2 templates) 
+    for subject in subjects:
+        for scope in scopes:
+            _ = preliminary[subject][scope]
+    return {
+        subject: {
+            scope_uuid: scopes_lookup[scope_uuid].evaluate(scope_result)
+            for scope_uuid, scope_result in subject_result.items()
         }
-        if target_results['main']['result'] == 1 and validity in ('effective', 'warn'):
-            results[subject][scopeuuid]["result"] = 1
-    for subject, subject_result in results.items():
-        for scopeuuid, scope_result in subject_result.items():
-            # sort versions into buckets according to validity status
-            versions = scope_result['versions']
-            buckets = defaultdict(list)
-            for vname, val in versions.items():
-                buckets[val['validity']].append(vname)
-            relevant = list(buckets['effective'])
-            # only show "warn" versions if no effective ones are passed
-            if not any(versions[vname]['result'] == 1 for vname in relevant):
-                relevant.extend(buckets['warn'])
-            relevant.extend(buckets['draft'])
-            passed = [vname for vname in relevant if versions[vname]['result'] == 1]
-            scope_result['relevant'] = relevant
-            scope_result['passed'] = passed
-            scope_result['passed_str'] = ', '.join([
-                vname + ASTERISK_LOOKUP[versions[vname]['validity']]
-                for vname in passed
-            ])
-    return results
+        for subject, subject_result in preliminary.items()
+    }
 
 
 @app.get("/status")
@@ -631,10 +638,14 @@ async def post_subjects(
     conn.commit()
 
 
-def passed_filter(scopedata):
-    if not scopedata or not scopedata.get('versions'):
+def passed_filter(results, subject, scope):
+    subject_data = results.get(subject)
+    if not subject_data:
         return ""
-    return scopedata['passed_str']
+    scope_data = subject_data.get(scope)
+    if not scope_data:
+        return ""
+    return scope_data['passed_str']
 
 
 def verdict_filter(value):
