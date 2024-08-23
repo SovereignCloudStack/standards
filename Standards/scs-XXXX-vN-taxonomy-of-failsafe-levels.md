@@ -41,19 +41,21 @@ Based on our research, no similar standardized classification scheme seems to ex
 Something close but also very detailed is the [BSI-Standard 200-3 (german)][bsi-200-3] published by the German Federal Office for Information Security.
 As we want to focus on IaaS and K8s resources and also have an easily understandable structure that can be applied in standards covering replication, redundancy and backups, this document is too detailed.
 
-<!--
-TODO: goals vs. non-goals
-TODO: Resolve confusion between high availability vs. disaster recovery vs. redundancy vs. backups
-TODO: What time frame do we look at? (so called Recovery Time Objecte aka RTO)
-TODO: how does this relate to Business Continuity Planning (BCP)
--->
-
 ### Goal of this Decision Record
 
 The SCS wants to classify levels of failure cases according to their impact and the respective measures CSPs can implement to prepare for each level.
 Standards that deal with redundancy or backups or recovery SHOULD refer to the levels of this standard.
 Thus every reader knows, up to which level of failsafeness the implementation of the standard works.
 Reader then should be able to abstract what kind of other measures they have to apply, to reach the failsafe lavel they want to reach.
+
+:::caution
+
+This document will not be a replacement for a risk analysis.
+Every CSP and every Customer (user of IaaS or KaaS resources) need to do a risk analysis of their own.
+Also the differentiation of failure cases in classes, may not be an ideal basis for Business Continuity Planning.
+It may be used to get general hints and directions though.
+
+:::
 
 ### Differentiation between failsafe levels and high availability, disaster recovery, redundancy and backups
 
@@ -133,10 +135,15 @@ But beforehand, we will describe the considered failure scenarios and the resour
 The following failure scenarios have been considered for the proposed failsafe levels.
 For each failure scenario, we estimate the probability of occurence and the (worst case) damage caused by the scenario.
 Furthermore, the corresponding minimum failsafe level covering that failure scenario is given.
+The following table give a coarse view over the probabilities, that are used to describe the occurance of failure cases:
 
-<!--
-TODO: define the meaning of our probabilities
--->
+| Probability | Meaning |
+|-----------|----|
+| Very Low  | Occurs at most once a decade OR needs extremly unlikely circumstances. |
+| Low       | Occurs at most once a year OR needs very unlikely circumstances.       |
+| Medium    | Occurs more than one time a year, up to one time a month.              |
+| High      | Occurs more than once a month and up to a daily basis.                 |
+| Very High | Occurs within minutes.                                                 |
 
 #### Hardware Related
 
@@ -156,8 +163,8 @@ Note that probability for these scenarios is dependent on the location.
 
 | Failure Scenario | Probability | Consequences | Failsafe Level Coverage |
 |----|-----|----|----|
-| Fire | Medium | permanent Disk and Host loss in the affected zone | L3 |
-| Flood | Low | permanent Disk and Host loss in the affected region | L4 |
+| Fire | Low | permanent Disk and Host loss in the affected zone | L3 |
+| Flood | Very Low | permanent Disk and Host loss in the affected region | L4 |
 | Earthquake | Very Low | permanent Disk and Host loss in the affected region | L4 |
 | Storm/Tornado | Low | permanent Disk and Host loss in the affected region | L4 |
 
@@ -169,8 +176,8 @@ There can be measures taken, to reduce the probability and severity of a floodin
 
 | Failure Scenario | Probability | Consequences | Failsafe Level Coverage |
 |----|-----|----|----|
-| Software bug (major) | Low | permanent loss or compromise of data that trigger the bug up to data on the whole physical machine | L3 |
-| Software bug (minor) | High | temporary or partial loss or compromise of data | L1 |
+| Software bug (major) | Low to Medium | permanent loss or compromise of data that trigger the bug up to data on the whole physical machine | L3 |
+| Software bug (minor) | Medium to High | temporary or partial loss or compromise of data | L1 |
 
 Many software components have lots of lines of code and cannot be proven correct in their whole functionality.
 They are tested instead with at best enough test cases to check every interaction.
@@ -193,7 +200,7 @@ CSPs should be in contact with people triaging and patching such bugs, to be inf
 |----|-----|----|----|
 | Minor operating error | High | Temporary outage | L1 |
 | Major operating error | Low | Permanent loss of data | L3 |
-| Cyber attack (minor) | High | permanent loss or compromise of data on affected Disk and Host | L1 |
+| Cyber attack (minor) | Very High | permanent loss or compromise of data on affected Disk and Host | L1 |
 | Cyber attack (major) | Medium | permanent loss or compromise of data on affected Disk and Host | L3 |
 
 Mistakes in maintaining a data center will always happen.
@@ -216,7 +223,7 @@ Using the definition of levels established in this decision record throughout al
 | Resource           | Explanation                                                                                                                              | Affected by Level |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
 | Ephemeral VM       | Equals the `server` resource in Nova, booting from ephemeral storage.                                                                    | L1, L2, L3, L4    |
-| Volume-based VM    | Equals the `server` resource in Nova, booting from a volume.                                                                             | L2, L3, L4        | 
+| Volume-based VM    | Equals the `server` resource in Nova, booting from a volume.                                                                             | L2, L3, L4        |
 | Ephemeral Storage  | Disk storage directly supplied to a virtual machine by Nova. Different from volumes.                                                     | L1, L2, L3, L4    |
 | Ironic Machine     | A physical host managed by Ironic or as a `server` resource in Nova.                                                                     | L1, L2, L3, L4    |
 | (Glance) Image     | IaaS resource usually storing raw disk data. Managed by the Glance service.                                                              | (L1), L2, L3, L4  |
@@ -245,51 +252,3 @@ The following table gives an overview about certain resources on the KaaS Layer 
 | PersistentVolumeClaim (PVC) | Persistent storage that can be bound and mounted to a pod.                                                                      | ???               |
 
 Also see [Kubernetes Glossary](https://kubernetes.io/docs/reference/glossary/).
-
-## Old sections
-
-### Impact of the Failure Scenarios
-
-These failure scenarios can result in temporary (T) or permanent (P) loss of the resource or data within.
-Additionally, there are a lot of resources in IaaS alone that are more or less affected by these failure scenarios.
-The following tables shows the impact **when no redundancy or failure safety measure is in place**, i.e., when
-**not even failsafe level 1 is fulfilled**.
-
-TODO: why should we do that?
-
-#### Impact on OpenStack Resources (IaaS layer)
-
-TODO: this table is getting difficult to maintain
-
-| Resource | Disk Loss | Node Loss | Rack Loss | Power Loss | Natural Catastrophy | Cyber Threat | Software Bug |
-|----|----|----|----|----|----|----|----|
-| Image | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | P |
-| Volume | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | P |
-| User Data on RAM /CPU | | P | P | P | P | T/P | P |
-| volume-based VM | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | P |
-| ephemeral-based VM | P (if on disk) | P | P | T | P (T if lucky) | T/P | P |
-| Ironic-based VM | P (all data on disk) | P | P | T | P (T if lucky) | T/P | P |
-| Secret | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | P |
-| network configuration (DB objects) | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | P |
-| network connectivity (materialization) | | T (if on node) | T/P | T | P (T if lucky) | T/P | T |
-| floating IP | P (if on disk) | T (if on node) | T/P | T | P (T if lucky) | T/P | T |
-
-For some cases, this only results in temporary unavailability and cloud infrastructures usually have certain mechanisms in place to avoid data loss, like redundancy in storage backends and databases.
-So some of these outages are easier to mitigate than others.
-
-#### Impact on Kubernetes Resources (KaaS layer)
-
-:::note
-
-In case the KaaS layer runs on top of IaaS layer, the impacts described in the above table apply for the KaaS layer as well.
-
-:::
-
-| Resource | Disk Loss | Node Loss | Rack Loss | Power Loss | Natural Catastrophy | Cyber Threat | Software Bug |
-|----|----|----|----|----|----|----|----|
-|Node|P| | | | | |T/P|
-|Kubelet|T| | | | | |T/P|
-|Pod|T| | | | | |T/P|
-|PVC|P| | | | | |P|
-|API Server|T| | | | | |T/P|
-
