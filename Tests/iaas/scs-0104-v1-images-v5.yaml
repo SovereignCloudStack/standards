@@ -12,7 +12,9 @@ images:
   - https://cdimage.debian.org/cdimage/cloud/bookworm/
   status: recommended
 - name: "ubuntu-capi-image"
-  name_scheme: "ubuntu-capi-image v[0-9]\\.[0-9]+(\\.[0-9]+)?"
+  # this name_scheme uses `-` to separate base name "ubuntu-capi-image" from version
+  # latest openstack-image-manager can be told to use `-` by setting `separator: "-"` on the image
+  name_scheme: "ubuntu-capi-image-v[0-9]\\.[0-9]+(\\.[0-9]+)?"
   source: https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube
   status: recommended
 # optional
