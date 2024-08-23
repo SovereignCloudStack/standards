@@ -3,6 +3,7 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta
 from enum import Enum
 import json
+import logging
 import os
 import os.path
 from shutil import which
@@ -31,6 +32,9 @@ from sql import (
     db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys,
     db_patch_subject, db_get_subjects, db_insert_result2, db_get_relevant_results2,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 try:
@@ -461,7 +465,7 @@ def convert_result_rows_to_dict2(
         preliminary[subject][scope_uuid][version][testcase_id] = tc_result
     if missing:
         logger.warning('missing objects: ' + ', '.join(missing))
-    # make sure the requested subjects and scopes are present (facilitates writing jinja2 templates) 
+    # make sure the requested subjects and scopes are present (facilitates writing jinja2 templates)
     for subject in subjects:
         for scope in scopes:
             _ = preliminary[subject][scope]
@@ -657,6 +661,7 @@ def verdict_check_filter(value):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
     env.filters.update(
         passed=passed_filter,
         verdict=verdict_filter,
