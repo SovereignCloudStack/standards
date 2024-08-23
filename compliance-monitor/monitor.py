@@ -93,7 +93,6 @@ VIEW_TABLE = {
 REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_DETAIL, VIEW_TABLE) for fn in view.values()))
 
 
-
 # do I hate these globals, but I don't see another way with these frameworks
 app = FastAPI()
 security = HTTPBasic(realm="Compliance monitor", auto_error=True)  # use False for optional login
