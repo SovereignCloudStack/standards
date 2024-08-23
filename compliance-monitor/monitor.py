@@ -416,13 +416,18 @@ def convert_result_rows_to_dict2(
         precomputed = scopes_lookup.get(scopeuuid)
         if precomputed is None:
             continue
-        testcases = precomputed['versions'][version]['suite'].testcases
+        precomputed_version = precomputed['versions'].get(version)
+        if precomputed_version is None:
+            # this version is missing in the specs that we have (maybe we should reload those)
+            # well, then we simply can't use these results right now
+            continue
+        testcases = precomputed_version['suite'].testcases
         prune_results(testcases, scenario_results, now=now)
         if not scenario_results:
             continue
-        validity = precomputed['spec']['versions'][version]['validity']
+        validity = precomputed_version['validity']
         target_results = {}
-        for tname, suite in precomputed['versions'][version]['targets'].items():
+        for tname, suite in precomputed_version['targets'].items():
             by_value = suite.evaluate(scenario_results)
             target_results[tname] = {
                 'testcases': [testcase['id'] for testcase in suite.testcases],
@@ -452,7 +457,7 @@ def convert_result_rows_to_dict2(
             if not any(versions[vname]['result'] == 1 for vname in relevant):
                 relevant.extend(buckets['warn'])
             relevant.extend(buckets['draft'])
-            passed = [vname for fname in relevant if versions[vname]['result'] == 1]
+            passed = [vname for vname in relevant if versions[vname]['result'] == 1]
             scope_result['relevant'] = relevant
             scope_result['passed'] = passed
             scope_result['passed_str'] = ', '.join([
