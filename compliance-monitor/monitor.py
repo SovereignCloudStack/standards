@@ -84,11 +84,7 @@ cryptctx = CryptContext(
     schemes=('argon2', 'bcrypt'),
     deprecated='auto',
 )
-env = Environment()
-env.filters.update(
-    passed=lambda scopedata:
-        ", ".join(key for key, val in scopedata['versions'].items() if val == 1) if scopedata else "",
-)
+env = Environment()  # populate this on startup (final section of this file)
 templates_map = {
     k: None for k in REQUIRED_TEMPLATES
 }
@@ -378,13 +374,13 @@ def convert_result_rows_to_dict2(rows, scopes_lookup, grace_period_days):
         precomputed = scopes_lookup.get(scopeuuid)
         if precomputed is None:
             continue
+        validity = precomputed['spec']['versions'][version]['validity']
         main_suite = precomputed['versions'][version]['targets']['main']
         by_result = main_suite.evaluate(scenario_results, now=now)
         missing, failed = by_result[0], by_result[-1]
         total_result = -1 if failed else 0 if missing else 1
-        results[subject][scopeuuid]["versions"][version] = total_result
-        if total_result == 1:
-            # FIXME also check that the version is valid
+        results[subject][scopeuuid]["versions"][version] = {'result': total_result, 'validity': validity}
+        if total_result == 1 and validity in ('effective', 'warn'):
             results[subject][scopeuuid]["result"] = 1
     return results
 
@@ -515,7 +511,24 @@ async def post_subjects(
     conn.commit()
 
 
+def passed_filter(scopedata):
+    if not scopedata or not scopedata.get('versions'):
+        return ""
+    # sort passed versions into buckets according to validity status
+    buckets = defaultdict(list)
+    for vname, val in scopedata['versions'].items():
+        if val['result'] != 1:
+            continue
+        buckets[val['validity']].append(vname)
+    # only show "warn" versions if no effective ones are passed
+    passed = buckets['effective'] or [vname + '†' for vname in buckets['warn']]
+    # append draft versions
+    passed.extend([vname + '*' for vname in buckets['draft']])
+    return ", ".join(passed)
+
+
 if __name__ == "__main__":
+    env.filters.update(passed=passed_filter)
     with mk_conn(settings=settings) as conn:
         db_ensure_schema(conn)
         import_bootstrap(settings.bootstrap_path, conn=conn)
