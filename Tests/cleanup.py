@@ -82,6 +82,18 @@ class Janitor:
         for port in ports:
             if port.device_owner:
                 continue
+            # Filter for IP range 10.1.0.0/24
+            found = False
+            fixed_adrs = port.fixed_ips
+            for fixed_adr in fixed_adrs:
+                ip_addr = fixed_adr["ip_address"]
+                if not ip_addr:
+                    continue
+                if ip_addr.startswith("10.1.0."):
+                    found = True
+                    continue
+            if not found:
+                continue
             logger.info(port.id)
             self.conn.network.delete_port(port)
 
@@ -148,8 +160,10 @@ class Janitor:
         # Note: FIPs have no name, so we might clean up unrelated
         #  currently unused FIPs here.
         logger.debug("clean up floating ips")
-        floating_ips = list(self.conn.search_floating_ips(filters={"attached": False}))
+        floating_ips = list(self.conn.search_floating_ips())
         for floating_ip in floating_ips:
+            if floating_ip["port_id"]:
+                continue
             logger.info(floating_ip.floating_ip_address)
             self.conn.delete_floating_ip(floating_ip.id)
 
