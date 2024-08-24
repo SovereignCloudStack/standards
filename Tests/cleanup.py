@@ -83,6 +83,9 @@ class Janitor:
             if port.device_owner:
                 continue
             # Filter for IP range 10.1.0.0/24
+            # This needs to match iaas/entropy/entropy-check.py (L.229)
+            # This way, we do not hit ports from others unless they happen
+            # to use the same IP range and are disconnected.
             found = False
             fixed_adrs = port.fixed_ips
             for fixed_adr in fixed_adrs:

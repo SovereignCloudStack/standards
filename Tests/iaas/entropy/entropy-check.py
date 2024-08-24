@@ -223,6 +223,7 @@ class TestEnvironment:
 
             # create network, subnet, router, connect everything
             self.network = self.conn.create_network(NETWORK_NAME)
+            # Note: The IP range/cidr here needs to match the one in cleanup.py (L.95)
             self.subnet = self.conn.create_subnet(
                 self.network.id,
                 cidr="10.1.0.0/24",
