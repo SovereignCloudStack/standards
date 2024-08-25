@@ -27,7 +27,7 @@ def print_usage(file=sys.stderr):
 This tool cleans the cloud environment CLOUD by removing any resources whose name start with PREFIX.
 Options:
  [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)
- [-i/--prefix PREFIX] sets prefix (default from PREFIX env)
+ [-p/--prefix PREFIX] sets prefix (default from PREFIX env)
 """, end='', file=file)
 
 

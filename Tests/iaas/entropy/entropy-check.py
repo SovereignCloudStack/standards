@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 # prefix ephemeral resources with '_scs-' to rule out any confusion with important resources
 # (this enables us to automatically dispose of any lingering resources should this script be killed)
 NETWORK_NAME = "_scs-0101-net"
+SUBNET_NAME = "_scs-0101-subnet"
 ROUTER_NAME = "_scs-0101-router"
 SERVER_NAME = "_scs-0101-server"
 SECURITY_GROUP_NAME = "_scs-0101-group"
@@ -234,6 +235,7 @@ class TestEnvironment:
                     "end": "10.1.0.200",
                 }],
                 dns_nameservers=["9.9.9.9"],
+                name=SUBNET_NAME,
             )
             external_networks = list(self.conn.network.networks(is_router_external=True))
             if not external_networks:
