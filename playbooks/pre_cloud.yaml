@@ -27,5 +27,5 @@
         mode: "0600"
 
     - name: Clean up any lingering resources from previous run
-      ansible.builtin.shell: python3 ~/Tests/cleanup.py -c {{ cloud }} --prefix _scs-
+      ansible.builtin.shell: python3 ~/Tests/cleanup.py -c {{ cloud }} --prefix _scs- --ipaddr 10.1.0.
       changed_when: true

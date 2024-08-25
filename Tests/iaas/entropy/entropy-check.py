@@ -224,7 +224,8 @@ class TestEnvironment:
 
             # create network, subnet, router, connect everything
             self.network = self.conn.create_network(NETWORK_NAME)
-            # Note: The IP range/cidr here needs to match the one in cleanup.py (L.95)
+            # Note: The IP range/cidr here needs to match the one in the pre_cloud.yaml
+            # playbook calling cleanup.py
             self.subnet = self.conn.create_subnet(
                 self.network.id,
                 cidr="10.1.0.0/24",
@@ -232,7 +233,7 @@ class TestEnvironment:
                 enable_dhcp=True,
                 allocation_pools=[{
                     "start": "10.1.0.100",
-                    "end": "10.1.0.200",
+                    "end": "10.1.0.199",
                 }],
                 dns_nameservers=["9.9.9.9"],
                 name=SUBNET_NAME,

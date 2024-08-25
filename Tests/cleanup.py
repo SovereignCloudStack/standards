@@ -26,15 +26,18 @@ def print_usage(file=sys.stderr):
     print("""Usage: cleanup.py [options]
 This tool cleans the cloud environment CLOUD by removing any resources whose name start with PREFIX.
 Options:
- [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)
- [-p/--prefix PREFIX] sets prefix (default from PREFIX env)
+ [-c/--os-cloud OS_CLOUD]  sets cloud environment (default from OS_CLOUD env)
+ [-p/--prefix PREFIX]      sets prefix to identify resources (default from PREFIX env)
+ [-i/--ipaddr addr[,addr]] list of IP addresses to identify ports to delete (def: delete all)
+                           the specified strings will be matched against the start of the addrs
 """, end='', file=file)
 
 
 class Janitor:
-    def __init__(self, conn, prefix=""):
+    def __init__(self, conn, prefix="", ipfilter=[]):
         self.conn = conn
         self.prefix = prefix
+        self.ipaddrs = ipfilter
 
     def disconnect_routers(self):
         logger.debug("disconnect routers")
@@ -75,29 +78,38 @@ class Janitor:
             logger.info(subnet.name)
             self.conn.network.delete_subnet(subnet)
 
+    def port_match(self, port):
+        """Determine whether port is to be cleaned up:
+           - If it is connected to a VM/LB/...: False
+           - It it has a name that starts with the prefix: True
+           - If it has a name not matching the prefix filter: False
+           - If it has no name and we do not have IP range filters: True
+           - Otherwise see if one of the specified IP ranges matches
+        """
+        if port.device_owner:
+            return False
+        if port.name.startswith(self.prefix):
+            return True
+        if port.name:
+            return False
+        if not self.ipaddrs:
+            return True
+        for fixed_addr in port.fixed_ips:
+            ip_addr = fixed_addr["ip_address"]
+            for ipmatch in self.ipaddrs:
+                if ip_addr.startswith(ipmatch):
+                    logger.debug(f"{ip_addr} matches {ipmatch}")
+                    return True
+        return False
+
     def cleanup_ports(self):
         logger.debug("clean up ports")
         # FIXME: We can't filter for device_owner = '' unfortunately
         ports = list(self.conn.network.ports(status="DOWN"))
         for port in ports:
-            if port.device_owner:
+            if not self.port_match(port):
                 continue
-            # Filter for IP range 10.1.0.0/24
-            # This needs to match iaas/entropy/entropy-check.py (L.229)
-            # This way, we do not hit ports from others unless they happen
-            # to use the same IP range and are disconnected.
-            found = False
-            fixed_adrs = port.fixed_ips
-            for fixed_adr in fixed_adrs:
-                ip_addr = fixed_adr["ip_address"]
-                if not ip_addr:
-                    continue
-                if ip_addr.startswith("10.1.0."):
-                    found = True
-                    continue
-            if not found:
-                continue
-            logger.info(port.id)
+            logger.info(f"{port.id}: {port.fixed_ips}")
             self.conn.network.delete_port(port)
 
     def cleanup_volumes(self):
@@ -193,9 +205,10 @@ def main(argv):
 
     prefix = os.environ.get("PREFIX", None)
     cloud = os.environ.get("OS_CLOUD")
+    ipaddrs = []
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:p:h", ["os-cloud=", "prefix=", "help"])
+        opts, args = getopt.gnu_getopt(argv, "c:p:i:h", ["os-cloud=", "prefix=", "ipaddr=", "help"])
     except getopt.GetoptError as exc:
         logger.critical(f"{exc}")
         print_usage()
@@ -209,6 +222,11 @@ def main(argv):
             prefix = opt[1]
         if opt[0] == "-c" or opt[0] == "--os-cloud":
             cloud = opt[1]
+        if opt[0] == "-i" or opt[0] == "--ipaddr":
+            if "," in opt[1]:
+                ipaddrs = opt[1].split(",")
+            else:
+                ipaddrs = opt[1]
 
     if prefix is None:
         # check for None, because supplying --prefix '' shall be permitted
@@ -220,7 +238,7 @@ def main(argv):
         return 1
 
     with openstack.connect(cloud=cloud) as conn:
-        Janitor(conn, prefix).cleanup()
+        Janitor(conn, prefix, ipaddrs).cleanup()
 
 
 if __name__ == "__main__":
