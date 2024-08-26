@@ -4,7 +4,7 @@ type: Supplement
 track: IaaS
 status: Proposal
 supplements:
-  - scs-XXXX-v1-vN-key-manager-standard.md
+  - scs-0116-v1-key-manager-standard.md
 ---
 
 ## Implementation
