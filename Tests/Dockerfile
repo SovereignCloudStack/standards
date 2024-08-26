@@ -10,4 +10,4 @@ RUN pip3 install -r requirements.txt
 COPY . .
 
 ENTRYPOINT ["./scs-compliance-check.py"]
-CMD ["scs-compatible-iaas.yaml"]
+CMD ["-h"]

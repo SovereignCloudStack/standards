@@ -49,7 +49,7 @@ like fault-tolerance and data redundancy. But it also understands the costs and 
 for the providers associated with this effort, since the infrastructure needs to have
 hardware which will just be used to provide fail-over safety or duplication.
 
-The document [Best practices for large clusters] describes the concept of a failure zone.
+The document [Best practices for large clusters][k8s-large-clusters] describes the concept of a failure zone.
 This term isn't defined any further, but can in this context be described as a number of
 physical (computing) machines in such a vicinity to each other (either through physical
 or logical interconnection in some way), that specific problems inside this zone would put
@@ -80,6 +80,34 @@ If the standard is used by a provider, the following decisions are binding and v
   can also be scaled vertically first before scaling horizontally.
 - Worker node distribution MUST be indicated to the user through some kind of labeling
   in order to enable (anti)-affinity for workloads over "failure zones".
+- To provide metadata about the node distribution, which also enables testing of this standard,
+  providers MUST label their K8s nodes with the labels listed below.
+  - `topology.kubernetes.io/zone`
+
+    Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
+    It provides a logical zone of failure on the side of the provider, e.g. a server rack
+    in the same electrical circuit or multiple machines bound to the internet through a
+    singular network structure. How this is defined exactly is up to the plans of the provider.
+    The field gets autopopulated most of the time by either the kubelet or external mechanisms
+    like the cloud controller.
+
+  - `topology.kubernetes.io/region`
+
+    Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
+    It describes the combination of one or more failure zones into a region or domain, therefore
+    showing a larger entity of logical failure zone. An example for this could be a building
+    containing racks that are put into such a zone, since they're all prone to failure, if e.g.
+    the power for the building is cut. How this is defined exactly is also up to the provider.
+    The field gets autopopulated most of the time by either the kubelet or external mechanisms
+    like the cloud controller.
+
+  - `topology.scs.community/host-id`
+
+    This is an SCS-specific label; it MUST contain the hostID of the physical machine running
+    the hypervisor (NOT: the hostID of a virtual machine). Here, the hostID is an arbitrary identifier,
+    which need not contain the actual hostname, but it should nonetheless be unique to the host.
+    This helps identify the distribution over underlying physical machines,
+    which would be masked if VM hostIDs were used.
 
 ## Conformance Tests
 
@@ -92,3 +120,4 @@ If also produces warnings and informational outputs, if e.g. labels don't seem t
 [k8s-ha]: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/
 [k8s-large-clusters]: https://kubernetes.io/docs/setup/best-practices/cluster-large/
 [scs-0213-v1]: https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0213-v1-k8s-nodes-anti-affinity.md
+[k8s-labels-docs]: https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone

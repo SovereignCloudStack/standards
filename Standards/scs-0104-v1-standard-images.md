@@ -1,6 +1,6 @@
 ---
 title: SCS Standard Images
-type: Standard
+type: Procedural
 status: Stable
 stabilized_at: 2024-02-21
 track: IaaS
@@ -40,14 +40,16 @@ The YAML file MUST contain the key `images`, whose value is a list of objects. E
 | Key       | Type                 | Description                                          | Example                                              |
 | --------- | -------------------- | ---------------------------------------------------- | ---------------------------------------------------- |
 | `name`    | String               | Name of the image                                    | `"Debian 12"`                                        |
-| `status`  | String               | _optional_: either `mandatory` or `recommended`      | `"recommended"`                                      |
+| `status`  | String (_optional_)  | `optional` (default), `mandatory` or `recommended`   | `"recommended"`                                      |
 | `source`  | String               | Prefix of the source URL                             | `"https://cloud.debian.org/images/cloud/bookworm/"`  |
 |           | OR: List of strings  | multiple possible prefixes                           | (see full example below)                             |
 
 The meaning of this specification is as follows.
 
-1. If the status is `mandatory`, then the image MUST be present.
-2. If an image by the name given is present, then its `image_source` property
+1. If the status is `mandatory`, then an image with the name given via `name` MUST be present.
+2. If the status is `recommended`, then an image with the name given via `name` SHOULD be present.
+3. Regardless of the status:
+   if an image with the name given is present, then its `image_source` property
    (as described in the [Image Metadata standard](scs-0102-v1-image-metadata.md))
    MUST start with one of the prefixes given via `source`.
 
@@ -57,7 +59,7 @@ The meaning of this specification is as follows.
 | ------------- | -------------------- | ---------------------------------------------------- | ------------------------------------------------ |
 | `name`        | String               | Name of the class of images                          | `"ubuntu-2204-kube"`                             |
 | `name_scheme` | String (regex)       | Regular expression for the image name                | `"ubuntu-2204-kube-v[0-9].[0-9]+(.[0-9]+)?"`     |
-| `status`      | String               | _optional_: either `mandatory` or `recommended`      | `"recommended"`                                  |
+| `status`      | String (_optional_)  | `optional` (default), `mandatory` or `recommended`   | `"recommended"`                                  |
 | `source`      | String               | Prefix of the source URL                             | `"https://swift.services.a.regiocloud.tech"`     |
 |               | OR: List of strings  | multiple possible prefixes                           | (see full example below)                         |
 
@@ -65,7 +67,10 @@ The meaning of this specification is as follows:
 
 1. If the status is `mandatory`, then at least one image MUST be present whose name
    matches the regular expression given via `name_scheme`.
-2. For any image whose name matches the regular expression given via `name_scheme`,
+2. If the status is `recommended`, then at least one image SHOULD be present whose name
+   matches the regular expression given via `name_scheme`.
+3. Regardless of the status:
+   for any image whose name matches the regular expression given via `name_scheme`,
    its `image_source` property MUST start with one of the prefixes given via `source`.
 
 ## Full example
@@ -78,7 +83,7 @@ images:
   - https://cloud-images.ubuntu.com/jammy/
   status: mandatory
 - name: "ubuntu-capi-image"
-  name_scheme: "ubuntu-capi-image-v[0-9].[0-9]+(.[0-9]+)?"
+  name_scheme: "ubuntu-capi-image v[0-9]\\.[0-9]+(\\.[0-9]+)?"
   source: https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube
   status: recommended
 - name: "Ubuntu 20.04"
@@ -104,10 +109,10 @@ recommended, while only Ubuntu 22.04 is mandatory.
 ### YAML lifecycle
 
 The YAML file is generally located under
-<https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/>.
+[https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/).
 
 Any change that could render existing installations non-conformant (i.e., when new
-specifications are added, when the name scheme of a specification is changed so as to
+specifications are added, when the name scheme of a specification is changed to
 match more names than before, when the status of an existing specification changes to
 mandatory, or when some source prefix is removed) requires a new YAML file to be created.
 As a consequence, any currently valid certificates stay valid; the change can only take

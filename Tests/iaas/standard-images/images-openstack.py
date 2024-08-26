@@ -87,6 +87,15 @@ def main(argv):
         logger.critical("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.")
         return 1
 
+    # we only support local files; but we allow specifying the following URLs for the sake of
+    # better documentation
+    prefix = next(p for p in (
+        'https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/',
+        'https://github.com/SovereignCloudStack/standards/blob/main/Tests/',
+        '',  # sentinel (do not remove!)
+    ) if yaml_path.startswith(p))
+    if prefix:
+        yaml_path = yaml_path[len(prefix):]
     try:
         with open(yaml_path, "rb") as fileobj:
             image_data = yaml.safe_load(fileobj)
@@ -136,6 +145,8 @@ def main(argv):
 
     c = counting_handler.bylevel
     logger.debug(f"Total critical / error / warning: {c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.WARNING]}")
+    if not c[logging.CRITICAL]:
+        print("standard-images-check: " + ('PASS', 'FAIL')[min(1, c[logging.ERROR])])
     return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 

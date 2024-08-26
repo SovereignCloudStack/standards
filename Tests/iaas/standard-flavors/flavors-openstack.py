@@ -27,6 +27,9 @@ import yaml
 
 
 logger = logging.getLogger(__name__)
+# do not enforce this part of the standard, because it doesn't work for the customers
+# RESERVED_KEYS = ('scs:name-v1', 'scs:name-v2')
+RESERVED_KEYS = ()
 
 
 def print_usage(file=sys.stderr):
@@ -102,7 +105,6 @@ def main(argv):
         logger.critical("Flavor definition missing 'flavor_groups' field")
 
     name_key = flavor_spec_data['meta']['name_key']
-    es_name_key = f"scs:{name_key}"
     # compute union of all flavor groups, copying group info (mainly "status") to each flavor
     # check if the spec is complete while we are at it
     flavor_specs = []
@@ -125,11 +127,16 @@ def main(argv):
         with openstack.connect(cloud=cloud, timeout=32) as conn:
             present_flavors = conn.list_flavors(get_extra=True)
             by_name = {
-                flavor.extra_specs[es_name_key]: flavor
+                flavor.extra_specs[name_key]: flavor
                 for flavor in present_flavors
-                if es_name_key in flavor.extra_specs
+                if name_key in flavor.extra_specs
             }
             by_legacy_name = {flavor.name: flavor for flavor in present_flavors}
+            # for reserved keys, keep track of all flavors that don't have a matching spec
+            unmatched = {flavor.id: (flavor, keys) for flavor, keys in [
+                (flavor, tuple(key for key in RESERVED_KEYS if key in flavor.extra_specs))
+                for flavor in present_flavors
+            ] if keys}
 
         logger.debug(f"Checking {len(flavor_specs)} flavor specs against {len(present_flavors)} flavors")
         for flavor_spec in flavor_specs:
@@ -137,12 +144,14 @@ def main(argv):
             if not flavor:
                 flavor = by_legacy_name.get(flavor_spec[name_key])
                 if flavor:
-                    logger.warning(f"Flavor '{flavor_spec['name']}' found via name only, missing property {es_name_key!r}")
+                    logger.warning(f"Flavor '{flavor_spec['name']}' found via name only, missing property {name_key!r}")
                 else:
                     status = flavor_spec['_group']['status']
-                    level = {"mandatory": logging.ERROR}.get(status, logging.INFO)
+                    level = {"mandatory": logging.ERROR}.get(status, logging.WARNING)
                     logger.log(level, f"Missing {status} flavor '{flavor_spec['name']}'")
                     continue
+            # this flavor has a matching spec
+            unmatched.pop(flavor.id, None)
             # check that flavor matches flavor_spec
             # cpu, ram, and disk should match, and they should match precisely for discoverability
             if flavor.vcpus != flavor_spec['cpus']:
@@ -155,20 +164,28 @@ def main(argv):
             report = [
                 f"{key}: {es_value!r} should be {value!r}"
                 for key, value, es_value in [
-                    (key, value, flavor.extra_specs.get(f"scs:{key}"))
+                    (key, value, flavor.extra_specs.get(key))
                     for key, value in flavor_spec.items()
-                    if key not in ('_group', 'name', 'cpus', 'ram', 'disk')
+                    if key.startswith("scs:")
                 ]
                 if value != es_value
             ]
             if report:
                 logger.error(f"Flavor '{flavor.name}' violating property constraints: {'; '.join(report)}")
+        if unmatched:
+            logger.error(
+                "The following flavors are not standard, yet use a reserved property: " + ", ".join(
+                    f"{flavor.name}: {', '.join(keys)}" for flavor, keys in unmatched.values() if keys
+                )
+            )
     except BaseException as e:
         logger.critical(f"{e!r}")
         logger.debug("Exception info", exc_info=True)
 
     c = counting_handler.bylevel
     logger.debug(f"Total critical / error / info: {c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.INFO]}")
+    if not c[logging.CRITICAL]:
+        print("standard-flavors-check: " + ('PASS', 'FAIL')[min(1, c[logging.ERROR])])
     return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 

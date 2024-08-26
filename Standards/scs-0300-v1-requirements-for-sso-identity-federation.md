@@ -25,7 +25,7 @@ premises or e.g. as an external 3rd party cloud service. To ease onboarding of
 customer employees (or e.g. customer contracted 3rd party admin staff) as SCS
 users, it would be good to be able to consume these external identities in SCS.
 
-For customers this avoids the neccessity to explicitly maintain an additional
+For customers this avoids the necessity to explicitly maintain an additional
 dedicated account in SCS and this also reduces what SCS needs to do with
 respect to taking care of persisting user account information.
 
@@ -34,7 +34,7 @@ authentication to external identity providers and map those users to roles in
 SCS that can be used for authorization decisions when users access SCS services.
 
 In addition to user identities there we also see the necessity to support the
-use of "machine identites" (aka "workload identities" or "service accounts").
+use of "machine identities" (aka "workload identities" or "service accounts").
 These will probably be SCS-local accounts and have for example the purpose
 to grant CaaS workload access to storage resources served by the infrastructure
 layer. Exact architectural details for this are still in active discussion,
@@ -50,11 +50,11 @@ authorization.
 One thing these services have in common, is that they are able
 to use SSO protocols like OAuth 2.0 or OpenID Connect (OIDC) on top of it to
 delegate authentication. They are service providers (SAML terminology) and can
-be relying parties (OIDC terminology) of a protocol compliant identity provider
+be relying on parties (OIDC terminology) of a protocol compliant identity provider
 (IdP).
 
 So the idea is, to run an SSO IdP as part of SCS to provide a dedicated point
-of entry for identites, which the SCS service layers can use as a common
+of entry for identities, which the SCS service layers can use as a common
 interface to consume external user identities.
 
 The purpose of this document is to specify what requirements a specific
@@ -66,10 +66,10 @@ in the context of SCS.
 As a central service for identity handling, the IdP
 service needs to be robust and reliable.
 
-Customers shall be able to access self service, so that
+Customers shall be able to access self-service, so that
 they can make reasonable adjustments e.g. to role mapping.
 At the time of writing this document it's still undecided
-if SCS has the requirement of a dedicated "self service" service
+if SCS has the requirement of a dedicated "self-service" service
 that serves as a frontend to provision and re-configure
 customer specific data, abstracting e.g. from IdP specific
 user interface particularities.
@@ -77,7 +77,7 @@ user interface particularities.
 Keycloak is currently being deployed as part of the IaaS reference implementation.
 Technically this IdP component shall be shifted from the management
 plane to be run on the basis of a "minimal" Kubernetes (e.g. K3S),
-e.g. to make use of the "self healing" and scaling features achievable
+e.g. to make use of the "self-healing" and scaling features achievable
 with that.
 
 So one of the considerations is if the solution will work well on a
@@ -98,7 +98,7 @@ Quarkus instead of WildFly/JBoss.
 
 The project maintains several means of community contributions
 as listed on the [community section](https://www.keycloak.org/community)
-of the project website. It uses [Github issues](https://github.com/keycloak/keycloak/issues)
+of the project website. It uses [GitHub issues](https://github.com/keycloak/keycloak/issues)
 to track development.
 
 It offers a REST API for administration and there's a separately maintained
@@ -111,7 +111,7 @@ in adopting to protocol standard changes and extensions. This has been
 observed in the case of logout support (backend and frontend variants) in OIDC.
 
 It offers a concept of "Identity Brokering", where Keycloak is not just IdP
-but also "client" to other IdPs. This allows daisy chaining of identity
+but also "client" to other IdPs. This allows daisy-chaining of identity
 federation. In this configuration it can work as a point of protocol
 transition between different supported SSO protocols (SAML, OAuth 2.0, etc.).
 
@@ -122,7 +122,7 @@ e.g.).
 Keycloak's implementation makes some design decisions, that are specific
 to it and have consequences for clients of the service. E.g. Keycloak
 has a concept of management "Realms", which have their own specific
-set of HTTP API entrypoints, both for administration as well as for IdP
+set of HTTP API entrypoints, both for administration and for IdP
 requests.
 
 Commonly Keycloak realms can be used to map them 1:1 to user domains,
@@ -145,9 +145,9 @@ for all aspects of its administration interface.
 
 For storage of Keycloak configuration and local user metadata
 (e.g. from which external IdP a user account originally came from)
-Keycloak supports several SQL backends through JDBC. Thus
+Keycloak supports several SQL backends through JDBC. Thus,
 it can be hooked up to a Postgres Database or to a
-MariaDB/Galera cluster e.g..
+MariaDB/Galera cluster e.g.
 
 As of April 11, 2023, Keycloak joined the CNCF as an incubating project.
 
@@ -157,9 +157,9 @@ Zitadel is a newer implementation of an SSO IdP.
 It is implemented in Go and under active development and maintained by ZITADEL.
 
 The project is open for community [contributions](https://github.com/zitadel/zitadel/blob/main/CONTRIBUTING.md)
-to all parts of the eco system.
-Feature requests and bugs being tracked on [Github](https://github.com/orgs/zitadel/projects/2/views/5) for development.
-Community questions can be asked in the [public chat](https://zitadel.com/chat) or via [Github Discussions](https://github.com/zitadel/zitadel/discussions).
+to all parts of the ecosystem.
+Feature requests and bugs being tracked on [GitHub](https://github.com/orgs/zitadel/projects/2/views/5) for development.
+Community questions can be asked in the [public chat](https://zitadel.com/chat) or via [GitHub Discussions](https://github.com/zitadel/zitadel/discussions).
 ZITADEL offers support for the commonly used authentication and authorization protocols such as OIDC, OAuth2, SAML2.
 It is a compliant and certified OpenID Connect provider with support for various Grant Types for both human users and machine users.
 Compared to Keycloak SPIs, ZITADEL offers Actions to customize and integrate (eg, calling external APIs, Webhooks, customizing pre-built workflows, customizing tokens)
@@ -175,7 +175,7 @@ in the following areas:
 
 - For client services (single set of HTTP API endpoints).
 - For SCS operators for provisioning customer [organizations](https://zitadel.com/docs/concepts/structure/organizations)
-  and robust configuraton by using templated client, role and mapping
+  and robust configuration by using templated client, role and mapping
   configuration.
 - For SCS customers for a robust user experience for self servicing.
 
@@ -188,8 +188,8 @@ Managers that receive granted Projects can assign users permissions to use the p
 for multiple areas of use and configuration.
 
 It recently also added support for the [Device Authorization Grant](https://github.com/zitadel/oidc/issues/141),
-which, at time of writing, is a feauture that is relevant
-for SCS to be able use OpenStack CLI and APIs with federated
+which, at time of writing, is a feature that is relevant
+for SCS to be able to use OpenStack CLI and APIs with federated
 identities ([Device Authorization Grant](https://github.com/SovereignCloudStack/issues/issues/221)).
 
 Support for consumption of LDAP backends is available since [Zitadel v2.23.0](https://github.com/zitadel/zitadel/releases/tag/v2.23.0)
@@ -203,7 +203,7 @@ to use Kubernetes (or similar like Knative) and CockroachDB.
 At time of writing a PoC "spike" is done to assess and verify the hopes
 connected with Zitadel in the context of the SCS testbed.
 
-Currently Zitadel is lacking the possibility to easily add custom claims.
+Currently, Zitadel is lacking the possibility to easily add custom claims.
 It supports `urn:zitadel:iam:user:metadata`, but that is more suitable
 towards Kubernetes and cannot be parsed with the OpenStack mapping mechanism.
 [There is work going on](https://github.com/zitadel/zitadel/issues/3997) which
@@ -238,13 +238,13 @@ Keycloak currently supports the OAuth 2.0 grants that SCS wants to make
 use of (e.g. Device Authorization Grant). It is the implementation for
 which integration is currently documented in OpenStack and implemented
 in kolla-ansible. SCS currently deploys Keycloak and the IAM team has
-most hands on expecience with it, e.g. when it comes to colletaral questions
+most hands-on experience with it, e.g. when it comes to collateral questions
 like how to make TLS and signing certificates available to the IdP that shall
 be used in federation to external domains.
 
 ## Related Documents
 
-- <https://github.com/SovereignCloudStack/standards/tree/main/Drafts/IAM-federation>
+- [https://github.com/SovereignCloudStack/standards/tree/main/Drafts/IAM-federation](https://github.com/SovereignCloudStack/standards/tree/main/Drafts/IAM-federation)
 
 ## Conformance Tests
 

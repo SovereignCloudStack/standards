@@ -41,8 +41,8 @@ Note that not all relevant properties of flavors can be discovered; creating a s
 to address this is a separate but related effort to the name standardization.
 Commonly used infrastructure-as-code tools do not provide a way to use discoverability
 features to express something like "I want a flavor with 2 vCPUs, 8GiB of RAM, a local
-20GB SSD disk and Infiniband support but I don't care whether it's AMD or intel" in a
-reasonable manner. Using flavor names to express this will thus continue to be useful
+20GB SSD disk and Infiniband support, but I don't care whether it's AMD or intel" in a
+reasonable manner. Using flavor names to express this will thus continue to be useful,
 and we don't expect the need for standardization of flavor names to go away until
 the commonly used IaC tools work on a higher abstraction layer than they currently do.
 
@@ -76,7 +76,7 @@ encoding all details) as well as very detailed longer names.
 | `SCS-` | N`L/V/T/C`\[`i`\] | `-`N\[`u`\]\[`o`\] | \[`-`\[M`x`\]N\[`n/h/s/p`\]\] | \[`_`EXT\]      |
 
 Note that N and M are placeholders for numbers here.
-The optional fields are denoted in brackets (and have opt: in the header.
+The optional fields are denoted in brackets (and have `opt:` in the header).
 See below for extensions.
 
 Note that all letters are case-sensitive.
@@ -126,12 +126,12 @@ the flavors must be declared insecure with the `i` suffix (see below).
 #### Higher oversubscription
 
 Must be indicated with a `L` vCPU type (low performance for > 5x/core or > 3x/thread oversubscription and
-the lack of workload management that would prevent worst case performance <20% in more than 7.2h per month).
+the lack of workload management that would prevent worst case performance < 20% in more than 7.2h per month).
 
 #### Insufficient microcode
 
 Not using these mitigations must be indicated by an additional `i` suffix for insecure
-(weak protection against CPU vulns through insufficient microcode, lack of disabled hyperthreading
+(weak protection against CPU vulnerabilities through insufficient microcode, lack of disabled hyperthreading
 on L1TF susceptible CPUs w/o effective core scheduling or disabled protections on the host/hypervisor).
 
 #### Examples
@@ -141,8 +141,8 @@ on L1TF susceptible CPUs w/o effective core scheduling or disabled protections o
 - SCS-**2V**-4-10n
 - SCS-**2L**-4-10n
 - SCS-**2Li**-4-10n
-- ~~SCS-**2**-\*\*4-10n~~ <- CPU suffix missing
-- ~~SCS-**2iT**-4-10n~~ <- This order is forbidden
+- ~~SCS-**2**-\*\*4-10n~~ - CPU suffix missing
+- ~~SCS-**2iT**-4-10n~~ - This order is forbidden
 
 ### [REQUIRED] Memory
 
@@ -150,7 +150,7 @@ on L1TF susceptible CPUs w/o effective core scheduling or disabled protections o
 
 Cloud providers should use ECC memory.
 Memory oversubscription should not be used.
-It is allowed to specify half GiBs (e.g. 3.5), though this is should not be done for larger memory sizes (>= 10GiB).
+It is allowed to specify half GiBs (e.g. 3.5), though this should not be done for larger memory sizes (>= 10GiB).
 
 #### No ECC
 
@@ -167,7 +167,7 @@ If memory is oversubscribed, you must expose this with the `o` suffix.
 - SCS-2C-**4u**-10n
 - SCS-2C-**4o**-10n
 - SCS-2C-**4uo**-10n
-- ~~SCS-2C-**4ou**-10n~~ <- This order is forbidden
+- ~~SCS-2C-**4ou**-10n~~ - This order is forbidden
 
 ### [OPTIONAL] Disk sizes and types
 
@@ -213,20 +213,20 @@ so users can expect some level of parallelism and independence.
 - SCS-2C-4-**10n**
 - SCS-2C-4-**10s**
 - SCS-2C-4-**10s**\_bms\_z3
-- SCS-2C-4-**3x10s** <- Cloud creates three 10GB SSDs
+- SCS-2C-4-**3x10s** - Cloud creates three 10GB SSDs
 - SCS-2C-4-**3x10s**\_bms\_z3
-- SCS-2C-4-**10** <- Cloud decides disk type
+- SCS-2C-4-**10** - Cloud decides disk type
 - SCS-2C-4-**10**\_bms\_z3
-- SCS-2C-4-**n** <- Cloud decides disk size (min\_disk from image or larger)
+- SCS-2C-4-**n** - Cloud decides disk size (min\_disk from image or larger)
 - SCS-2C-4-**n**\_bms\_3
-- SCS-2C-4- <- Cloud decides disk type and size
+- SCS-2C-4- - Cloud decides disk type and size
 - SCS-2C-4-\_bms\_z3
 - SCS-2C-4-\_bms\_z3h\_GNa-64\_ib
 - SCS-2C-4-\_ib
-- SCS-2C-4 <- You need to specify a boot volume yourself (boot from volume, or use `block_device_mapping_v2`)
+- SCS-2C-4 - You need to specify a boot volume yourself (boot from volume, or use `block_device_mapping_v2`)
 - SCS-2C-4\_bms\_z3
-- SCS-2C-4-3x10 <- Cloud decides type and creates three 10GB volumes
-- ~~SCS-2C-4-**1.5n**~~ <- You must not specify disk sizes which are not in full GiBs
+- SCS-2C-4-3x10 - Cloud decides type and creates three 10GB volumes
+- ~~SCS-2C-4-**1.5n**~~ - You must not specify disk sizes which are not in full GiBs
 
 ## Naming policy compliance
 
@@ -335,11 +335,11 @@ capabilities. Flavors may over-deliver ...)
 
 #### Examples
 
-- SCS-2C-4-10 <- may or may not support HW virtualization in VMs
-- SCS-2C-4-10_kvm_**hwv** <- kvm with enabled nested virtualization
-- SCS-2C-4-10\_**hwv** <- not recommended, but allowed
-- SCS-2C-4-10\_bms\_**hwv** <- better: bare metal with HW virt support (VMX on intel, SVM on AMD, ...)
-- ~~SCS-2C-4-10\_**hwv**\_xen~~ <- illegal, wrong ordering
+- SCS-2C-4-10 - may or may not support HW virtualization in VMs
+- SCS-2C-4-10_kvm_**hwv** - kvm with enabled nested virtualization
+- SCS-2C-4-10\_**hwv** - not recommended, but allowed
+- SCS-2C-4-10\_bms\_**hwv** - better: bare metal with HW virt support (VMX on intel, SVM on AMD, ...)
+- ~~SCS-2C-4-10\_**hwv**\_xen~~ - illegal, wrong ordering
 
 ### [OPTIONAL] CPU Architecture Details
 
@@ -408,7 +408,7 @@ capabilities.
 - SCS-2C-4-10n\_bms\_**z3**
 - SCS-2C-4-10n\_bms\_**z3**
 - SCS-2C-4-10n\_bms\_**z3h**
-- SCS-2C-4-10n\_bms\_**z3hh** <- Bare Metal, AMD Milan with > 3.25GHz all core freq
+- SCS-2C-4-10n\_bms\_**z3hh** - Bare Metal, AMD Milan with > 3.25GHz all core freq
 
 ### [OPTIONAL] GPU support
 
@@ -541,7 +541,7 @@ However, we have been reaching out to the OpenStack Public Cloud SIG and the ALA
 members to seek further alignment.
 
 Getting upstream OpenStack support for flavor aliases would provide more flexibility
-and ease migrations between providers, also providers that don't offer the SCS-
+and ease migrations between providers, also providers that don't offer the `SCS-`
 flavors.
 
 We also would like to see upstream `extra_specs` standardizing the discoverability of some

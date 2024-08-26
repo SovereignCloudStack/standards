@@ -179,7 +179,7 @@ csr-9wvgt   112s    kubernetes.io/kubelet-serving     system:node:worker-1      
 
 Further information and examples can be found in the Kubernetes documentation:
 [Kubeadm certs](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/)
-[Kubelete TLS bootstrapping](https://kubernetes.io/docs/reference/access-authn-authz/kubelet-tls-bootstrapping/)
+[Kubelet TLS bootstrapping](https://kubernetes.io/docs/reference/access-authn-authz/kubelet-tls-bootstrapping/)
 
 ## Decision
 
