@@ -223,10 +223,7 @@ def main(argv):
         if opt[0] == "-c" or opt[0] == "--os-cloud":
             cloud = opt[1]
         if opt[0] == "-i" or opt[0] == "--ipaddr":
-            if "," in opt[1]:
-                ipaddrs = opt[1].split(",")
-            else:
-                ipaddrs = opt[1]
+            ipaddrs = opt[1].split(",")
 
     if prefix is None:
         # check for None, because supplying --prefix '' shall be permitted
