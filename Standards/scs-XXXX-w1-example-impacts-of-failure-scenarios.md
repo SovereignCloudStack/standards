@@ -7,7 +7,7 @@ supplements:
   - scs-XXXX-vN-taxonomy-of-failsafe-levels.md
 ---
 
-# Examples of the impact from certain failure scenarios on Cloud Resources
+## Examples of the impact from certain failure scenarios on Cloud Resources
 
 Failure cases in Cloud deployments can be hardware related, environmental, due to software errors or human interference.
 The following table summerizes different failure scenarios, that can occur:
@@ -37,7 +37,7 @@ Additionally, there are a lot of resources in IaaS alone that are more or less a
 The following tables shows the impact **when no redundancy or failure safety measure is in place**, i.e., when
 **not even failsafe level 1 is fulfilled**.
 
-## Impact on IaaS Resources (IaaS Layer)
+### Impact on IaaS Resources (IaaS Layer)
 
 | Resource | Disk Loss | Node Loss | Rack Loss | Power Loss | Natural Catastrophy | Cyber Threat | Software Bug |
 |----|----|----|----|----|----|----|----|
@@ -60,7 +60,7 @@ So some of these outages are easier to mitigate than others.
 [^3]: If the resource is located on that specific node.
 [^4]: In case of disks, nodes or racks are not destroyed, some data could be safed. E.g. when a fire just destroyes the power line.
 
-## Impact on Kubernetes Resources (KaaS layer)
+### Impact on Kubernetes Resources (KaaS layer)
 
 :::note
 
