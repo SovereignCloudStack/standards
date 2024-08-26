@@ -155,6 +155,10 @@ modules:
         description: >
           Must fulfill all requirements of https://docs.scs.community/standards/scs-0104-v1-standard-images
 timeline:
+  - date: 2024-08-23
+    versions:
+      v5: draft
+      v4: effective
   - date: 2024-07-31
     versions:
       v4: effective
@@ -186,6 +190,18 @@ timeline:
     versions:
       v1: effective
 versions:
+  - version: v5
+    include:
+      - opc-v2022.11
+      - scs-0100-v3.2
+      - scs-0101-v1
+      - scs-0102-v1
+      - scs-0103-v1
+      - ref: scs-0104-v1
+        parameters:
+          image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images-v5.yaml
+    targets:
+      main: mandatory
   - version: v4
     stabilized_at: 2024-02-28
     include:
