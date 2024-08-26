@@ -34,7 +34,7 @@ Options:
 
 
 class Janitor:
-    def __init__(self, conn, prefix="", ipfilter=[]):
+    def __init__(self, conn, prefix="", ipfilter=()):
         self.conn = conn
         self.prefix = prefix
         self.ipaddrs = ipfilter
