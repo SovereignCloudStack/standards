@@ -18,12 +18,9 @@ import logging
 import os
 import re
 import sys
-import tempfile
 import time
 import warnings
 
-import fabric
-import invoke
 import openstack
 import openstack.cloud
 
@@ -413,9 +410,6 @@ def main(argv):
     # configure logging, disable verbose library logging
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
     openstack.enable_logging(debug=False)
-    logging.getLogger("fabric").propagate = False
-    logging.getLogger("invoke").propagate = False
-    logging.getLogger("paramiko").propagate = False
     warnings.filterwarnings("ignore", "search_floating_ips")
     # count the number of log records per level (used for summary and return code)
     counting_handler = CountingHandler(level=logging.INFO)
