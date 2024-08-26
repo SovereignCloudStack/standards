@@ -1,3 +1,12 @@
+---
+title: "SCS Taxonomy of Failsafe Levels: Examples of Failure Cases and their impact on IaaS and KaaS resources"
+type: Supplement
+track: IaaS
+status: Proposal
+supplements:
+  - scs-XXXX-vN-taxonomy-of-failsafe-levels.md
+---
+
 # Examples of the impact from certain failure scenarios on Cloud Resources
 
 Failure cases in Cloud deployments can be hardware related, environmental, due to software errors or human interference.
