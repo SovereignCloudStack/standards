@@ -393,10 +393,10 @@ async def get_report(
 ):
     with conn.cursor() as cur:
         specs = db_get_report(cur, report_uuid)
-        if not specs:
-            raise HTTPException(status_code=404)
-        spec = specs[0]
-        check_role(account, spec['subject'], ROLES['read_any'])
+    if not specs:
+        raise HTTPException(status_code=404)
+    spec = specs[0]
+    check_role(account, spec['subject'], ROLES['read_any'])
     return Response(content=json.dumps(spec, indent=2), media_type="application/json")
 
 
