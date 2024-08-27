@@ -39,16 +39,32 @@ of the following properties:
 
 The provisioned storage class MAY support volume expansion (`allowVolumeExpansion=true`).
 
+### Recommended non-performance-related properties
+
+The following recommendations cannot be checked without further ado and therefore do not represent hard requirement criteria.  Nevertheless, they are important prerequisites for ensuring data storage stability:
+
+- `ReadWriteOnce` should be a supported [access mode](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes)
+- volume should be protected against data loss due to hardware failures of a single disk or host
+- volume should not be bound to the lifecycle of a Kubernetes Node
+
+Hence,
+
+- ...volume should not be backed by local storage on the Kubernetes Node VM itself
+- ...volume may be backed by some kind of redundant storage within an AZ, across hosts
+- ...volume may be backed by some kind of redundant storage across AZ's
+
+- volumes that are not necessarily required to be failure-safe may be local/node-bound/non-redundant, possibly fast to run applications that take care of data durability and availability on application level
+
+### Required performance-related properties
+
+- _NO_ fixed guarantees regarding latency/bandwidth/IOPS/...
+Generally, customers should be able to expect low-tier performance without pricing surprises.
+
 ## Previous standard versions
 
 [Version v1 of this standard](scs-0211-v1-kaas-default-storage-class.md) did not enforce the
 existence of a default storage class in a newly created cluster.
 
-Previously, the backing storage of the default storage class was required to be protected
-against data loss caused by a physical disk or host failure.
-It also contained recommendations (MAY) with regard to redundant storage across hosts
-or availability zones.
-In this revision, these requirements and recommendations have been dropped.
 
 ## Conformance Tests
 
