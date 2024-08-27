@@ -22,7 +22,7 @@
 {% set res = version_result.results[testcase_id] if testcase_id in version_result.results else dict(result=0) -%}
 <tr><td>{% if res.result != 1 %}⚠️ {% endif %}{{ testcase.id }}</td><td
 {%- if res.report %} title="{{ res.report }} ({{ res.checked_at }})"{% endif -%}
->{% if res.report %}<a href="{{ base_url }}reports/{{ res.report }}">{% endif -%}
+>{% if res.report %}<a href="{{ report_url(res.report) }}">{% endif -%}
 {{ res.result | verdict_check }}
 {%- if res.report %}</a>{% endif -%}
 </td><td class="description">{{ testcase.description | trim | markdown }}</td></tr>

@@ -515,7 +515,9 @@ def render_view(view, view_type, results, base_url='/', title=None):
     stage1 = stage2 = view[view_type]
     if view_type is ViewType.page:
         stage1 = view[ViewType.fragment]
-    fragment = templates_map[stage1].render(results=results, base_url=base_url)
+    def detail_url(subject, scope): return f"{base_url}page/detail/{subject}/{scope}"  # noqa: E306,E704
+    def report_url(report): return f"{base_url}reports/{report}"  # noqa: E306,E704
+    fragment = templates_map[stage1].render(results=results, detail_url=detail_url, report_url=report_url)
     if stage1 != stage2:
         fragment = templates_map[stage2].render(fragment=fragment, title=title)
     return Response(content=fragment, media_type=media_type)
