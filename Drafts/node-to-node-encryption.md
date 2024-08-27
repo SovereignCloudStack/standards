@@ -18,12 +18,9 @@ natural openvswitch-ipsec solution.
 
 | Term | Meaning |
 |---|---|
-| VM | Virtual machine, alternatively instance, is a virtualized compute
-resource that functions as a self-contained server for a customer |
-| Node | Physical or virtual machine hosting cloud services and compute
-instances |
-| CSP | Cloud service provider, in this document it includes also an operator
-of a private cloud |
+| VM | Virtual machine, alternatively instance, is a virtualized compute resource that functions as a self-contained server for a customer |
+| Node | Physical or virtual machine hosting cloud services and compute instances |
+| CSP | Cloud service provider, in this document it includes also an operator of a private cloud |
 
 ## Context
 
@@ -34,13 +31,13 @@ larger and more diverse cloud instances, parts of the underlying physical
 infrastructure can be outside of CSPs direct control, either when
 interconnecting datacenters via public internet or in the case of renting
 infrastructure from third party. And many security breaches occur due to
-malicious or negligent inhouse operators. While some burden lies with
-customers, which should secure their own workloads CSP should have the option
-to transparently protect the data pathways between instances, more so for
-private clouds, where CSP and customer are the same entity or parts of the same
-entity.
+actions of malicious or negligent inhouse operators. While some burden lies
+with customers, which should secure their own workloads CSP should have the
+option to transparently protect the data pathways between instances, more so
+for private clouds, where CSP and customer are the same entity or parts of the
+same entity.
 
-In RFC8926[^611] it is stated:
+In RFC8926[^rfc] it is stated:
 > A tenant system in a customer premises (private data center) may want to
 > connect to tenant systems on their tenant overlay network in a public cloud
 > data center, or a tenant may want to have its tenant systems located in
@@ -56,14 +53,14 @@ In RFC8926[^611] it is stated:
 
 We aren't considering the communication intra node, meaning inside one host
 node between different VMs potentially of multiple tenants as this is a
-question of tenant isolation, not of networking security and encryption here
+question of tenant isolation, not of networking security, and encryption here
 would be possibly a redundant measure. Isolation of VMs is handled by OpenStack
 on multiple levels - VLAN/VxLAN/GRE tunneling, routing rules on networking
 level, network namespaces on kernel level and hypervisor isolation mechanisms.
 All the communication here is existing inside node and any malicious agent with
 high enough access to the node itself to observe/tamper with the internal
 communication traffic would pressumably have access to the encryption keys
-themselves, rendering the encryption useless.
+themselves, rendering the encryption ineffective.
 
 ### Potential threats in detail
 
@@ -241,7 +238,7 @@ protocols and maintaining OVSDB state database. It manages virtual ports,
 bridges and tunnels on hosts.
 
 Open Virtual Networking (OVN[^ov]) is a logical abstraction layer on top of OVS,
-developed by the same community and became the default controller driver for
+developed by the same community that became the default controller driver for
 Neutron. It manages logical networks insulated from underlying physical/virtual
 networks by encapsulation. It replaces the need for OVS agents running on each
 host and supports L2 switching, distributed L3 routing, access control and load
@@ -289,11 +286,10 @@ is on fast in-kernel encryption. WireGuard[^wg] adds new network interfaces,
 managable by standard tooling (ifconfig, route,...) which act as tunneling
 interfaces. Main mechanism, called _Cryptokey routing_, are tables associating
 public keys of endpoints with allowed IPs inside given tunnels. These behave as
-routing tables when sending
-and access control lists (ACL) when receiving packets. All packets are sent
-over UDP. Built-in roaming is achieved by both server and clients being able
-to update the peer list by examining from where correctly authenticated data
-originates.
+routing tables when sending and access control lists (ACL) when receiving
+packets. All packets are sent over UDP. Built-in roaming is achieved by both
+server and clients being able to update the peer list by examining from where
+correctly authenticated data originates.
 
 ### Solution proposals
 
@@ -310,13 +306,13 @@ tunnels for each two nodes on the same network, for all networks node are on,
 and Virtual IP tunnels. Each node hosting the VIP will open a tunnel for any
 node in the specific network that can properly authenticate. While using
 Ansible, the deployment isn't compatible with kolla-ansible[^ka] and would need
-porting. Also project retired as of February 2024.
+porting. Also this project retired as of February 2024.
 
 #### OVN[^ov] + IPsec[^ip]
 
 There is support in the OVN[^ov] project for IPsec[^ip] encryption of tunnel
-traffic[^oit]. A daemon running in each chassis manages and monitors IPsec[^ip]
-tunnel state.
+traffic[^oit]. A daemon running in each chassis automatically manages and
+monitors IPsec[^ip] tunnel states.
 
 #### Neutron[^ne] + Cilium[^ci]
 
@@ -325,16 +321,17 @@ eBPF[^eb] proxy on each interface and moving internal traffic via an encrypted
 Cilium[^ci] mesh. Cilium uses IPsec[^ip] or WireGuard[wg] to transparently
 encrypt node-to-node traffic. There were some attempts to integrate Cilium[^ci]
 with OpenStack [^neci1], [^neci2], but we didn't find any concrete projects
-integrating OpenStack and Cilium[^ci] to leverage the transparent encryption
-ability. This path would pressumably require significant development.
+which would leverage the transparent encryption ability of Cilium[^ci] in
+OpenStack environment. This path would pressumably require significant
+development.
 
 #### Neutron[^ne] + Calico[^ca]
 
 The Calico[^ca] project in its community open source version provides
 node-to-node encryption using WireGuard[^wg]. Despite being primarily a
-Kubernetes networking project provides an OpenStack integration[^caos] via a
-Neutron[^ne] plugin and deploying the necessary subset of tools like etcd,
-calico agent Felix, routing daemon BIRD and a DHCP agent.
+Kubernetes networking project, it provides an OpenStack integration[^caos] via
+a Neutron[^ne] plugin and deploying the necessary subset of tools like etcd,
+Calico agent Felix, routing daemon BIRD and a DHCP agent.
 
 ### Proof of concept implementations
 
@@ -367,17 +364,51 @@ openstack-ipsec container on each node.
 In our second proof of concept, we decided to implement support for
 openstack-ipsec. The initial step involved creating a new container image
 within the kolla[^kl] project specifically for this purpose. However, we
-encountered a significant challenge: the ovs-ctl start-ovs-ipsec command could
-not run inside the container because it requires a running init.d or systemctl
-to start the IPsec daemon immediately after Open vSwitch (OVS) deploys the
-configuration. We attempted to use supervisor to manage the processes within
-the container. However, this solution forced a manual start of the IPsec daemon
-before ovs-ctl had the chance to create the appropriate configurations.
+
+##### Architecture
+
+When Neutron[^ne] uses OVN[^ov] as controller it instructs it to create the
+necessary virtual networking infrastructure (logical switches, routers, etc.),
+particullary to create Geneve tunnels between compute nodes. These tunnels are
+used to carry traffic between instances on different compute nodes.
+
+In PoC setup Libreswan[^ls] suite runs on each compute node and manages the
+IPSec[^ip] tunnels. It encrypts the traffic flowing over the Geneve tunnels,
+ensuring that data is secure as it traverses the physical network. In setup
+phase it establishes IPSec tunnels between compute nodes by negotiating the
+necessary security parameters (encryption, authentication, etc.). Once the
+tunnels are established, Libreswan[^ls] monitors and manages them, ensuring
+that the encryption keys are periodically refreshed and that the tunnels remain
+up.
+
+A packet originating from a VM on one compute node is processed by OVS and
+encapsulated into a Geneve tunnel. Before the Geneve-encapsulated packet leaves
+the compute node, it passes through the Libreswan process, which applies IPSec
+encryption. The encrypted packet traverses the physical network to the
+destination compute node. On the destination node, Libreswan[^ls] decrypts the
+packet, and OVN[^ov] handles decapsulation and forwards it to the target VM.
+
+OVS database contains the tunnel configurations and a `ovs-monitor-ipsec`
+process reads them, and establishes and monitors the tunnels. For the actual
+key exchange and encryption/decryption of the traffic it communicates with
+Libreswan[^ls], specifically with its main daemon `pluto`.
+
+##### Challanges
+
+Implementing the openstack-ipsec image we encountered a significant challenge:
+the ovs-ctl start-ovs-ipsec command could not run inside the container because
+it requires a running init.d or systemctl to start the IPsec daemon immediately
+after OVS[^ov] deploys the configuration. We attempted to use supervisor to
+manage the processes within the container. However, this solution forced a
+manual start of the IPsec daemon before ovs-ctl had the chance to create the
+appropriate configurations.
 
 Another challenge was the requirement for both the IPsec daemon and ovs-ipsec
 to run within a single container. This added complexity to the container
 configuration and management, making it harder to ensure both services operated
 correctly and efficiently.
+
+##### Additional infrastructure
 
 New ansible role for generating chassis keys and distributing them to the
 respective machines was created. This utility also handles the configuration on
@@ -392,11 +423,6 @@ components for openstack-ipsec. Using supervisor to manage the IPsec daemon
 within the container involved creating configuration files to ensure all
 services start correctly. However, integrating supervisor introduced additional
 complexity and potential points of failure.
-
-New Ansible role was implemented for generating and distributing chassis keys,
-which simplifies the dev setup. Yet, it requires users to handle, generate
-certificate and renewals manually, which could lead to operational challenges
-if not managed properly.
 
 ##### Possible improvements
 
@@ -460,8 +486,6 @@ security at multiple layers, rather than trying to eliminate it.
 
 ### Performance impact and ease of use
 
-IPsec[^ip] adds some overhead.
-
 Setup is straightforward for the operator, there is just a flag to enable or
 disable the IPsec[^ip] encryption inside Geneve tunnels and the need to set the
 Neutron[^ne] agent to OVN[^ov]. No other configuration is necessary. The only
@@ -494,7 +518,7 @@ environments.
 [^ci]: [Cillium](https://cilium.io/)
 [^ca]: [Calico](https://docs.tigera.io/calico/latest/about)
 [^caos]: [Calico for OpenStack](https://docs.tigera.io/calico/latest/getting-started/openstack/overview)
-[^ta]: Tailscale
+[^ta]: [Tailscale]()
 [^ov]: [Open Virtual Network](https://www.ovn.org/en/) (OVN)
 [^oit]: [OVN IPsec tutorial](https://docs.ovn.org/en/latest/tutorials/ovn-ipsec.html)
 [^kl]: [kolla](https://opendev.org/openstack/kolla) project
@@ -502,7 +526,7 @@ environments.
 [^wg]: [WireGuard](https://www.wireguard.com/)
 [^wgwp]: WireGuard [white paper](https://www.wireguard.com/papers/wireguard.pdf)
 [^ie]: [Internet Engineering Task Force](https://www.ietf.org/) (IETF)
-[^611](https://datatracker.ietf.org/doc/html/rfc8926#name-inter-data-center-traffic)
+[^rfc]: [RFC8926](https://datatracker.ietf.org/doc/html/rfc8926#name-inter-data-center-traffic)
 [^lkc]: [Linux Kernel Crypto API](https://www.kernel.org/doc/html/v4.10/crypto/index.html)
 [^ls]: [Libreswan](https://libreswan.org/) VPN software
 [^ms]: [MACsec standard](https://en.wikipedia.org/wiki/IEEE_802.1AE)
