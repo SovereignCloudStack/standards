@@ -67,7 +67,7 @@ This works well for shared networks, where servers can be attached directly, but
 
 Making servers in a project-internal network externally accessible through a virtual router is a bit more complicated, though.
 One option is for the user to create a subnet with an external IP range for the internal network, and then ask the CSP to configure a static route to the subnet via the gateway IP of a virtual router.
-This is cumbersome to set up manually, but can be automated using the `bgp` extension of the Network API, which is implemented by the `neutron-dynamic-routing` project [^bgp].
+This is cumbersome to set up manually, but can be automated using the `bgp` extension of the Network API, which is currently implemented both by the `neutron-dynamic-routing` project [^bgp] and by the `ovn` mechanism driver when used with the `ovn-bgp-agent` [^ovn-bgp].
 For users, this takes the form of a CSP-managed shared subnet pool, which they can use to create externally routable subnets, limited by a per-project quota.
 
 For IPv6, there is also the option of prefix delegation, where a DHCPv6 server automatically assigns an IPv6 prefix to a subnet when it connects to the external provider network [^pd].
@@ -207,6 +207,7 @@ By default, users **SHOULD** be prohibited by policy from creating RBAC rules fo
 ## References
 
 [^bgp]: <https://docs.openstack.org/neutron/2024.1/admin/config-bgp-dynamic-routing.html>
+[^ovn-bgp]: <https://docs.openstack.org/ovn-bgp-agent/2024.1/readme.html>
 [^pd]: <https://docs.openstack.org/neutron/2024.1/admin/config-ipv6.html#prefix-delegation>
 [^pf]: <https://docs.openstack.org/api-ref/network/v2/index.html#floating-ips-port-forwarding>
 [^ds]: <https://docs.openstack.org/neutron/2024.1/admin/config-ipv6.html>
