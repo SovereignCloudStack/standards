@@ -23,6 +23,11 @@ KEYWORDS = {
     'testcases': ('lifetime', 'id', 'description', 'tags'),
     'include': ('ref', 'parameters'),
 }
+# The canonical result values are -1, 0, and 1, for FAIL, MISS (or DNF), and PASS, respectively;
+# these concrete numbers are important because we do rely on their ordering. Note that MISS/DNF should
+# not be reported because it is tantamount to a result being absent. (Therefore the NIL_RESULT default
+# value below.)
+TESTCASE_VERDICTS = {'PASS': 1, 'FAIL': -1}
 NIL_RESULT = {'result': 0}
 
 
@@ -193,12 +198,20 @@ class TestSuite:
         suite.include_testcases([tc for tc in self.testcases if test_selectors(selectors, tc['tags'])])
         return suite
 
-    def evaluate(self, results):
+    def eval_buckets(self, results) -> tuple[list[dict], list[dict], list[dict]]:
+        """returns lists of (failed, missing, passed) test cases"""
         by_value = defaultdict(list)
         for testcase in self.testcases:
             value = results.get(testcase['id'], NIL_RESULT).get('result', 0)
             by_value[value].append(testcase)
-        return by_value
+        return by_value[-1], by_value[0], by_value[1]
+
+    def evaluate(self, results) -> int:
+        """returns overall result"""
+        return min([
+            results.get(testcase['id'], NIL_RESULT).get('result', 0)
+            for testcase in self.testcases
+        ], default=0)
 
 
 def compile_suite(basename: str, include: list, sections: tuple = (), tests: re.Pattern = None) -> TestSuite:

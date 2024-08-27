@@ -213,6 +213,7 @@ def import_bootstrap(bootstrap_path, conn):
 
 
 class PrecomputedVersion:
+    """Precompute all `TestSuite` instances necessary to evaluate the results of some version"""
     def __init__(self, version):
         self.name = version['version']
         self.suite = compile_suite(self.name, version['include'])
@@ -223,15 +224,12 @@ class PrecomputedVersion:
         }
 
     def evaluate(self, scenario_results):
+        """evaluate the results for this version and return the canonical JSON output"""
         target_results = {}
         for tname, suite in self.targets.items():
-            by_value = suite.evaluate(scenario_results)
             target_results[tname] = {
                 'testcases': [testcase['id'] for testcase in suite.testcases],
-                'num_passed': len(by_value[1]),
-                'num_missing': len(by_value[0]),
-                'num_failed': len(by_value[-1]),
-                'result': -1 if by_value[-1] else 0 if by_value[0] else 1,
+                'result': suite.evaluate(scenario_results),
             }
         return {
             'testcases': {tc['id']: tc for tc in self.suite.testcases},
@@ -243,6 +241,7 @@ class PrecomputedVersion:
 
 
 class PrecomputedScope:
+    """Precompute all `TestSuite` instances necessary to evaluate the results of some scope"""
     def __init__(self, spec):
         self.name = spec['name']
         self.spec = spec
@@ -252,6 +251,7 @@ class PrecomputedScope:
         }
 
     def evaluate(self, scope_results):
+        """evaluate the results for this scope and return the canonical JSON output"""
         version_results = {
             vname: self.versions[vname].evaluate(scenario_results)
             for vname, scenario_results in scope_results.items()
@@ -276,18 +276,31 @@ class PrecomputedScope:
             ]),
         }
 
+    def update_lookup(self, target_dict):
+        """Create entries in a lookup mapping for each testcase that occurs in this scope.
+
+        This mapping from triples (scope uuid, version name, testcase id) to testcase facilitates
+        evaluating result sets from database queries a great deal, because then just one lookup operation
+        tells us whether a result row can be associated with any known testcase, and if so, whether the
+        result is still valid (looking at the testcase's lifetime).
+
+        In the future, the mapping could even be simplified by deriving a unique id from each triple that
+        could then be stored (redundantly) in a dedicated database column, and the mapping could be from
+        just one id (instead of a triple) to testcase.
+        """
+        scope_uuid = self.spec['uuid']
+        for vname, precomputed_version in self.versions.items():
+            for testcase in precomputed_version.suite.testcases:
+                target_dict[(scope_uuid, vname, testcase['id'])] = testcase
+
 
 def import_cert_yaml(yaml_path, target_dict):
     yaml = ruamel.yaml.YAML(typ='safe')
     with open(yaml_path, "r") as fileobj:
         spec = load_spec(yaml.load(fileobj.read()))
     annotate_validity(spec['timeline'], spec['versions'], date.today())
-    scope_uuid = spec['uuid']
-    target_dict[scope_uuid] = precomputed_scope = PrecomputedScope(spec)
-    # add quick direct lookup for testcases
-    for vname, precomputed_version in precomputed_scope.versions.items():
-        for testcase in precomputed_version.suite.testcases:
-            target_dict[(scope_uuid, vname, testcase['id'])] = testcase
+    target_dict[spec['uuid']] = precomputed_scope = PrecomputedScope(spec)
+    precomputed_scope.update_lookup(target_dict)
 
 
 def import_cert_yaml_dir(yaml_path, target_dict):
@@ -444,6 +457,7 @@ async def post_report(
 def convert_result_rows_to_dict2(
     rows, scopes_lookup, grace_period_days=0, scopes=(), subjects=(), include_report=False,
 ):
+    """evaluate all versions occurring in query result `rows`, returning canonical JSON representation"""
     now = datetime.now()
     if grace_period_days:
         now -= timedelta(days=grace_period_days)
@@ -643,6 +657,7 @@ async def post_subjects(
 
 
 def passed_filter(results, subject, scope):
+    """picks list of passed versions for given `subject` and `scope` from `results`"""
     subject_data = results.get(subject)
     if not subject_data:
         return ""
@@ -653,10 +668,14 @@ def passed_filter(results, subject, scope):
 
 
 def verdict_filter(value):
+    """turn a canonical result value into a written verdict (PASS, MISS, or FAIL)"""
+    # be fault-tolerant here and turn every non-canonical value into a MISS
     return {1: 'PASS', -1: 'FAIL'}.get(value, 'MISS')
 
 
 def verdict_check_filter(value):
+    """turn a canonical result value into a symbolic verdict (✔, ⚠, or ✘)"""
+    # be fault-tolerant here and turn every non-canonical value into a MISS
     return {1: '✔', -1: '✘'}.get(value, '⚠')
 
 
