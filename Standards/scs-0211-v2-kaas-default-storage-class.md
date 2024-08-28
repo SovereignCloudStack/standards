@@ -30,34 +30,28 @@ object that is annotated with `storageclass.kubernetes.io/is-default-class=true`
 [Kubernetes documentation][k8s-default-sc].
 The name of this storage class is not standardized.
 
-The persistent volumes (PV) provisioned by the provided default storage class MUST fulfill all
-of the following properties:
-
-- MUST support the `ReadWriteOnce` [access mode][k8s-accessmode].
-- MUST NOT be backed by local or ephemeral storage.
-- MUST NOT be bound to the lifecycle of a Kubernetes node.
-
-The provisioned storage class MAY support volume expansion (`allowVolumeExpansion=true`).
-
 ### Recommended non-performance-related properties
 
 The following recommendations cannot be checked without further ado and therefore do not represent hard requirement criteria. Nevertheless, they are important prerequisites for ensuring data storage stability:
 
-- `ReadWriteOnce` should be a supported [access mode](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes)
-- volume should be protected against data loss due to hardware failures of a single disk or host
-- volume should not be bound to the lifecycle of a Kubernetes Node
+If the persistent volumes (PV) provisioned by the provided default storage class are required to be failure-safe they MUST fulfill all
+of the following properties:
 
-Hence,
+- MUST support the `ReadWriteOnce` [access mode][k8s-accessmode].
+- MUST NOT be bound to the lifecycle of a Kubernetes node.
+- MUST NOT be backed by local or ephemeral storage.\
+  This means:
+  - MUST NOT be backed by local storage on the Kubernetes Node VM itself.
+  - MAY be backed by some kind of redundant storage within an AZ, across hosts.
+  - MAY be backed by some kind of redundant storage across AZ's.
 
-- ...volume should not be backed by local storage on the Kubernetes Node VM itself
-- ...volume may be backed by some kind of redundant storage within an AZ, across hosts
-- ...volume may be backed by some kind of redundant storage across AZ's
+Volumes that are not necessarily required to be failure-safe may be local/node-bound/non-redundant. This might be the case with fast to run applications that take care of data durability and availability on application level.
 
-- volumes that are not necessarily required to be failure-safe may be local/node-bound/non-redundant, possibly fast to run applications that take care of data durability and availability on application level
+The provisioned storage class MAY support volume expansion (`allowVolumeExpansion=true`).
 
 ### Required performance-related properties
 
-- _NO_ fixed guarantees regarding latency/bandwidth/IOPS/...
+- _NO_ fixed guarantees regarding latency/bandwidth/IOPS/etc.
 Generally, customers should be able to expect low-tier performance without pricing surprises.
 
 ## Previous standard versions
