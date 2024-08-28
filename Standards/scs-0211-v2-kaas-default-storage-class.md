@@ -65,7 +65,6 @@ Generally, customers should be able to expect low-tier performance without prici
 [Version v1 of this standard](scs-0211-v1-kaas-default-storage-class.md) did not enforce the
 existence of a default storage class in a newly created cluster.
 
-
 ## Conformance Tests
 
 TBD
