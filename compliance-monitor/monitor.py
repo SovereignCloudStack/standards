@@ -659,7 +659,7 @@ async def post_subjects(
 
 
 def passed_filter(results, subject, scope):
-    """picks list of passed versions for given `subject` and `scope` from `results`"""
+    """Jinja filter to pick list of passed versions from `results` for given `subject` and `scope`"""
     subject_data = results.get(subject)
     if not subject_data:
         return ""
@@ -670,13 +670,13 @@ def passed_filter(results, subject, scope):
 
 
 def verdict_filter(value):
-    """turn a canonical result value into a written verdict (PASS, MISS, or FAIL)"""
+    """Jinja filter to turn a canonical result value into a written verdict (PASS, MISS, or FAIL)"""
     # be fault-tolerant here and turn every non-canonical value into a MISS
     return {1: 'PASS', -1: 'FAIL'}.get(value, 'MISS')
 
 
 def verdict_check_filter(value):
-    """turn a canonical result value into a symbolic verdict (✔, ⚠, or ✘)"""
+    """Jinja filter to turn a canonical result value into a symbolic verdict (✔, ⚠, or ✘)"""
     # be fault-tolerant here and turn every non-canonical value into a MISS
     return {1: '✔', -1: '✘'}.get(value, '⚠')
 
