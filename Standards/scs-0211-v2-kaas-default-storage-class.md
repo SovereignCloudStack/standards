@@ -32,7 +32,7 @@ The name of this storage class is not standardized.
 
 ### Recommended non-performance-related properties
 
-The following recommendations cannot be checked without further ado and therefore do not represent hard requirement criteria. Nevertheless, they are important prerequisites for ensuring data storage stability:
+The following recommendations are not completely tested yet and therefore do not represent hard requirement criteria so far. Nevertheless, they are important prerequisites for ensuring data storage stability. Generally, these criteria are met by choosing the right provisioner such as Cinder CSI Provisioner. And this shall be cross-checked against a list of provisioners.
 
 If the persistent volumes (PV) provisioned by the provided default storage class are required to be failure-safe they MUST fulfill all
 of the following properties:
@@ -43,7 +43,7 @@ of the following properties:
   This means:
   - MUST NOT be backed by local storage on the Kubernetes Node VM itself.
   - MAY be backed by some kind of redundant storage within an AZ, across hosts.
-  - MAY be backed by some kind of redundant storage across AZ's.
+  - MAY be backed by some kind of redundant storage across AZ's. 
 
 Volumes that are not necessarily required to be failure-safe may be local/node-bound/non-redundant. This might be the case with fast to run applications that take care of data durability and availability on application level.
 
