@@ -41,7 +41,7 @@ The provisioned storage class MAY support volume expansion (`allowVolumeExpansio
 
 ### Recommended non-performance-related properties
 
-The following recommendations cannot be checked without further ado and therefore do not represent hard requirement criteria.  Nevertheless, they are important prerequisites for ensuring data storage stability:
+The following recommendations cannot be checked without further ado and therefore do not represent hard requirement criteria. Nevertheless, they are important prerequisites for ensuring data storage stability:
 
 - `ReadWriteOnce` should be a supported [access mode](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes)
 - volume should be protected against data loss due to hardware failures of a single disk or host
