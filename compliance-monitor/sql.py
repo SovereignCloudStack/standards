@@ -3,7 +3,7 @@ from psycopg2.extensions import cursor, connection
 
 # list schema versions in ascending order
 SCHEMA_VERSION_KEY = 'version'
-SCHEMA_VERSIONS = ['v1', 'v2']
+SCHEMA_VERSIONS = ['v1', 'v2', 'v3']
 # use ... (Ellipsis) here to indicate that no default value exists (will lead to error if no value is given)
 ACCOUNT_DEFAULTS = {'subject': ..., 'api_key': ..., 'roles': ...}
 PUBLIC_KEY_DEFAULTS = {'public_key': ..., 'public_key_type': ..., 'public_key_name': ...}
@@ -123,6 +123,18 @@ def db_ensure_schema_v2(cur: cursor):
     ''')
 
 
+def db_ensure_schema_v3(cur: cursor):
+    # v3 merely extends v2, so we need v2 first
+    db_ensure_schema_v2(cur)
+    cur.execute('''
+    CREATE TABLE IF NOT EXISTS delegation (
+        delegateid integer NOT NULL REFERENCES account ON DELETE CASCADE ON UPDATE CASCADE,
+        accountid integer NOT NULL REFERENCES account ON DELETE CASCADE ON UPDATE CASCADE,
+        UNIQUE (delegateid, accountid)
+    );
+    ''')
+
+
 def db_upgrade_data_v1_v2(cur):
     # we are going to drop table result, but use delete anyway to have the transaction safety
     cur.execute('''
@@ -187,6 +199,10 @@ def db_upgrade_schema(conn: connection, cur: cursor):
             db_post_upgrade_v1_v2(cur)
             db_set_schema_version(cur, 'v2')
             conn.commit()
+        elif current == 'v2':
+            db_ensure_schema_v3(cur)
+            db_set_schema_version(cur, 'v3')
+            conn.commit()
 
 
 def db_ensure_schema(conn: connection):
@@ -217,6 +233,29 @@ def db_update_account(cur: cursor, record: dict):
     RETURNING accountid;''', sanitized)
     accountid, = cur.fetchone()
     return accountid
+
+
+def db_clear_delegates(cur: cursor, accountid):
+    cur.execute('''DELETE FROM delegation WHERE accountid = %s;''', (accountid, ));
+
+
+def db_add_delegate(cur: cursor, accountid, delegate):
+    cur.execute('''
+    INSERT INTO delegation (accountid, delegateid)
+    (SELECT %s, accountid
+    FROM account
+    WHERE subject = %s)
+    RETURNING accountid;''', (accountid, delegate))
+
+
+def db_find_subjects(cur: cursor, delegate):
+    cur.execute('''
+    SELECT a.subject
+    FROM delegation
+    JOIN account a ON a.accountid = delegation.accountid
+    JOIN account b ON b.accountid = delegation.delegateid
+    WHERE b.subject = %s;''', (delegate, ))
+    return [row[0] for row in cur.fetchall()]
 
 
 def db_update_apikey(cur: cursor, accountid, apikey_hash):

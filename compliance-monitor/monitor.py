@@ -29,8 +29,9 @@ import uvicorn
 from sql import (
     db_find_account, db_update_account, db_update_publickey, db_filter_publickeys, db_get_reports,
     db_get_keys, db_insert_report, db_get_recent_results2, db_patch_approval2, db_get_report,
-    db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys,
-    db_patch_subject, db_get_subjects, db_insert_result2, db_get_relevant_results2,
+    db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys, db_clear_delegates,
+    db_patch_subject, db_get_subjects, db_insert_result2, db_get_relevant_results2, db_add_delegate,
+    db_find_subjects,
 )
 
 
@@ -203,6 +204,9 @@ def import_bootstrap(bootstrap_path, conn):
         for account in accounts:
             roles = sum(ROLES[r] for r in account.get('roles', ()))
             accountid = db_update_account(cur, {'subject': account['subject'], 'roles': roles})
+            db_clear_delegates(cur, accountid)
+            for delegate in account.get('delegates', ()):
+                db_add_delegate(cur, accountid, delegate)
             keyids = set(db_update_apikey(cur, accountid, h) for h in account.get("api_keys", ()))
             db_filter_apikeys(cur, accountid, lambda keyid, *_: keyid in keyids)
             keyids = set(db_update_publickey(cur, accountid, key) for key in account.get("keys", ()))
@@ -413,6 +417,11 @@ async def post_report(
     if content_type not in ('application/x-signed-yaml', 'application/x-signed-json'):
         # see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/415
         raise HTTPException(status_code=415, detail="Unsupported Media Type")
+
+    with conn.cursor() as cur:
+        keys = db_get_keys(cur, account[0])
+        allowed_subjects = set(db_find_subjects(cur, account[0]))
+
     body = await request.body()
     body_text = body.decode("utf-8")
     sep = body_text.find(SEP)
@@ -421,36 +430,42 @@ async def post_report(
     sep += len(SEP)
     signature = body_text[:sep - 1]  # do away with the ampersand!
     body_text = body_text[sep:]
-    json_text = None
-    if content_type.endswith('-yaml'):
-        yaml = ruamel.yaml.YAML(typ='safe')
-        document = yaml.load(body_text)
-        json_text = json.dumps(document, cls=TimestampEncoder)
-    elif content_type.endswith("-json"):
-        document = json.loads(body_text)
-        json_text = body_text
-    else:
-        raise HTTPException(status_code=500)
-    rundata = document['run']
-    uuid, subject, checked_at = rundata['uuid'], document['subject'], document['checked_at']
-    check_role(account, subject, ROLES['append_any'])
-    with conn.cursor() as cur:
-        keys = db_get_keys(cur, subject)
     try:
         ssh_validate(keys, signature, body_text)
     except ValueError:
         raise HTTPException(status_code=401)
-    scopeuuid = document['spec']['uuid']
+
+    json_texts = []
+    if content_type.endswith('-yaml'):
+        yaml = ruamel.yaml.YAML(typ='safe')
+        documents = yaml.load_all(body_text)
+        json_texts = [json.dumps(document, cls=TimestampEncoder) for document in documents]
+    elif content_type.endswith("-json"):
+        documents = [json.loads(body_text)]
+        json_texts = [body_text]
+    else:
+        raise HTTPException(status_code=500)
+
+    allowed_subjects.add(account[0])
+    for document in documents:
+        check_role(account, document['subject'], ROLES['append_any'])
+        if document['subject'] not in allowed_subjects:
+            raise HTTPException(status_code=401, detail="delegation problem?")    
+    
     with conn.cursor() as cur:
-        try:
-            reportid = db_insert_report(cur, uuid, checked_at, subject, json_text, content_type, body)
-        except UniqueViolation:
-            raise HTTPException(status_code=409, detail="Conflict: report already present")
-        for version, vdata in document['versions'].items():
-            for check, rdata in vdata.items():
-                result = rdata['result']
-                approval = 1 == result  # pre-approve good result
-                db_insert_result2(cur, checked_at, subject, scopeuuid, version, check, result, approval, reportid)
+        for document, json_text in zip(documents, json_texts):
+            rundata = document['run']
+            uuid, subject, checked_at = rundata['uuid'], document['subject'], document['checked_at']
+            scopeuuid = document['spec']['uuid']
+            try:
+                reportid = db_insert_report(cur, uuid, checked_at, subject, json_text, content_type, body)
+            except UniqueViolation:
+                raise HTTPException(status_code=409, detail="Conflict: report already present")
+            for version, vdata in document['versions'].items():
+                for check, rdata in vdata.items():
+                    result = rdata['result']
+                    approval = 1 == result  # pre-approve good result
+                    db_insert_result2(cur, checked_at, subject, scopeuuid, version, check, result, approval, reportid)
     conn.commit()
 
 

@@ -368,7 +368,7 @@ def main(argv):
         version_report = {version['version']: results for version, _, results in report_data}
         report = create_report(argv, config, spec, version_report, runner.get_invocations())
         with open(config.output, 'w', encoding='UTF-8') as fileobj:
-            yaml.safe_dump(report, fileobj, default_flow_style=False, sort_keys=False)
+            yaml.safe_dump(report, fileobj, default_flow_style=False, sort_keys=False, explicit_start=True)
     return min(127, runner.num_abort + (0 if config.critical_only else runner.num_error))
 
 
