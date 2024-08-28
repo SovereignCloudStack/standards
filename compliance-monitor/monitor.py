@@ -450,8 +450,8 @@ async def post_report(
     for document in documents:
         check_role(account, document['subject'], ROLES['append_any'])
         if document['subject'] not in allowed_subjects:
-            raise HTTPException(status_code=401, detail="delegation problem?")    
-    
+            raise HTTPException(status_code=401, detail="delegation problem?")
+
     with conn.cursor() as cur:
         for document, json_text in zip(documents, json_texts):
             rundata = document['run']

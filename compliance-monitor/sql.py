@@ -236,7 +236,7 @@ def db_update_account(cur: cursor, record: dict):
 
 
 def db_clear_delegates(cur: cursor, accountid):
-    cur.execute('''DELETE FROM delegation WHERE accountid = %s;''', (accountid, ));
+    cur.execute('''DELETE FROM delegation WHERE accountid = %s;''', (accountid, ))
 
 
 def db_add_delegate(cur: cursor, accountid, delegate):
