@@ -6,55 +6,18 @@ import sys
 import click
 import yaml
 
-from flavor_names import parser_v1, parser_v2, parser_v3, inputflavor, outputter, flavorname_to_dict, prettyname
+from flavor_names import parser_v1, parser_v2, parser_v3, inputflavor, outputter, flavorname_to_dict, \
+    prettyname, ParsingStrategy
 
 
-logger = logging.getLogger(__name__)
-
-
-class ParsingStrategy:
-    """class to model parsing that accepts multiple versions of the syntax in different ways"""
-
-    def __init__(self, parsers=(), tolerated_parsers=(), invalid_parsers=()):
-        self.parsers = parsers
-        self.tolerated_parsers = tolerated_parsers
-        self.invalid_parsers = invalid_parsers
-
-    def parse(self, namestr):
-        exc = None
-        for parser in self.parsers:
-            try:
-                return parser(namestr)
-            except Exception as e:
-                if exc is None:
-                    exc = e
-        # at this point, if `self.parsers` is not empty, then `exc` is not `None`
-        for parser in self.tolerated_parsers:
-            try:
-                result = parser(namestr)
-            except Exception:
-                pass
-            else:
-                logger.warning(f"Name is merely tolerated {parser.vstr}: {namestr}")
-                return result
-        for parser in self.invalid_parsers:
-            try:
-                result = parser(namestr)
-            except Exception:
-                pass
-            else:
-                raise ValueError(f"Name is non-tolerable {parser.vstr}")
-        raise exc
-
-
-VERSIONS = {
-    'v1': ParsingStrategy(parsers=(parser_v1, ), invalid_parsers=(parser_v2, )),
-    'v1/v2': ParsingStrategy(parsers=(parser_v1, ), tolerated_parsers=(parser_v2, )),
-    'v2/v1': ParsingStrategy(parsers=(parser_v2, ), tolerated_parsers=(parser_v1, )),
-    'v2': ParsingStrategy(parsers=(parser_v2, ), invalid_parsers=(parser_v1, )),
-    'v3': ParsingStrategy(parsers=(parser_v3, ), invalid_parsers=(parser_v1, )),
-}
-_, VERSIONS['latest'] = max(VERSIONS.items())
+PARSERS = {ps.vstr: ps for ps in [
+    ParsingStrategy(vstr='v1', parsers=(parser_v1, ), invalid_parsers=(parser_v2, )),
+    ParsingStrategy(vstr='v1/v2', parsers=(parser_v1, ), tolerated_parsers=(parser_v2, )),
+    ParsingStrategy(vstr='v2/v1', parsers=(parser_v2, ), tolerated_parsers=(parser_v1, )),
+    ParsingStrategy(vstr='v2', parsers=(parser_v2, ), invalid_parsers=(parser_v1, )),
+    ParsingStrategy(vstr='v3', parsers=(parser_v3, ), invalid_parsers=(parser_v1, )),
+]}
+_, PARSERS['latest'] = max(PARSERS.items())
 
 
 def noop(*args, **kwargs):
@@ -84,7 +47,7 @@ def process_pipeline(rc, *args, **kwargs):
 
 
 @cli.command()
-@click.argument('version', type=click.Choice(list(VERSIONS), case_sensitive=False))
+@click.argument('version', type=click.Choice(list(PARSERS), case_sensitive=False))
 @click.argument('name', nargs=-1)
 @click.option('-o', '--output', 'output', type=click.Choice(['none', 'prose', 'yaml']),
               help='select output format (default: none)')
@@ -96,12 +59,12 @@ def parse(cfg, version, name, output='none'):
     validation. With 'v1/v2', flavor names of both kinds are accepted, but warnings are emitted for v2,
     and similarly with 'v2/v1', where warnings are emitted for v1.
     """
-    version = VERSIONS.get(version)
+    parser = PARSERS.get(version)
     printv = cfg.printv
     errors = 0
     for namestr in name:
         try:
-            flavorname = version.parse(namestr)
+            flavorname = parser(namestr)
         except ValueError as exc:
             print(f"{exc}: {namestr}")
             errors += 1
