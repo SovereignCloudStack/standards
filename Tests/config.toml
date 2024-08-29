@@ -1,0 +1,30 @@
+[secrets]
+keyfile = ".secret/keyfile"
+tokenfile = ".secret/tokenfile"
+
+[presets.default]
+scopes = ["scs-compatible-iaas"]
+subjects = ["gx-scs"]
+
+[presets.all]
+scopes = ["scs-compatible-iaas"]
+subjects = ["gx-scs", "artcodix", "poc-wgcloud", "wavestack", "syseleven-ham1"]
+workers = 4
+
+[scopes.scs-compatible-iaas]
+spec = "./scs-compatible-iaas.yaml"
+
+[subjects.gx-scs.mapping]
+os_cloud = "gx-scs"
+
+[subjects.artcodix.mapping]
+os_cloud = "artcodix"
+
+[subjects.poc-wgcloud.mapping]
+os_cloud = "poc-wgcloud"
+
+[subjects.wavestack.mapping]
+os_cloud = "wavestack"
+
+[subjects.syseleven-ham1.mapping]
+os_cloud = "syseleven-ham1"
