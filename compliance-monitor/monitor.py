@@ -460,7 +460,7 @@ async def post_report(
             uuid, subject, checked_at = rundata['uuid'], document['subject'], document['checked_at']
             scopeuuid = document['spec']['uuid']
             try:
-                reportid = db_insert_report(cur, uuid, checked_at, subject, json_text, content_type, body)
+                reportid = db_insert_report(cur, uuid, checked_at, subject, json_text)
             except UniqueViolation:
                 raise HTTPException(status_code=409, detail="Conflict: report already present")
             for version, vdata in document['versions'].items():

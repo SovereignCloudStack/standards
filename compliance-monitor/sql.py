@@ -124,9 +124,16 @@ def db_ensure_schema_v2(cur: cursor):
 
 
 def db_ensure_schema_v3(cur: cursor):
-    # v3 merely extends v2, so we need v2 first
+    # v3 mainly extends v2, so we need v2 first
     db_ensure_schema_v2(cur)
+    # We do alter the table "report" by dropping two columns, so these columns may have been created in vain
+    # if this database never really was on v2, but I hope dropping columns from an empty table is cheap
+    # enough, because I want to avoid having too many code paths here. We can remove these columns from
+    # create table once all databases are on v3.
     cur.execute('''
+    ALTER TABLE report DROP COLUMN IF EXISTS raw;
+    ALTER TABLE report DROP COLUMN IF EXISTS rawformat;
+    DROP TABLE IF EXISTS invocation;  -- we forgot this for post-upgrade v2, can be dropped without harm
     CREATE TABLE IF NOT EXISTS delegation (
         delegateid integer NOT NULL REFERENCES account ON DELETE CASCADE ON UPDATE CASCADE,
         accountid integer NOT NULL REFERENCES account ON DELETE CASCADE ON UPDATE CASCADE,
@@ -187,8 +194,8 @@ def db_upgrade_schema(conn: connection, cur: cursor):
         if current is None:
             # this is an empty db, but it also used to be the case with v1
             # I (mbuechse) made sure manually that the value v1 is set on running installations
-            db_ensure_schema_v2(cur)
-            db_set_schema_version(cur, 'v2')
+            db_ensure_schema_v3(cur)
+            db_set_schema_version(cur, 'v3')
             conn.commit()
         elif current == 'v1':
             db_ensure_schema_v2(cur)
@@ -321,12 +328,12 @@ def db_get_reports(cur: cursor, subject, limit, skip):
     return [row[0] for row in cur.fetchall()]
 
 
-def db_insert_report(cur: cursor, uuid, checked_at, subject, json_text, content_type, body):
+def db_insert_report(cur: cursor, uuid, checked_at, subject, json_text):
     # this is an exception in that we don't use a record parameter (it's just not as practical here)
     cur.execute('''
     INSERT INTO report (reportuuid, checked_at, subject, data, rawformat, raw)
     VALUES (%s, %s, %s, %s, %s, %s)
-    RETURNING reportid;''', (uuid, checked_at, subject, json_text, content_type, body))
+    RETURNING reportid;''', (uuid, checked_at, subject, json_text))
     reportid, = cur.fetchone()
     return reportid
 
