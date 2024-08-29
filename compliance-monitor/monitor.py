@@ -439,7 +439,7 @@ async def post_report(
     json_texts = []
     if content_type.endswith('-yaml'):
         yaml = ruamel.yaml.YAML(typ='safe')
-        documents = yaml.load_all(body_text)
+        documents = list(yaml.load_all(body_text))  # ruamel.yaml doesn't have API docs: this is a generator
         json_texts = [json.dumps(document, cls=TimestampEncoder) for document in documents]
     elif content_type.endswith("-json"):
         documents = [json.loads(body_text)]
@@ -447,6 +447,9 @@ async def post_report(
     else:
         # unreachable due to the content-type check at the top
         raise AssertionError("branch should never be reached")
+
+    if not documents:
+        raise HTTPException(status_code=200, detail="empty reports")
 
     allowed_subjects = {auth_subject} | set(delegation_subjects)
     for document in documents:
