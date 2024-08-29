@@ -49,6 +49,7 @@ FLAVOR_ATTRIBUTES = {
 FLAVOR_OPTIONAL = ("hw_rng:rate_bytes", "hw_rng:rate_period")
 
 
+TIMEOUT = 5 * 60  # timeout in seconds after which we no longer wait for the VM to complete the run
 MARKER = '_scs-test-'
 SERVER_USERDATA_GENERIC = """
 #cloud-config
@@ -378,12 +379,17 @@ def evaluate_output(lines, image, flavor, marker=MARKER):
             continue
         if section:
             collected[section].append(line[indent:])
-    # virtio-rng is not an official test case according to testing notes,
-    # but for some reason we check it nonetheless (call it informative)
-    check_virtio_rng(collected['virtio-rng'], image, flavor)
-    print_result('entropy-check-entropy-avail', check_entropy_avail(collected['entropy-avail'], image.name))
-    print_result('entropy-check-rngd', check_rngd(collected['rngd'], image.name))
-    print_result('entropy-check-fips-test', check_fips_test(collected['fips-test'], image.name))
+    # always check if we have something, because print_result won't do MISS, only PASS/FAIL
+    if collected['virtio-rng']:
+        # virtio-rng is not an official test case according to testing notes,
+        # but for some reason we check it nonetheless (call it informative)
+        check_virtio_rng(collected['virtio-rng'], image, flavor)
+    if collected['entropy-avail']:
+        print_result('entropy-check-entropy-avail', check_entropy_avail(collected['entropy-avail'], image.name))
+    if collected['rngd']:
+        print_result('entropy-check-rngd', check_rngd(collected['rngd'], image.name))
+    if collected['fips-test']:
+        print_result('entropy-check-fips-test', check_fips_test(collected['fips-test'], image.name))
 
 
 def main(argv):
@@ -451,14 +457,19 @@ def main(argv):
                         # can be interrupted via Ctrl-C, and then the instance will be
                         # started without us knowing its id
                         server = create_vm(env, all_flavors, image)
+                        remainder = TIMEOUT
                         console = conn.compute.get_server_console_output(server)
-                        while True:
+                        while remainder > 0:
                             if "Failed to run module scripts-user" in console['output']:
                                 raise RuntimeError(f"Failed tests for {server.id}")
                             if "_scs-test-end" in console['output']:
                                 break
                             time.sleep(1.0)
+                            remainder -= 1
                             console = conn.compute.get_server_console_output(server)
+                        # if the timeout was hit, maybe we won't find everything, but that's okay --
+                        # these testcases will count as missing, rightly so
+                        logger.debug(f'Finished waiting with timeout remainder: {remainder} s')
                         evaluate_output(console['output'].splitlines(), image, server.flavor)
                     finally:
                         delete_vm(conn)
