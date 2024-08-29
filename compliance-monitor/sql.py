@@ -3,7 +3,7 @@ from psycopg2.extensions import cursor, connection
 
 # list schema versions in ascending order
 SCHEMA_VERSION_KEY = 'version'
-SCHEMA_VERSIONS = ['v1', 'v2']
+SCHEMA_VERSIONS = ['v1', 'v2', 'v3']
 # use ... (Ellipsis) here to indicate that no default value exists (will lead to error if no value is given)
 ACCOUNT_DEFAULTS = {'subject': ..., 'api_key': ..., 'roles': ...}
 PUBLIC_KEY_DEFAULTS = {'public_key': ..., 'public_key_type': ..., 'public_key_name': ...}
@@ -123,6 +123,25 @@ def db_ensure_schema_v2(cur: cursor):
     ''')
 
 
+def db_ensure_schema_v3(cur: cursor):
+    # v3 mainly extends v2, so we need v2 first
+    db_ensure_schema_v2(cur)
+    # We do alter the table "report" by dropping two columns, so these columns may have been created in vain
+    # if this database never really was on v2, but I hope dropping columns from an empty table is cheap
+    # enough, because I want to avoid having too many code paths here. We can remove these columns from
+    # create table once all databases are on v3.
+    cur.execute('''
+    ALTER TABLE report DROP COLUMN IF EXISTS raw;
+    ALTER TABLE report DROP COLUMN IF EXISTS rawformat;
+    DROP TABLE IF EXISTS invocation;  -- we forgot this for post-upgrade v2, can be dropped without harm
+    CREATE TABLE IF NOT EXISTS delegation (
+        delegateid integer NOT NULL REFERENCES account ON DELETE CASCADE ON UPDATE CASCADE,
+        accountid integer NOT NULL REFERENCES account ON DELETE CASCADE ON UPDATE CASCADE,
+        UNIQUE (delegateid, accountid)
+    );
+    ''')
+
+
 def db_upgrade_data_v1_v2(cur):
     # we are going to drop table result, but use delete anyway to have the transaction safety
     cur.execute('''
@@ -175,8 +194,8 @@ def db_upgrade_schema(conn: connection, cur: cursor):
         if current is None:
             # this is an empty db, but it also used to be the case with v1
             # I (mbuechse) made sure manually that the value v1 is set on running installations
-            db_ensure_schema_v2(cur)
-            db_set_schema_version(cur, 'v2')
+            db_ensure_schema_v3(cur)
+            db_set_schema_version(cur, 'v3')
             conn.commit()
         elif current == 'v1':
             db_ensure_schema_v2(cur)
@@ -186,6 +205,10 @@ def db_upgrade_schema(conn: connection, cur: cursor):
         elif current == 'v1-v2':
             db_post_upgrade_v1_v2(cur)
             db_set_schema_version(cur, 'v2')
+            conn.commit()
+        elif current == 'v2':
+            db_ensure_schema_v3(cur)
+            db_set_schema_version(cur, 'v3')
             conn.commit()
 
 
@@ -217,6 +240,29 @@ def db_update_account(cur: cursor, record: dict):
     RETURNING accountid;''', sanitized)
     accountid, = cur.fetchone()
     return accountid
+
+
+def db_clear_delegates(cur: cursor, accountid):
+    cur.execute('''DELETE FROM delegation WHERE accountid = %s;''', (accountid, ))
+
+
+def db_add_delegate(cur: cursor, accountid, delegate):
+    cur.execute('''
+    INSERT INTO delegation (accountid, delegateid)
+    (SELECT %s, accountid
+    FROM account
+    WHERE subject = %s)
+    RETURNING accountid;''', (accountid, delegate))
+
+
+def db_find_subjects(cur: cursor, delegate):
+    cur.execute('''
+    SELECT a.subject
+    FROM delegation
+    JOIN account a ON a.accountid = delegation.accountid
+    JOIN account b ON b.accountid = delegation.delegateid
+    WHERE b.subject = %s;''', (delegate, ))
+    return [row[0] for row in cur.fetchall()]
 
 
 def db_update_apikey(cur: cursor, accountid, apikey_hash):
@@ -282,12 +328,12 @@ def db_get_reports(cur: cursor, subject, limit, skip):
     return [row[0] for row in cur.fetchall()]
 
 
-def db_insert_report(cur: cursor, uuid, checked_at, subject, json_text, content_type, body):
+def db_insert_report(cur: cursor, uuid, checked_at, subject, json_text):
     # this is an exception in that we don't use a record parameter (it's just not as practical here)
     cur.execute('''
-    INSERT INTO report (reportuuid, checked_at, subject, data, rawformat, raw)
-    VALUES (%s, %s, %s, %s, %s, %s)
-    RETURNING reportid;''', (uuid, checked_at, subject, json_text, content_type, body))
+    INSERT INTO report (reportuuid, checked_at, subject, data)
+    VALUES (%s, %s, %s, %s)
+    RETURNING reportid;''', (uuid, checked_at, subject, json_text))
     reportid, = cur.fetchone()
     return reportid
 
