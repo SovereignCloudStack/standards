@@ -255,7 +255,7 @@ class TestEnvironment:
         self.clean()
 
 
-def create_vm(conn, all_flavors, image, server_name=SERVER_NAME):
+def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
     # Pick a flavor matching the image
     flavors = [flv for flv in all_flavors if flv.ram >= image.min_ram]
     # if at all possible, prefer a flavor that provides hw_rng:allowed!
@@ -279,9 +279,9 @@ def create_vm(conn, all_flavors, image, server_name=SERVER_NAME):
         f"Creating instance of image '{image.name}' using flavor '{flavor.name}' and "
         f"{volume_size} GiB ephemeral boot volume"
     )
-    server = conn.create_server(
+    server = env.conn.create_server(
         server_name, image=image, flavor=flavor, userdata=userdata, wait=True, timeout=500,
-        boot_from_volume=True, terminate_volume=True, volume_size=volume_size,
+        boot_from_volume=True, terminate_volume=True, volume_size=volume_size, network=env.network,
     )
     logger.debug(f"Server '{server_name}' ('{server.id}') has been created")
     # next, do an explicit get_server because, beginning with version 3.2.0, the openstacksdk no longer
@@ -289,7 +289,7 @@ def create_vm(conn, all_flavors, image, server_name=SERVER_NAME):
     # I (mbuechse) consider this a bug in openstacksdk; it was introduced with
     # https://opendev.org/openstack/openstacksdk/commit/a8adbadf0c4cdf1539019177fb1be08e04d98e82
     # I also consider openstacksdk architecture with the Mixins etc. smelly to say the least
-    return conn.get_server(server.id)
+    return env.conn.get_server(server.id)
 
 
 def delete_vm(conn, server_name=SERVER_NAME):
@@ -441,13 +441,13 @@ def main(argv):
 
             logger.debug("Checking dynamic instance properties")
             # Check a VM for services and requirements
-            with TestEnvironment(conn):
+            with TestEnvironment(conn) as env:
                 for image in images:
                     try:
                         # ugly: create the server inside the try-block because the call
                         # can be interrupted via Ctrl-C, and then the instance will be
                         # started without us knowing its id
-                        server = create_vm(conn, all_flavors, image)
+                        server = create_vm(env, all_flavors, image)
                         console = conn.compute.get_server_console_output(server)
                         while True:
                             if "Failed to run module scripts-user" in console['output']:
