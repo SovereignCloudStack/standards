@@ -34,8 +34,8 @@ modules:
         description: >
           Must fulfill all requirements of
           <https://docs.scs.community/standards/scs-0100-v2-flavor-naming>
-  - id: scs-0100-v3.1
-    name: Flavor naming v3.1
+  - id: scs-0100-v3.0
+    name: Flavor naming v3.0
     url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
     run:
       - executable: ./iaas/flavor-naming/flavor-names-openstack.py
@@ -48,8 +48,8 @@ modules:
           Must fulfill all requirements of
           <https://docs.scs.community/standards/scs-0100-v3-flavor-naming -- plus the list of mandatory>
           and recommended flavors found in <https://docs.scs.community/standards/scs-0100-v2-flavor-naming#standard-scs-flavors>
-  - id: scs-0100-v3.2
-    name: Flavor naming v3.2
+  - id: scs-0100-v3.1
+    name: Flavor naming v3.1
     url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
     run:
       - executable: ./iaas/flavor-naming/flavor-names-openstack.py
@@ -193,7 +193,7 @@ versions:
   - version: v5
     include:
       - opc-v2022.11
-      - scs-0100-v3.2
+      - scs-0100-v3.1
       - scs-0101-v1
       - scs-0102-v1
       - scs-0103-v1
@@ -206,7 +206,7 @@ versions:
     stabilized_at: 2024-02-28
     include:
       - opc-v2022.11
-      - scs-0100-v3.2
+      - scs-0100-v3.1
       - scs-0101-v1
       - scs-0102-v1
       - scs-0103-v1
@@ -219,7 +219,7 @@ versions:
     stabilized_at: 2023-06-15
     include:
       - opc-v2022.11
-      - scs-0100-v3.1
+      - scs-0100-v3.0
       - scs-0102-v1
     targets:
       main: mandatory
