@@ -6,3 +6,5 @@ PyYAML
 openstacksdk
 requests
 tomli
+kubernetes
+
