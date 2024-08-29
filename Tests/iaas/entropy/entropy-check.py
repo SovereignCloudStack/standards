@@ -300,29 +300,6 @@ def delete_vm(conn, server_name=SERVER_NAME):
         logger.debug(f"The server '{server_name}' couldn't be deleted.", exc_info=True)
 
 
-def retry(func, exc_type, timeouts=(8, 7, 15, 10, 20, 30, 60)):
-    if isinstance(exc_type, str):
-        exc_type = exc_type.split(',')
-    timeout_iter = iter(timeouts)
-    # do an initial sleep because func is known fail at first anyway
-    time.sleep(next(timeout_iter))
-    retries = 0
-    while True:
-        try:
-            func()
-        except Exception as e:
-            retries += 1
-            timeout = next(timeout_iter, None)
-            if timeout is None or e.__class__.__name__ not in exc_type:
-                raise
-            logger.debug(f"Initiating retry in {timeout} s due to {e!r} during {func!r}")
-            time.sleep(timeout)
-        else:
-            break
-    if retries:
-        logger.debug(f"Operation {func!r} successful after {retries} retries")
-
-
 class CountingHandler(logging.Handler):
     def __init__(self, level=logging.NOTSET):
         super().__init__(level=level)
