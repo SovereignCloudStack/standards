@@ -331,8 +331,8 @@ def db_get_reports(cur: cursor, subject, limit, skip):
 def db_insert_report(cur: cursor, uuid, checked_at, subject, json_text):
     # this is an exception in that we don't use a record parameter (it's just not as practical here)
     cur.execute('''
-    INSERT INTO report (reportuuid, checked_at, subject, data, rawformat, raw)
-    VALUES (%s, %s, %s, %s, %s, %s)
+    INSERT INTO report (reportuuid, checked_at, subject, data)
+    VALUES (%s, %s, %s, %s)
     RETURNING reportid;''', (uuid, checked_at, subject, json_text))
     reportid, = cur.fetchone()
     return reportid
