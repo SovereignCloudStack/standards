@@ -43,7 +43,7 @@ of the following properties:
   This means:
   - MUST NOT be backed by local storage on the Kubernetes Node VM itself.
   - MAY be backed by some kind of redundant storage within an AZ, across hosts.
-  - MAY be backed by some kind of redundant storage across AZ's. 
+  - MAY be backed by some kind of redundant storage across AZ's.
 
 Volumes that are not necessarily required to be failure-safe may be local/node-bound/non-redundant. This might be the case with fast to run applications that take care of data durability and availability on application level.
 
@@ -61,7 +61,7 @@ existence of a default storage class in a newly created cluster.
 
 ## Conformance Tests
 
-TBD
+Is currently under progress [stage: pull-request](https://github.com/SovereignCloudStack/standards/pull/658).
 
 [k8s-pvc]: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
 [k8s-default-sc]: https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/
