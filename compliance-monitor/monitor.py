@@ -418,9 +418,10 @@ async def post_report(
         # see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/415
         raise HTTPException(status_code=415, detail="Unsupported Media Type")
 
+    auth_subject, _ = account
     with conn.cursor() as cur:
-        keys = db_get_keys(cur, account[0])
-        allowed_subjects = set(db_find_subjects(cur, account[0]))
+        keys = db_get_keys(cur, auth_subject)
+        delegation_subjects = db_find_subjects(cur, auth_subject)
 
     body = await request.body()
     body_text = body.decode("utf-8")
@@ -447,7 +448,7 @@ async def post_report(
         # unreachable due to the content-type check at the top
         raise AssertionError("branch should never be reached")
 
-    allowed_subjects.add(account[0])
+    allowed_subjects = {auth_subject} | set(delegation_subjects)
     for document in documents:
         check_role(account, document['subject'], ROLES['append_any'])
         if document['subject'] not in allowed_subjects:
