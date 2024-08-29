@@ -426,14 +426,14 @@ async def post_report(
     body_text = body.decode("utf-8")
     sep = body_text.find(SEP)
     if sep < 0:
-        raise HTTPException(status_code=401)
+        raise HTTPException(status_code=401, detail="missing signature")
     sep += len(SEP)
     signature = body_text[:sep - 1]  # do away with the ampersand!
     body_text = body_text[sep:]
     try:
         ssh_validate(keys, signature, body_text)
-    except ValueError:
-        raise HTTPException(status_code=401)
+    except Exception:
+        raise HTTPException(status_code=401, detail="verification failed")
 
     json_texts = []
     if content_type.endswith('-yaml'):
@@ -444,7 +444,8 @@ async def post_report(
         documents = [json.loads(body_text)]
         json_texts = [body_text]
     else:
-        raise HTTPException(status_code=500)
+        # unreachable due to the content-type check at the top
+        raise AssertionError("branch should never be reached")
 
     allowed_subjects.add(account[0])
     for document in documents:
