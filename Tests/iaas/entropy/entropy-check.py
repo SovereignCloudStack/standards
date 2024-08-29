@@ -49,7 +49,7 @@ FLAVOR_ATTRIBUTES = {
 FLAVOR_OPTIONAL = ("hw_rng:rate_bytes", "hw_rng:rate_period")
 
 
-# we need to set package source on Ubuntu, because the default is not fixed and can lead to Heisenbugs
+MARKER = '_scs-test-'
 SERVER_USERDATA_GENERIC = """
 #cloud-config
 # apt-placeholder
@@ -63,6 +63,7 @@ runcmd:
   - echo '_scs-test-end'
 final_message: "_scs-test-end"
 """.strip()
+# we need to set package source on Ubuntu, because the default is not fixed and can lead to Heisenbugs
 SERVER_USERDATA = {
     'ubuntu': SERVER_USERDATA_GENERIC.replace('# apt-placeholder', """apt:
   primary:
@@ -361,14 +362,16 @@ def print_result(check_id, passed):
     print(check_id + ": " + ('FAIL', 'PASS')[bool(passed)])
 
 
-def evaluate_output(lines, image, flavor):
+def evaluate_output(lines, image, flavor, marker=MARKER):
+    # parse lines from console output
+    # removing any "indent", stuff that looks like '[   70.439502] cloud-init[513]: '
     section = None
     indent = 0
     collected = defaultdict(list)
     for line in lines:
-        idx = line.find("_scs-test-")
+        idx = line.find(marker)
         if idx != -1:
-            section = line[idx + 10:].split()[0]
+            section = line[idx + len(marker):].strip()
             if section == 'end':
                 section = None
             indent = idx
