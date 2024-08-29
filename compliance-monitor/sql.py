@@ -84,6 +84,18 @@ def db_ensure_schema_common(cur: cursor):
         name text,
         provider text
     );
+    CREATE TABLE IF NOT EXISTS report (
+        reportid SERIAL PRIMARY KEY,
+        reportuuid text UNIQUE,
+        checked_at timestamp,
+        subject text,
+        -- scopeid integer NOT NULL REFERENCES scope ON DELETE CASCADE ON UPDATE CASCADE,
+        -- let's omit the scope here because it is determined via the results, and it
+        -- is possible that future reports refer to multiple scopes
+        data jsonb,
+        rawformat text,
+        raw bytea
+    );
     ''')
 
 
@@ -251,6 +263,14 @@ def db_filter_publickeys(cur: cursor, accountid, predicate: callable):
         del removeids[:10]
 
 
+def db_get_report(cur: cursor, report_uuid):
+    cur.execute(
+        "SELECT data FROM report WHERE reportuuid = %(reportuuid)s;",
+        {"reportuuid": report_uuid},
+    )
+    return [row[0] for row in cur.fetchall()]
+
+
 def db_get_reports(cur: cursor, subject, limit, skip):
     cur.execute(
         sql.SQL("SELECT data FROM report {} LIMIT %(limit)s OFFSET %(skip)s;")
@@ -293,7 +313,9 @@ def db_get_relevant_results2(
     # DISTINCT ON is a Postgres-specific construct that comes in very handy here :)
     cur.execute(sql.SQL('''
     SELECT DISTINCT ON (subject, scopeuuid, version, testcase)
-    subject, scopeuuid, version, testcase, result, checked_at FROM result2
+    result2.subject, scopeuuid, version, testcase, result, result2.checked_at, report.reportuuid
+    FROM result2
+    JOIN report ON report.reportid = result2.reportid
     {filter_condition}
     ORDER BY subject, scopeuuid, version, testcase, checked_at DESC;
     ''').format(
@@ -301,7 +323,7 @@ def db_get_relevant_results2(
             sql.SQL('approval') if approved_only else None,
             None if scopeuuid is None else sql.SQL('scopeuuid = %(scopeuuid)s'),
             None if version is None else sql.SQL('version = %(version)s'),
-            None if subject is None else sql.SQL('subject = %(subject)s'),
+            None if subject is None else sql.SQL('result2.subject = %(subject)s'),
         ),
     ), {"subject": subject, "scopeuuid": scopeuuid, "version": version})
     return cur.fetchall()

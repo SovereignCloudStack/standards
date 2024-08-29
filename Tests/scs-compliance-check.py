@@ -31,13 +31,10 @@ from itertools import chain
 import logging
 import yaml
 
-from scs_cert_lib import load_spec, annotate_validity, compile_suite, TestSuite
+from scs_cert_lib import load_spec, annotate_validity, compile_suite, TestSuite, TESTCASE_VERDICTS
 
 
 logger = logging.getLogger(__name__)
-
-TESTCASE_VERDICTS = {'PASS': 1, 'FAIL': -1}
-NIL_RESULT = {'result': 0}
 
 
 def usage(file=sys.stdout):
@@ -277,8 +274,7 @@ def run_suite(suite: TestSuite, runner: CheckRunner):
 def print_report(subject: str, suite: TestSuite, targets: dict, results: dict):
     print(f"{subject} {suite.name}:")
     for tname, target_spec in targets.items():
-        by_result = suite.select(tname, target_spec).evaluate(results)
-        passed, missing, failed = by_result[1], by_result[0], by_result[-1]
+        failed, missing, passed = suite.select(tname, target_spec).eval_buckets(results)
         verdict = 'FAIL' if failed else 'TENTATIVE pass' if missing else 'PASS'
         summary_parts = [f"{len(passed)} passed"]
         if failed:
