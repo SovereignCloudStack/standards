@@ -12,6 +12,15 @@ SCS Clouds should provide a way to grant Domain Manager rights to SCS Customers 
 This is not properly implemented in the default OpenStack configuration and requires specific adjustments to the Keystone identity management configuration.
 To avoid conflict with the unscoped `admin` role in OpenStack we want to refer to this new persona as "Domain Manager", introducing the `manager` role in the API for domains.
 
+:::info
+
+As part of the Sovereign Cloud Stack project the Domain Manager functionality for OpenStack was contributed upstream and will be available natively starting with the OpenStack release 2024.2 ("Dalmatian").
+Until the next SCS release is based on OpenStack 2024.2 or later this standard serves as a transitional solution to offer the Domain Manager functionality for SCS clouds.
+
+The implementation in this standard and the upcoming native OpenStack integration will offer identical behavior for users, ensuring a seamless transition once this standard is deprecated and replaced by OpenStack's native implementation of the functionality in one of the upcoming SCS releases.
+
+:::
+
 ## Terminology
 
 The following special terms are used throughout this standard document:
