@@ -35,7 +35,7 @@ The following IaaS APIs MUST be present in SCS-compliant IaaS deployments and co
 | **image** | Glance | Image service |
 | **load-balancer** | Octavia | Load-balancer service |
 | **network** | Neutron | Networking service |
-| **s3** or **object-store** | S3 API object storage | No formal standard exists, many implementations: Swift, RadosGW, minio... |
+| **s3** | S3 API object storage | Object Storage service |
 
 :::caution
 
@@ -56,6 +56,7 @@ The following IaaS APIs MAY be present in SCS-compliant IaaS deployment, e.g. im
 | **dns** | Designate | DNS service |
 | **ha** | Masakari | Instances High Availability service |
 | **key-manager** | Barbican | Key Manager service |
+| **object-store** | Swift | Object Store with different possible backends |
 | **orchestration** | Heat | Orchestration service |
 | **shared-file-systems** | Manila | Shared File Systems service |
 | **telemetry** | Ceilometer | Telemetry service |
