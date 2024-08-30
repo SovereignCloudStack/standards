@@ -8,7 +8,7 @@ subjects = ["gx-scs"]
 
 [presets.all]
 scopes = ["scs-compatible-iaas"]
-subjects = ["gx-scs", "artcodix", "poc-wgcloud", "wavestack", "syseleven-ham1"]
+subjects = ["gx-scs", "artcodix", "poc-wgcloud", "wavestack", "syseleven-ham1", "pco-prod1"]
 workers = 4
 
 [scopes.scs-compatible-iaas]
@@ -20,11 +20,14 @@ os_cloud = "gx-scs"
 [subjects.artcodix.mapping]
 os_cloud = "artcodix"
 
+[subjects.pco-prod1.mapping]
+os_cloud = "pco-prod1"
+
 [subjects.poc-wgcloud.mapping]
 os_cloud = "poc-wgcloud"
 
-[subjects.wavestack.mapping]
-os_cloud = "wavestack"
-
 [subjects.syseleven-ham1.mapping]
 os_cloud = "syseleven-ham1"
+
+[subjects.wavestack.mapping]
+os_cloud = "wavestack"

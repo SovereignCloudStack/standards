@@ -32,6 +32,7 @@ class Config:
         self.presets = {}
         self.scopes = {}
         self.subjects = {}
+        self._auth_token = None
 
     def load_toml(self, path):
         self.cwd = os.path.abspath(os.path.dirname(path))
@@ -42,17 +43,47 @@ class Config:
         self.presets.update(toml_dict.get('presets', {}))
         self.secrets.update(toml_dict.get('secrets', {}))
 
+    @property
+    def auth_token(self):
+        if self._auth_token is None:
+            pass
+        with open(self.abspath(self.secrets['tokenfile']), "r") as fileobj:
+            self._auth_token = fileobj.read().strip()
+        return self._auth_token
+
     def abspath(self, path):
         return os.path.join(self.cwd, path)
 
-    def build_command(self, scope, subject, output):
+    def build_check_command(self, scope, subject, output):
         cmd = [
             sys.executable, self.scs_compliance_check, self.abspath(self.scopes[scope]['spec']),
-            '--debug', '-C', '-o', output, '-s', subject
+            '--debug', '-C', '-o', output, '-s', subject,
         ]
         for key, value in self.subjects[subject]['mapping'].items():
             cmd.extend(['-a', f'{key}={value}'])
         return cmd
+
+    def build_sign_command(self, target_path):
+        return [
+            self.ssh_keygen,
+            '-Y', 'sign',
+            '-f', self.abspath(self.secrets['keyfile']),
+            '-n', 'report',
+            target_path,
+        ]
+
+    def build_upload_command(self, target_path, monitor_url):
+        if not monitor_url.endswith('/'):
+            monitor_url += '/'
+        return [
+            self.curl,
+            '--fail-with-body',
+            '--data-binary', f'@{target_path}.sig',
+            '--data-binary', f'@{target_path}',
+            '-H', 'Content-Type: application/x-signed-yaml',
+            '-H', f'Authorization: Basic {self.auth_token}',
+            f'{monitor_url}reports',
+        ]
 
 
 @click.group()
@@ -70,13 +101,30 @@ def process_pipeline(rc, *args, **kwargs):
     sys.exit(rc)
 
 
-def _run_all(commands, num_workers=5):
+def _run_commands(commands, num_workers=5):
     processes = []
     while commands or processes:
         while commands and len(processes) < num_workers:
             processes.append(subprocess.Popen(commands.pop()))
         processes[:] = [p for p in processes if p.poll() is None]
         time.sleep(0.5)
+
+
+def _concat_files(source_paths, target_path):
+    with open(target_path, 'wb') as tfileobj:
+        for path in source_paths:
+            with open(path, 'rb') as sfileobj:
+                shutil.copyfileobj(sfileobj, tfileobj)
+
+
+def _move_file(source_path, target_path):
+    # for Windows people, remove target first, but don't try too hard (Windows is notoriously bad at this)
+    # this two-stage delete-rename approach does have a tiny (irrelevant) race condition (thx Windows)
+    try:
+        os.remove(target_path)
+    except FileNotFoundError:
+        pass
+    os.rename(source_path, target_path)
 
 
 @cli.command()
@@ -105,45 +153,19 @@ def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml):
         subjects = [subject.strip() for subject in subjects.split(',')] if subjects else []
     if not scopes or not subjects:
         raise click.UsageError('both scope(s) and subject(s) must be non-empty')
-    if not monitor_url.endswith('/'):
-        monitor_url += '/'
     logger.debug(f'running tests for scope(s) {", ".join(scopes)} and subject(s) {", ".join(subjects)}')
     logger.debug(f'monitor url: {monitor_url}, num_workers: {num_workers}, output: {report_yaml}')
-    with open(cfg.abspath(cfg.secrets['tokenfile']), "r") as fileobj:
-        auth_token = fileobj.read().strip()
     with tempfile.TemporaryDirectory(dir=cfg.cwd) as tdirname:
+        report_yaml_tmp = os.path.join(tdirname, 'report.yaml')
         jobs = [(scope, subject) for scope in scopes for subject in subjects]
         outputs = [os.path.join(tdirname, f'report-{idx}.yaml') for idx in range(len(jobs))]
-        commands = [cfg.build_command(job[0], job[1], output) for job, output in zip(jobs, outputs)]
-        _run_all(commands, num_workers=num_workers)
-        report_yaml_tmp = os.path.join(tdirname, f'report.yaml')
-        with open(report_yaml_tmp, 'wb') as tfileobj:
-            for output in outputs:
-                with open(output, 'rb') as sfileobj:
-                    shutil.copyfileobj(sfileobj, tfileobj)
-        subprocess.run([
-            cfg.ssh_keygen,
-            '-Y', 'sign',
-            '-f', cfg.abspath(cfg.secrets['keyfile']),
-            '-n', 'report',
-            report_yaml_tmp,
-        ])
-        subprocess.run([
-            cfg.curl,
-            '--fail-with-body',
-            '--data-binary', f'@{report_yaml_tmp}.sig',
-            '--data-binary', f'@{report_yaml_tmp}',
-            '-H', 'Content-Type: application/x-signed-yaml',
-            '-H', f'Authorization: Basic {auth_token}',
-            f'{monitor_url}reports',
-        ])
+        commands = [cfg.build_check_command(job[0], job[1], output) for job, output in zip(jobs, outputs)]
+        _run_commands(commands, num_workers=num_workers)
+        _concat_files(outputs, report_yaml_tmp)
+        subprocess.run(cfg.build_sign_command(report_yaml_tmp))
+        subprocess.run(cfg.build_upload_command(report_yaml_tmp, monitor_url))
         if report_yaml is not None:
-            # for Windows people, remove target first
-            try:
-                os.remove(report_yaml)
-            except FileNotFoundError:
-                pass
-            os.rename(report_yaml_tmp, report_yaml)
+            _move_file(report_yaml_tmp, report_yaml)
     return 0
 
 
