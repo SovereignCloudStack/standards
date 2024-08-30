@@ -89,16 +89,11 @@ This means that by creating a new role and extending Keystone's API policy confi
 
 ### Limitations
 
-The approach described in this standard imposes the following limitations:
+The approach described in this standard imposes the following limitation:
 
-1. as a result of the "`identity:list_domains`" rule (see below), Domain Managers are able to see all domains[^5] via "`openstack domain list`" and can inspect the metadata of other domains with "`openstack domain show`"
-2. as a result of the "`identity:list_roles`" rule (see below), Domain Managers are able to see all roles via "`openstack role list`" and can inspect the metadata of other roles with "`openstack role show`"
+As a result of the "`identity:list_roles`" rule (see below), Domain Managers are able to see all roles via "`openstack role list`" and can inspect the metadata of any role with "`openstack role show`"
 
-**As a result of points 1 and 2, metadata of all domains and roles will be exposed to all Domain Managers!**
-
-If a CSP deems either of these points critical, they may abstain from granting the `"manager"` role to any user in a domain scope, effectively disabling the Domain Manager functionality. See [Impact](#impact).
-
-[^5]: see the [corresponding Launchpad bug at Keystone](https://bugs.launchpad.net/keystone/+bug/2041611)
+If this limitation poses a concern for a CSP, they may abstain from granting the `"manager"` role to any user in a domain scope, effectively disabling the Domain Manager functionality. See [Impact](#impact).
 
 ## Decision
 
@@ -231,9 +226,9 @@ They are used as a basis for the domain-manager-specific changes which are imple
 The section of "`base_*`" rules is meant for easy maintenance/update of default rules while keeping the domain-manager-specific rules separate.
 
 > **Note:**
-> The "`or rule:admin_required`" appendix to the rule definitions in "Section B" is included for backwards compatibility with environments not yet fully configured for the new secure RBAC standard[^6].
+> The "`or rule:admin_required`" appendix to the rule definitions in "Section B" is included for backwards compatibility with environments not yet fully configured for the new secure RBAC standard[^5].
 
-[^6]: [OpenStack Technical Committee Governance Documents: Consistent and Secure Default RBAC](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html)
+[^5]: [OpenStack Technical Committee Governance Documents: Consistent and Secure Default RBAC](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html)
 
 #### Specifying manageable roles via "`is_domain_managed_role`"
 
