@@ -12,7 +12,7 @@ SCS Clouds should provide a way to grant Domain Manager rights to SCS Customers 
 This is not properly implemented in the default OpenStack configuration and requires specific adjustments to the Keystone identity management configuration.
 To avoid conflict with the unscoped `admin` role in OpenStack we want to refer to this new persona as "Domain Manager", introducing the `manager` role in the API for domains.
 
-### Glossary
+## Terminology
 
 The following special terms are used throughout this standard document:
 
@@ -31,16 +31,6 @@ The following special terms are used throughout this standard document:
 | cloud admin | OpenStack user belonging to the CSP that possesses the `admin` role |
 
 [^1]: [OpenStack Documentation: Role-Based Access Control Overview](https://static.opendev.org/docs/patrole/latest/rbac-overview.html)
-
-### Impact
-
-Applying this standard modifies the API policy configuration of Keystone and introduces a new persona to Keystone to enable IAM self-service for customers within a domain.
-Once assigned, this persona allows special Domain Manager users within a domain to manage users, project, groups and role assignments as part of the IAM self-service.
-
-However, the configuration change introduced by this standard does not automatically assign the Domain Manager persona to any users per default.
-Assigning the new persona and granting customers the resulting self-service capabilities is a deliberate action to be taken by the CSP on a per-tenant (i.e. per domain) basis.
-
-Omitting the provisioning of any Domain Manager users (i.e. not assigning the new persona to any user) will result in an OpenStack cloud that behaves identically to a configuration without the standard applied, making the actual usage of the functionality a CSP's choice and entirely optional.
 
 ## Motivation
 
@@ -267,6 +257,16 @@ When adjusting the "`is_domain_managed_role`" rule a CSP might opt to also inclu
 This increases the self-service capabilities of the customer but introduces risks of Domain Managers also being able to revoke this role from themselves or each other (within their domain) in an unintended fashion.
 
 CSPs have to carefully evaluate whether Domain Manager designation authority should reside solely on their side or be part of the customer self-service scope and decide about adding "`'manager':%(target.role.name)s`" to the rule accordingly.
+
+### Impact
+
+Applying this standard modifies the API policy configuration of Keystone and introduces a new persona to Keystone to enable IAM self-service for customers within a domain.
+Once assigned, this persona allows special Domain Manager users within a domain to manage users, project, groups and role assignments as part of the IAM self-service.
+
+However, the configuration change introduced by this standard does not automatically assign the Domain Manager persona to any users per default.
+Assigning the new persona and granting customers the resulting self-service capabilities is a deliberate action to be taken by the CSP on a per-tenant (i.e. per domain) basis.
+
+Omitting the provisioning of any Domain Manager users (i.e. not assigning the new persona to any user) will result in an OpenStack cloud that behaves identically to a configuration without the standard applied, making the actual usage of the functionality a CSP's choice and entirely optional.
 
 ## Related Documents
 
