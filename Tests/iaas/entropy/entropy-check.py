@@ -427,7 +427,7 @@ def main(argv):
     try:
         logger.debug(f"Connecting to cloud '{cloud}'")
         with openstack.connect(cloud=cloud, timeout=32) as conn:
-            all_images = list(filter(lambda x: x.visibility=='public' or x.visibility=='community', conn.list_images()))
+            all_images = list(filter(lambda x: x.visibility == 'public' or x.visibility == 'community', conn.list_images()))
             all_flavors = conn.list_flavors(get_extra=True)
 
             if image_names:
