@@ -7,8 +7,9 @@ track: IAM
 
 ## Introduction
 
-SCS aims to provide a standardized role model for RBAC roles across all supported OpenStack API services that applies sensible and consistent permission sets based on a set list of roles defined by a standard.
-It is closely guided by the OpenStack defaults.
+SCS aims to provide a standardized role model for Role-Based Access Control (RBAC) across all supported OpenStack API services.
+The goal of this standard is to define IaaS roles for SCS clouds with sensible and consistent permission sets.
+It is closely guided by the OpenStack defaults to achieve compatibility and interoperability.
 
 ## Terminology
 
@@ -26,8 +27,9 @@ The following special terms are used throughout this standard document:
 
 ## Motivation
 
-The permission settings of OpenStack RBAC roles are configured in service-specific deployment configuration files (usually the respective "`policy.yaml`") in a rather static way and have to be carefully managed.
-In contrast to many of OpenStack's IAM and IaaS resources, these settings cannot be changed via its API at runtime.
+The permission settings of OpenStack RBAC roles are preconfigured in the OpenStack API implementations and can be adjusted individually in service-specific deployment configuration files (usually the respective "`policy.yaml`") optionally.
+In contrast to many of OpenStack's IAM and IaaS resources however, these settings cannot be changed via its API at runtime, only via configuration files.
+Changing these settings can have a wide range of implications and require careful testing and maintenance.
 For this reason it is important to have a secure and sensible default configuration in SCS clouds that is both intuitive and flexible enough to cover all necessary use cases of permission models desired by CSPs and customers.
 
 ## Design Considerations
