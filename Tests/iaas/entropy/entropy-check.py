@@ -85,6 +85,7 @@ Options:
  [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)
  [-d/--debug] enables DEBUG logging channel
  [-i/--images IMAGE_LIST] sets images to be tested, separated by comma.
+ [-V/--image-visibility VIS_LIST] filters images by visibility (default: public,community)
 """, end='', file=file)
 
 
@@ -401,7 +402,7 @@ def main(argv):
     logger.addHandler(counting_handler)
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:i:hd", ["os-cloud=", "images=", "help", "debug"])
+        opts, args = getopt.gnu_getopt(argv, "c:i:hdV:", ["os-cloud=", "images=", "help", "debug", "image-visibility="])
     except getopt.GetoptError as exc:
         logger.critical(f"{exc}")
         print_usage()
@@ -409,6 +410,7 @@ def main(argv):
 
     cloud = os.environ.get("OS_CLOUD")
     image_names = set()
+    image_visibility = ("public", "community")
     for opt in opts:
         if opt[0] == "-h" or opt[0] == "--help":
             print_usage()
@@ -419,6 +421,8 @@ def main(argv):
             cloud = opt[1]
         if opt[0] == "-d" or opt[0] == "--debug":
             logging.getLogger().setLevel(logging.DEBUG)
+        if opt[0] == "-V" or opt[0] == "--image-visibility":
+            image_visibility = opt[1].split(",")
 
     if not cloud:
         logger.critical("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.")
@@ -427,7 +431,7 @@ def main(argv):
     try:
         logger.debug(f"Connecting to cloud '{cloud}'")
         with openstack.connect(cloud=cloud, timeout=32) as conn:
-            all_images = list(filter(lambda x: x.visibility == 'public' or x.visibility == 'community', conn.list_images()))
+            all_images = conn.list_images()
             all_flavors = conn.list_flavors(get_extra=True)
 
             if image_names:
@@ -442,6 +446,11 @@ def main(argv):
             else:
                 images = [select_deb_image(all_images) or all_images[0]]
                 logger.debug(f"Selected image: {images[0].name} ({images[0].id})")
+
+            if image_visibility[0] != '':
+                logger.debug(f"Images: Filter for visibility={image_visibility}")
+                all_images = list(filter(lambda x: x.visibility in image_visibility, all_images))
+            logger.debug(f"Images: {list(map(lambda x: x.name + "(" + x.visibility + ")", all_images))}")
 
             logger.debug("Checking images and flavors for recommended attributes")
             print_result('entropy-check-image-properties', check_image_attributes(all_images))
