@@ -450,7 +450,8 @@ def main(argv):
             if image_visibility[0] != '':
                 logger.debug(f"Images: Filter for visibility={image_visibility}")
                 all_images = list(filter(lambda x: x.visibility in image_visibility, all_images))
-            logger.debug(f"Images: {list(map(lambda x: x.name + "(" + x.visibility + ")", all_images))}")
+            all_img_list = list(map(lambda x: x.name + " (" + x.visibility + ")", all_images))
+            logger.debug(f"Images: {all_img_list}")
 
             logger.debug("Checking images and flavors for recommended attributes")
             print_result('entropy-check-image-properties', check_image_attributes(all_images))
