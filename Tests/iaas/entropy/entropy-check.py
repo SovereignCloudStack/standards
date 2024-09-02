@@ -69,13 +69,11 @@ SERVER_USERDATA = {
     'ubuntu': SERVER_USERDATA_GENERIC.replace('# apt-placeholder', """apt:
   primary:
     - arches: [default]
-      uri: http://az1.clouds.archive.ubuntu.com/ubuntu/
-  security: []"""),
+      uri: http://az1.clouds.archive.ubuntu.com/ubuntu/"""),
     'debian': SERVER_USERDATA_GENERIC.replace('# apt-placeholder', """apt:
   primary:
     - arches: [default]
-      uri: https://mirror.plusserver.com/debian/debian/
-  security: []"""),
+      uri: https://mirror.plusserver.com/debian/debian/"""),
 }
 
 
