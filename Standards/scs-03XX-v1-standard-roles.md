@@ -53,9 +53,8 @@ Careful evaluation of benefits as well as implications of adopting these changes
 The new options are not adopted equally across all OpenStack services yet in context of the ongoing rework.
 
 Some service-specific role sets currently found in OpenStack services can only be eliminated and streamlined with the general roles (reader, member etc.) when those new options are enabled.
-Due to their currently unresolved compatibility issues, they cannot be freely adopted without consequences.
-If adoption proves to be unfeasible, role models dependent on the those oslo.policy options could not be considered and the service-specific role sets would need to be preserved for the time being.
-The affected services and roles are documented below.
+
+[^2]: [OpenStack Technical Committee Governance Documents: Consistent and Secure Default RBAC](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html)
 
 #### Core Role Set
 
@@ -78,7 +77,7 @@ The Key Manager component Barbican [established a set of dedicated roles](https:
 - audit
 
 This set of roles is Barbican-specific and not used by any other API.
-It became deprecated during the RBAC rework of OpenStack[^2] but is still included per default in recent OpenStack releases (as of the 2024.1 release).
+It became deprecated during the RBAC rework of OpenStack[^2].
 
 Due to its deprecation it is possible to enable Barbican's use of the already established reader, member and admin roles instead.
 This however requires the olso.policy options `enforce_scope` and `enforce_new_default` to be enabled.
@@ -108,89 +107,33 @@ Unless the new scoping defaults (`enforce_new_defaults`) are used, this leads to
 This in turn renders encryption features like the volume encryption of OpenStack's volume service unusable for customers unless the corresponding users are assigned the Barbican-specific "creator" role in projects additionally.
 This creates unnecessary management overhead on the CSP side and ambiguity for users since the role is only useful in Barbican but its name does not communicate this.
 
-To improve user experience and make the encryption features easily accessible, this standard should adjust the Key Manager API policies to extend permissions referencing the Barbican-specific "creator" role by the "member" role.
-This offers users easy access to the Key Manager API and aligns the permission set with the future rework (as per `enforce_new_defaults`), because it will later replace the "creator" role by the "member" role entirely.
+To improve user experience and make the encryption features easily accessible, this standard should demand using the new role model and scoping defaults for the Key Manager API.
 
-The "creator" role will be kept for compatibility reasons concerning service integration.
-For example, the block storage service Cinder usually has a technical user in Keystone possessing the "creator" role in the "service" project.
-Moving such service accounts to the "member" role could introduce undesired access patterns in other APIs that otherwise don't accept the "creator" role but offer a lot of functionality to the "member" role by default.
+### Inclusion of the "manager" role
 
-### Classification of the "manager" role
-
-The current RBAC rework in upstream OpenStack[^2] describes a "project-manager" persona utilizing a "manager" role on project scope to perform more privileged operations than "member" (see "Phase 3" of the document).
+The current RBAC rework in upstream OpenStack[^2] describes a "project-manager" persona utilizing a new "manager" role on project scope to perform more privileged operations than "member" (see "Phase 3" of the document).
 This role is intended to be used across various OpenStack services.
-As of the OpenStack release 2024.1 this role is not implemented in any of the core services yet, only in Ironic with `enforce_new_defaults` enabled[^4].
+As of the OpenStack release 2024.1 this role is not implemented in any of the core services yet, only in Ironic with `enforce_new_defaults` enabled[^3].
 
 On the other hand, the SCS project is making use of this role to implement a Domain Manager persona (see the [SCS Domain Manager standard under "Related Documents"](#scs-domain-manager-standard)).
+This persona will be available as a native upstream feature in Keystone starting with the 2024.2 release of OpenStack.
 
-As a result, the "manager" role has no effect outside of the Keystone Identity API until phase 3 of the RBAC rework is implemented upstream and this standard is migrated to the proper use of `enforce_new_defaults`.
-As such, it will be handled as a service-specific role for Keystone in this standard, not as a core role.
-This is to ensure that the effective scope of the role in SCS clouds is clearly documented and communicated to users.
-It might be elevated to a core role in future iterations of the standard when it is implemented in other services.
+As a result, the "manager" role has no effect outside of the Keystone Identity API until phase 3 of the RBAC rework is implemented upstream but can be used for identity-related functionality in Keystone.
 
-[^4]: [Implementation of the "manager" role in Ironic for the 2024.1 release](https://github.com/openstack/ironic/blob/stable/2024.1/ironic/common/policy.py#L76-L82)
-
-### Open questions
-
-#### Incorporating future upstream defaults into this standard
-
-Due to the ongoing RBAC rework in upstream OpenStack[^2], not all changes which are to be introduced by it will be included in the first iteration of this standard to avoid prematurely adopting role and policy definitions which might still change before being stabilized or have unresolved compatibility issues with certain services.
-
-This results in a need of keeping this standard in sync once the upstream rework finishes.
-It is currently unknown when the upstream rework will conclude exactly and how this standard will need to be adjusted as a result.
-
-This primarily concerns the new scoping and defaults in `oslo.policy`:
-
-```ini
-[oslo_policy]
-enforce_new_defaults = True
-enforce_scope = True
-```
-
-Not all OpenStack services enable these options yet.
-Once those options default to `True` for additional services in a future OpenStack release, this standard must be updated to properly account for the resulting changes in policy and role defaults.
-Due to the fact that the details on how the remaining compatibility issues will be addressed upstream are still unknown, the full implications on when and how this standard will need to be updated specifically remains an open question.
-However, at the very least this will most likely result in the following changes to this standard:
-
-- mandate the use of the new olso.policy options in all APIs
-- remove the service-specific roles of Barbican and Octavia from the standard
-- add the reader role to the core roles of this standard
-- move the manager role from service-specific roles to core roles
-- remove the design considerations sections related to the above
-- if applicable, update any policy generation workflows to use the new role model
-
-[^2]: [OpenStack Technical Committee Governance Documents: Consistent and Secure Default RBAC](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html)
-
-[^3]: [Current parameter defaults in `oslo_policy/opts.py` (2023-12-11)](https://github.com/openstack/oslo.policy/blob/a1e76258180002b288e64532676ba2bc2d1ec800/oslo_policy/opts.py#L26-L51)
+[^3]: [Implementation of the "manager" role in Ironic for the 2024.1 release](https://github.com/openstack/ironic/blob/stable/2024.1/ironic/common/policy.py#L76-L82)
 
 ## Standard
 
 ### Roles
 
-This standard establishes the following roles in SCS clouds.
-**Core Roles** MUST be present in the Identity API at all times.
-**Service-specific Roles** MUST be present in the Identity API as long as the corresponding service (denoted in parentheses) is part of the infrastructure.
+This standard establishes the following default roles in SCS clouds.
+The roles mentioned below MUST be present in the Identity API at all times.
 
-**Core Roles:**
-
+- reader
 - member
+- manager
 - admin
 - service
-
-**Service-specific Roles:**
-
-- manager (Keystone)
-- key-manager:service-admin (Barbican)
-- creator (Barbican)
-- observer (Barbican)
-- audit (Barbican)
-- load-balancer_observer (Octavia)
-- load-balancer_global_observer (Octavia)
-- load-balancer_member (Octavia)
-- load-balancer_quota_admin (Octavia)
-- load-balancer_admin (Octavia)
-- ResellerAdmin (Swift + Ceilometer)
-- heat_stack_user (Heat)
 
 #### Role Definitions
 
@@ -201,48 +144,33 @@ Core Roles:
 
 | Role | Primary Target(s) | Purpose |
 |---|---|---|
+| reader | customer | read-only access to resources in the scope of authentication (e.g. project) |
 | member | customer | read and write access to resources in the scope of authentication (e.g. project) |
+| manager | customer | identity self-service capability within a domain, to assign/revoke roles between users, groups and projects |
 | admin | CSP | cloud-level global administrative access to all resources (cross-domain, cross-project) |
 | service | internal | internal technical user role for service communication |
 
-Service-specific Roles:
+### API configuration
 
-| Service | Role | Primary Target(s) | Purpose |
-|---|---|---|---|
-| Keystone | manager | customer, CSP | slightly more elevated privileges than *member*, able to manage core resources or settings of a project or domain; currently this is limited to managing identity resources within a domain |
-| Barbican | audit | customer | allows read-only access to metadata of secrets within a project; does not allow secret retrieval or decryption |
-| Barbican | observer | customer | allows read-only access to secrets within a project, including retrieval and decryption |
-| Barbican | creator | customer | allows access to, creation and deletion of secrets within a project, including retrieval and decryption, equal to the member role |
-| Barbican | key-manager:service-admin | CSP | management API access for the cloud administrator, e.g. for project quota settings |
-| Octavia | load-balancer_observer | customer | access to read-only APIs |
-| Octavia | load-balancer_global_observer | CSP | access to read-only APIs including resources owned by others |
-| Octavia | load-balancer_member | customer | access to read and write APIs |
-| Octavia | load-balancer_quota_admin | CSP | admin access to quota APIs only, including quota resources owned by others |
-| Octavia | load-balancer_admin | CSP | admin access to all LB APIs including resources owned by others |
-| Swift | ResellerAdmin | Ceilometer (internal) | assigned to technical users of Ceilometer to integrate with Swift for access privileges in the object storage API to store statistics for metering |
-| Heat | heat_stack_user | internal | assigned to technical user accounts resulting from other resources' creation in Heat templates |
+All API services MUST be configured to use the Secure RBAC role model by enabling `enforce_new_defaults` and `enforce_scope` of the oslo.policy library.
 
-### API Policies
+If custom policy rules to any API by a CSP, the following MUST be adhered to:
 
-TODO: what does the CSP need to adhere to when it comes to API policy configuration?
+1. The `policy_file` option of the oslo.policy library MUST be set to the name of the policy override file and not rely on default paths.
+2. The custom policy rules MUST NOT extend the privileges of the roles mentioned in this standard.
 
-#### Key Manager API
-
-For the Key Manager API, the policy rule called "creator" MUST be adjusted to incorporate the "member" role as shown below.
-This can be achieved by adding the following entry to a `policy.yaml` for Barbican (usually located at "`/etc/barbican/policy.yaml`"):
-
-```yaml
-"creator": "role:creator or role:member"
-```
-
-Exemplary contents of a "`/etc/barbican/barbican.conf`":
+Example configuration entries:
 
 ```ini
 [oslo_policy]
-enforce_new_defaults = False
-enforce_scope = False
+enforce_new_defaults = True
+enforce_scope = True
 policy_file = policy.yaml
 ```
+
+#### API Policies
+
+TODO: what does the CSP need to adhere to when it comes to API policy configuration?
 
 ## Related Documents
 
