@@ -281,8 +281,9 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
         f"Creating instance of image '{image.name}' using flavor '{flavor.name}' and "
         f"{volume_size} GiB ephemeral boot volume"
     )
+    # explicitly set auto_ip=False, we may still get a (totally unnecessary) floating IP assigned
     server = env.conn.create_server(
-        server_name, image=image, flavor=flavor, userdata=userdata, wait=True, timeout=500,
+        server_name, image=image, flavor=flavor, userdata=userdata, wait=True, timeout=500, auto_ip=False,
         boot_from_volume=True, terminate_volume=True, volume_size=volume_size, network=env.network,
     )
     logger.debug(f"Server '{server_name}' ('{server.id}') has been created")
