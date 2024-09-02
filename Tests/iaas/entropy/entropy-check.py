@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 # prefix ephemeral resources with '_scs-' to rule out any confusion with important resources
 # (this enables us to automatically dispose of any lingering resources should this script be killed)
 NETWORK_NAME = "_scs-0101-net"
+SUBNET_NAME = "_scs-0101-subnet"
 ROUTER_NAME = "_scs-0101-router"
 SERVER_NAME = "_scs-0101-server"
 SECURITY_GROUP_NAME = "_scs-0101-group"
@@ -223,6 +224,8 @@ class TestEnvironment:
 
             # create network, subnet, router, connect everything
             self.network = self.conn.create_network(NETWORK_NAME)
+            # Note: The IP range/cidr here needs to match the one in the pre_cloud.yaml
+            # playbook calling cleanup.py
             self.subnet = self.conn.create_subnet(
                 self.network.id,
                 cidr="10.1.0.0/24",
@@ -230,9 +233,10 @@ class TestEnvironment:
                 enable_dhcp=True,
                 allocation_pools=[{
                     "start": "10.1.0.100",
-                    "end": "10.1.0.200",
+                    "end": "10.1.0.199",
                 }],
                 dns_nameservers=["9.9.9.9"],
+                name=SUBNET_NAME,
             )
             external_networks = list(self.conn.network.networks(is_router_external=True))
             if not external_networks:
