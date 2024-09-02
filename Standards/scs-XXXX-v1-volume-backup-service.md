@@ -17,13 +17,16 @@ It is important for users to have the ability to create backups of this data in 
 | Term | Meaning |
 |---|---|
 | CSP | Cloud Service Provider, provider managing the OpenStack infrastructure |
+| IaaS | Abbreviation for Infrastructure as a Service |
+| Image | IaaS resource representing a snapshot of a block storage disk, can be used to create Volumes |
+| Volume | IaaS resource representing a virtual block storage device that can be attached as a disk to virtual machines |
 
 ## Motivation
 
-The [volume backup functionality of OpenStack](https://docs.openstack.org/cinder/latest/admin/volume-backups.html) is a feature that is not available in all OpenStack clouds per default.
+The [volume backup functionality of the Block Storage API](https://docs.openstack.org/cinder/latest/admin/volume-backups.html) is a feature that is not available in all clouds per default, e.g., in OpenStack.
 The feature requires a backend to be prepared and configured correctly before it can be used.
-In Cinder, this is a separate configuration to the general storage backend of the volume service and is not mandatory.
-Thus, an arbitrary OpenStack cloud may or may not offer this feature.
+In the Block Storage service, the backup storage backend is usually configured separately from the storage backend of the general volume service and may not be mandatory.
+Thus, an arbitrary cloud may or may not offer the backup feature in the Block Storage API.
 
 This standard aims to make this functionality the default in SCS clouds so that customers can expect the feature to be usable.
 
@@ -35,16 +38,16 @@ The standard should make sure that the feature is available and usable but shoul
 
 #### Only recommend volume backup feature, use images as alternative
 
-As an alternative to the volume backup feature of the Block Storage API, Glance images can also be created based on volumes and act as a backup under certain circumstances.
+As an alternative to the volume backup feature of the Block Storage API, images can also be created based on volumes and act as a backup under certain circumstances.
 As an option, this standard could keep the actual integration of the volume backup feature optional and guide users how to use images as backup targets instead in case the feature is unavailable.
 
-However, it is not guaranteed that the Glance backend storage is separate from the volume storage.
+However, it is not guaranteed that the image backend storage is separate from the volume storage.
 For instance, both could be using the same Ceph cluster.
 In such case, the images would not count as genuine backups.
 
 Although users are able to download images and transfer them to a different storage location, this approach might also prove unfeasible depending on the image size and the existence (or lack) of appropriate target storage on the user side.
 
-Furthermore, incremental backups are not possible when creating Glance images from volumes either.
+Furthermore, incremental backups are not possible when creating images from volumes either.
 This results in time-consuming backup operations of fully copying a volume everytime a backup is created.
 
 #### Focus on feature availability, make feature mandatory
