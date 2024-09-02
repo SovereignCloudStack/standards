@@ -85,6 +85,8 @@ Options:
  [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)
  [-d/--debug] enables DEBUG logging channel
  [-i/--images IMAGE_LIST] sets images to be tested, separated by comma.
+ [-V/--image-visibility VIS_LIST] filters images by visibility
+                                  (default: 'public,community'; use '*' to disable)
 """, end='', file=file)
 
 
@@ -343,9 +345,7 @@ DISTROS = {
 
 
 def _deduce_sort(img):
-    # avoid private images here
-    # (note that with SCS, public images MUST have os_distro and os_version, but we check nonetheless)
-    if img.visibility != 'public' or not img.os_distro or not img.os_version:
+    if not img.os_distro or not img.os_version:
         return 0, 0
     deducer = DISTROS.get(img.os_distro.strip().lower())
     if deducer is None:
@@ -401,7 +401,7 @@ def main(argv):
     logger.addHandler(counting_handler)
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:i:hd", ["os-cloud=", "images=", "help", "debug"])
+        opts, args = getopt.gnu_getopt(argv, "c:i:hdV:", ["os-cloud=", "images=", "help", "debug", "image-visibility="])
     except getopt.GetoptError as exc:
         logger.critical(f"{exc}")
         print_usage()
@@ -409,6 +409,7 @@ def main(argv):
 
     cloud = os.environ.get("OS_CLOUD")
     image_names = set()
+    image_visibility = set()
     for opt in opts:
         if opt[0] == "-h" or opt[0] == "--help":
             print_usage()
@@ -419,16 +420,31 @@ def main(argv):
             cloud = opt[1]
         if opt[0] == "-d" or opt[0] == "--debug":
             logging.getLogger().setLevel(logging.DEBUG)
+        if opt[0] == "-V" or opt[0] == "--image-visibility":
+            image_visibility.update([v.strip() for v in opt[1].split(',')])
 
     if not cloud:
         logger.critical("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.")
         return 1
+
+    if not image_visibility:
+        image_visibility.update(("public", "community"))
 
     try:
         logger.debug(f"Connecting to cloud '{cloud}'")
         with openstack.connect(cloud=cloud, timeout=32) as conn:
             all_images = conn.list_images()
             all_flavors = conn.list_flavors(get_extra=True)
+
+            if '*' not in image_visibility:
+                logger.debug(f"Images: filter for visibility {', '.join(image_visibility)}")
+                all_images = [img for img in all_images if img.visibility in image_visibility]
+            all_image_names = [f"{img.name} ({img.visibility})" for img in all_images]
+            logger.debug(f"Images: {', '.join(all_image_names) or '(NONE)'}")
+
+            if not all_images:
+                logger.critical("Can't run this test without image")
+                return 1
 
             if image_names:
                 # find images by the names given, BAIL out if some image is missing
