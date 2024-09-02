@@ -85,7 +85,8 @@ Options:
  [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)
  [-d/--debug] enables DEBUG logging channel
  [-i/--images IMAGE_LIST] sets images to be tested, separated by comma.
- [-V/--image-visibility VIS_LIST] filters images by visibility (default: public,community)
+ [-V/--image-visibility VIS_LIST] filters images by visibility
+                                  (default: 'public,community'; use '*' to disable)
 """, end='', file=file)
 
 
@@ -344,9 +345,7 @@ DISTROS = {
 
 
 def _deduce_sort(img):
-    # avoid private images here
-    # (note that with SCS, public images MUST have os_distro and os_version, but we check nonetheless)
-    if img.visibility != 'public' or not img.os_distro or not img.os_version:
+    if not img.os_distro or not img.os_version:
         return 0, 0
     deducer = DISTROS.get(img.os_distro.strip().lower())
     if deducer is None:
@@ -410,7 +409,7 @@ def main(argv):
 
     cloud = os.environ.get("OS_CLOUD")
     image_names = set()
-    image_visibility = ("public", "community")
+    image_visibility = set()
     for opt in opts:
         if opt[0] == "-h" or opt[0] == "--help":
             print_usage()
@@ -422,17 +421,30 @@ def main(argv):
         if opt[0] == "-d" or opt[0] == "--debug":
             logging.getLogger().setLevel(logging.DEBUG)
         if opt[0] == "-V" or opt[0] == "--image-visibility":
-            image_visibility = opt[1].split(",")
+            image_visibility.update([v.strip() for v in opt[1].split(',')])
 
     if not cloud:
         logger.critical("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.")
         return 1
+
+    if not image_visibility:
+        image_visibility.update(("public", "community"))
 
     try:
         logger.debug(f"Connecting to cloud '{cloud}'")
         with openstack.connect(cloud=cloud, timeout=32) as conn:
             all_images = conn.list_images()
             all_flavors = conn.list_flavors(get_extra=True)
+
+            if '*' not in image_visibility:
+                logger.debug(f"Images: filter for visibility {', '.join(image_visibility)}")
+                all_images = [img for img in all_images if img.visibility in image_visibility]
+            all_image_names = [f"{img.name} ({img.visibility})" for img in all_images]
+            logger.debug(f"Images: {', '.join(all_image_names) or '(NONE)'}")
+
+            if not all_images:
+                logger.critical("Can't run this test without image")
+                return 1
 
             if image_names:
                 # find images by the names given, BAIL out if some image is missing
@@ -446,12 +458,6 @@ def main(argv):
             else:
                 images = [select_deb_image(all_images) or all_images[0]]
                 logger.debug(f"Selected image: {images[0].name} ({images[0].id})")
-
-            if image_visibility[0] != '':
-                logger.debug(f"Images: Filter for visibility={image_visibility}")
-                all_images = list(filter(lambda x: x.visibility in image_visibility, all_images))
-            all_img_list = list(map(lambda x: x.name + " (" + x.visibility + ")", all_images))
-            logger.debug(f"Images: {all_img_list}")
 
             logger.debug("Checking images and flavors for recommended attributes")
             print_result('entropy-check-image-properties', check_image_attributes(all_images))
