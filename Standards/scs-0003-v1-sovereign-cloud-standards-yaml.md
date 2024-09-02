@@ -283,11 +283,10 @@ The following validity codes are recognized:
 - `warn`: the version can be certified against, but a PASS MUST be accompanied by a warning that the version
   is about to expire; the version MUST be stable at the start of the period.
 - `draft`: the version can be tested against, but not certified; the version need not be stable.
+- `deprecated`: the version can be tested against, but not certified.
 
-The following validity code is also recognized, but SHOULD NOT be used, because it is the default value for
-any version not mentioned in the map:
-
-- `obsolete`: the version MUST NOT be tested or certified against.
+By default, if no other restriction is given,
+any version explicitly mentioned in the entry SHOULD be tested against.
 
 Note: We intend to keep only one version in effect, except for a grace period of 4 to 6 weeks, when two versions
 are effective at the same time.
