@@ -27,7 +27,6 @@ import json
 import logging
 
 from kubernetes import client
-from helper import gen_sonobuoy_result_file
 from helper import SCSTestException
 from helper import initialize_logging
 from helper import print_usage
@@ -226,7 +225,7 @@ def main(argv):
         return_message = f"{exception_message}"
         return_code = 1
 
-    # Check if default storage class is defined (MENTETORY)
+    # Check if default storage class is defined (MANDATORY)
     try:
         logger.info("check_default_storageclass()")
         default_class_name = check_default_storageclass(k8s_storage_api)
@@ -239,7 +238,7 @@ def main(argv):
         return_message = f"{exception_message}"
         return_code = 1
 
-    # Check if default_persistent volume has ReadWriteOnce defined (MENTETORY)
+    # Check if default_persistent volume has ReadWriteOnce defined (MANDATORY)
     try:
         logger.info("check_default_persistentvolume_readwriteonce()")
         return_code = check_default_persistentvolumeclaim_readwriteonce(
@@ -259,7 +258,6 @@ def main(argv):
     if return_code == 0:
         return_message = "all tests passed"
 
-    gen_sonobuoy_result_file(return_code, return_message, __file__)
 
     return return_code
 
