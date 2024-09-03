@@ -208,7 +208,7 @@ def main(argv):
     ipaddrs = []
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:p:i:h", ["os-cloud=", "prefix=", "ipaddr=", "help"])
+        opts, args = getopt.gnu_getopt(argv, "c:p:i:h", ["os-cloud=", "prefix=", "ipaddr=", "help", "debug"])
     except getopt.GetoptError as exc:
         logger.critical(f"{exc}")
         print_usage()
@@ -224,6 +224,8 @@ def main(argv):
             cloud = opt[1]
         if opt[0] == "-i" or opt[0] == "--ipaddr":
             ipaddrs = opt[1].split(",")
+        if opt[0] == "--debug":
+            logging.getLogger().setLevel(logging.DEBUG)
 
     if prefix is None:
         # check for None, because supplying --prefix '' shall be permitted
@@ -243,6 +245,6 @@ if __name__ == "__main__":
         sys.exit(main(sys.argv[1:]))
     except SystemExit:
         raise
-    except BaseException as exc:
-        logger.critical(repr(exc))
-        sys.exit(1)
+    except BaseException:
+        logger.critical("A critical error occurred, see following traceback")
+        raise
