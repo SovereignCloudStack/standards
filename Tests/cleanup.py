@@ -244,5 +244,6 @@ if __name__ == "__main__":
     except SystemExit:
         raise
     except BaseException as exc:
-        logger.critical(repr(exc))
+        _, _, exc_tb = sys.exc_info()
+        logger.critical(f"{repr(exc)} in line {exc_tb.tb_lineno}")
         sys.exit(1)
