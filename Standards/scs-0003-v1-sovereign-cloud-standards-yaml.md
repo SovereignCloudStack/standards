@@ -285,8 +285,15 @@ The following validity codes are recognized:
 - `draft`: the version can be tested against, but not certified; the version need not be stable.
 - `deprecated`: the version can be tested against, but not certified.
 
-By default, if no other restriction is given,
-any version explicitly mentioned in the entry SHOULD be tested against.
+Any version not listed in `versions` is considered `deprecated`.
+
+If no other restriction is given, any version listed in `version` SHOULD be tested against.
+This includes any version listed as `deprecated`; the rationale here is that, while the cloud itself
+can no longer be certified against it, some customers may still work with that version.
+
+Note: Compliance with a new (effective) version often implies compliance with an older (deprecated) one.
+Including the older one into the test is meant to increase the confidence that this is indeed the case, or,
+if it isn't, serves to provide a clear picture of how many test subjects still comply with the old version.
 
 Note: We intend to keep only one version in effect, except for a grace period of 4 to 6 weeks, when two versions
 are effective at the same time.
