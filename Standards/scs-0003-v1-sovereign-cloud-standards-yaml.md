@@ -288,7 +288,7 @@ The following validity codes are recognized:
 Any version not listed in `versions` is considered `deprecated`.
 
 If no other restriction is given, any version listed in `version` SHOULD be tested against.
-This includes any version listed as `deprecated`; the rationale here is that, while the cloud itself
+This includes any version listed as `deprecated`; the rationale here is that, while the test subject
 can no longer be certified against it, some customers may still work with that version.
 
 Note: Compliance with a new (effective) version often implies compliance with an older (deprecated) one.
