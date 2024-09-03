@@ -159,6 +159,7 @@ timeline:
     versions:
       v5: draft
       v4: effective
+      v3: deprecated
   - date: 2024-07-31
     versions:
       v4: effective
