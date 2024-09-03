@@ -202,6 +202,7 @@ def main(argv):
         level=logging.INFO,
         datefmt="%Y-%m-%d %H:%M:%S",
     )
+    openstack.enable_logging(debug=False)
 
     prefix = os.environ.get("PREFIX", None)
     cloud = os.environ.get("OS_CLOUD")

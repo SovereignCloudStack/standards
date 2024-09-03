@@ -78,7 +78,7 @@ class Config:
             '-c', self.get_subject_mapping(subject)['os_cloud'],
             '--prefix', '_scs-',
             '--ipaddr', '10.1.0.',
-            # '--debug',
+            '--debug',
         ]
 
     def build_sign_command(self, target_path):
