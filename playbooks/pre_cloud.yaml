@@ -33,5 +33,6 @@
         mode: "0600"
 
     - name: Clean up any lingering resources from previous run
-      ansible.builtin.shell: python3 ~/Tests/scs-test-runner.py --debug cleanup --preset {{ preset }}
+      ansible.builtin.shell: >
+        python3 ~/Tests/scs-test-runner.py --config ~/Tests/config.toml --debug cleanup --preset {{ preset }}
       changed_when: true

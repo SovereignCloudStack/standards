@@ -3,7 +3,8 @@
   hosts: all
   tasks:
     - name: Run compliance script
-      ansible.builtin.shell: python3 ~/Tests/scs-test-runner.py --debug run --preset {{ preset }} --output report.yaml
+      ansible.builtin.shell: >
+        python3 ~/Tests/scs-test-runner.py --config ~/Tests/config.toml --debug run --preset {{ preset }} --output report.yaml
       changed_when: true
 
     - name: Copy result YAML
