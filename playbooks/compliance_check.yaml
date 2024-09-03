@@ -3,33 +3,22 @@
   hosts: all
   tasks:
     - name: Run compliance script
-      ansible.builtin.shell: |
-        python3 ~/Tests/scs-compliance-check.py ~/Tests/scs-compatible-iaas.yaml -s {{ item }} -a os_cloud={{ item }} -o report-{{ item }}.yaml -C
-        ssh-keygen -Y sign -f ~/id_subject -n report report-{{ item }}.yaml
-        curl --data-binary @report-{{ item }}.yaml.sig --data-binary @report-{{ item }}.yaml -H "Content-Type: application/x-signed-yaml" -H "Authorization: Basic $AUTH_TOKEN" https://compliance.sovereignit.cloud/reports
+      ansible.builtin.shell: python3 ~/Tests/scs-test-runner.py --debug run --preset {{ preset }} --output report.yaml
       changed_when: true
-      failed_when: false
-      # ^^^ this task does not fail; the only failure would be if `report.yaml` didn't get produced,
-      # but then the subsequent tasks would fail anyway
-      environment:
-        AUTH_TOKEN: "{{ clouds_conf.zuul_ci_basic_auth }}"
-      loop: "{{ clouds }}"
 
     - name: Copy result YAML
       ansible.builtin.synchronize:
-        dest: "{{ zuul.executor.log_root }}/{{ item }}-iaas.yaml"
+        dest: "{{ zuul.executor.log_root }}/report.yaml"
         mode: pull
-        src: "report-{{ item }}.yaml"
+        src: "report.yaml"
         verify_host: true
         owner: no
         group: no
-      loop: "{{ clouds }}"
 
     - name: Return artifact URL
       zuul_return:
         data:
           zuul:
             artifacts:
-              - name: "{{ item }}-iaas.yaml"
-                url: "{{ item }}-iaas.yaml"
-      loop: "{{ clouds }}"
+              - name: "report.yaml"
+                url: "report.yaml"

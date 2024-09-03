@@ -27,8 +27,8 @@
      - name: clouds_conf
        secret: SECRET_STANDARDS
     vars:
-      clouds:
-      - gx-scs
+      preset:
+      - default
     pre-run:
      - playbooks/pre.yaml
      - playbooks/pre_cloud.yaml
@@ -41,15 +41,4 @@
     name: scs-check-all
     parent: scs-check-gx-scs-main
     vars:
-      clouds:
-      - artcodix
-      - pco-prod1
-      - pco-prod2
-      - pco-prod3
-      - pco-prod4
-      - poc-kdo
-      - poc-wgcloud
-      - regio-a
-      - syseleven-dus2
-      - syseleven-ham1
-      - wavestack
+      preset: all
