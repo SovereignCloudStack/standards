@@ -245,6 +245,6 @@ if __name__ == "__main__":
         sys.exit(main(sys.argv[1:]))
     except SystemExit:
         raise
-    except BaseException as exc:
+    except BaseException:
         logger.critical("A critical error occurred, see following traceback")
         raise
