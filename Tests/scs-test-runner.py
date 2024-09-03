@@ -61,6 +61,7 @@ class Config:
         return os.path.join(self.cwd, path)
 
     def build_check_command(self, scope, subject, output):
+        # TODO figure out when to supply --debug here (but keep separated from our --debug)
         cmd = [
             sys.executable, self.scs_compliance_check, self.abspath(self.scopes[scope]['spec']),
             '--debug', '-C', '-o', output, '-s', subject,
