@@ -2,32 +2,41 @@
 keyfile = ".secret/keyfile"
 tokenfile = ".secret/tokenfile"
 
+
 [presets.default]
-scopes = ["scs-compatible-iaas"]
-subjects = ["gx-scs"]
+scopes = [
+    "scs-compatible-iaas",
+]
+subjects = [
+    "gx-scs",
+]
+
 
 [presets.all]
-scopes = ["scs-compatible-iaas"]
-subjects = ["gx-scs", "artcodix", "poc-wgcloud", "wavestack", "syseleven-ham1", "pco-prod1"]
+scopes = [
+    "scs-compatible-iaas",
+]
+subjects = [
+    "gx-scs",
+    "artcodix",
+    "pco-prod1",
+    "pco-prod2",
+    "pco-prod3",
+    "pco-prod4",
+    "poc-kdo",
+    "poc-wgcloud",
+    "syseleven-dus2",
+    "syseleven-ham1",
+    "wavestack",
+]
 workers = 4
+
 
 [scopes.scs-compatible-iaas]
 spec = "./scs-compatible-iaas.yaml"
 
-[subjects.gx-scs.mapping]
-os_cloud = "gx-scs"
 
-[subjects.artcodix.mapping]
-os_cloud = "artcodix"
-
-[subjects.pco-prod1.mapping]
-os_cloud = "pco-prod1"
-
-[subjects.poc-wgcloud.mapping]
-os_cloud = "poc-wgcloud"
-
-[subjects.syseleven-ham1.mapping]
-os_cloud = "syseleven-ham1"
-
-[subjects.wavestack.mapping]
-os_cloud = "wavestack"
+# default subject (not a real subject, but used to declare a default mapping)
+# (this is the only mapping declaration that supports using Python string interpolation)
+[subjects._.mapping]
+os_cloud = "{subject}"

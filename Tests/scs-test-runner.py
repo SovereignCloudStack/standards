@@ -51,6 +51,12 @@ class Config:
             self._auth_token = fileobj.read().strip()
         return self._auth_token
 
+    def get_subject_mapping(self, subject):
+        default_mapping = self.subjects.get('_', {}).get('mapping', {})
+        mapping = {key: value.format(subject=subject) for key, value in default_mapping.items()}
+        mapping.update(self.subjects.get(subject, {}).get('mapping', {}))
+        return mapping
+
     def abspath(self, path):
         return os.path.join(self.cwd, path)
 
@@ -59,7 +65,7 @@ class Config:
             sys.executable, self.scs_compliance_check, self.abspath(self.scopes[scope]['spec']),
             '--debug', '-C', '-o', output, '-s', subject,
         ]
-        for key, value in self.subjects[subject]['mapping'].items():
+        for key, value in self.get_subject_mapping(subject).items():
             cmd.extend(['-a', f'{key}={value}'])
         return cmd
 
