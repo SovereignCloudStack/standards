@@ -160,6 +160,7 @@ timeline:
       v5: draft
       v4: effective
       v3: deprecated
+      v3-orig: deprecated
   - date: 2024-07-31
     versions:
       v4: effective
@@ -217,6 +218,17 @@ versions:
     targets:
       main: mandatory
   - version: v3
+    # comment: >
+    #   This is what our documentation wrongly stated as being v3 when we introduced v4.
+    #   What was originally v3 (and what we actually continued to test) can be found as v3-orig.
+    stabilized_at: 2024-02-28
+    include:
+      - opc-v2022.11
+      - scs-0100-v3.1
+      - scs-0102-v1
+    targets:
+      main: mandatory
+  - version: v3-orig
     stabilized_at: 2023-06-15
     include:
       - opc-v2022.11
