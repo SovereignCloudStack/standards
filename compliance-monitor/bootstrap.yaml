@@ -2,13 +2,8 @@ accounts:
   - subject: admin
     api_keys:
       - "$2b$12$02j2DtlOXdT/MTVmWG60Yu.MNIJOGxRGKvE3DdA5DylCaHXxAY1Om"
-    keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "primary"
     roles:
       - read_any
-      - append_any
       - approve
       - admin
   - subject: zuul_ci
@@ -24,95 +19,50 @@ accounts:
     delegates:
       - zuul_ci
     keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIBgla2bdGVztsncJNoAEVdAUiZaOW9Lwvf2yCt5GcI1J"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "zuul_ci_sign"
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
         public_key_type: "ssh-ed25519"
-        public_key_name: "auxiliary"
+        public_key_name: "primary"
   - subject: artcodix
     delegates:
       - zuul_ci
-    keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIBgla2bdGVztsncJNoAEVdAUiZaOW9Lwvf2yCt5GcI1J"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "zuul_ci_sign"
   - subject: pco-prod1
     delegates:
       - zuul_ci
-    keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIBgla2bdGVztsncJNoAEVdAUiZaOW9Lwvf2yCt5GcI1J"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "zuul_ci_sign"
   - subject: pco-prod2
     delegates:
       - zuul_ci
-    keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIBgla2bdGVztsncJNoAEVdAUiZaOW9Lwvf2yCt5GcI1J"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "zuul_ci_sign"
   - subject: pco-prod3
     delegates:
       - zuul_ci
-    keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIBgla2bdGVztsncJNoAEVdAUiZaOW9Lwvf2yCt5GcI1J"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "zuul_ci_sign"
   - subject: pco-prod4
     delegates:
       - zuul_ci
-    keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIBgla2bdGVztsncJNoAEVdAUiZaOW9Lwvf2yCt5GcI1J"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "zuul_ci_sign"
   - subject: poc-kdo
     delegates:
       - zuul_ci
-    keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIBgla2bdGVztsncJNoAEVdAUiZaOW9Lwvf2yCt5GcI1J"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "zuul_ci_sign"
   - subject: poc-wgcloud
     delegates:
       - zuul_ci
-    keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIBgla2bdGVztsncJNoAEVdAUiZaOW9Lwvf2yCt5GcI1J"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "zuul_ci_sign"
   - subject: regio-a
     delegates:
       - zuul_ci
     keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIBgla2bdGVztsncJNoAEVdAUiZaOW9Lwvf2yCt5GcI1J"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "zuul_ci_sign"
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
         public_key_type: "ssh-ed25519"
-        public_key_name: "auxiliary"
+        public_key_name: "primary"
   - subject: syseleven-dus2
     delegates:
       - zuul_ci
-    keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIBgla2bdGVztsncJNoAEVdAUiZaOW9Lwvf2yCt5GcI1J"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "zuul_ci_sign"
   - subject: syseleven-ham1
     delegates:
       - zuul_ci
-    keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIBgla2bdGVztsncJNoAEVdAUiZaOW9Lwvf2yCt5GcI1J"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "zuul_ci_sign"
   - subject: wavestack
     delegates:
       - zuul_ci
     keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIBgla2bdGVztsncJNoAEVdAUiZaOW9Lwvf2yCt5GcI1J"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "zuul_ci_sign"
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
         public_key_type: "ssh-ed25519"
-        public_key_name: "auxiliary"
+        public_key_name: "primary"
 subjects:
   gx-scs:
     active: true
