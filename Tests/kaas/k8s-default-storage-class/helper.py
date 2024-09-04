@@ -39,7 +39,6 @@ class SCSTestException(Exception):
 
 
 def setup_k8s_client(kubeconfigfile=None):
-
     if kubeconfigfile:
         logger.debug(f"using kubeconfig file '{kubeconfigfile}'")
         config.load_kube_config(kubeconfigfile)
@@ -54,6 +53,7 @@ def setup_k8s_client(kubeconfigfile=None):
         k8s_api_client,
         k8s_storage_client,
     )
+
 
 def gen_sonobuoy_result_file(error_n: int, error_msg: str, test_file_name: str):
     test_name = test_file_name.replace(".py", "")
