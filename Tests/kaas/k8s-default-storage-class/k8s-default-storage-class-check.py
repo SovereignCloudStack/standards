@@ -27,6 +27,7 @@ import json
 import logging
 
 from kubernetes import client
+from helper import gen_sonobuoy_result_file
 from helper import SCSTestException
 from helper import initialize_logging
 from helper import print_usage
@@ -258,6 +259,7 @@ def main(argv):
     if return_code == 0:
         return_message = "all tests passed"
 
+    gen_sonobuoy_result_file(return_code, return_message, __file__)
 
     return return_code
 

@@ -54,3 +54,19 @@ def setup_k8s_client(kubeconfigfile=None):
         k8s_api_client,
         k8s_storage_client,
     )
+
+def gen_sonobuoy_result_file(error_n: int, error_msg: str, test_file_name: str):
+    test_name = test_file_name.replace(".py", "")
+    test_status = "passed"
+    if error_n != 0:
+        test_status = test_name + "_" + str(error_n)
+        result_file = manual_result_file_template
+        result_file["name"] = test_name
+        result_file["status"] = test_status
+        result_file["details"]["messages"] = error_msg
+
+        directory_path = os.path.dirname(f"./{test_name}.result.yaml")
+        os.makedirs(directory_path, exist_ok=True)
+
+        with open(f"./{test_name}.result.yaml", "w") as file:
+            yaml.dump(result_file, file)
