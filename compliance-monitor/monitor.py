@@ -264,13 +264,14 @@ class PrecomputedScope:
         by_validity = defaultdict(list)
         for vname in scope_results:
             by_validity[self.versions[vname].validity].append(vname)
-        relevant = list(by_validity['effective'])
-        # only show "warn" versions if no effective ones are passed
-        if not any(version_results[vname]['result'] == 1 for vname in relevant):
-            relevant.extend(by_validity['warn'])
-        # only show "deprecated" versions if no effective ones are passed
-        if not any(version_results[vname]['result'] == 1 for vname in relevant):
-            relevant.extend(by_validity['deprecated'])
+        # go through worsening validity values until a passing version is found
+        relevant = []
+        for validity in ('effective', 'warn', 'deprecated'):
+            vnames = by_validity[validity]
+            relevant.extend(vnames)
+            if any(version_results[vname]['result'] == 1 for vname in vnames):
+                break
+        # always include draft (but only at the end)
         relevant.extend(by_validity['draft'])
         passed = [vname for vname in relevant if version_results[vname]['result'] == 1]
         return {
