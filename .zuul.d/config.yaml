@@ -27,8 +27,7 @@
      - name: clouds_conf
        secret: SECRET_STANDARDS
     vars:
-      preset:
-      - default
+      preset: default
     pre-run:
      - playbooks/pre.yaml
      - playbooks/pre_cloud.yaml
