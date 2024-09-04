@@ -77,7 +77,7 @@ GRACE_PERIOD_DAYS = 7
 #       http://127.0.0.1:8080/reports
 # to achieve this!
 SEP = "-----END SSH SIGNATURE-----\n&"
-ASTERISK_LOOKUP = {'effective': '', 'draft': '*', 'warn': '†'}
+ASTERISK_LOOKUP = {'effective': '', 'draft': '*', 'warn': '†', 'deprecated': '††'}
 
 
 class ViewType(Enum):
@@ -222,6 +222,7 @@ class PrecomputedVersion:
         self.name = version['version']
         self.suite = compile_suite(self.name, version['include'])
         self.validity = version['validity']
+        self.listed = bool(version['_explicit_validity'])
         self.targets = {
             tname: self.suite.select(tname, target_spec)
             for tname, target_spec in version['targets'].items()
@@ -267,6 +268,9 @@ class PrecomputedScope:
         # only show "warn" versions if no effective ones are passed
         if not any(version_results[vname]['result'] == 1 for vname in relevant):
             relevant.extend(by_validity['warn'])
+        # only show "deprecated" versions if no effective ones are passed
+        if not any(version_results[vname]['result'] == 1 for vname in relevant):
+            relevant.extend(by_validity['deprecated'])
         relevant.extend(by_validity['draft'])
         passed = [vname for vname in relevant if version_results[vname]['result'] == 1]
         return {
@@ -294,8 +298,10 @@ class PrecomputedScope:
         """
         scope_uuid = self.spec['uuid']
         for vname, precomputed_version in self.versions.items():
+            listed = precomputed_version.listed
             for testcase in precomputed_version.suite.testcases:
-                target_dict[(scope_uuid, vname, testcase['id'])] = testcase
+                # put False if listed is False, else put testcase
+                target_dict[(scope_uuid, vname, testcase['id'])] = listed and testcase
 
 
 def import_cert_yaml(yaml_path, target_dict):
@@ -486,8 +492,11 @@ def convert_result_rows_to_dict2(
     missing = set()
     for subject, scope_uuid, version, testcase_id, result, checked_at, report_uuid in rows:
         testcase = scopes_lookup.get((scope_uuid, version, testcase_id))
-        if testcase is None:
-            missing.add((scope_uuid, version, testcase_id))
+        if not testcase:
+            # it can be False (testcase is known but version too old) or None (testcase not known)
+            # only report the latter case
+            if testcase is None:
+                missing.add((scope_uuid, version, testcase_id))
             continue
         # drop value if too old
         expires_at = add_period(checked_at, testcase.get('lifetime'))
@@ -498,7 +507,7 @@ def convert_result_rows_to_dict2(
             tc_result.update(report=report_uuid)
         preliminary[subject][scope_uuid][version][testcase_id] = tc_result
     if missing:
-        logger.warning('missing objects: ' + ', '.join(missing))
+        logger.warning('missing objects: ' + ', '.join(repr(x) for x in missing))
     # make sure the requested subjects and scopes are present (facilitates writing jinja2 templates)
     for subject in subjects:
         for scope in scopes:

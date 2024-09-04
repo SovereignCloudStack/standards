@@ -46,7 +46,7 @@ modules:
         tags: [mandatory]
         description: >
           Must fulfill all requirements of
-          <https://docs.scs.community/standards/scs-0100-v3-flavor-naming -- plus the list of mandatory>
+          <https://docs.scs.community/standards/scs-0100-v3-flavor-naming> -- plus the list of mandatory
           and recommended flavors found in <https://docs.scs.community/standards/scs-0100-v2-flavor-naming#standard-scs-flavors>
   - id: scs-0100-v3.1
     name: Flavor naming v3.1
