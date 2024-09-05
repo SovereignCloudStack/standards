@@ -291,10 +291,10 @@ and the old document SHOULD be deprecated.
 
 ### Deprecation phase (Deprecated)
 
-Should a document become obsolete,
-it can be deprecated.
+When the document is no longer deemed fit for production use,
+it can be marked as deprecated.
 
-Obsoletions SHOULD be announced ahead of their execution by setting the
+Deprecations SHOULD be announced ahead of their execution by setting the
 `deprecated_at` field to a future date and moving the `status` to `Deprecated`.
 This signals current and future implementors
 that the subject of the document
