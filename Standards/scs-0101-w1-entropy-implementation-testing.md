@@ -9,12 +9,14 @@ supplements:
 
 ## Implementation notes
 
-We presume that almost nothing has to be done (or indeed can be done), as
-long as the CPUs and VM images are reasonably recent; only the flavor and
-image attributes required by the standard have to be set:
+With reasonably recent hardware -- x86 CPU with RDRAND/RDSEED (Intel from 2012,
+AMD from 2015) or ARM CPU with FEAT_RNG or FEAT_RNG_TRAP -- and recent VM image
+-- Linux kernel 5.18 or higher --, there is (almost) nothing to be done.
 
-- flavor: `hw_rng:allowed=True` ,
-- image: `hw_rng_model: virtio` .
+Only the flavor and image attributes required by the standard have to be set:
+
+- flavor extra_spec: `hw_rng:allowed=True` ,
+- image property: `hw_rng_model: virtio` .
 
 ## Automated tests
 
