@@ -9,9 +9,9 @@ supplements:
 
 ## Implementation notes
 
-With reasonably recent hardware -- x86 CPU with RDRAND/RDSEED (Intel from 2012,
-AMD from 2015) or ARM CPU with FEAT_RNG or FEAT_RNG_TRAP -- and recent VM image
--- Linux kernel 5.18 or higher --, there is (almost) nothing to be done.
+With reasonably recent hardware—x86 CPU with RDRAND/RDSEED (Intel from 2012,
+AMD from 2015) or ARM CPU with FEAT_RNG or FEAT_RNG_TRAP—and recent VM image—Linux
+kernel 5.18 or higher—, there is (almost) nothing to be done.
 
 Only the flavor and image attributes required by the standard have to be set:
 
