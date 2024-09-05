@@ -291,7 +291,7 @@ and the old document SHOULD be deprecated.
 
 ### Deprecation phase (Deprecated)
 
-When the document is no longer deemed fit for production use,
+When a document is no longer deemed fit for production use,
 it can be marked as deprecated.
 
 Deprecations SHOULD be announced ahead of their execution by setting the
