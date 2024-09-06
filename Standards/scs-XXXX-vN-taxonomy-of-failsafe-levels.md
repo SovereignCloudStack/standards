@@ -59,7 +59,7 @@ It may be used to get general hints and directions though.
 
 ### Differentiation between failsafe levels and high availability, disaster recovery, redundancy and backups
 
-The levels auf failsafeness that are defined in this decision record are classifying the possibilities and impacts of failure cases (such as data loss) and possible measures.
+The levels of failsafeness defined in this decision record classify the possibilities and impacts of failure cases (such as data loss) and the possible measures.
 High Availability, disaster recovery, redundancy and backups are all measures that can and should be applied to IaaS and KaaS deployments by both CSPs and Users to reduce the possibility and impact of data loss.
 So with this document every reader can see to what level of failsafeness their measures protect user data.
 
@@ -208,7 +208,7 @@ To reduce the probability of such a mistake, measures are needed to reduce human
 On the other side an attack on an infrastructure cannot be avoided by this.
 Instead every deployment needs to be prepared for an attack all the time, e.g. through security updates.
 The severity of Cyber attacks can also vary broadly: from denial-of-service attacks, which should only be a temporary issue, up until coordinated attacks to steal or destroy data, which could also affect a whole deployment.
-The more easy an attack is, the more often it will be used by various persons and organizations up to be just daily business.
+The easier an attack is, the more frequently it will be used by various persons and organizations up to be just daily business.
 Major attacks are often orchestrated and require speicif knowledge e.g. of Day-0 Bugs or the attacked infrastructure.
 Due to that nature their occurance is less likely, but the damage done can be far more severe.
 
