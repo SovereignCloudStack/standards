@@ -25,12 +25,14 @@
         content: "{{ clouds_conf.zuul_ci_signing_key + '\n' }}"
         dest: "~/Tests/.secret/keyfile"
         mode: "0600"
+      no_log: true
 
     - name: Create basic_auth token file
       ansible.builtin.copy:
         content: "{{ clouds_conf.zuul_ci_basic_auth }}"
         dest: "~/Tests/.secret/tokenfile"
         mode: "0600"
+      no_log: true
 
     - name: Clean up any lingering resources from previous run
       ansible.builtin.shell: >
