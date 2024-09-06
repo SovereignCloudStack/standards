@@ -26,6 +26,7 @@ class Config:
     def __init__(self):
         self.cwd = os.path.abspath(os.path.dirname(sys.argv[0]) or os.getcwd())
         self.scs_compliance_check = os.path.join(self.cwd, 'scs-compliance-check.py')
+        self.cleanup_py = os.path.join(self.cwd, 'cleanup.py')
         self.ssh_keygen = shutil.which('ssh-keygen')
         self.curl = shutil.which('curl')
         self.secrets = {}
@@ -69,6 +70,16 @@ class Config:
         for key, value in self.get_subject_mapping(subject).items():
             cmd.extend(['-a', f'{key}={value}'])
         return cmd
+
+    def build_cleanup_command(self, subject):
+        # TODO figure out when to supply --debug here (but keep separated from our --debug)
+        return [
+            sys.executable, self.cleanup_py,
+            '-c', self.get_subject_mapping(subject)['os_cloud'],
+            '--prefix', '_scs-',
+            '--ipaddr', '10.1.0.',
+            '--debug',
+        ]
 
     def build_sign_command(self, target_path):
         return [
@@ -173,6 +184,33 @@ def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml):
         subprocess.run(cfg.build_upload_command(report_yaml_tmp, monitor_url))
         if report_yaml is not None:
             _move_file(report_yaml_tmp, report_yaml)
+    return 0
+
+
+@cli.command()
+@click.option('--subject', 'subjects', type=str)
+@click.option('--preset', 'preset', type=str)
+@click.option('--num-workers', 'num_workers', type=int, default=5)
+@click.pass_obj
+def cleanup(cfg, subjects, preset, num_workers):
+    """
+    clean up any lingering resources
+    """
+    if not subjects and not preset:
+        preset = 'default'
+    if preset:
+        preset_dict = cfg.presets.get(preset)
+        if preset_dict is None:
+            raise KeyError('preset not found')
+        subjects = preset_dict['subjects']
+        num_workers = preset_dict.get('workers', num_workers)
+    else:
+        subjects = [subject.strip() for subject in subjects.split(',')] if subjects else []
+    if not subjects:
+        raise click.UsageError('subject(s) must be non-empty')
+    logger.debug(f'cleaning up for subject(s) {", ".join(subjects)}, num_workers: {num_workers}')
+    commands = [cfg.build_cleanup_command(subject) for subject in subjects]
+    _run_commands(commands, num_workers=num_workers)
     return 0
 
 
