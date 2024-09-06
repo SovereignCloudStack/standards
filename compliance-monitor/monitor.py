@@ -88,12 +88,12 @@ class ViewType(Enum):
 
 VIEW_DETAIL = {
     ViewType.markdown: 'details.md',
-    ViewType.fragment: 'details.html',
+    ViewType.fragment: 'details.md',
     ViewType.page: 'overview.html',
 }
 VIEW_TABLE = {
     ViewType.markdown: 'overview.md',
-    ViewType.fragment: 'overview_fragment.html',
+    ViewType.fragment: 'overview.md',
     ViewType.page: 'overview.html',
 }
 REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_DETAIL, VIEW_TABLE) for fn in view.values()))
@@ -548,6 +548,8 @@ def render_view(view, view_type, results, base_url='/', title=None):
     def detail_url(subject, scope): return f"{base_url}page/detail/{subject}/{scope}"  # noqa: E306,E704
     def report_url(report): return f"{base_url}reports/{report}"  # noqa: E306,E704
     fragment = templates_map[stage1].render(results=results, detail_url=detail_url, report_url=report_url)
+    if view_type != ViewType.markdown and stage1.endswith('.md'):
+        fragment = markdown(fragment, extensions=['extra'])
     if stage1 != stage2:
         fragment = templates_map[stage2].render(fragment=fragment, title=title)
     return Response(content=fragment, media_type=media_type)
