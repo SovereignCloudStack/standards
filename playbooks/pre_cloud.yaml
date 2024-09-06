@@ -19,6 +19,13 @@
         mode: "0600"
       no_log: true
 
+    - name: Create secrets dir
+      ansible.builtin.file:
+        path: "~/Tests/.secret"
+        state: directory
+        recurse: true
+        mode: "0700"
+
     - name: Create signing key file
       ansible.builtin.copy:
         # the secrets are usually stripped of whitespace, but the final newline is essential here
