@@ -7,6 +7,7 @@ import logging
 import os
 import os.path
 from shutil import which
+import signal
 from subprocess import run
 from tempfile import NamedTemporaryFile
 # _thread: low-level library, but (contrary to the name) not private
@@ -705,6 +706,11 @@ def verdict_check_filter(value):
     return {1: '✔', -1: '✘'}.get(value, '⚠')
 
 
+def sighup_handler(signum, frame):
+    with _scopes_lock:
+        _scopes['_counter'] += 1
+
+
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
     env.filters.update(
@@ -723,4 +729,5 @@ if __name__ == "__main__":
     _ = get_scopes()  # make sure they can be read
     import_templates(settings.template_path, env=env, templates=templates_map)
     validate_templates(templates=templates_map)
+    signal.signal(signal.SIGUSR2, sighup_handler)
     uvicorn.run(app, host='0.0.0.0', port=8080, log_level="info", workers=1)
