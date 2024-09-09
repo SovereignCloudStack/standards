@@ -79,6 +79,15 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
     3. Check if PV got succesfully created using ReadWriteOnce
     4. Delete resources used for testing
     """
+    # 0. Define CleanUp
+    def cleanup():
+        logger.debug(f"delete pod:{pod_name}")
+        api_response = k8s_api_instance.delete_namespaced_pod(pod_name, namespace)
+        logger.debug(f"delete pvc:{pvc_name}")
+        api_response = k8s_api_instance.delete_namespaced_persistent_volume_claim(
+            pvc_name, namespace
+        )
+
 
     namespace = "default"
     pvc_name = "test-pvc"
@@ -134,7 +143,7 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
     pod_info = json.loads(api_response.read().decode("utf-8"))
     pod_status = pod_info["status"]["phase"]
 
-    # Check if pod is up and running:
+    # Check if pod is up and running: Default Retries 30
     retries = 0
     while pod_status != "Running" and retries <= 30:
         api_response = k8s_api_instance.read_namespaced_pod(
@@ -150,6 +159,7 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
     if pod_status != "Running":
         raise SCSTestException(
             "pod is not Running not able to setup test Enviornment",
+            cleanup(),
             return_code=13,
         )
 
@@ -170,22 +180,19 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
             if pv["status"]["phase"] != "Bound":
                 raise SCSTestException(
                     "Not able to bind pv to pvc",
+                    cleanup(),
                     return_code=41,
                 )
 
             if "ReadWriteOnce" not in pv["spec"]["accessModes"]:
                 raise SCSTestException(
                     "access mode 'ReadWriteOnce' is not supported",
+                    cleanup(),
                     return_code=42,
                 )
 
     # 4. Delete resources used for testing
-    logger.debug(f"delete pod:{pod_name}")
-    api_response = k8s_api_instance.delete_namespaced_pod(pod_name, namespace)
-    logger.debug(f"delete pvc:{pvc_name}")
-    api_response = k8s_api_instance.delete_namespaced_persistent_volume_claim(
-        pvc_name, namespace
-    )
+    cleanup()
 
     return 0
 
