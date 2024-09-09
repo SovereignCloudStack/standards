@@ -138,12 +138,9 @@ urllib3==2.2.2
     #   kubernetes
     #   kubernetes-asyncio
     #   requests
-<<<<<<< HEAD
-=======
 websocket-client==1.8.0
     # via kubernetes
 wrapt==1.16.0
     # via deprecated
->>>>>>> compiled new requirements.txt
 yarl==1.9.4
     # via aiohttp
