@@ -79,6 +79,7 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
     3. Check if PV got succesfully created using ReadWriteOnce
     4. Delete resources used for testing
     """
+
     # 0. Define CleanUp
     def cleanup():
         logger.debug(f"delete pod:{pod_name}")
@@ -87,7 +88,6 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
         api_response = k8s_api_instance.delete_namespaced_persistent_volume_claim(
             pvc_name, namespace
         )
-
 
     namespace = "default"
     pvc_name = "test-pvc"
