@@ -154,10 +154,7 @@ Core Roles:
 
 All API services MUST be configured to use the Secure RBAC role model by enabling `enforce_new_defaults` and `enforce_scope` of the oslo.policy library.
 
-If custom policy rules to any API by a CSP, the following MUST be adhered to:
-
-1. The `policy_file` option of the oslo.policy library MUST be set to the name of the policy override file and not rely on default paths.
-2. The custom policy rules MUST NOT extend the privileges of the roles mentioned in this standard.
+If custom policy rules are added to an API by a CSP the `policy_file` option of the oslo.policy library SHOULD be explicitly set to the name of the policy override file and not rely on the corresponding default path.
 
 Example configuration entries:
 
@@ -170,7 +167,15 @@ policy_file = policy.yaml
 
 #### API Policies
 
-TODO: what does the CSP need to adhere to when it comes to API policy configuration?
+The following applies to all APIs that use RBAC policies:
+
+- Custom policy rules MUST NOT extend the privileges of the core roles mentioned in this standard beyond their default permissions.
+- If roles with custom permission sets are required, new roles and corresponding policies MAY be added as long as their names differ from the core roles and they do not impact the core roles.
+
+The following applies only to the Octavia v2 LBaaS API:
+
+- The scoping-compatible variant of [OpenStack Default Roles Policy Override File](https://docs.openstack.org/octavia/2024.1/configuration/policy.html#openstack-default-roles-policy-override-file) MUST be used as a base to align the LBaaS API with the standardized reader, member and admin role set.
+  As of the 2024.1 release of Octavia, this template is provided as [keystone_default_roles_scoped-policy.yaml](https://github.com/openstack/octavia/blob/stable/2024.1/etc/policy/keystone_default_roles_scoped-policy.yaml).
 
 ## Related Documents
 
