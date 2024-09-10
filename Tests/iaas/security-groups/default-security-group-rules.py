@@ -73,7 +73,7 @@ def test_rules(cloud_name: str):
             # r_custom_sg = rule['used_in_non_default_sg']
             # r_default_sg = rule['used_in_default_sg']
             direction = rule.direction
-            ethertype = rule.ethertype
+            ethertype = rule.ether_type
             r_custom_sg = rule.used_in_non_default_sg
             r_default_sg = rule.used_in_default_sg
             if direction == "ingress":
