@@ -8,7 +8,15 @@ presence of default rules for egress traffic is checked.
 import openstack
 import os
 import argparse
+import yaml
 
+def load_env_from_yaml(cloudname):
+      with open(".sandbox/clouds.yaml", "r+") as file:
+          data = yaml.safe_load(file)
+      for cloud in data["clouds"]:
+        if cloud == cloudname:
+            env = data["clouds"][cloud]
+      return env
 
 def connect(cloud_name: str) -> openstack.connection.Connection:
     """Create a connection to an OpenStack cloud
@@ -18,8 +26,17 @@ def connect(cloud_name: str) -> openstack.connection.Connection:
 
     :returns: openstack.connnection.Connection
     """
+    env = load_env_from_yaml(cloud_name)
+
     return openstack.connect(
         cloud=cloud_name,
+        auth_type=env["auth_type"],
+        auth_url=env["auth_url"],
+        project_name=env["project_name"],
+        username=env["username"],
+        password=env["password"],
+        user_domain_name=env["user_domain_name"],
+        project_domain_name=env["project_domain_name"]
     )
 
 
