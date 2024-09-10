@@ -241,14 +241,14 @@ The following table gives an overview about certain resources on the KaaS Layer 
 
 | Resource(s)        | Explanation                                                                                                                              | Affected by Level |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
-| Pod                | Kubernetes object that represents a workload to be executed, consisting of one or more containers.                                       | ???               |
-| Container          | A lightweight and portable executable image that contains software and all of its dependencies.                                          | ???               |
-| Deployment, StatefulSet | Kubernetes objects that manage a set of Pods.                                                                                       | ???               |
-| Job                | Application workload that runs once.                                                                                                     | ???               |
-| CronJob            | Application workload that runs once, but repeatedly at specific intervals.                                                               | ???               |
-| ConfigMap, Secret  | Objects holding static application configuration data.                                                                                   | ???               |
-| Service            | Makes a Pod's network service accessible inside a cluster.                                                                               | ???               |
-| Ingress            | Makes a Service externally accessible.                                                                                                   | ???               |
-| PersistentVolume (PV) | Persistent storage that can be bound and mounted to a pod.                                                                            | ???               |
+| Pod                | Kubernetes object that represents a workload to be executed, consisting of one or more containers.                                       | L3, L4            |
+| Container          | A lightweight and portable executable image that contains software and all of its dependencies.                                          | L3, L4            |
+| Deployment, StatefulSet | Kubernetes objects that manage a set of Pods.                                                                                       | L3, L4            |
+| Job                | Application workload that runs once.                                                                                                     | L3, L4            |
+| CronJob            | Application workload that runs once, but repeatedly at specific intervals.                                                               | L3, L4            |
+| ConfigMap, Secret  | Objects holding static application configuration data.                                                                                   | L3, L4            |
+| Service            | Makes a Pod's network service accessible inside a cluster.                                                                               | (L2), L3, L4      |
+| Ingress            | Makes a Service externally accessible.                                                                                                   | L2, L3, L4        |
+| PersistentVolume (PV) | Persistent storage that can be bound and mounted to a pod.                                                                            | L1, L2, L3, L4    |
 
 Also see [Kubernetes Glossary](https://kubernetes.io/docs/reference/glossary/).
