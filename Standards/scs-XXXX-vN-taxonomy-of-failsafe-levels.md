@@ -249,6 +249,6 @@ The following table gives an overview about certain resources on the KaaS Layer 
 | ConfigMap, Secret  | Objects holding static application configuration data.                                                                                   | ???               |
 | Service            | Makes a Pod's network service accessible inside a cluster.                                                                               | ???               |
 | Ingress            | Makes a Service externally accessible.                                                                                                   | ???               |
-| PersistentVolumeClaim (PVC) | Persistent storage that can be bound and mounted to a pod.                                                                      | ???               |
+| PersistentVolume (PV) | Persistent storage that can be bound and mounted to a pod.                                                                            | ???               |
 
 Also see [Kubernetes Glossary](https://kubernetes.io/docs/reference/glossary/).
