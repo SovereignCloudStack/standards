@@ -31,13 +31,10 @@ from itertools import chain
 import logging
 import yaml
 
-from scs_cert_lib import load_spec, annotate_validity, compile_suite, TestSuite
+from scs_cert_lib import load_spec, annotate_validity, compile_suite, TestSuite, TESTCASE_VERDICTS
 
 
 logger = logging.getLogger(__name__)
-
-TESTCASE_VERDICTS = {'PASS': 1, 'FAIL': -1}
-NIL_RESULT = {'result': 0}
 
 
 def usage(file=sys.stdout):
@@ -144,8 +141,8 @@ class Config:
         self.arg0 = args[0]
 
 
-def select_valid(versions: list, valid=('effective', 'warn', 'draft')) -> list:
-    return [version for version in versions if version['validity'] in valid]
+def select_valid(versions: list) -> list:
+    return [version for version in versions if version['_explicit_validity']]
 
 
 def suppress(*args, **kwargs):
@@ -277,8 +274,7 @@ def run_suite(suite: TestSuite, runner: CheckRunner):
 def print_report(subject: str, suite: TestSuite, targets: dict, results: dict):
     print(f"{subject} {suite.name}:")
     for tname, target_spec in targets.items():
-        by_result = suite.select(tname, target_spec).evaluate(results)
-        passed, missing, failed = by_result[1], by_result[0], by_result[-1]
+        failed, missing, passed = suite.select(tname, target_spec).eval_buckets(results)
         verdict = 'FAIL' if failed else 'TENTATIVE pass' if missing else 'PASS'
         summary_parts = [f"{len(passed)} passed"]
         if failed:
@@ -372,7 +368,7 @@ def main(argv):
         version_report = {version['version']: results for version, _, results in report_data}
         report = create_report(argv, config, spec, version_report, runner.get_invocations())
         with open(config.output, 'w', encoding='UTF-8') as fileobj:
-            yaml.safe_dump(report, fileobj, default_flow_style=False, sort_keys=False)
+            yaml.safe_dump(report, fileobj, default_flow_style=False, sort_keys=False, explicit_start=True)
     return min(127, runner.num_abort + (0 if config.critical_only else runner.num_error))
 
 
