@@ -43,7 +43,11 @@ def connect(cloud_name: str) -> openstack.connection.Connection:
 def test_rules(cloud_name: str):
     try:
         connection = connect(cloud_name)
-        rules = connection.network.default_security_group_rules()
+        #rules = connection.network.default_security_group_rules()
+        #print(f"!! worked: network.default_security_group_rules() {rules}")
+        #rules = connection.network.find_security_group("default")
+        rules = connection.network.security_group_rules()
+        print(f"!! worked: rules {rules}")
     except Exception as e:
         print(str(e))
         raise Exception(
@@ -64,6 +68,10 @@ def test_rules(cloud_name: str):
         print("No default security group rules defined.")
     else:
         for rule in rules:
+            # direction = rule['direction']
+            # ethertype = rule['ethertype']
+            # r_custom_sg = rule['used_in_non_default_sg']
+            # r_default_sg = rule['used_in_default_sg']
             direction = rule.direction
             ethertype = rule.ethertype
             r_custom_sg = rule.used_in_non_default_sg
