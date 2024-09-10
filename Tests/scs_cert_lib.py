@@ -105,7 +105,9 @@ def annotate_validity(timeline: list, versions: dict, checkdate: date):
         default={},
     ).get('versions', {})
     for vname, version in versions.items():
-        version['validity'] = validity_lookup.get(vname, 'deprecated')
+        validity = validity_lookup.get(vname)
+        version['validity'] = validity or 'deprecated'
+        version['_explicit_validity'] = validity
 
 
 def add_period(dt: datetime, period: str) -> datetime:

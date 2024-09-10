@@ -141,8 +141,8 @@ class Config:
         self.arg0 = args[0]
 
 
-def select_valid(versions: list, valid=('effective', 'warn', 'draft')) -> list:
-    return [version for version in versions if version['validity'] in valid]
+def select_valid(versions: list) -> list:
+    return [version for version in versions if version['_explicit_validity']]
 
 
 def suppress(*args, **kwargs):
