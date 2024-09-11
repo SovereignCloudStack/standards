@@ -9,7 +9,9 @@ import openstack
 import os
 import argparse
 import yaml
+from openstack.exceptions import ResourceNotFound
 
+###### debugging. TODO remove #####################
 def load_env_from_yaml(cloudname):
       with open(".sandbox/clouds.yaml", "r+") as file:
           data = yaml.safe_load(file)
@@ -38,20 +40,19 @@ def connect(cloud_name: str) -> openstack.connection.Connection:
         user_domain_name=env["user_domain_name"],
         project_domain_name=env["project_domain_name"]
     )
-
+####################################################
 
 def test_rules(cloud_name: str):
     try:
         connection = connect(cloud_name)
-        #rules = connection.network.default_security_group_rules()
-        #print(f"!! worked: network.default_security_group_rules() {rules}")
-        #rules = connection.network.find_security_group("default")
-        rules = connection.network.security_group_rules()
-        print(f"!! worked: rules {rules}")
+        print("test_rules")
+        rules = connection.network.default_security_group_rules()
+        print("After test_rules")
     except Exception as e:
+        print("except test_rules")
         print(str(e))
         raise Exception(
-            f"Connection to cloud '{cloud_name}' was not successfully. "
+            f"Connection to cloud '{cloud_name}' was not successful. "
             f"The default Security Group Rules could not be accessed. "
             f"Please check your cloud connection and authorization."
         )
@@ -68,12 +69,10 @@ def test_rules(cloud_name: str):
         print("No default security group rules defined.")
     else:
         for rule in rules:
-            # direction = rule['direction']
-            # ethertype = rule['ethertype']
-            # r_custom_sg = rule['used_in_non_default_sg']
-            # r_default_sg = rule['used_in_default_sg']
-            direction = rule.direction
-            ethertype = rule.ether_type
+            direction = rule['direction']
+            ethertype = rule['ethertype']
+            r_custom_sg = rule['used_in_non_default_sg']
+            r_default_sg = rule['used_in_default_sg']
             r_custom_sg = rule.used_in_non_default_sg
             r_default_sg = rule.used_in_default_sg
             if direction == "ingress":
@@ -123,6 +122,88 @@ def test_rules(cloud_name: str):
     }
     return result_dict
 
+def altern_test_rules(cloud_name: str):
+    try:
+        connection = connect(cloud_name)
+        #rules = connection.network.default_security_group_rules()
+        #print(f"!! worked: network.default_security_group_rules() {rules}")
+        #rules = connection.network.find_security_group("default")
+        rules = connection.network.security_group_rules()
+        print(f"!! worked: altern_rules {rules}")
+    except Exception as e:
+        print(str(e))
+        raise Exception(
+            f"Connection to cloud '{cloud_name}' was not successful. "
+            f"The default Security Group Rules could not be accessed. "
+            f"Please check your cloud connection and authorization."
+        )
+
+    # count all overall ingress rules and egress rules.
+    ingress_rules = 0
+    ingress_from_same_sg = 0
+    egress_rules = 0
+    egress_ipv4_default_sg = 0
+    egress_ipv4_custom_sg = 0
+    egress_ipv6_default_sg = 0
+    egress_ipv6_custom_sg = 0
+    if not rules:
+        print("No default security group rules defined.")
+    else:
+        for rule in rules:
+            # direction = rule['direction']
+            # ethertype = rule['ethertype']
+            # r_custom_sg = rule['used_in_non_default_sg']
+            # r_default_sg = rule['used_in_default_sg']
+            direction = rule.direction
+            ethertype = rule.ether_type
+            # r_custom_sg = rule.used_in_non_default_sg
+            # r_default_sg = rule.used_in_default_sg
+            if direction == "ingress":
+                ingress_rules += 1
+                # we allow ingress from the same security group
+                # but only for the default security group
+                # r_group_id = rule.remote_group_id
+                # if (r_group_id == "PARENT" and not r_custom_sg):
+                #     ingress_from_same_sg += 1
+            elif direction == "egress" and ethertype == "IPv4":
+                egress_rules += 1
+                if rule.remote_ip_prefix:
+                    # this rule does not allow traffic to all external ips
+                    continue
+                # if r_custom_sg:
+                #     egress_ipv4_custom_sg += 1
+                # if r_default_sg:
+                #     egress_ipv4_default_sg += 1
+            elif direction == "egress" and ethertype == "IPv6":
+                egress_rules += 1
+                if rule.remote_ip_prefix:
+                    # this rule does not allow traffic to all external ips
+                    continue
+                # if r_custom_sg:
+                #     egress_ipv6_custom_sg += 1
+                # if r_default_sg:
+                #     egress_ipv6_default_sg += 1
+
+    # test whether there are no other than the allowed ingress rules
+    assert ingress_rules == ingress_from_same_sg, (
+        f"Expected only ingress rules for default security groups, "
+        f"that allow ingress traffic from the same group. "
+        f"But there are more - in total {ingress_rules} ingress rules. "
+        f"There should be only {ingress_from_same_sg} ingress rules.")
+    assert egress_rules > 0, (
+        f"Expected to have more than {egress_rules} egress rules present.")
+    var_list = [egress_ipv4_default_sg, egress_ipv4_custom_sg,
+                egress_ipv6_default_sg, egress_ipv6_custom_sg]
+    assert all([var > 0 for var in var_list]), (
+        "Not all expected egress rules are present. "
+        "Expected rules for egress for IPv4 and IPv6 "
+        "both for default and custom security groups.")
+
+    result_dict = {
+        "Ingress Rules": ingress_rules,
+        "Egress Rules": egress_rules
+    }
+    return result_dict
 
 def main():
     parser = argparse.ArgumentParser(
@@ -147,9 +228,15 @@ def main():
         "You need to have the OS_CLOUD environment variable set to your cloud "
         "name or pass it via --os-cloud"
     )
-
-    print(test_rules(cloud))
-
-
+    try:
+        print(test_rules(cloud))
+    except ResourceNotFound as e:
+        print("Ressource could not be found."
+              f"Fehlermeldung: {e}"
+              "Openstack components are not up to date and might soon be depricated!"
+              f"{altern_test_rules(cloud)}"
+        )
+    except Exception as e:
+      print(f"Ein anderer Fehler ist aufgetreten: {e}")
 if __name__ == "__main__":
     main()
