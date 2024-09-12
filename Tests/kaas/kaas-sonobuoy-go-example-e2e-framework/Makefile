@@ -123,7 +123,7 @@ dev-rerun: dev-clean dev-build dev-run
 		sleep 5; \
 	done
 	@echo "[rerun] Waiting an additional 10 seconds to ensure results are ready..."
-	sleep 10
+	sleep 30
 	$(MAKE) dev-result
 	@echo "[Displaying results...]"
 	cat results/plugins/scsconformance/sonobuoy_results.yaml
