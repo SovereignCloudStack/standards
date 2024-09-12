@@ -58,6 +58,10 @@ The following overview will classify the main communication channels.
 | 6 | Nova VM migration traffic | Nova VM migration data transfer traffic between compute nodes | QEMU-native TLS |
 | 7 | External Neutron network traffic | VM-related traffic between the network/controller nodes and external networks (e.g. internet) established through routed provider networks and floating IPs | VPN |
 | 8 | Internal Neutron network traffic | Traffic within Neutron SDN networks exchanged between internal systems such as network/controller and compute nodes | WireGuard |
+| 9 | Storage network frontend traffic | Traffic exchanged between OpenStack and network storage backends (e.g. Ceph) | N/A* |
+| 10 | Storage network replication traffic | Traffic exchanged between individual storage nodes within the network storage backend for replication purposes | N/A* |
+
+\* The characteristics of the storage network traffic is highly specific to the individual storage backend and no generic solution can be stated here.
 
 Notes about the classification categories and implications:
 
@@ -69,6 +73,10 @@ Notes about the classification categories and implications:
 6. For protecting the data transferred between compute nodes during live-migration of VMs, [Nova offers support for QEMU-native TLS](https://docs.openstack.org/nova/latest/admin/secure-live-migration-with-qemu-native-tls.html). As an alternative, SSH is also a channel that Nova can be configured to use between hosts for this but requires passwordless SSH keys with root access to all other compute nodes which in turn requires further hardening.
 7. Neutron's external network traffic leaves the IaaS infrastructure. This part is twofold: connections initiated by the VMs themselves (egress) and connections reaching VMs from the outside (ingress). The CSP cannot influence the egress connections but can offer VPNaaS for the ingress direction.
 8. Neutron's internal network traffic is one of the hardest aspects to address. Due to the highly dynamic nature of SDN, connection endpoints and relations are constantly changing. There is no holistic approach currently offered or recommended by OpenStack itself. Encrypted tunnels could be established between all involved nodes but would require a scalable solution and reliable key management. WireGuard could be considered a good starting point for this. A per-tenant/per-customer encryption remains very hard to establish this way though.
+9. The available means of securing frontend storage communication are dependent on the protocol used for communication between OpenStack and the storage backend. Some storage solutions and protocols might offer authentication and encryption functionality by default but that cannot be assumed to be the case for every possible backend. Furthermore, storage is highly sensitive to latency and performance impacts imposed by such measures. Due to the fact that OpenStack's volume encryption functionality encrypts block storage data before it enters the storage network, an unsecured communication channel may be considered not as much of a problem here as it is for other channels\*.
+10. Storage network replication traffic is highly specific to the storage backend solution and its method of operation. For some backends this channel might not even exists, depending on their architecture. As such, in most cases it is up to the storage solution to provide adequate measures for protection of this channel. As with the frontend storage traffic, due to the possible at-rest encryption implemented by OpenStack, only already encrypted data is transferred here for some resources\*.
+
+\* Encryption of data implemented by OpenStack before it is passed to the storage backend currently only applies to block data of volumes that use an encrypted volume type. Other data (e.g. of unencrypted volumes, images) is transferred to and from the storage in plaintext.
 
 ### libvirt Hypervisor Interface on Compute Nodes
 
@@ -138,6 +146,18 @@ For this reason, the standard should reference widely accepted best practices an
 
 [Mozilla publishes and maintains](https://wiki.mozilla.org/Security/Server_Side_TLS) TLS recommendations and corresponding presets for configuration and testing.
 Considering Mozilla's well-established name in the internet and open source communities, this could qualify as a good basis for the standard concerning the TLS configurations.
+
+### Storage network protection
+
+As stated in the overview of communication channels, the existence and characteristics of the storage frontend and replication networks are highly specific to the storage backend solution in use.
+In conjunction with the fact that storage performance is easily impacted by anything that introduces latency or reduces throughput on these channels, there is no easy recommendation on how to secure them that can be made here.
+
+This is partially mitigated by OpenStack's ability to encrypt storage data before it enters the storage backend, protecting the data regardless of the storage channels characteristics.
+But this only applies to block data of volumes that use an encrypted volume type and does not apply to other data put into the storage backend by OpenStack, for example images.
+As such, this does not fully address unsecured storage channels.
+
+However, requiring the network storage channels to be dedicated physical connections separate from the other channels like tenant VM traffic or API communication can increase both the reliability as well as security of the storage connections.
+Therefore this standard should at least recommend a dedicated network infrastructure to be implemented for the storage if network storage backends are used, such as Ceph.
 
 ### Options considered
 
@@ -238,6 +258,12 @@ See the [corresponding Design Considerations section](#libvirt-hypervisor-interf
 ### Internal Neutron Connections
 
 - As an OPTIONAL measure to protect Neutron SDN traffic between physical nodes within the infrastructure, encrypted tunnels MAY be established between nodes involved in Neutron networks, such as compute and network controller nodes, at the network interfaces configured in Neutron (e.g. via WireGuard or similar solutions).
+
+### Storage Connections
+
+- For storage backends that are connected to OpenStack over the network, the network connections between the OpenStack components and the storage backend SHOULD be located on a separate physical network with dedicated interfaces at the involved nodes.
+- For storage backends that transfer replication data between individual storage nodes, the connections between those nodes SHOULD be implemented by a dedicated physical network.
+- Where applicable, storage traffic between OpenStack components and the storage backend (frontend traffic) as well as storage replication traffic between storage nodes themselves (backend traffic) MAY be encrypted using the storage protocols native security features (if any) or a generic solution such as WireGuard.
 
 ## Related Documents
 
