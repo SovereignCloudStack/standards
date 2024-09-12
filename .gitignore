@@ -4,4 +4,5 @@
 .DS_Store
 node_modules
 Tests/kaas/results/
+Tests/kaas/kaas-sonobuoy-go-example-e2e-framework/results
 *.tar.gz

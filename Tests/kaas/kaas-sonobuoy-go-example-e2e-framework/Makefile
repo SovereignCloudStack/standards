@@ -60,7 +60,7 @@ dev-prerequests:
 
 
 dev-setup: kind-init
-	kind create cluster --name ${KIND_CLUSTER}
+	kind create cluster --name ${KIND_CLUSTER} --config kind-config.yaml
 
 
 dev-build: container-init
@@ -104,11 +104,29 @@ dev-clean:
 	@rm -rf results || true
 
 
-
 dev-purge: kind-init dev-clean
 	@echo "[purge]"
 	kind delete cluster --name ${KIND_CLUSTER} || true
 	docker rmi ${SONOBUOY_IMAGE} || true
 
+
+dev-rerun: dev-clean dev-build dev-run
+	@echo "[rerun] Waiting for tests to complete..."
+	# Poll sonobuoy status until it shows "complete"
+	while true; do \
+		status_output=$$(sonobuoy status); \
+		echo "$$status_output"; \
+		if echo "$$status_output" | grep -q "complete"; then \
+			echo "Tests completed."; \
+			break; \
+		fi; \
+		sleep 5; \
+	done
+	@echo "[rerun] Waiting an additional 10 seconds to ensure results are ready..."
+	sleep 30
+	$(MAKE) dev-result
+	@echo "[Displaying results...]"
+	cat results/plugins/scsconformance/sonobuoy_results.yaml
+	cat results/plugins/scsconformance/results/global/out.json
 
 PHONY: dev-prerequests dev-build dev-run dev-result dev-clean dev-clean dev-purge
