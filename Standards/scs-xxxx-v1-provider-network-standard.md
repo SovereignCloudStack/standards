@@ -10,7 +10,7 @@ track: IaaS
 Many use-cases of IaaS require virtual servers to be able to connect to network resources outside of the cloud environment, often to the internet.
 Openstack supports this by allowing CSPs to map non-virtualized networks onto specific virtual networks, such that virtual routers and servers can connect to them.
 
-Such networks will usually be created in a provider-managed project and then shared to user projects using the RBAC-feature of the network API.
+Such networks will usually be created in a provider-managed project and then shared to user projects using the RBAC-feature of the Networking API.
 Because they have to be set up by the cloud provider, networks of this type are generally referred to as _provider networks_, though that term can also be used in a broader senseto refer to other types of CSP-managed virtual networks.
 
 When setting up provider networks for external access, CSPs have a number of different options regarding usage restrictions and the allocation of IP addresses.
@@ -30,7 +30,7 @@ The following terms are used throughout this document:
 | DHCP | Dynamic Host Configuration Protocol: Used to automatically configure hosts in a network with IP addresses, default routes, and other information such as DNS servers. |
 | Prefix | IP address prefix of a given bit-length N, written as _ADDRESS/N_. Divides addresses into a network and a host part, a shorter prefix allows more hosts but takes up more address space. |
 | NAT | Network Address Translation: mapping (usually public) IPv4 addresses onto a different (usually private) address space. May allows multiple hosts to share a public address by multiplexing TCP/UDP ports. |
-| RBAC | Role-based Access Control: A mechanism in the Network API to give projects limited access to resources owned by other projects. Typically used by CSPs to create provider networks. |
+| RBAC | Role-based Access Control: A mechanism in the Networking API to give projects limited access to resources owned by other projects. Typically used by CSPs to create provider networks. |
 | Shared Network | Virtual network that is shared between projects in a way that allows direct attachment of servers. |
 | External Network | Virtual network that is shared between projects in a way that only allows virtual routers to use it as external gateway. Typically used by CSPs to provide access to networks outside of the cloud environment. |
 | Provider Network | A CSP-managed virtual network made available to projects as either shared or external, typically connected to non-virtualized infrastructure. |
@@ -50,7 +50,7 @@ This section will provide some general background on OpenStack provider networks
 In OpenStack, ownership of resources is generally tracked through projects, and, as per default policy, only members of a project have access to its resources
 This is also true for CSP-managed resources, such as provider networks, which have to be created in a CSP-internal project, and are initially only accessible in this project.
 
-The Network API's Role Based Access Control (RBAC) extension can then be used to share it with other projects.
+The Networking API's Role Based Access Control (RBAC) extension can then be used to share it with other projects.
 RBAC rules for networks support the two actions `access_as_external` and `access_as_shared`, and can be created automatically on `openstack network create` with the options `--external` and `--share`.
 
 * `access_as_external` allows networks to be used as external gateway for virtual routers in the target projects. Such networks are in the following referred to as _external networks_.
@@ -67,7 +67,7 @@ This works well for shared networks, where servers can be attached directly, but
 
 Making servers in a project-internal network externally accessible through a virtual router is a bit more complicated, though.
 One option is for the user to create a subnet with an external IP range for the internal network, and then ask the CSP to configure a static route to the subnet via the gateway IP of a virtual router.
-This is cumbersome to set up manually, but can be automated using the `bgp` extension of the Network API, which is currently implemented both by the `neutron-dynamic-routing` project [^bgp] and by the `ovn` mechanism driver when used with the `ovn-bgp-agent` [^ovn-bgp].
+This is cumbersome to set up manually, but can be automated using the `bgp` extension of the Networking API, which is currently implemented both by the `neutron-dynamic-routing` project [^bgp] and by the `ovn` mechanism driver when used with the `ovn-bgp-agent` [^ovn-bgp].
 For users, this takes the form of a CSP-managed shared subnet pool, which they can use to create externally routable subnets, limited by a per-project quota.
 
 For IPv6, there is also the option of prefix delegation, where a DHCPv6 server automatically assigns an IPv6 prefix to a subnet when it connects to the external provider network [^pd].
@@ -107,7 +107,7 @@ So, rather than trying to find common ground between the networking requirements
 
 #### IPv6
 
-The OpenStack Network API allows the creation of subnets with either IPv4 or IPv6 address ranges, as indicated by the `ip_version` field.
+The OpenStack Networking API allows the creation of subnets with either IPv4 or IPv6 address ranges, as indicated by the `ip_version` field.
 However, to allow external access to either, the CSP needs to provide projects with externally routable addresses for that IP version.
 
 While it is possible (and common) for CSPs to provide both IPv4 and IPv6, the increasing scarcity (and cost) of IPv4 address space may at some point become a barrier to entry for new CSPs.
@@ -172,7 +172,7 @@ CSPs can try to educate users on the correct provider networks to use, and can a
 
 #### Required API extensions
 
-The OpenStack Network API has a more modular design than other OpenStack APIs.
+The OpenStack Networking API has a more modular design than other OpenStack APIs.
 New features are added as optional API extensions rather than a linear sequence of micro-version, and different Neutron core-plugins, service plugins, and mechanism drivers may provide different extensions.
 
 In practice, the great majority of OpenStack deployments will use Neutron with the ML2 core plugin and either the `router` or the `ovn-router` service plugins, which should cover all requirements of this standard.
