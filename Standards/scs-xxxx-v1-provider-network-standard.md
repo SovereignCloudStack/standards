@@ -8,10 +8,10 @@ track: IaaS
 ## Introduction
 
 Many use-cases of IaaS require virtual servers to be able to connect to network resources outside of the cloud environment, often to the internet.
-Openstack supports this by allowing CSPs to map non-virtualized networks onto specific virtual networks, such that virtual routers and servers can connect to them.
+OpenStack supports this by allowing CSPs to map non-virtualized networks onto specific virtual networks, such that virtual routers and servers can connect to them.
 
 Such networks will usually be created in a provider-managed project and then shared to user projects using the RBAC-feature of the Networking API.
-Because they have to be set up by the cloud provider, networks of this type are generally referred to as _provider networks_, though that term can also be used in a broader senseto refer to other types of CSP-managed virtual networks.
+Because they have to be set up by the cloud provider, networks of this type are generally referred to as _provider networks_, though that term can also be used in a broader sense to refer to other types of CSP-managed virtual networks.
 
 When setting up provider networks for external access, CSPs have a number of different options regarding usage restrictions and the allocation of IP addresses.
 This document defines a standardized approach for using provider networks to allocate public IP addresses and provide external access in a way that is portable across SCS clouds.
@@ -158,7 +158,7 @@ IPv4 NAT can also be used in a dual stack setup alongside a routed IPv6 subnet.
 
 #### Disable RBAC for Users
 
-Per default policy, Neutron allows any user the creation RBAC rules to share resources of their projects with other projects.
+Per default policy, Neutron allows any user the creation of RBAC rules to share resources of their projects with other projects.
 Only the use of the `*` wildcard target is limited to admin users.
 
 However, how a network was shared, and who shared it, is not immediately obvious from the perspective of the target project.
@@ -167,7 +167,7 @@ And even though users can determine the project ID of networks by using `network
 
 Under these conditions, a malicious user could create a network with a misleading name, share it with target projects to trick them into using it like a provider network, and then intercept their traffic.
 
-For this attack to work, the attacker has to find out the target's project ID, and the target has to be sufficiently oblivious to the CSP's provider network setup.
+For this attack to work, the attacker has to find out the target's project ID, and the target has to be sufficiently oblivious to the CSPs provider network setup.
 CSPs can try to educate users on the correct provider networks to use, and can avoid leaking project IDs, but the best protection is to disable the creation of RBAC rules for non-admin users.
 
 #### Required API extensions
@@ -175,8 +175,8 @@ CSPs can try to educate users on the correct provider networks to use, and can a
 The OpenStack Networking API has a more modular design than other OpenStack APIs.
 New features are added as optional API extensions rather than a linear sequence of micro-version, and different Neutron core-plugins, service plugins, and mechanism drivers may provide different extensions.
 
-In practice, the great majority of OpenStack deployments will use Neutron with the ML2 core plugin and either the `router` or the `ovn-router` service plugins, which should cover all requirements of this standard.
-As this standard tries to target the OpenStack API rather than it's specific implementation, we could consider standardizing a minimal set of API extensions.
+In practice, the great majority of OpenStack deployments will use Neutron with the ML2 core plugin and either the `router` or the `ovn-router` service plugins, which should support all extensions required by this standard.
+Because this standard tries to target the OpenStack API, rather than it's specific implementation, we might consider standardizing a minimal set of Networking API extensions that CSPs must provide.
 
 On the other hand, the mandatory set of API extensions follows directly from the mandated features, e.g. the `external-net`, `provider`, and `router` extensions, which must all be available if an external provider network is required.
 So, just specifying mandatory features rather than a certain set of extensions may actually be preferable, as it removes redundancy and thus the potential for inconsistency.
