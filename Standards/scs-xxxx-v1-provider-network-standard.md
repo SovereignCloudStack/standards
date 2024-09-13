@@ -10,7 +10,7 @@ track: IaaS
 Many use-cases of IaaS require virtual servers to be able to connect to network resources outside of the cloud environment, often to the internet.
 OpenStack supports this by allowing CSPs to map non-virtualized networks onto specific virtual networks, such that virtual routers and servers can connect to them.
 
-Such networks will usually be created in a provider-managed project and then shared to user projects using the RBAC-feature of the Networking API.
+Such networks will usually be created in a provider-managed project and then shared to user projects using access control features of the Networking API.
 Because they have to be set up by the cloud provider, networks of this type are generally referred to as _provider networks_, though that term can also be used in a broader sense to refer to other types of CSP-managed virtual networks.
 
 When setting up provider networks for external access, CSPs have a number of different options regarding usage restrictions and the allocation of IP addresses.
@@ -30,7 +30,7 @@ The following terms are used throughout this document:
 | DHCP | Dynamic Host Configuration Protocol: Used to automatically configure hosts in a network with IP addresses, default routes, and other information such as DNS servers. |
 | Prefix | IP address prefix of a given bit-length N, written as _ADDRESS/N_. Divides addresses into a network and a host part, a shorter prefix allows more hosts but takes up more address space. |
 | NAT | Network Address Translation: mapping (usually public) IPv4 addresses onto a different (usually private) address space. May allows multiple hosts to share a public address by multiplexing TCP/UDP ports. |
-| RBAC | Role-based Access Control: A mechanism in the Networking API to give projects limited access to resources owned by other projects. Typically used by CSPs to create provider networks. |
+| Networking RBAC | A mechanism in the Networking API to give projects limited access to resources owned by other projects. Used by CSPs to create provider networks. Not to be confused with the role-based access control of OpenStack's policy mechanism. |
 | Shared Network | Virtual network that is shared between projects in a way that allows direct attachment of servers. |
 | External Network | Virtual network that is shared between projects in a way that only allows virtual routers to use it as external gateway. Typically used by CSPs to provide access to networks outside of the cloud environment. |
 | Provider Network | A CSP-managed virtual network made available to projects as either shared or external, typically connected to non-virtualized infrastructure. |
@@ -50,8 +50,10 @@ This section will provide some general background on OpenStack provider networks
 In OpenStack, ownership of resources is generally tracked through projects, and, as per default policy, only members of a project have access to its resources
 This is also true for CSP-managed resources, such as provider networks, which have to be created in a CSP-internal project, and are initially only accessible in this project.
 
-The Networking API's Role Based Access Control (RBAC) extension can then be used to share it with other projects.
-RBAC rules for networks support the two actions `access_as_external` and `access_as_shared`, and can be created automatically on `openstack network create` with the options `--external` and `--share`.
+They can then be made available to other projects by using the Networking API's Role-based Access Control (_RBAC_) extension.
+(This is it's official name in the documentation, even though it isn't technically role-based. To avoid confusion with the actual RBAC of OpenStack's API authorization, it will in the following referred to as _Networking RBAC_.)
+
+Networking RBAC rules for virtual networks support the two actions `access_as_external` and `access_as_shared`, and can be created automatically on `openstack network create` with the options `--external` and `--share`.
 
 * `access_as_external` allows networks to be used as external gateway for virtual routers in the target projects. Such networks are in the following referred to as _external networks_.
   External networks have some special properties, such as allowing the creation of floating IPs, which will be discussed in the next section.
@@ -156,9 +158,9 @@ The floating IP quota also offers a finer granularity for distributing IPs among
 
 IPv4 NAT can also be used in a dual stack setup alongside a routed IPv6 subnet.
 
-#### Disable RBAC for Users
+#### Disable Networking RBAC for Users
 
-Per default policy, Neutron allows any user the creation of RBAC rules to share resources of their projects with other projects.
+Per default policy, Neutron allows any user the creation of Networking RBAC rules to share resources of their projects with other projects.
 Only the use of the `*` wildcard target is limited to admin users.
 
 However, how a network was shared, and who shared it, is not immediately obvious from the perspective of the target project.
@@ -168,7 +170,7 @@ And even though users can determine the project ID of networks by using `network
 Under these conditions, a malicious user could create a network with a misleading name, share it with target projects to trick them into using it like a provider network, and then intercept their traffic.
 
 For this attack to work, the attacker has to find out the target's project ID, and the target has to be sufficiently oblivious to the CSPs provider network setup.
-CSPs can try to educate users on the correct provider networks to use, and can avoid leaking project IDs, but the best protection is to disable the creation of RBAC rules for non-admin users.
+CSPs can try to educate users on the correct provider networks to use, and can avoid leaking project IDs, but the best protection is to disable the creation of Networking RBAC rules for non-admin users.
 
 #### Required API extensions
 
@@ -198,7 +200,7 @@ If they do offer public IPv4 addresses, they **MUST** provide at least one publi
 CSPs **MUST** externally route any public IP addresses allocated from subnets of the standard provider network.
 CSPs **MUST** provide dynamic routing for all project-allocated public IP-prefixes via the standard provider network.
 
-By default, users **SHOULD** be prohibited by policy from creating RBAC rules for networks in their projects, to prevent the creation of faux provider networks.
+By default, users **SHOULD** be prohibited by policy from creating Networking RBAC rules, to prevent the creation of faux provider networks.
 
 ## Conformance Tests
 
