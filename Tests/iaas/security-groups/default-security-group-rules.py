@@ -126,7 +126,7 @@ def delete_security_group(conn, sg_id):
     conn.network.delete_security_group(sg_id)
     try:
         conn.network.find_security_group(name_or_id=sg_id)
-    except Exception as e:
+    except Exception:
         print(f"Security group {sg_id} was deleted successfully.")
 
 
@@ -143,7 +143,7 @@ def altern_test_rules(cloud_name: str):
     try:
         sg_id = create_security_group(connection)
         rules = connection.network.find_security_group(name_or_id=sg_id)
-    except Exception as e:
+    except Exception:
         print("Security group was not created successfully.")
 
     # count all overall ingress rules and egress rules.
@@ -186,7 +186,7 @@ def altern_test_rules(cloud_name: str):
     )
     try:
         delete_security_group(connection, sg_id)
-    except Exception as e:
+    except Exception:
         print(f"Security group {sg_id} was not deleted successfully")
     result_dict = {"Ingress Rules": ingress_rules, "Egress Rules": egress_rules}
     return result_dict
