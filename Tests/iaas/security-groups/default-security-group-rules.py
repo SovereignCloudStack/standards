@@ -12,16 +12,6 @@ import yaml
 from openstack.exceptions import ResourceNotFound
 
 
-###### debugging. TODO remove #####################
-def load_env_from_yaml(cloudname):
-    with open(".sandbox/clouds.yaml", "r+") as file:
-        data = yaml.safe_load(file)
-    for cloud in data["clouds"]:
-        if cloud == cloudname:
-            env = data["clouds"][cloud]
-    return env
-
-
 def connect(cloud_name: str) -> openstack.connection.Connection:
     """Create a connection to an OpenStack cloud
 
@@ -30,21 +20,9 @@ def connect(cloud_name: str) -> openstack.connection.Connection:
 
     :returns: openstack.connnection.Connection
     """
-    env = load_env_from_yaml(cloud_name)
-
     return openstack.connect(
         cloud=cloud_name,
-        auth_type=env["auth_type"],
-        auth_url=env["auth_url"],
-        project_name=env["project_name"],
-        username=env["username"],
-        password=env["password"],
-        user_domain_name=env["user_domain_name"],
-        project_domain_name=env["project_domain_name"],
     )
-
-
-####################################################
 
 
 def test_rules(cloud_name: str):
@@ -243,8 +221,8 @@ def main():
         print(test_rules(cloud))
     except ResourceNotFound as e:
         print(
-            "Ressource could not be found."
-            "Openstack components might not up to date and soon be depricated!"
+            "Ressource could not be found. Openstack components might not be up to date. "
+            "Continuing with still supported test. "
             f"Error: {e}"
         )
         print(altern_test_rules(cloud))
