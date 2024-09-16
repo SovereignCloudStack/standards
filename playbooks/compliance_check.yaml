@@ -3,15 +3,16 @@
   hosts: all
   tasks:
     - name: Run compliance script
-      ansible.builtin.shell: >
-        python3 ~/Tests/scs-test-runner.py --config ~/Tests/config.toml --debug run --preset {{ preset }} --output report.yaml
+      ansible.builtin.command:
+        cmd: python3 Tests/scs-test-runner.py --config Tests/config.toml --debug run --preset {{ preset }} --output report.yaml
+        chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
       changed_when: true
 
     - name: Copy result YAML
       ansible.builtin.synchronize:
         dest: "{{ zuul.executor.log_root }}/report.yaml"
         mode: pull
-        src: "report.yaml"
+        src: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/report.yaml"
         verify_host: true
         owner: no
         group: no
