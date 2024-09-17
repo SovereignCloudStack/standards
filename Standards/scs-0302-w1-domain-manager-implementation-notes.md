@@ -11,12 +11,16 @@ supplements:
 
 :::caution
 
-If a Keystone release of OpenStack 2024.2 or later is used, this document can be disregarded.
+If a Keystone release of OpenStack 2024.2 or later is used, **the policy configuration described in this document MUST be removed again** in case it was applied in the past prior to the upgrade.
+
+:::
+
+:::info
+
 The implementation described in this document only applies to Keystone releases prior to the OpenStack release 2024.2 ("Dalmatian").
 This document describes a transitional solution to offer the Domain Manager functionality for SCS clouds based on an OpenStack release earlier than 2024.2.
 
-Beginning with the 2024.2 release of OpenStack, the Domain Manager persona is integrated natively into Keystone and the implementation described below is unnecessary.
-The implementation described in this document and the native OpenStack integration starting with 2024.2 offer identical behavior for users, ensuring a seamless transition.
+Beginning with the 2024.2 release of OpenStack, the Domain Manager persona is integrated natively into Keystone and the implementation described below is unnecessary and might conflict with the native implementation.
 
 :::
 
