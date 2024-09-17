@@ -146,7 +146,7 @@ A CSP MAY choose this setting freely but SHOULD NOT change it after the initial 
 
 ### DNS-as-a-Service
 
-The following section only applies to SCS clouds which include the DNS-as-a-Service functionality for customers via the [OpenStack DNS v2 API](https://docs.openstack.org/api-ref/dns/dns-api-v2-index.html).
+The following section only applies to SCS clouds which include the DNS-as-a-Service functionality for customers via the [OpenStack DNS v2 API](https://docs.openstack.org/api-ref/dns/dns-api-v2-index.html), e.g., through Designate.
 All guidelines above still apply.
 
 In the Networking API, the "dns-domain-ports" extension MUST be enabled to offer the full range of DNS record settings for both ports and networks.
