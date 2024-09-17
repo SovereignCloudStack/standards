@@ -94,16 +94,16 @@ Its use case seems pretty niche and will most likely be considered entirely opti
 
 ## Standard
 
-The decisions of this standard will be categorized into three main sections: forwarded DNS, internal DNS and external DNS.
+The decisions of this standard will be categorized into three main sections: default DNS servers, internal DNS and external DNS.
 
-Forwarded DNS refers to the DNS servers communicated to tenant VMs for DNS resolution as well as any local recursors involved.
+Default DNS servers refer to the DNS servers communicated to tenant VMs for DNS resolution as well as any local recursors involved.
 
 Internal DNS refers to the DNS resolution that OpenStack Neutron implements internally to make VM instances' addresses resolvable via name within the same tenant network.
 
 DNS-as-a-Service refers to the integration of external or public DNS via the OpenStack DNS v2 API and its publishing of DNS records for VMs that are externally reachable.
 This is an optional feature of OpenStack clouds and can be implemented by integrating the Designate service for example.
 
-### Forwarded DNS
+### Default DNS servers
 
 - In OVS-based setups, the `dnsmasq_local_resolv` setting for Neutron DHCP agents MUST be disabled.
 - One or more local DNS recursors SHOULD be integrated into the infrastructure.
