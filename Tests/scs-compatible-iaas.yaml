@@ -46,7 +46,7 @@ modules:
         tags: [mandatory]
         description: >
           Must fulfill all requirements of
-          <https://docs.scs.community/standards/scs-0100-v3-flavor-naming -- plus the list of mandatory>
+          <https://docs.scs.community/standards/scs-0100-v3-flavor-naming> -- plus the list of mandatory
           and recommended flavors found in <https://docs.scs.community/standards/scs-0100-v2-flavor-naming#standard-scs-flavors>
   - id: scs-0100-v3.1
     name: Flavor naming v3.1
@@ -159,6 +159,8 @@ timeline:
     versions:
       v5: draft
       v4: effective
+      v3: deprecated
+      v3-orig: deprecated
   - date: 2024-07-31
     versions:
       v4: effective
@@ -216,6 +218,17 @@ versions:
     targets:
       main: mandatory
   - version: v3
+    # comment: >
+    #   This is what our documentation wrongly stated as being v3 when we introduced v4.
+    #   What was originally v3 (and what we actually continued to test) can be found as v3-orig.
+    stabilized_at: 2024-02-28
+    include:
+      - opc-v2022.11
+      - scs-0100-v3.1
+      - scs-0102-v1
+    targets:
+      main: mandatory
+  - version: v3-orig
     stabilized_at: 2023-06-15
     include:
       - opc-v2022.11

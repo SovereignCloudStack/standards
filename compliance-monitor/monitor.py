@@ -77,7 +77,7 @@ GRACE_PERIOD_DAYS = 7
 #       http://127.0.0.1:8080/reports
 # to achieve this!
 SEP = "-----END SSH SIGNATURE-----\n&"
-ASTERISK_LOOKUP = {'effective': '', 'draft': '*', 'warn': '†'}
+ASTERISK_LOOKUP = {'effective': '', 'draft': '*', 'warn': '†', 'deprecated': '††'}
 
 
 class ViewType(Enum):
@@ -88,12 +88,12 @@ class ViewType(Enum):
 
 VIEW_DETAIL = {
     ViewType.markdown: 'details.md',
-    ViewType.fragment: 'details.html',
+    ViewType.fragment: 'details.md',
     ViewType.page: 'overview.html',
 }
 VIEW_TABLE = {
     ViewType.markdown: 'overview.md',
-    ViewType.fragment: 'overview_fragment.html',
+    ViewType.fragment: 'overview.md',
     ViewType.page: 'overview.html',
 }
 REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_DETAIL, VIEW_TABLE) for fn in view.values()))
@@ -222,6 +222,7 @@ class PrecomputedVersion:
         self.name = version['version']
         self.suite = compile_suite(self.name, version['include'])
         self.validity = version['validity']
+        self.listed = bool(version['_explicit_validity'])
         self.targets = {
             tname: self.suite.select(tname, target_spec)
             for tname, target_spec in version['targets'].items()
@@ -263,10 +264,14 @@ class PrecomputedScope:
         by_validity = defaultdict(list)
         for vname in scope_results:
             by_validity[self.versions[vname].validity].append(vname)
-        relevant = list(by_validity['effective'])
-        # only show "warn" versions if no effective ones are passed
-        if not any(version_results[vname]['result'] == 1 for vname in relevant):
-            relevant.extend(by_validity['warn'])
+        # go through worsening validity values until a passing version is found
+        relevant = []
+        for validity in ('effective', 'warn', 'deprecated'):
+            vnames = by_validity[validity]
+            relevant.extend(vnames)
+            if any(version_results[vname]['result'] == 1 for vname in vnames):
+                break
+        # always include draft (but only at the end)
         relevant.extend(by_validity['draft'])
         passed = [vname for vname in relevant if version_results[vname]['result'] == 1]
         return {
@@ -294,8 +299,10 @@ class PrecomputedScope:
         """
         scope_uuid = self.spec['uuid']
         for vname, precomputed_version in self.versions.items():
+            listed = precomputed_version.listed
             for testcase in precomputed_version.suite.testcases:
-                target_dict[(scope_uuid, vname, testcase['id'])] = testcase
+                # put False if listed is False, else put testcase
+                target_dict[(scope_uuid, vname, testcase['id'])] = listed and testcase
 
 
 def import_cert_yaml(yaml_path, target_dict):
@@ -486,8 +493,11 @@ def convert_result_rows_to_dict2(
     missing = set()
     for subject, scope_uuid, version, testcase_id, result, checked_at, report_uuid in rows:
         testcase = scopes_lookup.get((scope_uuid, version, testcase_id))
-        if testcase is None:
-            missing.add((scope_uuid, version, testcase_id))
+        if not testcase:
+            # it can be False (testcase is known but version too old) or None (testcase not known)
+            # only report the latter case
+            if testcase is None:
+                missing.add((scope_uuid, version, testcase_id))
             continue
         # drop value if too old
         expires_at = add_period(checked_at, testcase.get('lifetime'))
@@ -498,7 +508,7 @@ def convert_result_rows_to_dict2(
             tc_result.update(report=report_uuid)
         preliminary[subject][scope_uuid][version][testcase_id] = tc_result
     if missing:
-        logger.warning('missing objects: ' + ', '.join(missing))
+        logger.warning('missing objects: ' + ', '.join(repr(x) for x in missing))
     # make sure the requested subjects and scopes are present (facilitates writing jinja2 templates)
     for subject in subjects:
         for scope in scopes:
@@ -538,6 +548,8 @@ def render_view(view, view_type, results, base_url='/', title=None):
     def detail_url(subject, scope): return f"{base_url}page/detail/{subject}/{scope}"  # noqa: E306,E704
     def report_url(report): return f"{base_url}reports/{report}"  # noqa: E306,E704
     fragment = templates_map[stage1].render(results=results, detail_url=detail_url, report_url=report_url)
+    if view_type != ViewType.markdown and stage1.endswith('.md'):
+        fragment = markdown(fragment, extensions=['extra'])
     if stage1 != stage2:
         fragment = templates_map[stage2].render(fragment=fragment, title=title)
     return Response(content=fragment, media_type=media_type)

@@ -15,21 +15,20 @@ The three major versions of the standard that exist so far are very similar, and
 Therefore, the procedures needed to implement or test them are very similar as well. Yet, this document
 will only cover v3, because v1 and v2 are already obsolete by the time of writing.
 
-## Implementation Notes
+## Implementation notes
 
 Every flavor whose name starts with `SCS-` must conform with the naming scheme laid down in the standard.
 
-### Operational Tooling
+### Operational tooling
 
-#### Syntax Check
+#### Syntax check
 
 The [test suite](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming)
 comes with a handy
 [command-line utility](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming/cli.py)
-that can be used to validate flavor names, to
-interactively construct a flavor name via a questionnaire, and to generate prose descriptions for given
-flavor names. See the
-[README](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming/README.md)
+that can be used to validate flavor names, to interactively construct a flavor name
+via a questionnaire, and to generate prose descriptions for given flavor names.
+See the [README](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming/README.md)
 for more details.
 
 The functionality of this script is also (partially) exposed via the web page
@@ -39,12 +38,14 @@ With the OpenStack tooling (`python3-openstackclient`, `OS_CLOUD`) in place, you
 `cli.py -v parse v3 $(openstack flavor list -f value -c Name)` to get a report
 on the syntax compliance of the flavor names of the cloud environment.
 
-#### Flavor Creation
+#### Flavor creation
 
-The [OpenStack Flavor Manager](https://github.com/osism/openstack-flavor-manager) will create a whole set
-of flavors in one go, given a YAML description of this set.
+The [OpenStack Flavor Manager from OSISM](https://github.com/osism/openstack-flavor-manager)
+will create a whole set of flavors in one go.
+To that end, it provides different options: either the standard mandatory and
+possibly recommended flavors can be created, or the user can set a file containing his flavors.
 
-## Automated Tests
+## Automated tests
 
 ### Errors
 
@@ -68,6 +69,6 @@ The script [`flavor-names-openstack.py`](https://github.com/SovereignCloudStack/
 talks to the OpenStack API of the cloud specified by the `OS_CLOUD` environment and queries properties and
 checks the names for standards compliance.
 
-## Manual Tests
+## Manual tests
 
 To be determined.
