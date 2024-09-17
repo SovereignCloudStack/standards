@@ -118,12 +118,16 @@ enforce_scope = True
 The "`is_domain_managed_role`" policy rule MAY be adjusted using a dedicated `policy.yaml` file for the Identity API in order to adjust the set of roles a Domain Manager is able to assign/revoke.
 When doing so, the `admin` role MUST NOT be added to this set.
 
+#### Note about upgrading from SCS Domain Manager to native integration
+
+In case the Identity API was upgraded from an older version where the policy-based Domain Manager implementation of SCS described in the [implementation notes for this standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0302-w1-domain-manager-implementation-notes.md) was still in use, the policies described there MUST be removed (except for the "`is_domain_managed_role`" rule).
+
 ### For OpenStack Keystone 2024.1 or below
 
 For OpenStack Keystone 2024.1 or below, the Domain Manager functionality MUST be implemented using API policies.
 For details, refer to the [implementation notes for this standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0302-w1-domain-manager-implementation-notes.md).
 
-For those versions, changing the "`enforce_scope`" and "`enforce_new_defaults`" options for the Identity API is not necessary for the Domain Manager implementation.
+For the release 2024.1 and below, changing the "`enforce_scope`" and "`enforce_new_defaults`" options for the Identity API is not necessary for the Domain Manager implementation.
 
 ## Related Documents
 
