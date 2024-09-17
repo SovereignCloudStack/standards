@@ -1,6 +1,6 @@
 sonobuoy-config:
   driver: Job
-  plugin-name: scsconformance
+  plugin-name: scs-conformance
   result-format: gojson
   description: An easy to start from project for making K8s aware tests.
 spec:
