@@ -314,7 +314,6 @@ def import_cert_yaml(yaml_path, target_dict):
         spec = load_spec(yaml.load(fileobj.read()))
     annotate_validity(spec['timeline'], spec['versions'], date.today())
     target_dict[spec['uuid']] = precomputed_scope = PrecomputedScope(spec)
-    precomputed_scope.update_lookup(target_dict)
 
 
 def import_cert_yaml_dir(yaml_path, target_dict):
@@ -332,10 +331,13 @@ def get_scopes():
         current = _scopes.get(ident)
         if current is None:
             _scopes[ident] = current = {'_counter': -1}
-    if current['_counter'] != counter:
-        current.clear()
-        current['_counter'] = counter
-        import_cert_yaml_dir(yaml_path, current)
+        if current['_counter'] != counter:
+            reference = _scopes['_reference']
+            current.clear()
+            current['_counter'] = counter
+            for uuid, precomputed in reference.items():
+                current[uuid] = precomputed_scope = PrecomputedScope(precomputed.spec)
+                precomputed_scope.update_lookup(current)
     return current
 
 
@@ -707,8 +709,13 @@ def verdict_check_filter(value):
 
 
 def sighup_handler(signum, frame):
+    reference = {}
+    import_cert_yaml_dir(_scopes['_yaml_path'], reference)
     with _scopes_lock:
+        _scopes['_reference'] = reference
         _scopes['_counter'] += 1
+    import_templates(settings.template_path, env=env, templates=templates_map)
+    validate_templates(templates=templates_map)
 
 
 if __name__ == "__main__":
@@ -726,8 +733,7 @@ if __name__ == "__main__":
         '_yaml_path': settings.yaml_path,
         '_counter': 0,
     })
+    sighup_handler(None, None)  # initial loading of specs and templates
     _ = get_scopes()  # make sure they can be read
-    import_templates(settings.template_path, env=env, templates=templates_map)
-    validate_templates(templates=templates_map)
     signal.signal(signal.SIGUSR2, sighup_handler)
     uvicorn.run(app, host='0.0.0.0', port=8080, log_level="info", workers=1)
