@@ -27,8 +27,7 @@ def connect(cloud_name: str) -> openstack.connection.Connection:
     )
 
 
-def check_for_member_role(conn: openstack.connection.Connection
-                          ) -> None:
+def check_for_member_role(conn: openstack.connection.Connection) -> None:
     """Checks whether the current user has at maximum privileges
     of the member role.
     :param connection:
@@ -37,29 +36,32 @@ def check_for_member_role(conn: openstack.connection.Connection
     """
 
     auth_data = conn.auth
+
     auth_dict = {
         "identity": {
             "methods": ["password"],
             "password": {
                 "user": {
-                    "name": auth_data['username'],
-                    "domain": {"name": auth_data['project_domain_name']},
-                    "password": auth_data['password']
+                    "name": auth_data["username"],
+                    "domain": {"name": auth_data["project_domain_name"]},
+                    "password": auth_data["password"],
                 }
             },
         },
         "scope": {
             "project": {
-                "domain": {"name": auth_data['project_domain_name']},
-                "name": auth_data['project_name']
+                "domain": {"name": auth_data["project_domain_name"]},
+                "name": auth_data["project_name"],
             }
-        }
+        },
     }
 
     has_member_role = False
-    request = conn.session.request(auth_data['auth_url'] + '/v3/auth/tokens',
-                                   'POST',
-                                   json={'auth': auth_dict})
+    #    auth_url = auth_data['auth_url'] + '/v3/auth/tokens'
+    auth_url = auth_data["auth_url"] + "auth/tokens"
+    print("!URL" + auth_url)
+    request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
+
     for role in json.loads(request.content)["token"]["roles"]:
         role_name = role["name"]
         if role_name == "admin" or role_name == "manager":
@@ -88,7 +90,7 @@ def check_presence_of_key_manager(cloud_name: str):
         )
 
     for svc in services:
-        svc_type = svc['type']
+        svc_type = svc["type"]
         if svc_type == "key-manager":
             # key-manager is present
             # now we want to check whether a user with member role
@@ -102,8 +104,7 @@ def check_presence_of_key_manager(cloud_name: str):
     return 0
 
 
-def check_key_manager_permissions(conn: openstack.connection.Connection
-                                  ) -> None:
+def check_key_manager_permissions(conn: openstack.connection.Connection) -> None:
     """
     After checking that the current user only has the member and maybe the
     reader role, this method verifies that the user with a member role
@@ -111,8 +112,7 @@ def check_key_manager_permissions(conn: openstack.connection.Connection
     """
     secret_name = "scs-member-role-test-secret"
     if not check_for_member_role(conn):
-        logger.warning("Cannot test key-manager permissions. "
-                       "User has wrong roles")
+        logger.warning("Cannot test key-manager permissions. " "User has wrong roles")
         return None
 
     def _find_secret(secret_name_or_id: str):
@@ -137,7 +137,7 @@ def check_key_manager_permissions(conn: openstack.connection.Connection
             name=secret_name,
             payload_content_type="text/plain",
             secret_type="opaque",
-            payload="foo"
+            payload="foo",
         )
 
         new_secret = _find_secret(secret_name)
@@ -147,29 +147,22 @@ def check_key_manager_permissions(conn: openstack.connection.Connection
         )
         conn.key_manager.delete_secret(new_secret)
     except openstack.exceptions.ForbiddenException as e:
-        print(
-            "Users of the 'member' role can use Key Manager API: FAIL"
-        )
-        print(
-            f"ERROR: {str(e)}"
-        )
+        print("Users of the 'member' role can use Key Manager API: FAIL")
+        print(f"ERROR: {str(e)}")
         exit(1)
-    print(
-        "Users of the 'member' role can use Key Manager API: PASS"
-    )
+    print("Users of the 'member' role can use Key Manager API: PASS")
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="SCS Mandatory IaaS Service Checker")
+    parser = argparse.ArgumentParser(description="SCS Mandatory IaaS Service Checker")
     parser.add_argument(
-        "--os-cloud", type=str,
+        "--os-cloud",
+        type=str,
         help="Name of the cloud from clouds.yaml, alternative "
-        "to the OS_CLOUD environment variable"
+        "to the OS_CLOUD environment variable",
     )
     parser.add_argument(
-        "--debug", action="store_true",
-        help="Enable OpenStack SDK debug logging"
+        "--debug", action="store_true", help="Enable OpenStack SDK debug logging"
     )
     args = parser.parse_args()
     openstack.enable_logging(debug=args.debug)
