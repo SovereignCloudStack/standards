@@ -1,7 +1,7 @@
 ---
 title: Volume Backup Functionality
 type: Standard
-status: Proposal
+status: Draft
 track: IaaS
 ---
 
