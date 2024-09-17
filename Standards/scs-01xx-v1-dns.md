@@ -20,7 +20,7 @@ DNS can also be used to publish DNS records for virtual machines that have exter
 |---|---|
 | CSP | Cloud Service Provider, provider managing the OpenStack infrastructure |
 | DNS | Domain Name System |
-| DNS recursor | Recursive DNS resolver |
+| DNS recursor | Recursive DNS resolver, see "Recursive resolver" as per [RFC 9499](https://datatracker.ietf.org/doc/html/rfc9499#dns-servers-and-clients) |
 | network | OpenStack Neutron network resource unless stated otherwise |
 | OVN | Virtual networking component of the Open vSwitch project and a mechanism driver choice for OpenStack Neutron as an alternative to the OVS driver |
 | OVS | Abbreviation for Open vSwitch, a virtualized switch solution and mechanism driver choice for OpenStack Neutron |
