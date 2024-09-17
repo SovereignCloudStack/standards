@@ -313,7 +313,7 @@ def import_cert_yaml(yaml_path, target_dict):
     with open(yaml_path, "r") as fileobj:
         spec = load_spec(yaml.load(fileobj.read()))
     annotate_validity(spec['timeline'], spec['versions'], date.today())
-    target_dict[spec['uuid']] = precomputed_scope = PrecomputedScope(spec)
+    target_dict[spec['uuid']] = PrecomputedScope(spec)
 
 
 def import_cert_yaml_dir(yaml_path, target_dict):
@@ -326,7 +326,6 @@ def get_scopes():
     """returns thread-local copy of the scopes dict"""
     ident = get_ident()
     with _scopes_lock:
-        yaml_path = _scopes['_yaml_path']
         counter = _scopes['_counter']
         current = _scopes.get(ident)
         if current is None:
