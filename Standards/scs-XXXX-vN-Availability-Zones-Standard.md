@@ -194,7 +194,7 @@ AZs SHOULD only occur within the same region and have a low-latency interconnect
 
 The taxonomy of failsafe levels can be used to get an overview over the levels of failure safety in a deployment(TODO: link after DR is merged.)
 
-The BSI can be consulted for further information about [failure risks](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Grundschutz/Kompendium/Elementare_Gefaehrdungen.pdf?__blob=publicationFile&v=4), [risk analysis for a datacenter](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Grundschutz/BSI_Standards/standard_200_3.pdf?__blob=publicationFile&v=2) or [measures for availability](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/RZ-Sicherheit/RZ-Verfuegbarkeitsmassnahmen.pdf?__blob=publicationFile&v=9).
+The BSI can be consulted for further information about [failure risks](https://www.bsi.bund.de/DE/Themen/Unternehmen-und-Organisationen/Standards-und-Zertifizierung/IT-Grundschutz/IT-Grundschutz-Kompendium/Elementare-Gefaehrdungen/elementare-gefaehrdungen_node.html), [risk analysis for a datacenter](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Grundschutz/BSI_Standards/standard_200_3.pdf?__blob=publicationFile&v=2) or [measures for availability](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/RZ-Sicherheit/RZ-Verfuegbarkeitsmassnahmen.pdf?__blob=publicationFile&v=9).
 
 ## Conformance Tests
 
