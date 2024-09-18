@@ -75,7 +75,7 @@ class KubernetesClusterPlugin(ABC):
         :param: None
         :return: None
         """
-        logger.info(f" invoke cncf conformance test")
+        logger.info(" invoke cncf conformance test")
         # ~ os.system(f"sonobuoy run --wait --mode=certified-conformance --kubeconfig='{self.kubeconfig_path}'")
         # TODO:!!! switch to the real test on the final merge !!!
         # Only one test is currently being carried out for development purposes
@@ -99,7 +99,7 @@ class KubernetesClusterPlugin(ABC):
         :param: None
         :return: None
         """
-        logger.info(f"removing sonobuoy tests from cluster")
+        logger.info("removing sonobuoy tests from cluster")
         os.system(f"sonobuoy delete --wait --kubeconfig='{self.kubeconfig_path}'")
 
     @final
