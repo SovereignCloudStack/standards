@@ -1,4 +1,5 @@
 from plugin_kind import PluginKind
+from plugin_static import PluginStatic
 import os
 
 if __name__ == "__main__":
