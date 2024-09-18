@@ -23,6 +23,6 @@ For each deployment, that uses Availability Zones there has to be done an Audit 
 2.1. There MUST be redundancy in Power Supply
 2.2. There MUST be redundancy in external connection
 2.3. There MUST be redundancy in core routers
-   
+
 All of these things will either not change at all like the fire zones or it is very unlikely for them to change like redundant internet connection.
 Because of this a manual audit will be enough to check for compliance.
