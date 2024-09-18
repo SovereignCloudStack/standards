@@ -158,6 +158,20 @@ The floating IP quota also offers a finer granularity for distributing IPs among
 
 IPv4 NAT can also be used in a dual stack setup alongside a routed IPv6 subnet.
 
+#### Support for Auto-Allocation
+
+The `auto-allocated-topology` extension of the Networking API can be used to create a default network setup in a project with a single API call [^aa].
+It will create a project network with a subnet from either an IPv4 or IPv6 subnet pool (or one of each, if configured that way), as well as a router connecting it to a provider network.
+The OpenStack Compute API also has support for this feature, allowing automatic network allocation on server creation.
+
+To function for a project, auto-allocation requires one external provider network and one shared subnet pool to be available, both with the `is_default` flag set to True.
+It is possible to have both an IPv4 and an IPv6 subnet pool where `is_default` is set, in which case a dual-stack setup will be allocated.
+The behavior is undefined when more than one network in the project is marked as default, or more than one subnet pool per address family.
+
+So, it is strongly advisable to only have one default defined for each.
+It seems sensible to standardize on using SCS-mandated resources as auto-allocation defaults, as this is likely to be the expected behavior from users.
+It can also be useful for both users and automated compliance tests to determine the defaults in the presence of multiple provider networks.
+
 #### Disable Networking RBAC for Users
 
 Per default policy, Neutron allows any user the creation of Networking RBAC rules to share resources of their projects with other projects.
@@ -190,12 +204,15 @@ This provider network will in the following be referred to as the _standard prov
 To avoid ambiguity, the standard provider network **SHOULD** be the only provider network available to projects by default.
 
 The standard provider network **MUST** be an external network, allowing it to be used as external gateway by virtual routers.
+The standard provider network **MUST** have the `is_default` flag set to True, and it **MUST** be the only network to do so.
 The standard provider network **MAY** be a shared network, allowing direct attachment of virtual servers.
 If the standard provider network is a shared network, it **MUST** enable port security to prevent projects from interfering with each other.
 
-If CSPs offer public IP addresses at all, they **MUST** provide a subnet pool for the allocation of at least one public /64 IPv6 prefix per project.
+If CSPs offer public IP addresses at all, they **MUST** provide a shared subnet pool for the allocation of at least one public /64 IPv6 prefix per project.
+This subnet pool **MUST** have the `is_default` flag set to True, and it **MUST** be the only IPv6 subnet pool to do so.
 If CSPs offer public IP addresses, they **SHOULD** also offer public IPv4 addresses.
-If they do offer public IPv4 addresses, they **MUST** provide at least one public Floating IP per project, but **MAY** also provide a subnet pool for the allocation of public IPv4 prefixes to project networks.
+If they do offer public IPv4 addresses, they **MUST** provide at least one public Floating IP per project, but **MAY** also provide a shared subnet pool for the allocation of public IPv4 prefixes to project networks.
+If CSPs offer a subnet pool for the allocation of public IPv4 prefixes, it **MUST** have the `is_default` flag set to True, and it **MUST** be the only IPv4 subnet pool to do so.
 
 CSPs **MUST** externally route any public IP addresses allocated from subnets of the standard provider network.
 CSPs **MUST** provide dynamic routing for all project-allocated public IP-prefixes via the standard provider network.
@@ -213,3 +230,4 @@ By default, users **SHOULD** be prohibited by policy from creating Networking RB
 [^pd]: <https://docs.openstack.org/neutron/2024.1/admin/config-ipv6.html#prefix-delegation>
 [^pf]: <https://docs.openstack.org/api-ref/network/v2/index.html#floating-ips-port-forwarding>
 [^ds]: <https://docs.openstack.org/neutron/2024.1/admin/config-ipv6.html>
+[^aa]: <https://docs.openstack.org/neutron/2024.1/admin/config-auto-allocation.html>
