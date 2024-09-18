@@ -35,7 +35,7 @@ While CSPs already have some similarities in their grouping of physical resource
 This standard aims to reduce those differences and will clarify, what customers can expect from Availability Zones in IaaS.
 
 Availability Zones in IaaS can be set up for Compute, Network and Storage separately while all may be referring to the same physical separation in a deployment.
-This standard elaborates the necessity of having Availability Zones for each of these classes.
+This standard elaborates the necessity of having Availability Zones for each of these classes of resources.
 It will also check the requirements customers may have, when thinking about Availability Zones in relation to the taxonomy of failure safety levels [^1].
 The result should enable CSPs to know when to create AZs to be SCS-compliant.
 
