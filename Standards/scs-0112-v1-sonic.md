@@ -2,7 +2,7 @@
 title: SONiC Support in SCS
 type: Decision Record
 status: Draft
-track: Global
+track: IaaS
 description: |
   SCSS-0112 outlines architectural decisions in SCS in regards to SONiC support and integration.
 ---
