@@ -31,6 +31,8 @@ def synth_auth_url(auth_url: str):
     # check whether auth_url already has v3
     if "/v3/" in auth_url:
         auth_url = auth_url + "auth/tokens"
+    elif "/v3":
+        auth_url = auth_url + "/auth/tokens"
     else:
         auth_url = auth_url + "/v3/auth/tokens"
     return auth_url
