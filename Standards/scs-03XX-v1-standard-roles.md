@@ -11,6 +11,12 @@ SCS aims to provide a standardized role model for Role-Based Access Control (RBA
 The goal of this standard is to define IaaS roles for SCS clouds with sensible and consistent permission sets.
 It is closely guided by the OpenStack defaults to achieve compatibility and interoperability.
 
+:::note
+
+The standard described below is only applicable to OpenStack releases 2024.2 or later.
+
+:::
+
 ## Terminology
 
 The following special terms are used throughout this standard document:
