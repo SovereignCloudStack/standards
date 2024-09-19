@@ -15,8 +15,10 @@ from keystoneauth1.exceptions.http import Unauthorized
 
 logger = logging.getLogger(__name__)
 
+
 def connect(cloud_name: str) -> openstack.connection.Connection:
-    """Create a connection to an OpenStack cloud
+    """
+    Create a connection to an OpenStack cloud
     :param string cloud_name:
         The name of the configuration to load from clouds.yaml.
     :returns: openstack.connnection.Connection
@@ -24,6 +26,7 @@ def connect(cloud_name: str) -> openstack.connection.Connection:
     return openstack.connect(
         cloud=cloud_name,
     )
+
 
 def synth_auth_url(auth_url: str):
     # check whether auth_url already has v3
@@ -34,6 +37,7 @@ def synth_auth_url(auth_url: str):
     else:
         re_auth_url = auth_url + "/v3/auth/tokens"
     return re_auth_url
+
 
 def delete_application_credential(
     conn: openstack.connection.Connection, credential_name: str
@@ -122,38 +126,38 @@ def check_for_member_role(
 
         has_member_role = False
 
-        auth_url = synth_auth_url(auth_data['auth_url'])
+        auth_url = synth_auth_url(auth_data["auth_url"])
         print(f"!URL {auth_url}")
         request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
 
     except Unauthorized as auth_err:
-            print(f"Unauthorized (401): {auth_err}")
-            new_conn = reconnect_with_role(conn, "member", cloud_name)
-            auth_data = new_conn.auth
+        print(f"Unauthorized (401): {auth_err}")
+        new_conn = reconnect_with_role(conn, "member", cloud_name)
+        auth_data = new_conn.auth
 
-            print(auth_data)
+        print(auth_data)
 
-            auth_dict = {
-                "identity": {
-                    "methods": ["application_credential"],
-                    "application_credential": {
-                        "id": auth_data["application_credential_id"],
-                        "secret": auth_data["application_credential_secret"],
-                    },
+        auth_dict = {
+            "identity": {
+                "methods": ["application_credential"],
+                "application_credential": {
+                    "id": auth_data["application_credential_id"],
+                    "secret": auth_data["application_credential_secret"],
                 },
-                # "scope": {
-                #     "project": {
-                #         "domain": {"name": auth_data["project_domain_name"]},
-                #         "name": auth_data["project_name"],
-                #     }
-                # },
-            }
-            has_member_role = False
-            auth_url = synth_auth_url(auth_data['auth_url'])
+            },
+            # "scope": {
+            #     "project": {
+            #         "domain": {"name": auth_data["project_domain_name"]},
+            #         "name": auth_data["project_name"],
+            #     }
+            # },
+        }
+        has_member_role = False
+        auth_url = synth_auth_url(auth_data["auth_url"])
 
-            print(f"!URL {auth_url}")
-            request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
-            # print(request.content)
+        print(f"!URL {auth_url}")
+        request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
+        # print(request.content)
     # working original test
     for role in json.loads(request.content)["token"]["roles"]:
         role_name = role["name"]
@@ -176,7 +180,7 @@ def check_presence_of_key_manager(cloud_name: str):
         services = connection.service_catalog
     except Exception as e:
         print(str(e))
-        #reconnect_with_role(None, "member", cloud_name)
+        # reconnect_with_role(None, "member", cloud_name)
         raise Exception(
             f"Connection to cloud '{cloud_name}' was not successfully. "
             f"The Catalog endpoint could not be accessed. "
