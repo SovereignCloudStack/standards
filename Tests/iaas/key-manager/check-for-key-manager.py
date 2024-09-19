@@ -197,12 +197,11 @@ def check_presence_of_key_manager(cloud_name: str):
         services = connection.service_catalog
     except Exception as e:
         print(str(e))
-        reconnect_with_role(None, "member", cloud_name)
-        # raise Exception(
-        #     f"Connection to cloud '{cloud_name}' was not successfully. "
-        #     f"The Catalog endpoint could not be accessed. "
-        #     f"Please check your cloud connection and authorization."
-        # )
+        raise Exception(
+            f"Connection to cloud '{cloud_name}' was not successfully. "
+            f"The Catalog endpoint could not be accessed. "
+            f"Please check your cloud connection and authorization."
+        )
 
     for svc in services:
         svc_type = svc["type"]
