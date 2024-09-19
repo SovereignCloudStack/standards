@@ -97,17 +97,6 @@ def check_for_member_role(
     #         print(member_role)
     #         break
 
-    # Check if the user has the "member" role
-    # user_id = "aa0304f7017144ceaadad5e0c26238e8"
-    # project_id = "50cbe6c8b6af45cba53f3500a236cebf"
-    # role_assignments = conn.identity.role_assignments(user=user_id, project=project_id)
-    # has_member_role = False
-    # for assignment in role_assignments:
-    #     role = conn.identity.get_role(assignment.role['id'])
-    #     if role.name == "member":
-    #         has_member_role = True
-    #         break
-
     try:
         auth_data = conn.auth
         print(auth_data)
@@ -136,11 +125,9 @@ def check_for_member_role(
         auth_url = synth_auth_url(auth_data['auth_url'])
         print(f"!URL {auth_url}")
         request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
-        # print(request.content)
-    except Unauthorized as auth_err:
-            # Catch the specific 401 Unauthorized error
-            print(f"Unauthorized (401): {auth_err}")
 
+    except Unauthorized as auth_err:
+            print(f"Unauthorized (401): {auth_err}")
             new_conn = reconnect_with_role(conn, "member", cloud_name)
             auth_data = new_conn.auth
 
@@ -162,7 +149,6 @@ def check_for_member_role(
                 # },
             }
             has_member_role = False
-          # check whether auth_url already has v3
             auth_url = synth_auth_url(auth_data['auth_url'])
 
             print(f"!URL {auth_url}")
