@@ -9,20 +9,28 @@ supplements:
 
 ## Automated Tests
 
-The SCS will also allow small deployments and edge deployments, that both will not meet the requirement for bein divided into multiple Availability Zones.
-Thus Availability Zones are not always present and there will be no automated tests to search for AZs.
+The standard will not exclude small deployments and edge deployments, that both will not meet the requirement for being divided into multiple Availability Zones.
+Thus multiple Availability Zones are not always present.
+Somtimes there can just be a single Availability Zones.
+Because of that, there will be no automated tests to search for AZs.
 
-## Manual Tests / Audits
+## Manual Tests / Audits / Required Documentation
 
 The requirements for each Availability Zone are written in the Standard.
 For each deployment, that uses Availability Zones there has to be done an Audit to check the following parameters:
 
 1. The presence of fire zones MUST be checked.
-1.1. The correct configuration of one AZ per fire zone MUST be checked.
-2. For each fire zone (== AZ) the following parts MUST be checked:
-2.1. There MUST be redundancy in Power Supply
-2.2. There MUST be redundancy in external connection
-2.3. There MUST be redundancy in core routers
+2. The correct configuration of one AZ per fire zone MUST be checked.
+3. For each fire zone (== AZ) the following parts MUST be checked:
+4. There MUST be redundancy in Power Supply
+5. There MUST be redundancy in external connection
+6. There MUST be redundancy in core routers
 
 All of these things will either not change at all like the fire zones or it is very unlikely for them to change like redundant internet connection.
 Because of this a manual audit will be enough to check for compliance.
+
+## Physical Audits
+
+In cases where it is reasonable to mistrust the provided documentation, a physical audit by a natural person - called auditor - send by the OSBA (?) should be performed.
+The CSP of the deployment, which needs such an audit, should grant access to the auditor to the physical infrastructure and should show them all necessary IaaS-Layer configurations, that are needed to verify compliance to this standard.
+
