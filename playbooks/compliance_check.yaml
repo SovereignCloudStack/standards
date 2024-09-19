@@ -9,7 +9,7 @@
         cmd: >
           python3 Tests/scs-test-runner.py --config Tests/config.toml --debug
           run --preset {{ preset }}
-          --output "{{ ansible_user_dir }}/zuul-output/report.yaml"
+          --output "{{ ansible_user_dir }}/zuul-output/artifacts/report.yaml"
         chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
       changed_when: true
 
