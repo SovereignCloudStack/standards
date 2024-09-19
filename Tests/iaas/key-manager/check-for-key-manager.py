@@ -15,6 +15,7 @@ from keystoneauth1.exceptions.http import Unauthorized
 
 logger = logging.getLogger(__name__)
 
+
 def connect(cloud_name: str) -> openstack.connection.Connection:
     """Create a connection to an OpenStack cloud
     :param string cloud_name:
@@ -24,6 +25,15 @@ def connect(cloud_name: str) -> openstack.connection.Connection:
     return openstack.connect(
         cloud=cloud_name,
     )
+
+
+def synth_auth_url(auth_url: str):
+    # check whether auth_url already has v3
+    if "/v3/" in auth_url:
+        auth_url = auth_url + "auth/tokens"
+    else:
+        auth_url = auth_url + "/v3/auth/tokens"
+    return auth_url
 
 
 def delete_application_credential(
@@ -124,51 +134,47 @@ def check_for_member_role(
 
         has_member_role = False
 
+        auth_url = synth_auth_url(auth_data["auth_url"])
 
-
-        # check whether auth_url already has v3
-        if "/v3/" in auth_data["auth_url"]:
-            auth_url = auth_data["auth_url"] + "auth/tokens"
-        else:
-            auth_url = auth_data["auth_url"] + "/v3/auth/tokens"
+        # # check whether auth_url already has v3
+        # if "/v3/" in auth_data["auth_url"]:
+        #     auth_url = auth_data["auth_url"] + "auth/tokens"
+        # else:
+        #     auth_url = auth_data["auth_url"] + "/v3/auth/tokens"
 
         print(f"!URL {auth_url}")
         request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
         # print(request.content)
     except Unauthorized as auth_err:
-            # Catch the specific 401 Unauthorized error
-            print(f"Unauthorized (401): {auth_err}")
+        # Catch the specific 401 Unauthorized error
+        print(f"Unauthorized (401): {auth_err}")
 
-            new_conn = reconnect_with_role(conn, "member", cloud_name)
-            auth_data = new_conn.auth
+        new_conn = reconnect_with_role(conn, "member", cloud_name)
+        auth_data = new_conn.auth
 
-            print(auth_data)
+        print(auth_data)
 
-            auth_dict = {
-                "identity": {
-                    "methods": ["application_credential"],
-                    "application_credential": {
-                        "id": auth_data["application_credential_id"],
-                        "secret": auth_data["application_credential_secret"],
-                    },
+        auth_dict = {
+            "identity": {
+                "methods": ["application_credential"],
+                "application_credential": {
+                    "id": auth_data["application_credential_id"],
+                    "secret": auth_data["application_credential_secret"],
                 },
-                # "scope": {
-                #     "project": {
-                #         "domain": {"name": auth_data["project_domain_name"]},
-                #         "name": auth_data["project_name"],
-                #     }
-                # },
-            }
-            has_member_role = False
-          # check whether auth_url already has v3
-            if "/v3/" in auth_data["auth_url"]:
-                auth_url = auth_data["auth_url"] + "auth/tokens"
-            else:
-                auth_url = auth_data["auth_url"] + "/v3/auth/tokens"
+            },
+            # "scope": {
+            #     "project": {
+            #         "domain": {"name": auth_data["project_domain_name"]},
+            #         "name": auth_data["project_name"],
+            #     }
+            # },
+        }
+        has_member_role = False
+        auth_url = synth_auth_url(auth_data["auth_url"])
 
-            print(f"!URL {auth_url}")
-            request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
-            # print(request.content)
+        print(f"!URL {auth_url}")
+        request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
+        # print(request.content)
     # working original test
     for role in json.loads(request.content)["token"]["roles"]:
         role_name = role["name"]
