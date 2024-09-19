@@ -29,7 +29,12 @@ def connect(cloud_name: str) -> openstack.connection.Connection:
 
 
 def synth_auth_url(auth_url: str):
-    # check whether auth_url already has v3
+    """
+    Synthesize URL for membership request
+    :param string auth_url:
+        The authentification URL from clouds.yaml.
+    :returns: URL for membership request
+    """
     if "/v3/" in auth_url:
         re_auth_url = auth_url + "auth/tokens"
     elif "/v3" in auth_url:
@@ -91,7 +96,6 @@ def check_for_member_role(
         The current connection to an OpenStack cloud.
     :returns: boolean, when role with most priviledges is member
     """
-
     #  # test alternative role function
     #   roles = conn.identity.roles()
     #   for role in roles:
@@ -103,8 +107,6 @@ def check_for_member_role(
 
     try:
         auth_data = conn.auth
-        print(auth_data)
-        print("password auth")
         auth_dict = {
             "identity": {
                 "methods": ["password"],
@@ -127,16 +129,12 @@ def check_for_member_role(
         has_member_role = False
 
         auth_url = synth_auth_url(auth_data["auth_url"])
-        print(f"!URL {auth_url}")
         request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
 
     except Unauthorized as auth_err:
         print(f"Unauthorized (401): {auth_err}")
         new_conn = reconnect_with_role(conn, "member", cloud_name)
         auth_data = new_conn.auth
-
-        print(auth_data)
-
         auth_dict = {
             "identity": {
                 "methods": ["application_credential"],
@@ -154,11 +152,8 @@ def check_for_member_role(
         }
         has_member_role = False
         auth_url = synth_auth_url(auth_data["auth_url"])
-
-        print(f"!URL {auth_url}")
         request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
-        # print(request.content)
-    # working original test
+
     for role in json.loads(request.content)["token"]["roles"]:
         role_name = role["name"]
         if role_name == "admin" or role_name == "manager":
@@ -180,7 +175,6 @@ def check_presence_of_key_manager(cloud_name: str):
         services = connection.service_catalog
     except Exception as e:
         print(str(e))
-        # reconnect_with_role(None, "member", cloud_name)
         raise Exception(
             f"Connection to cloud '{cloud_name}' was not successfully. "
             f"The Catalog endpoint could not be accessed. "
@@ -231,7 +225,6 @@ def check_key_manager_permissions(
 
     try:
         existing_secret = _find_secret(secret_name)
-        print(existing_secret)
         if existing_secret:
             conn.key_manager.delete_secret(existing_secret)
 
@@ -250,10 +243,17 @@ def check_key_manager_permissions(
         conn.key_manager.delete_secret(new_secret)
 
     except openstack.exceptions.ForbiddenException as e:
-        print("Users of the 'member' role can use Key Manager API: FAIL")
+        print(
+            "Users with the 'member' role can use Key Manager API: FAIL "
+            "- According to the Key Manager Standard, users with the "
+            "'member' role should be able to use the Key Manager API."
+        )
         print(f"ERROR: {str(e)}")
         exit(1)
-    print("Users of the 'member' role can use Key Manager API: PASS")
+    print(
+        "Users with the 'member' role can use Key Manager API: PASS "
+        "- This is compliant to the Key Manager Standard."
+    )
 
 
 def main():
