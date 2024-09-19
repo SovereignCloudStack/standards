@@ -33,10 +33,10 @@ The following special terms are used throughout this standard document:
 
 ## Motivation
 
-The permission settings of OpenStack RBAC roles are preconfigured in the OpenStack API implementations and can be adjusted individually in service-specific deployment configuration files (usually the respective "`policy.yaml`") optionally.
+The permission settings of OpenStack RBAC roles are preconfigured in the OpenStack API implementations and can optionally be adjusted in service-specific deployment configuration files (usually the respective "`policy.yaml`") individually.
 In contrast to many of OpenStack's IAM and IaaS resources however, these settings cannot be changed via its API at runtime, only via configuration files.
-Changing these settings can have a wide range of implications and require careful testing and maintenance.
-For this reason it is important to have a secure and sensible default configuration in SCS clouds that is both intuitive and flexible enough to cover all necessary use cases of permission models desired by CSPs and customers.
+Changing these settings can also have a wide range of implications and requires careful testing and maintenance.
+For these reasons it is important to have a secure and sensible default configuration in SCS clouds that is both intuitive and flexible enough to cover all necessary use cases of permission models desired by CSPs and customers.
 
 ## Design Considerations
 
