@@ -9,10 +9,15 @@ The test suite strictly requires an OpenStack user that possesses the following 
 1. the "`member`" role in the project referenced as authentication target
 2. access permissions to the "`list_roles`" in the Identity API
 
-The second requirement (access to "`list_roles`") is usually not granted to users with the "`member`" role in default configurations and only works for user accounts also possessing the "`admin`" role.
-So the test would require an user account possessing both the "`member`" and "`admin`" role.
+The second requirement (access to "`list_roles`") is usually not granted to users with the "`member`" role in default configurations and only works for user accounts also possessing the "`manager`" role in the domain.
+So the test would require an user account possessing both the "`member`" role in a project as well as the "`manager`" role in the domain.
 
-One alternative way to address this without granting the "`admin`" role to the test account is to create a dedicated role in the cloud environment which only has access to the role list endpoint and assign it to the user account intended for testing (in addition to the "`member`" role).
+Note that the "`manager`" role only works this way starting with OpenStack Keystone 2024.2.
+If an older Keystone release is used, see the alternative instructions below.
+
+#### Alternative using a dedicated role
+
+One alternative way to address this is for older Keystone releases is to create a dedicated role in the cloud environment which only has access to the role list endpoint and assign it to the user account intended for testing (in addition to the "`member`" role).
 
 To achieve this, first the role has to be created and assigned:
 
@@ -22,7 +27,8 @@ openstack role add --user ... --project ... member
 openstack role add --user ... --project ... scs-conformance-tester
 ```
 
-Finally, the policy definition for the role list endpoint has to be extended to allow this role:
+Finally, the Keystone API policy definition for the role list endpoint has to be extended to allow this role.
+The following is an example entry for `/etc/keystone/policy.yaml` of the Keystone service:
 
 ```yaml
 "identity:list_roles": "... or role:scs-conformance-tester"
