@@ -46,6 +46,21 @@ Meanwhile the standardized roles and permission sets should cover all scenarios 
 Due to the high level of modularity and the large amount of available services for OpenStack clouds, this standard cannot address all possible manifestations of OpenStack clouds.
 This standard will therefore only cover IaaS APIs and services that are classified as either mandatory or supported by the SCS project.
 
+### Core Roles
+
+The following overview will list the roles which are considered core roles by this standard and explain their purposes as well as target scopes.
+Roles marked as "internal" are roles only meant to be assigned to technical user accounts intended for internal use by OpenStack services.
+
+Core Roles:
+
+| Role | Primary Target(s) | Purpose |
+|---|---|---|
+| reader | customer | read-only access to resources in the scope of authentication (e.g. project) |
+| member | customer | read and write access to resources in the scope of authentication (e.g. project) |
+| manager | customer | identity self-service capability within a domain, to assign/revoke roles between users, groups and projects |
+| admin | CSP | cloud-level global administrative access to all resources (cross-domain, cross-project) |
+| service | internal | internal technical user role for service communication |
+
 ### Scope Enforcement Compatibility
 
 The API policy library used by OpenStack (oslo.policy) introduced two new [configuration options](https://docs.openstack.org/oslo.policy/latest/configuration/#oslo-policy) during the ongoing RBAC rework of OpenStack[^2]:
@@ -140,21 +155,6 @@ The roles mentioned below MUST be present in the Identity API at all times.
 - manager
 - admin
 - service
-
-#### Role Definitions
-
-The following overview will explain the roles' purposes and target scopes.
-Roles marked as "internal" are roles only meant to be assigned to technical user accounts intended for internal use by OpenStack services.
-
-Core Roles:
-
-| Role | Primary Target(s) | Purpose |
-|---|---|---|
-| reader | customer | read-only access to resources in the scope of authentication (e.g. project) |
-| member | customer | read and write access to resources in the scope of authentication (e.g. project) |
-| manager | customer | identity self-service capability within a domain, to assign/revoke roles between users, groups and projects |
-| admin | CSP | cloud-level global administrative access to all resources (cross-domain, cross-project) |
-| service | internal | internal technical user role for service communication |
 
 ### API configuration
 
