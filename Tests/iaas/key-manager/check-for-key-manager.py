@@ -11,10 +11,9 @@ import logging
 import os
 
 import openstack
-
+from keystoneauth1.exceptions.http import Unauthorized
 
 logger = logging.getLogger(__name__)
-
 
 def connect(cloud_name: str) -> openstack.connection.Connection:
     """Create a connection to an OpenStack cloud
@@ -63,7 +62,7 @@ def reconnect_with_role(
         auth={
             "auth_url": conn.auth["auth_url"],
             "application_credential_id": app_credential.id,
-            "application_credential_secret": app_credential.secret
+            "application_credential_secret": app_credential.secret,
         },
     )
     print(f"reconnected with {credential_name}")
@@ -99,60 +98,77 @@ def check_for_member_role(
     #     if role.name == "member":
     #         has_member_role = True
     #         break
-    auth_data = conn.auth
-    print(auth_data)
 
-    new_conn=reconnect_with_role(conn,"member", cloud_name)
-    auth_data = new_conn.auth
+    try:
+        auth_data = conn.auth
+        print(auth_data)
+        print("password auth")
+        auth_dict = {
+            "identity": {
+                "methods": ["password"],
+                "password": {
+                    "user": {
+                        "name": auth_data["username"],
+                        "domain": {"name": auth_data["project_domain_name"]},
+                        "password": auth_data["password"],
+                    }
+                },
+            },
+            "scope": {
+                "project": {
+                    "domain": {"name": auth_data["project_domain_name"]},
+                    "name": auth_data["project_name"],
+                }
+            },
+        }
 
-    print(auth_data)
-    # auth_dict = {
-    #     "identity": {
-    #         "methods": ["password"],
-    #         "password": {
-    #             "user": {
-    #                 "name": auth_data["username"],
-    #                 "domain": {"name": auth_data["project_domain_name"]},
-    #                 "password": auth_data["password"],
-    #             }
-    #         },
-    #     },
-    #     "scope": {
-    #         "project": {
-    #             "domain": {"name": auth_data["project_domain_name"]},
-    #             "name": auth_data["project_name"],
-    #         }
-    #     },
-    # }
-    auth_dict = {
+        has_member_role = False
 
-                  "identity": {
-                      "methods": ["application_credential"],
-                      "application_credential": {
-                          "id": auth_data["application_credential_id"],
-                          "secret": auth_data["application_credential_secret"]
-                      }
-                  },
-        # "scope": {
-        #     "project": {
-        #         "domain": {"name": auth_data["project_domain_name"]},
-        #         "name": auth_data["project_name"],
-        #     }
-        # },
-    }
 
-    has_member_role = False
 
-    # check whether auth_url already has v3
-    if "/v3/" in auth_data["auth_url"]:
-        auth_url = auth_data["auth_url"] + "auth/tokens"
-    else:
-        auth_url = auth_data["auth_url"] + "/v3/auth/tokens"
+        # check whether auth_url already has v3
+        if "/v3/" in auth_data["auth_url"]:
+            auth_url = auth_data["auth_url"] + "auth/tokens"
+        else:
+            auth_url = auth_data["auth_url"] + "/v3/auth/tokens"
 
-    print(f"!URL {auth_url}")
-    request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
-    # print(request.content)
+        print(f"!URL {auth_url}")
+        request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
+        # print(request.content)
+    except Unauthorized as auth_err:
+            # Catch the specific 401 Unauthorized error
+            print(f"Unauthorized (401): {auth_err}")
 
+            new_conn = reconnect_with_role(conn, "member", cloud_name)
+            auth_data = new_conn.auth
+
+            print(auth_data)
+
+            auth_dict = {
+                "identity": {
+                    "methods": ["application_credential"],
+                    "application_credential": {
+                        "id": auth_data["application_credential_id"],
+                        "secret": auth_data["application_credential_secret"],
+                    },
+                },
+                # "scope": {
+                #     "project": {
+                #         "domain": {"name": auth_data["project_domain_name"]},
+                #         "name": auth_data["project_name"],
+                #     }
+                # },
+            }
+            has_member_role = False
+          # check whether auth_url already has v3
+            if "/v3/" in auth_data["auth_url"]:
+                auth_url = auth_data["auth_url"] + "auth/tokens"
+            else:
+                auth_url = auth_data["auth_url"] + "/v3/auth/tokens"
+
+            print(f"!URL {auth_url}")
+            request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
+            # print(request.content)
     # working original test
     for role in json.loads(request.content)["token"]["roles"]:
         role_name = role["name"]
