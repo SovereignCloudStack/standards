@@ -1,0 +1,25 @@
+sonobuoy-config:
+  driver: Job
+  plugin-name: test
+  result-format: gojson
+  description: An easy to start from project for making K8s aware tests.
+spec:
+  command:
+  - bash
+  args: 
+    - -c
+    - |
+      # Run tests
+      go tool test2json ./custom.test -test.v | tee ${SONOBUOY_RESULTS_DIR}/out.json
+      echo ${SONOBUOY_RESULTS_DIR}/out.json > ${SONOBUOY_RESULTS_DIR}/done
+  image: ghcr.io/sovereigncloudstack/standards/test:dev #registry.dnation.cloud/test-mg/standard:dev1
+  env:
+  - name: NS_PREFIX
+    value: custom
+  - name: SONOBUOY_PROGRESS_PORT
+    value: "8099"
+  name: plugin
+  resources: {}
+  volumeMounts:
+  - mountPath: /tmp/sonobuoy/results
+    name: results
