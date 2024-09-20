@@ -35,7 +35,6 @@ class KubernetesClusterPlugin(ABC):
     cluster_name = None
     k8s_api_client = None
     working_directory = None
-    plugin_result_directory = "plugins/e2e/results/global"
 
     @final
     def __init__(self, config=None):
@@ -103,7 +102,7 @@ class KubernetesClusterPlugin(ABC):
         os.system(f"sonobuoy delete --wait --kubeconfig='{self.kubeconfig_path}'")
 
     @final
-    def _retrieve_result(self, result_file_name):
+    def _retrieve_result(self, result_dir_name):
         """
         This method invokes sonobouy to store the results in a subdirectory of
         the working directory. The Junit results file contained in it is then
@@ -111,22 +110,20 @@ class KubernetesClusterPlugin(ABC):
         :param: result_file_name:
         :return: None
         """
-        logger.debug(f"retrieving results to {result_file_name}")
-        result_directory = self.working_directory + "/" + result_file_name
-        if os.path.exists(result_directory):
-            os.system(f"rm -rf {result_directory}/*")
+        logger.debug(f"retrieving results to {result_dir_name}")
+        result_dir = self.working_directory + "/" + result_dir_name
+        if os.path.exists(result_dir):
+            os.system(f"rm -rf {result_dir}/*")
         else:
-            os.mkdir(result_directory)
-        os.chdir(result_directory)
+            os.mkdir(result_dir)
         os.system(
-            f"sonobuoy retrieve -x --filename='{result_file_name}' --kubeconfig='{self.kubeconfig_path}'"
+            f"sonobuoy retrieve {result_dir} -x --filename='{result_dir_name}' --kubeconfig='{self.kubeconfig_path}'"
         )
-
         logger.debug(
-            f"parsing JUnit result from {result_directory + '/' +  self.plugin_result_directory + '/junit_01.xml' } "
+            f"parsing JUnit result from {result_dir + '/plugins/e2e/results/global/junit_01.xml' } "
         )
         xml = JUnitXml.fromfile(
-            result_directory + "/" + self.plugin_result_directory + "/junit_01.xml"
+            result_dir + "/plugins/e2e/results/global/junit_01.xml"
         )
         failed_test_cases = 0
         passed_test_cases = 0
@@ -143,7 +140,6 @@ class KubernetesClusterPlugin(ABC):
         logger.info(
             f" {passed_test_cases} passed, {failed_test_cases} failed of which {skipped_test_cases} were skipped"
         )
-        os.chdir(self.working_directory)
 
     @abstractmethod
     def _create_cluster(self, cluster_name) -> (str, int):

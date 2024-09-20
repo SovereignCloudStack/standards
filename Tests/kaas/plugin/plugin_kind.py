@@ -1,5 +1,6 @@
 from interface import KubernetesClusterPlugin
 from pytest_kind import KindCluster
+import time
 
 
 class PluginKind(KubernetesClusterPlugin):
@@ -12,6 +13,7 @@ class PluginKind(KubernetesClusterPlugin):
         self.cluster_name = "scs-cluster"
         self.cluster = KindCluster(self.cluster_name)
         self.cluster.create()
+        time.sleep(30)
         self.kubeconfig_path = str(self.cluster.kubeconfig_path.resolve())
 
     def _delete_cluster(self):
