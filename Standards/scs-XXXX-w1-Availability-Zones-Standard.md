@@ -9,25 +9,32 @@ supplements:
 
 ## Automated Tests
 
-The standard will not exclude small deployments and edge deployments, that both will not meet the requirement for being divided into multiple Availability Zones.
+The standard will not preclude small deployments and edge deployments, that both will not meet the requirement for being divided into multiple Availability Zones.
 Thus multiple Availability Zones are not always present.
 Somtimes there can just be a single Availability Zones.
 Because of that, there will be no automated tests to search for AZs.
 
-## Manual Tests / Audits / Required Documentation
+## Required Documentation
 
 The requirements for each Availability Zone are written in the Standard.
-For each deployment, that uses Availability Zones there has to be done an Audit to check the following parameters:
+For each deployment, that uses more than a single Availability Zone, the CSP has to provide documentation to proof the following points:
 
-1. The presence of fire zones MUST be checked.
-2. The correct configuration of one AZ per fire zone MUST be checked.
-3. For each fire zone (== AZ) the following parts MUST be checked:
-4. There MUST be redundancy in Power Supply
-5. There MUST be redundancy in external connection
-6. There MUST be redundancy in core routers
+1. The presence of fire zones MUST be documented (e.g. through construction plans of the deployment).
+2. The correct configuration of one AZ per fire zone MUST be documented.
+3. The redundancy in Power Supply within each AZ MUST be documented.
+4. The redundancy in external connection within each AZ MUST be documented.
+5. The redundancy in core routers within each AZ MUST be documented.
 
-All of these things will either not change at all like the fire zones or it is very unlikely for them to change like redundant internet connection.
-Because of this a manual audit will be enough to check for compliance.
+All of these requirements will either not change at all like the fire zones or it is very unlikely for them to change like redundant internet connection.
+Because of this documentation must only be provided in thw following cases:
+
+1. When a new deployment with multiple AZs should be tested for compliance.
+2. When there are physical changes in a deplyoment, which already provided the documentation: the changes needs to be documented and provided as soon as possible.
+
+### Alternative Documentation
+
+If a deployment already did undergo certification like ISO 27001 or ISO 9001, those certificates can be provided as part of the documentation to cover the redundancy parts.
+It is still required to document the existence of fire zones and the correct configuration of one AZ per fire zone.
 
 ## Physical Audits
 
