@@ -6,11 +6,18 @@ class KubernetesClusterPlugin():
     It represents an interface class from which the api provider-specific
     plugins must be derived as child classes
 
+<<<<<<< HEAD
     To implement fill the methods `create_cluster` and `delete_cluster` with
     api provider-specific functionalities for creating and deleting clusters.
     The `create_cluster` method must ensure that the kubeconfigfile is provided
     at the position in the file system defined by the parameter
     `kubeconfig_filepath`
+=======
+    kubeconfig_path = None
+    cluster_name = None
+    k8s_api_client = None
+    working_directory = None
+>>>>>>> Fix path to junit file
 
     - Implement `create_cluster` and `delete_cluster` methods
     - Create `__init__(self, config_file)` method to handle api specific
