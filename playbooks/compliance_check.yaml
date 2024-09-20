@@ -19,4 +19,4 @@
           zuul:
             artifacts:
               - name: "report.yaml"
-                url: "report.yaml"
+                url: "artifacts/report.yaml"
