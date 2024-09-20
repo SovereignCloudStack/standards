@@ -98,7 +98,7 @@ This means that by creating a new role and extending Keystone's API policy confi
 
 A role named "`manager`" MUST be present in the identity service.
 
-The role MUST implement the Domain Manager functionality for identity resources.
+The identity service MUST implement the Domain Manager functionality for this role.
 The implementation details depend on the OpenStack Keystone version used.
 See the sections below for reference.
 
@@ -120,7 +120,8 @@ When doing so, the `admin` role MUST NOT be added to this set.
 
 #### Note about upgrading from SCS Domain Manager to native integration
 
-In case the Identity API was upgraded from an older version where the policy-based Domain Manager implementation of SCS described in the [implementation notes for this standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0302-w1-domain-manager-implementation-notes.md) was still in use, the policies described there MUST be removed (except for the "`is_domain_managed_role`" rule).
+In case the Identity API was upgraded from an older version where the policy-based Domain Manager implementation of SCS described in the [implementation notes for this standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0302-w1-domain-manager-implementation-notes.md) was still in use, the policies described there MUST be removed.
+The only exception to this is the "`is_domain_managed_role`" rule in case any adjustments have been made to that rule and the CSP wants to preserve them.
 
 ### For OpenStack Keystone 2024.1 or below
 
