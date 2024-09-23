@@ -132,9 +132,6 @@ def check_for_member_role(
 
         has_member_role = False
 
-        session_token = conn.session.get_token()
-        print(session_token)
-
         auth_url = synth_auth_url(auth_data["auth_url"])
         request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
 
@@ -164,8 +161,8 @@ def check_for_member_role(
         request = conn.session.request(
             url=synth_auth_url(conn.auth["auth_url"]),
             method="POST",
-            json=auth_payload,  # The JSON payload for the request
-            headers={"X-Auth-Token": token},  # Pass the token in the header
+            json=auth_payload,
+            headers={"X-Auth-Token": token},
         )
 
         # Print the response content
