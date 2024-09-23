@@ -34,10 +34,10 @@ def connect(cloud_name: str) -> openstack.connection.Connection:
 
 def synth_auth_url(auth_url: str):
     """
-    Synthesize URL for membership request
+    Synthesize URL for role request
     :param string auth_url:
         The authentification URL from clouds.yaml.
-    :returns: URL for membership request
+    :returns: URL for role request
     """
     if "/v3/" in auth_url:
         re_auth_url = auth_url + "auth/tokens"
@@ -107,34 +107,52 @@ def check_for_member_role(
         The current connection to an OpenStack cloud.
     :returns: boolean, when role with most priviledges is member
     """
+    auth_data = conn.auth
+    token = conn.session.get_token()
+    auth_url = synth_auth_url(auth_data["auth_url"])
+    has_member_role = False
     try:
-        auth_data = conn.auth
-        auth_dict = {
-            "identity": {
-                "methods": ["password"],
-                "password": {
-                    "user": {
-                        "name": auth_data["username"],
-                        "domain": {"name": auth_data["project_domain_name"]},
-                        "password": auth_data["password"],
+        # auth_dict = {
+        #     "identity": {
+        #         "methods": ["password"],
+        #         "password": {
+        #             "user": {
+        #                 "name": auth_data["username"],
+        #                 "domain": {"name": auth_data["project_domain_name"]},
+        #                 "password": auth_data["password"],
+        #             }
+        #         },
+        #     },
+        #     "scope": {
+        #         "project": {
+        #             "domain": {"name": auth_data["project_domain_name"]},
+        #             "name": auth_data["project_name"],
+        #         }
+        #     },
+        # }
+        # request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
+
+        ## Make the POST request using the current session
+        auth_payload = {
+            "auth": {
+                "identity": {"methods": ["token"], "token": {"id": token}},
+                "scope": {
+                    "project": {
+                        "domain": {"name": conn.auth["project_domain_name"]},
+                        "name": conn.auth["project_name"],
                     }
                 },
-            },
-            "scope": {
-                "project": {
-                    "domain": {"name": auth_data["project_domain_name"]},
-                    "name": auth_data["project_name"],
-                }
-            },
+            }
         }
-
-        has_member_role = False
-
-        auth_url = synth_auth_url(auth_data["auth_url"])
-        request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
-
+        request = conn.session.request(
+            url=auth_url,
+            method="POST",
+            json=auth_payload,  # The JSON payload for the request
+            headers={"X-Auth-Token": token},  # Pass the token in the header
+        )
     except Unauthorized as auth_err:
-        print(f"Unauthorized (401): {auth_err}")
+        print(f"Unauthorized scope (401): {auth_err}")
+        ## Reconnect with v3 application credentials as member
         # new_conn = reconnect_with_role(conn, "member", cloud_name)
         # auth_data = new_conn.auth
         # auth_dict = {
@@ -150,20 +168,19 @@ def check_for_member_role(
         # auth_url = synth_auth_url(auth_data["auth_url"])
         # request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
 
-        # Make the POST request using the current session
-        token = conn.session.get_token()
+        ## Make the POST request without special scope
+        print("Make a new request without specifying the project domain")
         auth_payload = {
             "auth": {"identity": {"methods": ["token"], "token": {"id": token}}}
         }
 
         request = conn.session.request(
-            url=synth_auth_url(conn.auth["auth_url"]),
+            url=auth_url,
             method="POST",
             json=auth_payload,
             headers={"X-Auth-Token": token},
         )
-
-        print(f"Response Status: {request.status_code}")
+        print(f"Response Status new request: {request.status_code}")
 
     for role in json.loads(request.content)["token"]["roles"]:
         role_name = role["name"]
