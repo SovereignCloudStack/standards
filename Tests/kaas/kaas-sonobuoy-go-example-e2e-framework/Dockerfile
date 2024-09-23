@@ -1,4 +1,4 @@
-FROM golang:1.17-buster as build
+FROM golang:1.23
 
 # Install kubectl
 # Note: Latest version may be found on:
