@@ -12,8 +12,6 @@ import os
 
 import openstack
 from keystoneauth1.exceptions.http import Unauthorized
-from keystoneauth1 import session
-from keystoneauth1.identity import v3
 
 logger = logging.getLogger(__name__)
 
