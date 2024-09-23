@@ -12,9 +12,14 @@ import os
 
 import openstack
 from keystoneauth1.exceptions.http import Unauthorized
+from keystoneauth1 import session
+from keystoneauth1.identity import v3
 
 logger = logging.getLogger(__name__)
 
+RED = "\033[31m"
+GREEN = "\033[32m"
+RESET = "\033[0m"
 
 def connect(cloud_name: str) -> openstack.connection.Connection:
     """
@@ -96,15 +101,6 @@ def check_for_member_role(
         The current connection to an OpenStack cloud.
     :returns: boolean, when role with most priviledges is member
     """
-    #  # test alternative role function
-    #   roles = conn.identity.roles()
-    #   for role in roles:
-    #     print (role.name)
-    #     if role.name == "member":
-    #         member_role = role
-    #         print(member_role)
-    #         break
-
     try:
         auth_data = conn.auth
         auth_dict = {
@@ -131,35 +127,57 @@ def check_for_member_role(
         auth_url = synth_auth_url(auth_data["auth_url"])
         request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
 
+        session_token = conn.session.get_token()
+        print(session_token)
+
     except Unauthorized as auth_err:
         print(f"Unauthorized (401): {auth_err}")
         new_conn = reconnect_with_role(conn, "member", cloud_name)
         auth_data = new_conn.auth
-        auth_dict = {
-            "identity": {
-                "methods": ["application_credential"],
-                "application_credential": {
-                    "id": auth_data["application_credential_id"],
-                    "secret": auth_data["application_credential_secret"],
-                },
-            },
-            # "scope": {
-            #     "project": {
-            #         "domain": {"name": auth_data["project_domain_name"]},
-            #         "name": auth_data["project_name"],
-            #     }
-            # },
-        }
-        has_member_role = False
-        auth_url = synth_auth_url(auth_data["auth_url"])
-        request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
+        # auth_dict = {
+        #     "identity": {
+        #         "methods": ["application_credential"],
+        #         "application_credential": {
+        #             "id": auth_data["application_credential_id"],
+        #             "secret": auth_data["application_credential_secret"],
+        #         },
+        #     },
+        #     # "scope": {
+        #     #     "project": {
+        #     #         "domain": {"name": auth_data["project_domain_name"]},
+        #     #         "name": auth_data["project_name"],
+        #     #     }
+        #     # },
+        # }
+        # has_member_role = False
+        # auth_url = synth_auth_url(auth_data["auth_url"])
+        # request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
+        auth_url = auth_data["auth_url"]
+        print(auth_url)
+        auth = v3.ApplicationCredential(
+        auth_url=f"{auth_url}/v3",
+        application_credential_id=auth_data["application_credential_id"],
+        application_credential_secret=auth_data["application_credential_secret"]
+        )
+
+        sess = session.Session(auth=auth)
+        # Get the authentication token (session token)
+        session_token = sess.get_token()
+        print(session_token)
+        user_id = sess.get_user_id
+        project_id = sess.get_project_id
+
+        roles = conn.identity.role_assignments(user=user_id, project=project_id)
+        for role in roles:
+            print(role)
+
 
     for role in json.loads(request.content)["token"]["roles"]:
         role_name = role["name"]
         if role_name == "admin" or role_name == "manager":
             return False
         elif role_name == "member":
-            print("User has member role.")
+            print(f"{GREEN}User has member role.{RESET}")
             has_member_role = True
         elif role_name == "reader":
             print("User has reader role.")
@@ -244,15 +262,15 @@ def check_key_manager_permissions(
 
     except openstack.exceptions.ForbiddenException as e:
         print(
-            "Users with the 'member' role can use Key Manager API: FAIL "
-            "- According to the Key Manager Standard, users with the "
-            "'member' role should be able to use the Key Manager API."
+            f"Users with the 'member' role can use Key Manager API: {RED}FAIL "
+            f"- According to the Key Manager Standard, users with the "
+            f"'member' role should be able to use the Key Manager API.{RESET}"
         )
         print(f"ERROR: {str(e)}")
         exit(1)
     print(
-        "Users with the 'member' role can use Key Manager API: PASS "
-        "- This is compliant to the Key Manager Standard."
+        f"Users with the 'member' role can use Key Manager API: {GREEN}PASS "
+        f"- This is compliant to the Key Manager Standard.{RESET}"
     )
 
 
