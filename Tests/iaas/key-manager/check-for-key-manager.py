@@ -21,6 +21,7 @@ RED = "\033[31m"
 GREEN = "\033[32m"
 RESET = "\033[0m"
 
+
 def connect(cloud_name: str) -> openstack.connection.Connection:
     """
     Create a connection to an OpenStack cloud
@@ -52,6 +53,13 @@ def synth_auth_url(auth_url: str):
 def delete_application_credential(
     conn: openstack.connection.Connection, credential_name: str
 ) -> None:
+    """
+    Deletes current credentials from openstack connection
+    :param object conn:
+        Instance of the openstack.connection.Connection class.
+    :param string credential_name:
+        Name of the credentials.
+    """
     existing_credential = conn.identity.find_application_credential(
         conn.current_user_id, credential_name
     )
@@ -124,16 +132,16 @@ def check_for_member_role(
 
         has_member_role = False
 
-        auth_url = synth_auth_url(auth_data["auth_url"])
-        request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
-
         session_token = conn.session.get_token()
         print(session_token)
 
+        auth_url = synth_auth_url(auth_data["auth_url"])
+        request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
+
     except Unauthorized as auth_err:
         print(f"Unauthorized (401): {auth_err}")
-        new_conn = reconnect_with_role(conn, "member", cloud_name)
-        auth_data = new_conn.auth
+        # new_conn = reconnect_with_role(conn, "member", cloud_name)
+        # auth_data = new_conn.auth
         # auth_dict = {
         #     "identity": {
         #         "methods": ["application_credential"],
@@ -142,35 +150,27 @@ def check_for_member_role(
         #             "secret": auth_data["application_credential_secret"],
         #         },
         #     },
-        #     # "scope": {
-        #     #     "project": {
-        #     #         "domain": {"name": auth_data["project_domain_name"]},
-        #     #         "name": auth_data["project_name"],
-        #     #     }
-        #     # },
         # }
         # has_member_role = False
         # auth_url = synth_auth_url(auth_data["auth_url"])
         # request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
-        auth_url = auth_data["auth_url"]
-        print(auth_url)
-        auth = v3.ApplicationCredential(
-        auth_url=f"{auth_url}/v3",
-        application_credential_id=auth_data["application_credential_id"],
-        application_credential_secret=auth_data["application_credential_secret"]
+        token = conn.session.get_token()
+        print(f"Token: {token}")
+        auth_payload = {
+            "auth": {"identity": {"methods": ["token"], "token": {"id": token}}}
+        }
+
+        # Make the POST request using the session
+        request = conn.session.request(
+            url=synth_auth_url(conn.auth["auth_url"]),
+            method="POST",
+            json=auth_payload,  # The JSON payload for the request
+            headers={"X-Auth-Token": token},  # Pass the token in the header
         )
 
-        sess = session.Session(auth=auth)
-        # Get the authentication token (session token)
-        session_token = sess.get_token()
-        print(session_token)
-        user_id = sess.get_user_id
-        project_id = sess.get_project_id
-
-        roles = conn.identity.role_assignments(user=user_id, project=project_id)
-        for role in roles:
-            print(role)
-
+        # Print the response content
+        print(f"Response Status: {request.status_code}")
+        print(f"Response Content: {request.text}")
 
     for role in json.loads(request.content)["token"]["roles"]:
         role_name = role["name"]
@@ -183,7 +183,6 @@ def check_for_member_role(
             print("User has reader role.")
         else:
             print("User has custom role.")
-            return False
     return has_member_role
 
 
@@ -205,7 +204,7 @@ def check_presence_of_key_manager(cloud_name: str):
             # key-manager is present
             # now we want to check whether a user with member role
             # can create and access secrets
-            print("Key-Manager is present")
+            print(f"{GREEN}Key-Manager is present{RESET}")
             check_key_manager_permissions(connection, cloud_name)
             return 0
 
