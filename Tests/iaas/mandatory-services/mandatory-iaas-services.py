@@ -181,7 +181,7 @@ def check_for_s3_and_swift(cloud_name: str):
     except Exception as e:
         logger.error(
             f"FAIL: No object store endpoint found. No testing for "
-            f"the s3 service possible. Details: %s", e
+            f"the s3 service possible in '{cloud_name}'. Details: %s", e
         )
         return 1
     # Get S3 endpoint (swift) and ec2 creds from OpenStack (keystone)
