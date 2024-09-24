@@ -12,18 +12,15 @@ restrictions); for further information, see the log messages on various channels
     WARNING   for violations of recommendations,
     DEBUG     for background information and problems that don't hinder the test.
 """
-from collections import Counter
+from collections import Counter, defaultdict
 import getopt
 import logging
 import os
 import re
 import sys
-import tempfile
 import time
 import warnings
 
-import fabric
-import invoke
 import openstack
 import openstack.cloud
 
@@ -33,6 +30,7 @@ logger = logging.getLogger(__name__)
 # prefix ephemeral resources with '_scs-' to rule out any confusion with important resources
 # (this enables us to automatically dispose of any lingering resources should this script be killed)
 NETWORK_NAME = "_scs-0101-net"
+SUBNET_NAME = "_scs-0101-subnet"
 ROUTER_NAME = "_scs-0101-router"
 SERVER_NAME = "_scs-0101-server"
 SECURITY_GROUP_NAME = "_scs-0101-group"
@@ -51,22 +49,31 @@ FLAVOR_ATTRIBUTES = {
 FLAVOR_OPTIONAL = ("hw_rng:rate_bytes", "hw_rng:rate_period")
 
 
+TIMEOUT = 5 * 60  # timeout in seconds after which we no longer wait for the VM to complete the run
+MARKER = '_scs-test-'
+SERVER_USERDATA_GENERIC = """
+#cloud-config
+# apt-placeholder
+packages:
+  - rng-tools5
+runcmd:
+  - echo '_scs-test-entropy-avail'; cat /proc/sys/kernel/random/entropy_avail
+  - echo '_scs-test-fips-test'; cat /dev/random | rngtest -c 1000
+  - echo '_scs-test-rngd'; sudo systemctl status rngd
+  - echo '_scs-test-virtio-rng'; cat /sys/devices/virtual/misc/hw_random/rng_available; sudo /bin/sh -c 'od -vAn -N2 -tu2 < /dev/hwrng'
+  - echo '_scs-test-end'
+final_message: "_scs-test-end"
+""".strip()
 # we need to set package source on Ubuntu, because the default is not fixed and can lead to Heisenbugs
 SERVER_USERDATA = {
-    'ubuntu': """#cloud-config
-apt:
+    'ubuntu': SERVER_USERDATA_GENERIC.replace('# apt-placeholder', """apt:
   primary:
     - arches: [default]
-      uri: http://az1.clouds.archive.ubuntu.com/ubuntu/
-  security: []
-""",
-    'debian': """#cloud-config
-apt:
+      uri: http://az1.clouds.archive.ubuntu.com/ubuntu/"""),
+    'debian': SERVER_USERDATA_GENERIC.replace('# apt-placeholder', """apt:
   primary:
     - arches: [default]
-      uri: https://mirror.plusserver.com/debian/debian/
-  security: []
-""",
+      uri: https://mirror.plusserver.com/debian/debian/"""),
 }
 
 
@@ -78,6 +85,8 @@ Options:
  [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)
  [-d/--debug] enables DEBUG logging channel
  [-i/--images IMAGE_LIST] sets images to be tested, separated by comma.
+ [-V/--image-visibility VIS_LIST] filters images by visibility
+                                  (default: 'public,community'; use '*' to disable)
 """, end='', file=file)
 
 
@@ -111,36 +120,8 @@ def check_flavor_attributes(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAV
     return not offenses
 
 
-def install_test_requirements(fconn):
-    # in case we had to patch the apt package sources, wait here for completion
-    _ = fconn.run('cloud-init status --long --wait', hide=True, warn=True)
-    # logger.debug(_.stdout)
-    # the following commands seem to be necessary for CentOS 8, but let's not go there
-    # because, frankly, that image is ancient
-    # sudo sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
-    # sudo sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
-    # Try those commands first that have a high chance of success (Ubuntu seems very common)
-    commands = (
-        # use ; instead of && after update because an error in update is not fatal
-        # also, on newer systems, it seems we need to install rng-tools5...
-        ('apt-get', 'apt-get -v && (cat /etc/apt/sources.list ; sudo apt-get update ; sudo apt-get install -y rng-tools5 || sudo apt-get install -y rng-tools)'),
-        ('dnf', 'sudo dnf install -y rng-tools'),
-        ('yum', 'sudo yum -y install rng-tools'),
-        ('pacman', 'sudo pacman -Syu rng-tools'),
-    )
-    for name, cmd in commands:
-        try:
-            _ = fconn.run(cmd, hide=True)
-        except invoke.exceptions.UnexpectedExit as e:
-            logger.debug(f"Error running '{name}':\n{e.result.stderr.strip()}\n{e.result.stdout.strip()}")
-        else:
-            # logger.debug(f"Output running '{name}':\n{_.stderr.strip()}\n{_.stdout.strip()}")
-            return
-    logger.debug("No package manager worked; proceeding anyway as rng-utils might be present nonetheless.")
-
-
-def check_entropy_avail(fconn, image_name):
-    entropy_avail = fconn.run('cat /proc/sys/kernel/random/entropy_avail', hide=True).stdout.strip()
+def check_entropy_avail(lines, image_name):
+    entropy_avail = lines[0].strip()
     if entropy_avail != "256":
         logger.error(
             f"VM '{image_name}' didn't have a fixed amount of entropy available. "
@@ -150,18 +131,16 @@ def check_entropy_avail(fconn, image_name):
     return True
 
 
-def check_rngd(fconn, image_name):
-    result = fconn.run('sudo systemctl status rngd', hide=True, warn=True)
-    if "could not be found" in result.stdout or "could not be found" in result.stderr:
+def check_rngd(lines, image_name):
+    if "could not be found" in '\n'.join(lines):
         logger.warning(f"VM '{image_name}' doesn't provide the recommended service rngd")
         return False
     return True
 
 
-def check_fips_test(fconn, image_name):
+def check_fips_test(lines, image_name):
     try:
-        install_test_requirements(fconn)
-        fips_data = fconn.run('cat /dev/random | rngtest -c 1000', hide=True, warn=True).stderr
+        fips_data = '\n'.join(lines)
         failure_re = re.search(r'failures:\s\d+', fips_data, flags=re.MULTILINE)
         if failure_re:
             fips_failures = failure_re.string[failure_re.regs[0][0]:failure_re.regs[0][1]].split(" ")[1]
@@ -179,7 +158,7 @@ def check_fips_test(fconn, image_name):
     return False  # any unsuccessful path should end up here
 
 
-def check_virtio_rng(fconn, image, flavor):
+def check_virtio_rng(lines, image, flavor):
     try:
         # Check the existence of the HRNG -- can actually be skipped if the flavor
         # or the image doesn't have the corresponding attributes anyway!
@@ -187,9 +166,8 @@ def check_virtio_rng(fconn, image, flavor):
             logger.debug("Not looking for virtio-rng because required attributes are missing")
             return False
         # `cat` can fail with return code 1 if special file does not exist
-        hw_device = fconn.run('cat /sys/devices/virtual/misc/hw_random/rng_available', hide=True, warn=True).stdout
-        result = fconn.run("sudo su -c 'od -vAn -N2 -tu2 < /dev/hwrng'", hide=True, warn=True)
-        if not hw_device.strip() or "No such device" in result.stdout or "No such " in result.stderr:
+        hw_device = lines[0]
+        if not hw_device.strip() or "No such device" in lines[1]:
             logger.warning(f"VM '{image.name}' doesn't provide a hardware device.")
             return False
         return True
@@ -209,20 +187,10 @@ class TestEnvironment:
 
     def prepare(self):
         try:
-            # Create a keypair and save both parts for later usage
-            self.keypair = self.conn.compute.create_keypair(name=KEYPAIR_NAME)
-
-            self.keyfile = tempfile.NamedTemporaryFile()
-            self.keyfile.write(self.keypair.private_key.encode("ascii"))
-            self.keyfile.flush()
-
-            # Create a new security group and give it some simple rules in order to access it via SSH
-            self.sec_group = self.conn.network.create_security_group(
-                name=SECURITY_GROUP_NAME
-            )
-
             # create network, subnet, router, connect everything
             self.network = self.conn.create_network(NETWORK_NAME)
+            # Note: The IP range/cidr here needs to match the one in the pre_cloud.yaml
+            # playbook calling cleanup.py
             self.subnet = self.conn.create_subnet(
                 self.network.id,
                 cidr="10.1.0.0/24",
@@ -230,9 +198,10 @@ class TestEnvironment:
                 enable_dhcp=True,
                 allocation_pools=[{
                     "start": "10.1.0.100",
-                    "end": "10.1.0.200",
+                    "end": "10.1.0.199",
                 }],
                 dns_nameservers=["9.9.9.9"],
+                name=SUBNET_NAME,
             )
             external_networks = list(self.conn.network.networks(is_router_external=True))
             if not external_networks:
@@ -248,25 +217,6 @@ class TestEnvironment:
                 ROUTER_NAME, ext_gateway_net_id=external_gateway_net_id,
             )
             self.conn.add_router_interface(self.router, subnet_id=self.subnet.id)
-
-            _ = self.conn.network.create_security_group_rule(
-                security_group_id=self.sec_group.id,
-                direction='ingress',
-                remote_ip_prefix='0.0.0.0/0',
-                protocol='icmp',
-                port_range_max=None,
-                port_range_min=None,
-                ethertype='IPv4',
-            )
-            _ = self.conn.network.create_security_group_rule(
-                security_group_id=self.sec_group.id,
-                direction='ingress',
-                remote_ip_prefix='0.0.0.0/0',
-                protocol='tcp',
-                port_range_max=22,
-                port_range_min=22,
-                ethertype='IPv4',
-            )
         except BaseException:
             # if `prepare` doesn't go through, we want to revert to a clean state
             # (in my opinion, the user should only need to call `clean` when `prepare` goes through)
@@ -299,24 +249,6 @@ class TestEnvironment:
                 logger.debug(f"The network {self.network.name} couldn't be deleted.", exc_info=True)
             self.network = None
 
-        if self.sec_group is not None:
-            try:
-                _ = self.conn.network.delete_security_group(self.sec_group)
-            except (openstack.cloud.OpenStackCloudException, openstack.cloud.OpenStackCloudUnavailableFeature):
-                logger.debug(f"The security group {self.sec_group.name} couldn't be deleted.", exc_info=True)
-            self.sec_group = None
-
-        if self.keyfile is not None:
-            self.keyfile.close()
-            self.keyfile = None
-
-        if self.keypair is not None:
-            try:
-                _ = self.conn.compute.delete_keypair(self.keypair)
-            except openstack.cloud.OpenStackCloudException:
-                logger.debug(f"The keypair '{self.keypair.name}' couldn't be deleted.")
-            self.keypair = None
-
     def __enter__(self):
         self.prepare()
         return self
@@ -340,7 +272,8 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
 
     # try to pick a frugal flavor
     flavor = min(flavors, key=lambda flv: flv.vcpus + flv.ram / 3.0 + flv.disk / 10.0)
-    userdata = next((value for key, value in SERVER_USERDATA.items() if image.name.lower().startswith(key)), None)
+    userdata = SERVER_USERDATA.get(image.os_distro, SERVER_USERDATA_GENERIC)
+    logger.debug(f"Using userdata:\n{userdata}")
     volume_size = max(image.min_disk, 8)  # sometimes, the min_disk property is not set correctly
     # create a server with the image and the flavor as well as
     # the previously created keys and security group
@@ -348,10 +281,10 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
         f"Creating instance of image '{image.name}' using flavor '{flavor.name}' and "
         f"{volume_size} GiB ephemeral boot volume"
     )
+    # explicitly set auto_ip=False, we may still get a (totally unnecessary) floating IP assigned
     server = env.conn.create_server(
-        server_name, image=image, flavor=flavor, key_name=env.keypair.name, network=env.network,
-        security_groups=[env.sec_group.id], userdata=userdata, wait=True, timeout=500, auto_ip=True,
-        boot_from_volume=True, terminate_volume=True, volume_size=volume_size,
+        server_name, image=image, flavor=flavor, userdata=userdata, wait=True, timeout=500, auto_ip=False,
+        boot_from_volume=True, terminate_volume=True, volume_size=volume_size, network=env.network,
     )
     logger.debug(f"Server '{server_name}' ('{server.id}') has been created")
     # next, do an explicit get_server because, beginning with version 3.2.0, the openstacksdk no longer
@@ -370,29 +303,6 @@ def delete_vm(conn, server_name=SERVER_NAME):
         logger.debug(f"The server '{server_name}' couldn't be deleted.", exc_info=True)
 
 
-def retry(func, exc_type, timeouts=(8, 7, 15, 10, 20, 30, 60)):
-    if isinstance(exc_type, str):
-        exc_type = exc_type.split(',')
-    timeout_iter = iter(timeouts)
-    # do an initial sleep because func is known fail at first anyway
-    time.sleep(next(timeout_iter))
-    retries = 0
-    while True:
-        try:
-            func()
-        except Exception as e:
-            retries += 1
-            timeout = next(timeout_iter, None)
-            if timeout is None or e.__class__.__name__ not in exc_type:
-                raise
-            logger.debug(f"Initiating retry in {timeout} s due to {e!r} during {func!r}")
-            time.sleep(timeout)
-        else:
-            break
-    if retries:
-        logger.debug(f"Operation {func!r} successful after {retries} retries")
-
-
 class CountingHandler(logging.Handler):
     def __init__(self, level=logging.NOTSET):
         super().__init__(level=level)
@@ -402,58 +312,96 @@ class CountingHandler(logging.Handler):
         self.bylevel[record.levelno] += 1
 
 
-def _deduce_version(name, ubuntu_ver=re.compile(r"\d\d\.\d\d\Z"), debian_ver=re.compile(r"\d+\Z")):
-    """helper for `select_deb_image` to deduce a version even if its only given via codename"""
-    canonicalized = [part.strip() for part in name.lower().split()]
-    if "debian" in canonicalized:
-        # don't even consider "stretch" (9) here
-        codenames = ("buster", "bullseye", "bookworm")
-        for idx, name in enumerate(codenames):
-            if name in canonicalized:
-                return idx + 10
-        for part in canonicalized:
-            if debian_ver.match(part):
-                return int(part)
-    elif "ubuntu" in canonicalized:
-        for part in canonicalized:
-            if ubuntu_ver.match(part):
-                return int(part[:2] + part[3:])
-    return -1
+# the following functions are used to map any OpenStack Image to a pair of integers
+# used for sorting the images according to fitness for our test
+# - debian take precedence over ubuntu
+# - higher versions take precedence over lower ones
+
+# only list stable versions here
+DEBIAN_CODENAMES = {
+    "buster": 10,
+    "bullseye": 11,
+    "bookworm": 12,
+}
+
+
+def _deduce_sort_debian(os_version, debian_ver=re.compile(r"\d+\Z")):
+    if debian_ver.match(os_version):
+        return 2, int(os_version)
+    return 2, DEBIAN_CODENAMES.get(os_version, 0)
+
+
+def _deduce_sort_ubuntu(os_version, ubuntu_ver=re.compile(r"\d\d\.\d\d\Z")):
+    if ubuntu_ver.match(os_version):
+        return 1, int(os_version.replace(".", ""))
+    return 1, 0
+
+
+# map lower-case distro name to version deducing function
+DISTROS = {
+    "ubuntu": _deduce_sort_ubuntu,
+    "debian": _deduce_sort_debian,
+}
+
+
+def _deduce_sort(img):
+    if not img.os_distro or not img.os_version:
+        return 0, 0
+    deducer = DISTROS.get(img.os_distro.strip().lower())
+    if deducer is None:
+        return 0, 0
+    return deducer(img.os_version.strip().lower())
 
 
 def select_deb_image(images):
-    """From a list of OpenStack image objects, select a recent Debian derivative.
-
-    Try Debian first, then Ubuntu.
-    """
-    for prefix in ("Debian ", "Ubuntu "):
-        imgs = sorted(
-            [img for img in images if img.name.startswith(prefix)],
-            key=lambda img: _deduce_version(img.name),
-        )
-        if imgs:
-            return imgs[-1]
-    return None
+    """From a list of OpenStack image objects, select a recent Debian derivative."""
+    return max(images, key=_deduce_sort, default=None)
 
 
 def print_result(check_id, passed):
     print(check_id + ": " + ('FAIL', 'PASS')[bool(passed)])
 
 
+def evaluate_output(lines, image, flavor, marker=MARKER):
+    # parse lines from console output
+    # removing any "indent", stuff that looks like '[   70.439502] cloud-init[513]: '
+    section = None
+    indent = 0
+    collected = defaultdict(list)
+    for line in lines:
+        idx = line.find(marker)
+        if idx != -1:
+            section = line[idx + len(marker):].strip()
+            if section == 'end':
+                section = None
+            indent = idx
+            continue
+        if section:
+            collected[section].append(line[indent:])
+    # always check if we have something, because print_result won't do MISS, only PASS/FAIL
+    if collected['virtio-rng']:
+        # virtio-rng is not an official test case according to testing notes,
+        # but for some reason we check it nonetheless (call it informative)
+        check_virtio_rng(collected['virtio-rng'], image, flavor)
+    if collected['entropy-avail']:
+        print_result('entropy-check-entropy-avail', check_entropy_avail(collected['entropy-avail'], image.name))
+    if collected['rngd']:
+        print_result('entropy-check-rngd', check_rngd(collected['rngd'], image.name))
+    if collected['fips-test']:
+        print_result('entropy-check-fips-test', check_fips_test(collected['fips-test'], image.name))
+
+
 def main(argv):
     # configure logging, disable verbose library logging
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
     openstack.enable_logging(debug=False)
-    logging.getLogger("fabric").propagate = False
-    logging.getLogger("invoke").propagate = False
-    logging.getLogger("paramiko").propagate = False
     warnings.filterwarnings("ignore", "search_floating_ips")
     # count the number of log records per level (used for summary and return code)
     counting_handler = CountingHandler(level=logging.INFO)
     logger.addHandler(counting_handler)
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:i:hd", ["os-cloud=", "images=", "help", "debug"])
+        opts, args = getopt.gnu_getopt(argv, "c:i:hdV:", ["os-cloud=", "images=", "help", "debug", "image-visibility="])
     except getopt.GetoptError as exc:
         logger.critical(f"{exc}")
         print_usage()
@@ -461,6 +409,7 @@ def main(argv):
 
     cloud = os.environ.get("OS_CLOUD")
     image_names = set()
+    image_visibility = set()
     for opt in opts:
         if opt[0] == "-h" or opt[0] == "--help":
             print_usage()
@@ -471,16 +420,31 @@ def main(argv):
             cloud = opt[1]
         if opt[0] == "-d" or opt[0] == "--debug":
             logging.getLogger().setLevel(logging.DEBUG)
+        if opt[0] == "-V" or opt[0] == "--image-visibility":
+            image_visibility.update([v.strip() for v in opt[1].split(',')])
 
     if not cloud:
         logger.critical("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.")
         return 1
+
+    if not image_visibility:
+        image_visibility.update(("public", "community"))
 
     try:
         logger.debug(f"Connecting to cloud '{cloud}'")
         with openstack.connect(cloud=cloud, timeout=32) as conn:
             all_images = conn.list_images()
             all_flavors = conn.list_flavors(get_extra=True)
+
+            if '*' not in image_visibility:
+                logger.debug(f"Images: filter for visibility {', '.join(image_visibility)}")
+                all_images = [img for img in all_images if img.visibility in image_visibility]
+            all_image_names = [f"{img.name} ({img.visibility})" for img in all_images]
+            logger.debug(f"Images: {', '.join(all_image_names) or '(NONE)'}")
+
+            if not all_images:
+                logger.critical("Can't run this test without image")
+                return 1
 
             if image_names:
                 # find images by the names given, BAIL out if some image is missing
@@ -500,27 +464,28 @@ def main(argv):
             print_result('entropy-check-flavor-properties', check_flavor_attributes(all_flavors))
 
             logger.debug("Checking dynamic instance properties")
+            # Check a VM for services and requirements
             with TestEnvironment(conn) as env:
-                # Check a VM for services and requirements
                 for image in images:
                     try:
                         # ugly: create the server inside the try-block because the call
                         # can be interrupted via Ctrl-C, and then the instance will be
                         # started without us knowing its id
                         server = create_vm(env, all_flavors, image)
-                        with fabric.Connection(
-                            host=server.public_v4,
-                            user=image.properties.get('image_original_user') or image.properties.get('standarduser'),
-                            connect_kwargs={"key_filename": env.keyfile.name, "allow_agent": False},
-                        ) as fconn:
-                            # need to retry because it takes time for sshd to come up
-                            retry(fconn.open, exc_type="NoValidConnectionsError,TimeoutError")
-                            # virtio-rng is not an official test case according to testing notes,
-                            # but for some reason we check it nonetheless (call it informative)
-                            check_virtio_rng(fconn, image, server.flavor)
-                            print_result('entropy-check-entropy-avail', check_entropy_avail(fconn, image.name))
-                            print_result('entropy-check-rngd', check_rngd(fconn, image.name))
-                            print_result('entropy-check-fips-test', check_fips_test(fconn, image.name))
+                        remainder = TIMEOUT
+                        console = conn.compute.get_server_console_output(server)
+                        while remainder > 0:
+                            if "Failed to run module scripts-user" in console['output']:
+                                raise RuntimeError(f"Failed tests for {server.id}")
+                            if "_scs-test-end" in console['output']:
+                                break
+                            time.sleep(1.0)
+                            remainder -= 1
+                            console = conn.compute.get_server_console_output(server)
+                        # if the timeout was hit, maybe we won't find everything, but that's okay --
+                        # these testcases will count as missing, rightly so
+                        logger.debug(f'Finished waiting with timeout remainder: {remainder} s')
+                        evaluate_output(console['output'].splitlines(), image, server.flavor)
                     finally:
                         delete_vm(conn)
     except BaseException as e:
