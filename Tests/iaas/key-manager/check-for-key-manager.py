@@ -45,6 +45,7 @@ def synth_auth_url(auth_url: str):
         re_auth_url = auth_url + "/auth/tokens"
     else:
         re_auth_url = auth_url + "/v3/auth/tokens"
+    print(f"url: {re_auth_url}")
     return re_auth_url
 
 
@@ -134,7 +135,7 @@ def check_presence_of_key_manager(cloud_name: str):
             return 0
 
     # we did not find the key-manager service
-    logger.warning("There is no key-manager endpoint in the cloud.")
+    logger.warning(f"{RED}There is no key-manager endpoint in the cloud.{RESET}")
     # we do not fail, until a key-manager MUST be present
     return 0
 
