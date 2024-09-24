@@ -56,7 +56,6 @@ func Test_scs_0217_sonobuoy_Kubelet_ReadOnly_Port_Disabled(t *testing.T) {
 	f := features.New("kubelet security").Assess(
 		"Kubelet read-only port (10255) should be disabled",
 		func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			// Get the list of nodes in the cluster
 			nodes := &corev1.NodeList{}
 			err := cfg.Client().Resources().List(context.TODO(), nodes)
 			if err != nil {
@@ -68,9 +67,9 @@ func Test_scs_0217_sonobuoy_Kubelet_ReadOnly_Port_Disabled(t *testing.T) {
 				nodeIP := node.Status.Addresses[0].Address
 				isPortOpen := checkPortOpen(nodeIP, kubeletReadOnlyPort, connectionTimeout)
 				if isPortOpen {
-					t.Logf("⚠️ WARNING: kubelet read-only port 10255 is open on node %s", nodeIP)
+					t.Logf("Warning: kubelet read-only port 10255 is open on node %s", nodeIP)
 				} else {
-					t.Logf("✅ kubelet read-only port 10255 is correctly disabled on node %s", nodeIP)
+					t.Logf("Kubelet read-only port 10255 is correctly disabled on node %s", nodeIP)
 				}
 			}
 			return ctx
@@ -133,7 +132,6 @@ func Test_scs_0217_sonobuoy_K8s_Endpoints_HTTPS(t *testing.T) {
 			for _, ep := range endpoints.Items {
 				for _, subset := range ep.Subsets {
 					for _, addr := range subset.Addresses {
-						// Check each endpoint address for HTTPS security
 						nodeIP := addr.IP
 						for _, port := range subset.Ports {
 							portName := port.Name
@@ -141,9 +139,9 @@ func Test_scs_0217_sonobuoy_K8s_Endpoints_HTTPS(t *testing.T) {
 
 							// Check if the endpoint is secured via HTTPS
 							if isPortSecuredWithHTTPS(nodeIP, portNum, connectionTimeout) {
-								t.Logf("✅ Endpoint %s:%d (%s) is secured via HTTPS", nodeIP, portNum, portName)
+								t.Logf("Endpoint %s:%d (%s) is secured via HTTPS", nodeIP, portNum, portName)
 							} else {
-								t.Errorf("❌ ERROR: Endpoint %s:%d (%s) is not secured via HTTPS", nodeIP, portNum, portName)
+								t.Errorf("Error: Endpoint %s:%d (%s) is not secured via HTTPS", nodeIP, portNum, portName)
 							}
 						}
 					}
@@ -185,7 +183,7 @@ func Test_scs_0217_sonobuoy_Kubelet_HTTPS_Anonymous_Auth_Disabled(t *testing.T) 
 				t.Fatal("failed to gather node data:", err)
 			}
 
-			// Check anonymous authentication from configz files
+			// Get kubelets configz file from each node
 			for _, nodeName := range nodeNames {
 				configzPath := path.Join(sonobuoyResultsDir, nodeName, "configz.json")
 				kubeletConfig, err := readKubeletConfigFromFile(configzPath)
@@ -196,9 +194,9 @@ func Test_scs_0217_sonobuoy_Kubelet_HTTPS_Anonymous_Auth_Disabled(t *testing.T) 
 
 				// Check if anonymous authentication is enabled
 				if kubeletConfig.KubeletConfig.Authentication.Anonymous.Enabled {
-					t.Errorf("❌ ERROR: Kubelet anonymous authentication is enabled at %s", nodeName)
+					t.Errorf("ERROR: Kubelet anonymous authentication is enabled at %s", nodeName)
 				} else {
-					t.Logf("✅ Kubelet anonymous authentication is correctly disabled at %s", nodeName)
+					t.Logf("Kubelet anonymous authentication is correctly disabled at %s", nodeName)
 				}
 			}
 
@@ -208,7 +206,7 @@ func Test_scs_0217_sonobuoy_Kubelet_HTTPS_Anonymous_Auth_Disabled(t *testing.T) 
 	testenv.Test(t, f.Feature())
 }
 
-// Test_Kubelet_Webhook_Authorization_Enabled checks
+// Test_scs_0217_sonobuoy_Kubelet_Webhook_Authorization_Enabled checks
 // if the Kubelet's authorization mode is Webhook by accessing the Kubelet's /configz endpoint.
 func Test_scs_0217_sonobuoy_Kubelet_Webhook_Authorization_Enabled(t *testing.T) {
 	f := features.New("kubelet security").Assess(
@@ -238,20 +236,20 @@ func Test_scs_0217_sonobuoy_Kubelet_Webhook_Authorization_Enabled(t *testing.T) 
 				t.Fatal("failed to gather node data:", err)
 			}
 
-			// Check authorization mode from `configz` files
+			// Get kubelets configz file from each node
 			for _, nodeName := range nodeNames {
 				configzPath := path.Join(sonobuoyResultsDir, nodeName, "configz.json")
 				kubeletConfig, err := readKubeletConfigFromFile(configzPath)
 				if err != nil {
-					t.Errorf("Failed to read Kubelet config from file %s: %v", configzPath, err)
+					t.Errorf("failed to read Kubelet config from file %s: %v", configzPath, err)
 					continue
 				}
 
-				// Check if the authorization mode is Webhook
+				// Check if the authorization mode is set to Webhook
 				if kubeletConfig.KubeletConfig.Authorization.Mode != "Webhook" {
-					t.Errorf("❌ ERROR: Kubelet authorization mode is not webhook, got %s", kubeletConfig.KubeletConfig.Authorization.Mode)
+					t.Errorf("Error: Kubelet authorization mode is not webhook, got %s", kubeletConfig.KubeletConfig.Authorization.Mode)
 				} else {
-					t.Logf("✅ Kubelet authorization mode is correctly set to Webhook")
+					t.Logf("kubelet authorization mode is correctly set to Webhook")
 				}
 			}
 
@@ -261,18 +259,18 @@ func Test_scs_0217_sonobuoy_Kubelet_Webhook_Authorization_Enabled(t *testing.T) 
 	testenv.Test(t, f.Feature())
 }
 
-// Test_NodeRestriction_Admission_Controller_Enabled checks if the NodeRestriction admission controller is enabled.
-func Test_NodeRestriction_Admission_Controller_Enabled_in_KubeAPIServer(t *testing.T) {
+// Test_scs_0217_sonobuoy_NodeRestriction_Admission_Controller_Enabled_in_KubeAPIServer
+// checks if the NodeRestriction admission controller is enabled.
+func Test_scs_0217_sonobuoy_NodeRestriction_Admission_Controller_Enabled_in_KubeAPIServer(t *testing.T) {
 	f := features.New("kube-apiserver admission plugins").Assess(
 		"Check if NodeRestriction admission plugin is enabled in kube-apiserver pods",
 		func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			// Create an in-cluster Kubernetes client configuration
 			restConf, err := rest.InClusterConfig()
 			if err != nil {
 				t.Fatal("failed to create rest config:", err)
 			}
 
-			// Create a Kubernetes clientset
+			// Create a Kubernetes client
 			kubeClient, err := kubernetes.NewForConfig(restConf)
 			if err != nil {
 				t.Fatal("failed to create Kubernetes client:", err)
@@ -288,22 +286,48 @@ func Test_NodeRestriction_Admission_Controller_Enabled_in_KubeAPIServer(t *testi
 
 			// Check each kube-apiserver pod
 			for _, pod := range podList.Items {
-				// Check each container in the pod
 				for _, container := range pod.Spec.Containers {
-					flagFound := false
+					cmdFound := false
 					for _, cmd := range container.Command {
 						if strings.Contains(cmd, "--enable-admission-plugins=NodeRestriction") {
-							t.Logf("✅ NodeRestriction admission plugin is enabled in container: %s of pod: %s", container.Name, pod.Name)
-							flagFound = true
+							t.Logf("NodeRestriction admission plugin is enabled in pod: %s", pod.Name)
+							cmdFound = true
 							break
 						}
 					}
 
-					if !flagFound {
-						t.Errorf("❌ ERROR: NodeRestriction admission plugin is not enabled in container: %s of pod: %s", container.Name, pod.Name)
+					if !cmdFound {
+						t.Errorf("Error: NodeRestriction admission plugin is not enabled in pod: %s", pod.Name)
 					}
 				}
 			}
+
+			return ctx
+		})
+
+	testenv.Test(t, f.Feature())
+}
+
+func Test_scs_0217_sonobuoy_PodSecurity_Standards_And_Admission_Controller_Enabled(t *testing.T) {
+	f := features.New("pod security standards").Assess(
+		"Pod security admission controller should be enabled and enforce Baseline/Restricted policies",
+		func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+			restConf, err := rest.InClusterConfig()
+			if err != nil {
+				t.Fatal("failed to create rest config:", err)
+			}
+
+			// Create a Kubernetes client
+			kubeClient, err := kubernetes.NewForConfig(restConf)
+			if err != nil {
+				t.Fatal("failed to create Kubernetes client:", err)
+			}
+
+			// Check that the PodSecurity admission controller is enabled in the kube-apiserver pods
+			checkPodSecurityAdmissionControllerEnabled(t, kubeClient)
+
+			// Verify that Pod Security Standards (Baseline/Restricted) are enforced on namespaces
+			checkPodSecurityPoliciesEnforced(t, kubeClient)
 
 			return ctx
 		})
@@ -329,13 +353,13 @@ func checkPortOpen(ip, port string, timeout time.Duration) bool {
 func checkPortAccessibility(t *testing.T, ip, port string, shouldBeAccessible bool) {
 	isOpen := checkPortOpen(ip, port, connectionTimeout)
 	if isOpen && !shouldBeAccessible {
-		t.Errorf("❌ ERROR: port %s on node %s should not be accessible, but it is open", port, ip)
+		t.Errorf("Error: port %s on node %s should not be accessible, but it is open", port, ip)
 	} else if !isOpen && shouldBeAccessible {
-		t.Errorf("❌ ERROR: port %s on node %s should be accessible, but it is not", port, ip)
+		t.Errorf("Error: port %s on node %s should be accessible, but it is not", port, ip)
 	} else if isOpen && shouldBeAccessible {
-		t.Logf("✅ port %s on node %s is accessible as expected", port, ip)
+		t.Logf("Port %s on node %s is accessible as expected", port, ip)
 	} else {
-		t.Logf("✅ port %s on node %s is correctly restricted", port, ip)
+		t.Logf("Port %s on node %s is correctly restricted", port, ip)
 	}
 }
 
@@ -448,4 +472,68 @@ func getNodeEndpoint(client rest.Interface, nodeName, endpoint string) (rest.Res
 		logrus.Warningf("Could not get %v endpoint for node %v: %v", endpoint, nodeName, result.Error())
 	}
 	return result, result.Error()
+}
+
+// checkPodSecurityAdmissionControllerEnabled checks if the PodSecurity admission controller is enabled in kube-apiserver pods
+func checkPodSecurityAdmissionControllerEnabled(t *testing.T, kubeClient *kubernetes.Clientset) {
+	// List all pods in the kube-system namespace with label "component=kube-apiserver"
+	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), v1.ListOptions{
+		LabelSelector: "component=kube-apiserver",
+	})
+	if err != nil {
+		t.Fatal("failed to list kube-apiserver pods:", err)
+	}
+
+	// Check each kube-apiserver pod
+	for _, pod := range podList.Items {
+		t.Logf("Checking pod: %s for PodSecurity admission controller", pod.Name)
+		for _, container := range pod.Spec.Containers {
+			admissionPluginsFound := false
+			// Look for the enable-admission-plugins flag in container command
+			for _, cmd := range container.Command {
+				if strings.Contains(cmd, "--enable-admission-plugins=") {
+					admissionPluginsFound = true
+
+					// Extract the plugins list and check if PodSecurity is one of them
+					plugins := strings.Split(cmd, "=")[1]
+					if strings.Contains(plugins, "PodSecurity") {
+						t.Logf("PodSecurity admission plugin is enabled in container: %s of pod: %s", container.Name, pod.Name)
+					} else {
+						t.Errorf("Error: PodSecurity admission plugin is not enabled in container: %s of pod: %s", container.Name, pod.Name)
+					}
+					break
+				}
+			}
+
+			if !admissionPluginsFound {
+				t.Errorf("Error: --enable-admission-plugins flag not found in container: %s of pod: %s", container.Name, pod.Name)
+			}
+		}
+	}
+}
+
+// checkPodSecurityPoliciesEnforced checks if Baseline and Restricted policies are enforced on namespaces
+func checkPodSecurityPoliciesEnforced(t *testing.T, kubeClient *kubernetes.Clientset) {
+	// List all namespaces
+	namespaceList, err := kubeClient.CoreV1().Namespaces().List(context.TODO(), v1.ListOptions{})
+	if err != nil {
+		t.Fatal("failed to list namespaces:", err)
+	}
+
+	// Check for the "pod-security.kubernetes.io/enforce" annotation in each namespace
+	for _, namespace := range namespaceList.Items {
+		annotations := namespace.Annotations
+		enforcePolicy, ok := annotations["pod-security.kubernetes.io/enforce"]
+		if !ok {
+			t.Logf("Warning: Namespace %s does not have an enforce policy annotation", namespace.Name)
+			continue
+		}
+
+		// Check if the policy is either Baseline or Restricted
+		if enforcePolicy == "baseline" || enforcePolicy == "restricted" {
+			t.Logf("Namespace %s enforces the %s policy", namespace.Name, enforcePolicy)
+		} else {
+			t.Errorf("Error: Namespace %s does not enforce Baseline or Restricted policy, but has %s", namespace.Name, enforcePolicy)
+		}
+	}
 }
