@@ -48,54 +48,54 @@ def synth_auth_url(auth_url: str):
     return re_auth_url
 
 
-def delete_application_credential(
-    conn: openstack.connection.Connection, credential_name: str
-) -> None:
-    """
-    Deletes current credentials from openstack connection
-    :param object conn:
-        Instance of the openstack.connection.Connection class.
-    :param string credential_name:
-        Name of the credentials.
-    """
-    existing_credential = conn.identity.find_application_credential(
-        conn.current_user_id, credential_name
-    )
+# def delete_application_credential(
+#     conn: openstack.connection.Connection, credential_name: str
+# ) -> None:
+#     """
+#     Deletes current credentials from openstack connection
+#     :param object conn:
+#         Instance of the openstack.connection.Connection class.
+#     :param string credential_name:
+#         Name of the credentials.
+#     """
+#     existing_credential = conn.identity.find_application_credential(
+#         conn.current_user_id, credential_name
+#     )
 
-    if existing_credential:
-        print(f"INFO: deleting application credential '{credential_name}' ...")
-        conn.identity.delete_application_credential(
-            conn.current_user_id, existing_credential
-        )
+#     if existing_credential:
+#         print(f"INFO: deleting application credential '{credential_name}' ...")
+#         conn.identity.delete_application_credential(
+#             conn.current_user_id, existing_credential
+#         )
 
 
-def reconnect_with_role(
-    conn: openstack.connection.Connection, target_role_name: str, cloud_name
-) -> openstack.connection.Connection:
-    """
-    Uses the existing cloud connection to create a new application credential
-    in the Identity API limited to the role specified via target_role_name.
-    Creates a new cloud connection using the application credential and
-    returns it, effectively scoping the returned connection to the specific
-    role.
-    """
-    credential_name = cloud_name
-    delete_application_credential(conn, credential_name)
-    app_credential = conn.identity.create_application_credential(
-        conn.current_user_id, credential_name, roles=[{"name": target_role_name}]
-    )
-    # Open a new connection using the application credential
-    new_conn = openstack.connect(
-        region_name="RegionOne",  # conn.config.config["region_name"],
-        auth_type="v3applicationcredential",
-        auth={
-            "auth_url": conn.auth["auth_url"],
-            "application_credential_id": app_credential.id,
-            "application_credential_secret": app_credential.secret,
-        },
-    )
-    print(f"reconnected with {credential_name}")
-    return new_conn
+# def reconnect_with_role(
+#     conn: openstack.connection.Connection, target_role_name: str, cloud_name
+# ) -> openstack.connection.Connection:
+#     """
+#     Uses the existing cloud connection to create a new application credential
+#     in the Identity API limited to the role specified via target_role_name.
+#     Creates a new cloud connection using the application credential and
+#     returns it, effectively scoping the returned connection to the specific
+#     role.
+#     """
+#     credential_name = cloud_name
+#     delete_application_credential(conn, credential_name)
+#     app_credential = conn.identity.create_application_credential(
+#         conn.current_user_id, credential_name, roles=[{"name": target_role_name}]
+#     )
+#     # Open a new connection using the application credential
+#     new_conn = openstack.connect(
+#         region_name="RegionOne",  # conn.config.config["region_name"],
+#         auth_type="v3applicationcredential",
+#         auth={
+#             "auth_url": conn.auth["auth_url"],
+#             "application_credential_id": app_credential.id,
+#             "application_credential_secret": app_credential.secret,
+#         },
+#     )
+#     print(f"reconnected with {credential_name}")
+#     return new_conn
 
 
 def check_for_member_role(
