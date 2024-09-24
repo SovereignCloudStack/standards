@@ -48,56 +48,6 @@ def synth_auth_url(auth_url: str):
     return re_auth_url
 
 
-# def delete_application_credential(
-#     conn: openstack.connection.Connection, credential_name: str
-# ) -> None:
-#     """
-#     Deletes current credentials from openstack connection
-#     :param object conn:
-#         Instance of the openstack.connection.Connection class.
-#     :param string credential_name:
-#         Name of the credentials.
-#     """
-#     existing_credential = conn.identity.find_application_credential(
-#         conn.current_user_id, credential_name
-#     )
-
-#     if existing_credential:
-#         print(f"INFO: deleting application credential '{credential_name}' ...")
-#         conn.identity.delete_application_credential(
-#             conn.current_user_id, existing_credential
-#         )
-
-
-# def reconnect_with_role(
-#     conn: openstack.connection.Connection, target_role_name: str, cloud_name
-# ) -> openstack.connection.Connection:
-#     """
-#     Uses the existing cloud connection to create a new application credential
-#     in the Identity API limited to the role specified via target_role_name.
-#     Creates a new cloud connection using the application credential and
-#     returns it, effectively scoping the returned connection to the specific
-#     role.
-#     """
-#     credential_name = cloud_name
-#     delete_application_credential(conn, credential_name)
-#     app_credential = conn.identity.create_application_credential(
-#         conn.current_user_id, credential_name, roles=[{"name": target_role_name}]
-#     )
-#     # Open a new connection using the application credential
-#     new_conn = openstack.connect(
-#         region_name="RegionOne",  # conn.config.config["region_name"],
-#         auth_type="v3applicationcredential",
-#         auth={
-#             "auth_url": conn.auth["auth_url"],
-#             "application_credential_id": app_credential.id,
-#             "application_credential_secret": app_credential.secret,
-#         },
-#     )
-#     print(f"reconnected with {credential_name}")
-#     return new_conn
-
-
 def check_for_member_role(
     conn: openstack.connection.Connection, cloud_name: str
 ) -> None:
@@ -112,26 +62,6 @@ def check_for_member_role(
     auth_url = synth_auth_url(auth_data["auth_url"])
     has_member_role = False
     try:
-        # auth_dict = {
-        #     "identity": {
-        #         "methods": ["password"],
-        #         "password": {
-        #             "user": {
-        #                 "name": auth_data["username"],
-        #                 "domain": {"name": auth_data["project_domain_name"]},
-        #                 "password": auth_data["password"],
-        #             }
-        #         },
-        #     },
-        #     "scope": {
-        #         "project": {
-        #             "domain": {"name": auth_data["project_domain_name"]},
-        #             "name": auth_data["project_name"],
-        #         }
-        #     },
-        # }
-        # request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
-
         ## Make the POST request using the current session
         auth_payload = {
             "auth": {
@@ -152,21 +82,6 @@ def check_for_member_role(
         )
     except Unauthorized as auth_err:
         print(f"Unauthorized scope (401): {auth_err}")
-        ## Reconnect with v3 application credentials as member
-        # new_conn = reconnect_with_role(conn, "member", cloud_name)
-        # auth_data = new_conn.auth
-        # auth_dict = {
-        #     "identity": {
-        #         "methods": ["application_credential"],
-        #         "application_credential": {
-        #             "id": auth_data["application_credential_id"],
-        #             "secret": auth_data["application_credential_secret"],
-        #         },
-        #     },
-        # }
-        # has_member_role = False
-        # auth_url = synth_auth_url(auth_data["auth_url"])
-        # request = conn.session.request(auth_url, "POST", json={"auth": auth_dict})
 
         ## Make the POST request without special scope
         print("Make a new request without specifying the project domain")
