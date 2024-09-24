@@ -45,6 +45,10 @@ Users should always research whether a needed feature is supported in the offere
 
 :::
 
+The endpoints of services MUST be findable through the `catalog list` of the identity API[^1].
+
+[^1]: [Integrate into the service catalog of Keystone](https://docs.openstack.org/keystone/latest/contributor/service-catalog.html)
+
 ## Supported IaaS APIs
 
 The following IaaS APIs MAY be present in SCS-compliant IaaS deployment, e.g. implemented thorugh the corresponding OpenStack services, and are considered in the SCS standards.
@@ -74,5 +78,5 @@ The SCS standard offers no guarantees for compatibility or reliability of servic
 
 ## Conformance Tests
 
-The presence of the mandatory OpenStack APIs (except the S3) will be tested in a test-script.
-As the S3 interface is a moving target, it may be integrated into the test suite but the test result will not be taken into account to determine conformance.
+The presence of the mandatory OpenStack APIs will be tested in [this test-script](https://github.com/SovereignCloudStack/standards/blob/mandatory-and-supported-IaaS-services/Tests/iaas/mandatory-services/mandatory-iaas-services.py).
+The test will further check, whether the object store endpoint is compatible to s3.
