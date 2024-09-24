@@ -62,7 +62,7 @@ def check_for_member_role(
     auth_url = synth_auth_url(auth_data["auth_url"])
     has_member_role = False
     try:
-        ## Make the POST request using the current session
+        # Make the POST request using the current session
         auth_payload = {
             "auth": {
                 "identity": {"methods": ["token"], "token": {"id": token}},
@@ -83,7 +83,7 @@ def check_for_member_role(
     except Unauthorized as auth_err:
         print(f"Unauthorized scope (401): {auth_err}")
 
-        ## Make the POST request without special scope
+        # Make the POST request without special scope
         print("Make a new request without specifying the project domain")
         auth_payload = {
             "auth": {"identity": {"methods": ["token"], "token": {"id": token}}}
