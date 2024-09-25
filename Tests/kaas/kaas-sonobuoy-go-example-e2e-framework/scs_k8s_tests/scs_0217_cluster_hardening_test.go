@@ -308,6 +308,9 @@ func Test_scs_0217_sonobuoy_NodeRestriction_Admission_Controller_Enabled_in_Kube
 	testenv.Test(t, f.Feature())
 }
 
+// Test_scs_0217_sonobuoy_PodSecurity_Standards_And_Admission_Controller_Enabled
+// checks if the PodSecurity admission controller is enabled and
+// verify that if Pod Security Standards (Baseline/Restricted) are enforced on namespaces.
 func Test_scs_0217_sonobuoy_PodSecurity_Standards_And_Admission_Controller_Enabled(t *testing.T) {
 	f := features.New("pod security standards").Assess(
 		"Pod security admission controller should be enabled and enforce Baseline/Restricted policies",
@@ -328,6 +331,33 @@ func Test_scs_0217_sonobuoy_PodSecurity_Standards_And_Admission_Controller_Enabl
 
 			// Verify that Pod Security Standards (Baseline/Restricted) are enforced on namespaces
 			checkPodSecurityPoliciesEnforced(t, kubeClient)
+
+			return ctx
+		})
+
+	testenv.Test(t, f.Feature())
+}
+
+// Test_scs_0217_sonobuoy_Authorization_Methods checks whether at least two authorization methods are sets in k8s cluster,
+// one of which MUST be Node authorization and another one consisting of either ABAC, RBAC or Webhook authorization.
+func Test_scs_0217_sonobuoy_Authorization_Methods(t *testing.T) {
+	f := features.New("authorization methods").Assess(
+		"At least two authorization methods must be set, one of which must be Node authorization "+
+			"and another one consisting of either ABAC, RBAC, or Webhook authorization",
+		func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+			restConf, err := rest.InClusterConfig()
+			if err != nil {
+				t.Fatal("failed to create rest config:", err)
+			}
+
+			// Create a Kubernetes client
+			kubeClient, err := kubernetes.NewForConfig(restConf)
+			if err != nil {
+				t.Fatal("failed to create Kubernetes client:", err)
+			}
+
+			// Check authorization methods in the kube-apiserver
+			checkAuthorizationmethods(t, kubeClient)
 
 			return ctx
 		})
@@ -534,6 +564,61 @@ func checkPodSecurityPoliciesEnforced(t *testing.T, kubeClient *kubernetes.Clien
 			t.Logf("Namespace %s enforces the %s policy", namespace.Name, enforcePolicy)
 		} else {
 			t.Errorf("Error: Namespace %s does not enforce Baseline or Restricted policy, but has %s", namespace.Name, enforcePolicy)
+		}
+	}
+}
+
+// checkAuthorizationmethods checks if authorization methods are correctly sets in k8s cluster based on standard
+func checkAuthorizationmethods(t *testing.T, kubeClient *kubernetes.Clientset) {
+	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), v1.ListOptions{
+		LabelSelector: "component=kube-apiserver",
+	})
+	if err != nil {
+		t.Fatal("failed to list kube-apiserver pods:", err)
+	}
+
+	// Check each kube-apiserver pod
+	for _, pod := range podList.Items {
+		t.Logf("Checking pod: %s for authorization modes", pod.Name)
+		for _, container := range pod.Spec.Containers {
+			authModeFound := false
+			// Look for the --authorization-mode flag in container command
+			for _, cmd := range container.Command {
+				if strings.Contains(cmd, "--authorization-mode=") {
+					authModeFound = true
+
+					modes := strings.Split(cmd, "=")[1]
+					authModes := strings.Split(modes, ",")
+
+					nodeAuthEnabled := false
+					otherAuthEnabled := false
+
+					for _, mode := range authModes {
+						mode = strings.TrimSpace(mode)
+						if mode == "Node" {
+							nodeAuthEnabled = true
+						}
+						if mode == "ABAC" || mode == "RBAC" || mode == "Webhook" {
+							otherAuthEnabled = true
+						}
+					}
+
+					// Validate the presence of required authorization methods
+					if nodeAuthEnabled && otherAuthEnabled {
+						t.Logf("Node authorization is enabled and at least one method (ABAC, RBAC or Webhook) is enabled.")
+					} else if !nodeAuthEnabled {
+						t.Errorf("Error: Node authorization is not enabled in api-server pod: %s", pod.Name)
+					} else if !otherAuthEnabled {
+						t.Errorf("Error: None of ABAC, RBAC, or Webhook authorization methods are enabled in api-server pod: %s", pod.Name)
+					}
+					break
+				}
+			}
+
+			// If the --authorization-mode flag is not found
+			if !authModeFound {
+				t.Errorf("Error: --authorization-mode flag not found in api-server pod: %s", pod.Name)
+			}
 		}
 	}
 }
