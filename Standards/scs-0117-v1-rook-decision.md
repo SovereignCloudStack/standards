@@ -12,7 +12,7 @@ The new deployment tool aims to enhance Kubernetes integration within SCS, poten
 
 ## Context
 
-The current reference implementation relies on `ceph-ansible`, [which is now deprecated](https://github.com/ceph/ceph-ansible/commit/a9d1ec844d24fcc3ddea7c030eff4cd6c414d23d). As a result, this decision record evaluates two alternatives: Cephadm and Rook.
+The current reference implementation relies on `ceph-ansible`, [which is now deprecated](https://github.com/ceph/ceph-ansible/commit/a9d1ec844d24fcc3ddea7c030eff4cd6c414d23d). As a result, this decision record evaluates two alternatives: [Cephadm](https://docs.ceph.com/en/latest/cephadm/) and [Rook](https://rook.io/docs/rook/latest-release/Getting-Started/intro/).
 
 Both tools are designed to roll out and configure Ceph clusters, providing the capability to manage clusters throughout their lifecycle. This includes functionalities such as adding or removing OSDs, upgrading Ceph services, and managing CRUSH maps, as outlined in the [Feature-Decision-Table](#feature-decision-table).
 
@@ -51,7 +51,7 @@ A comparative analysis of Cephadm and Rook highlights the following:
 
 #### Evaluation in the Light of SCS Community Plans and Preferences
 
-**Environment**: Cephadm is better suited for traditional or standalone environments. Conversely, Rook is tailored for Kubernetes. That being said, it's important to note that the current state of resource deployment and management on Kubernetes within the reference implementation is still in its early stages. This would make Rook one of the first components to utilise Kubernetes in OSISM.
+**Environment**: Cephadm is better suited for traditional or standalone environments. Conversely, Rook is tailored for Kubernetes. That being said, it's important to note that the current state of resource deployment and management on Kubernetes within the IaaS reference implementation is still in its early stages. This would make Rook one of the first components to utilise Kubernetes in OSISM.
 
 **Deployment**: Cephadm uses containerization for Ceph components, whereas Rook fully embraces the Kubernetes ecosystem for deployment and management. Although containerization is already a core concept in the reference implementation, there is a strong push from the SCS community to adopt more Kubernetes.
 
@@ -67,7 +67,7 @@ A comparative analysis of Cephadm and Rook highlights the following:
 
 ## Decision
 
-As OSISM will increasingly focus on Kubernetes in the near future, adopting Rook is a more suitable and standardized approach. Moreover, many service providers within the SCS community (including several who deploy OSISM) already have experience with Kubernetes. Regarding the missing OpenStack Keystone integration, we are confident that colleagues, who work on this issue, will provide a solution in a timely manner. We expect that deploying Ceph with Rook will simplify deployment and configuration form the outset.
+As OSISM will increasingly focus on a Kubernetes-centric approach for orchestration in the near future, adopting Rook is a more suitable and standardized approach. Moreover, many service providers within the SCS community (including several who deploy OSISM) already have experience with Kubernetes. Regarding the missing OpenStack Keystone integration, we are confident that colleagues, who work on this issue, will provide a solution in a timely manner. We expect that deploying Ceph with Rook will simplify deployment and configuration form the outset.
 In order to allow for a migration from existing Ceph installations to Rook, we decided to develop a migration tool (called Rookify) for the reference implementation. If the development of Rookify goes beyond the targeted scope of the reference implementation the tool will add value to the Ceph as well as the Rook community.
 
 ## Consequences
