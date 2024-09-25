@@ -61,7 +61,7 @@ def main(argv):
     logger.addHandler(counting_handler)
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:hd", ["os-cloud=", "help", "debug"])
+        opts, args = getopt.gnu_getopt(argv, "c:hdp", ["os-cloud=", "help", "debug", "private"])
     except getopt.GetoptError as exc:
         logger.critical(f"{exc}")
         print_usage()
@@ -74,12 +74,15 @@ def main(argv):
 
     yaml_path = args[0]
     cloud = os.environ.get("OS_CLOUD")
+    private = False
     for opt in opts:
         if opt[0] == "-h" or opt[0] == "--help":
             print_usage()
             return 0
         if opt[0] == "-c" or opt[0] == "--os-cloud":
             cloud = opt[1]
+        if opt[0] == "-p" or opt[0] == "--private":
+            private = True
         if opt[0] == "-d" or opt[0] == "--debug":
             logging.getLogger().setLevel(logging.DEBUG)
 
@@ -115,7 +118,8 @@ def main(argv):
             present_images = conn.list_images(show_all=True)
             by_name = {
                 image.name: image
-                for image in present_images
+                for image in present_images if private or image.visibility == "public" or 
+                                                          image.visibility == "community"
             }
         logger.debug(f"Images present: {', '.join(sorted(by_name))}")
 
