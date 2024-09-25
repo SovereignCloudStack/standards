@@ -26,7 +26,7 @@ These levels can then be used in standards to clearly set the scope that certain
 | Compute             | A generic name for the IaaS service, that manages virtual machines (e.g. Nova in OpenStack).                                             |
 | Network             | A generic name for the IaaS service, that manages network resources (e.g. Neutron in OpenStack).                                         |
 | Storage             | A generic name for the IaaS service, that manages the storage backends and virtual devices (e.g. Cinder in OpenStack).                   |
-| RTO                 | Recovery Time Objective, the maximum amount of time allowed to restore a ressource.                                                      |
+| RTO                 | Recovery Time Objective, the acceptable time needed to restore a ressource.                                                              |
 | Disk                | A physical disk drive (e.g. HDD, SSD) in the infrastructure.                                                                             |
 | Host                | A physical machine in the infrastructure providing computational, storage and/or network connectivity capabilities.                      |
 | Cyber attack/threat | Attacks on the infrastructure through the means of electronic access.                                                                    |
@@ -75,11 +75,12 @@ To differentiate also between the named measures the following table can be used
 ### Failsafe Levels and RTO
 
 As this documents classifies failure case with very broad impacts and it is written in regards of mostly IaaS and KaaS, there cannot be one simple RTO set.
-It should be taken into consideration that the RTO for IaaS and KaaS means to make user data available again through measures within the infrastructure.
+The RTOs will differ for each resource and also between IaaS and KaaS level.
+It should be taken into consideration that the measure to achieve the RTOs for IaaS and KaaS means to make user data available again through measures within the infrastructure.
 But this will not be effective, when there is no backup of the user data or a redundancy of it already in place.
-The different failsafe levels, measures and impacts will lead to very different RTOs.
-For example a storage disk that has a failure will result in an RTO of 0 seconds, when the storage backend uses internal replication and still has two replicas of the user data.
-While in the worst case of a natural disaster, most likely a severe fire, the whole deployment will be lost and if there were no off-site backups done by users there will be no RTO, because the data cannot be recovered anymore.
+So the different failsafe levels, measures and impacts will be needed to define realistic RTOs.
+For example a storage disk that has a failure will not result in a volume gein unavailable and needing a defined RTO, when the storage backend uses internal replication and still has two replicas of the user data.
+While in the worst case of a natural disaster, most likely a severe fire, the whole deployment will be lost and if there were no off-site backups done by users any defined RTO will never be met, because the data cannot be recovered anymore.
 
 [bsi-200-3]: https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Grundschutz/BSI_Standards/standard_200_3.pdf?__blob=publicationFile&v=2
 
