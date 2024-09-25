@@ -4,7 +4,7 @@ type: Supplement
 track: IaaS
 status: Proposal
 supplements:
-  - scs-XXXX-vN-taxonomy-of-failsafe-levels.md
+  - scs-0118-v1-taxonomy-of-failsafe-levels.md
 ---
 
 ## Examples of the impact from certain failure scenarios on Cloud Resources
