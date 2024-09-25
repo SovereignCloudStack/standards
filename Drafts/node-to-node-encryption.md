@@ -18,9 +18,9 @@ natural openvswitch-ipsec solution.
 
 | Term | Meaning |
 |---|---|
-| VM | Virtual machine, alternatively instance, is a virtualized compute resource that functions as a self-contained server for a customer |
-| Node | Physical or virtual machine hosting cloud services and compute instances |
 | CSP | Cloud service provider, in this document it includes also an operator of a private cloud |
+| VM | Virtual machine, alternatively instance, is a virtualized compute resource that functions as a self-contained server for a customer |
+| Node | Machine under CSP administration which hosts cloud services and compute instances |
 
 ## Context
 
@@ -30,9 +30,9 @@ The security of customer/user workloads is one of CSPs main concerns. With
 larger and more diverse cloud instances, parts of the underlying physical
 infrastructure can be outside of CSPs direct control, either when
 interconnecting datacenters via public internet or in the case of renting
-infrastructure from third party. And many security breaches occur due to
+infrastructure from third party. Many security breaches occur due to
 actions of malicious or negligent inhouse operators. While some burden lies
-with customers, which should secure their own workloads CSP should have the
+with customers, which should secure their own workloads, CSP should have the
 option to transparently protect the data pathways between instances, more so
 for private clouds, where CSP and customer are the same entity or parts of the
 same entity.
@@ -47,15 +47,13 @@ In RFC8926[^rfc] it is stated:
 > data leaving the data center network beyond the operator's security domain
 > SHOULD be secured by encryption mechanisms, such as IPsec or other VPN
 > technologies, to protect the communications between the NVEs when they are
-> geographically separated over untrusted network links. Specification of data
-> protection mechanisms employed between data centers is beyond the scope of
-> this document.
+> geographically separated over untrusted network links.
 
 We aren't considering the communication intra node, meaning inside one host
 node between different VMs potentially of multiple tenants as this is a
 question of tenant isolation, not of networking security, and encryption here
 would be possibly a redundant measure. Isolation of VMs is handled by OpenStack
-on multiple levels - VLAN/VxLAN/GRE tunneling, routing rules on networking
+on multiple levels - overlay tunneling protocols, routing rules on networking
 level, network namespaces on kernel level and hypervisor isolation mechanisms.
 All the communication here is existing inside node and any malicious agent with
 high enough access to the node itself to observe/tamper with the internal
@@ -65,17 +63,17 @@ themselves, rendering the encryption ineffective.
 ### Potential threats in detail
 
 We are assuming that:
-* the customer workloads are not executed within SGX or equivalent secure
-  enclaves and aren't using security measures like end-to-end encryption
-  themselves, either relying with security on the CSP or in the case of
-  a private cloud are run by the operator of the cloud
+* the customer workloads are not executed within secure enclaves (e.g. Security
+Guard Extensions (SGX)) and aren't using security measures like end-to-end
+encryption themselves, either relying with security on the CSP or in the case
+of a private cloud are run by the operator of the cloud
 * the CSP OpenStack administrators are deemed trustworthy since they possess
-  root access to the host nodes, with access to keys and certificates, enabling
-  them to bypass any form of internode communication encryption
+root access to the host nodes, with access to keys and certificates, enabling
+them to bypass any form of internode communication encryption
 * a third party or an independent team manages physical network communication
-  between nodes within a colocation setting or the communication passes unsafe
-  public infrastructure in the case of a single stretched instance spanning
-  multiple data centers
+between nodes within a colocation setting or the communication passes unsafe
+public infrastructure in the case of a single stretched instance spanning
+multiple data centers
 
 #### Man in the Middle Attack
 
@@ -143,8 +141,7 @@ network. This deception can manifest in several ways:
 Moreover, when an active interception device is in place, attackers can extend
 their capabilities to traffic filtering. They might selectively delete or alter
 logs and metrics to erase traces of their intrusion or fabricate system
-performance data, thus obscuring the true nature of their activities. For
-instance.
+performance data, thus obscuring the true nature of their activities.
 
 ### Preliminary considerations
 
@@ -273,7 +270,7 @@ Virtual Private Network (VPN) setups. It is an IETF[^ie] specification with
 various open source and commercial implementations. For historical
 reasons[^ipwh] it defines two main transmission protocols
 Authentication Header (AH) and Encapsulating Security Payload (ESP) where only
-the latter provides with authentication and integrity also encryption. The
+the latter provides encryption in addition to authentication and integrity. The
 key negotiations use the IKE(v1/v2) protocol to establish and maintain
 Security Associations (SA).
 
@@ -300,13 +297,14 @@ correctly authenticated data originates.
 > Nova, Ironic, Neutron and Heat to automate cloud management at datacenter
 > scale
 
-This project deployment allows for IPsec[^ip] encryption of node communication.
-When utilized, two types of tunnels are created in overcloud: node-to-node
-tunnels for each two nodes on the same network, for all networks node are on,
-and Virtual IP tunnels. Each node hosting the VIP will open a tunnel for any
-node in the specific network that can properly authenticate. While using
-Ansible, the deployment isn't compatible with kolla-ansible[^ka] and would need
-porting. Also this project retired as of February 2024.
+This project is retired as of February 2024, but its approach was considered
+for adoption.
+
+Its deployment allowed for IPsec[^ip] encryption of node communication. When
+utilized, two types of tunnels were created in overcloud: node-to-node tunnels
+for each two nodes on the same network, for all networks those nodes were on,
+and Virtual IP tunnels. Each node hosting the Virtual IP would open a tunnel
+for any node in the specific network that can properly authenticate.
 
 #### OVN[^ov] + IPsec[^ip]
 
@@ -363,7 +361,7 @@ openstack-ipsec container on each node.
 
 In our second proof of concept, we decided to implement support for
 openstack-ipsec. The initial step involved creating a new container image
-within the kolla[^kl] project specifically for this purpose. However, we
+within the kolla[^kl] project specifically for this purpose.
 
 ##### Architecture
 
@@ -379,19 +377,16 @@ phase it establishes IPSec tunnels between compute nodes by negotiating the
 necessary security parameters (encryption, authentication, etc.). Once the
 tunnels are established, Libreswan[^ls] monitors and manages them, ensuring
 that the encryption keys are periodically refreshed and that the tunnels remain
-up.
+up. It also dynamically adds and removes tunnels based on changes of network
+topology.
 
-A packet originating from a VM on one compute node is processed by OVS and
-encapsulated into a Geneve tunnel. Before the Geneve-encapsulated packet leaves
-the compute node, it passes through the Libreswan process, which applies IPSec
-encryption. The encrypted packet traverses the physical network to the
-destination compute node. On the destination node, Libreswan[^ls] decrypts the
-packet, and OVN[^ov] handles decapsulation and forwards it to the target VM.
-
-OVS database contains the tunnel configurations and a `ovs-monitor-ipsec`
-process reads them, and establishes and monitors the tunnels. For the actual
-key exchange and encryption/decryption of the traffic it communicates with
-Libreswan[^ls], specifically with its main daemon `pluto`.
+A packet originating from a VM on one compute node and destined for a VM on
+a different node is processed by OVS and encapsulated into a Geneve tunnel.
+Before the Geneve-encapsulated packet leaves the compute node, it passes
+through the Libreswan process, which applies IPSec encryption. The encrypted
+packet traverses the physical network to the destination compute node. On the
+destination node, Libreswan[^ls] decrypts the packet, and OVN[^ov] handles
+decapsulation and forwards it to the target VM.
 
 ##### Challanges
 
@@ -431,7 +426,7 @@ encryption for some specific group of nodes, where operator deems it
 detrimental because of them being virtual or where security is already handled
 in some other layer of the stack. This could be implemented as a further
 customization available to the operator to encrypt only some subset of Geneve
-tunnels, or (blacklist, whitelist).
+tunnels, either in blacklist or whitelist manner.
 
 Further refinement is needed to ensure ovs-ctl and the IPsec daemon start and
 configure correctly within the container environment. Exploring alternative
