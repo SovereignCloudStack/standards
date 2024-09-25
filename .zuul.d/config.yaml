@@ -18,6 +18,7 @@
 - job:
     name: scs-check-adr-syntax
     parent: base
+    nodeset: pod-fedora-40
     pre-run: playbooks/pre.yaml
     run: playbooks/adr_syntax.yaml
 - job:
@@ -26,6 +27,7 @@
     secrets:
      - name: clouds_conf
        secret: SECRET_STANDARDS
+    nodeset: pod-fedora-40
     vars:
       preset: default
     pre-run:

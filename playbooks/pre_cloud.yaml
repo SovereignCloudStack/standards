@@ -2,7 +2,6 @@
 - name: Prepare cloud config and ensure clean env
   hosts: all
   roles:
-    - role: ensure-pip  # https://zuul-ci.org/docs/zuul-jobs/latest/python-roles.html#role-ensure-pip
     - role: bindep # https://zuul-ci.org/docs/zuul-jobs/latest/general-roles.html#role-bindep
   tasks:
     - name: Create cloud config dir
@@ -21,7 +20,7 @@
 
     - name: Create secrets dir
       ansible.builtin.file:
-        path: "~/Tests/.secret"
+        path: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/Tests/.secret"
         state: directory
         recurse: true
         mode: "0700"
@@ -30,18 +29,19 @@
       ansible.builtin.copy:
         # the secrets are usually stripped of whitespace, but the final newline is essential here
         content: "{{ clouds_conf.zuul_ci_signing_key + '\n' }}"
-        dest: "~/Tests/.secret/keyfile"
+        dest: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/Tests/.secret/keyfile"
         mode: "0600"
       no_log: true
 
     - name: Create basic_auth token file
       ansible.builtin.copy:
         content: "{{ clouds_conf.zuul_ci_basic_auth }}"
-        dest: "~/Tests/.secret/tokenfile"
+        dest: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/Tests/.secret/tokenfile"
         mode: "0600"
       no_log: true
 
     - name: Clean up any lingering resources from previous run
-      ansible.builtin.shell: >
-        python3 ~/Tests/scs-test-runner.py --config ~/Tests/config.toml --debug cleanup --preset {{ preset }}
+      ansible.builtin.command:
+        cmd: python3 Tests/scs-test-runner.py --config Tests/config.toml --debug cleanup --preset {{ preset }}
+        chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
       changed_when: true
