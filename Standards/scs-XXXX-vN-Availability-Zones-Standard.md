@@ -45,7 +45,7 @@ Availability Zones should represent parts of the same physical deployment that a
 The maximum level of physical independence is achieved through putting physical machines into different fire zones.
 In that case a failure case up to level 3 as described in the taxonomy of failure safety levels document[^1] will not lead to a complete outage of the deployment.
 
-Having Availability Zones represent fire zones will also result in AZs being able to take workload from another AZ in a Failure Case of Level 3.
+Having Availability Zones represent fire zones will also result in AZs being able to take workload from another AZ in a failure case of Level 3.
 So that even the destruction of one Availability Zone will not automatically include the destruction of the other AZs.
 
 :::caution
@@ -145,16 +145,16 @@ CSPs may need to communicate clearly up to which failure safety level their stor
 Virtualized network resources can typically be quickly and easily set up from building instructions.
 Those instructions are stored in the database of the networking service.
 
-If a physical machine, on which certain network resources are set up, is not available anymore, the resources can be rolled out on another physical machine, without being depended on the current situation of the lost resources.
+If a physical machine, on which certain network resources are set up, is not available anymore, the resources can be rolled out on another physical machine, without being dependent on the current situation of the lost resources.
 There might only be a loss of a few packets within the affected network resources.
 
 With having Compute and Storage in a good state (e.g. through having fire zones with a compute AZ each and storage being replicated over the fire zones) there would be no downsides to omitting Availability Zones for the network service.
 It might even be the opposite: Having resources running in certain Availability Zones might prevent them from being scheduled in other AZs[^3].
 As the network resources like routers are bound to an AZ, in a failure case of one AZ all resource definitions might still be there in the database, while the implementation of those resources is gone.
-Trying to rebuild them in another AZ is not possible, because the scheduler will not allow them to be implemented in another AZ, then the one thats present in their definition.
+Trying to rebuild them in another AZ is not possible, because the scheduler will not allow them to be implemented in another AZ, than the one thats present in their definition.
 In a failure case of one AZ this might lead to a lot of manual work to rebuild the SDN from scratch instead of just re-using the definitions.
 
-Because of this severe sideeffect, this standard will make no recommendations about Network AZs.
+Because of this severe side effect, this standard will make no recommendations about Network AZs.
 
 [^3]: [Availability Zones in Neutron for OVN](https://docs.openstack.org/neutron/latest/admin/ovn/availability_zones.html)
 
