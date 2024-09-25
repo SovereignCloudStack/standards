@@ -8,7 +8,7 @@ track: IaaS
 ## Abstract
 
 This decision record evaluates the choice for a modern, future-proof deployment tool for the networked storage solution Ceph in the SCS reference implementation, [OSISM](https://osism.tech/).
-The new deployment tool aims to enhance Kubernetes integration within SCS, potentially allowing users to manage the Ceph cluster with greater ease and efficiency.
+The new deployment tool aims to enhance Kubernetes integration within SCS, potentially allowing providers to manage the Ceph cluster with greater ease and efficiency.
 
 ## Context
 
@@ -59,7 +59,7 @@ A comparative analysis of Cephadm and Rook highlights the following:
 
 **Integration**: Rook provides better integration with cloud-native tools and environments, whereas Cephadm offers a more Ceph-centric management experience.
 
-**Migration**: Rook does not currently provide any migration support, while Cephadm does offer this capability. However, the SCS community is highly supportive of developing a migration tool (Rookify) for Rook, as this would enhance SCS's influence by offering the first migration solution specifically for Rook users.
+**Migration**: Rook does not currently provide any migration support, while Cephadm does offer this capability. However, the SCS community is highly supportive of developing a migration tool (Rookify) for Rook, as this would enhance SCS's influence by offering the first migration solution specifically for Rook providers.
 
 **SCS Community**: An important factor in our decision is the preferences and direction of the SCS community and its providers. There is a noticeable trend towards increased use of Kubernetes within the community. This indicates a preference for deployment tools that integrate well with Kubernetes environments.
 
