@@ -109,6 +109,7 @@ class Config:
                 sys.exit(0)
             elif opt[0] == "-v" or opt[0] == "--verbose":
                 self.verbose = True
+                logger.setLevel(logging.DEBUG)
             elif opt[0] == "--debug":
                 logging.getLogger().setLevel(logging.DEBUG)
             elif opt[0] == "-q" or opt[0] == "--quiet":
@@ -271,7 +272,7 @@ def run_suite(suite: TestSuite, runner: CheckRunner):
     return builder.finalize(permissible_ids=suite.ids)
 
 
-def print_report(subject: str, suite: TestSuite, targets: dict, results: dict):
+def print_report(subject: str, suite: TestSuite, targets: dict, results: dict, verbose=False):
     print(f"{subject} {suite.name}:")
     for tname, target_spec in targets.items():
         failed, missing, passed = suite.select(tname, target_spec).eval_buckets(results)
@@ -283,7 +284,10 @@ def print_report(subject: str, suite: TestSuite, targets: dict, results: dict):
             summary_parts.append(f"{len(missing)} missing")
         verdict += f" ({', '.join(summary_parts)})"
         print(f"- {tname}: {verdict}")
-        for offenders, category in ((failed, 'FAILED'), (missing, 'MISSING')):
+        reportcateg = [(failed, 'FAILED'), (missing, 'MISSING')]
+        if verbose:
+            reportcateg.append((passed, 'PASSED'))
+        for offenders, category in reportcateg:
             if category == 'MISSING' and suite.partial:
                 continue  # do not report each missing testcase if a filter was used
             if not offenders:
@@ -363,7 +367,7 @@ def main(argv):
         if runner.spamminess:
             print("********" * 10)  # 80 characters
         for version, suite, results in report_data:
-            print_report(config.subject, suite, version['targets'], results)
+            print_report(config.subject, suite, version['targets'], results, config.verbose)
     if config.output:
         version_report = {version['version']: results for version, _, results in report_data}
         report = create_report(argv, config, spec, version_report, runner.get_invocations())
