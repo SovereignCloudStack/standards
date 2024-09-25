@@ -26,7 +26,7 @@ These levels can then be used in standards to clearly set the scope that certain
 | Compute             | A generic name for the IaaS service, that manages virtual machines (e.g. Nova in OpenStack).                                             |
 | Network             | A generic name for the IaaS service, that manages network resources (e.g. Neutron in OpenStack).                                         |
 | Storage             | A generic name for the IaaS service, that manages the storage backends and virtual devices (e.g. Cinder in OpenStack).                   |
-| RTO                 | Recovery Time Objective.                                                                                                                 |
+| RTO                 | Recovery Time Objective, the maximum amount of time allowed to restore a ressource.                                                      |
 | Disk                | A physical disk drive (e.g. HDD, SSD) in the infrastructure.                                                                             |
 | Host                | A physical machine in the infrastructure providing computational, storage and/or network connectivity capabilities.                      |
 | Cyber attack/threat | Attacks on the infrastructure through the means of electronic access.                                                                    |
@@ -70,7 +70,7 @@ To differentiate also between the named measures the following table can be used
 | High Availability  | Refers to the availability of resources over an extended period of time unaffected by smaller hardware issues. E.g. achievable through having several instances of resources.      |
 | Disaster Recovery  | Measures taken after an incident to recover data, IaaS resource and maybe even physical resources.                                                                                 |
 | Redundancy         | Having more than one (or two) instances of each resource, to be able to switch to the second resource (could also be a data mirror) in case of a failure.                          |
-| Backup             | A specific copy of user data, that presents all data points at a givne time. Usually managed by users themself, read only and never stored in the same place as the original data. |
+| Backup             | A specific copy of user data, that presents all data points at a given time. Usually managed by users themself, read only and never stored in the same place as the original data. |
 
 ### Failsafe Levels and RTO
 
@@ -176,7 +176,7 @@ There can be measures taken, to reduce the probability and severity of a floodin
 
 | Failure Scenario | Probability | Consequences | Failsafe Level Coverage |
 |----|-----|----|----|
-| Software bug (major) | Low to Medium | permanent loss or compromise of data that trigger the bug up to data on the whole physical machine | L3 |
+| Software bug (major) | Low to Medium | permanent loss or compromise of data that trigger the bug up to data on the whole deployment | L3 |
 | Software bug (minor) | Medium to High | temporary or partial loss or compromise of data | L1 |
 
 Many software components have lots of lines of code and cannot be proven correct in their whole functionality.
@@ -209,7 +209,7 @@ On the other side an attack on an infrastructure cannot be avoided by this.
 Instead every deployment needs to be prepared for an attack all the time, e.g. through security updates.
 The severity of Cyber attacks can also vary broadly: from denial-of-service attacks, which should only be a temporary issue, up until coordinated attacks to steal or destroy data, which could also affect a whole deployment.
 The easier an attack is, the more frequently it will be used by various persons and organizations up to be just daily business.
-Major attacks are often orchestrated and require speicif knowledge e.g. of Day-0 Bugs or the attacked infrastructure.
+Major attacks are often orchestrated and require specific knowledge e.g. of Day-0 Bugs or the attacked infrastructure.
 Due to that nature their occurance is less likely, but the damage done can be far more severe.
 
 ## Consequences
