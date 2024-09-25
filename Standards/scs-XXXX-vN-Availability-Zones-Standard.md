@@ -24,6 +24,7 @@ Therefore this standard will address the minimal requirements that need to be me
 | Storage            | A generic name for the IaaS service, that manages the storage backends and virtual devices (e.g. Cinder in OpenStack).                   |
 | BSI                | German Federal Office for Information Security (Bundesamt für Sicherheit in der Informationstechnik)                                     |
 | CSP                | Cloud Service Provider, provider managing the OpenStack infrastructure.                                                                  |
+| SDN                | Software Defined Network, virtual networks managed by the networking service.                                                            |
 
 ## Motivation
 
