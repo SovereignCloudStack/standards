@@ -700,7 +700,7 @@ def prettyname(flavorname, prefix=""):
         stg += _tbl_out(flavorname.gpu, "perf", True)
         stg += _tbl_out(flavorname.gpu, "gen", True)
         if flavorname.gpu.cu is not None:
-            stg += f"(w/ {flavorname.gpu.cu} CU/EU/SM) "
+            stg += f"(w/ {flavorname.gpu.cu} SMs/CUs/EUs) "
     # IB
     if flavorname.ib:
         stg += "and Infiniband "
