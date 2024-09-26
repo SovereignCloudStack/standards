@@ -45,7 +45,6 @@ def synth_auth_url(auth_url: str):
         re_auth_url = auth_url + "/auth/tokens"
     else:
         re_auth_url = auth_url + "/v3/auth/tokens"
-    print(f"url: {re_auth_url}")
     return re_auth_url
 
 
