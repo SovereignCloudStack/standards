@@ -107,7 +107,7 @@ embedded in the markdown header.
 | Field name      | Requirement                                                                | Description                                                                           |
 | --------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | `type`          | REQUIRED                                                                   | one of `Procedural`, `Standard`, `Decision Record`, or `Supplement`                   |
-| `status`        | REQUIRED                                                                   | one of `Proposal`, `Draft`, `Stable`, `Deprecated`, or `Rejected`                     |
+| `status`        | REQUIRED                                                                   | one of `Draft`, `Stable`, `Deprecated`, or `Rejected`                                 |
 | `track`         | REQUIRED                                                                   | one of `Global`, `IaaS`, `KaaS`, `IAM`, `Ops`                                         |
 | `supplements`   | REQUIRED precisely when `type` is `Supplement`                             | list of documents that are extended by this document (e.g., multiple major versions)  |
 | `deprecated_at`  | REQUIRED if `status` is `Deprecated`                                       | ISO formatted date indicating the date after which the deprecation is in effect       |
@@ -167,11 +167,11 @@ In addition, the following OPTIONAL sections should be considered:
 ## Process
 
 The lifecycle of an SCS document goes through the following phases:
-Proposal, Draft, Stable, Deprecated, and Rejected.
+Draft, Stable, Deprecated, and Rejected.
 
 ```mermaid
 graph TD
-    A[Proposal] -->|Pull Request| B[Draft]
+    A["Draft (Proposal)"] -->|Pull Request| B[Draft]
     B -->|Pull Request| D[Stable]
     B -->|Pull Request| E[Rejected]
     D -->|Pull Request| F[Deprecated]
@@ -195,8 +195,15 @@ Supplements may be kept in Draft state, because they are not authoritative.
 To propose a new SCS document,
 a community participant creates a pull request on GitHub
 against the [standards repository in the SovereignCloudStack organisation][scs-standards-repo].
+In the beginning, the pull request will contain a draft of an SCS document and
+the community participant should present it to the SCS community.
+They may refer to the [SCS Community page](https://docs.scs.community/community/)
+for an overview of applicable means of communication and online meetings
+to get in touch with the SCS community.
+Community participants are encouraged to present their proposal to the SCS community early on.
+Note that the proposal draft's content does not need to be finished in any way at this stage.
 
-The pull request MUST add exactly one SCS document,
+The pull request for the proposal MUST add exactly one SCS document,
 in the `Standards` folder.
 In the proposal phase,
 the document number MUST be replaced with `xxxx` in the file name,
@@ -209,7 +216,7 @@ for a Supplement of `scs-0100-v3-flavor-naming.md`,
 the file name might be `scs-0100-w1-flavor-naming-implementation-testing.md` (note the `w1`!).
 
 The metadata MUST indicate the intended `track` and `type` of the document,
-and the `status` MUST be set to `Proposal`;
+and the `status` MUST be set to `Draft`;
 for a Supplement, the `supplements` field MUST be set
 to a list of documents (usually containing one element).
 
@@ -217,7 +224,8 @@ Upon acceptance by the group of people identified by the `track`,
 a number is assigned
 (the next unused number)
 and the proposer is asked
-to rename the file to replace the `xxxx` with that number.
+to rename the file to replace the `xxxx` with that number
+before the merge of the pull request.
 
 **Note:**
 Documents on the `Design Record` track MAY be proposed or accepted directly into `Stable` state,
