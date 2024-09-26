@@ -22,7 +22,7 @@ SONO_WAIT= 30
 ## Helpers:  							                                                   ##
 ###############################################################################
 
-ifndef IMAGE_VERSION_TAG:
+ifeq ($(IMAGE_VERSION_TAG),)
 	export TAG=dev
 else
 	export TAG=${IMAGE_VERSION_TAG}
