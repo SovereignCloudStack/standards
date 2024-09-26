@@ -104,7 +104,7 @@ dev-clean-sonobuoy: dev-clean-result
 	@sonobuoy status || true
 
 
-dev-purge: kind-init clean-sonobuoy
+dev-purge: kind-init dev-clean-sonobuoy
 	@echo "[Purge everthing...]"
 	@echo "[Deleting kind cluster...]"
 	kind delete cluster --name ${KIND_CLUSTER} || true
