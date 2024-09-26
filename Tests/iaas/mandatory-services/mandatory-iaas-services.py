@@ -37,7 +37,7 @@ def connect(cloud_name: str) -> openstack.connection.Connection:
     )
 
 
-def check_presence_of_mandatory_services(cloud_name: str):
+def check_presence_of_mandatory_services(cloud_name: str, s3_credentials=None):
     try:
         connection = connect(cloud_name)
         services = connection.service_catalog
@@ -49,6 +49,8 @@ def check_presence_of_mandatory_services(cloud_name: str):
             f"Please check your cloud connection and authorization."
         )
 
+    if s3_credentials:
+        mandatory_services.remove("object-store")
     for svc in services:
         svc_type = svc['type']
         if svc_type in mandatory_services:
@@ -94,12 +96,13 @@ def del_container(conn, name):
 def s3_conn(creds, conn=None):
     "Return an s3 client conn"
     vrfy = True
-    cacert = conn.config.config.get("cacert")
-    # TODO: Handle self-signed certs (from ca_cert in openstack config)
-    if cacert:
-        print("WARNING: Trust all Certificates in S3, "
-              f"OpenStack uses {cacert}", file=sys.stderr)
-        vrfy = False
+    if conn:
+        cacert = conn.config.config.get("cacert")
+        # TODO: Handle self-signed certs (from ca_cert in openstack config)
+        if cacert:
+            print("WARNING: Trust all Certificates in S3, "
+                  f"OpenStack uses {cacert}", file=sys.stderr)
+            vrfy = False
     return boto3.resource('s3', aws_access_key_id=creds["AKI"],
                           aws_secret_access_key=creds["SAK"],
                           endpoint_url=creds["HOST"],
@@ -164,7 +167,26 @@ def s3_from_ostack(creds, conn, endpoint):
         # pass
 
 
-def check_for_s3_and_swift(cloud_name: str):
+def check_for_s3_and_swift(cloud_name: str, s3_credentials=None):
+    # If we get credentials we assume, that there is no Swift and only test s3
+    if s3_credentials:
+        try:
+            s3 = s3_conn(s3_credentials)
+        except Exception as e:
+            print(str(e))
+            logger.error("FAIL: Connection to s3 failed.")
+            return 1
+        s3_buckets = list_s3_buckets(s3)
+        if not s3_buckets:
+            s3_buckets = create_bucket(s3, TESTCONTNAME)
+            assert s3_buckets
+        if s3_buckets == [TESTCONTNAME]:
+            del_bucket(s3, TESTCONTNAME)
+        # everything worked, and we don't need to test for Swift:
+        print("SUCCESS: S3 exists")
+        return 0
+    # there were no credentials given, so we assume s3 is accessable via
+    # the service catalog and Swift might exist too
     try:
         connection = connect(cloud_name)
         connection.authorize()
@@ -181,8 +203,8 @@ def check_for_s3_and_swift(cloud_name: str):
     except Exception as e:
         logger.error(
             f"FAIL: No object store endpoint found. No testing for "
-            f"the s3 service possible in '{cloud_name}'. Details: %s", e
-        )
+            f"the s3 service possible. Details: %s", e
+            )
         return 1
     # Get S3 endpoint (swift) and ec2 creds from OpenStack (keystone)
     s3_from_ostack(s3_creds, connection, endpoint)
@@ -217,7 +239,6 @@ def check_for_s3_and_swift(cloud_name: str):
         del_bucket(s3, TESTCONTNAME)
     return result
 
-
 def main():
     parser = argparse.ArgumentParser(
         description="SCS Mandatory IaaS Service Checker")
@@ -225,6 +246,18 @@ def main():
         "--os-cloud", type=str,
         help="Name of the cloud from clouds.yaml, alternative "
         "to the OS_CLOUD environment variable"
+    )
+    parser.add_argument(
+        "--s3-endpoint", type=str,
+        help="URL to the s3 service."
+    )
+    parser.add_argument(
+        "--s3-access", type=str,
+        help="Access Key to connect to the s3 service."
+    )
+    parser.add_argument(
+        "--s3-access-secret", type=str,
+        help="Access secret to connect to the s3 service."
     )
     parser.add_argument(
         "--debug", action="store_true",
@@ -242,8 +275,20 @@ def main():
         "name or pass it via --os-cloud"
     )
 
-    result = check_presence_of_mandatory_services(cloud)
-    result = result + check_for_s3_and_swift(cloud)
+    s3_credentials = None
+    if args.s3_endpoint:
+        if (not args.s3_access) or (not args.s3_access_secret):
+            print("WARNING: test for external s3 needs access key and access secret.")
+        s3_credentials = {
+            "AKI": args.s3_access,
+            "SAK": args.s3_access_secret,
+            "HOST": args.s3_endpoint
+        }
+    elif args.s3_access or args.s3_access_secret:
+        print("WARNING: access to s3 was given, but no endpoint provided.")
+
+    result = check_presence_of_mandatory_services(cloud, s3_credentials)
+    result = result + check_for_s3_and_swift(cloud, s3_credentials)
 
     return result
 
