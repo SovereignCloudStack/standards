@@ -215,7 +215,7 @@ class GPU:
     brand = TblAttr("Brand", {"N": "nVidia", "A": "AMD", "I": "Intel"})
     gen = DepTblAttr("Gen", brand, {
         "N": {'': '(unspecified)', "f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal",
-              "v": "Volta", "t": "Turing", "a": "Ampere", "l": "AdaLovelace", "h": "Hopper"},
+              "v": "Volta", "t": "Turing", "a": "Ampere", "l": "AdaLovelace", "g": "GraceHopper"},
         "A": {'': '(unspecified)', "0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "C/RDNA2/Navi2x",
               "3": "C/RDNA3/Navi3x", "3.5": "C/RDNA3.5", "4": "C/RDNA4"},
         "I": {'': '(unspecified)', "0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1/DG1", "2": "Xe2/Gen12.2",

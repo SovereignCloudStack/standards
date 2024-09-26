@@ -435,7 +435,7 @@ Note that the vendor letter X is mandatory, generation and processing units are 
 | `A`      | AMD    | compute units (CUs)             |
 | `I`      | Intel  | execution units (EUs)           |
 
-For nVidia, the generation N can be f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=turing, a=Ampere, l=Ada Lovelace, h=Hopper, ...,
+For nVidia, the generation N can be f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=turing, a=Ampere, l=Ada Lovelace, g=Grace Hopper, ...,
 for AMD GCN-x=0.x, RDNA1=1, C/RDNA2=2, C/RDNA3=3, C/RDNA3.5=3.5, C/RDNA4=4, ...
 for Intel Gen9=0.9, Xe(12.1/DG1)=1, Xe(12.2)=2, Arc(12.7/DG2)=3 ...
 (Note: This may need further work to properly reflect what's out there.)
