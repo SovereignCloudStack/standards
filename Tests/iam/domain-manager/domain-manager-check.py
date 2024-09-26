@@ -30,8 +30,9 @@ import keystoneauth1
 DEFAULT_PREFIX = "scs-test-"
 
 
-def connect(cloud_name: str,
-            auth_overrides: dict = None) -> openstack.connection.Connection:
+def connect(
+    cloud_name: str, auth_overrides: dict = None
+) -> openstack.connection.Connection:
     """Create a connection to an OpenStack cloud
 
     :param string cloud_name:
@@ -52,20 +53,16 @@ def connect(cloud_name: str,
     """
 
     if auth_overrides:
-        return openstack.connect(
-            cloud=cloud_name,
-            auth=auth_overrides
-        )
+        return openstack.connect(cloud=cloud_name, auth=auth_overrides)
     else:
         return openstack.connect(
             cloud=cloud_name,
         )
 
 
-def connect_to_domain(cloud_name: str,
-                      domain: str,
-                      domain_definitions: list[dict]
-                      ) -> openstack.connection.Connection:
+def connect_to_domain(
+    cloud_name: str, domain: str, domain_definitions: list[dict]
+) -> openstack.connection.Connection:
     domain_def = next(d for d in domain_definitions if d.get("name") == domain)
     auth = {
         "username": domain_def.get("manager").get("username"),
@@ -79,36 +76,41 @@ def connect_to_domain(cloud_name: str,
 
 
 def load_domain_definitions(yaml_path: str) -> list[dict]:
-    assert os.path.exists(yaml_path), (
-        f"Test definition YAML '{yaml_path}' does not exist"
-    )
+    assert os.path.exists(
+        yaml_path
+    ), f"Test definition YAML '{yaml_path}' does not exist"
     # validate the schema of the file after loading it
-    with open(yaml_path, 'r') as f:
+    with open(yaml_path, "r") as f:
         definitions = yaml.safe_load(f)
         assert "domains" in definitions, (
-            f"Test definition YAML '{yaml_path}' "
-            f"is missing a 'domains' section")
+            f"Test definition YAML '{yaml_path}' " f"is missing a 'domains' section"
+        )
 
         assert len(definitions.get("domains")) > 1, (
             f"Test definition YAML '{yaml_path}' "
             f"has less than 2 entries in the 'domains' section; "
-            f"at least 2 are required")
+            f"at least 2 are required"
+        )
 
         for domain in definitions.get("domains"):
             assert "name" in domain, (
                 f"At least one domain in the test definition YAML "
-                f"'{yaml_path}' is missing the 'name' property")
+                f"'{yaml_path}' is missing the 'name' property"
+            )
             domain_name = domain.get("name")
             assert "manager" in domain, (
                 f"Domain '{domain_name}' in the test definition YAML "
-                f"'{yaml_path}' is missing the 'manager' subsection")
+                f"'{yaml_path}' is missing the 'manager' subsection"
+            )
             manager = domain.get("manager")
             assert "username" in manager, (
                 f"Domain '{domain_name}' in the test definition YAML "
-                f"'{yaml_path}' is missing the 'manager.username' property")
+                f"'{yaml_path}' is missing the 'manager.username' property"
+            )
             assert "password" in manager, (
                 f"Domain '{domain_name}' in the test definition YAML "
-                f"'{yaml_path}' is missing the 'manager.password' property")
+                f"'{yaml_path}' is missing the 'manager.password' property"
+            )
         return definitions
 
 
@@ -127,9 +129,9 @@ def test_logins(cloud_name: str, domains: list[dict]):
                 f"properly configured"
             )
         try:
-            assert conn.identity.find_domain(domain_name), (
-                f"Lookup of domain '{domain_name}' returned None"
-            )
+            assert conn.identity.find_domain(
+                domain_name
+            ), f"Lookup of domain '{domain_name}' returned None"
         except Exception as e:
             print(str(e))
             raise Exception(
@@ -149,8 +151,7 @@ def cleanup(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     and are also checked against a specific name prefix that all test resources
     have to avoid accidental deletion of non-test resources.
     """
-    print(f"\nPerforming cleanup for resources with the "
-          f"'{prefix}' prefix ...")
+    print(f"\nPerforming cleanup for resources with the " f"'{prefix}' prefix ...")
     for domain in domains:
         domain_name = domain.get("name")
         print(f"Cleanup starting for domain {domain_name} ...")
@@ -227,7 +228,7 @@ def test_users(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         openstack.exceptions.ForbiddenException,
         conn_a.identity.create_user,
         name=domain_a_user_name,
-        domain_id=domain_a.id
+        domain_id=domain_a.id,
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' cannot "
         f"create user within domain"
@@ -250,19 +251,19 @@ def test_users(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     assert not _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.update_user,
-        domain_a_user.id, email="CHANGED-MAIL"
+        domain_a_user.id,
+        email="CHANGED-MAIL",
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' cannot "
         f"update user '{domain_a_user.name}' within domain"
     )
     # refresh the user object
     domain_a_user = conn_a.identity.find_user(domain_a_user_name)
-    assert domain_a_user is not None and \
-        domain_a_user.email == "CHANGED-MAIL", (
-            f"Policy error: domain manager of domain '{domain_a.name}' cannot "
-            f"successfully update user '{domain_a_user.name}'s email address "
-            f"within domain"
-        )
+    assert domain_a_user is not None and domain_a_user.email == "CHANGED-MAIL", (
+        f"Policy error: domain manager of domain '{domain_a.name}' cannot "
+        f"successfully update user '{domain_a_user.name}'s email address "
+        f"within domain"
+    )
     print("Domain manager can update user metadata within domain: PASS")
 
     # prepare a user in D2 for all subsequent tests
@@ -272,8 +273,7 @@ def test_users(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
 
     # [D1] domain manager can only find users within domain
     assert not _raisesException(
-        openstack.exceptions.ForbiddenException,
-        conn_a.identity.users
+        openstack.exceptions.ForbiddenException, conn_a.identity.users
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' cannot "
         f"list users"
@@ -300,8 +300,7 @@ def test_users(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         f"assign domain-level role to user '{domain_a_user.name}' within "
         f"domain"
     )
-    print("Domain manager can assign domain-level role to user within domain: "
-          "PASS")
+    print("Domain manager can assign domain-level role to user within domain: " "PASS")
     conn_a.identity.unassign_domain_role_from_user(
         domain_a.id, domain_a_user.id, domain_a_role.id
     )
@@ -312,14 +311,15 @@ def test_users(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         f"unassign domain-level role to user '{domain_a_user.name}' within "
         f"domain"
     )
-    print("Domain manager can unassign domain-level role from user within "
-          "domain: PASS")
+    print(
+        "Domain manager can unassign domain-level role from user within " "domain: PASS"
+    )
 
     # [D1] domain manager can delete user within domain
     assert not _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.delete_user,
-        domain_a_user.id
+        domain_a_user.id,
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' cannot "
         f"delete user '{domain_a_user.name}' within domain"
@@ -330,7 +330,7 @@ def test_users(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.create_user,
-        name=f"{domain_a_user_name}-outside-of-a"
+        name=f"{domain_a_user_name}-outside-of-a",
     ), (
         f"Policy error: domain manager of dofmain '{domain_a.name}' is able to "
         f"create user outside of domain scope"
@@ -342,7 +342,7 @@ def test_users(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         openstack.exceptions.ForbiddenException,
         conn_a.identity.create_user,
         name=f"{domain_a_user_name}-in-domain-2",
-        domain_id=domain_b.id
+        domain_id=domain_b.id,
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' is able to "
         f"create user in foreign domain '{domain_b.name}'"
@@ -362,7 +362,7 @@ def test_users(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         openstack.exceptions.ForbiddenException,
         conn_a.identity.update_user,
         domain_b_user.id,
-        email="CHANGED-MAIL"
+        email="CHANGED-MAIL",
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' is able to "
         f"update user '{domain_b_user.name}' of foreign domain '{domain_b.name}'"
@@ -373,7 +373,7 @@ def test_users(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.delete_user,
-        domain_b_user.id
+        domain_b_user.id,
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' is able to "
         f"delete user '{domain_b_user.name}' of foreign domain "
@@ -405,8 +405,10 @@ def test_users(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         f"assign domain-level role to user '{domain_b_user.name}' within "
         f"foreign domain '{domain_b.name}'"
     )
-    print("Domain manager cannot assign domain-level role to user in foreign "
-          "domain: PASS")
+    print(
+        "Domain manager cannot assign domain-level role to user in foreign "
+        "domain: PASS"
+    )
 
     # [D1] domain manager cannot unassign domain-level role from user in D2
     # first prepare the assignment as domain manager of D2 via conn_b
@@ -433,8 +435,10 @@ def test_users(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         f"unassign domain-level role from user '{domain_b_user.name}' within "
         f"foreign domain '{domain_b.name}'"
     )
-    print("Domain manager cannot unassign domain-level role from user in "
-          "foreign domain: PASS")
+    print(
+        "Domain manager cannot unassign domain-level role from user in "
+        "foreign domain: PASS"
+    )
 
 
 def test_projects(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
@@ -470,7 +474,7 @@ def test_projects(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         openstack.exceptions.ForbiddenException,
         conn_a.identity.create_project,
         name=domain_a_project_name,
-        domain_id=domain_a.id
+        domain_id=domain_a.id,
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' cannot "
         f"create project within domain"
@@ -493,19 +497,22 @@ def test_projects(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     assert not _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.update_project,
-        domain_a_project.id, description="CHANGED-DESCRIPTION"
+        domain_a_project.id,
+        description="CHANGED-DESCRIPTION",
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' cannot "
         f"update project '{domain_a_project.name}' within domain"
     )
     # refresh the project object
     domain_a_project = conn_a.identity.find_project(domain_a_project_name)
-    assert domain_a_project is not None and \
-        domain_a_project.description == "CHANGED-DESCRIPTION", (
-            f"Policy error: domain manager of domain '{domain_a.name}' cannot "
-            f"successfully update project '{domain_a_project.name}'s "
-            f"description within domain"
-        )
+    assert (
+        domain_a_project is not None
+        and domain_a_project.description == "CHANGED-DESCRIPTION"
+    ), (
+        f"Policy error: domain manager of domain '{domain_a.name}' cannot "
+        f"successfully update project '{domain_a_project.name}'s "
+        f"description within domain"
+    )
     print("Domain manager can update project metadata within domain: PASS")
 
     # [D1] domain manager can assign project-level role to user within domain
@@ -521,14 +528,13 @@ def test_projects(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         f"assign project-level role to user '{domain_a_user.name}' for "
         f"project '{domain_a_project.name}' within domain"
     )
-    print("Domain manager can assign project-level role to user within domain: "
-          "PASS")
+    print("Domain manager can assign project-level role to user within domain: " "PASS")
 
     # [D1] domain manager can list projects for user in domain
     assert not _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.user_projects,
-        domain_a_user.id
+        domain_a_user.id,
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' cannot "
         f"list projects for user '{domain_a_user.name}' within domain"
@@ -556,14 +562,16 @@ def test_projects(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         f"'{domain_a_user.name}' for project '{domain_a_project.name}' within "
         f"domain"
     )
-    print("Domain manager can unassign project-level role from user within "
-          "domain: PASS")
+    print(
+        "Domain manager can unassign project-level role from user within "
+        "domain: PASS"
+    )
 
     # [D1] domain manager can list projects for user in domain
     assert not _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.delete_project,
-        domain_a_project.id
+        domain_a_project.id,
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' cannot "
         f"delete project '{domain_a_project.name}' within domain"
@@ -587,7 +595,7 @@ def test_projects(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         openstack.exceptions.ForbiddenException,
         conn_a.identity.create_project,
         name=f"{domain_a_project_name}-in-b",
-        domain_id=domain_b.id
+        domain_id=domain_b.id,
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' is able to "
         f"create project in foreign domain '{domain_b.name}'"
@@ -596,8 +604,7 @@ def test_projects(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
 
     # create a project in D2 for further tests
     domain_b_project = conn_b.identity.create_project(
-        name=domain_b_project_name,
-        domain_id=domain_b.id
+        name=domain_b_project_name, domain_id=domain_b.id
     )
 
     # [D1] domain manager cannot discover project in foreign domain D2
@@ -620,7 +627,7 @@ def test_projects(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         openstack.exceptions.ForbiddenException,
         conn_a.identity.update_project,
         domain_b_project.id,
-        description="CHANGED-DESCRIPTION"
+        description="CHANGED-DESCRIPTION",
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' is able to "
         f"update project '{domain_b_project.name}' of foreign domain "
@@ -633,7 +640,7 @@ def test_projects(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.delete_project,
-        domain_b_project.id
+        domain_b_project.id,
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' is able to "
         f"delete project '{domain_b_project.name}' of foreign domain "
@@ -682,8 +689,10 @@ def test_projects(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         f"project '{domain_b_project.name}' of foreign domain "
         f"'{domain_b.name}'"
     )
-    print("Domain manager cannot assign project-level role to user within "
-          "foreign domain: PASS")
+    print(
+        "Domain manager cannot assign project-level role to user within "
+        "foreign domain: PASS"
+    )
 
     # [D1] domain manager cannot unassign project-level role from user in
     # foreign domain (negative test)
@@ -714,8 +723,10 @@ def test_projects(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         f"project '{domain_b_project.name}' within foreign domain "
         f"'{domain_b.name}'"
     )
-    print("Domain manager cannot unassign project-level role from user within "
-          "foreign domain: PASS")
+    print(
+        "Domain manager cannot unassign project-level role from user within "
+        "foreign domain: PASS"
+    )
 
     # [D1] domain manager cannot list projects for a user of foreign domain D2
     #
@@ -726,14 +737,13 @@ def test_projects(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         next,  # the function to be called
-        conn_a.identity.user_projects(domain_b_user.id)  # the argument
+        conn_a.identity.user_projects(domain_b_user.id),  # the argument
     ), (
         f"Policy error: domain manager of domain '{domain_a.name}' is able to "
         f"list projects for user '{domain_b_user.name}' of foreign domain "
         f"'{domain_b.name}'"
     )
-    print("Domain manager cannot list projects for user of foreign domain: "
-          "PASS")
+    print("Domain manager cannot list projects for user of foreign domain: " "PASS")
 
 
 def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
@@ -748,12 +758,10 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     conn_a = connect_to_domain(cloud_name, domain_a_name, domains)
     domain_a = conn_a.identity.find_domain(domain_a_name)
     domain_a_user = conn_a.identity.create_user(
-        name=f"{prefix}domain-a-user-1",
-        domain_id=domain_a.id
+        name=f"{prefix}domain-a-user-1", domain_id=domain_a.id
     )
     domain_a_project = conn_a.identity.create_project(
-        name=f"{prefix}domain-a-project-1",
-        domain_id=domain_a.id
+        name=f"{prefix}domain-a-project-1", domain_id=domain_a.id
     )
     domain_a_role = conn_a.identity.find_role(domains[0].get("member_role"))
 
@@ -762,15 +770,14 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     conn_b = connect_to_domain(cloud_name, domain_b_name, domains)
     domain_b = conn_b.identity.find_domain(domain_b_name)
     domain_b_user = conn_b.identity.create_user(
-        name=f"{prefix}domain-b-user-1",
-        domain_id=domain_b.id
+        name=f"{prefix}domain-b-user-1", domain_id=domain_b.id
     )
 
     # [D1] group creation without specifying domain (negative test)
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.create_group,
-        name=f"{prefix}group-outside-domain-a"
+        name=f"{prefix}group-outside-domain-a",
     ), (
         f"Policy error: domain manager is able to create group without "
         f"specifying domain '{domain_a.name}'"
@@ -782,7 +789,7 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         openstack.exceptions.ForbiddenException,
         conn_a.identity.create_group,
         name=f"{prefix}group-in-wrong-domain",
-        domain_id=domain_b.id
+        domain_id=domain_b.id,
     ), (
         f"Policy error: domain manager of '{domain_a.name}' is able to create "
         f"group in foreign domain '{domain_b.name}'"
@@ -791,12 +798,11 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
 
     # [D1] group creation within domain
     domain_a_group = conn_a.identity.create_group(
-        name=f"{prefix}group-inside-domain-a",
-        domain_id=domain_a.id
+        name=f"{prefix}group-inside-domain-a", domain_id=domain_a.id
     )
-    assert domain_a_group, (
-        f"Domain manager cannot create groups within domain '{domain_a.name}'"
-    )
+    assert (
+        domain_a_group
+    ), f"Domain manager cannot create groups within domain '{domain_a.name}'"
     print("Domain manager can create group within domain: PASS")
 
     # [D2] domain manager does not see group of foreign domain D1
@@ -812,7 +818,7 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         openstack.exceptions.ForbiddenException,
         conn_b.identity.update_group,
         domain_a_group.id,
-        name=f"{prefix}group-RENAMED"
+        name=f"{prefix}group-RENAMED",
     ), (
         f"Policy error: domain manager of '{domain_b.name}' is able to update "
         f"group in foreign domain '{domain_a.name}'"
@@ -823,7 +829,7 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_b.identity.delete_group,
-        domain_a_group.id
+        domain_a_group.id,
     ), (
         f"Policy error: domain manager of '{domain_b.name}' is able to delete "
         f"group in foreign domain '{domain_a.name}'"
@@ -832,18 +838,18 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
 
     # [D2] group creation within domain (prerequisite for subsequent tests)
     domain_b_group = conn_b.identity.create_group(
-        name=f"{prefix}group-inside-domain-b",
-        domain_id=domain_b.id
+        name=f"{prefix}group-inside-domain-b", domain_id=domain_b.id
     )
-    assert domain_b_group, (
-        f"Domain manager cannot create groups within domain '{domain_b.name}'"
-    )
+    assert (
+        domain_b_group
+    ), f"Domain manager cannot create groups within domain '{domain_b.name}'"
 
     # [D1] domain manager can query group relationship of user within domain
     assert not _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.check_user_in_group,
-        domain_a_user.id, domain_a_group.id
+        domain_a_user.id,
+        domain_a_group.id,
     ), (
         f"Policy error: domain manager of '{domain_a.name}' cannot use "
         f"check_user_in_group within domain"
@@ -855,47 +861,55 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.check_user_in_group,
-        domain_b_user.id, domain_a_group.id
+        domain_b_user.id,
+        domain_a_group.id,
     ), (
         f"Policy error: domain manager of '{domain_a.name}' is able to use "
         f"check_user_in_group for user of foreign domain '{domain_b.name}'"
     )
-    print("Domain manager cannot use check_user_in_group "
-          "for user of foreign domain: PASS")
+    print(
+        "Domain manager cannot use check_user_in_group "
+        "for user of foreign domain: PASS"
+    )
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.check_user_in_group,
-        domain_a_user.id, domain_b_group.id
+        domain_a_user.id,
+        domain_b_group.id,
     ), (
         f"Policy error: domain manager of '{domain_a.name}' is able to use "
         f"check_user_in_group for group of foreign domain '{domain_b.name}'"
     )
-    print("Domain manager cannot use check_user_in_group "
-          "for group of foreign domain: PASS")
+    print(
+        "Domain manager cannot use check_user_in_group "
+        "for group of foreign domain: PASS"
+    )
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.check_user_in_group,
-        domain_b_user.id, domain_b_group.id
+        domain_b_user.id,
+        domain_b_group.id,
     ), (
         f"Policy error: domain manager of '{domain_a.name}' is able to use "
         f"check_user_in_group for user and group, both of foreign domain "
         f"'{domain_b.name}'"
     )
-    print("Domain manager cannot use check_user_in_group "
-          "for user and group of foreign domain: PASS")
+    print(
+        "Domain manager cannot use check_user_in_group "
+        "for user and group of foreign domain: PASS"
+    )
 
     # [D1] domain manager can add user to group within domain
     assert not _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.add_user_to_group,
-        domain_a_user.id, domain_a_group.id
+        domain_a_user.id,
+        domain_a_group.id,
     ), (
         f"Policy error: domain manager cannot add user to group within domain "
         f"'{domain_a.name}'"
     )
-    assert conn_a.identity.check_user_in_group(
-        domain_a_user.id, domain_a_group.id
-    ), (
+    assert conn_a.identity.check_user_in_group(domain_a_user.id, domain_a_group.id), (
         f"User '{domain_a_user.name}' was not successfully added to group "
         f"'{domain_a_group.name}' in domain '{domain_a.name}'"
     )
@@ -905,7 +919,8 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.add_user_to_group,
-        domain_a_user.id, domain_b_group.id
+        domain_a_user.id,
+        domain_b_group.id,
     ), (
         f"Policy error: domain manager of '{domain_a.name}' is able to add "
         f"user to group belonging to foreign domain '{domain_b.name}'"
@@ -914,7 +929,8 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.add_user_to_group,
-        domain_b_user.id, domain_a_group.id
+        domain_b_user.id,
+        domain_a_group.id,
     ), (
         f"Policy error: domain manager of '{domain_a.name}' is able to add "
         f"user belonging to foreign domain '{domain_b.name}' to group"
@@ -923,7 +939,8 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.add_user_to_group,
-        domain_b_user.id, domain_b_group.id
+        domain_b_user.id,
+        domain_b_group.id,
     ), (
         f"Policy error: domain manager of '{domain_a.name}' is able to add "
         f"user belonging to foreign domain '{domain_b.name}' to group of foreign "
@@ -935,7 +952,7 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     assert not _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_a.identity.group_users,
-        domain_a_group.id
+        domain_a_group.id,
     ), (
         f"Policy error: domain manager cannot list users for group within "
         f"domain '{domain_a.name}'"
@@ -955,8 +972,7 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     # (do these tests before any other role assignment tests that might succeed
     # because we expect assignment lists to be empty for the negative tests)
     domain_a_project_2 = conn_a.identity.create_project(
-        name=f"{prefix}domain-a-project-2",
-        domain_id=domain_a.id
+        name=f"{prefix}domain-a-project-2", domain_id=domain_a.id
     )
     admin_role = conn_a.identity.find_role("admin")
     assert admin_role is not None, (
@@ -968,32 +984,35 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     )
     # the assign_project_role_to_group() does not raise an exception but should
     # not result in an active role assignment for the admin role
-    assigns = list(conn_a.identity.role_assignments(
-        scope_project_id=domain_a_project_2.id,
-        group_id=domain_a_group.id
-    ))
+    assigns = list(
+        conn_a.identity.role_assignments(
+            scope_project_id=domain_a_project_2.id, group_id=domain_a_group.id
+        )
+    )
     assert len(assigns) == 0, (
         f"Domain Manager of domain '{domain_a.name}' is able to assign 'admin' "
         f"role to group '{domain_a_group.name}' in project "
         f"'{domain_a_project_2.name}'"
     )
-    print("Domain manager cannot assign admin role to group on project level: "
-          "PASS")
+    print("Domain manager cannot assign admin role to group on project level: " "PASS")
     conn_a.identity.assign_domain_role_to_group(
         domain_a.id, domain_a_group.id, admin_role.id
     )
     # the assign_domain_role_to_group() does not raise an exception but should
     # not result in an active role assignment for the admin role
-    assigns = list(conn_a.identity.role_assignments(
-        scope_domain_id=domain_a.id,
-        group_id=domain_a_group.id
-    ))
+    assigns = list(
+        conn_a.identity.role_assignments(
+            scope_domain_id=domain_a.id, group_id=domain_a_group.id
+        )
+    )
     assert len(assigns) == 0, (
         f"Domain Manager of domain '{domain_a.name}' is able to assign 'admin' "
         f"role to group '{domain_a_group.name}' in domain"
     )
-    print("Domain manager cannot assign admin role to group on domain level in "
-          "domain: PASS")
+    print(
+        "Domain manager cannot assign admin role to group on domain level in "
+        "domain: PASS"
+    )
 
     # [D1] domain manager can assign role to group within domain
     # note that assign_domain_role_to_group() does not raise any exception if
@@ -1001,31 +1020,32 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     conn_a.identity.assign_domain_role_to_group(
         domain_a.id, domain_a_group.id, domain_a_role.id
     )
-    assigns = list(conn_a.identity.role_assignments(
-        scope_domain_id=domain_a.id,
-        group_id=domain_a_group.id,
-    ))
+    assigns = list(
+        conn_a.identity.role_assignments(
+            scope_domain_id=domain_a.id,
+            group_id=domain_a_group.id,
+        )
+    )
     assert len(assigns) == 1 and assigns[0].role["id"] == domain_a_role.id, (
         f"The domain role assignment for role '{domain_a_role.name}', domain "
         f"'{domain_a.name}' and group '{domain_a_group.name}' was not successful"
     )
-    print("Domain manager can assign domain-level role to group in domain: "
-          "PASS")
+    print("Domain manager can assign domain-level role to group in domain: " "PASS")
 
     conn_a.identity.assign_project_role_to_group(
         domain_a_project.id, domain_a_group.id, domain_a_role.id
     )
-    assigns = list(conn_a.identity.role_assignments(
-        scope_project_id=domain_a_project.id,
-        group_id=domain_a_group.id
-    ))
+    assigns = list(
+        conn_a.identity.role_assignments(
+            scope_project_id=domain_a_project.id, group_id=domain_a_group.id
+        )
+    )
     assert len(assigns) == 1 and assigns[0].role["id"] == domain_a_role.id, (
         f"The project role assignment for role '{domain_a_role.name}', "
         f"project '{domain_a_project.name}' and group '{domain_a_group.name}' "
         f"in domain '{domain_a.name}' was not successful"
     )
-    print("Domain manager can assign project-level role to group in domain: "
-          "PASS")
+    print("Domain manager can assign project-level role to group in domain: " "PASS")
 
     # [D2] domain manager cannot unassign project-level role from group in
     # foreign domain
@@ -1036,17 +1056,20 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         domain_a_project.id, domain_a_group.id, domain_a_role
     )
     # use connection for D1 to check that the role assignment was not removed
-    assigns = list(conn_a.identity.role_assignments(
-        scope_project_id=domain_a_project.id,
-        group_id=domain_a_group.id
-    ))
+    assigns = list(
+        conn_a.identity.role_assignments(
+            scope_project_id=domain_a_project.id, group_id=domain_a_group.id
+        )
+    )
     assert len(assigns) == 1 and assigns[0].role["id"] == domain_a_role.id, (
         f"Policy error: domain manager of domain '{domain_b.name}' is able to "
         f"unassign project-level role from group within foreign domain "
         f"'{domain_a.name}'"
     )
-    print("Domain manager cannot unassign project-level role from group in "
-          "foreign domain: PASS")
+    print(
+        "Domain manager cannot unassign project-level role from group in "
+        "foreign domain: PASS"
+    )
 
     # [D2] domain manager cannot unassign domain-level role from group in
     # foreign domain
@@ -1057,47 +1080,52 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
         domain_a.id, domain_a_group.id, domain_a_role
     )
     # use connection for D1 to check that the role assignment was not removed
-    assigns = list(conn_a.identity.role_assignments(
-        scope_domain_id=domain_a.id,
-        group_id=domain_a_group.id
-    ))
+    assigns = list(
+        conn_a.identity.role_assignments(
+            scope_domain_id=domain_a.id, group_id=domain_a_group.id
+        )
+    )
     assert len(assigns) == 1 and assigns[0].role["id"] == domain_a_role.id, (
         f"Policy error: domain manager of domain '{domain_b.name}' is able to "
         f"unassign domain-level role from group within foreign domain "
         f"'{domain_a.name}'"
     )
-    print("Domain manager cannot unassign domain-level role from group in "
-          "foreign domain: PASS")
+    print(
+        "Domain manager cannot unassign domain-level role from group in "
+        "foreign domain: PASS"
+    )
 
     # [D1] domain manager can revoke domain-level role from group within domain
     conn_a.identity.unassign_domain_role_from_group(
         domain_a.id, domain_a_group.id, domain_a_role
     )
-    assigns = list(conn_a.identity.role_assignments(
-        scope_domain_id=domain_a.id,
-        group_id=domain_a_group.id
-    ))
+    assigns = list(
+        conn_a.identity.role_assignments(
+            scope_domain_id=domain_a.id, group_id=domain_a_group.id
+        )
+    )
     assert len(assigns) == 0, (
         f"Policy error: domain manager of domain '{domain_a.name}' cannot unassign "
         f"domain-level role from group '{domain_a_group.name}' within domain"
     )
-    print("Domain manager can unassign domain-level role from group in "
-          "domain: PASS")
+    print("Domain manager can unassign domain-level role from group in " "domain: PASS")
 
     # [D1] domain manager can revoke project-level role from group within domain
     conn_a.identity.unassign_project_role_from_group(
         domain_a_project.id, domain_a_group.id, domain_a_role
     )
-    assigns = list(conn_a.identity.role_assignments(
-        scope_project_id=domain_a_project.id,
-        group_id=domain_a_group.id
-    ))
+    assigns = list(
+        conn_a.identity.role_assignments(
+            scope_project_id=domain_a_project.id, group_id=domain_a_group.id
+        )
+    )
     assert len(assigns) == 0, (
         f"Policy error: domain manager of domain '{domain_a.name}' cannot unassign "
         f"project-level role from group '{domain_a_group.name}' within domain"
     )
-    print("Domain manager can unassign project-level role from group in "
-          "domain: PASS")
+    print(
+        "Domain manager can unassign project-level role from group in " "domain: PASS"
+    )
 
     # [D2] domain manager cannot query user lists of groups of foreign domains
     users_seen_by_a = list(conn_a.identity.group_users(domain_a_group.id))
@@ -1113,7 +1141,7 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         next,  # the function to be called
-        conn_b.identity.group_users(domain_a_group.id)  # the argument
+        conn_b.identity.group_users(domain_a_group.id),  # the argument
     ), (
         f"Policy error: domain manager of '{domain_b.name}' is able to list "
         f"users for group '{domain_a_group.name}' of foreign domain "
@@ -1125,20 +1153,20 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_b.identity.remove_user_from_group,
-        domain_a_user.id, domain_a_group.id
+        domain_a_user.id,
+        domain_a_group.id,
     ), (
         f"Policy error: domain manager of '{domain_b.name}' is able to remove "
         f"user '{domain_a_user.name}' from group '{domain_a_group.name}' "
         f"within foreign domain '{domain_a.name}'"
     )
-    print("Domain manager cannot remove user from group in foreign domain: "
-          "PASS")
+    print("Domain manager cannot remove user from group in foreign domain: " "PASS")
 
     # [D2] domain manager cannot delete group in foreign domain
     assert _raisesException(
         openstack.exceptions.ForbiddenException,
         conn_b.identity.delete_group,
-        domain_a_group.id
+        domain_a_group.id,
     ), (
         f"Policy error: domain manager of '{domain_b.name}' is able to delete "
         f"group '{domain_a_group.name}' of foreign domain '{domain_a.name}'"
@@ -1149,41 +1177,46 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
     #
     # as conn_a create a dedicated group in D1 for this test without any roles
     domain_a_group_2 = conn_a.identity.create_group(
-        name=f"{prefix}secondary-group-inside-domain-a",
-        domain_id=domain_a.id
+        name=f"{prefix}secondary-group-inside-domain-a", domain_id=domain_a.id
     )
     # as conn_b attempt to add project-level role
     conn_b.identity.assign_project_role_to_group(
         domain_a_project.id, domain_a_group_2.id, domain_a_role.id
     )
     # as conn_a verify that no role assignment was added
-    assigns = list(conn_a.identity.role_assignments(
-        scope_project_id=domain_a_project.id,
-        group_id=domain_a_group_2.id
-    ))
+    assigns = list(
+        conn_a.identity.role_assignments(
+            scope_project_id=domain_a_project.id, group_id=domain_a_group_2.id
+        )
+    )
     assert len(assigns) == 0, (
         f"Domain Manager of domain '{domain_b.name}' is able to assign "
         f"project-level role to group '{domain_a_group_2.name}' in project "
         f"'{domain_a_project.name}' of foreign domain '{domain_a.name}'"
     )
-    print("Domain manager cannot assign project-level role to group in "
-          "foreign domain: PASS")
+    print(
+        "Domain manager cannot assign project-level role to group in "
+        "foreign domain: PASS"
+    )
     # as conn_b attempt to add domain-level role
     conn_b.identity.assign_domain_role_to_group(
         domain_a.id, domain_a_group_2.id, domain_a_role.id
     )
     # as conn_a verify that no role assignment was added
-    assigns = list(conn_a.identity.role_assignments(
-        scope_domain_id=domain_a.id,
-        group_id=domain_a_group_2.id
-    ))
+    assigns = list(
+        conn_a.identity.role_assignments(
+            scope_domain_id=domain_a.id, group_id=domain_a_group_2.id
+        )
+    )
     assert len(assigns) == 0, (
         f"Domain Manager of domain '{domain_b.name}' is able to assign "
         f"domain-level role to group '{domain_a_group_2.name}' within foreign "
         f"domain '{domain_a.name}'"
     )
-    print("Domain manager cannot assign domain-level role to group in "
-          "foreign domain: PASS")
+    print(
+        "Domain manager cannot assign domain-level role to group in "
+        "foreign domain: PASS"
+    )
 
     # [D1] domain manager can delete group within domain
     assert conn_a.identity.find_group(domain_a_group.id), (
@@ -1200,41 +1233,47 @@ def test_groups(cloud_name: str, domains: list[dict], prefix=DEFAULT_PREFIX):
 
 
 def main():
-    domain_yaml_path = "./domain-manager-test.yaml"
+    domain_yaml_path = (
+        f"{os.path.dirname(os.path.abspath(__file__))}/domain-manager-test.yaml"
+    )
     parser = argparse.ArgumentParser(
-        description="SCS Domain Manager Conformance Checker")
+        description="SCS Domain Manager Conformance Checker"
+    )
     parser.add_argument(
-        "--os-cloud", type=str,
+        "--os-cloud",
+        type=str,
         help="Name of the cloud from clouds.yaml, alternative "
-        "to the OS_CLOUD environment variable"
+        "to the OS_CLOUD environment variable",
     )
     parser.add_argument(
-        "--domain-config", type=str,
+        "--domain-config",
+        type=str,
         help=f"Path to the YAML file containing the domain definitions and "
-        f"domain manager credentials for testing (default: {domain_yaml_path})"
+        f"domain manager credentials for testing (default: {domain_yaml_path})",
     )
     parser.add_argument(
-        "--prefix", type=str,
+        "--prefix",
+        type=str,
         default=DEFAULT_PREFIX,
         help=f"OpenStack resource name prefix for all resources to be created "
         f"and/or cleaned up by this script within the configured domains "
-        f"(default: '{DEFAULT_PREFIX}')"
+        f"(default: '{DEFAULT_PREFIX}')",
     )
     parser.add_argument(
-        "--cleanup-only", action="store_true",
+        "--cleanup-only",
+        action="store_true",
         help="Instead of executing tests, cleanup all resources "
         "with the prefix specified via '--prefix' (or its default) "
-        "within the defined domains"
+        "within the defined domains",
     )
     parser.add_argument(
-        "--debug", action="store_true",
-        help="Enable OpenStack SDK debug logging"
+        "--debug", action="store_true", help="Enable OpenStack SDK debug logging"
     )
     args = parser.parse_args()
     openstack.enable_logging(debug=args.debug)
     prefix = args.prefix
-    if not prefix.endswith('-'):
-        prefix += '-'
+    if not prefix.endswith("-"):
+        prefix += "-"
     if args.domain_config:
         domain_yaml_path = args.domain_config
 

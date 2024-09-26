@@ -2,10 +2,10 @@ domains:
   - name: "scs-test-domain-a"
     manager:
       username: "scs-test-domain-a-manager"
-      password: "foobar123"
+      password: "nomoresecret"
     member_role: "member"
   - name: "scs-test-domain-b"
     manager:
       username: "scs-test-domain-b-manager"
-      password: "foobar123"
+      password: "nomoresecret"
     member_role: "member"
