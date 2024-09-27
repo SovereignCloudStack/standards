@@ -168,8 +168,7 @@ In Neutron, this can be done by activating either the `subnet_dns_publish_fixed_
 
 ## Conformance Tests
 
-Conformance tests verify the existence of necessary APIs and API extensions as mandated by the standard.
+Most of the guidelines in this standard are not mandatory.
+The only hard requirement for any SCS cloud is that `dnsmasq_local_resolv` must be disabled in Neutron, which cannot be tested from outside of the infrastructure.
 
-There is a test suite in [`dns-extensions-check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/dns-extensions/dns-extensions-check.py).
-The test suite connects to the OpenStack API and queries the applicable APIs and extensions related to the DNS features.
-Please consult the associated [README.md](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/dns-extensions/README.md) for detailed setup and testing instructions.
+As such, there are currently no applicable conformance tests for this standard that can be executed via public interfaces of an SCS cloud.
