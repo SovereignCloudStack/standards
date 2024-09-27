@@ -44,9 +44,11 @@ The standard should make sure that a specified level of DNS functionality can be
 #### Making Designate mandatory
 
 To offer a consistent feature set to customers, the SCS project could consider to make Designate mandatory in a sense that SCS-compliant clouds would need to integrate the service, make it available to customers and properly configure it for publishing DNS records.
-This would offer easy DNS-as-a-Service functionality to customers.
+This would offer easy DNS-as-a-Service (DNSaaS) functionality to customers.
 
 However, this would also require solid DNS expertise at CSP-side to properly set up and integrate Designate and DNS zones as Designate does not act as a full DNS server on its own but instead relies on external DNS providers or self-hosted DNS infrastructures that the CSP needs to integrate into it.
+
+Furthermore, the CSP will need to be aware of threats like [DNS Zone Squatting](https://docs.openstack.org/designate/2024.1/admin/production-guidelines.html#dns-zone-squatting) and [DNS Cache Poisoning](https://docs.openstack.org/designate/2024.1/admin/production-guidelines.html#dns-cache-poisoning) when offering DNSaaS via Designate and mitigate them, further increasing the burden on the CSP.
 
 #### Mandating the use of DNSSEC
 
@@ -149,6 +151,8 @@ A CSP MAY choose this setting freely but SHOULD NOT change it after the initial 
 The following section only applies to SCS clouds which include the DNS-as-a-Service functionality for customers via the [OpenStack DNS v2 API](https://docs.openstack.org/api-ref/dns/dns-api-v2-index.html), e.g., through Designate.
 All guidelines above still apply.
 
+When providing a service like Designate, it MUST be ensured that threats like [DNS Zone Squatting](https://docs.openstack.org/designate/2024.1/admin/production-guidelines.html#dns-zone-squatting) and [DNS Cache Poisoning](https://docs.openstack.org/designate/2024.1/admin/production-guidelines.html#dns-cache-poisoning) are considered and mitigated where possible.
+
 In the Networking API, the "dns-domain-ports" extension MUST be enabled to offer the full range of DNS record settings for both ports and networks.
 This is implemented by the `dns_domain_ports` Neutron extension driver for the ML2 plugin.
 See the Internal DNS section above for an example on how to enable an extension driver.
@@ -158,6 +162,7 @@ In Neutron, this can be done by activating either the `subnet_dns_publish_fixed_
 
 ## Related Documents
 
+- [OpenStack Designate Production Guidelines](https://docs.openstack.org/designate/latest/admin/production-guidelines.html)
 - [OpenStack User Guide for basic usage of DNS-as-a-Service with Neutron and Nova resources](https://docs.openstack.org/designate/latest/user/neutron-integration.html)
 - [OpenStack Configuration and User Guide for various DNS-as-a-Service scenarios in Neutron](https://docs.openstack.org/neutron/latest/admin/config-dns-int-ext-serv.html)
 
