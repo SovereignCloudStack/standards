@@ -365,6 +365,71 @@ func Test_scs_0217_sonobuoy_Authorization_Methods(t *testing.T) {
 	testenv.Test(t, f.Feature())
 }
 
+// Test_scs_0217_sonobuoy_Authentication_Methods checks if at least two authentication methods are enabled in the cluster,
+// one of which MUST be Service Account Tokens, to provide full functionality to Pods.
+func Test_scs_0217_sonobuoy_Authentication_Methods(t *testing.T) {
+	f := features.New("authentication methods").Assess(
+		"At least two authentication methods must be enabled, one of which MUST be Service Account Tokens",
+		func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+			restConf, err := rest.InClusterConfig()
+			if err != nil {
+				t.Fatal("failed to create rest config:", err)
+			}
+
+			kubeClient, err := kubernetes.NewForConfig(restConf)
+			if err != nil {
+				t.Fatal("failed to create Kubernetes client:", err)
+			}
+
+			podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), v1.ListOptions{
+				LabelSelector: "component=kube-apiserver",
+			})
+			if err != nil {
+				t.Fatal("failed to list kube-apiserver pods:", err)
+			}
+
+			// Check each kube-apiserver pod for authentication modes
+			for _, pod := range podList.Items {
+				t.Logf("Checking pod: %s for authentication methods", pod.Name)
+
+				for _, container := range pod.Spec.Containers {
+					// Check for the --authentication-token-webhook and --service-account-issuer flags in the container's command
+					authMethodsFound := map[string]bool{
+						"ServiceAccountTokens": false,
+						"OtherAuthMethod":      false,
+					}
+
+					for _, cmd := range container.Command {
+						// Check for Service Account Tokens (--service-account-issuer)
+						if strings.Contains(cmd, "--service-account-issuer=") {
+							authMethodsFound["ServiceAccountTokens"] = true
+						}
+						// Check for other authentication methods like --authentication-token-webhook-config-file or --oidc-issuer-url
+						if strings.Contains(cmd, "--authentication-token-webhook-config-file=") || strings.Contains(cmd, "--oidc-issuer-url=") {
+							authMethodsFound["OtherAuthMethod"] = true
+						}
+					}
+
+					// Check if both authentication methods are present
+					if authMethodsFound["ServiceAccountTokens"] && authMethodsFound["OtherAuthMethod"] {
+						t.Logf("Both authentication methods (Service Account Tokens and another method) are enabled")
+					} else {
+						if !authMethodsFound["ServiceAccountTokens"] {
+							t.Errorf("Error: Service Account Tokens are not enabled")
+						}
+						if !authMethodsFound["OtherAuthMethod"] {
+							t.Errorf("Error: No other authentication method (Token Webhook or OIDC) is enabled")
+						}
+					}
+				}
+			}
+
+			return ctx
+		})
+
+	testenv.Test(t, f.Feature())
+}
+
 // checkPortOpen tries to establish a TCP connection to the given IP and port.
 // It returns true if the port is open and false if the connection is refused or times out.
 func checkPortOpen(ip, port string, timeout time.Duration) bool {
