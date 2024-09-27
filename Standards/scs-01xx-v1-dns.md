@@ -123,7 +123,7 @@ The *DNS server setting* refers to the following:
 
 #### DNS Extensions
 
-In the Networking API, the "dns-integration" extension MUST be enabled to offer internal DNS resolution.
+In the Networking API, the "dns-integration" extension SHOULD be enabled to offer internal DNS resolution.
 
 For Neutron, this can implemented by enabling one of the following extension drivers:
 
@@ -153,7 +153,7 @@ All guidelines above still apply.
 
 When providing a service like Designate, it MUST be ensured that threats like [DNS Zone Squatting](https://docs.openstack.org/designate/2024.1/admin/production-guidelines.html#dns-zone-squatting) and [DNS Cache Poisoning](https://docs.openstack.org/designate/2024.1/admin/production-guidelines.html#dns-cache-poisoning) are considered and mitigated where possible.
 
-In the Networking API, the "dns-domain-ports" extension MUST be enabled to offer the full range of DNS record settings for both ports and networks.
+In the Networking API, the "dns-domain-ports" extension SHOULD be enabled to offer the full range of DNS record settings for both ports and networks.
 This is implemented by the `dns_domain_ports` Neutron extension driver for the ML2 plugin.
 See the Internal DNS section above for an example on how to enable an extension driver.
 
