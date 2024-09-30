@@ -38,5 +38,5 @@ It is still required to document the existence of fire zones and the correct con
 
 ## Physical Audits
 
-In cases where it is reasonable to mistrust the provided documentation, a physical audit by a natural person - called auditor - send by the OSBA (?) should be performed.
+In cases where it is reasonable to mistrust the provided documentation, a physical audit by a natural person - called auditor - send by e.g. the [OSBA](https://osb-alliance.de/) should be performed.
 The CSP of the deployment, which needs such an audit, should grant access to the auditor to the physical infrastructure and should show them all necessary IaaS-Layer configurations, that are needed to verify compliance to this standard.
