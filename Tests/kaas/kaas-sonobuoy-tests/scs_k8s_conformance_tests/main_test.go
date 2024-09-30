@@ -54,10 +54,10 @@ func TestMain(m *testing.M) {
 
   case "usecluster":
     log.Println("Use existing k8s cluster for the test")
-    log.Println("TO_BE_IMPLEMENTED")
-	  //~ testenv = env.NewFromFlags()
+    log.Println("Not Yet Implemented")
+    //~ testenv = env.NewFromFlags()
     //~ KubeConfig:= os.Getenv(KUBECONFIGFILE)
-	  //~ testenv = env.NewWithKubeConfig(KubeConfig)
+    //~ testenv = env.NewWithKubeConfig(KubeConfig)
 
   default:
 	  // Assume we are running in the cluster as a Sonobuoy plugin.
