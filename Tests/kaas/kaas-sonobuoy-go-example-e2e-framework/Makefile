@@ -57,6 +57,7 @@ dev-prerequests:
 	@docker version
 	@sonobuoy version --short
 	@go version
+	@docker buildx version
 
 
 dev-setup: kind-init
