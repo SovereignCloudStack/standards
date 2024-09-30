@@ -189,6 +189,12 @@ This list is decisive for the standard on roles as all applicable services need 
 
 **Link:** [SCS Standards: Domain Manager configuration for Keystone](https://docs.scs.community/standards/scs-0302-v1-domain-manager-role)
 
+### SCS Key Manager standard role adjustment
+
+**Description:** Implementation notes of the [SCS Key Manager standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0116-v1-key-manager-standard.md) that describe a policy adjustment to redirect the "creator" role to the "member" role for Key Manager setups not yet using the `enforce_new_defaults` option in order to enable generic project members to manage secrets and access encryption functionalities.
+
+**Link:** [SCS Standards: Key Manager Standard Implementation Notes](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0116-w1-key-manager-implementation-testing.md#policies)
+
 ### Consistent and Secure Default RBAC
 
 **Description:** Upstream rework of the default role definitions and hierarchy across all OpenStack services.
