@@ -34,13 +34,6 @@ For test development with Sonobuoy, [KinD](https://kind.sigs.k8s.io/) is used as
     make dev-setup
     ```
 
-* (Optional): Set env
-
-    ```bash
-    export TEST_STANDARD=<standard number code>
-    ```
-
-
 1. Build the image and upload it to the KinD cluster
 
     ```bash
@@ -87,3 +80,13 @@ Finnaly to remove the kind cluster simply use:
 ```bash
 make dev-purge
 ```
+
+## Execution of only certain test functions for development purposes
+
+```bash
+export TESTFUNCTION_CODE=<standard number code>
+make test-function
+```
+
+
+

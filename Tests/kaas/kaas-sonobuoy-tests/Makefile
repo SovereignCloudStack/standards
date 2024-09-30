@@ -16,7 +16,7 @@ PLUGIN_NAME="scs-conformance-sonobuoy-plugin"
 PLUGIN_FILE="${PLUGIN_NAME}.yaml"
 KIND_CONFIG_FILE="kind_config.yaml"
 
-SONO_WAIT= 30
+SONO_WAIT= 10
 
 ###############################################################################
 ## Helpers:  							                                                   ##
@@ -69,7 +69,6 @@ dev-build: container-init
 dev-run:
 	@echo "[Running sonobuoy...]"
 	@sonobuoy run -p ${PLUGIN_FILE} --wait=${SONO_WAIT}
-	@sonobuoy status
 
 
 dev-run-background:
@@ -85,12 +84,21 @@ dev-result: dev-clean-result
 	mkdir results
 	tar -xf *.tar.gz -C results
 	cat results/plugins/scs-kaas-conformance/sonobuoy_results.yaml | yq
-	cat results/plugins/scs-kaas-conformance/results/global/out.json | jq
+	cat results/plugins/scs-kaas-conformance/results/global/out.json | jq '.Output'
 	@echo "[Displaying results...]"
 	sonobuoy results *.tar.gz
 
 
 dev-rerun: dev-clean-sonobuoy dev-build dev-run dev-result
+
+
+test-function:
+	@echo "only run tests for: $${TESTFUNCTION_CODE}"
+	DEVELOPMENT_MODE=createcluster go test -run=$${TESTFUNCTION_CODE}  ./... || true
+
+
+lint:
+	@echo "NOT YET IMPLEMENTED"
 
 
 dev-clean-result:
@@ -101,7 +109,6 @@ dev-clean-result:
 dev-clean-sonobuoy: dev-clean-result
 	@echo "[Cleanup sonobuoy environment from cluster...]"
 	@sonobuoy delete --all --wait || true
-	@sonobuoy status || true
 
 
 dev-purge: kind-init dev-clean-sonobuoy
