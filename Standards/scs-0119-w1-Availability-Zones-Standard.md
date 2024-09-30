@@ -26,7 +26,7 @@ For each deployment, that uses more than a single Availability Zone, the CSP has
 5. The redundancy in core routers within each AZ MUST be documented.
 
 All of these requirements will either not change at all like the fire zones or it is very unlikely for them to change like redundant internet connection.
-Because of this documentation must only be provided in thw following cases:
+Because of this documentation must only be provided in the following cases:
 
 1. When a new deployment with multiple AZs should be tested for compliance.
 2. When there are physical changes in a deplyoment, which already provided the documentation: the changes needs to be documented and provided as soon as possible.
