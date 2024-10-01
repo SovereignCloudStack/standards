@@ -54,7 +54,7 @@ Thus this option can be dicarded.
 While follwoing closely to the newest releases could be advised, there are several downsides to requiring this workflow, even if it would be only for SLURP releases.
 Following the reference implementation for example would also lead into being a little bit behind the newest release.
 But this is not as bad as it may seem to be, because security related fixes and bug fixes are backported to older but still `maintained` releases.
-Which releases still are maintained is stated [here](https://releases.openstack.org).
+Which releases still are maintained can be looked up at the releases page from OpenStack[^1].
 
 Allowing maintained versions would give CSPs a little bit more time to update and test their environments, while still receiving relevant security updates and bug fixes.
 Also CSPs that want to become scs-compliant may not have the burden to upgrade their deployments, but can test before an upgrade, where they need to put in additional work to become scs-compliant.
