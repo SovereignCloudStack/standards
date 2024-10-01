@@ -430,6 +430,33 @@ func Test_scs_0217_sonobuoy_Authentication_Methods(t *testing.T) {
 	testenv.Test(t, f.Feature())
 }
 
+// Test_scs_0217_etcd_tls checks if communication with etcd is secured with TLS for both peer- and cluster-communication.
+func Test_scs_0217_etcd_tls_communication(t *testing.T) {
+	f := features.New("etcd security").Assess(
+		"Communication with etcd MUST be secured with TLS for both peer- and cluster-communication",
+		func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+			restConf, err := rest.InClusterConfig()
+			if err != nil {
+				t.Fatal("failed to create rest config:", err)
+			}
+
+			kubeClient, err := kubernetes.NewForConfig(restConf)
+			if err != nil {
+				t.Fatal("failed to create Kubernetes client:", err)
+			}
+
+			// Check kube-apiserver communication with etcd
+			checkKubeAPIServerETCDTLS(t, kubeClient)
+
+			// Check etcd peer communication for TLS
+			checkETCDPeerCommunicationTLS(t, kubeClient)
+
+			return ctx
+		})
+
+	testenv.Test(t, f.Feature())
+}
+
 // checkPortOpen tries to establish a TCP connection to the given IP and port.
 // It returns true if the port is open and false if the connection is refused or times out.
 func checkPortOpen(ip, port string, timeout time.Duration) bool {
@@ -683,6 +710,66 @@ func checkAuthorizationmethods(t *testing.T, kubeClient *kubernetes.Clientset) {
 			// If the --authorization-mode flag is not found
 			if !authModeFound {
 				t.Errorf("Error: --authorization-mode flag not found in api-server pod: %s", pod.Name)
+			}
+		}
+	}
+}
+
+// checkKubeAPIServerETCDTLS checks whether the kube-apiserver communicates with etcd over TLS.
+func checkKubeAPIServerETCDTLS(t *testing.T, kubeClient *kubernetes.Clientset) {
+	// List kube-apiserver pods
+	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), v1.ListOptions{
+		LabelSelector: "component=kube-apiserver",
+	})
+	if err != nil {
+		t.Fatal("failed to list kube-apiserver pods:", err)
+	}
+
+	// Check each kube-apiserver pod
+	for _, pod := range podList.Items {
+		for _, container := range pod.Spec.Containers {
+			cmdFound := false
+			for _, cmd := range container.Command {
+				// Check for etcd certificates and key flags
+				if strings.Contains(cmd, "--etcd-certfile") && strings.Contains(cmd, "--etcd-keyfile") && strings.Contains(cmd, "--etcd-cafile") {
+					t.Logf("kube-apiserver communicates with etcd using TLS in container: %s of pod: %s", container.Name, pod.Name)
+					cmdFound = true
+					break
+				}
+			}
+
+			if !cmdFound {
+				t.Errorf("Error: kube-apiserver does not use TLS for etcd communication in container: %s of pod: %s", container.Name, pod.Name)
+			}
+		}
+	}
+}
+
+// checkETCDPeerCommunicationTLS checks whether etcd peer communication is secured with TLS.
+func checkETCDPeerCommunicationTLS(t *testing.T, kubeClient *kubernetes.Clientset) {
+	// List etcd pods
+	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), v1.ListOptions{
+		LabelSelector: "component=etcd",
+	})
+	if err != nil {
+		t.Fatal("failed to list etcd pods:", err)
+	}
+
+	// Check each etcd pod
+	for _, pod := range podList.Items {
+		for _, container := range pod.Spec.Containers {
+			cmdFound := false
+			for _, cmd := range container.Command {
+				// Check for etcd peer certificate and key flags
+				if strings.Contains(cmd, "--peer-cert-file") && strings.Contains(cmd, "--peer-key-file") && strings.Contains(cmd, "--peer-client-cert-auth") {
+					t.Logf("Etcd peer communication is secured with TLS in container: %s of pod: %s", container.Name, pod.Name)
+					cmdFound = true
+					break
+				}
+			}
+
+			if !cmdFound {
+				t.Errorf("Error: etcd peer communication is not secured with TLS in container: %s of pod: %s", container.Name, pod.Name)
 			}
 		}
 	}
