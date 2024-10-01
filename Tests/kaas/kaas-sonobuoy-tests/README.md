@@ -87,6 +87,3 @@ make dev-purge
 export TESTFUNCTION_CODE=<standard number code>
 make test-function
 ```
-
-
-
