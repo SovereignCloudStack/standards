@@ -1,6 +1,8 @@
-"""Mandatory APIs checker
+"""Key Manager service checker
 This script retrieves the endpoint catalog from Keystone using the OpenStack
-SDK and checks whether a key manager APi endpoint is present.
+SDK and checks whether a key manager API endpoint is present.
+It then checks, whether a user with the maximum of a member role can create secrets.
+This will only work after policy adjustments or with the new secure RBAC roles and policies.
 The script relies on an OpenStack SDK compatible clouds.yaml file for
 authentication with Keystone.
 """
