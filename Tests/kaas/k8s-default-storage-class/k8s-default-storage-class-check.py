@@ -28,6 +28,7 @@ import logging
 import os
 
 from kubernetes import client
+from kubernetes.client.rest import ApiException
 from helper import gen_sonobuoy_result_file
 from helper import SCSTestException
 from helper import initialize_logging
@@ -39,6 +40,10 @@ import logging.config
 logger = logging.getLogger("k8s-default-storage-class-check")
 
 NUM_RETRIES = 30
+NAMESPACE = "default"
+PVC_NAME = "test-pvc"
+PV_NAME = "test-pv"
+POD_NAME = "test-pod"
 
 def check_default_storageclass(k8s_client_storage):
     api_response = k8s_client_storage.list_storage_class(_preload_content=False)
@@ -73,6 +78,13 @@ def check_default_storageclass(k8s_client_storage):
     logger.info(f"One default Storage Class found:'{default_storage_class}'")
     return default_storage_class
 
+def cleanup(k8s_api_instance,namespace, pod_name, pvc_name):
+    logger.debug(f"delete pod:{pod_name}")
+    api_response = k8s_api_instance.delete_namespaced_pod(pod_name, namespace)
+    logger.debug(f"delete pvc:{pvc_name}")
+    api_response = k8s_api_instance.delete_namespaced_persistent_volume_claim(
+        pvc_name, namespace
+    )
 
 def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_class):
     """
@@ -81,25 +93,10 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
     3. Check if PV got succesfully created using ReadWriteOnce
     4. Delete resources used for testing
     """
-
-    # 0. Define CleanUp
-    def cleanup():
-        logger.debug(f"delete pod:{pod_name}")
-        api_response = k8s_api_instance.delete_namespaced_pod(pod_name, namespace)
-        logger.debug(f"delete pvc:{pvc_name}")
-        api_response = k8s_api_instance.delete_namespaced_persistent_volume_claim(
-            pvc_name, namespace
-        )
-
-    namespace = "default"
-    pvc_name = "test-pvc"
-    pv_name = "test-pv"
-    pod_name = "test-pod"
-
     # 1. Create PersistantVolumeClaim
-    logger.debug(f"create pvc: {pvc_name}")
+    logger.debug(f"create pvc: {PVC_NAME}")
 
-    pvc_meta = client.V1ObjectMeta(name=pvc_name)
+    pvc_meta = client.V1ObjectMeta(name=PVC_NAME)
     pvc_resources = client.V1ResourceRequirements(
         requests={"storage": "1Gi"},
     )
@@ -113,34 +110,34 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
     )
 
     api_response = k8s_api_instance.create_namespaced_persistent_volume_claim(
-        namespace, body_pvc
+        NAMESPACE, body_pvc
     )
 
     # 2. Create a pod which makes use of the PersitantVolumeClaim
-    logger.debug(f"create pod: {pod_name}")
+    logger.debug(f"create pod: {POD_NAME}")
 
     pod_vol = client.V1Volume(
-        name=pv_name,
-        persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(pvc_name),
+        name=PV_NAME,
+        persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(PVC_NAME),
     )
     pod_con = client.V1Container(
         name="nginx",
         image="nginx",
         ports=[client.V1ContainerPort(container_port=80)],
         volume_mounts=[
-            client.V1VolumeMount(name=pv_name, mount_path="/usr/share/nginx/html")
+            client.V1VolumeMount(name=PV_NAME, mount_path="/usr/share/nginx/html")
         ],
     )
     pod_spec = client.V1PodSpec(volumes=[pod_vol], containers=[pod_con])
     pod_body = client.V1Pod(
         api_version="v1",
         kind="Pod",
-        metadata=client.V1ObjectMeta(name=pod_name),
+        metadata=client.V1ObjectMeta(name=POD_NAME),
         spec=pod_spec,
     )
 
     api_response = k8s_api_instance.create_namespaced_pod(
-        namespace, pod_body, _preload_content=False
+        NAMESPACE, pod_body, _preload_content=False
     )
     pod_info = json.loads(api_response.read().decode("utf-8"))
     pod_status = pod_info["status"]["phase"]
@@ -148,7 +145,7 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
     retries = 0
     while pod_status != "Running" and retries <= NUM_RETRIES:
         api_response = k8s_api_instance.read_namespaced_pod(
-            pod_name, namespace, _preload_content=False
+            POD_NAME, NAMESPACE, _preload_content=False
         )
         pod_info = json.loads(api_response.read().decode("utf-8"))
         pod_status = pod_info["status"]["phase"]
@@ -158,9 +155,9 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
 
     # assert pod_status == "Running"
     if pod_status != "Running":
+        cleanup(k8s_api_instance, NAMESPACE, POD_NAME, PVC_NAME)
         raise SCSTestException(
             "pod is not Running not able to setup test Enviornment",
-            cleanup(),
             return_code=13,
         )
 
@@ -175,25 +172,25 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
     logger.debug("searching for corresponding pv")
     for pv in pv_list:
         logger.debug(f"parsing pv: {pv['metadata']['name']}")
-        if pv["spec"]["claimRef"]["name"] == pvc_name:
-            logger.debug(f"found pv to pvc: {pvc_name}")
+        if pv["spec"]["claimRef"]["name"] == PVC_NAME:
+            logger.debug(f"found pv to pvc: {PVC_NAME}")
 
             if pv["status"]["phase"] != "Bound":
                 raise SCSTestException(
                     "Not able to bind pv to pvc",
-                    cleanup(),
+                    cleanup(k8s_api_instance, NAMESPACE, POD_NAME, PVC_NAME),
                     return_code=41,
                 )
 
             if "ReadWriteOnce" not in pv["spec"]["accessModes"]:
                 raise SCSTestException(
                     "access mode 'ReadWriteOnce' is not supported",
-                    cleanup(),
+                    cleanup(k8s_api_instance, NAMESPACE, POD_NAME, PVC_NAME),
                     return_code=42,
                 )
 
     # 4. Delete resources used for testing
-    cleanup()
+    cleanup(k8s_api_instance, NAMESPACE, POD_NAME, PVC_NAME)
 
     return 0
 
@@ -227,7 +224,7 @@ def main(argv):
         logger.debug("setup_k8s_client(kubeconfig)")
         k8s_core_api, k8s_storage_api = setup_k8s_client(kubeconfig)
     except Exception as exception_message:
-        logger.info(f"{exception_message}")
+        logger.info(f"L228 {exception_message}")
         return_message = f"{exception_message}"
         return_code = 1
 
@@ -236,11 +233,11 @@ def main(argv):
         logger.info("check_default_storageclass()")
         default_class_name = check_default_storageclass(k8s_storage_api)
     except SCSTestException as test_exception:
-        logger.info(f"{test_exception}")
+        logger.info(f"L237 {test_exception}")
         return_message = f"{test_exception}"
         return_code = test_exception.return_code
     except Exception as exception_message:
-        logger.info(f"{exception_message}")
+        logger.info(f"L241 {exception_message}")
         return_message = f"{exception_message}"
         return_code = 1
 
@@ -251,9 +248,16 @@ def main(argv):
             k8s_core_api, default_class_name
         )
     except SCSTestException as test_exception:
-        logger.info(f"{test_exception}")
+        logger.info(f"L252 {test_exception}")
         return_message = f"{test_exception}"
         return_code = test_exception.return_code
+    except ApiException as api_exception:
+      if api_exception.status == 409:
+          print("(409) conflicting resources, try to cleaning up left overs")
+          cleanup(k8s_core_api, NAMESPACE, POD_NAME, PVC_NAME)
+      else:
+          print(f"An API error occurred: {api_exception}")
+      return_code = 1
     except Exception as exception_message:
         logger.info(f"{exception_message}")
         return_message = f"{exception_message}"
