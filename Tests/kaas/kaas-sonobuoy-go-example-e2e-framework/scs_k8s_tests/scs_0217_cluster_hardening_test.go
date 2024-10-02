@@ -457,6 +457,30 @@ func Test_scs_0217_etcd_tls_communication(t *testing.T) {
 	testenv.Test(t, f.Feature())
 }
 
+// Test_scs_0217_etcd_isolation checks ETCD is isolated from k8s cluster by checking the etcd server endpoints.
+func Test_scs_0217_etcd_isolation(t *testing.T) {
+	f := features.New("etcd security").Assess(
+		"ETCD should be isolated from the Kubernetes cluster",
+		func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
+			restConf, err := rest.InClusterConfig()
+			if err != nil {
+				t.Fatal("failed to create rest config:", err)
+			}
+
+			kubeClient, err := kubernetes.NewForConfig(restConf)
+			if err != nil {
+				t.Fatal("failed to create Kubernetes client:", err)
+			}
+
+			// Check if etcd is isolated from k8s cluster
+			checkIsolationETCD(t, kubeClient)
+
+			return ctx
+		})
+
+	testenv.Test(t, f.Feature())
+}
+
 // checkPortOpen tries to establish a TCP connection to the given IP and port.
 // It returns true if the port is open and false if the connection is refused or times out.
 func checkPortOpen(ip, port string, timeout time.Duration) bool {
@@ -770,6 +794,44 @@ func checkETCDPeerCommunicationTLS(t *testing.T, kubeClient *kubernetes.Clientse
 
 			if !cmdFound {
 				t.Errorf("Error: etcd peer communication is not secured with TLS in container: %s of pod: %s", container.Name, pod.Name)
+			}
+		}
+	}
+}
+
+// checkIsolationETCD checks whether the etcd is isolated from k8s cluster.
+func checkIsolationETCD(t *testing.T, kubeClient *kubernetes.Clientset) {
+	// List kube-apiserver pods
+	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), v1.ListOptions{
+		LabelSelector: "component=kube-apiserver",
+	})
+	if err != nil {
+		t.Fatal("failed to list kube-apiserver pods:", err)
+	}
+
+	// Check each kube-apiserver pod
+	for _, pod := range podList.Items {
+		for _, container := range pod.Spec.Containers {
+			etcdServersFound := false
+			for _, cmd := range container.Command {
+				if strings.Contains(cmd, "--etcd-servers=") {
+					etcdServersFound = true
+					etcdServers := strings.Split(cmd, "--etcd-servers=")[1]
+					etcdEndpoints := strings.Split(etcdServers, ",")
+
+					// Verify that etcd is not running on localhost
+					for _, endpoint := range etcdEndpoints {
+						if strings.Contains(endpoint, "localhost") || strings.Contains(endpoint, "127.0.0.1") {
+							t.Logf("Warning: etcd should be isolated from k8s cluster, currently it is running on localhost: %s", endpoint)
+						} else {
+							t.Logf("ETCD is isolated at endpoint: %s", endpoint)
+						}
+					}
+				}
+			}
+
+			if !etcdServersFound {
+				t.Errorf("Error: --etcd-servers flag is missing in kube-apiserver pod: %s", pod.Name)
 			}
 		}
 	}
