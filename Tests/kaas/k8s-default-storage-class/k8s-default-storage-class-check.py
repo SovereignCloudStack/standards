@@ -38,6 +38,7 @@ import logging.config
 
 logger = logging.getLogger("k8s-default-storage-class-check")
 
+NUM_RETRIES = 30
 
 def check_default_storageclass(k8s_client_storage):
     api_response = k8s_client_storage.list_storage_class(_preload_content=False)
@@ -144,9 +145,8 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
     pod_info = json.loads(api_response.read().decode("utf-8"))
     pod_status = pod_info["status"]["phase"]
 
-    # Check if pod is up and running: Default Retries 30
     retries = 0
-    while pod_status != "Running" and retries <= 30:
+    while pod_status != "Running" and retries <= NUM_RETRIES:
         api_response = k8s_api_instance.read_namespaced_pod(
             pod_name, namespace, _preload_content=False
         )

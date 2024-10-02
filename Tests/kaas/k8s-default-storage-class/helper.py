@@ -70,3 +70,4 @@ def gen_sonobuoy_result_file(error_n: int, error_msg: str, test_file_name: str):
 
         with open(f"./{test_name}.result.yaml", "w") as file:
             yaml.dump(result_file, file)
+
