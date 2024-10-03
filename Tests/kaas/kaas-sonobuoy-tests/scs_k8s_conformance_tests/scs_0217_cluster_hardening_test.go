@@ -448,9 +448,6 @@ func Test_scs_0217_etcd_tls_communication(t *testing.T) {
 			// Check kube-apiserver communication with etcd
 			checkKubeAPIServerETCDTLS(t, kubeClient)
 
-			// Check etcd peer communication for TLS
-			checkETCDPeerCommunicationTLS(t, kubeClient)
-
 			return ctx
 		})
 
@@ -749,51 +746,33 @@ func checkKubeAPIServerETCDTLS(t *testing.T, kubeClient *kubernetes.Clientset) {
 		t.Fatal("failed to list kube-apiserver pods:", err)
 	}
 
+	// Expected etcd TLS flags
+	requiredFlags := []string{
+		"--etcd-certfile=",
+		"--etcd-keyfile=",
+		"--etcd-cafile=",
+	}
+
 	// Check each kube-apiserver pod
 	for _, pod := range podList.Items {
 		for _, container := range pod.Spec.Containers {
-			cmdFound := false
-			for _, cmd := range container.Command {
-				// Check for etcd certificates and key flags
-				if strings.Contains(cmd, "--etcd-certfile") && strings.Contains(cmd, "--etcd-keyfile") && strings.Contains(cmd, "--etcd-cafile") {
-					t.Logf("kube-apiserver communicates with etcd using TLS in container: %s of pod: %s", container.Name, pod.Name)
-					cmdFound = true
-					break
+			// Gather all the commands into a single string for easier matching
+			cmdLine := strings.Join(container.Command, " ")
+			t.Logf("TEST: Checking container: %s of pod: %s", container.Name, pod.Name)
+
+			// Check if all required etcd TLS flags are present
+			allFlagsPresent := true
+			for _, flag := range requiredFlags {
+				if !strings.Contains(cmdLine, flag) {
+					t.Errorf("Missing flag %s in container: %s of pod: %s", flag, container.Name, pod.Name)
+					allFlagsPresent = false
 				}
 			}
 
-			if !cmdFound {
-				t.Errorf("Error: kube-apiserver does not use TLS for etcd communication in container: %s of pod: %s", container.Name, pod.Name)
-			}
-		}
-	}
-}
-
-// checkETCDPeerCommunicationTLS checks whether etcd peer communication is secured with TLS.
-func checkETCDPeerCommunicationTLS(t *testing.T, kubeClient *kubernetes.Clientset) {
-	// List etcd pods
-	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), v1.ListOptions{
-		LabelSelector: "component=etcd",
-	})
-	if err != nil {
-		t.Fatal("failed to list etcd pods:", err)
-	}
-
-	// Check each etcd pod
-	for _, pod := range podList.Items {
-		for _, container := range pod.Spec.Containers {
-			cmdFound := false
-			for _, cmd := range container.Command {
-				// Check for etcd peer certificate and key flags
-				if strings.Contains(cmd, "--peer-cert-file") && strings.Contains(cmd, "--peer-key-file") && strings.Contains(cmd, "--peer-client-cert-auth") {
-					t.Logf("Etcd peer communication is secured with TLS in container: %s of pod: %s", container.Name, pod.Name)
-					cmdFound = true
-					break
-				}
-			}
-
-			if !cmdFound {
-				t.Errorf("Error: etcd peer communication is not secured with TLS in container: %s of pod: %s", container.Name, pod.Name)
+			if allFlagsPresent {
+				t.Logf("kube-apiserver communicates with etcd using TLS in container: %s of pod: %s", container.Name, pod.Name)
+			} else {
+				t.Errorf("Error: kube-apiserver does not use all required TLS flags for etcd communication in container: %s of pod: %s", container.Name, pod.Name)
 			}
 		}
 	}

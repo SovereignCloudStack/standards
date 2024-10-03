@@ -11,7 +11,7 @@ kubeadmConfigPatches:
       name: config
     apiServer:
       extraArgs:
-        enable-admission-plugins: "NodeRestriction,PodSecurity"  
+        enable-admission-plugins: "NodeRestriction,PodSecurity"
 nodes:
 - role: control-plane
 - role: worker
