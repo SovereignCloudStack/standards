@@ -1,44 +1,28 @@
-/*
-Copyright 2021 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
-package k8s_test_template
+package scs_k8s_tests
 
 import (
 	"context"
 	"fmt"
 	"os"
 	"testing"
-
+  "log"
 	plugin_helper "github.com/vmware-tanzu/sonobuoy-plugins/plugin-helper"
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/e2e-framework/pkg/env"
 	"sigs.k8s.io/e2e-framework/pkg/envconf"
+	"sigs.k8s.io/e2e-framework/pkg/envfuncs"
 )
 
 
 const (
 	ProgressReporterCtxKey = "SONOBUOY_PROGRESS_REPORTER"
 	NamespacePrefixKey = "NS_PREFIX"
+  DevelopmentModeKey = "DEVELOPMENT_MODE"
 )
 
 var testenv env.Environment
 
 func TestMain(m *testing.M) {
-	// Assume we are running in the cluster as a Sonobuoy plugin.
-	testenv = env.NewInClusterConfig()
 
 	// Specifying a run ID so that multiple runs wouldn't collide. Allow a prefix to be set via env var
 	// so that a plugin configuration (yaml file) can easily set that without code changes.
@@ -48,18 +32,65 @@ func TestMain(m *testing.M) {
 	// Create updateReporter; will also place into context during Setup for use in features.
 	updateReporter := plugin_helper.NewProgressReporter(0)
 
-	testenv.Setup(func(ctx context.Context, config *envconf.Config) (context.Context, error) {
-		// Try and create the client; doing it before all the tests allows the tests to assume
-		// it can be created without error and they can just use config.Client().
-		_,err:=config.NewClient()
-		return context.WithValue(ctx,ProgressReporterCtxKey,updateReporter) ,err
-	})
+	developmentMode := os.Getenv(DevelopmentModeKey)
+  log.Printf("Setup test enviornment for: %#v", developmentMode )
+
+  switch KubernetesEnviornment := developmentMode; KubernetesEnviornment {
+
+  case "createcluster":
+    log.Println("Create kind cluster for test")
+    testenv = env.New()
+    kindClusterName := envconf.RandomName("gotestcluster", 16)
+    //~ namespace := envconf.RandomName("testnamespace", 16)
+
+    testenv.Setup(
+      envfuncs.CreateKindCluster(kindClusterName),
+    )
+
+    testenv.Finish(
+      //~ envfuncs.DeleteNamespace(namespace),
+      envfuncs.DestroyKindCluster(kindClusterName),
+    )
+
+  case "usecluster":
+    log.Println("Use existing k8s cluster for the test")
+    log.Println("Not Yet Implemented")
+    //~ testenv = env.NewFromFlags()
+    //~ KubeConfig:= os.Getenv(KUBECONFIGFILE)
+    //~ testenv = env.NewWithKubeConfig(KubeConfig)
+
+  default:
+	  // Assume we are running in the cluster as a Sonobuoy plugin.
+    log.Println("Running tests inside k8s cluster")
+	  testenv = env.NewInClusterConfig()
+
+	  testenv.Setup(func(ctx context.Context, config *envconf.Config) (context.Context, error) {
+		  // Try and create the client; doing it before all the tests allows the tests to assume
+		  // it can be created without error and they can just use config.Client().
+		  _,err:=config.NewClient()
+		  return context.WithValue(ctx,ProgressReporterCtxKey,updateReporter) ,err
+	  })
+
+	  testenv.Finish(
+		  func(ctx context.Context, cfg *envconf.Config) (context.Context, error) {
+			  log.Println("Finished go test suite")
+			  //~ if err := ???; err != nil{
+        //~   return ctx, err
+			  //~ }
+			  return ctx, nil
+		  },
+	  )
+
+  }
 
 	testenv.BeforeEachTest(func(ctx context.Context, cfg *envconf.Config, t *testing.T) (context.Context, error) {
+	  fmt.Println("BeforeEachTest")
 		updateReporter.StartTest(t.Name())
 		return createNSForTest(ctx, cfg, t, runID)
 	})
+
 	testenv.AfterEachTest(func(ctx context.Context, cfg *envconf.Config, t *testing.T) (context.Context, error) {
+	  fmt.Println("AfterEachTest")
 		updateReporter.StopTest(t.Name(),t.Failed(),t.Skipped(),nil)
 		return deleteNSForTest(ctx, cfg, t, runID)
 	})
@@ -68,11 +99,14 @@ func TestMain(m *testing.M) {
 	testenv.BeforeEachFeature(func(ctx context.Context, config *envconf.Config, info features.Feature) (context.Context, error) {
 		// Note that you can also add logic here for before a feature is tested. There may be
 		// more than one feature in a test.
+		fmt.Println("BeforeEachFeature")
 		return ctx, nil
 	})
+
 	testenv.AfterEachFeature(func(ctx context.Context, config *envconf.Config, info features.Feature) (context.Context, error) {
 		// Note that you can also add logic here for after a feature is tested. There may be
 		// more than one feature in a test.
+		fmt.Println("AfterEachFeature")
 		return ctx, nil
 	})
 	*/

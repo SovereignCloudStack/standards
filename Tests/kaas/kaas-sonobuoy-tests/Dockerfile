@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y wget jq && \
     fi && \
     chmod +x /usr/bin/kubectl
 
-COPY ./scs_k8s_tests /src/scs_k8s_tests
+COPY ./scs_k8s_conformance_tests /src/scs_k8s_conformance_tests
 WORKDIR /src
 COPY go.* /src/
 ENV CGO_ENABLED=0
