@@ -1,6 +1,6 @@
-module kaas/kaas-sonobuoy-go-example-2
+module kaas/kaas-sonobuoy-tests
 
-go 1.17
+go 1.21
 
 require (
 	github.com/vmware-tanzu/sonobuoy-plugins/plugin-helper v0.0.0-20211029183731-1d6848b67eec
@@ -27,6 +27,7 @@ require (
 	github.com/satori/go.uuid v1.2.1-0.20181028125025-b2ce2384e17b // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/vladimirvivien/gexe v0.1.1 // indirect
 	github.com/vmware-tanzu/sonobuoy v1.11.5-prerelease.1.0.20211004145628-b633b4fefcdc // indirect
 	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
