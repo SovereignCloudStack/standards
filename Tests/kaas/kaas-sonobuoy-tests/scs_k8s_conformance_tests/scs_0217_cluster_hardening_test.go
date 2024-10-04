@@ -31,13 +31,14 @@ const (
 	etcdPortRangeStart    = 2379
 	etcdPortRangeEnd      = 2380
 	kubeletApiPort        = "10250"
-	kubeletReadOnlyPort   = "10255"
+	kubeletReadOnlyPort   = 10255
 	connectionTimeout     = 5 * time.Second
 	sonobuoyResultsDir    = "/tmp/sonobuoy/results"
 )
 
 type KubeletConfig struct {
 	KubeletConfig struct {
+		ReadOnlyPort   int `json:"readOnlyPort"`
 		Authentication struct {
 			Anonymous struct {
 				Enabled bool `json:"enabled"`
@@ -56,20 +57,44 @@ func Test_scs_0217_sonobuoy_Kubelet_ReadOnly_Port_Disabled(t *testing.T) {
 	f := features.New("kubelet security").Assess(
 		"Kubelet read-only port (10255) should be disabled",
 		func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			nodes := &corev1.NodeList{}
-			err := cfg.Client().Resources().List(context.TODO(), nodes)
+			restConf, err := rest.InClusterConfig()
 			if err != nil {
-				t.Fatal("failed to list nodes:", err)
+				t.Fatal("failed to create rest config:", err)
 			}
 
-			// Loop over each node and check if the read-only port is open
-			for _, node := range nodes.Items {
-				nodeIP := node.Status.Addresses[0].Address
-				isPortOpen := checkPortOpen(nodeIP, kubeletReadOnlyPort, connectionTimeout)
-				if isPortOpen {
-					t.Logf("Warning: kubelet read-only port 10255 is open on node %s", nodeIP)
+			kubeClient, err := kubernetes.NewForConfig(restConf)
+			if err != nil {
+				t.Fatal("failed to create Kubernetes client:", err)
+			}
+
+			nodeList, err := kubeClient.CoreV1().Nodes().List(context.TODO(), v1.ListOptions{})
+			if err != nil {
+				t.Fatal("failed to get node list:", err)
+			}
+
+			nodeNames := make([]string, len(nodeList.Items))
+			for i, node := range nodeList.Items {
+				nodeNames[i] = node.Name
+			}
+
+			if err := gatherNodeData(nodeNames, kubeClient.CoreV1().RESTClient(), sonobuoyResultsDir); err != nil {
+				t.Fatal("failed to gather node data:", err)
+			}
+
+			// Get kubelets configz file from each node
+			for _, nodeName := range nodeNames {
+				configzPath := path.Join(sonobuoyResultsDir, nodeName, "configz.json")
+				kubeletConfig, err := readKubeletConfigFromFile(configzPath)
+				if err != nil {
+					t.Errorf("Failed to read Kubelet config from file %s: %v", configzPath, err)
+					continue
+				}
+
+				// Check if readonly port is enabled
+				if kubeletConfig.KubeletConfig.ReadOnlyPort == kubeletReadOnlyPort {
+					t.Logf("Warning: kubelet read-only port 10255 is open on node %s", nodeName)
 				} else {
-					t.Logf("Kubelet read-only port 10255 is correctly disabled on node %s", nodeIP)
+					t.Logf("Kubelet read-only port 10255 is correctly disabled on node %s", nodeName)
 				}
 			}
 			return ctx
