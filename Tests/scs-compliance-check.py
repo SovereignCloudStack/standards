@@ -108,10 +108,11 @@ class Config:
                 usage()
                 sys.exit(0)
             elif opt[0] == "-v" or opt[0] == "--verbose":
+                if self.verbose:
+                    logger.setLevel(logging.DEBUG)
                 self.verbose = True
-                logger.setLevel(logging.DEBUG)
             elif opt[0] == "--debug":
-                logging.getLogger().setLevel(logging.DEBUG)
+                logger.setLevel(logging.DEBUG)
             elif opt[0] == "-q" or opt[0] == "--quiet":
                 self.quiet = True
                 logging.getLogger().setLevel(logging.ERROR)
