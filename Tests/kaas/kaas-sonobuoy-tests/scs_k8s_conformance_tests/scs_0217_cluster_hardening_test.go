@@ -549,23 +549,6 @@ func isPortSecuredWithHTTPS(ip string, port int32, timeout time.Duration) bool {
 	return true
 }
 
-// waitForDirectory waits for a directory to become available at a specified path.
-func waitForDirectory(path string, timeout time.Duration) error {
-	start := time.Now()
-	for time.Since(start) < timeout {
-		if info, err := os.Stat(path); err == nil && info.IsDir() {
-			return nil
-		}
-		time.Sleep(5 * time.Second)
-	}
-	return fmt.Errorf("directory %s not found after %v", path, timeout)
-}
-
-// isConfigzFile checks if a file is a configz.json file.
-func isConfigzFile(fileName string) bool {
-	return fileName != "" && (fileName[0:8] == "configz-")
-}
-
 // readKubeletConfigFromFile reads and parses the Kubelet configuration from a file.
 func readKubeletConfigFromFile(path string) (*KubeletConfig, error) {
 	fmt.Printf("Reading Kubelet config from file: %s\n", path)
