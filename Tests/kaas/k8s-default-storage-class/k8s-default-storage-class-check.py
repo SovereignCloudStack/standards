@@ -81,12 +81,10 @@ def check_default_storageclass(k8s_client_storage):
     return default_storage_class
 
 
-def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_class):
+def create_pvc_pod(k8s_api_instance, storage_class):
     """
     1. Create PersistantVolumeClaim
     2. Create pod which uses the PersitantVolumeClaim
-    3. Check if PV got succesfully created using ReadWriteOnce
-    4. Delete resources used for testing
     """
     # 1. Create PersistantVolumeClaim
     logger.debug(f"create pvc: {PVC_NAME}")
@@ -155,6 +153,11 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
             return_code=13,
         )
 
+def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_class):
+    """
+    3. Check if PV got succesfully created using ReadWriteOnce
+    """
+
     # 3. Check if PV got succesfully created using ReadWriteOnce
     logger.debug("check if the created PV supports ReadWriteOnce")
 
@@ -194,6 +197,7 @@ class TestEnvironment:
         print("prepare")
 
     def clean(self):
+#        print("cheers")
         try:
             logger.debug(f"delete pod:{self.pod_name}")
             api_response = self.k8s_api_instance.delete_namespaced_pod(
@@ -274,9 +278,24 @@ def main(argv):
             return_message = f"{exception_message}"
             return_code = 1
 
+        try:
+          return_code = create_pvc_pod(k8s_core_api, default_class_name)
+        except ApiException as api_exception:
+            if api_exception.status == 409:
+                logger.info("(409) conflicting resources, "
+                            "try to cleaning up left overs, then start again")
+                # TODO clean up and start again#
+                #return_code = create_pvc_pod(k8s_core_api, default_class_name)
+                return_code = 1
+            else:
+                logger.info(f"An API error occurred: {api_exception}")
+                return_code = 1
+
+
         # Check if default_persistent volume has ReadWriteOnce defined (MANDATORY)
         try:
             logger.info("check_default_persistentvolume_readwriteonce()")
+
             return_code = check_default_persistentvolumeclaim_readwriteonce(
                 k8s_core_api, default_class_name
             )
@@ -284,13 +303,6 @@ def main(argv):
             logger.info(f"L{inspect.currentframe().f_lineno} {test_exception}")
             return_message = f"{test_exception}"
             return_code = test_exception.return_code
-        except ApiException as api_exception:
-            if api_exception.status == 409:
-                print("(409) conflicting resources, try to cleaning up left overs")
-                # TODO clean up and start again#
-            else:
-                print(f"An API error occurred: {api_exception}")
-            return_code = 1
         except Exception as exception_message:
             logger.info(f"{exception_message}")
             return_message = f"{exception_message}"
