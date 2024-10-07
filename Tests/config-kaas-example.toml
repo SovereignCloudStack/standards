@@ -1,0 +1,92 @@
+[secrets]
+keyfile = ".secret/keyfile"
+tokenfile = ".secret/tokenfile"
+
+
+[presets.default]
+scopes = [
+    "scs-compatible-iaas",
+]
+subjects = [
+    "gx-scs",
+]
+
+
+[presets.all]
+scopes = [
+    "scs-compatible-iaas",
+]
+subjects = [
+    "gx-scs",
+    "artcodix",
+    "pco-prod1",
+    "pco-prod2",
+    "pco-prod3",
+    "pco-prod4",
+    "poc-kdo",
+    "poc-wgcloud",
+    "regio-a",
+    "syseleven-dus2",
+    "syseleven-ham1",
+    "wavestack",
+]
+workers = 4
+
+
+###############################################################################
+
+[presets.all-iaas-kaas]
+scopes = [
+    "scs-compatible-kaas",
+    "scs-compatible-iaas",
+]
+subjects = [
+    "cloud-ik-1",
+    "cloud-ik-2",
+    #"cloud-ik-3",
+]
+workers = 4
+
+
+[presets.all-kaas]
+scopes = [
+    "scs-compatible-kaas",
+]
+subjects = [
+    "cloud-k-4",
+    "cloud-k-5",
+    #"cloud-k-6",
+]
+workers = 4
+
+
+
+[scopes.scs-compatible-iaas]
+spec = "./scs-compatible-iaas.yaml"
+
+
+[scopes.scs-compatible-kaas]
+spec = "./scs-compatible-kaas.yaml"
+
+
+# default subject (not a real subject, but used to declare a default mapping)
+# (this is the only mapping declaration that supports using Python string interpolation)
+[subjects._.mapping]
+os_cloud = "{subject}"
+
+
+[subjects._.kubernetes_setup]
+kube_plugin = "kind"
+kube_versions = [
+  "v1.12",
+  #"v1.13",
+  #"v1.14",
+]
+
+
+[subjects.cloud-ik-1.kubernetes_setup]
+kube_plugin = "none"
+
+[subjects.cloud-ik-1.mapping]
+os_cloud = "none"
+

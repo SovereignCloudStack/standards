@@ -1,9 +1,13 @@
+<<<<<<< HEAD
 import logging
 import os
 import os.path
 from pathlib import Path
 
 from interface import KubernetesClusterPlugin
+=======
+from .interface import KubernetesClusterPlugin
+>>>>>>> Inital integration of the plugin into the 'scs-test-runner.py'
 from pytest_kind import KindCluster
 import time
 
