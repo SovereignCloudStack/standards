@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Key Manager service checker
 This script retrieves the endpoint catalog from Keystone using the OpenStack
 SDK and checks whether a key manager API endpoint is present.
