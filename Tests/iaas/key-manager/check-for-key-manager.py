@@ -23,105 +23,29 @@ GREEN = "\033[32m"
 RESET = "\033[0m"
 
 
-def connect(cloud_name: str) -> openstack.connection.Connection:
-    """
-    Create a connection to an OpenStack cloud
-    :param string cloud_name:
-        The name of the configuration to load from clouds.yaml.
-    :returns: openstack.connnection.Connection
-    """
-    return openstack.connect(
-        cloud=cloud_name,
-    )
-
-
-def synth_auth_url(auth_url: str):
-    """
-    Synthesize URL for role request
-    :param string auth_url:
-        The authentification URL from clouds.yaml.
-    :returns: URL for role request
-    """
-    if "/v3/" in auth_url:
-        re_auth_url = auth_url + "auth/tokens"
-    elif "/v3" in auth_url:
-        re_auth_url = auth_url + "/auth/tokens"
-    else:
-        re_auth_url = auth_url + "/v3/auth/tokens"
-    return re_auth_url
-
-
-def check_for_member_role(
-    conn: openstack.connection.Connection, cloud_name: str
-) -> None:
+def check_for_member_role(conn: openstack.connection.Connection) -> None:
     """Checks whether the current user has at maximum privileges
     of the member role.
     :param connection:
         The current connection to an OpenStack cloud.
     :returns: boolean, when role with most priviledges is member
     """
-    auth_data = conn.auth
-    token = conn.session.get_token()
-    auth_url = synth_auth_url(auth_data["auth_url"])
-    has_member_role = False
+    role_names = set(conn.session.auth.get_access(conn.session).role_names)
+    if role_names & {'admin', 'manager'}:
+        return False
+    if 'reader' in role_names:
+        print("User has reader role.")
+    if role_names - {'reader', 'member'}:
+        print("User has custom role.")
+    return 'member' in role_names
+
+
+def check_presence_of_key_manager(conn: openstack.connection.Connection) -> None:
     try:
-        # Make the POST request using the current session
-        auth_payload = {
-            "auth": {
-                "identity": {"methods": ["token"], "token": {"id": token}},
-                "scope": {
-                    "project": {
-                        "domain": {"name": conn.auth["project_domain_name"]},
-                        "name": conn.auth["project_name"],
-                    }
-                },
-            }
-        }
-        request = conn.session.request(
-            url=auth_url,
-            method="POST",
-            json=auth_payload,  # The JSON payload for the request
-            headers={"X-Auth-Token": token},  # Pass the token in the header
-        )
-    except Unauthorized as auth_err:
-        print(f"Unauthorized scope (401): {auth_err}")
-
-        # Make the POST request without special scope
-        print("Make a new request without specifying the project domain")
-        auth_payload = {
-            "auth": {"identity": {"methods": ["token"], "token": {"id": token}}}
-        }
-
-        request = conn.session.request(
-            url=auth_url,
-            method="POST",
-            json=auth_payload,
-            headers={"X-Auth-Token": token},
-        )
-        print(f"Response Status new request: {request.status_code}")
-
-    for role in json.loads(request.content)["token"]["roles"]:
-        role_name = role["name"]
-        if role_name == "admin" or role_name == "manager":
-            return False
-        elif role_name == "member":
-            print(f"{GREEN}User has member role.{RESET}")
-            has_member_role = True
-        elif role_name == "reader":
-            print("User has reader role.")
-        else:
-            print("User has custom role.")
-    return has_member_role
-
-
-def check_presence_of_key_manager(cloud_name: str):
-    try:
-        connection = connect(cloud_name)
-        services = connection.service_catalog
+        services = conn.service_catalog
     except Exception as e:
         print(str(e))
         raise Exception(
-            f"Connection to cloud '{cloud_name}' was not successfully. "
             f"The Catalog endpoint could not be accessed. "
             f"Please check your cloud connection and authorization."
         )
@@ -133,26 +57,23 @@ def check_presence_of_key_manager(cloud_name: str):
             # now we want to check whether a user with member role
             # can create and access secrets
             print(f"{GREEN}Key-Manager is present{RESET}")
-            check_key_manager_permissions(connection, cloud_name)
-            return 0
+            check_key_manager_permissions(conn)
+            return
 
     # we did not find the key-manager service
     logger.warning(f"{RED}There is no key-manager endpoint in the cloud.{RESET}")
     # we do not fail, until a key-manager MUST be present
-    return 0
 
 
-def check_key_manager_permissions(
-    conn: openstack.connection.Connection, cloud_name
-) -> None:
+def check_key_manager_permissions(conn: openstack.connection.Connection) -> None:
     """
     After checking that the current user only has the member and maybe the
     reader role, this method verifies that the user with a member role
     has sufficient access to the Key Manager API functionality.
     """
     secret_name = "scs-member-role-test-secret"
-    if not check_for_member_role(conn, cloud_name):
-        logger.warning("Cannot test key-manager permissions. " "User has wrong roles")
+    if not check_for_member_role(conn):
+        logger.warning("Cannot test key-manager permissions. User has wrong roles")
         return None
 
     def _find_secret(secret_name_or_id: str):
@@ -216,15 +137,15 @@ def main():
     openstack.enable_logging(debug=args.debug)
 
     # parse cloud name for lookup in clouds.yaml
-    cloud = os.environ.get("OS_CLOUD", None)
-    if args.os_cloud:
-        cloud = args.os_cloud
-    assert cloud, (
-        "You need to have the OS_CLOUD environment variable set to your cloud "
-        "name or pass it via --os-cloud"
-    )
+    cloud = args.os_cloud or os.environ.get("OS_CLOUD", None)
+    if not cloud:
+        raise RuntimeError(
+            "You need to have the OS_CLOUD environment variable set to your cloud "
+            "name or pass it via --os-cloud"
+        )
 
-    return check_presence_of_key_manager(cloud)
+    with openstack.connect(cloud=cloud) as conn:
+        return check_presence_of_key_manager(conn)
 
 
 if __name__ == "__main__":
