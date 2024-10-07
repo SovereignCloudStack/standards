@@ -26,6 +26,7 @@ import time
 import json
 import logging
 import os
+import inspect
 
 from kubernetes import client
 from kubernetes.client.rest import ApiException
@@ -44,6 +45,7 @@ NAMESPACE = "default"
 PVC_NAME = "test-pvc"
 PV_NAME = "test-pv"
 POD_NAME = "test-pod"
+
 
 def check_default_storageclass(k8s_client_storage):
     api_response = k8s_client_storage.list_storage_class(_preload_content=False)
@@ -77,14 +79,6 @@ def check_default_storageclass(k8s_client_storage):
 
     logger.info(f"One default Storage Class found:'{default_storage_class}'")
     return default_storage_class
-
-def cleanup(k8s_api_instance,namespace, pod_name, pvc_name):
-    logger.debug(f"delete pod:{pod_name}")
-    api_response = k8s_api_instance.delete_namespaced_pod(pod_name, namespace)
-    logger.debug(f"delete pvc:{pvc_name}")
-    api_response = k8s_api_instance.delete_namespaced_persistent_volume_claim(
-        pvc_name, namespace
-    )
 
 def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_class):
     """
@@ -155,7 +149,6 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
 
     # assert pod_status == "Running"
     if pod_status != "Running":
-        cleanup(k8s_api_instance, NAMESPACE, POD_NAME, PVC_NAME)
         raise SCSTestException(
             "pod is not Running not able to setup test Enviornment",
             return_code=13,
@@ -178,41 +171,47 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
             if pv["status"]["phase"] != "Bound":
                 raise SCSTestException(
                     "Not able to bind pv to pvc",
-                    cleanup(k8s_api_instance, NAMESPACE, POD_NAME, PVC_NAME),
                     return_code=41,
                 )
 
             if "ReadWriteOnce" not in pv["spec"]["accessModes"]:
                 raise SCSTestException(
                     "access mode 'ReadWriteOnce' is not supported",
-                    cleanup(k8s_api_instance, NAMESPACE, POD_NAME, PVC_NAME),
                     return_code=42,
                 )
-
-    # 4. Delete resources used for testing
-    cleanup(k8s_api_instance, NAMESPACE, POD_NAME, PVC_NAME)
-
     return 0
 
+
 class TestEnvironment:
-    def __init__(self, conn):
-        self.conn = conn
+    def __init__(self, k8s_api_instance):
+        self.namespace = NAMESPACE
+        self.pod_name = POD_NAME
+        self.pvc_name = PVC_NAME
+        self.k8s_api_instance = k8s_api_instance
 
     def prepare(self):
         print("prepare")
+
     def clean(self):
-        print("clean")
+        logger.debug(f"delete pod:{self.pod_name}")
+        api_response = self.k8s_api_instance.delete_namespaced_pod(
+            self.pod_name, self.namespace
+        )
+        logger.debug(f"delete pvc:{self.pvc_name}")
+        api_response = self.k8s_api_instance.delete_namespaced_persistent_volume_claim(
+            self.pvc_name, self.namespace
+        )
 
     def __enter__(self):
         self.prepare()
-        print(f"Entering the context {self.conn}")
+        #print(f"Entering the context {self.k8s_api_instance}")
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.clean()
-        print(f"Exiting the context {self.conn}")
+        #print(f"Exiting the context {self.k8s_api_instance}")
         if exc_type:
-            print(f"An exception occurred: {exc_value}")
+            logger.debug(f"An exception occurred: {exc_value}")
         # Return True if the exception should be suppressed, otherwise False
         return False
 
@@ -223,7 +222,7 @@ def main(argv):
     return_message = "return_message: FAILED"
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "k:hd:", ["kubeconfig=", "help","debug"])
+        opts, args = getopt.gnu_getopt(argv, "k:hd:", ["kubeconfig=", "help", "debug"])
     except getopt.GetoptError as exc:
         logger.debug(f"{exc}", file=sys.stderr)
         print_usage()
@@ -248,46 +247,45 @@ def main(argv):
         logger.debug("setup_k8s_client(kubeconfig)")
         k8s_core_api, k8s_storage_api = setup_k8s_client(kubeconfig)
     except Exception as exception_message:
-        logger.info(f"L228 {exception_message}")
+        logger.info(f"L{inspect.currentframe().f_lineno} {exception_message}")
         return_message = f"{exception_message}"
         return_code = 1
 
-    with TestEnvironment(k8s_storage_api) as env:
-      print("Inside the with block")
-    # Check if default storage class is defined (MANDATORY)
-    try:
-        logger.info("check_default_storageclass()")
-        default_class_name = check_default_storageclass(k8s_storage_api)
-    except SCSTestException as test_exception:
-        logger.info(f"L237 {test_exception}")
-        return_message = f"{test_exception}"
-        return_code = test_exception.return_code
-    except Exception as exception_message:
-        logger.info(f"L241 {exception_message}")
-        return_message = f"{exception_message}"
-        return_code = 1
+    with TestEnvironment(k8s_core_api) as env:
+        # Check if default storage class is defined (MANDATORY)
+        try:
+            logger.info("check_default_storageclass()")
+            default_class_name = check_default_storageclass(k8s_storage_api)
+        except SCSTestException as test_exception:
+            logger.info(f"L{inspect.currentframe().f_lineno} {test_exception}")
+            return_message = f"{test_exception}"
+            return_code = test_exception.return_code
+        except Exception as exception_message:
+            logger.info(f"L{inspect.currentframe().f_lineno} {exception_message}")
+            return_message = f"{exception_message}"
+            return_code = 1
 
-    # Check if default_persistent volume has ReadWriteOnce defined (MANDATORY)
-    try:
-        logger.info("check_default_persistentvolume_readwriteonce()")
-        return_code = check_default_persistentvolumeclaim_readwriteonce(
-            k8s_core_api, default_class_name
-        )
-    except SCSTestException as test_exception:
-        logger.info(f"L252 {test_exception}")
-        return_message = f"{test_exception}"
-        return_code = test_exception.return_code
-    except ApiException as api_exception:
-      if api_exception.status == 409:
-          print("(409) conflicting resources, try to cleaning up left overs")
-          cleanup(k8s_core_api, NAMESPACE, POD_NAME, PVC_NAME)
-      else:
-          print(f"An API error occurred: {api_exception}")
-      return_code = 1
-    except Exception as exception_message:
-        logger.info(f"{exception_message}")
-        return_message = f"{exception_message}"
-        return_code = 1
+        # Check if default_persistent volume has ReadWriteOnce defined (MANDATORY)
+        try:
+            logger.info("check_default_persistentvolume_readwriteonce()")
+            return_code = check_default_persistentvolumeclaim_readwriteonce(
+                k8s_core_api, default_class_name
+            )
+        except SCSTestException as test_exception:
+            logger.info(f"L{inspect.currentframe().f_lineno} {test_exception}")
+            return_message = f"{test_exception}"
+            return_code = test_exception.return_code
+        except ApiException as api_exception:
+            if api_exception.status == 409:
+                print("(409) conflicting resources, try to cleaning up left overs")
+                #TODO clean up and start again#
+            else:
+                print(f"An API error occurred: {api_exception}")
+            return_code = 1
+        except Exception as exception_message:
+            logger.info(f"{exception_message}")
+            return_message = f"{exception_message}"
+            return_code = 1
 
     logger.debug(f"return_code:{return_code}")
 
