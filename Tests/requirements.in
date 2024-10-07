@@ -1,6 +1,5 @@
 aiohttp
 click
-fabric
 kubernetes
 kubernetes_asyncio
 python-dateutil
