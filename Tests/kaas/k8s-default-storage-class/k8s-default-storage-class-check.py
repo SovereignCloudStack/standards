@@ -80,6 +80,7 @@ def check_default_storageclass(k8s_client_storage):
     logger.info(f"One default Storage Class found:'{default_storage_class}'")
     return default_storage_class
 
+
 def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_class):
     """
     1. Create PersistantVolumeClaim
@@ -193,23 +194,31 @@ class TestEnvironment:
         print("prepare")
 
     def clean(self):
-        logger.debug(f"delete pod:{self.pod_name}")
-        api_response = self.k8s_api_instance.delete_namespaced_pod(
-            self.pod_name, self.namespace
-        )
-        logger.debug(f"delete pvc:{self.pvc_name}")
-        api_response = self.k8s_api_instance.delete_namespaced_persistent_volume_claim(
-            self.pvc_name, self.namespace
-        )
+        try:
+            logger.debug(f"delete pod:{self.pod_name}")
+            api_response = self.k8s_api_instance.delete_namespaced_pod(
+                self.pod_name, self.namespace
+            )
+        except:
+            logger.debug(f"The pod {self.pod_name} couldn't be deleted.", exc_info=True)
+        try:
+            logger.debug(f"delete pvc:{self.pvc_name}")
+            api_response = (
+                self.k8s_api_instance.delete_namespaced_persistent_volume_claim(
+                    self.pvc_name, self.namespace
+                )
+            )
+        except:
+            logger.debug(f"The PVC {self.pvc_name} couldn't be deleted.", exc_info=True)
 
     def __enter__(self):
         self.prepare()
-        #print(f"Entering the context {self.k8s_api_instance}")
+        # print(f"Entering the context {self.k8s_api_instance}")
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.clean()
-        #print(f"Exiting the context {self.k8s_api_instance}")
+        # print(f"Exiting the context {self.k8s_api_instance}")
         if exc_type:
             logger.debug(f"An exception occurred: {exc_value}")
         # Return True if the exception should be suppressed, otherwise False
@@ -278,7 +287,7 @@ def main(argv):
         except ApiException as api_exception:
             if api_exception.status == 409:
                 print("(409) conflicting resources, try to cleaning up left overs")
-                #TODO clean up and start again#
+                # TODO clean up and start again#
             else:
                 print(f"An API error occurred: {api_exception}")
             return_code = 1
