@@ -2,26 +2,11 @@ from abc import ABC, abstractmethod
 from typing import final
 from kubernetes import client, config
 import os
+import shutil
 import logging
 from junitparser import JUnitXml
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("interface")
-
-
-def setup_k8s_client(kubeconfigfile=None):
-
-    if kubeconfigfile:
-        logger.debug(f"loading kubeconfig file '{kubeconfigfile}'")
-        config.load_kube_config(kubeconfigfile)
-        logger.info("kubeconfigfile loaded successfully")
-    else:
-        logger.error("no kubeconfig file provided")
-        return None
-
-    k8s_api_client = client.CoreV1Api()
-
-    return k8s_api_client
 
 
 class KubernetesClusterPlugin(ABC):
@@ -31,115 +16,18 @@ class KubernetesClusterPlugin(ABC):
     plugins must be derived as child classes
     """
 
-    kubeconfig_path = None
+    kubeconfig = None
     cluster_name = None
     k8s_api_client = None
     working_directory = None
 
     @final
     def __init__(self, config=None):
+        logger.info(f"Inital provider plug in of type:{type(self)}")
         logger.debug(config)
         self.working_directory = os.getcwd()
         logger.debug(f"Working from {self.working_directory}")
 
-    @final
-    def _preflight_check(self):
-        """
-        Prefligth test to ensure that everything is set up correctly for execution
-        :param: None
-        :return: None
-        """
-        logger.info("check kubeconfig")
-        self.k8s_api_client = setup_k8s_client(self.kubeconfig_path)
-
-        for api in client.ApisApi().get_api_versions().groups:
-            versions = []
-            for v in api.versions:
-                name = ""
-                if v.version == api.preferred_version.version and len(api.versions) > 1:
-                    name += "*"
-                name += v.version
-                versions.append(name)
-            logger.debug(f"[supported api]: {api.name:<40} {','.join(versions)}")
-
-        logger.debug("checks if sonobuoy is availabe")
-        return_value = os.system(f"sonobuoy version --kubeconfig='{self.kubeconfig_path}'")
-        if return_value != 0:
-            raise Exception("sonobuoy is not installed")
-
-    @final
-    def _test_k8s_cncf_conformance(self):
-        """
-        This method invokes the conformance tests with sononbuoy
-        :param: None
-        :return: None
-        """
-        logger.info(" invoke cncf conformance test")
-        # ~ os.system(f"sonobuoy run --wait --mode=certified-conformance --kubeconfig='{self.kubeconfig_path}'")
-        # TODO:!!! switch to the real test on the final merge !!!
-        # Only one test is currently being carried out for development purposes
-        os.system(
-            f"sonobuoy run --wait --plugin-env e2e.E2E_FOCUS=pods --plugin-env e2e.E2E_DRYRUN=true --kubeconfig='{self.kubeconfig_path}'"
-        )
-
-    @final
-    def _test_scs_kaas_conformance(self):
-        """
-        This method invokes SCS's very own conformance tests by using sononbuoy
-        :param: None
-        :return: None
-        """
-        raise NotImplementedError
-
-    @final
-    def _cleanup_sonobuoy_resources(self):
-        """
-        This method deletes all resources that sonobuoy has created in a k8s cluster for a test
-        :param: None
-        :return: None
-        """
-        logger.info("removing sonobuoy tests from cluster")
-        os.system(f"sonobuoy delete --wait --kubeconfig='{self.kubeconfig_path}'")
-
-    @final
-    def _retrieve_result(self, result_dir_name):
-        """
-        This method invokes sonobouy to store the results in a subdirectory of
-        the working directory. The Junit results file contained in it is then
-        analyzed in order to interpret the relevant information it containes
-        :param: result_file_name:
-        :return: None
-        """
-        logger.debug(f"retrieving results to {result_dir_name}")
-        result_dir = self.working_directory + "/" + result_dir_name
-        if os.path.exists(result_dir):
-            os.system(f"rm -rf {result_dir}/*")
-        else:
-            os.mkdir(result_dir)
-        os.system(
-            f"sonobuoy retrieve {result_dir} -x --filename='{result_dir_name}' --kubeconfig='{self.kubeconfig_path}'"
-        )
-        logger.debug(
-            f"parsing JUnit result from {result_dir + '/plugins/e2e/results/global/junit_01.xml' } "
-        )
-        xml = JUnitXml.fromfile(
-            result_dir + "/plugins/e2e/results/global/junit_01.xml"
-        )
-        failed_test_cases = 0
-        passed_test_cases = 0
-        skipped_test_cases = 0
-        for suite in xml:
-            for case in suite:
-                if case.is_passed:
-                    passed_test_cases += 1
-                else:
-                    failed_test_cases += 1
-                if case.is_skipped:
-                    skipped_test_cases += 1
-
-        logger.info(
-            f" {passed_test_cases} passed, {failed_test_cases} failed of which {skipped_test_cases} were skipped"
-        )
 
     @abstractmethod
     def _create_cluster(self, cluster_name) -> (str, int):
@@ -160,25 +48,38 @@ class KubernetesClusterPlugin(ABC):
         pass
 
     @final
-    def run(self):
+    def create(self, name="scs-cluster", version=None, kubeconfig_filepath=None,):
         """
-        This method is to be called to run the plugin
+        This method is to be called to create a k8s cluster
+        :param: kubernetes_version:
+        :return: uuid
         """
-
+        self.cluster_name=name
+        self.cluster_version=version
         try:
             self._create_cluster()
-            self._preflight_check()
-            self._test_k8s_cncf_conformance()
-            self._retrieve_result("cncf_result")
-            self._cleanup_sonobuoy_resources()
-            # self._test_scs_kaas_conformance()
-            # self._retrieve_result("scs_kaas_result")
+
+        except Exception as e:
+            logging.error(e)
+            self._delete_cluster()
+
+        if kubeconfig_filepath:
+            generated_file=self.kubeconfig 
+            self.kubeconfig = shutil.move(generated_file, kubeconfig_filepath) 
+
+        return self.kubeconfig 
+
+    @final
+    def destroy(self, cluster_uuid=None):
+        """
+        This method is to be called unprovision a cluster
+        :param: cluster_uuid:
+        """
+        try:
+            self._delete_cluster()
         except Exception as e:
             logging.error(e)
 
-        try:
-            self._cleanup_sonobuoy_resources()
-        except Exception as e:
-            logging.error(e)
-        finally:
-            self._delete_cluster()
+
+
+
