@@ -201,7 +201,7 @@ def main(argv):
     return_message = "return_message: FAILED"
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "k:h:d", ["kubeconfig=", "help","debug"])
+        opts, args = getopt.gnu_getopt(argv, "k:hd:", ["kubeconfig=", "help","debug"])
     except getopt.GetoptError as exc:
         logger.debug(f"{exc}", file=sys.stderr)
         print_usage()
@@ -217,9 +217,10 @@ def main(argv):
             kubeconfig = opt[1]
         if opt[0] == "-d" or opt[0] == "--debug":
             logging.getLogger().setLevel(logging.DEBUG)
-        else:
-            print_usage(kubeconfig)
-            return 2
+    if not kubeconfig:
+        logger.critical("You need to have OS_CLOUD set or pass --kubeconfig=CLOUD.")
+        return 2
+
 
     # Setup kubernetes client
     try:

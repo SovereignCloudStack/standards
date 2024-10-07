@@ -14,21 +14,17 @@ logger = logging.getLogger("helper")
 
 
 def initialize_logging():
-    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG)
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
 
 
 def print_usage(file=sys.stderr):
     """Help output"""
-    print(
-        """Usage: k8s_storageclass_check.py [options]
+    print("""Usage: k8s_storageclass_check.py [options]
 This tool checks the requested k8s default storage class according to the SCS Standard 0211 "kaas-default-storage-class".
 Options:
  [-k/--kubeconfig PATH_TO_KUBECONFIG] sets kubeconfig file to access kubernetes api
  [-d/--debug] enables DEBUG logging channel
-""",
-        end="",
-        file=file,
-    )
+""",end='',file=file)
 
 
 class SCSTestException(Exception):
@@ -68,10 +64,3 @@ def gen_sonobuoy_result_file(error_n: int, error_msg: str, test_file_name: str):
         script_directory = os.path.dirname(os.path.abspath(__file__))
         with open(f"{script_directory}/{test_name}.result.yaml", "w") as file:
             yaml.dump(result_file, file)
-    # else:
-    #   result_file = manual_result_file_template
-    #   result_file["name"] = test_name
-    #   result_file["status"] = test_status
-    #   script_directory = os.path.dirname(os.path.abspath(__file__))
-    #   with open(f"{script_directory}/{test_name}.result.yaml", "w") as file:
-    #           yaml.dump(result_file, file)
