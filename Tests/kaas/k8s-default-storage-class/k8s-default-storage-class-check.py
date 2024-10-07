@@ -194,6 +194,28 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance, storage_
 
     return 0
 
+class TestEnvironment:
+    def __init__(self, conn):
+        self.conn = conn
+
+    def prepare(self):
+        print("prepare")
+    def clean(self):
+        print("clean")
+
+    def __enter__(self):
+        self.prepare()
+        print(f"Entering the context {self.conn}")
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.clean()
+        print(f"Exiting the context {self.conn}")
+        if exc_type:
+            print(f"An exception occurred: {exc_value}")
+        # Return True if the exception should be suppressed, otherwise False
+        return False
+
 
 def main(argv):
     initialize_logging()
@@ -221,7 +243,6 @@ def main(argv):
         logger.critical("You need to have OS_CLOUD set or pass --kubeconfig=CLOUD.")
         return 2
 
-
     # Setup kubernetes client
     try:
         logger.debug("setup_k8s_client(kubeconfig)")
@@ -231,6 +252,8 @@ def main(argv):
         return_message = f"{exception_message}"
         return_code = 1
 
+    with TestEnvironment(k8s_storage_api) as env:
+      print("Inside the with block")
     # Check if default storage class is defined (MANDATORY)
     try:
         logger.info("check_default_storageclass()")
