@@ -183,26 +183,36 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance):
                 )
     return 0
 
-
+#with TestEnvironment(k8s_core_api, return_code, return_message) as env:
 class TestEnvironment:
-    def __init__(self, k8s_api_instance):
+    def __init__(self, kubeconfig):
         self.namespace = NAMESPACE
         self.pod_name = POD_NAME
         self.pvc_name = PVC_NAME
-        self.k8s_api_instance = k8s_api_instance
-        self.return_code = None
+        self.k8s_core_api = None
+        self.return_code = 0
         self.return_message = "return_message: FAILED"
+        self.kubeconfig= kubeconfig
 
 
-    def prepare(self, k8s_api_instance):
+    def prepare(self):
+        try:
+          logger.debug("setup_k8s_client(kubeconfig)")
+          self.k8s_core_api, self.k8s_storage_api = setup_k8s_client(self.kubeconfig)
+        except Exception as exception_message:
+            logger.info(f"L{inspect.currentframe().f_lineno} {exception_message}")
+            self.return_message = f"{exception_message}"
+            self.return_code = 1
+
+
         logger.debug("Checking Environment for Leftovers")
         try:
-          pod_list = k8s_api_instance.list_namespaced_pod(namespace=self.namespace)
+          pod_list = self.k8s_core_api.list_namespaced_pod(namespace=self.namespace)
           for pod in pod_list.items:
               if pod.metadata.name == self.pod_name:
                   logger.debug(f"POD '{self.pod_name}' exists in namespace '{self.namespace}'")
                   return True
-          pvc_list = k8s_api_instance.list_namespaced_persistent_volume_claim(namespace=self.namespace)
+          pvc_list = self.k8s_core_api.list_namespaced_persistent_volume_claim(namespace=self.namespace)
           for pvc in pvc_list.items:
               if pvc.metadata.name == self.pvc_name:
                   logger.debug(f"PVC '{self.pvc_name}' exists in namespace '{self.namespace}'")
@@ -217,7 +227,7 @@ class TestEnvironment:
         api_response = None
         try:
             logger.debug(f"delete pod:{self.pod_name}")
-            api_response = self.k8s_api_instance.delete_namespaced_pod(
+            api_response = self.k8s_core_api.delete_namespaced_pod(
                 self.pod_name, self.namespace
             )
         except:
@@ -225,7 +235,7 @@ class TestEnvironment:
         try:
             logger.debug(f"delete pvc:{self.pvc_name}")
             api_response = (
-                self.k8s_api_instance.delete_namespaced_persistent_volume_claim(
+                self.k8s_core_api.delete_namespaced_persistent_volume_claim(
                     self.pvc_name, self.namespace
                 )
             )
@@ -236,26 +246,26 @@ class TestEnvironment:
     def __enter__(self):
         retries = 0
         while retries <= 2:
-          if self.prepare(self.k8s_api_instance):
+          if self.prepare():
               self.clean()
               logger.debug(f"Deleting Leftovers in namespace {self.namespace} from previous test runs")
               time.sleep(2)
           else:
-              logger.debug(f"Entering the context {self.k8s_api_instance}")
+              logger.debug(f"Entering the context {self.k8s_core_api}")
               return self
           retries += 1
         return self
 
 
     def __exit__(self, exc_type, exc_value, traceback):
-        #self.clean()
+        self.clean()
         if self.return_code == 0:
             self.return_message = "all tests passed"
 
         logger.debug(f"return_code:{self.return_code} {self.return_message}")
 
         gen_sonobuoy_result_file(self.return_code, self.return_message, os.path.basename(__file__))
-        print(f"Exiting the context {self.k8s_api_instance}")
+        print(f"Exiting the context {self.k8s_core_api}")
         if exc_type:
             logger.debug(f"An exception occurred: {exc_value}")
         # Return True if the exception should be suppressed, otherwise False
@@ -264,9 +274,6 @@ class TestEnvironment:
 
 def main(argv):
     initialize_logging()
-    return_code = 0
-    return_message = "return_message: FAILED"
-
     try:
         opts, args = getopt.gnu_getopt(argv, "k:hd:", ["kubeconfig=", "help", "debug"])
     except getopt.GetoptError as exc:
@@ -289,19 +296,24 @@ def main(argv):
         return 2
 
     # Setup kubernetes client
-    try:
-        logger.debug("setup_k8s_client(kubeconfig)")
-        k8s_core_api, k8s_storage_api = setup_k8s_client(kubeconfig)
-    except Exception as exception_message:
-        logger.info(f"L{inspect.currentframe().f_lineno} {exception_message}")
-        return_message = f"{exception_message}"
-        return_code = 1
+    # return_code = 0
+    # return_message = "return_message: FAILED"
+    # try:
+    #     logger.debug("setup_k8s_client(kubeconfig)")
+    #     k8s_core_api, k8s_storage_api = setup_k8s_client(kubeconfig)
+    # except Exception as exception_message:
+    #     logger.info(f"L{inspect.currentframe().f_lineno} {exception_message}")
+    #     return_message = f"{exception_message}"
+    #     return_code = 1
 
-    with TestEnvironment(k8s_core_api) as env:
+    # with TestEnvironment(k8s_core_api, return_code, return_message) as env:
+    with TestEnvironment(kubeconfig) as env:
         # Check if default storage class is defined (MANDATORY)
+        k8s_core_api = env.k8s_core_api
+
         try:
             logger.info("check_default_storageclass()")
-            default_class_name = check_default_storageclass(k8s_storage_api)
+            default_class_name = check_default_storageclass(env.k8s_storage_api)
         except SCSTestException as test_exception:
             logger.info(f"L{inspect.currentframe().f_lineno} {test_exception}")
             env.return_message = f"{test_exception}"
@@ -339,7 +351,7 @@ def main(argv):
             logger.info(f"{exception_message}")
             env.return_message = f"{exception_message}"
             env.return_code = 1
-    return return_code
+    return env.return_code
 
 
 if __name__ == "__main__":
