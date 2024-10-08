@@ -31,6 +31,7 @@ class SCSTestException(Exception):
     """Raised when an Specific test did not pass"""
 
     def __init__(self, *args, return_code: int):
+        super().__init__(*args)
         self.return_code = return_code
 
 

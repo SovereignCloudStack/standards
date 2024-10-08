@@ -261,7 +261,13 @@ class TestEnvironment:
         self.clean()
         if self.return_code == 0:
             self.return_message = "all tests passed"
-
+        if isinstance(exc_value, SCSTestException):
+            # Get the return_code from the exception
+            self.return_code = exc_value.return_code
+            print(f"SCSTestException occurred with return_code: {self.return_code}")
+        else:
+            # No specific exception, handle normally
+            print(f"Exiting the context with return_code: {self.return_code}")
         logger.debug(f"return_code:{self.return_code} {self.return_message}")
 
         gen_sonobuoy_result_file(self.return_code, self.return_message, os.path.basename(__file__))
