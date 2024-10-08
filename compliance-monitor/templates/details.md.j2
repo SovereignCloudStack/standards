@@ -1,5 +1,6 @@
 {% for subject, subject_result in results.items() -%}
-{# # {{ subject }} -#}
+{# omit h1 title here because we can only have one of those,
+   and the html wrapper template will add one anyway -#}
 {% for scopeuuid, scope_result in subject_result.items() -%}
 ## {{ scope_result.name }}
 

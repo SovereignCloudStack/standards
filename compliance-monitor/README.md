@@ -211,7 +211,7 @@ Supports content type `text/plain; version=0.0.4; charset=utf-8` only.
 
 ### GET /{view_type}/table\[_full\]
 
-Returns the compliance table for all active subjects, where `view_type` can be
+Returns the compliance table for all active subjects, where `view_type` can be one of the following:
 
 - `markdown`: return Markdown fragment (mimetype `text/markdown`)
 - `fragment`: return HTML fragment (mimetype `text/html`)
