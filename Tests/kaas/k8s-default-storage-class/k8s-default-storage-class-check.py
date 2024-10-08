@@ -195,19 +195,26 @@ class TestEnvironment:
 
 
     def prepare(self, k8s_api_instance):
-        print("prepare")
+        logger.debug("Checking Environment for Leftovers")
         try:
+          pod_list = k8s_api_instance.list_namespaced_pod(namespace=self.namespace)
+          for pod in pod_list.items:
+              if pod.metadata.name == self.pod_name:
+                  logger.debug(f"POD '{self.pod_name}' exists in namespace '{self.namespace}'")
+                  return True
           pvc_list = k8s_api_instance.list_namespaced_persistent_volume_claim(namespace=self.namespace)
           for pvc in pvc_list.items:
               if pvc.metadata.name == self.pvc_name:
+                  logger.debug(f"PVC '{self.pvc_name}' exists in namespace '{self.namespace}'")
                   return True
           return False
         except ApiException as e:
-            print(f"Error: {e}")
+            logger.debug(f"Error preparing Environment: {e}")
             return False
 
 
     def clean(self):
+        api_response = None
         try:
             logger.debug(f"delete pod:{self.pod_name}")
             api_response = self.k8s_api_instance.delete_namespaced_pod(
@@ -224,16 +231,21 @@ class TestEnvironment:
             )
         except:
             logger.debug(f"The PVC {self.pvc_name} couldn't be deleted.", exc_info=True)
+        return api_response
 
     def __enter__(self):
-        # Check if the PVC exists
-        if self.prepare(self.k8s_api_instance):
-            logger.debug(f"PVC '{self.pvc_name}' exists in namespace '{self.namespace}'")
-            self.clean()
-            logger.debug(f"Deleting Leftovers from previous test runs")
-        else:
-            logger.debug(f"Entering the context {self.k8s_api_instance}")
+        retries = 0
+        while retries <= 2:
+          if self.prepare(self.k8s_api_instance):
+              self.clean()
+              logger.debug(f"Deleting Leftovers in namespace {self.namespace} from previous test runs")
+              time.sleep(2)
+          else:
+              logger.debug(f"Entering the context {self.k8s_api_instance}")
+              return self
+          retries += 1
         return self
+
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.clean()
@@ -306,10 +318,11 @@ def main(argv):
                             "try to clean up left overs, then start again")
                 #return_code = create_pvc_pod(k8s_core_api, default_class_name)
                 env.return_code = 1
+                env.return_message = "(409) conflicting resources"
+                return
             else:
                 logger.info(f"An API error occurred: {api_exception}")
                 env.return_code = 1
-
 
         # Check if default_persistent volume has ReadWriteOnce defined (MANDATORY)
         try:
