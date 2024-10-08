@@ -103,6 +103,14 @@ However it is still useful for a CSP to offer less portable, but more precise me
 So, we should standardize a portable NTP setup that users can assume when developing images to work well in any SCS cloud.
 We should not try to prevent CSPs from also supporting paravirtualized or other methods of time synchronization that may offer significant benefits over NTP.
 
+We should consider setting quality requirements, for example limiting the acceptable offset and jitter of the synchronized time.
+The specific limits should be informed by research into the requirements of popular quorum-based distributed services, such as RabbitMQ, Zookeeper, and Ceph, which tend to be sensitive to relative time drift.
+
+We should also work towards upstream OpenStack support for injecting locally synced NTP servers into subnets, comparable to Neutron's support for injecting DHCP servers and providing local DNS resolution.
+This would be an optimal target for standardization, because it would allow time synchronization in isolated networks, and, depending on the implementation, may also help to improve precision and scalability.
+
+Lastly, we should consider giving requirements, or at least guidelines, to CSPs regarding time synchronization in their internal infrastructure, especially if this forms the basis for the synchronisation of guests.
+
 ## Consequences
 
 A standardized NTP setup will allow SCS users and third party image providers to develop images that support local time synchronization across SCS clouds.
@@ -111,9 +119,9 @@ As discussed in the NTP section above, there are a number of limitations in Open
 
 * OpenStack currently has no support for providing NTP servers to VMs under a fixed link-local address, like AWS and GCP are doing.
   Such a feature could probably be implemented by re-using the metadata service IP (`169.254.169.254`) and the mechanisms to inject it into subnets.
-  If this feature becomes available in the future, it will be an attractive target for standardization, but until then it seems more sensible to focus on servers available through provider networks.
-* Making NTP servers accessible via provider networks will limit availability to those VMs that are connected to the provider network, either directly or via a virtual router
-* Without mandating fixed IP addresses or domain names for local NTP servers, CSPs will need a method of informing VMs of available NTP servers.
+  While this would be a great target for standardization, we will first need to get it accepted by the upstream OpenStack community.
+* Alternatively, making NTP servers accessible via provider networks will limit availability to those VMs that are connected to the provider network, either directly or via a virtual router
+* CSPs will need a method of informing VMs of available NTP servers.
   DHCP is the currently best supported mechanism for this, but is not guaranteed to be available to VMs, as users may disable it for their subnets.
   Also, OVN's DHCPv6 implementation currently does not support the required option, but that seems to be a relatively straightforward feature to add.
 * The alternative to DHCP is of course the metadata service, though there is currently no standard field for providing NTP servers.
