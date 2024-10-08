@@ -248,7 +248,7 @@ class TestEnvironment:
 
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.clean()
+        #self.clean()
         if self.return_code == 0:
             self.return_message = "all tests passed"
 
@@ -310,6 +310,7 @@ def main(argv):
             logger.info(f"L{inspect.currentframe().f_lineno} {exception_message}")
             env.return_message = f"{exception_message}"
             env.return_code = 1
+
         try:
           env.return_code = create_pvc_pod(k8s_core_api, default_class_name)
         except ApiException as api_exception:
