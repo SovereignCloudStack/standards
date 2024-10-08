@@ -100,7 +100,7 @@ An open SBOM list MAY be used to propagate the current version of the software a
 
 ## Conformance Tests
 
-In case of provided SBOMs the version numbers of the softwar could be checked.
+In case of provided SBOMs the version numbers of the software could be checked.
 But this is not a requirement, so there cannot be such a test.
 Tests on the integration of security patches itself are difficult.
 And even if tests for certain security issues are possible, then those might be received as an attack.
