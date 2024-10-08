@@ -1,0 +1,28 @@
+name: Check Go syntax
+
+on:
+  push:
+    paths:
+      - 'Tests/kaas/kaas-sonobuoy-tests/**/*.go'
+      - .github/workflows/lint-go.yml
+
+jobs:
+  lint-go-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+      
+      # Install golangci-lint
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.61.0
+      
+      # Run golangci-lint
+      - name: Run golangci-lint
+        working-directory: Tests/kaas/kaas-sonobuoy-tests
+        run: golangci-lint run ./... -v
