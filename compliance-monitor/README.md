@@ -216,9 +216,3 @@ Returns the compliance table for all active subjects (type `text/html`).
 Query parameters:
 
 - `fragment_only` (optional `0` or `1`, default `1`): return just the table (otherwise a complete HTML doc)
-
-### GET /subjects
-
-Returns the list of subjects (together with activity status).
-
-### POST /subjects
