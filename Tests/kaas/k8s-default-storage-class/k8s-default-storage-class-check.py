@@ -156,7 +156,6 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance):
     """
     3. Check if PV got succesfully created using ReadWriteOnce
     """
-
     # 3. Check if PV got succesfully created using ReadWriteOnce
     logger.debug("check if the created PV supports ReadWriteOnce")
 
@@ -192,13 +191,12 @@ class TestEnvironment:
         self.pvc_name = PVC_NAME
         self.k8s_api_instance = k8s_api_instance
         self.return_code = None
-        self.return_message = "return message"
+        self.return_message = "return_message: FAILED"
 
 
     def prepare(self, k8s_api_instance):
         print("prepare")
         try:
-          # Get the list of PVCs in the namespace and filter by name
           pvc_list = k8s_api_instance.list_namespaced_persistent_volume_claim(namespace=self.namespace)
           for pvc in pvc_list.items:
               if pvc.metadata.name == self.pvc_name:
@@ -239,10 +237,10 @@ class TestEnvironment:
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.clean()
-        logger.debug(f"return_code:{self.return_code}")
-
         if self.return_code == 0:
             self.return_message = "all tests passed"
+
+        logger.debug(f"return_code:{self.return_code} {self.return_message}")
 
         gen_sonobuoy_result_file(self.return_code, self.return_message, os.path.basename(__file__))
         print(f"Exiting the context {self.k8s_api_instance}")
