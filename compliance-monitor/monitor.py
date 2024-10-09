@@ -96,7 +96,12 @@ VIEW_TABLE = {
     ViewType.fragment: 'overview.md',
     ViewType.page: 'overview.html',
 }
-REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_DETAIL, VIEW_TABLE) for fn in view.values()))
+VIEW_SCOPE = {
+    ViewType.markdown: 'scope.md',
+    ViewType.fragment: 'scope.md',
+    ViewType.page: 'overview.html',
+}
+REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_DETAIL, VIEW_TABLE, VIEW_SCOPE) for fn in view.values()))
 
 
 # do I hate these globals, but I don't see another way with these frameworks
@@ -540,14 +545,15 @@ async def get_status(
     return convert_result_rows_to_dict2(rows2, get_scopes(), include_report=True)
 
 
-def render_view(view, view_type, results, base_url='/', title=None):
+def render_view(view, view_type, base_url='/', title=None, **kwargs):
     media_type = {ViewType.markdown: 'text/markdown'}.get(view_type, 'text/html')
     stage1 = stage2 = view[view_type]
     if view_type is ViewType.page:
         stage1 = view[ViewType.fragment]
+    def scope_url(uuid): return f"{base_url}page/scope/{uuid}"  # noqa: E306,E704
     def detail_url(subject, scope): return f"{base_url}page/detail/{subject}/{scope}"  # noqa: E306,E704
     def report_url(report): return f"{base_url}reports/{report}"  # noqa: E306,E704
-    fragment = templates_map[stage1].render(results=results, detail_url=detail_url, report_url=report_url)
+    fragment = templates_map[stage1].render(detail_url=detail_url, report_url=report_url, scope_url=scope_url, **kwargs)
     if view_type != ViewType.markdown and stage1.endswith('.md'):
         fragment = markdown(fragment, extensions=['extra'])
     if stage1 != stage2:
@@ -569,7 +575,7 @@ async def get_detail(
         rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS,
         subjects=(subject, ), scopes=(scopeuuid, ),
     )
-    return render_view(VIEW_DETAIL, view_type, results2, base_url=settings.base_url, title=f'{subject} compliance')
+    return render_view(VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url, title=f'{subject} compliance')
 
 
 @app.get("/{view_type}/detail_full/{subject}/{scopeuuid}")
@@ -587,7 +593,7 @@ async def get_detail_full(
     results2 = convert_result_rows_to_dict2(
         rows2, get_scopes(), include_report=True, subjects=(subject, ), scopes=(scopeuuid, ),
     )
-    return render_view(VIEW_DETAIL, view_type, results2, base_url=settings.base_url, title=f'{subject} compliance')
+    return render_view(VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url, title=f'{subject} compliance')
 
 
 @app.get("/{view_type}/table")
@@ -599,7 +605,7 @@ async def get_table(
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, approved_only=True)
     results2 = convert_result_rows_to_dict2(rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS)
-    return render_view(VIEW_TABLE, view_type, results2, base_url=settings.base_url, title="SCS compliance overview")
+    return render_view(VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, title="SCS compliance overview")
 
 
 @app.get("/{view_type}/table_full")
@@ -613,7 +619,29 @@ async def get_table_full(
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, approved_only=False)
     results2 = convert_result_rows_to_dict2(rows2, get_scopes())
-    return render_view(VIEW_TABLE, view_type, results2, base_url=settings.base_url, title="SCS compliance overview")
+    return render_view(VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, title="SCS compliance overview")
+
+
+@app.get("/{view_type}/scope/{scopeuuid}")
+async def get_scope(
+    request: Request,
+    conn: Annotated[connection, Depends(get_conn)],
+    view_type: ViewType,
+    scopeuuid: str,
+):
+    spec = get_scopes()[scopeuuid].spec
+    versions = spec['versions']
+    relevant = sorted([name for name, version in versions.items() if version['_explicit_validity']])
+    modules_chart = {}
+    for name in relevant:
+        for include in versions[name]['include']:
+            module_id = include['module']['id']
+            row = modules_chart.get(module_id)
+            if row is None:
+                row = modules_chart[module_id] = {'module': include['module'], 'columns': {}}
+            row['columns'][name] = include
+    rows = sorted(list(modules_chart.values()), key=lambda row: row['module']['id'])
+    return render_view(VIEW_SCOPE, view_type, spec=spec, relevant=relevant, rows=rows, base_url=settings.base_url, title=spec['name'])
 
 
 @app.get("/pages")
