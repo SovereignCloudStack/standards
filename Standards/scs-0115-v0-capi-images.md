@@ -5,43 +5,61 @@ status: Draft
 track: Iaas
 ---
 
-<!---
-This is a template striving to provide a starting point for
-creating a decision record adhering to scs-0001.
-Replace at least all text in the sections not marked as OPTIONAL.
-See https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0001-v1-sovereign-cloud-standards.md
---->
-
 ## Abstract
 
-The problem that brings us here is how to update and keep track with upstream kubernetes versions when using the cluster-stacks approach on OpenStack. As the [SCS K8S Version Policy](https://docs.scs.community/standards/scs-0210-v2-k8s-version-policy#motivation) formulates, SCS is quite eager to keep track with the upstream work and does not want to fall behind:
+The SCS reference implementation for the Kubernetes-as-a-service layer is built on top of Cluster API (CAPI), and therefore it depends on the corresponding VM images, which may or may not be present on the underlying infrastructure-as-a-service layer. Current tooling will make sure to upload the required image in case it's not present or outdated. However, these ad-hoc uploads will not be shared across environments, which may lead to waste of bandwidth (for transferring the image), storage (if images are not stored in a deduplicated manner), and not least time (because the upload does take multiple minutes). Needless to say, it may also lead to excessive greenhouse-gas emissions.
 
-> We want to achieve an up-to-date policy, meaning that providers should be mostly in sync with the upstream and don't fall behind the official Kubernetes releases.
+This decision record investigates the pros and cons of making the CAPI images mandatory. Ultimately, the decision is made to keep them recommended; we stress, however, that providers who offer the images by default should advertise this fact.
 
-## Context
+## Terminology
 
-The following scenario: 1 CSP with 100 customers each deploying at least one cluster.
-One image will be downloaded (from upstream) and uploaded (to glance) and stored 99 times.
+Kubernetes as a service (KaaS)
+  A service that offers provisioning Kubernetes clusters.
+Cluster API (CAPI)
+  "Cluster API is a Kubernetes sub-project focused on providing declarative APIs and tooling to simplify provisioning, upgrading, and operating multiple Kubernetes clusters." ([source](https://cluster-api.sigs.k8s.io/)) This API can thus be used to implement KaaS.
+CAPI image
+  Virtual machine image that contains a standardized Kubernetes setup to be used for CAPI. The SCS reference implementation for KaaS depends on these images.
+CSP
+  Cloud-service provider
+
+## Design considerations
+
+We consider the following two options:
+
+1. Make CAPI image mandatory.
+2. Keep CAPI image recommended.
+
+For reasons of symmetry, it suffices to consider the pros and cons of the first option.
+
+Pros:
+
+- Save time, money, physical resources and power for both CSP and customer.
+- Regardless of CSP taste, this KaaS tech is part of SCS.
+
+Neutral:
+
+- The CAPI image can be provided in an automated fashion that means virtually no burden to the CSP.
+- The KaaS implementation will work either way.
+- Willing CSPs may offer the image by default and advertise as much.
+
+Cons:
+
+- Additional regulations would be necessary to guarantee quality and timeliness of image.
+- Some CSPs may be opposed to being forced to offer a certain service, which may hurt the overall acceptance
+  of the SCS standardization efforts.
 
 ## Decision
 
-Mandate the CSP to keep cluster-api Images up-to-date.
-
-From the meeting notes:
-
-- will save time, money, physical resources and power for both CSP and customer
-- would guarantee quality and timeliness of image
-- regardless of CSP taste, this KaaS tech is part of SCS
-- CSP won't have noticable disadvantages from providing the image
-
-This would lead to the following standard changes:
-Create a copy of the [default image list](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/scs-0104-v1-images.yaml) and change the capi block from "recommended" to "mandatory".
-
-Also, strictly speaking, we have to change [the standard image format definition](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0104-v1-standard-images.md#image-specification-class-of-images) so that "mandatory" for an image class does not mean that at least one image MUST be present in glance but all that match the [SCS K8S Version Policy](https://docs.scs.community/standards/scs-0210-v2-k8s-version-policy#motivation). Also the checking script has to be adapted.
+Ultimately, we value the freedom of the CSPs (and the acceptance of the standardization efforts) highest;
+willing CSPs are welcome to opt in, i.e., to provide up-to-date images and advertise as much.
 
 ## Consequences
 
-CSPs will have the additional burden to provide cluster-api images in glance (and update them regularly).
+None, as the status quo is being kept.
 
-The CSP will save bandwitdth and diskspace when images are only downloaded and stored once, instead of per Customer.
-It will be easier and quicker for customers to update their clusters.
+## Open questions
+
+Some interesting potential future work does remain, however: to find a way to certify that a willing provider
+does indeed provide up-to-date images. It would be possible with today's methods to certify that a CAPI
+image is present (the image_spec yaml file would have to be split up to obtain a separate test case), but
+we there is no way to make sure that the image is up to date.
