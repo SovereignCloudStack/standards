@@ -209,13 +209,24 @@ Needs to be authenticated (via basic auth).
 
 Supports content type `text/plain; version=0.0.4; charset=utf-8` only.
 
-### GET /pages
+### GET /{view_type}/table\[_full\]
 
-Returns the compliance table for all active subjects (type `text/html`).
+Returns the compliance table for all active subjects, where `view_type` can be one of the following:
 
-Query parameters:
+- `markdown`: return Markdown fragment (mimetype `text/markdown`)
+- `fragment`: return HTML fragment (mimetype `text/html`)
+- `page`: return full HTML page (mimetype `text/html`)
 
-- `fragment_only` (optional `0` or `1`, default `1`): return just the table (otherwise a complete HTML doc)
+If `table_full` is used, then HTTP basic auth must be performed, and the table will show the
+privileged view (i.e., any FAIL will be reported regardless of manual approval).
+
+### GET /{view_type}/details\[_full\]/{subject}/{scopeuuid}
+
+Returns compliance details for given subject and scope.
+
+### GET /{view_type}/scope/{scopeuuid}
+
+Returns spec overview for the given scope.
 
 ### GET /subjects
 
