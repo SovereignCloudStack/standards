@@ -63,6 +63,7 @@ themselves, rendering the encryption ineffective.
 ### Potential threats in detail
 
 We are assuming that:
+
 * the customer workloads are not executed within secure enclaves (e.g. Security
 Guard Extensions (SGX)) and aren't using security measures like end-to-end
 encryption themselves, either relying with security on the CSP or in the case
@@ -293,7 +294,7 @@ correctly authenticated data originates.
 #### TripleO[^to] with IPsec[^ip]
 
 > TripleO is a project aimed at installing, upgrading and operating OpenStack
-> clouds using OpenStack’s own cloud facilities as the foundation - building on
+> clouds using OpenStack's own cloud facilities as the foundation - building on
 > Nova, Ironic, Neutron and Heat to automate cloud management at datacenter
 > scale
 
@@ -503,17 +504,16 @@ environments.
 ## References
 
 [^ne]: [Neutron](https://docs.openstack.org/neutron/latest/) - networking as a service (NaaS) in OpenStack
-[^eb]: [eBPF](https://ebpf.io/)
+[^eb]: [eBPF](https://en.wikipedia.org/wiki/EBPF)
 [^ia]: Team IaaS call [minutes](https://github.com/SovereignCloudStack/minutes/blob/main/iaas/20240214.md)
 [^sw]: [open vSwitch](https://www.openvswitch.org/)
 [^ip]: [IPsec](https://en.wikipedia.org/wiki/IPsec)
 [^ipwh]: [Why is IPsec so complicated](https://destcert.com/resources/why-the-is-ipsec-so-complicated/)
 [^to]: [TripleO](https://docs.openstack.org/developer/tripleo-docs/) - OpenStack on OpenStack
-[^pa]: [Pacemaker](https://clusterlabs.org/pacemaker/)
 [^ci]: [Cillium](https://cilium.io/)
 [^ca]: [Calico](https://docs.tigera.io/calico/latest/about)
 [^caos]: [Calico for OpenStack](https://docs.tigera.io/calico/latest/getting-started/openstack/overview)
-[^ta]: [Tailscale]()
+[^ta]: [Tailscale](https://tailscale.com/solutions/devops)
 [^ov]: [Open Virtual Network](https://www.ovn.org/en/) (OVN)
 [^oit]: [OVN IPsec tutorial](https://docs.ovn.org/en/latest/tutorials/ovn-ipsec.html)
 [^kl]: [kolla](https://opendev.org/openstack/kolla) project
