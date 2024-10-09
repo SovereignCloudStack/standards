@@ -2,7 +2,7 @@
 title: Cluster-API images
 type: Decision Record
 status: Draft
-track: Iaas
+track: IaaS
 ---
 
 ## Abstract
