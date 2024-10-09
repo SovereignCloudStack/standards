@@ -49,6 +49,8 @@ Cons:
 Ultimately, we value the freedom of the CSPs (and the acceptance of the standardization efforts) highest;
 willing CSPs are welcome to opt in, i.e., to provide up-to-date images and advertise as much.
 
+Therefore we decide to _keep the CAPI images recommended_.
+
 ## Consequences
 
 None, as the status quo is being kept.
