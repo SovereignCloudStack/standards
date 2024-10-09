@@ -14,13 +14,13 @@ This decision record investigates the pros and cons of making the CAPI images ma
 ## Terminology
 
 Kubernetes as a service (KaaS)
-  A service that offers provisioning Kubernetes clusters.
+: A service that offers provisioning Kubernetes clusters.
 Cluster API (CAPI)
-  "Cluster API is a Kubernetes sub-project focused on providing declarative APIs and tooling to simplify provisioning, upgrading, and operating multiple Kubernetes clusters." ([source](https://cluster-api.sigs.k8s.io/)) This API can thus be used to implement KaaS.
+: "Cluster API is a Kubernetes sub-project focused on providing declarative APIs and tooling to simplify provisioning, upgrading, and operating multiple Kubernetes clusters." ([source](https://cluster-api.sigs.k8s.io/)) This API can thus be used to implement KaaS.
 CAPI image
-  Virtual machine image that contains a standardized Kubernetes setup to be used for CAPI. The SCS reference implementation for KaaS depends on these images.
+: Virtual machine image that contains a standardized Kubernetes setup to be used for CAPI. The SCS reference implementation for KaaS depends on these images.
 CSP
-  Cloud-service provider
+: Cloud-service provider
 
 ## Design considerations
 
