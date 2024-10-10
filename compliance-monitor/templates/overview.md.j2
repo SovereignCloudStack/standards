@@ -3,7 +3,7 @@ we could of course iterate over results etc., but hardcode the table (except the
 for the time being to have the highest degree of control
 -#}
 {% set iaas = '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f' -%}
-| Name  | Description  | Operator  | [SCS-compatible IaaS]({{ scope_url(iaas) }})  | HealthMon  |
+| Name  | Description  | Operator  | [SCS-compatible IaaS](https://docs.scs.community/standards/scs-compatible-iaas/)  | HealthMon  |
 |-------|--------------|-----------|----------------------|:----------:|
 | [gx-scs](https://github.com/SovereignCloudStack/docs/blob/main/community/cloud-resources/plusserver-gx-scs.md) | Dev environment provided for SCS & GAIA-X context | plusserver GmbH | 
 {#- #} [{{ results | passed('gx-scs', iaas) or '–' }}]({{ detail_url('gx-scs', iaas) }}) {# -#}
