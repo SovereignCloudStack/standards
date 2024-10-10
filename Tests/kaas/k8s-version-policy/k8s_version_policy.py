@@ -24,6 +24,7 @@ a shorter notice.
 (c) Hannes Baum <hannes.baum@cloudandheat.com>, 6/2023
 (c) Martin Morgenstern <martin.morgenstern@cloudandheat.com>, 2/2024
 (c) Matthias Büchse <matthias.buechse@cloudandheat.com>, 3/2024
+(c) Piotr Bigos <piobig2871@gmail.com>, 10/2024
 SPDX-License-Identifier: CC-BY-SA-4.0
 """
 
@@ -337,18 +338,31 @@ async def collect_cve_versions(session: aiohttp.ClientSession) -> set:
 
     # CVE fix versions
     cfvs = set()
+    cve_patch_data = dict()
 
-    # Request latest version
+    # # Request latest version
+    # async with session.get(
+    #     "https://kubernetes.io/docs/reference/issues-security/official-cve-feed/index.json",
+    #     headers={"Accept": "application/json"}
+    # ) as resp:
+    #     cve_list = await resp.json()
+
     async with session.get(
-        "https://kubernetes.io/docs/reference/issues-security/official-cve-feed/index.json",
-        headers={"Accept": "application/json"}
+            "https://kubernetes.io/docs/reference/issues-security/official-cve-feed/index.json",
+            headers={"Accept": "application/json"}
     ) as resp:
+        if resp.status != 200:
+            logger.error(f"Failed to fetch CVE data, status code: {resp.status}")
+            return cve_patch_data
+
         cve_list = await resp.json()
 
     tasks = [request_cve_data(session=session, cveid=cve['id'])
-             for cve in cve_list['items']]
+             for cve in cve_list.get('items', [])]
 
     cve_data_list = await asyncio.gather(*tasks, return_exceptions=True)
+
+    cve_data_list = [data for data in cve_data_list if not isinstance(data, Exception)]
 
     for cve_data in cve_data_list:
         try:
@@ -379,6 +393,44 @@ async def collect_cve_versions(session: aiohttp.ClientSession) -> set:
             cfvs.update(affected_kubernetes_versions)
 
     return cfvs
+
+
+def is_critical_cve(cve_metrics: list) -> bool:
+    """Checks if the CVE is considered critical based on CVSS score."""
+    for metric in cve_metrics:
+        if metric.get('cvssV3', {}).get('baseScore', 0) >= CVE_SEVERITY:
+            return True
+        return False
+
+
+def parse_cve_version_information_new(version_info: dict) -> str:
+    """Extracts the affected Kubernetes version from CVE data."""
+    return version_info.get('version')
+
+
+def parse_patch_release_date(version_info: dict) -> datetime:
+    """Extracts the release date of the patch from the CVE version info."""
+    patch_release_str = version_info.get('patchReleaseDate', None)
+    if patch_release_str:
+        return datetime.strptime(patch_release_str, "%Y-%m-%d")
+    return None
+
+
+async def check_patch_deployment(session: aiohttp.ClientSession, current_version: str, deployed_date: datetime) -> None:
+    """Check if the latest patch targeting a critical CVE was deployed within the allowed time."""
+    cve_patch_data = await collect_cve_versions(session)
+
+    for cve_id, version_data in cve_patch_data.items():
+        for version, patch_release_date in version_data:
+            if version == current_version:
+                if patch_release_date:
+                    allowed_timeframe = patch_release_date + CVE_VERSION_CADENCE
+                    if deployed_date > allowed_timeframe:
+                        logger.error(f"Patch for {cve_id} affecting version {version} was not deployed in time!")
+                    else:
+                        logger.info(f"Patch for {cve_id} affecting version {version} deployed in time.")
+                else:
+                    logger.warning(f"Patch release date for {cve_id} affecting version {version} is missing.")
 
 
 async def get_k8s_cluster_info(kubeconfig, context=None) -> ClusterInfo:
