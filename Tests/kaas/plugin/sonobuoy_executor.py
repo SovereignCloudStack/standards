@@ -30,18 +30,20 @@ class SonobuoyExecutor:
     """
 
     kubeconfig_path = None
-
     working_directory = None
 
     @final
-    def __init__(self, kubeconfig=None):
-        logger.info("Inital SonobuoyExecutor")
-        logger.debug(kubeconfig)
+    def __init__(self, check_name="sonobuoy_executor", kubeconfig=None, result_dir_name="sonobuoy_results"):
+        self.check_name = check_name
+        logger.info(f"Inital SonobuoyExecutor for {self.check_name}")
+        logger.debug(f"kubeconfig: {kubeconfig} ")
         if kubeconfig is None:
             raise Exception("No kubeconfig provided")
-        # TODO:!!! check if kubeconfig is valid
+        else:
+            self.kubeconfig_path = kubeconfig
         self.working_directory = os.getcwd()
-        logger.debug(f"Working from {self.working_directory}")
+        self.result_dir_name = result_dir_name
+        logger.debug(f"Working from {self.working_directory} placing results at {self.result_dir_name}")
 
     @final
     def _preflight_check(self):
@@ -103,7 +105,7 @@ class SonobuoyExecutor:
         os.system(f"sonobuoy delete --wait --kubeconfig='{self.kubeconfig_path}'")
 
     @final
-    def _retrieve_result(self, result_dir_name):
+    def _retrieve_result(self):
         """
         This method invokes sonobouy to store the results in a subdirectory of
         the working directory. The Junit results file contained in it is then
@@ -111,14 +113,14 @@ class SonobuoyExecutor:
         :param: result_file_name:
         :return: None
         """
-        logger.debug(f"retrieving results to {result_dir_name}")
-        result_dir = self.working_directory + "/" + result_dir_name
+        logger.debug(f"retrieving results to {self.result_dir_name}")
+        result_dir = self.working_directory + "/" + self.result_dir_name
         if os.path.exists(result_dir):
             os.system(f"rm -rf {result_dir}/*")
         else:
             os.mkdir(result_dir)
         os.system(
-            f"sonobuoy retrieve {result_dir} -x --filename='{result_dir_name}' --kubeconfig='{self.kubeconfig_path}'"
+            f"sonobuoy retrieve {result_dir} -x --filename='{result_dir}' --kubeconfig='{self.kubeconfig_path}'"
         )
         logger.debug(
             f"parsing JUnit result from {result_dir + '/plugins/e2e/results/global/junit_01.xml'} "
@@ -131,28 +133,37 @@ class SonobuoyExecutor:
         skipped_test_cases = 0
         for suite in xml:
             for case in suite:
-                if case.is_passed:
+                if case.is_passed is True:
                     passed_test_cases += 1
+                elif case.is_skipped is True:
+                    skipped_test_cases += 1
+                    # ~ logger.warning(f"SKIPPED:{case.name}")  # TODO:!!! decide if skipped is error or warning only ?
                 else:
                     failed_test_cases += 1
-                if case.is_skipped:
-                    skipped_test_cases += 1
+                    logger.error(f"ERROR: {case.name}")
 
-        logger.info(
-            f" {passed_test_cases} passed, {failed_test_cases} failed of which {skipped_test_cases} were skipped"
-        )
+        result_message = f" {passed_test_cases} passed, {failed_test_cases} failed, {skipped_test_cases} skipped"
+        if failed_test_cases == 0 and skipped_test_cases == 0:
+            logger.info(result_message)
+            self.return_code = 0
+        else:
+            logger.error("ERROR:" + result_message)
+            self.return_code = 3
 
     @final
     def run(self):
         """
         This method is to be called to run the plugin
         """
+        self.return_code = 11
         try:
             self._preflight_check()
             self._test_k8s_cncf_conformance()
-            self._retrieve_result("cncf_result")
-            self._cleanup_sonobuoy_resources()
+            self._retrieve_result()
         except Exception as e:
             logging.error(e)
+            self.return_code = 1
         finally:
             self._cleanup_sonobuoy_resources()
+            print(self.check_name + ": " + ('PASS', 'FAIL')[min(1, self.return_code)])
+            return self.return_code

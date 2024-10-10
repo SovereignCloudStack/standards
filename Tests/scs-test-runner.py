@@ -199,8 +199,9 @@ def _move_file(source_path, target_path):
 @click.option('--num-workers', 'num_workers', type=int, default=5)
 @click.option('--monitor-url', 'monitor_url', type=str, default=MONITOR_URL)
 @click.option('-o', '--output', 'report_yaml', type=click.Path(exists=False), default=None)
+@click.option('--upload/--no-upload', default=True)
 @click.pass_obj
-def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml):
+def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml, upload):
     """
     run compliance tests and upload results to compliance monitor
     """
@@ -224,7 +225,7 @@ def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml):
         report_yaml_tmp = os.path.join(tdirname, 'report.yaml')
         jobs = cfg.generate_compliance_check_jobs(subjects, scopes)
         logger.debug("Create clusters and provide kubeconfig")
-        jobs = cfg.build_clusters_for_jobs_sequence(jobs)
+        jobs = cfg.build_clusters_for_jobs_in_sequence(jobs)
         outputs = [os.path.join(tdirname, f'report-{idx}.yaml') for idx in range(len(jobs))]
         commands = [cfg.build_check_command(job, output) for job, output in zip(jobs, outputs)]
         _run_commands(commands, num_workers=num_workers)
@@ -233,6 +234,8 @@ def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml):
         subprocess.run(**cfg.build_upload_command(report_yaml_tmp, monitor_url))
         if report_yaml is not None:
             _move_file(report_yaml_tmp, report_yaml)
+        logger.debug("delete clusters")
+        cfg.delete_clusters_for_jobs_in_sequence(jobs)
     return 0
 
 

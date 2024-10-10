@@ -8,12 +8,12 @@ variables:
 modules:
   - id: cncf-k8s-conformance
     name: CNCF Kubernetes conformance
-    url: https://github.com/cncf/k8s-conformance/tree/master
+    url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0210-v2-k8s-version-policy.md # TODO:!!! this standard mentions cncf but is is the right reference?
     run:
       - executable: ./kaas/plugin/run_sonobuoy_executor.py
-        args: -k {kubeconfig}
+        args: -k {kubeconfig} -r {result_dir_name} -c 'cncf-conformance'
     testcases:
-      - id: cncf-k8s-conformance
+      - id: cncf-conformance
         tags: [mandatory]
   - id: scs-0210-v2
     name: Kubernetes version policy
