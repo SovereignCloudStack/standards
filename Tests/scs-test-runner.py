@@ -17,9 +17,7 @@ import time
 import click
 import tomli
 
-# TODO:!!! provide plugin chosing at interface side
-from kaas.plugin.plugin_kind import PluginKind
-cluster_plugin = PluginKind()
+from kaas.plugin.run_plugin import run_plugin_create, run_plugin_delete
 
 logger = logging.getLogger(__name__)
 MONITOR_URL = "https://compliance.sovereignit.cloud/"
@@ -70,7 +68,8 @@ class Config:
                 if scope == "scs-compatible-kaas":
                     k8s_setup = self.get_kubernetes_setup(subject)
                     for k8s_version in k8s_setup["kube_versions"]:
-                        jobs.append([scope, subject, k8s_version, k8s_setup["kube_plugin"]])
+                        kaas_subject = f"{subject}.{k8s_version}"
+                        jobs.append([scope, kaas_subject, k8s_version, k8s_setup["kube_plugin"]])
         return jobs
 
     def get_kubernetes_setup(self, subject):
@@ -79,18 +78,25 @@ class Config:
         kubernetes_setup.update(self.subjects.get(subject, {}).get('kubernetes_setup', {}))
         return kubernetes_setup
 
-    def build_clusters_for_jobs_sequence(self, jobs):
+    def build_clusters_for_jobs_in_sequence(self, jobs):
         for i in range(len(jobs)):
             if jobs[i][0] == "scs-compatible-kaas":
-                cluster_id = f"{jobs[i][1]}-{jobs[i][2]}"
+                cluster_id = f"{jobs[i][1]}"
                 logger.debug(f"Provide cluster '{cluster_id}'")
                 kubeconfig_path = os.getcwd() + "/k8s_test_kubeconfigs/"
                 if not os.path.exists(kubeconfig_path):
                     os.mkdir(kubeconfig_path)
-                kubeconfig_file = f"{cluster_id}.yaml"
-                kubeconfig = cluster_plugin.create(cluster_id, jobs[i][2], (kubeconfig_path + kubeconfig_file))
+                kubeconfig_filepath = kubeconfig_path + f"{cluster_id}.yaml"
+                kubeconfig = run_plugin_create(jobs[i][3], cluster_id, jobs[i][2], (kubeconfig_filepath))
                 jobs[i].append(kubeconfig)
         return jobs
+
+    def delete_clusters_for_jobs_in_sequence(self, jobs):
+        for i in range(len(jobs)):
+            if jobs[i][0] == "scs-compatible-kaas":
+                cluster_id = f"{jobs[i][1]}"
+                logger.debug(f"Delete cluster '{cluster_id}'")
+                run_plugin_delete(jobs[i][3], cluster_id)
 
     def abspath(self, path):
         return os.path.join(self.cwd, path)
@@ -107,6 +113,7 @@ class Config:
             cmd.extend(['-a', f'{key}={value}'])
         if len(job) == 5 and scope == "scs-compatible-kaas":
             cmd.extend(['-a', f'kubeconfig={job[4]}'])
+            cmd.extend(['-a', f'result_dir_name={job[1]}-{job[2]}'])
         elif len(job) != 5 and scope == "scs-compatible-kaas":
             logger.Error(f"Scope is '{job[0]}' but no kubeconfig was provided")
         return cmd
@@ -192,8 +199,9 @@ def _move_file(source_path, target_path):
 @click.option('--num-workers', 'num_workers', type=int, default=5)
 @click.option('--monitor-url', 'monitor_url', type=str, default=MONITOR_URL)
 @click.option('-o', '--output', 'report_yaml', type=click.Path(exists=False), default=None)
+@click.option('--upload/--no-upload', default=True)
 @click.pass_obj
-def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml):
+def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml, upload):
     """
     run compliance tests and upload results to compliance monitor
     """
@@ -217,15 +225,19 @@ def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml):
         report_yaml_tmp = os.path.join(tdirname, 'report.yaml')
         jobs = cfg.generate_compliance_check_jobs(subjects, scopes)
         logger.debug("Create clusters and provide kubeconfig")
-        jobs = cfg.build_clusters_for_jobs_sequence(jobs)
+        jobs = cfg.build_clusters_for_jobs_in_sequence(jobs)
         outputs = [os.path.join(tdirname, f'report-{idx}.yaml') for idx in range(len(jobs))]
         commands = [cfg.build_check_command(job, output) for job, output in zip(jobs, outputs)]
         _run_commands(commands, num_workers=num_workers)
         _concat_files(outputs, report_yaml_tmp)
-        subprocess.run(cfg.build_sign_command(report_yaml_tmp))
-        subprocess.run(cfg.build_upload_command(report_yaml_tmp, monitor_url))
+        if upload:
+            logging.debug("uploading results")
+            subprocess.run(cfg.build_sign_command(report_yaml_tmp))
+            subprocess.run(cfg.build_upload_command(report_yaml_tmp, monitor_url))
         if report_yaml is not None:
             _move_file(report_yaml_tmp, report_yaml)
+        logger.debug("delete clusters")
+        cfg.delete_clusters_for_jobs_in_sequence(jobs)
     return 0
 
 

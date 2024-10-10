@@ -3,32 +3,46 @@
 #
 
 from sonobuoy_executor import SonobuoyExecutor
-import logging
-import getopt
 import sys
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger("sonobuoy_executor")
+import click
+import logging
 
-#TODO:!!! move this to class file
-def parse_arguments(argv):
-    """Parse cli arguments from the script call"""
-    try:
-        opts, args = getopt.gnu_getopt(argv, "k:t:h", ["kubeconfig=", "test=", "help"])
-    except getopt.GetoptError:
-        raise ConfigException
+logging_config = {
+    "level": "INFO",
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "sonobuoy_logs": {
+            "format": "%(levelname)s: %(message)s"
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "sonobuoy_logs",
+            "stream": "ext://sys.stdout"
+        }
+    },
+    "root": {
+        "handlers": ["console"]
+    }
+}
 
-    for opt in opts:
-        if opt[0] == "-h" or opt[0] == "--help":
-            raise HelpException
-        if opt[0] == "-k" or opt[0] == "--kubeconfig":
-            kubeconfig = opt[1]
 
-    return kubeconfig
+logger = logging.getLogger(__name__)
+
+
+@click.command()
+@click.option('-k', '--kubeconfig', 'kubeconfig', type=click.Path(exists=False), default=None, help='path/to/kubeconfig_file.yaml')
+@click.option('-r', '--result_dir_name', 'result_dir_name', type=str, default="sonobuoy_results", help='directory name to store results at')
+@click.option('-c', '--check', 'check_name', type=str, default="sonobuoy_executor", help='name of the check to p')  # TODO:!!! this should be eighter 'scs-kaas-tests' or 'cncf-conformance'
+@click.option('--debug/--no-debug', default=False)  # TODO: Not Yet Implemented
+def sonobuoy_run(kubeconfig, result_dir_name, check_name, debug):
+    logger.info("Run sonobuoy_executor")
+    sonobuoy_executor = SonobuoyExecutor(check_name, kubeconfig, result_dir_name)
+    return_code = sonobuoy_executor.run()
+    sys.exit(return_code)
 
 
 if __name__ == "__main__":
-    logger.info("read in kubeconfig")
-    kubeconfig_path = parse_arguments(sys.argv)
-    logger.info("Run sonobuoy_executor")
-    sonobuoy_executor = SonobuoyExecutor(kubeconfig_path)
-    sonobuoy_executor.run()
+    sonobuoy_run()

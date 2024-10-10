@@ -1,10 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import final
-from kubernetes import client, config
 import os
 import shutil
 import logging
-from junitparser import JUnitXml
 
 logger = logging.getLogger("interface")
 
@@ -24,10 +22,10 @@ class KubernetesClusterPlugin(ABC):
     @final
     def __init__(self, config=None):
         logger.info(f"Inital provider plug in of type:{type(self)}")
-        logger.debug(config)
+        self.config = config
+        logger.debug(self.config)
         self.working_directory = os.getcwd()
         logger.debug(f"Working from {self.working_directory}")
-
 
     @abstractmethod
     def _create_cluster(self, cluster_name) -> (str, int):
@@ -48,14 +46,14 @@ class KubernetesClusterPlugin(ABC):
         pass
 
     @final
-    def create(self, name="scs-cluster", version=None, kubeconfig_filepath=None,):
+    def create(self, name="scs-cluster", version=None, kubeconfig_filepath=None):
         """
         This method is to be called to create a k8s cluster
         :param: kubernetes_version:
         :return: uuid
         """
-        self.cluster_name=name
-        self.cluster_version=version
+        self.cluster_name = name
+        self.cluster_version = version
         try:
             self._create_cluster()
 
@@ -64,22 +62,19 @@ class KubernetesClusterPlugin(ABC):
             self._delete_cluster()
 
         if kubeconfig_filepath:
-            generated_file=self.kubeconfig 
-            self.kubeconfig = shutil.move(generated_file, kubeconfig_filepath) 
+            generated_file = self.kubeconfig
+            self.kubeconfig = shutil.move(generated_file, kubeconfig_filepath)
 
-        return self.kubeconfig 
+        return self.kubeconfig
 
     @final
-    def destroy(self, cluster_uuid=None):
+    def delete(self, cluster_name=None):
         """
-        This method is to be called unprovision a cluster
+        This method is to be called in order to unprovision a cluster
         :param: cluster_uuid:
         """
+        self.cluster_name = cluster_name
         try:
             self._delete_cluster()
         except Exception as e:
             logging.error(e)
-
-
-
-
