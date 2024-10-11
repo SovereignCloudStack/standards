@@ -1,5 +1,8 @@
-from .plugin_kind import PluginKind
-from .plugin_static import PluginStatic
+import argparse
+
+from plugin_kind import PluginKind
+from plugin_static import PluginStatic
+from plugin_cluster_stacks import PluginClusterStacks
 
 
 def init_plugin(plugin_kind, config=None):
@@ -8,6 +11,9 @@ def init_plugin(plugin_kind, config=None):
 
     elif plugin_kind == "kind":
         plugin = PluginKind(config)
+
+    elif plugin_kind == "cluster-stacks":
+        plugin = PluginClusterStacks(config)
 
     else:
         raise ValueError(f"unknown plugin '{plugin_kind}'")

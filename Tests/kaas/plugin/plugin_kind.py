@@ -1,4 +1,4 @@
-from .interface import KubernetesClusterPlugin
+from interface import KubernetesClusterPlugin
 from pytest_kind import KindCluster
 
 
