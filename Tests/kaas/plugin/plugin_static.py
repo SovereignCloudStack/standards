@@ -1,4 +1,4 @@
-from .interface import KubernetesClusterPlugin
+from interface import KubernetesClusterPlugin
 
 
 class PluginStatic(KubernetesClusterPlugin):
