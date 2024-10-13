@@ -417,7 +417,7 @@ is more significant.
 
 ### [OPTIONAL] GPU support
 
-Format: `_`\[`G/g`\]X\[N\]\[`-`M\]\[`h`\]
+Format: `_`\[`G/g`\]X\[N\[`-`M\[`h`\]\[`-`V\[`h`\]\]\]\]
 
 This extension provides more details on the specific GPU:
 
@@ -425,7 +425,9 @@ This extension provides more details on the specific GPU:
 - vendor (X)
 - generation (N)
 - number (M) of processing units that are exposed (for pass-through) or assigned; see table below for vendor-specific terminology
-- high-performance indicator (`h`)
+- high-frequency indicator (`h`) for compute units
+- amount of video memory (V) in GiB
+- an indicator for high-bandwidth memory
 
 Note that the vendor letter X is mandatory, generation and processing units are optional.
 
@@ -440,13 +442,29 @@ for AMD GCN-x=0.x, RDNA1=1, C/RDNA2=2, C/RDNA3=3, C/RDNA3.5=3.5, C/RDNA4=4, ...
 for Intel Gen9=0.9, Xe(12.1/DG1)=1, Xe(12.2)=2, Arc(12.7/DG2)=3 ...
 (Note: This may need further work to properly reflect what's out there.)
 
-The optional `h` suffix to the compute unit count indicates high-performance (e.g. high freq or special
-high bandwidth gfx memory such as HBM);
-`h` can be duplicated for even higher performance.
+The optional `h` suffix to the compute unit count indicates high-frequency GPU compute units.
+It is not normally recommended to use it except if there are several variants of cards within
+a generation of GPUs and with similar number of SMs/CUs/EUs.
+In case there are even more than two variants, the letter `h` can be duplicated for even
+higher frquencies.
 
-Example: `SCS-16V-64-500s_GNa-14h`
-This flavor has a pass-through GPU nVidia Ampere with 14 SMs and either high-bandwidth memory or specially high frequencies.
-Looking through GPU specs you could guess it's 1/4 of an A30.
+Please note that there are GPUs from one generation and vendor that have vastly different sizes
+(or different fractions are being passed to an instance with multi-instance-GPUs). The number
+M allows to differentiate between them and have an indicator of the compute capability and
+parallelism. M can not at all be compared between different generations let alone different
+vendors.
+
+The amount of video memory dedicated to the instance can be indicated by V (in binary
+Gigabytes). This number needs to be an integer -- fractional memory sizes must be rounded
+down. An optional `h` can be used to indicate high bandwidth memory (such as HBM) with
+bandwidths well above 1GiB/s.
+
+Example: `SCS-16V-64-500s_GNa-14-6h`
+This flavor has a pass-through GPU nVidia Ampere with 14 SMs and 6 GiB of high-bandwidth video
+memory. Looking through GPU specs you could guess it's 1/4 of an A30.
+
+We have a table with common GPUs in the
+[implementation hints for this standard](scs-0100-w1-flavor-naming-implementation-testing)
 
 ### [OPTIONAL] Infiniband
 
