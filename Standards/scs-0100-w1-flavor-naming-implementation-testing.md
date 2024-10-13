@@ -82,7 +82,7 @@ out as as pass-through PCIe devices to instances. One SM corresponds to 64 Cuda 
 
 ##### Ada Lovelave (`l`)
 
-No MIG support, 128 Cuda Cores and 4 Tesnro Cores per SM.
+No MIG support, 128 Cuda Cores and 4 Tensor Cores per SM.
 
 | nVidia GPU | Tensor C | Cuda Cores | SMs |    VRAM    | SCS name piece |
 |------------|----------|------------|-----|------------|----------------|
