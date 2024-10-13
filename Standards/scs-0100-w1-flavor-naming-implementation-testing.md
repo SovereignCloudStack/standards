@@ -108,6 +108,8 @@ These have MIG support and 128 Cuda Cores and 4 Tensor Cores per SM.
 
 ##### CDNA 2 (`2`)
 
+One CU contains 64 Stream Processors.
+
 |   AMD  GPU  | Stream Proc | CUs |    VRAM    | SCS name piece |
 |-------------|-------------|-----|------------|----------------|
 | Inst MI210  |     6656    | 104 |  64G HBM2e | `GA2-104-64h`  |
@@ -118,7 +120,7 @@ These have MIG support and 128 Cuda Cores and 4 Tensor Cores per SM.
 
 SRIOV partitioning is possible, resulting in pass-through for
 up to 8 partitions, somewhat similar to nVidia MIG. 4 Tensor
-Cores per CU.
+Cores and 64 Stream Processors per CU.
 
 |   AMD  GPU  | Tensor C | Stream Proc | CUs |    VRAM    | SCS name piece |
 |-------------|----------|-------------|-----|------------|----------------|
@@ -129,7 +131,7 @@ Cores per CU.
 
 ##### Xe-HPC (Ponte Vecchio) (`12.7`)
 
-1 EU corresponds to one Tensor Core.
+1 EU corresponds to one Tensor Core and contains 128 Shading Units.
 
 | intel DC GPU | Tensor C |  Shading U | EUs |    VRAM    | SCS name piece    |
 |--------------|----------|------------|-----|------------|-------------------|
