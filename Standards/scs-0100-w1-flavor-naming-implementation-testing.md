@@ -116,7 +116,7 @@ These have MIG support and 128 Cuda Cores and 4 Tensor Cores per SM.
 
 ##### CDNA 3 (`3`)
 
-SRIOV partitioning is possible, resulting in pass-through for 
+SRIOV partitioning is possible, resulting in pass-through for
 up to 8 partitions, somewhat similar to nVidia MIG. 4 Tensor
 Cores per CU.
 
@@ -135,7 +135,6 @@ Cores per CU.
 |--------------|----------|------------|-----|------------|-------------------|
 | Max 1100     |   56     |     7168   |  56 |  48G HBM2e | `GI12.7-56-48h`   |
 | Max 1550     |  128     |    16384   | 128 | 128G HBM2e | `GI12.7-128-128h` |
-
 
 ## Automated tests
 
