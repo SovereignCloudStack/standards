@@ -18,9 +18,8 @@ Unpatched versions should not be used in deployments as they are a security risk
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | CSP                 | Cloud Service Provider, provider managing the OpenStack infrastructure.                                                                  |
 | SLURP               | Skip Level Upgrade Release Process - A Process that allows upgrades between two releases, while skipping the one in between them.        |
-| Compute             | A generic name for the IaaS service, that manages virtual machines (e.g. Nova in OpenStack).                                             |
-| Network             | A generic name for the IaaS service, that manages network resources (e.g. Neutron in OpenStack).                                         |
-| Storage             | A generic name for the IaaS service, that manages the storage backends and virtual devices (e.g. Cinder in OpenStack).                   |
+| OSSN                | [OpenStack Security Note](https://wiki.openstack.org/wiki/Security_Notes) - security issues from 3rd parties or due to misconfigurations. |
+| OSSA                | [OpenStack Security Advisories](https://security.openstack.org/ossalist.html) - security issues and advices for OpenStack.               |
 
 ## Motivation
 
