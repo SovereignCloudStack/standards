@@ -1,6 +1,7 @@
 **/__pycache__/
 .venv/
 .idea
+.sandbox
 .DS_Store
 node_modules
 Tests/kaas/results/
