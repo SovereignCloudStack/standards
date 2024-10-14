@@ -33,7 +33,12 @@ class SonobuoyExecutor:
     working_directory = None
 
     @final
-    def __init__(self, check_name="sonobuoy_executor", kubeconfig=None, result_dir_name="sonobuoy_results"):
+    def __init__(
+        self,
+        check_name="sonobuoy_executor",
+        kubeconfig=None,
+        result_dir_name="sonobuoy_results",
+    ):
         self.check_name = check_name
         logger.info(f"Inital SonobuoyExecutor for {self.check_name}")
         logger.debug(f"kubeconfig: {kubeconfig} ")
@@ -43,7 +48,9 @@ class SonobuoyExecutor:
             self.kubeconfig_path = kubeconfig
         self.working_directory = os.getcwd()
         self.result_dir_name = result_dir_name
-        logger.debug(f"Working from {self.working_directory} placing results at {self.result_dir_name}")
+        logger.debug(
+            f"Working from {self.working_directory} placing results at {self.result_dir_name}"
+        )
 
     @final
     def _preflight_check(self):
@@ -66,7 +73,9 @@ class SonobuoyExecutor:
             logger.debug(f"[supported api]: {api.name:<40} {','.join(versions)}")
 
         logger.debug("checks if sonobuoy is availabe")
-        return_value = os.system(f"sonobuoy version --kubeconfig='{self.kubeconfig_path}'")
+        return_value = os.system(
+            f"sonobuoy version --kubeconfig='{self.kubeconfig_path}'"
+        )
         if return_value != 0:
             raise Exception("sonobuoy is not installed")
 
@@ -125,9 +134,7 @@ class SonobuoyExecutor:
         logger.debug(
             f"parsing JUnit result from {result_dir + '/plugins/e2e/results/global/junit_01.xml'} "
         )
-        xml = JUnitXml.fromfile(
-            result_dir + "/plugins/e2e/results/global/junit_01.xml"
-        )
+        xml = JUnitXml.fromfile(result_dir + "/plugins/e2e/results/global/junit_01.xml")
         failed_test_cases = 0
         passed_test_cases = 0
         skipped_test_cases = 0
@@ -165,5 +172,5 @@ class SonobuoyExecutor:
             self.return_code = 1
         finally:
             self._cleanup_sonobuoy_resources()
-            print(self.check_name + ": " + ('PASS', 'FAIL')[min(1, self.return_code)])
+            print(self.check_name + ": " + ("PASS", "FAIL")[min(1, self.return_code)])
             return self.return_code

@@ -23,5 +23,4 @@ def run_plugin_create(plugin_kind, cluster_id, k8s_version, kubeconfig_filepath)
 
 def run_plugin_delete(plugin_kind, cluster_id):
     plugin = init_plugin(plugin_kind)
-    kubeconfig = plugin.delete(cluster_id)
-    return kubeconfig
+    plugin.delete(cluster_id)

@@ -9,11 +9,10 @@ class PluginKind(KubernetesClusterPlugin):
     """
 
     def _create_cluster(self):
-        print(self.cluster_version)
-        self.cluster = KindCluster(
-            self.cluster_name
-        )  # TODO: enrich with config and version 
-        self.cluster.create()
+        config_file = None
+        cluster_image = f"kindest/node:{self.cluster_version}"
+        self.cluster = KindCluster(self.cluster_name, self.kubeconfig, cluster_image)
+        self.cluster.create(config_file)
         self.kubeconfig = str(self.cluster.kubeconfig_path.resolve())
 
     def _delete_cluster(self):
