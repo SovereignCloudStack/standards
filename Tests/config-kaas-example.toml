@@ -1,6 +1,7 @@
 [secrets]
 keyfile = ".secret/keyfile"
 tokenfile = ".secret/tokenfile"
+k8s_config = ".secret/k8s_config.yml"
 
 
 [presets.default]
@@ -31,7 +32,7 @@ scopes = [
 ]
 subjects = [
     "cloud-kaas-a",
-    "cloud-kaas-b",
+    #"cloud-kaas-b",
 ]
 workers = 4
 
@@ -54,9 +55,9 @@ os_cloud = "{subject}"
 [subjects._.kubernetes_setup]
 kube_plugin = "kind"
 kube_versions = [
-  "v1.29",
-  #"v1.30",
-  #"v1.31",
+  "v1.29.0",
+  "v1.30.0",
+  #"v1.31.0",
 ]
 
 
