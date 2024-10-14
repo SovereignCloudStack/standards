@@ -88,8 +88,8 @@ And CSPs using OpenStack could even be encouraged to upgrade their deployments.
 
 ## Standard for a minimum IaaS Layer Software version
 
-If a maintained[^1] version of OpenStack is used as implementation for IaaS Layer software, security patches noted in OSSNs and OSSAs MUST be integrated within a reasonable timeframe.
-Otherwise the CSP MUST implement security bug fixes themself within a reasonable timeframe.
+If a deployment is affected by a security issue and a maintained[^1] version of OpenStack is used as implementation for IaaS Layer software, security patches noted in OSSNs and OSSAs MUST be integrated within a reasonable timeframe.
+Otherwise the CSP MUST implement security bug fixes themself within a reasonable timeframe, when the deplyoment is affected by a security issue.
 
 In both cases proof of the update MUST be send to the OSBA, so that the compliance will not be revoked.
 
