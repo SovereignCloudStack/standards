@@ -4,7 +4,7 @@ type: Supplement
 track: IaaS
 status: Draft
 supplements:
-  - scs-0120-v1-Availability-Zones-Standard.md
+  - scs-0121-v1-Availability-Zones-Standard.md
 ---
 
 ## Automated Tests
