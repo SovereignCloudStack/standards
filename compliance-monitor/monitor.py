@@ -703,8 +703,8 @@ def verdict_check_filter(value):
 
 
 def reload_static_config(*args, do_ensure_schema=False):
-    logger.info("loading static config")
     # allow arbitrary arguments so it can readily be used as signal handler
+    logger.info("loading static config")
     scopes = {}
     import_cert_yaml_dir(settings.yaml_path, scopes)
     # import successful: only NOW destructively update global _scopes
