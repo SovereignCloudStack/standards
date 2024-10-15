@@ -455,8 +455,8 @@ parallelism. M can not at all be compared between different generations let alon
 vendors.
 
 The amount of video memory dedicated to the instance can be indicated by V (in binary
-Gigabytes). This number needs to be an integer -- fractional memory sizes must be rounded
-down. An optional `h` can be used to indicate high bandwidth memory (such as HBM) with
+Gigabytes). This number needs to be an integer - fractional memory sizes must be rounded
+down. An optional `h` can be used to indicate high bandwidth memory (such as HBM2+) with
 bandwidths well above 1GiB/s.
 
 Example: `SCS-16V-64-500s_GNa-14-6h`

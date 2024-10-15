@@ -45,7 +45,8 @@
           "message": "Avoid double spaces",
           "searchPattern": "/([^\\s>])  ([^\\s|])/g",
           "replace": "$1 $2",
-          "skipCode": true
+          "skipCode": true,
+	  "tables": false
         }
       ]
     }
