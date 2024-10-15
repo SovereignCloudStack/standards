@@ -7,7 +7,6 @@ supplements:
   - scs-0004-v1-achieving-certification.md
 ---
 
-
 # Getting SCS-compatible certification
 
 ## Process overview
@@ -32,7 +31,6 @@ The SCS certification process typically consists of a few simple steps:
 
 The precise rules that govern how certificates are issued or withdrawn are defined in the
 [SCS standard 0004](scs-0004-v1-achieving-certification).
-
 
 ## Self-testing and technical adjustments
 
