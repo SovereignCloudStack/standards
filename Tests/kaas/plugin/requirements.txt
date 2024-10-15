@@ -31,7 +31,7 @@ pyasn1-modules==0.4.0
 pykube-ng==23.6.0
     # via pytest-kind
 pytest-kind==22.11.1
-    # via -r Tests/kaas/plugin/requirements.in
+    # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via kubernetes
 pyyaml==6.0.2
