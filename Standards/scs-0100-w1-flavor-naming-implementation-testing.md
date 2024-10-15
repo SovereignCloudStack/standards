@@ -131,7 +131,7 @@ SRIOV partitioning is possible, resulting in pass-through for
 up to 8 partitions, somewhat similar to Nvidia MIG. 4 Tensor
 Cores and 64 Stream Processors per CU.
 
-|   AMD  GPU  | Tensor C | Stream Proc | CUs | VRAM       | SCS name piece |
+| AMD GPU     | Tensor C | Stream Proc | CUs | VRAM       | SCS name piece |
 |-------------|----------|-------------|-----|------------|----------------|
 | Inst MI300X | 1216     | 19456       | 304 | 192G HBM3  | `GA3-304-192h` |
 | Inst MI325X | 1216     | 19456       | 304 | 288G HBM3  | `GA3-304-288h` |
