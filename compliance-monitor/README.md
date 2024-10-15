@@ -227,9 +227,3 @@ Returns compliance details for given subject and scope.
 ### GET /{view_type}/scope/{scopeuuid}
 
 Returns spec overview for the given scope.
-
-### GET /subjects
-
-Returns the list of subjects (together with activity status).
-
-### POST /subjects
