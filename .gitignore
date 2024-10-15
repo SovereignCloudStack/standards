@@ -5,3 +5,4 @@
 node_modules
 Tests/kaas/results/
 *.tar.gz
+.pytest-kind/

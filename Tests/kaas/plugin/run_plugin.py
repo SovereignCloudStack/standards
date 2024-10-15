@@ -32,7 +32,7 @@ def run_plugin_delete(plugin_kind, cluster_id):
     kubeconfig = plugin.delete(cluster_id)
     return kubeconfig
 
-
+# Todo: Can be removed after it will be done differently, only for dev purposes for now :)
 # Add a main function to handle the command-line interface
 def main():
     parser = argparse.ArgumentParser(description="Manage Kubernetes clusters with plugins")
