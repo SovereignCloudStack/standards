@@ -43,7 +43,7 @@
         {
           "name": "double-spaces",
           "message": "Avoid double spaces",
-          "searchPattern": "/([^\\s>])  ([^\\s|])/g",
+          "searchPattern": "/([^\\s>|])  ([^\\s|])/g",
           "replace": "$1 $2",
           "skipCode": true,
 	  "tables": false

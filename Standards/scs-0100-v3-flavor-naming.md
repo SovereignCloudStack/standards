@@ -464,7 +464,7 @@ This flavor has a pass-through GPU nVidia Ampere with 14 SMs and 6 GiB of high-b
 memory. Looking through GPU specs you could guess it's 1/4 of an A30.
 
 We have a table with common GPUs in the
-[implementation hints for this standard](scs-0100-w1-flavor-naming-implementation-testing)
+[implementation hints for this standard](scs-0100-w1-flavor-naming-implementation-testing.md)
 
 ### [OPTIONAL] Infiniband
 
