@@ -1,4 +1,17 @@
 #!/usr/bin/env python3
+# AN IMPORTANT NOTE ON CONCURRENCY:
+# This server is based on uvicorn and, as such, is not multi-threaded.
+# (It could use multiple processes, but we don't do that yet.)
+# Consequently, we don't need to use any measures for thread-safety.
+# However, if we do at some point enable the use of multiple processes,
+# we should make sure that all processes are "on the same page" with regard
+# to basic data such as certificate scopes, templates, and accounts.
+# One way to achieve this synchronicity could be to use the Postgres server
+# more, however, I hope that more efficient ways are possible.
+# Also, it is quite likely that the signal SIGHUP could no longer be used
+# to trigger a re-load. In any case, the `uvicorn.run` call would have to be
+# fundamentally changed:
+# > You must pass the application as an import string to enable 'reload' or 'workers'.
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from enum import Enum
@@ -7,11 +20,9 @@ import logging
 import os
 import os.path
 from shutil import which
+import signal
 from subprocess import run
 from tempfile import NamedTemporaryFile
-# _thread: low-level library, but (contrary to the name) not private
-# https://docs.python.org/3/library/_thread.html
-from _thread import allocate_lock, get_ident
 from typing import Annotated, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
@@ -30,8 +41,7 @@ from sql import (
     db_find_account, db_update_account, db_update_publickey, db_filter_publickeys, db_get_reports,
     db_get_keys, db_insert_report, db_get_recent_results2, db_patch_approval2, db_get_report,
     db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys, db_clear_delegates,
-    db_patch_subject, db_get_subjects, db_insert_result2, db_get_relevant_results2, db_add_delegate,
-    db_find_subjects,
+    db_find_subjects, db_insert_result2, db_get_relevant_results2, db_add_delegate,
 )
 
 
@@ -117,10 +127,7 @@ env = Environment()  # populate this on startup (final section of this file)
 templates_map = {
     k: None for k in REQUIRED_TEMPLATES
 }
-# map thread id (cf. `get_ident`) to a dict that maps scope uuids to scope documents
-# -- access this using function `get_scopes`
-_scopes = defaultdict(dict)  # thread-local storage (similar to threading.local, but more efficient)
-_scopes_lock = allocate_lock()  # mutex lock so threads can add their local storage without races
+_scopes = {}  # map scope uuid to `PrecomputedScope` instance
 
 
 class TimestampEncoder(json.JSONEncoder):
@@ -216,8 +223,6 @@ def import_bootstrap(bootstrap_path, conn):
             db_filter_apikeys(cur, accountid, lambda keyid, *_: keyid in keyids)
             keyids = set(db_update_publickey(cur, accountid, key) for key in account.get("keys", ()))
             db_filter_publickeys(cur, accountid, lambda keyid, *_: keyid in keyids)
-        for subject, record in subjects.items():
-            db_patch_subject(cur, {'subject': subject, **record})
         conn.commit()
 
 
@@ -326,19 +331,8 @@ def import_cert_yaml_dir(yaml_path, target_dict):
 
 
 def get_scopes():
-    """returns thread-local copy of the scopes dict"""
-    ident = get_ident()
-    with _scopes_lock:
-        yaml_path = _scopes['_yaml_path']
-        counter = _scopes['_counter']
-        current = _scopes.get(ident)
-        if current is None:
-            _scopes[ident] = current = {'_counter': -1}
-    if current['_counter'] != counter:
-        current.clear()
-        import_cert_yaml_dir(yaml_path, current)
-        current['_counter'] = counter
-    return current
+    """returns the scopes dict"""
+    return _scopes
 
 
 def import_templates(template_dir, env, templates):
@@ -685,39 +679,6 @@ async def post_results(
     conn.commit()
 
 
-@app.get("/subjects")
-async def get_subjects(
-    request: Request,
-    account: Annotated[tuple[str, str], Depends(auth)],
-    conn: Annotated[connection, Depends(get_conn)],
-    active: Optional[bool] = None, limit: int = 10, skip: int = 0,
-):
-    """get subjects, potentially filtered by activity status"""
-    check_role(account, roles=ROLES['read_any'])
-    with conn.cursor() as cur:
-        return db_get_subjects(cur, active, limit, skip)
-
-
-@app.post("/subjects")
-async def post_subjects(
-    request: Request,
-    account: Annotated[tuple[str, str], Depends(auth)],
-    conn: Annotated[connection, Depends(get_conn)],
-):
-    """post approvals to this endpoint"""
-    check_role(account, roles=ROLES['admin'])
-    content_type = request.headers['content-type']
-    if content_type not in ('application/json', ):
-        raise HTTPException(status_code=500, detail="Unsupported content type")
-    body = await request.body()
-    document = json.loads(body.decode("utf-8"))
-    records = [document] if isinstance(document, dict) else document
-    with conn.cursor() as cur:
-        for record in records:
-            db_patch_subject(cur, record)
-    conn.commit()
-
-
 def passed_filter(results, subject, scope):
     """Jinja filter to pick list of passed versions from `results` for given `subject` and `scope`"""
     subject_data = results.get(subject)
@@ -741,6 +702,22 @@ def verdict_check_filter(value):
     return {1: '✔', -1: '✘'}.get(value, '⚠')
 
 
+def reload_static_config(*args, do_ensure_schema=False):
+    # allow arbitrary arguments so it can readily be used as signal handler
+    logger.info("loading static config")
+    scopes = {}
+    import_cert_yaml_dir(settings.yaml_path, scopes)
+    # import successful: only NOW destructively update global _scopes
+    _scopes.clear()
+    _scopes.update(scopes)
+    import_templates(settings.template_path, env=env, templates=templates_map)
+    validate_templates(templates=templates_map)
+    with mk_conn(settings=settings) as conn:
+        if do_ensure_schema:
+            db_ensure_schema(conn)
+        import_bootstrap(settings.bootstrap_path, conn=conn)
+
+
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
     env.filters.update(
@@ -749,14 +726,6 @@ if __name__ == "__main__":
         verdict_check=verdict_check_filter,
         markdown=markdown,
     )
-    with mk_conn(settings=settings) as conn:
-        db_ensure_schema(conn)
-        import_bootstrap(settings.bootstrap_path, conn=conn)
-        _scopes.update({
-            '_yaml_path': settings.yaml_path,
-            '_counter': 0,
-        })
-        _ = get_scopes()  # make sure they can be read
-        import_templates(settings.template_path, env=env, templates=templates_map)
-        validate_templates(templates=templates_map)
+    reload_static_config(do_ensure_schema=True)
+    signal.signal(signal.SIGHUP, reload_static_config)
     uvicorn.run(app, host='0.0.0.0', port=8080, log_level="info", workers=1)
