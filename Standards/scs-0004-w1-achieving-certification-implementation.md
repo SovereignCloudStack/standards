@@ -7,8 +7,6 @@ supplements:
   - scs-0004-v1-achieving-certification.md
 ---
 
-# Getting SCS-compatible certification
-
 ## Process overview
 
 The *SCS-compatible* Certification for Operators is a technical certification:
