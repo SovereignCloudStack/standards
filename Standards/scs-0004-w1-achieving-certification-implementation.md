@@ -28,7 +28,7 @@ The SCS certification process typically consists of a few simple steps:
    updated on a daily basis. SCS then tests the infrastructure on a daily basis.
 
 The precise rules that govern how certificates are issued or withdrawn are defined in the
-[SCS standard 0004](scs-0004-v1-achieving-certification).
+[SCS standard 0004](scs-0004-v1-achieving-certification.md).
 
 ## Self-testing and technical adjustments
 
@@ -39,7 +39,7 @@ publicly.
 
 The best approach to get your cloud into compliance is by installing the
 test suite locally. Have a look at the
-[blog article](https://scs.community/blog/2024/10/14/cert-adapt-example.html).
+[blog article](https://scs.community/blog/2024/10/14/cert-adapt-example/).
 
 A description how *SCS-compatible IaaS* compliance can be achieved on environments that use different
 OpenStack implementations is written up in a blog article
