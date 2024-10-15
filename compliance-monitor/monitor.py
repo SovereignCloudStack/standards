@@ -284,6 +284,10 @@ class PrecomputedScope:
         # always include draft (but only at the end)
         relevant.extend(by_validity['draft'])
         passed = [vname for vname in relevant if version_results[vname]['result'] == 1]
+        if passed:
+            summary = 1 if self.versions[passed[0]].validity in ('effective', 'warn') else -1
+        else:
+            summary = 0
         return {
             'name': self.name,
             'versions': version_results,
@@ -293,6 +297,7 @@ class PrecomputedScope:
                 vname + ASTERISK_LOOKUP[self.versions[vname].validity]
                 for vname in passed
             ]),
+            'summary': summary,
         }
 
     def update_lookup(self, target_dict):
@@ -679,15 +684,17 @@ async def post_results(
     conn.commit()
 
 
-def passed_filter(results, subject, scope):
-    """Jinja filter to pick list of passed versions from `results` for given `subject` and `scope`"""
-    subject_data = results.get(subject)
-    if not subject_data:
-        return ""
-    scope_data = subject_data.get(scope)
-    if not scope_data:
-        return ""
-    return scope_data['passed_str']
+def pick_filter(results, subject, scope):
+    """Jinja filter to pick scope results from `results` for given `subject` and `scope`"""
+    return results.get(subject, {}).get(scope, {})
+
+
+def summary_filter(scope_results):
+    """Jinja filter to construct summary from `scope_results`"""
+    passed_str = scope_results.get('passed_str', '') or '–'
+    summary = scope_results.get('summary', 0)
+    color = {1: '✅'}.get(summary, '🛑')  # instead of 🟢🔴 (hard to distinguish for color-blind folks)
+    return f'{color} {passed_str}'
 
 
 def verdict_filter(value):
@@ -721,7 +728,8 @@ def reload_static_config(*args, do_ensure_schema=False):
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
     env.filters.update(
-        passed=passed_filter,
+        pick=pick_filter,
+        summary=summary_filter,
         verdict=verdict_filter,
         verdict_check=verdict_check_filter,
         markdown=markdown,
