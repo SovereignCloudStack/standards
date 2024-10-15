@@ -54,7 +54,6 @@ dev-prerequests:
 	@jq --version
 	@go version
 	@docker buildx version
-	# @golangci-lint version --format short	
 
 
 dev-setup: kind-init
