@@ -39,7 +39,7 @@ publicly.
 
 The best approach to get your cloud into compliance is by installing the
 test suite locally. Have a look at the
-[blog article](https://scs.community/blog/2024/10/14/cert-adapt-example/).
+[blog article](https://scs.community/2024/10/14/cert-adapt-example/).
 
 A description of how *SCS-compatible IaaS* compliance can be achieved on OpenStack environments that
 do not use the SCS reference implementation is written up in the blog article
