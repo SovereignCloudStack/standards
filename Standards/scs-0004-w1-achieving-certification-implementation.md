@@ -1,5 +1,5 @@
 ---
-title: "Implementtaion hints for achieveing SCS-compatible certification"
+title: "Implementation hints for achieving SCS-compatible certification"
 type: Supplement
 track: Global
 status: Draft
@@ -10,7 +10,7 @@ supplements:
 ## Process overview
 
 The *SCS-compatible* Certification for Operators is a technical certification:
-The Operator needs to fulfill technical requirements, such as providing certain
+The operator needs to fulfill technical requirements, such as providing certain
 APIs and guaranteeing certain platform behavior in order to be certifiable.
 
 These requirements are meant to provide guarantees to their customers, allowing
@@ -41,8 +41,8 @@ The best approach to get your cloud into compliance is by installing the
 test suite locally. Have a look at the
 [blog article](https://scs.community/blog/2024/10/14/cert-adapt-example/).
 
-A description how *SCS-compatible IaaS* compliance can be achieved on environments that use different
-OpenStack implementations is written up in a blog article
+A description of how *SCS-compatible IaaS* compliance can be achieved on OpenStack environments that
+do not use the SCS reference implementation is written up in the blog article
 [Cost of making an OpenStack Cluster SCS compliant](https://scs.community/2024/05/13/cost-of-making-an-openstack-cluster-scs-compliant/).
 
 ## Declarations
