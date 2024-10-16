@@ -189,7 +189,6 @@ class K8sBranch:
 
     def previous(self):
         if self.minor == 0:
-            # FIXME: this is ugly
             return self
         return K8sBranch(self.major, self.minor - 1)
 
@@ -258,18 +257,25 @@ class VersionRange:
     upper_version: K8sVersion = None
     inclusive: bool = False
 
-    def __post_init__(self):
-        if self.lower_version is None:
-            raise ValueError("lower_version must not be None")
-        if self.upper_version and self.upper_version < self.lower_version:
-            raise ValueError("lower_version must be lower than upper_version")
-
     def __contains__(self, version: K8sVersion) -> bool:
         if self.upper_version is None:
             return self.lower_version == version
         if self.inclusive:
             return self.lower_version <= version <= self.upper_version
         return self.lower_version <= version < self.upper_version
+
+    # def __post_init__(self):
+    #     if self.lower_version is None:
+    #         raise ValueError("lower_version must not be None")
+    #     if self.upper_version and self.upper_version < self.lower_version:
+    #         raise ValueError("lower_version must be lower than upper_version")
+    #
+    # def __contains__(self, version: K8sVersion) -> bool:
+    #     if self.upper_version is None:
+    #         return self.lower_version == version
+    #     if self.inclusive:
+    #         return self.lower_version <= version <= self.upper_version
+    #     return self.lower_version <= version < self.upper_version
 
 
 @dataclass
@@ -468,9 +474,16 @@ def check_k8s_version_recency(
         if my_version.patch >= release.version.patch:
             continue
         # at this point `release` has the same major.minor, but higher patch than `my_version`
-        if release.age > PATCH_VERSION_CADENCE:
-            # whoops, the cluster should have been updated to this (or a higher version) already!
-            return False
+        if my_version == release.version:
+            if release.age <= MINOR_VERSION_CADENCE:
+                logger.info(f"Version {my_version} is recent (within cadence).")
+                return True
+            else:
+                logger.error(f"Version {my_version} is too old.")
+                return False
+        # if release.age > PATCH_VERSION_CADENCE:
+        #     # whoops, the cluster should have been updated to this (or a higher version) already!
+        #     return False
         ranges = [_range for _range in cve_affected_ranges if my_version in _range]
         if ranges and release.age > CVE_VERSION_CADENCE:
             # -- two FIXMEs:
