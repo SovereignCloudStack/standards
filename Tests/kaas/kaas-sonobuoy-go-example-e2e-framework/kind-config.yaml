@@ -1,0 +1,19 @@
+# kind-config.yaml
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+kubeadmConfigPatches:
+- |
+  apiVersion: kubeadm.k8s.io/v1beta2
+  kind: ClusterConfiguration
+  apiServer:
+    extraArgs:
+      enable-admission-plugins: EventRateLimit
+      admission-control-config-file: /etc/kubernetes/admission-control-config.yaml
+      feature-gates": APIPriorityAndFairness=true
+nodes:
+- role: control-plane
+  extraMounts:
+    - hostPath: ./event-ratelimit-config.yaml
+      containerPath: /etc/kubernetes/admission-control-config.yaml
+- role: worker
+- role: worker
