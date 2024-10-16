@@ -96,10 +96,19 @@ test-function:
 	@echo "only run tests for: $${TESTFUNCTION_CODE}"
 	DEVELOPMENT_MODE=createcluster go test -run=$${TESTFUNCTION_CODE}  ./... || true
 
+lint: check-golangci-lint
+	@echo "[Running golangci-lint...]"
+	@golangci-lint run ./... -v || true
 
-lint:
-	@echo "NOT YET IMPLEMENTED"
-
+GOLANGCI_LINT_VERSION ?= v1.61.0
+check-golangci-lint:
+	@if ! [ -x "$$(command -v golangci-lint)" ]; then \
+		echo "[golangci-lint not found, installing...]"; \
+		go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION); \
+		echo "[golangci-lint installed]"; \
+	else \
+		echo "[golangci-lint is already installed]"; \
+	fi
 
 dev-clean-result:
 	@rm -rf *.tar.gz || true
