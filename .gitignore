@@ -4,6 +4,9 @@
 .sandbox
 .DS_Store
 node_modules
+<<<<<<< HEAD
 Tests/kaas/results/
+=======
+>>>>>>> 4e8fc4d (add results path to .gitignore)
 Tests/kaas/kaas-sonobuoy-tests/results/
 *.tar.gz
