@@ -222,7 +222,9 @@ class GPU:
               "3": "Arc/Gen12.7/DG2"},
     })
     cu = OptIntAttr("#.N:SMs/A:CUs/I:EUs")
-    perf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"})
+    perf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf"})
+    vram = OptIntAttr("#.V:GiB VRAM")
+    vramperf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf"})
 
 
 class IB:
@@ -278,7 +280,7 @@ class Outputter:
     hype = "_%s"
     hwvirt = "_%?"
     cpubrand = "_%s%0%s"
-    gpu = "_%s%s%s%-%s"
+    gpu = "_%s%s%s%-%s%-%s"
     ib = "_%?"
 
     def output_component(self, pattern, component, parts):
@@ -341,7 +343,7 @@ class SyntaxV1:
     hwvirt = re.compile(r"\-(hwv)")
     # cpubrand needs final lookahead assertion to exclude confusion with _ib extension
     cpubrand = re.compile(r"\-([izar])([0-9]*)(h*)(?=$|\-)")
-    gpu = re.compile(r"\-([gG])([NAI])([^:h]*)(?::([0-9]+)|)(h*)")
+    gpu = re.compile(r"\-([gG])([NAI])([^:h]*)(?::([0-9]+)|)(h*)(?::([0-9]+)|)(h*)")
     ib = re.compile(r"\-(ib)")
 
     @staticmethod
@@ -366,7 +368,7 @@ class SyntaxV2:
     hwvirt = re.compile(r"_(hwv)")
     # cpubrand needs final lookahead assertion to exclude confusion with _ib extension
     cpubrand = re.compile(r"_([izar])([0-9]*)(h*)(?=$|_)")
-    gpu = re.compile(r"_([gG])([NAI])([^\-h]*)(?:\-([0-9]+)|)(h*)")
+    gpu = re.compile(r"_([gG])([NAI])([^\-h]*)(?:\-([0-9]+)|)(h*)(?:\-([0-9]+)|)(h*)")
     ib = re.compile(r"_(ib)")
 
     @staticmethod
@@ -697,10 +699,11 @@ def prettyname(flavorname, prefix=""):
     if flavorname.gpu:
         stg += "and " + _tbl_out(flavorname.gpu, "gputype")
         stg += _tbl_out(flavorname.gpu, "brand")
-        stg += _tbl_out(flavorname.gpu, "perf", True)
         stg += _tbl_out(flavorname.gpu, "gen", True)
         if flavorname.gpu.cu is not None:
-            stg += f"(w/ {flavorname.gpu.cu} SMs/CUs/EUs) "
+            stg += f"(w/ {flavorname.gpu.cu} {_tbl_out(flavorname.gpu, "perf", True)}SMs/CUs/EUs) "
+        if flavorname.gpu.vram:
+            stg += f"(w/ {flavorname.gpu.vram} GiB {_tbl_out(flavorname.gpu, "vramperf", True)}VRAM) "
     # IB
     if flavorname.ib:
         stg += "and Infiniband "
