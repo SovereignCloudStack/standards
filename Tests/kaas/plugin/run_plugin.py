@@ -32,11 +32,12 @@ def run_plugin_delete(plugin_kind, cluster_id):
     kubeconfig = plugin.delete(cluster_id)
     return kubeconfig
 
+
 # Todo: Can be removed after it will be done differently, only for dev purposes for now :)
 # Add a main function to handle the command-line interface
 def main():
     parser = argparse.ArgumentParser(description="Manage Kubernetes clusters with plugins")
-    
+
     # Subcommands: create or delete
     subparsers = parser.add_subparsers(dest='command', help='create or delete a cluster')
 
@@ -58,14 +59,15 @@ def main():
         # Run the create cluster logic
         kubeconfig = run_plugin_create(args.plugin_kind, args.cluster_id, args.k8s_version, args.kubeconfig_filepath)
         print(f"Cluster created successfully. Kubeconfig saved at: {kubeconfig}")
-    
+
     elif args.command == 'delete':
         # Run the delete cluster logic
         kubeconfig = run_plugin_delete(args.plugin_kind, args.cluster_id)
         print(f"Cluster {args.cluster_id} deleted successfully.")
-    
+
     else:
         print("Invalid command. Use 'create' or 'delete'.")
+
 
 if __name__ == "__main__":
     main()

@@ -12,7 +12,7 @@ class PluginKind(KubernetesClusterPlugin):
         print(self.cluster_version)
         self.cluster = KindCluster(
             self.cluster_name
-        )  # TODO: enrich with config and version 
+        )  # TODO: enrich with config and version
         self.cluster.create()
         self.kubeconfig = str(self.cluster.kubeconfig_path.resolve())
 

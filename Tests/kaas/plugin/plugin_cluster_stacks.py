@@ -12,7 +12,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
     Plugin to handle the provisioning of kubernetes cluster for
     conformance testing purpose with the use of cluster-stacks
     """
-        
+
     def _create_cluster(self):
         # Step 1: Create the Kind cluster
         self.cluster = KindCluster(
@@ -27,7 +27,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         os.environ['EXP_RUNTIME_SDK'] = 'true'
         os.environ['KUBECONFIG'] = self.kubeconfig
 
-       # Step 3: Initialize clusterctl with OpenStack as the infrastructure provider
+        # Step 3: Initialize clusterctl with OpenStack as the infrastructure provider
         try:
             subprocess.run(
                 ["clusterctl", "init", "--infrastructure", "openstack"],
@@ -123,7 +123,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         os.environ['CS_CLUSTER_NAME'] = os.getenv('CS_CLUSTER_NAME', 'cs-cluster')
         os.environ['CS_POD_CIDR'] = os.getenv('CS_POD_CIDR', '192.168.0.0/16')
         os.environ['CS_SERVICE_CIDR'] = os.getenv('CS_SERVICE_CIDR', '10.96.0.0/12')
-        os.environ['CS_EXTERNAL_ID'] = os.getenv('CS_EXTERNAL_ID', 'ebfe5546-f09f-4f42-ab54-094e457d42ec') # gx-scs
+        os.environ['CS_EXTERNAL_ID'] = os.getenv('CS_EXTERNAL_ID', 'ebfe5546-f09f-4f42-ab54-094e457d42ec')  # gx-scs
         os.environ['CS_K8S_PATCH_VERSION'] = os.getenv('CS_K8S_PATCH_VERSION', '6')
 
         # Construct CS_CLASS_NAME
@@ -147,12 +147,12 @@ class PluginClusterStacks(KubernetesClusterPlugin):
 
         # Step 12: Get kubeadmcontrolplane name
         max_retries = 6
-        delay_between_retries = 10  # seconds        
-        for attempt in range(max_retries):
+        delay_between_retries = 10  # seconds
+        for _ in range(max_retries):
             try:
                 kcp_command = "kubectl get kubeadmcontrolplane -o=jsonpath='{.items[0].metadata.name}'"
                 kcp_name = subprocess.run(kcp_command, shell=True, check=True, capture_output=True, text=True)
-                kcp_name_stdout = kcp_name.stdout.strip()  # Remove any leading/trailing whitespace
+                kcp_name_stdout = kcp_name.stdout.strip()
                 if kcp_name_stdout:
                     print(f"KubeadmControlPlane name: {kcp_name_stdout}")
                     break
