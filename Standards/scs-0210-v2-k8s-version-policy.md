@@ -56,16 +56,6 @@ window period.
 In order to keep up-to-date with the latest Kubernetes features, bug fixes and security improvements,
 the provided Kubernetes versions should be kept up-to-date with new upstream releases:
 
-<<<<<<< HEAD
-- The latest minor version MUST be provided no later than 4 months after release.
-- The latest patch version MUST be provided no later than 2 weeks after release.
-- This time period MUST be even shorter for patches that fix critical CVEs.
-  In this context, a critical CVE is a CVE with a CVSS base score >= 8 according
-  to the CVSS version used in the original CVE record (e.g., CVSSv3.1).
-  It is RECOMMENDED to provide a new patch version in a 2-day time period after their release.
-- New versions MUST be tested before being rolled out on productive infrastructure;
-  at least the [CNCF E2E tests][cncf-conformance] should be passed beforehand.
-=======
 1. Minor Versions:
    - The latest minor version MUST be provided no later than 4 months after release.
    
