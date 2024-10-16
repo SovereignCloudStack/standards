@@ -701,9 +701,9 @@ def prettyname(flavorname, prefix=""):
         stg += _tbl_out(flavorname.gpu, "brand")
         stg += _tbl_out(flavorname.gpu, "gen", True)
         if flavorname.gpu.cu is not None:
-            stg += f"(w/ {flavorname.gpu.cu} {_tbl_out(flavorname.gpu, "perf", True)}SMs/CUs/EUs) "
+            stg += f"(w/ {flavorname.gpu.cu} {_tbl_out(flavorname.gpu, 'perf', True)}SMs/CUs/EUs) "
         if flavorname.gpu.vram:
-            stg += f"(w/ {flavorname.gpu.vram} GiB {_tbl_out(flavorname.gpu, "vramperf", True)}VRAM) "
+            stg += f"(w/ {flavorname.gpu.vram} GiB {_tbl_out(flavorname.gpu, 'vramperf', True)}VRAM) "
     # IB
     if flavorname.ib:
         stg += "and Infiniband "
