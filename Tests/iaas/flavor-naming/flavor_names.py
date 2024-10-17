@@ -222,9 +222,9 @@ class GPU:
               "3": "Arc/Gen12.7/DG2"},
     })
     cu = OptIntAttr("#.N:SMs/A:CUs/I:EUs")
-    perf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf"})
+    perf = TblAttr("Frequency", {"": "Std Freq", "h": "High Freq", "hh": "Very High Freq"})
     vram = OptIntAttr("#.V:GiB VRAM")
-    vramperf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf"})
+    vramperf = TblAttr("Bandwidth", {"": "Std BW {<~1GiB/s)", "h": "High BW", "hh": "Very High BW"})
 
 
 class IB:
