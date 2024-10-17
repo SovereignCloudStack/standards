@@ -212,7 +212,7 @@ class GPU:
     type = "GPU"
     component_name = "gpu"
     gputype = TblAttr("Type", {"g": "vGPU", "G": "Pass-Through GPU"})
-    brand = TblAttr("Brand", {"N": "nVidia", "A": "AMD", "I": "Intel"})
+    brand = TblAttr("Brand", {"N": "Nvidia", "A": "AMD", "I": "Intel"})
     gen = DepTblAttr("Gen", brand, {
         "N": {'': '(unspecified)', "f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal",
               "v": "Volta", "t": "Turing", "a": "Ampere", "l": "AdaLovelace", "g": "GraceHopper"},
@@ -701,9 +701,12 @@ def prettyname(flavorname, prefix=""):
         stg += _tbl_out(flavorname.gpu, "brand")
         stg += _tbl_out(flavorname.gpu, "gen", True)
         if flavorname.gpu.cu is not None:
-            stg += f"(w/ {flavorname.gpu.cu} {_tbl_out(flavorname.gpu, 'perf', True)}SMs/CUs/EUs) "
-        if flavorname.gpu.vram:
-            stg += f"(w/ {flavorname.gpu.vram} GiB {_tbl_out(flavorname.gpu, 'vramperf', True)}VRAM) "
+            stg += f"(w/ {flavorname.gpu.cu} {_tbl_out(flavorname.gpu, 'perf', True)}SMs/CUs/EUs"
+            # Can not specify VRAM without CUs
+            if flavorname.gpu.vram:
+                stg += f" and {flavorname.gpu.vram} GiB {_tbl_out(flavorname.gpu, 'vramperf', True)}VRAM) "
+            else:
+                stg += ") "
     # IB
     if flavorname.ib:
         stg += "and Infiniband "
