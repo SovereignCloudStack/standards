@@ -5,4 +5,5 @@ python-dateutil
 PyYAML
 openstacksdk
 requests
+sslyze
 tomli
