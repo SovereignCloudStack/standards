@@ -255,7 +255,7 @@ class GPU:
 
     def shorten(self):
         # remove h modifiers
-        return GPU(self.gputype, self.brand, self.gen, self.cu, self.vram)
+        return GPU(gputype=self.gputype, brand=self.brand, gen=self.gen, cu=self.cu, vram=self.vram)
 
 
 class IB:
