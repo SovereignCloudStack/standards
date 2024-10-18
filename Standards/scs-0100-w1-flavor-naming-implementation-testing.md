@@ -53,13 +53,13 @@ of a GPU) result in what GPU part of the flavor name.
 
 #### Nvidia (`N`)
 
-We show the most popular recent generations here. older one are of course possible as well.
+We show the most popular recent generations here. Older one are of course possible as well.
 
 ##### Ampere (`a`)
 
 One Streaming Multiprocessor on Ampere has 64 (A30, A100) or 128 Cuda Cores (A10, A40).
 
-GPUs without MIG (one SM has 128 Cude Cores and 4 Tensor Cores):
+GPUs without MIG (one SM has 128 Cuda Cores and 4 Tensor Cores):
 
 | Nvidia GPU | Tensor C | Cuda Cores | SMs | VRAM      | SCS name piece |
 |------------|----------|------------|-----|-----------|----------------|
@@ -138,14 +138,14 @@ Cores and 64 Stream Processors per CU.
 
 #### intel Xe (`I`)
 
-##### Xe-HPC (Ponte Vecchio) (`12.7`)
+##### Xe-HPC (Ponte Vecchio) (`3`)
 
 1 EU corresponds to one Tensor Core and contains 128 Shading Units.
 
-| intel DC GPU | Tensor C | Shading U | EUs | VRAM       | SCS name piece    |
-|--------------|----------|-----------|-----|------------|-------------------|
-| Max 1100     |  56      |  7168     |  56 |  48G HBM2e | `GI12.7-56-48h`   |
-| Max 1550     | 128      | 16384     | 128 | 128G HBM2e | `GI12.7-128-128h` |
+| intel DC GPU | Tensor C | Shading U | EUs | VRAM       | SCS name part  |
+|--------------|----------|-----------|-----|------------|----------------|
+| Max 1100     |  56      |  7168     |  56 |  48G HBM2e | `GI3-56-48h`   |
+| Max 1550     | 128      | 16384     | 128 | 128G HBM2e | `GI3-128-128h` |
 
 ## Automated tests
 
