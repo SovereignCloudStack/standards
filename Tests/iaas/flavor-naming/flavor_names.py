@@ -250,14 +250,19 @@ class Flavorname:
 
     def shorten(self):
         """return canonically shortened name as recommended in the standard"""
-        if self.hype is None and self.hwvirt is None and self.cpubrand is None:
+        if self.hype is None and self.hwvirt is None and self.cpubrand is None and self.gpu is None:
             return self
+        # GPU: Remove h modifiers - cleaner would be to build a c'tor like with CPUBrand
+        gpu = self.gpu
+        if self.gpu:
+            gpu.perf = ""
+            gpu.vramperf = ""
         # For non-x86-64, don't strip out CPU brand for short name, as it contains the architecture
         if self.cpubrand and self.cpubrand.cpuvendor not in ('i', 'z'):
             return Flavorname(cpuram=self.cpuram, disk=self.disk,
                               cpubrand=CPUBrand(self.cpubrand.cpuvendor),
-                              gpu=self.gpu, ib=self.ib)
-        return Flavorname(cpuram=self.cpuram, disk=self.disk, gpu=self.gpu, ib=self.ib)
+                              gpu=gpu, ib=self.ib)
+        return Flavorname(cpuram=self.cpuram, disk=self.disk, gpu=gpu, ib=self.ib)
 
 
 class Outputter:
