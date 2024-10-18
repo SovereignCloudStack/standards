@@ -24,10 +24,9 @@ a shorter notice.
 (c) Hannes Baum <hannes.baum@cloudandheat.com>, 6/2023
 (c) Martin Morgenstern <martin.morgenstern@cloudandheat.com>, 2/2024
 (c) Matthias Büchse <matthias.buechse@cloudandheat.com>, 3/2024
-(c) Piotr Bigos <piobig2871@gmail.com>, 10/2024
+(c) Piotr Bigos <piotr.bigos@dNation.com>
 SPDX-License-Identifier: CC-BY-SA-4.0
 """
-
 from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -36,11 +35,13 @@ import aiohttp
 import asyncio
 import contextlib
 import getopt
+import json
 import kubernetes_asyncio
 import logging
 import logging.config
 import re
 import requests
+import subprocess
 import sys
 import yaml
 
@@ -92,6 +93,10 @@ class ConfigException(BaseException):
 
 class HelpException(BaseException):
     """Exception raised if the help functionality is called"""
+
+
+class CriticalException(BaseException):
+    """Exception raised if the critical CVE are found"""
 
 
 class Config:
@@ -189,6 +194,7 @@ class K8sBranch:
 
     def previous(self):
         if self.minor == 0:
+            # FIXME: this is ugly
             return self
         return K8sBranch(self.major, self.minor - 1)
 
@@ -257,6 +263,12 @@ class VersionRange:
     upper_version: K8sVersion = None
     inclusive: bool = False
 
+    def __post_init__(self):
+        if self.lower_version is None:
+            raise ValueError("lower_version must not be None")
+        if self.upper_version and self.upper_version < self.lower_version:
+            raise ValueError("lower_version must be lower than upper_version")
+
     def __contains__(self, version: K8sVersion) -> bool:
         if self.upper_version is None:
             return self.lower_version == version
@@ -264,24 +276,12 @@ class VersionRange:
             return self.lower_version <= version <= self.upper_version
         return self.lower_version <= version < self.upper_version
 
-    # def __post_init__(self):
-    #     if self.lower_version is None:
-    #         raise ValueError("lower_version must not be None")
-    #     if self.upper_version and self.upper_version < self.lower_version:
-    #         raise ValueError("lower_version must be lower than upper_version")
-    #
-    # def __contains__(self, version: K8sVersion) -> bool:
-    #     if self.upper_version is None:
-    #         return self.lower_version == version
-    #     if self.inclusive:
-    #         return self.lower_version <= version <= self.upper_version
-    #     return self.lower_version <= version < self.upper_version
-
 
 @dataclass
 class ClusterInfo:
     version: K8sVersion
     name: str
+    kubeconfig: str
 
 
 async def request_cve_data(session: aiohttp.ClientSession, cveid: str) -> dict:
@@ -344,31 +344,18 @@ async def collect_cve_versions(session: aiohttp.ClientSession) -> set:
 
     # CVE fix versions
     cfvs = set()
-    cve_patch_data = dict()
 
-    # # Request latest version
-    # async with session.get(
-    #     "https://kubernetes.io/docs/reference/issues-security/official-cve-feed/index.json",
-    #     headers={"Accept": "application/json"}
-    # ) as resp:
-    #     cve_list = await resp.json()
-
+    # Request latest version
     async with session.get(
-            "https://kubernetes.io/docs/reference/issues-security/official-cve-feed/index.json",
-            headers={"Accept": "application/json"}
+        "https://kubernetes.io/docs/reference/issues-security/official-cve-feed/index.json",
+        headers={"Accept": "application/json"}
     ) as resp:
-        if resp.status != 200:
-            logger.error(f"Failed to fetch CVE data, status code: {resp.status}")
-            return cve_patch_data
-
         cve_list = await resp.json()
 
     tasks = [request_cve_data(session=session, cveid=cve['id'])
-             for cve in cve_list.get('items', [])]
+             for cve in cve_list['items']]
 
     cve_data_list = await asyncio.gather(*tasks, return_exceptions=True)
-
-    cve_data_list = [data for data in cve_data_list if not isinstance(data, Exception)]
 
     for cve_data in cve_data_list:
         try:
@@ -401,42 +388,82 @@ async def collect_cve_versions(session: aiohttp.ClientSession) -> set:
     return cfvs
 
 
-def is_critical_cve(cve_metrics: list) -> bool:
-    """Checks if the CVE is considered critical based on CVSS score."""
-    for metric in cve_metrics:
-        if metric.get('cvssV3', {}).get('baseScore', 0) >= CVE_SEVERITY:
-            return True
-        return False
+async def run_trivy_scan(image: str) -> dict:
+    """
+    Run Trivy scan on the specified image and return the results as a dictionary.
+
+    Args:
+        image (str): The Docker image to scan.
+
+    Returns:
+        dict: Parsed JSON results from Trivy.
+    """
+    try:
+        # Run the Trivy scan command
+        result = await asyncio.create_subprocess_exec(
+            'trivy',
+            'image',
+            '--format', 'json',
+            '--no-progress',
+            image,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+        stdout, stderr = await result.communicate()
+
+        if result.returncode != 0:
+            logger.error("Trivy scan failed: %s", stderr.decode().strip())
+            return {}
+
+        # Parse the JSON output from Trivy
+        return json.loads(stdout.decode())
+
+    except Exception as e:
+        logger.error("Error running Trivy scan: %s", e)
+        return {}
 
 
-def parse_cve_version_information_new(version_info: dict) -> str:
-    """Extracts the affected Kubernetes version from CVE data."""
-    return version_info.get('version')
+async def get_k8s_pod_images(kubeconfig, context=None) -> list[str]:
+    """Get the list of container images used by all the pods in the Kubernetes cluster."""
+    cluster_config = await kubernetes_asyncio.config.load_kube_config(kubeconfig, context)
+
+    async with kubernetes_asyncio.client.ApiClient() as api:
+        v1 = kubernetes_asyncio.client.CoreV1Api(api)
+        pods = await v1.list_pod_for_all_namespaces(watch=False)
+
+        images = set()
+        for pod in pods.items:
+            # Get images from pod containers
+            for container in pod.spec.containers:
+                images.add(container.image)
+
+            # Get images from init containers (if any)
+            if pod.spec.init_containers:
+                for container in pod.spec.init_containers:
+                    images.add(container.image)
+
+        return list(images)
 
 
-def parse_patch_release_date(version_info: dict) -> datetime:
-    """Extracts the release date of the patch from the CVE version info."""
-    patch_release_str = version_info.get('patchReleaseDate', None)
-    if patch_release_str:
-        return datetime.strptime(patch_release_str, "%Y-%m-%d")
-    return None
+async def scan_k8s_images(kubeconfig, context=None) -> None:
+    """Scan the images used in the Kubernetes cluster for vulnerabilities."""
+    images_to_scan = await get_k8s_pod_images(kubeconfig, context)
 
+    # Scan each image using Trivy
+    for image in images_to_scan:
+        logger.info(f"Scanning image: {image}")
+        scan_results = await run_trivy_scan(image)
 
-async def check_patch_deployment(session: aiohttp.ClientSession, current_version: str, deployed_date: datetime) -> None:
-    """Check if the latest patch targeting a critical CVE was deployed within the allowed time."""
-    cve_patch_data = await collect_cve_versions(session)
-
-    for cve_id, version_data in cve_patch_data.items():
-        for version, patch_release_date in version_data:
-            if version == current_version:
-                if patch_release_date:
-                    allowed_timeframe = patch_release_date + CVE_VERSION_CADENCE
-                    if deployed_date > allowed_timeframe:
-                        logger.error(f"Patch for {cve_id} affecting version {version} was not deployed in time!")
-                    else:
-                        logger.info(f"Patch for {cve_id} affecting version {version} deployed in time.")
-                else:
-                    logger.warning(f"Patch release date for {cve_id} affecting version {version} is missing.")
+        if scan_results:
+            # Process the results, e.g., log vulnerabilities
+            for result in scan_results.get('Results', []):
+                for vulnerability in result.get('Vulnerabilities', []):
+                    logger.warning(
+                        f"""Vulnerability found in image {image}:
+                            {vulnerability['VulnerabilityID']} "
+                            (Severity: {vulnerability['Severity']})"""
+                    )
 
 
 async def get_k8s_cluster_info(kubeconfig, context=None) -> ClusterInfo:
@@ -447,7 +474,7 @@ async def get_k8s_cluster_info(kubeconfig, context=None) -> ClusterInfo:
         version_api = kubernetes_asyncio.client.VersionApi(api)
         response = await version_api.get_code()
         version = parse_version(response.git_version)
-        return ClusterInfo(version, cluster_config.current_context['name'])
+        return ClusterInfo(version, cluster_config.current_context['name'], kubeconfig=kubeconfig)
 
 
 def check_k8s_version_recency(
@@ -474,16 +501,9 @@ def check_k8s_version_recency(
         if my_version.patch >= release.version.patch:
             continue
         # at this point `release` has the same major.minor, but higher patch than `my_version`
-        if my_version == release.version:
-            if release.age <= MINOR_VERSION_CADENCE:
-                logger.info(f"Version {my_version} is recent (within cadence).")
-                return True
-            else:
-                logger.error(f"Version {my_version} is too old.")
-                return False
-        # if release.age > PATCH_VERSION_CADENCE:
-        #     # whoops, the cluster should have been updated to this (or a higher version) already!
-        #     return False
+        if release.age > PATCH_VERSION_CADENCE:
+            # whoops, the cluster should have been updated to this (or a higher version) already!
+            return False
         ranges = [_range for _range in cve_affected_ranges if my_version in _range]
         if ranges and release.age > CVE_VERSION_CADENCE:
             # -- two FIXMEs:
@@ -539,10 +559,22 @@ async def main(argv):
         logger.critical("The EOL data in %s is outdated and we cannot reliably run this script.", EOLDATA_FILE)
         return 1
 
+    kubeconfig_path = config.kubeconfig
+
     connector = aiohttp.TCPConnector(limit=5)
     async with aiohttp.ClientSession(connector=connector) as session:
         cve_affected_ranges = await collect_cve_versions(session)
     releases_data = fetch_k8s_releases_data()
+
+    try:
+        logger.info(f"Checking cluster specified by {kubeconfig_path}")
+        cluster = await get_k8s_cluster_info(config.kubeconfig, config.context)
+        await scan_k8s_images(cluster.kubeconfig)
+
+    except CriticalException as e:
+        logger.critical(e)
+        logger.debug("Exception info", exc_info=True)
+        return 1
 
     try:
         context_desc = f"context '{config.context}'" if config.context else "default context"
