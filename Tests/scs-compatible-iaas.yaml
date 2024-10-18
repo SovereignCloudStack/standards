@@ -21,7 +21,7 @@ modules:
         tags: [mandatory]
         description: >
           Must fulfill all requirements of
-          https://docs.scs.community/standards/scs-0100-v1-flavor-naming
+          <https://docs.scs.community/standards/scs-0100-v1-flavor-naming>
   - id: scs-0100-v2
     name: Flavor naming v2
     url: https://docs.scs.community/standards/scs-0100-v2-flavor-naming
@@ -33,9 +33,9 @@ modules:
         tags: [mandatory]
         description: >
           Must fulfill all requirements of
-          https://docs.scs.community/standards/scs-0100-v2-flavor-naming
-  - id: scs-0100-v3.1
-    name: Flavor naming v3.1
+          <https://docs.scs.community/standards/scs-0100-v2-flavor-naming>
+  - id: scs-0100-v3.0
+    name: Flavor naming v3.0
     url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
     run:
       - executable: ./iaas/flavor-naming/flavor-names-openstack.py
@@ -46,10 +46,10 @@ modules:
         tags: [mandatory]
         description: >
           Must fulfill all requirements of
-          https://docs.scs.community/standards/scs-0100-v3-flavor-naming -- plus the list of mandatory
-          and recommended flavors found in https://docs.scs.community/standards/scs-0100-v2-flavor-naming#standard-scs-flavors
-  - id: scs-0100-v3.2
-    name: Flavor naming v3.2
+          <https://docs.scs.community/standards/scs-0100-v3-flavor-naming> -- plus the list of mandatory
+          and recommended flavors found in <https://docs.scs.community/standards/scs-0100-v2-flavor-naming#standard-scs-flavors>
+  - id: scs-0100-v3.1
+    name: Flavor naming v3.1
     url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
     run:
       - executable: ./iaas/flavor-naming/flavor-names-openstack.py
@@ -60,7 +60,7 @@ modules:
         tags: [mandatory]
         description: >
           Must fulfill all requirements of
-          https://docs.scs.community/standards/scs-0100-v3-flavor-naming
+          <https://docs.scs.community/standards/scs-0100-v3-flavor-naming>
   - id: scs-0101-v1
     name: Entropy v1
     url: https://docs.scs.community/standards/scs-0101-v1-entropy
@@ -82,7 +82,7 @@ modules:
         tags: [mandatory]
         description: >
           Must fulfill all requirements of
-          https://docs.scs.community/standards/scs-0101-v1-entropy
+          <https://docs.scs.community/standards/scs-0101-v1-entropy>
   - id: scs-0101-v1.1
     name: Entropy v1
     url: https://docs.scs.community/standards/scs-0101-v1-entropy
@@ -94,27 +94,27 @@ modules:
         tags: [recommended]
         description: >
           Must have all flavor properties recommended in
-          https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings
+          <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings>
       - id: entropy-check-image-properties
         tags: [recommended]
         description: >
           Must have all image properties recommended in
-          https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings
+          <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings>
       - id: entropy-check-rngd
         tags: [mandatory]
         description: >
           Images of the test sample must have the service `rngd`; see
-          https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors
+          <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
       - id: entropy-check-entropy-avail
         tags: [mandatory]
         description: >
           A test instance must have the correct `entropy_avail`; see
-          https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors
+          <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
       - id: entropy-check-fips-test
         tags: [mandatory]
         description: >
           A test instance must pass the "FIPS test"; see
-          https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors
+          <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
       - id: entropy-check
         tags: []  # don't use this testcase, but list it anyway because the script will output a result
   - id: scs-0102-v1
@@ -129,7 +129,7 @@ modules:
       - id: image-metadata-check
         tags: [mandatory]
         description: >
-          Must fulfill all requirements of https://docs.scs.community/standards/scs-0102-v1-image-metadata
+          Must fulfill all requirements of <https://docs.scs.community/standards/scs-0102-v1-image-metadata>
   - id: scs-0103-v1
     name: Standard flavors
     url: https://docs.scs.community/standards/scs-0103-v1-standard-flavors
@@ -140,7 +140,7 @@ modules:
       - id: standard-flavors-check
         tags: [mandatory]
         description: >
-          Must fulfill all requirements of https://docs.scs.community/standards/scs-0103-v1-standard-flavors
+          Must fulfill all requirements of <https://docs.scs.community/standards/scs-0103-v1-standard-flavors>
   - id: scs-0104-v1
     name: Standard images
     url: https://docs.scs.community/standards/scs-0104-v1-standard-images
@@ -153,8 +153,14 @@ modules:
       - id: standard-images-check
         tags: [mandatory]
         description: >
-          Must fulfill all requirements of https://docs.scs.community/standards/scs-0104-v1-standard-images
+          Must fulfill all requirements of <https://docs.scs.community/standards/scs-0104-v1-standard-images>
 timeline:
+  - date: 2024-08-23
+    versions:
+      v5: draft
+      v4: effective
+      v3: deprecated
+      v3-orig: deprecated
   - date: 2024-07-31
     versions:
       v4: effective
@@ -186,11 +192,23 @@ timeline:
     versions:
       v1: effective
 versions:
+  - version: v5
+    include:
+      - opc-v2022.11
+      - scs-0100-v3.1
+      - scs-0101-v1
+      - scs-0102-v1
+      - scs-0103-v1
+      - ref: scs-0104-v1
+        parameters:
+          image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images-v5.yaml
+    targets:
+      main: mandatory
   - version: v4
     stabilized_at: 2024-02-28
     include:
       - opc-v2022.11
-      - scs-0100-v3.2
+      - scs-0100-v3.1
       - scs-0101-v1
       - scs-0102-v1
       - scs-0103-v1
@@ -200,10 +218,21 @@ versions:
     targets:
       main: mandatory
   - version: v3
-    stabilized_at: 2023-06-15
+    # comment: >
+    #   This is what our documentation wrongly stated as being v3 when we introduced v4.
+    #   What was originally v3 (and what we actually continued to test) can be found as v3-orig.
+    stabilized_at: 2024-02-28
     include:
       - opc-v2022.11
       - scs-0100-v3.1
+      - scs-0102-v1
+    targets:
+      main: mandatory
+  - version: v3-orig
+    stabilized_at: 2023-06-15
+    include:
+      - opc-v2022.11
+      - scs-0100-v3.0
       - scs-0102-v1
     targets:
       main: mandatory

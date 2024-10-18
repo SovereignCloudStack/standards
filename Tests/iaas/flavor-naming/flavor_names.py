@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from collections import defaultdict
+import logging
 import os
 import os.path
 import re
@@ -9,8 +11,13 @@ from typing import Optional
 import yaml
 
 
+logger = logging.getLogger(__name__)
+
+SCS_NAME_PATTERN = re.compile(r"scs:name-v\d+\Z")
 CPUTYPE_KEY = {'L': 'crowded-core', 'V': 'shared-core', 'T': 'dedicated-thread', 'C': 'dedicated-core'}
+CPUTYPE_SORT = {'crowded-core': 0, 'shared-core': 1, 'dedicated-thread': 2, 'dedicated-core': 3}
 DISKTYPE_KEY = {'n': 'network', 'h': 'hdd', 's': 'ssd', 'p': 'nvme'}
+DISKTYPE_SORT = {'network': 0, 'hdd': 1, 'ssd': 2, 'nvme': 3}
 HERE = Path(__file__).parent
 
 
@@ -185,9 +192,11 @@ class CPUBrand:
     component_name = "cpubrand"
     cpuvendor = TblAttr("CPU Vendor", {"i": "Intel", "z": "AMD", "a": "ARM", "r": "RISC-V"})
     cpugen = DepTblAttr("#.CPU Gen", cpuvendor, {
-        "i": {None: '(unspecified)', 0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake", 4: "Sapphire Rapids"},
-        "z": {None: '(unspecified)', 0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4"},
-        "a": {None: '(unspecified)', 0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A710/NeoN2"},
+        "i": {None: '(unspecified)', 0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake", 4: "Sapphire Rapids",
+              5: 'Sierra Forest (E)', 6: 'Granite Rapids (P)'},
+        "z": {None: '(unspecified)', 0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4/4c", 5: "Zen 5/5c"},
+        "a": {None: '(unspecified)', 0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A71x/NeoN2/V2",
+              4: "AmpereOne", 5: "A72x/NeoN3/V3"},
         "r": {None: '(unspecified)', 0: "Unspec"},
     })
     perf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"})
@@ -203,15 +212,19 @@ class GPU:
     type = "GPU"
     component_name = "gpu"
     gputype = TblAttr("Type", {"g": "vGPU", "G": "Pass-Through GPU"})
-    brand = TblAttr("Brand", {"N": "nVidia", "A": "AMD", "I": "Intel"})
+    brand = TblAttr("Brand", {"N": "Nvidia", "A": "AMD", "I": "Intel"})
     gen = DepTblAttr("Gen", brand, {
         "N": {'': '(unspecified)', "f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal",
-              "v": "Volta", "t": "Turing", "a": "Ampere", "l": "AdaLovelace"},
-        "A": {'': '(unspecified)', "0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "RDNA2/Navi2x", "3": "RDNA3/Navi3x"},
-        "I": {'': '(unspecified)', "0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1", "2": "Xe2"},
+              "v": "Volta", "t": "Turing", "a": "Ampere", "l": "AdaLovelace", "g": "GraceHopper"},
+        "A": {'': '(unspecified)', "0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "C/RDNA2/Navi2x",
+              "3": "C/RDNA3/Navi3x", "3.5": "C/RDNA3.5", "4": "C/RDNA4"},
+        "I": {'': '(unspecified)', "0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1/DG1", "2": "Xe2/Gen12.2",
+              "3": "Arc/Gen12.7/DG2"},
     })
-    cu = OptIntAttr("#.CU/EU/SM")
-    perf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"})
+    cu = OptIntAttr("#.N:SMs/A:CUs/I:EUs")
+    perf = TblAttr("Frequency", {"": "Std Freq", "h": "High Freq", "hh": "Very High Freq"})
+    vram = OptIntAttr("#.V:GiB VRAM")
+    vramperf = TblAttr("Bandwidth", {"": "Std BW {<~1GiB/s)", "h": "High BW", "hh": "Very High BW"})
 
 
 class IB:
@@ -267,7 +280,7 @@ class Outputter:
     hype = "_%s"
     hwvirt = "_%?"
     cpubrand = "_%s%0%s"
-    gpu = "_%s%s%s%-%s"
+    gpu = "_%s%s%s%-%s%-%s"
     ib = "_%?"
 
     def output_component(self, pattern, component, parts):
@@ -330,7 +343,7 @@ class SyntaxV1:
     hwvirt = re.compile(r"\-(hwv)")
     # cpubrand needs final lookahead assertion to exclude confusion with _ib extension
     cpubrand = re.compile(r"\-([izar])([0-9]*)(h*)(?=$|\-)")
-    gpu = re.compile(r"\-([gG])([NAI])([^:h]*)(?::([0-9]+)|)(h*)")
+    gpu = re.compile(r"\-([gG])([NAI])([^:h]*)(?::([0-9]+)|)(h*)(?::([0-9]+)|)(h*)")
     ib = re.compile(r"\-(ib)")
 
     @staticmethod
@@ -355,7 +368,7 @@ class SyntaxV2:
     hwvirt = re.compile(r"_(hwv)")
     # cpubrand needs final lookahead assertion to exclude confusion with _ib extension
     cpubrand = re.compile(r"_([izar])([0-9]*)(h*)(?=$|_)")
-    gpu = re.compile(r"_([gG])([NAI])([^\-h]*)(?:\-([0-9]+)|)(h*)")
+    gpu = re.compile(r"_([gG])([NAI])([^\-h]*)(?:\-([0-9]+)|)(h*)(?:\-([0-9]+)|)(h*)")
     ib = re.compile(r"_(ib)")
 
     @staticmethod
@@ -435,6 +448,46 @@ class Parser:
         if ctx.pos != len(s):
             raise ValueError(f"Extra characters: {s[ctx.pos:]}")
         return flavorname
+
+
+class ParsingStrategy:
+    """
+    Composite parser that accepts multiple versions of the syntax in different ways
+
+    Follows the contract of class `Parser`
+    """
+
+    def __init__(self, vstr, parsers=(), tolerated_parsers=(), invalid_parsers=()):
+        self.vstr = vstr
+        self.parsers = parsers
+        self.tolerated_parsers = tolerated_parsers
+        self.invalid_parsers = invalid_parsers
+
+    def __call__(self, namestr: str) -> Flavorname:
+        exc = None
+        for parser in self.parsers:
+            try:
+                return parser(namestr)
+            except Exception as e:
+                if exc is None:
+                    exc = e
+        # at this point, if `self.parsers` is not empty, then `exc` is not `None`
+        for parser in self.tolerated_parsers:
+            try:
+                result = parser(namestr)
+            except Exception:
+                pass
+            else:
+                logger.warning(f"Name is merely tolerated {parser.vstr}: {namestr}")
+                return result
+        for parser in self.invalid_parsers:
+            try:
+                result = parser(namestr)
+            except Exception:
+                pass
+            else:
+                raise ValueError(f"Name is non-tolerable {parser.vstr}")
+        raise exc
 
 
 def _convert_user_input(idx, attr, target, val):
@@ -542,23 +595,49 @@ class Inputter:
 parser_v1 = Parser("v1", SyntaxV1)
 parser_v2 = Parser("v2", SyntaxV2)
 parser_v3 = Parser("v3", SyntaxV2)  # this is the same as parser_v2 except for the vstr
+parser_vN = ParsingStrategy(vstr="vN", parsers=(parser_v2, parser_v1))
 outname = outputter = Outputter()
 inputflavor = inputter = Inputter()
 
 
-def flavorname_to_dict(flavorname: Flavorname) -> dict:
-    name_v2 = outputter(flavorname)
+def flavorname_to_dict(*flavornames: Flavorname, ctx='') -> dict:
+    if not flavornames:
+        raise RuntimeError("need to supply at least one Flavorname instance!")
+    if ctx:
+        ctx = ctx + ': '  # used for logging warnings
+    name_collection = set()
+    collection = defaultdict(set)
+    for flavorname in flavornames:
+        collection['cpus'].add(flavorname.cpuram.cpus)
+        collection['ram'].add(flavorname.cpuram.ram)
+        collection['scs:cpu-type'].add(CPUTYPE_KEY[flavorname.cpuram.cputype])
+        if flavorname.disk:
+            collection['disk'].add(flavorname.disk.disksize)
+            collection['nrdisks'].add(flavorname.disk.nrdisks)  # this will need some postprocessing
+            collection['scs:disk0-type'].add(DISKTYPE_KEY[flavorname.disk.disktype or 'n'])
+        name_v2 = outputter(flavorname)
+        name_collection.add((SyntaxV1.from_v2(name_v2), "v1"))
+        name_collection.add((name_v2, "v2"))
+        short_v2 = outputter(flavorname.shorten())
+        # could check whether short_v2 != name_v2, but the set will swallow everything
+        name_collection.add((SyntaxV1.from_v2(short_v2), "v1"))
+        name_collection.add((short_v2, "v2"))
+    for key, values in collection.items():
+        if len(values) > 1:
+            logger.warning(f"{ctx}Inconsistent {key}: {', '.join(values)}")
     result = {
-        'cpus': flavorname.cpuram.cpus,
-        'cpu-type': CPUTYPE_KEY[flavorname.cpuram.cputype],
-        'ram': flavorname.cpuram.ram,
-        'name-v1': SyntaxV1.from_v2(name_v2),
-        'name-v2': name_v2,
+        'cpus': max(collection['cpus']),
+        'scs:cpu-type': max(collection['scs:cpu-type'], key=CPUTYPE_SORT.__getitem__),
+        'ram': max(collection['ram']),
     }
-    if flavorname.disk:
-        result['disk'] = flavorname.disk.disksize
-        for i in range(flavorname.disk.nrdisks):
-            result[f'disk{i}-type'] = DISKTYPE_KEY[flavorname.disk.disktype or 'n']
+    if collection['nrdisks']:
+        result['disk'] = max(collection['disk'])
+        disktype = max(collection['scs:disk0-type'], key=DISKTYPE_SORT.__getitem__)
+        for i in range(max(collection['nrdisks'])):
+            result[f'scs:disk{i}-type'] = disktype
+    names = [item[0] for item in sorted(name_collection, key=lambda item: (-len(item[0]), item[1]))]
+    for idx, name in enumerate(names):
+        result[f'scs:name-v{idx + 1}'] = name
     return result
 
 
@@ -620,10 +699,14 @@ def prettyname(flavorname, prefix=""):
     if flavorname.gpu:
         stg += "and " + _tbl_out(flavorname.gpu, "gputype")
         stg += _tbl_out(flavorname.gpu, "brand")
-        stg += _tbl_out(flavorname.gpu, "perf", True)
         stg += _tbl_out(flavorname.gpu, "gen", True)
         if flavorname.gpu.cu is not None:
-            stg += f"(w/ {flavorname.gpu.cu} CU/EU/SM) "
+            stg += f"(w/ {flavorname.gpu.cu} {_tbl_out(flavorname.gpu, 'perf', True)}SMs/CUs/EUs"
+            # Can not specify VRAM without CUs
+            if flavorname.gpu.vram:
+                stg += f" and {flavorname.gpu.vram} GiB {_tbl_out(flavorname.gpu, 'vramperf', True)}VRAM) "
+            else:
+                stg += ") "
     # IB
     if flavorname.ib:
         stg += "and Infiniband "

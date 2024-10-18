@@ -23,6 +23,11 @@ KEYWORDS = {
     'testcases': ('lifetime', 'id', 'description', 'tags'),
     'include': ('ref', 'parameters'),
 }
+# The canonical result values are -1, 0, and 1, for FAIL, MISS (or DNF), and PASS, respectively;
+# these concrete numbers are important because we do rely on their ordering. Note that MISS/DNF should
+# not be reported because it is tantamount to a result being absent. (Therefore the NIL_RESULT default
+# value below.)
+TESTCASE_VERDICTS = {'PASS': 1, 'FAIL': -1}
 NIL_RESULT = {'result': 0}
 
 
@@ -100,7 +105,9 @@ def annotate_validity(timeline: list, versions: dict, checkdate: date):
         default={},
     ).get('versions', {})
     for vname, version in versions.items():
-        version['validity'] = validity_lookup.get(vname, 'deprecated')
+        validity = validity_lookup.get(vname)
+        version['validity'] = validity or 'deprecated'
+        version['_explicit_validity'] = validity
 
 
 def add_period(dt: datetime, period: str) -> datetime:
@@ -193,22 +200,20 @@ class TestSuite:
         suite.include_testcases([tc for tc in self.testcases if test_selectors(selectors, tc['tags'])])
         return suite
 
-    def evaluate(self, results, checked_at=None, now=None):
-        by_result = defaultdict(list)
+    def eval_buckets(self, results) -> tuple[list[dict], list[dict], list[dict]]:
+        """returns lists of (failed, missing, passed) test cases"""
+        by_value = defaultdict(list)
         for testcase in self.testcases:
-            result = results.get(testcase['id'], NIL_RESULT)
-            value = result['result']
-            ch_date = result.get('checked_at', checked_at)
-            if ch_date is not None:
-                # invalidate value if too old, but only do so if we know the date
-                if now is None:
-                    now = datetime.now()
-                expires_at = add_period(ch_date, testcase.get('lifetime'))
-                if now >= expires_at:
-                    value = 0  # too old is equivalent with absent
-            # here, it's paramount that absences are recorded!
-            by_result[value].append(testcase)
-        return by_result
+            value = results.get(testcase['id'], NIL_RESULT).get('result', 0)
+            by_value[value].append(testcase)
+        return by_value[-1], by_value[0], by_value[1]
+
+    def evaluate(self, results) -> int:
+        """returns overall result"""
+        return min([
+            results.get(testcase['id'], NIL_RESULT).get('result', 0)
+            for testcase in self.testcases
+        ], default=0)
 
 
 def compile_suite(basename: str, include: list, sections: tuple = (), tests: re.Pattern = None) -> TestSuite:

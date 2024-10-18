@@ -11,13 +11,18 @@ with SCS specifications.
 SPDX-License-Identifier: CC-BY-SA-4.0
 """
 
+import calendar
+from collections import Counter
+import getopt
+import logging
 import os
 import sys
 import time
-import calendar
-import getopt
+
 import openstack
-from collections import Counter
+
+
+logger = logging.getLogger(__name__)
 
 
 def usage(ret):
@@ -31,8 +36,10 @@ def usage(ret):
     print(" -v/--verbose : Be more verbose")
     print(" -s/--skip-completeness: Don't check whether we have all mandatory images")
     print(" -h/--help    : Print this usage information")
-    print("If you pass images, only these will be validated, otherwise all (public unless")
-    print(" -p is specified) images from the catalog will be processed.")
+    print(" [-V/--image-visibility VIS_LIST] : filters images by visibility")
+    print("                (default: 'public,community'; use '*' to disable)")
+    print("If you pass images, only these will be validated, otherwise all images")
+    print("(filtered according to -p, -V) from the catalog will be processed.")
     sys.exit(ret)
 
 
@@ -335,15 +342,19 @@ def miss_replacement_images(by_name, outd_list):
 
 def main(argv):
     "Main entry point"
+    # configure logging, disable verbose library logging
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
+    openstack.enable_logging(debug=False)
     # Option parsing
     global verbose
+    image_visibility = set()
     private = False
     skip = False
     cloud = os.environ.get("OS_CLOUD")
     err = 0
     try:
-        opts, args = getopt.gnu_getopt(argv[1:], "phvc:s",
-                                       ("private", "help", "os-cloud=", "verbose", "skip-completeness"))
+        opts, args = getopt.gnu_getopt(argv[1:], "phvc:sV:",
+                                       ("private", "help", "os-cloud=", "verbose", "skip-completeness", "image-visibility="))
     except getopt.GetoptError:  # as exc:
         print("CRITICAL: Command-line syntax error", file=sys.stderr)
         usage(1)
@@ -351,27 +362,39 @@ def main(argv):
         if opt[0] == "-h" or opt[0] == "--help":
             usage(0)
         elif opt[0] == "-p" or opt[0] == "--private":
-            private = True
+            private = True  # only keep this for backwards compatibility (we have -V now)
         elif opt[0] == "-v" or opt[0] == "--verbose":
             verbose = True
+            logging.getLogger().setLevel(logging.DEBUG)
         elif opt[0] == "-s" or opt[0] == "--skip-completeness":
             skip = True
         elif opt[0] == "-c" or opt[0] == "--os-cloud":
             cloud = opt[1]
+        if opt[0] == "-V" or opt[0] == "--image-visibility":
+            image_visibility.update([v.strip() for v in opt[1].split(',')])
     images = args
     if not cloud:
         print("CRITICAL: Need to specify --os-cloud or set OS_CLOUD environment.", file=sys.stderr)
         usage(1)
+    if not image_visibility:
+        image_visibility.update(("public", "community"))
+    if private:
+        image_visibility.add("private")
     try:
         conn = openstack.connect(cloud=cloud, timeout=24)
         all_images = list(conn.image.images())
+        if '*' not in image_visibility:
+            logger.debug(f"Images: filter for visibility {', '.join(sorted(image_visibility))}")
+            all_images = [img for img in all_images if img.visibility in image_visibility]
+        all_image_names = [f"{img.name} ({img.visibility})" for img in all_images]
+        logger.debug(f"Images: {', '.join(all_image_names) or '(NONE)'}")
         by_name = {img.name: img for img in all_images}
         if len(by_name) != len(all_images):
             counter = Counter([img.name for img in all_images])
             duplicates = [name for name, count in counter.items() if count > 1]
             print(f'WARNING: duplicate names detected: {", ".join(duplicates)}', file=sys.stderr)
         if not images:
-            images = [img.name for img in all_images if private or img.visibility == 'public']
+            images = [img.name for img in all_images]
         # Analyse image metadata
         outdated_images = []
         for imgnm in images:

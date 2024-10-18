@@ -1,9 +1,9 @@
 aiohttp
 click
-fabric
 kubernetes_asyncio
 python-dateutil
 PyYAML
 openstacksdk
 requests
-sslyze==6.0.0
+sslyze
+tomli
