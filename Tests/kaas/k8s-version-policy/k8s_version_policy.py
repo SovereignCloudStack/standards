@@ -24,9 +24,9 @@ a shorter notice.
 (c) Hannes Baum <hannes.baum@cloudandheat.com>, 6/2023
 (c) Martin Morgenstern <martin.morgenstern@cloudandheat.com>, 2/2024
 (c) Matthias Büchse <matthias.buechse@cloudandheat.com>, 3/2024
+(c) Piotr Bigos <piotr.bigos@dNation.com>
 SPDX-License-Identifier: CC-BY-SA-4.0
 """
-
 from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -35,11 +35,13 @@ import aiohttp
 import asyncio
 import contextlib
 import getopt
+import json
 import kubernetes_asyncio
 import logging
 import logging.config
 import re
 import requests
+import subprocess
 import sys
 import yaml
 
@@ -91,6 +93,10 @@ class ConfigException(BaseException):
 
 class HelpException(BaseException):
     """Exception raised if the help functionality is called"""
+
+
+class CriticalException(BaseException):
+    """Exception raised if the critical CVE are found"""
 
 
 class Config:
@@ -275,6 +281,7 @@ class VersionRange:
 class ClusterInfo:
     version: K8sVersion
     name: str
+    kubeconfig: str
 
 
 async def request_cve_data(session: aiohttp.ClientSession, cveid: str) -> dict:
@@ -381,6 +388,84 @@ async def collect_cve_versions(session: aiohttp.ClientSession) -> set:
     return cfvs
 
 
+async def run_trivy_scan(image: str) -> dict:
+    """
+    Run Trivy scan on the specified image and return the results as a dictionary.
+
+    Args:
+        image (str): The Docker image to scan.
+
+    Returns:
+        dict: Parsed JSON results from Trivy.
+    """
+    try:
+        # Run the Trivy scan command
+        result = await asyncio.create_subprocess_exec(
+            'trivy',
+            'image',
+            '--format', 'json',
+            '--no-progress',
+            image,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+        stdout, stderr = await result.communicate()
+
+        if result.returncode != 0:
+            logger.error("Trivy scan failed: %s", stderr.decode().strip())
+            return {}
+
+        # Parse the JSON output from Trivy
+        return json.loads(stdout.decode())
+
+    except Exception as e:
+        logger.error("Error running Trivy scan: %s", e)
+        return {}
+
+
+async def get_k8s_pod_images(kubeconfig, context=None) -> list[str]:
+    """Get the list of container images used by all the pods in the Kubernetes cluster."""
+    cluster_config = await kubernetes_asyncio.config.load_kube_config(kubeconfig, context)
+
+    async with kubernetes_asyncio.client.ApiClient() as api:
+        v1 = kubernetes_asyncio.client.CoreV1Api(api)
+        pods = await v1.list_pod_for_all_namespaces(watch=False)
+
+        images = set()
+        for pod in pods.items:
+            # Get images from pod containers
+            for container in pod.spec.containers:
+                images.add(container.image)
+
+            # Get images from init containers (if any)
+            if pod.spec.init_containers:
+                for container in pod.spec.init_containers:
+                    images.add(container.image)
+
+        return list(images)
+
+
+async def scan_k8s_images(kubeconfig, context=None) -> None:
+    """Scan the images used in the Kubernetes cluster for vulnerabilities."""
+    images_to_scan = await get_k8s_pod_images(kubeconfig, context)
+
+    # Scan each image using Trivy
+    for image in images_to_scan:
+        logger.info(f"Scanning image: {image}")
+        scan_results = await run_trivy_scan(image)
+
+        if scan_results:
+            # Process the results, e.g., log vulnerabilities
+            for result in scan_results.get('Results', []):
+                for vulnerability in result.get('Vulnerabilities', []):
+                    logger.warning(
+                        f"""Vulnerability found in image {image}:
+                            {vulnerability['VulnerabilityID']} "
+                            (Severity: {vulnerability['Severity']})"""
+                    )
+
+
 async def get_k8s_cluster_info(kubeconfig, context=None) -> ClusterInfo:
     """Get the k8s version of the cluster under test."""
     cluster_config = await kubernetes_asyncio.config.load_kube_config(kubeconfig, context)
@@ -389,7 +474,7 @@ async def get_k8s_cluster_info(kubeconfig, context=None) -> ClusterInfo:
         version_api = kubernetes_asyncio.client.VersionApi(api)
         response = await version_api.get_code()
         version = parse_version(response.git_version)
-        return ClusterInfo(version, cluster_config.current_context['name'])
+        return ClusterInfo(version, cluster_config.current_context['name'], kubeconfig=kubeconfig)
 
 
 def check_k8s_version_recency(
@@ -474,10 +559,22 @@ async def main(argv):
         logger.critical("The EOL data in %s is outdated and we cannot reliably run this script.", EOLDATA_FILE)
         return 1
 
+    kubeconfig_path = config.kubeconfig
+
     connector = aiohttp.TCPConnector(limit=5)
     async with aiohttp.ClientSession(connector=connector) as session:
         cve_affected_ranges = await collect_cve_versions(session)
     releases_data = fetch_k8s_releases_data()
+
+    try:
+        logger.info(f"Checking cluster specified by {kubeconfig_path}")
+        cluster = await get_k8s_cluster_info(config.kubeconfig, config.context)
+        await scan_k8s_images(cluster.kubeconfig)
+
+    except CriticalException as e:
+        logger.critical(e)
+        logger.debug("Exception info", exc_info=True)
+        return 1
 
     try:
         context_desc = f"context '{config.context}'" if config.context else "default context"
