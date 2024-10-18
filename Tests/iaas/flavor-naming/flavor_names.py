@@ -288,7 +288,7 @@ class Flavorname:
             cpuram=self.cpuram and self.cpuram.shorten(),
             disk=self.disk and self.disk.shorten(),
             hype=self.hype and self.hype.shorten(),
-            hwvirt=self.hwwirt and self.hwvirt.shorten(),
+            hwvirt=self.hwvirt and self.hwvirt.shorten(),
             cpubrand=self.cpubrand and self.cpubrand.shorten(),
             gpu=self.gpu and self.gpu.shorten(),
             ib=self.ib and self.ib.shorten(),
