@@ -25,8 +25,8 @@ Unpatched versions should not be used in deployments as they are a security risk
 
 In software projects like e.g. OpenStack the software will be modified and receive bug fixes continuously and will receive releases of new versions on a regular basis.
 Older releases will at some point not receive updates anymore, because maintaining more and more releases simultaneously requires too much manpower.
-Thus older software will also eventually not receive security updates anymore.
-Using software which does not receive updates anymore threatens the baseline security of deployments and should be avoided under all circumstances.
+Thus older versions will also eventually not receive security updates anymore.
+Using versions which do not receive updates anymore threatens the baseline security of deployments and should be avoided under all circumstances.
 
 ## Design Considerations
 
