@@ -162,6 +162,9 @@ class Main:
     raminsecure = BoolAttr("?no ECC", letter="u")
     ramoversubscribed = BoolAttr("?RAM Over", letter="o")
 
+    def shorten(self):
+        return self
+
 
 class Disk:
     """Class representing the disk part"""
@@ -171,6 +174,9 @@ class Disk:
     disksize = OptIntAttr("#.GB Disk")
     disktype = TblAttr("Disk type", {'': '(unspecified)', "n": "Networked", "h": "Local HDD", "s": "SSD", "p": "HiPerf NVMe"})
 
+    def shorten(self):
+        return self
+
 
 class Hype:
     """Class repesenting Hypervisor"""
@@ -178,12 +184,18 @@ class Hype:
     component_name = "hype"
     hype = TblAttr(".Hypervisor", {"kvm": "KVM", "xen": "Xen", "hyv": "Hyper-V", "vmw": "VMware", "bms": "Bare Metal System"})
 
+    def shorten(self):
+        return None
+
 
 class HWVirt:
     """Class repesenting support for hardware virtualization"""
     type = "Hardware/NestedVirtualization"
     component_name = "hwvirt"
     hwvirt = BoolAttr("?HardwareVirt", letter="hwv")
+
+    def shorten(self):
+        return None
 
 
 class CPUBrand:
@@ -206,6 +218,12 @@ class CPUBrand:
         self.cpugen = cpugen
         self.perf = perf
 
+    def shorten(self):
+        # For non-x86-64, don't strip out CPU brand for short name, as it contains the architecture
+        if self.cpuvendor in ('i', 'z'):
+            return None
+        return CPUBrand(self.cpuvendor)
+
 
 class GPU:
     """Class repesenting GPU support"""
@@ -226,12 +244,28 @@ class GPU:
     vram = OptIntAttr("#.V:GiB VRAM")
     vramperf = TblAttr("Bandwidth", {"": "Std BW {<~1GiB/s)", "h": "High BW", "hh": "Very High BW"})
 
+    def __init__(self, gputype="g", brand="N", gen='', cu=None, perf='', vram=None, vramperf=''):
+        self.gputype = gputype
+        self.brand = brand
+        self.gen = gen
+        self.cu = cu
+        self.perf = perf
+        self.vram = vram
+        self.vramperf = vramperf
+
+    def shorten(self):
+        # remove h modifiers
+        return GPU(self.gputype, self.brand, self.gen, self.cu, self.vram)
+
 
 class IB:
     """Class representing Infiniband"""
     type = "Infiniband"
     component_name = "ib"
     ib = BoolAttr("?IB")
+
+    def shorten(self):
+        return self
 
 
 class Flavorname:
@@ -250,19 +284,15 @@ class Flavorname:
 
     def shorten(self):
         """return canonically shortened name as recommended in the standard"""
-        if self.hype is None and self.hwvirt is None and self.cpubrand is None and self.gpu is None:
-            return self
-        # GPU: Remove h modifiers - cleaner would be to build a c'tor like with CPUBrand
-        gpu = self.gpu
-        if self.gpu:
-            gpu.perf = ""
-            gpu.vramperf = ""
-        # For non-x86-64, don't strip out CPU brand for short name, as it contains the architecture
-        if self.cpubrand and self.cpubrand.cpuvendor not in ('i', 'z'):
-            return Flavorname(cpuram=self.cpuram, disk=self.disk,
-                              cpubrand=CPUBrand(self.cpubrand.cpuvendor),
-                              gpu=gpu, ib=self.ib)
-        return Flavorname(cpuram=self.cpuram, disk=self.disk, gpu=gpu, ib=self.ib)
+        return Flavorname(
+            cpuram=self.cpuram and self.cpuram.shorten(),
+            disk=self.disk and self.disk.shorten(),
+            hype=self.hype and self.hype.shorten(),
+            hwvirt=self.hwwirt and self.hwvirt.shorten(),
+            cpubrand=self.cpubrand and self.cpubrand.shorten(),
+            gpu=self.gpu and self.gpu.shorten(),
+            ib=self.ib and self.ib.shorten(),
+        )
 
 
 class Outputter:
