@@ -1,0 +1,8 @@
+# event-ratelimit-config.yaml
+kind: Configuration
+apiVersion: eventratelimit.admission.k8s.io/v1alpha1
+limits:
+- burst: 20000
+  qps: 5000
+  type: Server
+
