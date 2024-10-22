@@ -96,8 +96,8 @@ class PluginClusterStacks(KubernetesClusterPlugin):
             print(f"Error during clusterctl init: {error}")
             raise
 
-        # print("Waiting for webhook services to become ready...")
-        time.sleep(60)
+        # Wait for all CAPI pods to be ready
+        wait_for_capi_pods_ready()
 
         # Step 4: Download and apply the infrastructure components YAML with envsubst and kubectl
         download_and_apply_cmd_cso = (
@@ -139,8 +139,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
             print(f"Error during Helm upgrade: {error}")
             raise
 
-        # Todo: How to handle sleep to wait until all cso components are ready
-        time.sleep(30)
+        # Todo: Add waiting func for cso pods to be ready
 
         # Step 7: Create Cluster Stack definition (CSP/per tenant)
         clusterstack_yaml_path = "clusterstack.yaml"
@@ -251,3 +250,57 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         except Exception as error:
             print(f"Error during Kind cluster deletion: {error}")
             raise
+
+
+def wait_for_capi_pods_ready(timeout=240, interval=15):
+    """
+    Wait for all CAPI and CAPO pods to be in the 'Running' state with containers ready.
+
+    :param timeout: Maximum time to wait in seconds.
+    :param interval: Time to wait between checks in seconds.
+    """
+    namespaces = [
+        "capi-kubeadm-bootstrap-system",
+        "capi-kubeadm-control-plane-system",
+        "capi-system",
+    ]
+
+    start_time = time.time()
+
+    while time.time() - start_time < timeout:
+        all_pods_ready = True
+
+        for namespace in namespaces:
+            try:
+                # Get all pods in the namespace
+                result = subprocess.run(
+                    f"kubectl get pods -n {namespace} -o=jsonpath='{{range .items[*]}}{{.metadata.name}} {{.status.phase}} {{.status.containerStatuses[*].ready}}{{\"\\n\"}}{{end}}'",
+                    shell=True, capture_output=True, text=True
+                )
+
+                if result.returncode == 0:
+                    pods_status = result.stdout.strip().splitlines()
+                    for pod_status in pods_status:
+                        pod_info = pod_status.split()
+                        pod_name, phase, ready = pod_info[0], pod_info[1], pod_info[2]
+
+                        # Check if pod is in Running phase and containers are ready
+                        if phase != "Running" or ready != "true":
+                            all_pods_ready = False
+                            print(f"Pod {pod_name} in namespace {namespace} is not ready. Phase: {phase}, Ready: {ready}")
+                else:
+                    print(f"Error fetching pods in namespace {namespace}: {result.stderr}")
+                    all_pods_ready = False
+
+            except subprocess.CalledProcessError as error:
+                print(f"Error checking pods in namespace {namespace}: {error}")
+                all_pods_ready = False
+
+        if all_pods_ready:
+            print("All CAPI and CAPO system pods are ready.")
+            return True
+
+        print("Waiting for all CAPI and CAPO pods to become ready...")
+        time.sleep(interval)
+
+    raise TimeoutError("Timeout waiting for CAPI and CAPO system pods to become ready.")
