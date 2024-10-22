@@ -32,7 +32,8 @@ See the [README](https://github.com/SovereignCloudStack/standards/tree/main/Test
 for more details.
 
 The functionality of this script is also (partially) exposed via the web page
-[https://flavors.scs.community/](https://flavors.scs.community/).
+[https://flavors.scs.community/](https://flavors.scs.community/), which can both
+parse SCS flavors names as well as generate them.
 
 With the OpenStack tooling (`python3-openstackclient`, `OS_CLOUD`) in place, you can call
 `cli.py -v parse v3 $(openstack flavor list -f value -c Name)` to get a report
@@ -44,6 +45,107 @@ The [OpenStack Flavor Manager from OSISM](https://github.com/osism/openstack-fla
 will create a whole set of flavors in one go.
 To that end, it provides different options: either the standard mandatory and
 possibly recommended flavors can be created, or the user can set a file containing his flavors.
+
+### GPU table
+
+The most commonly used datacenter GPUs are listed here, showing what GPUs (or partitions
+of a GPU) result in what GPU part of the flavor name.
+
+#### Nvidia (`N`)
+
+We show the most popular recent generations here. Older one are of course possible as well.
+
+##### Ampere (`a`)
+
+One Streaming Multiprocessor on Ampere has 64 (A30, A100) or 128 Cuda Cores (A10, A40).
+
+GPUs without MIG (one SM has 128 Cuda Cores and 4 Tensor Cores):
+
+| Nvidia GPU | Tensor C | Cuda Cores | SMs | VRAM      | SCS name piece |
+|------------|----------|------------|-----|-----------|----------------|
+|  A10       |  288     |  9216      |  72 | 24G GDDR6 | `GNa-72-24`    |
+|  A40       |  336     | 10752      |  84 | 48G GDDR6 | `GNa-84-48`    |
+
+GPUs with Multi-Instance-GPU (MIG), where GPUs can be partitioned and the partitions handed
+out as as pass-through PCIe devices to instances. One SM corresponds to 64 Cuda Cores and
+4 Tensor Cores.
+
+| Nvidia GPU | Fraction | Tensor C | Cuda Cores | SMs | VRAM      | SCS GPU name   |
+|------------|----------|----------|------------|-----|-----------|----------------|
+|  A30       | 1/1      | 224      | 3584       |  56 | 24G HBM2  | `GNa-56-24`    |
+|  A30       | 1/2      | 112      | 1792       |  28 | 12G HBM2  | `GNa-28-12`    |
+|  A30       | 1/4      |  56      |  896       |  14 |  6G HBM2  | `GNa-14-6`     |
+|  A30X      | 1/1      | 224      | 3584       |  56 | 24G HBM2e | `GNa-56h-24h`  |
+| A100       | 1/1      | 432      | 6912       | 108 | 80G HBM2e | `GNa-108h-80h` |
+| A100       | 1/2      | 216      | 3456       |  54 | 40G HBM2e | `GNa-54h-40h`  |
+| A100       | 1/4      | 108      | 1728       |  27 | 20G HBM2e | `GNa-27h-20h`  |
+| A100       | 1/7      |  60+     |  960+      |  15+| 10G HBM2e | `GNa-15h-10h`+ |
+| A100X      | 1/1      | 432      | 6912       | 108 | 80G HBM2e | `GNa-108-80h`  |
+
+[+] The precise numbers for the 1/7 MIG configurations are not known by the author of
+this document and need validation.
+
+##### Ada Lovelave (`l`)
+
+No MIG support, 128 Cuda Cores and 4 Tensor Cores per SM.
+
+| Nvidia GPU | Tensor C | Cuda Cores | SMs | VRAM      | SCS name piece |
+|------------|----------|------------|-----|-----------|----------------|
+|  L4        | 232      |  7424      |  58 | 24G GDDR6 | `GNl-58-24`    |
+| L40        | 568      | 18176      | 142 | 48G GDDR6 | `GNl-142-48`   |
+| L40G       | 568      | 18176      | 142 | 48G GDDR6 | `GNl-142h-48`  |
+| L40S       | 568      | 18176      | 142 | 48G GDDR6 | `GNl-142hh-48` |
+
+##### Grace Hopper (`g`)
+
+These have MIG support and 128 Cuda Cores and 4 Tensor Cores per SM.
+
+| Nvidia GPU | Fraction | Tensor C | Cuda Cores | SMs | VRAM       | SCS GPU name   |
+|------------|----------|----------|------------|-----|------------|----------------|
+| H100       | 1/1      | 528      | 16896      | 132 |  80G HBM3  | `GNg-132-80h`  |
+| H100       | 1/2      | 264      |  8448      |  66 |  40G HBM3  | `GNg-66-40h`   |
+| H100       | 1/4      | 132      |  4224      |  33 |  20G HBM3  | `GNg-33-20h`   |
+| H100       | 1/7      |  72+     |  2304+     |  18+|  10G HBM3  | `GNg-18-10h`+  |
+| H200       | 1/1      | 528      | 16896      | 132 | 141G HBM3e | `GNg-132-141h` |
+| H200       | 1/2      | 264      | 16896      |  66 |  70G HBM3e | `GNg-66-70h`   |
+| ... |
+
+[+] The precise numbers for the 1/7 MIG configurations are not known by the author of
+this document and need validation.
+
+#### AMD Radeon (`A`)
+
+##### CDNA 2 (`2`)
+
+One CU contains 64 Stream Processors.
+
+| AMD Instinct| Stream Proc | CUs | VRAM       | SCS name piece |
+|-------------|-------------|-----|------------|----------------|
+| Inst MI210  |     6656    | 104 |  64G HBM2e | `GA2-104-64h`  |
+| Inst MI250  |    13312    | 208 | 128G HBM2e | `GA2-208-128h` |
+| Inst MI250X |    14080    | 229 | 128G HBM2e | `GA2-220-128h` |
+
+##### CDNA 3 (`3`)
+
+SRIOV partitioning is possible, resulting in pass-through for
+up to 8 partitions, somewhat similar to Nvidia MIG. 4 Tensor
+Cores and 64 Stream Processors per CU.
+
+| AMD GPU     | Tensor C | Stream Proc | CUs | VRAM       | SCS name piece |
+|-------------|----------|-------------|-----|------------|----------------|
+| Inst MI300X | 1216     | 19456       | 304 | 192G HBM3  | `GA3-304-192h` |
+| Inst MI325X | 1216     | 19456       | 304 | 288G HBM3  | `GA3-304-288h` |
+
+#### intel Xe (`I`)
+
+##### Xe-HPC (Ponte Vecchio) (`3`)
+
+1 EU corresponds to one Tensor Core and contains 128 Shading Units.
+
+| intel DC GPU | Tensor C | Shading U | EUs | VRAM       | SCS name part  |
+|--------------|----------|-----------|-----|------------|----------------|
+| Max 1100     |  56      |  7168     |  56 |  48G HBM2e | `GI3-56-48h`   |
+| Max 1550     | 128      | 16384     | 128 | 128G HBM2e | `GI3-128-128h` |
 
 ## Automated tests
 
