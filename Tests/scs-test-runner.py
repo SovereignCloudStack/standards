@@ -17,8 +17,6 @@ import time
 import click
 import tomli
 
-from kaas.plugin.run_plugin import run_plugin_create, run_plugin_delete
-
 logger = logging.getLogger(__name__)
 MONITOR_URL = "https://compliance.sovereignit.cloud/"
 
@@ -28,6 +26,7 @@ class Config:
         self.cwd = os.path.abspath(os.path.dirname(sys.argv[0]) or os.getcwd())
         self.scs_compliance_check = os.path.join(self.cwd, 'scs-compliance-check.py')
         self.cleanup_py = os.path.join(self.cwd, 'cleanup.py')
+        self.run_plugin = os.path.join(self.cwd, 'run_plugin.py')
         self.ssh_keygen = shutil.which('ssh-keygen')
         self.curl = shutil.which('curl')
         self.secrets = {}
@@ -87,8 +86,8 @@ class Config:
                 if not os.path.exists(kubeconfig_path):
                     os.mkdir(kubeconfig_path)
                 kubeconfig_filepath = kubeconfig_path + f"{cluster_id}.yaml"
-                kubeconfig = run_plugin_create(jobs[i][3], cluster_id, jobs[i][2], (kubeconfig_filepath))
-                jobs[i].append(kubeconfig)
+                subprocess.run(self.build_create_cluster_command(jobs[i][3], cluster_id, jobs[i][2], kubeconfig_filepath))
+                jobs[i].append(kubeconfig_filepath)
         return jobs
 
     def delete_clusters_for_jobs_in_sequence(self, jobs):
@@ -96,7 +95,25 @@ class Config:
             if jobs[i][0] == "scs-compatible-kaas":
                 cluster_id = f"{jobs[i][1]}"
                 logger.debug(f"Delete cluster '{cluster_id}'")
-                run_plugin_delete(jobs[i][3], cluster_id)
+                subprocess.run(self.build_delete_cluster_command(jobs[i][3], cluster_id))
+
+    def build_create_cluster_command(self, plugin_type, cluster_id, k8s_version, kubeconfig_path):
+        return [
+            self.run_plugin,
+            "create",
+            '--plugin', plugin_type,
+            '--clusterid', cluster_id,
+            '--version', k8s_version,
+            '--kubeconfig', kubeconfig_path
+        ]
+
+    def build_delete_cluster_command(self, plugin_type, cluster_id):
+        return [
+            self.run_plugin,
+            "delete",
+            '--plugin', plugin_type,
+            '--clusterid', cluster_id
+        ]
 
     def abspath(self, path):
         return os.path.join(self.cwd, path)
@@ -199,9 +216,8 @@ def _move_file(source_path, target_path):
 @click.option('--num-workers', 'num_workers', type=int, default=5)
 @click.option('--monitor-url', 'monitor_url', type=str, default=MONITOR_URL)
 @click.option('-o', '--output', 'report_yaml', type=click.Path(exists=False), default=None)
-@click.option('--upload/--no-upload', default=True)
 @click.pass_obj
-def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml, upload):
+def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml):
     """
     run compliance tests and upload results to compliance monitor
     """
@@ -230,6 +246,8 @@ def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml, up
         commands = [cfg.build_check_command(job, output) for job, output in zip(jobs, outputs)]
         _run_commands(commands, num_workers=num_workers)
         _concat_files(outputs, report_yaml_tmp)
+        subprocess.run(cfg.build_sign_command(report_yaml_tmp))
+        subprocess.run(cfg.build_upload_command(report_yaml_tmp, monitor_url))
         if report_yaml is not None:
             _move_file(report_yaml_tmp, report_yaml)
         logger.debug("delete clusters")
