@@ -437,7 +437,7 @@ def main(argv):
             all_flavors = conn.list_flavors(get_extra=True)
 
             if '*' not in image_visibility:
-                logger.debug(f"Images: filter for visibility {', '.join(image_visibility)}")
+                logger.debug(f"Images: filter for visibility {', '.join(sorted(image_visibility))}")
                 all_images = [img for img in all_images if img.visibility in image_visibility]
             all_image_names = [f"{img.name} ({img.visibility})" for img in all_images]
             logger.debug(f"Images: {', '.join(all_image_names) or '(NONE)'}")

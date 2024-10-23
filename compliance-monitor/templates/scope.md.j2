@@ -1,0 +1,26 @@
+| Scope versions ->  | {% for name in relevant %} {{name}} |{% endfor %}
+| :----------------- | {% for name in relevant %} :-- |{% endfor %}
+| State              | {% for name in relevant %} {{spec.versions[name].validity | capitalize}} |{% endfor %}
+| Stabilized at      | {% for name in relevant %} {{spec.versions[name].stabilized_at}} |{% endfor %}
+| **Modules**        | {% for name in relevant %}     |{% endfor %}
+{% for row in rows -%}
+| [{% if row.module.id.startswith('scs-') %}{{row.module.id}}: {% endif %}{{row.module.name}}]({{row.module.url}})  |{%
+for name in relevant
+  %} {% set column = row.columns[name] %}{%
+  if column
+    %}X{%
+    if column.parameters
+      %} ({%
+      for key, value in column.parameters.items()
+        %}{%
+        if value.startswith("https://")
+          %}[{{key}}]({{value}}){%
+          else
+          %}{{key}}={{value}}{%
+        endif %}{{ ", " if not loop.last }}){%
+      endfor %}{%
+    endif %}{%
+  endif %} |{%
+endfor
+%}
+{% endfor %}

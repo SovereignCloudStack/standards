@@ -3,18 +3,15 @@
   hosts: all
   tasks:
     - name: Run compliance script
-      ansible.builtin.shell: >
-        python3 ~/Tests/scs-test-runner.py --config ~/Tests/config.toml --debug run --preset {{ preset }} --output report.yaml
+      # write report.yaml into the proper directory so it will be transferred back by base job
+      # -- this then works regardless of VM/pod
+      ansible.builtin.command:
+        cmd: >
+          python3 Tests/scs-test-runner.py --config Tests/config.toml --debug
+          run --preset {{ preset }}
+          --output "{{ ansible_user_dir }}/zuul-output/artifacts/report.yaml"
+        chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
       changed_when: true
-
-    - name: Copy result YAML
-      ansible.builtin.synchronize:
-        dest: "{{ zuul.executor.log_root }}/report.yaml"
-        mode: pull
-        src: "report.yaml"
-        verify_host: true
-        owner: no
-        group: no
 
     - name: Return artifact URL
       zuul_return:
@@ -22,4 +19,4 @@
           zuul:
             artifacts:
               - name: "report.yaml"
-                url: "report.yaml"
+                url: "artifacts/report.yaml"

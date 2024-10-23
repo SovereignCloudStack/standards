@@ -1,17 +1,21 @@
 {% for subject, subject_result in results.items() -%}
-# {{ subject }}
+{# omit h1 title here because we can only have one of those,
+   and the html wrapper template will add one anyway -#}
 {% for scopeuuid, scope_result in subject_result.items() -%}
-{% if not scope_result.relevant -%}
 ## {{ scope_result.name }}
+
+- [spec overview]({{ scope_url(scopeuuid) }})
+
+{% if not scope_result.relevant -%}
 
 No recent test results available.
 
 {% endif -%}
 {% for version in scope_result.relevant -%}
 {%- set version_result = scope_result.versions[version] -%}
-## {{ scope_result.name }} {{ version }} ({{ version_result.validity }}): {{ version_result.result | verdict }}
+### {{ version }} ({{ version_result.validity }}): {{ version_result.result | verdict }}
 {% for target, target_result in version_result.targets.items() -%}
-### Target {{ target }}: {{ target_result.result | verdict }}
+#### Target {{ target }}: {{ target_result.result | verdict }}
 
 | testcase id | result | description |
 |---|---|---|

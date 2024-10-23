@@ -162,6 +162,9 @@ class Main:
     raminsecure = BoolAttr("?no ECC", letter="u")
     ramoversubscribed = BoolAttr("?RAM Over", letter="o")
 
+    def shorten(self):
+        return self
+
 
 class Disk:
     """Class representing the disk part"""
@@ -171,12 +174,18 @@ class Disk:
     disksize = OptIntAttr("#.GB Disk")
     disktype = TblAttr("Disk type", {'': '(unspecified)', "n": "Networked", "h": "Local HDD", "s": "SSD", "p": "HiPerf NVMe"})
 
+    def shorten(self):
+        return self
+
 
 class Hype:
     """Class repesenting Hypervisor"""
     type = "Hypervisor"
     component_name = "hype"
     hype = TblAttr(".Hypervisor", {"kvm": "KVM", "xen": "Xen", "hyv": "Hyper-V", "vmw": "VMware", "bms": "Bare Metal System"})
+
+    def shorten(self):
+        return None
 
 
 class HWVirt:
@@ -185,6 +194,9 @@ class HWVirt:
     component_name = "hwvirt"
     hwvirt = BoolAttr("?HardwareVirt", letter="hwv")
 
+    def shorten(self):
+        return None
+
 
 class CPUBrand:
     """Class repesenting CPU brand"""
@@ -192,9 +204,11 @@ class CPUBrand:
     component_name = "cpubrand"
     cpuvendor = TblAttr("CPU Vendor", {"i": "Intel", "z": "AMD", "a": "ARM", "r": "RISC-V"})
     cpugen = DepTblAttr("#.CPU Gen", cpuvendor, {
-        "i": {None: '(unspecified)', 0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake", 4: "Sapphire Rapids"},
-        "z": {None: '(unspecified)', 0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4"},
-        "a": {None: '(unspecified)', 0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A710/NeoN2"},
+        "i": {None: '(unspecified)', 0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake", 4: "Sapphire Rapids",
+              5: 'Sierra Forest (E)', 6: 'Granite Rapids (P)'},
+        "z": {None: '(unspecified)', 0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4/4c", 5: "Zen 5/5c"},
+        "a": {None: '(unspecified)', 0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A71x/NeoN2/V2",
+              4: "AmpereOne", 5: "A72x/NeoN3/V3"},
         "r": {None: '(unspecified)', 0: "Unspec"},
     })
     perf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"})
@@ -204,21 +218,44 @@ class CPUBrand:
         self.cpugen = cpugen
         self.perf = perf
 
+    def shorten(self):
+        # For non-x86-64, don't strip out CPU brand for short name, as it contains the architecture
+        if self.cpuvendor in ('i', 'z'):
+            return None
+        return CPUBrand(self.cpuvendor)
+
 
 class GPU:
     """Class repesenting GPU support"""
     type = "GPU"
     component_name = "gpu"
     gputype = TblAttr("Type", {"g": "vGPU", "G": "Pass-Through GPU"})
-    brand = TblAttr("Brand", {"N": "nVidia", "A": "AMD", "I": "Intel"})
+    brand = TblAttr("Brand", {"N": "Nvidia", "A": "AMD", "I": "Intel"})
     gen = DepTblAttr("Gen", brand, {
         "N": {'': '(unspecified)', "f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal",
-              "v": "Volta", "t": "Turing", "a": "Ampere", "l": "AdaLovelace"},
-        "A": {'': '(unspecified)', "0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "RDNA2/Navi2x", "3": "RDNA3/Navi3x"},
-        "I": {'': '(unspecified)', "0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1", "2": "Xe2"},
+              "v": "Volta", "t": "Turing", "a": "Ampere", "l": "AdaLovelace", "g": "GraceHopper"},
+        "A": {'': '(unspecified)', "0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "C/RDNA2/Navi2x",
+              "3": "C/RDNA3/Navi3x", "3.5": "C/RDNA3.5", "4": "C/RDNA4"},
+        "I": {'': '(unspecified)', "0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1/DG1", "2": "Xe2/Gen12.2",
+              "3": "Arc/Gen12.7/DG2"},
     })
-    cu = OptIntAttr("#.CU/EU/SM")
-    perf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"})
+    cu = OptIntAttr("#.N:SMs/A:CUs/I:EUs")
+    perf = TblAttr("Frequency", {"": "Std Freq", "h": "High Freq", "hh": "Very High Freq"})
+    vram = OptIntAttr("#.V:GiB VRAM")
+    vramperf = TblAttr("Bandwidth", {"": "Std BW {<~1GiB/s)", "h": "High BW", "hh": "Very High BW"})
+
+    def __init__(self, gputype="g", brand="N", gen='', cu=None, perf='', vram=None, vramperf=''):
+        self.gputype = gputype
+        self.brand = brand
+        self.gen = gen
+        self.cu = cu
+        self.perf = perf
+        self.vram = vram
+        self.vramperf = vramperf
+
+    def shorten(self):
+        # remove h modifiers
+        return GPU(gputype=self.gputype, brand=self.brand, gen=self.gen, cu=self.cu, vram=self.vram)
 
 
 class IB:
@@ -226,6 +263,9 @@ class IB:
     type = "Infiniband"
     component_name = "ib"
     ib = BoolAttr("?IB")
+
+    def shorten(self):
+        return self
 
 
 class Flavorname:
@@ -244,14 +284,15 @@ class Flavorname:
 
     def shorten(self):
         """return canonically shortened name as recommended in the standard"""
-        if self.hype is None and self.hwvirt is None and self.cpubrand is None:
-            return self
-        # For non-x86-64, don't strip out CPU brand for short name, as it contains the architecture
-        if self.cpubrand and self.cpubrand.cpuvendor not in ('i', 'z'):
-            return Flavorname(cpuram=self.cpuram, disk=self.disk,
-                              cpubrand=CPUBrand(self.cpubrand.cpuvendor),
-                              gpu=self.gpu, ib=self.ib)
-        return Flavorname(cpuram=self.cpuram, disk=self.disk, gpu=self.gpu, ib=self.ib)
+        return Flavorname(
+            cpuram=self.cpuram and self.cpuram.shorten(),
+            disk=self.disk and self.disk.shorten(),
+            hype=self.hype and self.hype.shorten(),
+            hwvirt=self.hwvirt and self.hwvirt.shorten(),
+            cpubrand=self.cpubrand and self.cpubrand.shorten(),
+            gpu=self.gpu and self.gpu.shorten(),
+            ib=self.ib and self.ib.shorten(),
+        )
 
 
 class Outputter:
@@ -274,7 +315,7 @@ class Outputter:
     hype = "_%s"
     hwvirt = "_%?"
     cpubrand = "_%s%0%s"
-    gpu = "_%s%s%s%-%s"
+    gpu = "_%s%s%s%-%s%-%s"
     ib = "_%?"
 
     def output_component(self, pattern, component, parts):
@@ -337,7 +378,7 @@ class SyntaxV1:
     hwvirt = re.compile(r"\-(hwv)")
     # cpubrand needs final lookahead assertion to exclude confusion with _ib extension
     cpubrand = re.compile(r"\-([izar])([0-9]*)(h*)(?=$|\-)")
-    gpu = re.compile(r"\-([gG])([NAI])([^:h]*)(?::([0-9]+)|)(h*)")
+    gpu = re.compile(r"\-([gG])([NAI])([^:h]*)(?::([0-9]+)|)(h*)(?::([0-9]+)|)(h*)")
     ib = re.compile(r"\-(ib)")
 
     @staticmethod
@@ -362,7 +403,7 @@ class SyntaxV2:
     hwvirt = re.compile(r"_(hwv)")
     # cpubrand needs final lookahead assertion to exclude confusion with _ib extension
     cpubrand = re.compile(r"_([izar])([0-9]*)(h*)(?=$|_)")
-    gpu = re.compile(r"_([gG])([NAI])([^\-h]*)(?:\-([0-9]+)|)(h*)")
+    gpu = re.compile(r"_([gG])([NAI])([^\-h]*)(?:\-([0-9]+)|)(h*)(?:\-([0-9]+)|)(h*)")
     ib = re.compile(r"_(ib)")
 
     @staticmethod
@@ -693,10 +734,14 @@ def prettyname(flavorname, prefix=""):
     if flavorname.gpu:
         stg += "and " + _tbl_out(flavorname.gpu, "gputype")
         stg += _tbl_out(flavorname.gpu, "brand")
-        stg += _tbl_out(flavorname.gpu, "perf", True)
         stg += _tbl_out(flavorname.gpu, "gen", True)
         if flavorname.gpu.cu is not None:
-            stg += f"(w/ {flavorname.gpu.cu} CU/EU/SM) "
+            stg += f"(w/ {flavorname.gpu.cu} {_tbl_out(flavorname.gpu, 'perf', True)}SMs/CUs/EUs"
+            # Can not specify VRAM without CUs
+            if flavorname.gpu.vram:
+                stg += f" and {flavorname.gpu.vram} GiB {_tbl_out(flavorname.gpu, 'vramperf', True)}VRAM) "
+            else:
+                stg += ") "
     # IB
     if flavorname.ib:
         stg += "and Infiniband "
