@@ -33,7 +33,8 @@ class Config:
         self.cwd = os.path.abspath(os.path.dirname(sys.argv[0]) or os.getcwd())
         self.scs_compliance_check = os.path.join(self.cwd, 'scs-compliance-check.py')
         self.cleanup_py = os.path.join(self.cwd, 'cleanup.py')
-        self.run_plugin_py = os.path.join(self.cwd, 'kaas', 'plugin', 'run_plugin.py')
+        # self.run_plugin_py = os.path.join(self.cwd, 'kaas', 'plugin', 'run_plugin.py') #TODO:!!! rebase artefact
+        self.run_plugin = os.path.join(self.cwd, 'run_plugin.py')
         self.ssh_keygen = shutil.which('ssh-keygen')
         self.curl = shutil.which('curl')
         self.secrets = {}
@@ -70,6 +71,24 @@ class Config:
         kubernetes_setup = dict(default_kubernetes_setup)
         kubernetes_setup.update(self.subjects.get(subject, {}).get('kubernetes_setup', {}))
         return kubernetes_setup
+
+    #TODO:!!! rebase artefact --> merge with functions `build_provision_command` and `build_unprovision_command`
+    #def build_create_cluster_command(self, plugin_type, cluster_id, k8s_version, kubeconfig_path):
+    #    return [
+    #        self.run_plugin,
+    #        "create",
+    #        '--plugin', plugin_type,
+    #        '--clusterid', cluster_id,
+    #        '--version', k8s_version,
+    #        '--kubeconfig', kubeconfig_path
+    #    ]
+    #def build_delete_cluster_command(self, plugin_type, cluster_id):
+    #    return [
+    #        self.run_plugin,
+    #        "delete",
+    #        '--plugin', plugin_type,
+    #        '--clusterid', cluster_id
+    #    ]
 
     def abspath(self, path):
         return os.path.join(self.cwd, path)
@@ -197,9 +216,8 @@ def _move_file(source_path, target_path):
 @click.option('--num-workers', 'num_workers', type=int, default=5)
 @click.option('--monitor-url', 'monitor_url', type=str, default=MONITOR_URL)
 @click.option('-o', '--output', 'report_yaml', type=click.Path(exists=False), default=None)
-@click.option('--upload/--no-upload', default=True)
 @click.pass_obj
-def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml, upload):
+def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml):
     """
     run compliance tests and upload results to compliance monitor
     """
