@@ -9,12 +9,10 @@ authentication with Keystone.
 """
 
 import argparse
-import json
 import logging
 import os
 
 import openstack
-from keystoneauth1.exceptions.http import Unauthorized
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +44,8 @@ def check_presence_of_key_manager(conn: openstack.connection.Connection) -> None
     except Exception as e:
         logger.error(str(e))
         raise Exception(
-            f"The Catalog endpoint could not be accessed. "
-            f"Please check your cloud connection and authorization."
+            "The Catalog endpoint could not be accessed. "
+            "Please check your cloud connection and authorization."
         )
 
     for svc in services:
@@ -56,12 +54,12 @@ def check_presence_of_key_manager(conn: openstack.connection.Connection) -> None
             # key-manager is present
             # now we want to check whether a user with member role
             # can create and access secrets
-            logger.info(f"Key-Manager is present")
+            logger.info("Key-Manager is present")
             check_key_manager_permissions(conn)
             return
 
     # we did not find the key-manager service
-    logger.warning(f"There is no key-manager endpoint in the cloud.")
+    logger.warning("There is no key-manager endpoint in the cloud.")
     # we do not fail, until a key-manager MUST be present
 
 
@@ -110,15 +108,15 @@ def check_key_manager_permissions(conn: openstack.connection.Connection) -> None
 
     except openstack.exceptions.ForbiddenException as e:
         logger.info(
-            f"Users with the 'member' role can use Key Manager API: FAIL "
-            f"- According to the Key Manager Standard, users with the "
-            f"'member' role should be able to use the Key Manager API."
+            "Users with the 'member' role can use Key Manager API: FAIL "
+            "- According to the Key Manager Standard, users with the "
+            "'member' role should be able to use the Key Manager API."
         )
         logger.error(f"ERROR: {str(e)}")
         exit(1)
     logger.info(
-        f"Users with the 'member' role can use Key Manager API: PASS "
-        f"- This is compliant to the Key Manager Standard."
+        "Users with the 'member' role can use Key Manager API: PASS "
+        "- This is compliant to the Key Manager Standard."
     )
 
 
