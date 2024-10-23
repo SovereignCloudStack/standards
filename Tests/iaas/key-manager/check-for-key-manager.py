@@ -18,6 +18,7 @@ from keystoneauth1.exceptions.http import Unauthorized
 
 logger = logging.getLogger(__name__)
 
+
 def initialize_logging():
     logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG)
 
@@ -30,13 +31,13 @@ def check_for_member_role(conn: openstack.connection.Connection) -> None:
     :returns: boolean, when role with most priviledges is member
     """
     role_names = set(conn.session.auth.get_access(conn.session).role_names)
-    if role_names & {'admin', 'manager'}:
+    if role_names & {"admin", "manager"}:
         return False
-    if 'reader' in role_names:
+    if "reader" in role_names:
         logger.info("User has reader role.")
-    if role_names - {'reader', 'member'}:
+    if role_names - {"reader", "member"}:
         logger.info("User has custom role.")
-    return 'member' in role_names
+    return "member" in role_names
 
 
 def check_presence_of_key_manager(conn: openstack.connection.Connection) -> None:
@@ -99,12 +100,12 @@ def check_key_manager_permissions(conn: openstack.connection.Connection) -> None
             secret_type="opaque",
             payload="foo",
         )
-
         new_secret = _find_secret(secret_name)
-        assert new_secret, (
-            f"Secret created with name '{secret_name}' was not discoverable by "
-            f"the user"
-        )
+
+        if not new_secret:
+            raise ValueError(
+                f"Secret created with name '{secret_name}' was not discoverable by the user"
+            )
         conn.key_manager.delete_secret(new_secret)
 
     except openstack.exceptions.ForbiddenException as e:
