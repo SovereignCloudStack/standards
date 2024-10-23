@@ -21,7 +21,7 @@ class KubernetesClusterPlugin(ABC):
 
     @final
     def __init__(self, config=None):
-        logger.info(f"Inital provider plug in of type:{type(self)}")
+        logger.info(f"Init provider plug-in of type {self.__class__.__name__}")
         self.config = config
         logger.debug(self.config)
         self.working_directory = os.getcwd()
@@ -58,14 +58,15 @@ class KubernetesClusterPlugin(ABC):
             self._create_cluster()
 
         except Exception as e:
-            logging.error(e)
+            logging.exception(e)
             self._delete_cluster()
 
         if kubeconfig_filepath:
-            generated_file = self.kubeconfig
-            self.kubeconfig = shutil.move(generated_file, kubeconfig_filepath)
+            shutil.move(self.kubeconfig, kubeconfig_filepath)
+        else:
+            kubeconfig_filepath = str(self.kubeconfig)
 
-        return self.kubeconfig
+        return kubeconfig_filepath
 
     @final
     def delete(self, cluster_name=None):
@@ -77,4 +78,4 @@ class KubernetesClusterPlugin(ABC):
         try:
             self._delete_cluster()
         except Exception as e:
-            logging.error(e)
+            logging.exception(e)

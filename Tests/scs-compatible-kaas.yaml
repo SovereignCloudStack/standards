@@ -2,32 +2,38 @@ name: SCS-compatible KaaS
 uuid: 1fffebe6-fd4b-44d3-a36c-fc58b4bb0180
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-kaas.yaml
 variables:
-  - kubeconfig
+  - subject_root  # directory containing the kubeconfig files for the subject under test
 modules:
   - id: cncf-k8s-conformance
     name: CNCF Kubernetes conformance
     url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0210-v2-k8s-version-policy.md # TODO:!!! this standard mentions cncf but is is the right reference?
+    parameters:
+      kubeconfig: relative path to kubeconfig file
     run:
       - executable: ./kaas/plugin/run_sonobuoy_executor.py
-        args: -k {kubeconfig} -r {result_dir_name} -c 'cncf-conformance'
+        args: -k {subject_root}/{kubeconfig} -r {result_dir_name} -c 'cncf-conformance'
     testcases:
-      - id: cncf-conformance
+      - id: cncf-k8s-conformance
         tags: [mandatory]
   - id: scs-0210-v2
     name: Kubernetes version policy
     url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0210-v2-k8s-version-policy.md
+    parameters:
+      kubeconfig: relative path to kubeconfig file
     run:
       - executable: ./kaas/k8s-version-policy/k8s_version_policy.py
-        args: -k {kubeconfig}
+        args: -k {subject_root}/{kubeconfig}
     testcases:
       - id: version-policy-check
         tags: [mandatory]
   - id: scs-0214-v2
     name: Kubernetes node distribution and availability
     url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0214-v1-k8s-node-distribution.md
+    parameters:
+      kubeconfig: relative path to kubeconfig file
     run:
       - executable: ./kaas/k8s-node-distribution/k8s_node_distribution_check.py
-        args: -k {kubeconfig}
+        args: -k {subject_root}/{kubeconfig}
     testcases:
       - id: node-distribution-check
         tags: [mandatory]
@@ -36,18 +42,23 @@ timeline:
   - date: 2024-02-28
     versions:
       v1: draft
-      v2: draft
 versions:
-  - version: v2
-    include:
-      - cncf-k8s-conformance
-      - scs-0210-v2
-      - scs-0214-v2
-    targets:
-      main: mandatory
   - version: v1
     include:
-      - scs-0210-v2
-      - scs-0214-v2
+      - ref: cncf-k8s-conformance
+        parameters:
+          kubeconfig: kubeconfig.yaml
+      - ref: scs-0210-v2
+        parameters:
+          kubeconfig: kubeconfig.yaml
+      - ref: scs-0210-v2
+        parameters:
+          kubeconfig: kubecfg129.yaml
+      - ref: scs-0210-v2
+        parameters:
+          kubeconfig: kubecfg130.yaml
+      - ref: scs-0214-v2
+        parameters:
+          kubeconfig: kubeconfig.yaml
     targets:
       main: mandatory
