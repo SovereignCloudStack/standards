@@ -74,9 +74,7 @@ class Config:
     def abspath(self, path):
         return os.path.join(self.cwd, path)
 
-    def build_check_command(self, job, output):
-        scope = job[0]
-        subject = job[1]
+    def build_check_command(self, scope, subject, output):
         # TODO figure out when to supply --debug here (but keep separated from our --debug)
         args = [
             sys.executable, self.scs_compliance_check, self.abspath(self.scopes[scope]['spec']),
@@ -223,9 +221,8 @@ def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml, up
     logger.debug(f'monitor url: {monitor_url}, num_workers: {num_workers}, output: {report_yaml}')
     with tempfile.TemporaryDirectory(dir=cfg.cwd) as tdirname:
         report_yaml_tmp = os.path.join(tdirname, 'report.yaml')
-        jobs = cfg.generate_compliance_check_jobs(subjects, scopes)
+        jobs = [(scope, subject) for scope in scopes for subject in subjects]
         logger.debug("Create clusters and provide kubeconfig")
-        jobs = cfg.build_clusters_for_jobs_in_sequence(jobs)
         outputs = [os.path.join(tdirname, f'report-{idx}.yaml') for idx in range(len(jobs))]
         commands = [cfg.build_check_command(job, output) for job, output in zip(jobs, outputs)]
         _run_commands(commands, num_workers=num_workers)
@@ -234,8 +231,6 @@ def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml, up
         subprocess.run(**cfg.build_upload_command(report_yaml_tmp, monitor_url))
         if report_yaml is not None:
             _move_file(report_yaml_tmp, report_yaml)
-        logger.debug("delete clusters")
-        cfg.delete_clusters_for_jobs_in_sequence(jobs)
     return 0
 
 
