@@ -18,9 +18,8 @@ from keystoneauth1.exceptions.http import Unauthorized
 
 logger = logging.getLogger(__name__)
 
-RED = "\033[31m"
-GREEN = "\033[32m"
-RESET = "\033[0m"
+def initialize_logging():
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG)
 
 
 def check_for_member_role(conn: openstack.connection.Connection) -> None:
@@ -34,9 +33,9 @@ def check_for_member_role(conn: openstack.connection.Connection) -> None:
     if role_names & {'admin', 'manager'}:
         return False
     if 'reader' in role_names:
-        print("User has reader role.")
+        logger.info("User has reader role.")
     if role_names - {'reader', 'member'}:
-        print("User has custom role.")
+        logger.info("User has custom role.")
     return 'member' in role_names
 
 
@@ -44,7 +43,7 @@ def check_presence_of_key_manager(conn: openstack.connection.Connection) -> None
     try:
         services = conn.service_catalog
     except Exception as e:
-        print(str(e))
+        logger.error(str(e))
         raise Exception(
             f"The Catalog endpoint could not be accessed. "
             f"Please check your cloud connection and authorization."
@@ -56,12 +55,12 @@ def check_presence_of_key_manager(conn: openstack.connection.Connection) -> None
             # key-manager is present
             # now we want to check whether a user with member role
             # can create and access secrets
-            print(f"{GREEN}Key-Manager is present{RESET}")
+            logger.info(f"Key-Manager is present")
             check_key_manager_permissions(conn)
             return
 
     # we did not find the key-manager service
-    logger.warning(f"{RED}There is no key-manager endpoint in the cloud.{RESET}")
+    logger.warning(f"There is no key-manager endpoint in the cloud.")
     # we do not fail, until a key-manager MUST be present
 
 
@@ -109,20 +108,21 @@ def check_key_manager_permissions(conn: openstack.connection.Connection) -> None
         conn.key_manager.delete_secret(new_secret)
 
     except openstack.exceptions.ForbiddenException as e:
-        print(
-            f"Users with the 'member' role can use Key Manager API: {RED}FAIL "
+        logger.info(
+            f"Users with the 'member' role can use Key Manager API: FAIL "
             f"- According to the Key Manager Standard, users with the "
-            f"'member' role should be able to use the Key Manager API.{RESET}"
+            f"'member' role should be able to use the Key Manager API."
         )
-        print(f"ERROR: {str(e)}")
+        logger.error(f"ERROR: {str(e)}")
         exit(1)
-    print(
-        f"Users with the 'member' role can use Key Manager API: {GREEN}PASS "
-        f"- This is compliant to the Key Manager Standard.{RESET}"
+    logger.info(
+        f"Users with the 'member' role can use Key Manager API: PASS "
+        f"- This is compliant to the Key Manager Standard."
     )
 
 
 def main():
+    initialize_logging()
     parser = argparse.ArgumentParser(description="SCS Mandatory IaaS Service Checker")
     parser.add_argument(
         "--os-cloud",
