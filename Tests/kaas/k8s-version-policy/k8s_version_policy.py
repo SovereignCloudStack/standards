@@ -434,11 +434,9 @@ async def get_k8s_pod_images(kubeconfig, context=None) -> list[str]:
 
         images = set()
         for pod in pods.items:
-            # Get images from pod containers
             for container in pod.spec.containers:
                 images.add(container.image)
 
-            # Get images from init containers (if any)
             if pod.spec.init_containers:
                 for container in pod.spec.init_containers:
                     images.add(container.image)
@@ -450,13 +448,11 @@ async def scan_k8s_images(kubeconfig, context=None) -> None:
     """Scan the images used in the Kubernetes cluster for vulnerabilities."""
     images_to_scan = await get_k8s_pod_images(kubeconfig, context)
 
-    # Scan each image using Trivy
     for image in images_to_scan:
         logger.info(f"Scanning image: {image}")
         scan_results = await run_trivy_scan(image)
 
         if scan_results:
-            # Process the results, e.g., log vulnerabilities
             for result in scan_results.get('Results', []):
                 for vulnerability in result.get('Vulnerabilities', []):
                     logger.warning(
