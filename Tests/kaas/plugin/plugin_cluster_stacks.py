@@ -105,7 +105,6 @@ class PluginClusterStacks(KubernetesClusterPlugin):
             "https://github.com/SovereignCloudStack/cluster-stack-operator/releases/latest/download/cso-infrastructure-components.yaml"
             " | /tmp/envsubst | kubectl apply -f -"
         )
-        # Todo: USE something else like envsubst in python?
         download_and_apply_cmd_cspo = (
             "curl -sSL "
             "https://github.com/SovereignCloudStack/cluster-stack-provider-openstack/releases/latest/download/cspo-infrastructure-components.yaml"
@@ -139,7 +138,8 @@ class PluginClusterStacks(KubernetesClusterPlugin):
             print(f"Error during Helm upgrade: {error}")
             raise
 
-        # Todo: Add waiting func for cso pods to be ready
+        # Wait for the CSO pods to be ready
+        wait_for_cso_pods_ready()
 
         # Step 7: Create Cluster Stack definition (CSP/per tenant)
         clusterstack_yaml_path = "clusterstack.yaml"
@@ -227,7 +227,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
                 print(f"Cluster {self.cs_cluster_name} exists. Proceeding with deletion.")
                 # Step 2: Delete the cluster with a timeout
                 delete_cluster_command = (
-                    f"kubectl delete cluster {self.cs_cluster_name} --kubeconfig {self.kubeconfig} "
+                    f"kubectl delete cluster {self.cs_cluster_name} --kubeconfig {self.kubeconfig}"
                     f"--timeout=300s"
                 )
                 subprocess.run(delete_cluster_command, shell=True, check=True)
@@ -304,3 +304,52 @@ def wait_for_capi_pods_ready(timeout=240, interval=15):
         time.sleep(interval)
 
     raise TimeoutError("Timeout waiting for CAPI and CAPO system pods to become ready.")
+
+
+def wait_for_cso_pods_ready(timeout=240, interval=15):
+    """
+    Wait for all CSO (Cluster Stack Operator) pods in the 'cso-system' namespace to be in the 'Running' state with containers ready.
+
+    :param timeout: Maximum time to wait in seconds.
+    :param interval: Time to wait between checks in seconds.
+    """
+    cso_namespace = "cso-system"
+
+    start_time = time.time()
+
+    while time.time() - start_time < timeout:
+        all_pods_ready = True
+
+        try:
+            # Get all pods in the cso-system namespace
+            result = subprocess.run(
+                f"kubectl get pods -n {cso_namespace} -o=jsonpath='{{range .items[*]}}{{.metadata.name}} {{.status.phase}} {{.status.containerStatuses[*].ready}}{{\"\\n\"}}{{end}}'",
+                shell=True, capture_output=True, text=True
+            )
+
+            if result.returncode == 0:
+                pods_status = result.stdout.strip().splitlines()
+                for pod_status in pods_status:
+                    pod_info = pod_status.split()
+                    pod_name, phase, ready = pod_info[0], pod_info[1], pod_info[2]
+
+                    # Check if pod is in Running phase and containers are ready
+                    if phase != "Running" or ready != "true":
+                        all_pods_ready = False
+                        print(f"Pod {pod_name} in namespace {cso_namespace} is not ready. Phase: {phase}, Ready: {ready}")
+            else:
+                print(f"Error fetching pods in namespace {cso_namespace}: {result.stderr}")
+                all_pods_ready = False
+
+        except subprocess.CalledProcessError as error:
+            print(f"Error checking pods in namespace {cso_namespace}: {error}")
+            all_pods_ready = False
+
+        if all_pods_ready:
+            print("All CSO pods in the 'cso-system' namespace are ready.")
+            return True
+
+        print("Waiting for CSO pods in 'cso-system' namespace to become ready...")
+        time.sleep(interval)
+
+    raise TimeoutError("Timeout waiting for CSO pods in 'cso-system' namespace to become ready.")
