@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Mandatory APIs checker
 This script retrieves the endpoint catalog from Keystone using the OpenStack
 SDK and checks whether a key manager APi endpoint is present.

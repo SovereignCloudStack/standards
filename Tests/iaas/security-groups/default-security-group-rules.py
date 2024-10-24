@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Default Security Group Rules Checker
 
 This script tests the absence of any ingress default security group rule
