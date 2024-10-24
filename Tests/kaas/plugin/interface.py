@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import final
 import os
+import os.path
 import shutil
 import logging
 
@@ -54,12 +55,13 @@ class KubernetesClusterPlugin(ABC):
         """
         self.cluster_name = name
         self.cluster_version = version
-        try:
-            self._create_cluster()
 
-        except Exception as e:
-            logging.exception(e)
-            self._delete_cluster()
+        self._create_cluster()  # TODO: maybe we do not need to use try exept here?
+        # try:
+        #     self._create_cluster()
+        # except Exception as e:
+        #     logging.exception(e)
+        #     self._delete_cluster()
 
         if kubeconfig_filepath:
             shutil.move(self.kubeconfig, kubeconfig_filepath)

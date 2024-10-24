@@ -9,16 +9,15 @@ class PluginKind(KubernetesClusterPlugin):
     """
 
     def _create_cluster(self):
-        # ~ cluster_version = self.cluster_version #TODO:!!! rebase artefact
-        # ~ if cluster_version == '1.29': #TODO:!!! rebase artefact
-            # ~ cluster_version = 'v1.29.8' #TODO:!!! rebase artefact
-        # ~ elif cluster_version == '1.30': #TODO:!!! rebase artefact
-            # ~ cluster_version = 'v1.30.4' #TODO:!!! rebase artefact
-        # ~ elif cluster_version == '1.31' or cluster_version == 'default': #TODO:!!! rebase artefact
-            # ~ cluster_version = 'v1.31.1' #TODO:!!! rebase artefact
-
-        cluster_image = f"kindest/node:{self.cluster_version}"
-        self.cluster = KindCluster(self.cluster_name, self.kubeconfig, cluster_image)
+        cluster_version = self.cluster_version
+        if cluster_version == '1.29':
+            cluster_version = 'v1.29.8'
+        elif cluster_version == '1.30':
+            cluster_version = 'v1.30.4'
+        elif cluster_version == '1.31' or cluster_version == 'default':
+            cluster_version = 'v1.31.1'
+        cluster_image = f"kindest/node:{cluster_version}"
+        self.cluster = KindCluster(name=self.cluster_name, image=cluster_image)
         if self.config is None:
             self.cluster.create()
         else:

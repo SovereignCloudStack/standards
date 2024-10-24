@@ -33,8 +33,7 @@ class Config:
         self.cwd = os.path.abspath(os.path.dirname(sys.argv[0]) or os.getcwd())
         self.scs_compliance_check = os.path.join(self.cwd, 'scs-compliance-check.py')
         self.cleanup_py = os.path.join(self.cwd, 'cleanup.py')
-        # self.run_plugin_py = os.path.join(self.cwd, 'kaas', 'plugin', 'run_plugin.py') #TODO:!!! rebase artefact
-        self.run_plugin = os.path.join(self.cwd, 'run_plugin.py')
+        self.run_plugin_py = os.path.join(self.cwd, 'kaas', 'plugin', 'run_plugin.py')
         self.ssh_keygen = shutil.which('ssh-keygen')
         self.curl = shutil.which('curl')
         self.secrets = {}
@@ -71,24 +70,6 @@ class Config:
         kubernetes_setup = dict(default_kubernetes_setup)
         kubernetes_setup.update(self.subjects.get(subject, {}).get('kubernetes_setup', {}))
         return kubernetes_setup
-
-    #TODO:!!! rebase artefact --> merge with functions `build_provision_command` and `build_unprovision_command`
-    #def build_create_cluster_command(self, plugin_type, cluster_id, k8s_version, kubeconfig_path):
-    #    return [
-    #        self.run_plugin,
-    #        "create",
-    #        '--plugin', plugin_type,
-    #        '--clusterid', cluster_id,
-    #        '--version', k8s_version,
-    #        '--kubeconfig', kubeconfig_path
-    #    ]
-    #def build_delete_cluster_command(self, plugin_type, cluster_id):
-    #    return [
-    #        self.run_plugin,
-    #        "delete",
-    #        '--plugin', plugin_type,
-    #        '--clusterid', cluster_id
-    #    ]
 
     def abspath(self, path):
         return os.path.join(self.cwd, path)
@@ -236,9 +217,8 @@ def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml):
     with tempfile.TemporaryDirectory(dir=cfg.cwd) as tdirname:
         report_yaml_tmp = os.path.join(tdirname, 'report.yaml')
         jobs = [(scope, subject) for scope in scopes for subject in subjects]
-        logger.debug("Create clusters and provide kubeconfig")
         outputs = [os.path.join(tdirname, f'report-{idx}.yaml') for idx in range(len(jobs))]
-        commands = [cfg.build_check_command(job, output) for job, output in zip(jobs, outputs)]
+        commands = [cfg.build_check_command(job[0], job[1], output) for job, output in zip(jobs, outputs)]
         _run_commands(commands, num_workers=num_workers)
         _concat_files(outputs, report_yaml_tmp)
         subprocess.run(cfg.build_sign_command(report_yaml_tmp))
