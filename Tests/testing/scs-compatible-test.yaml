@@ -1,6 +1,43 @@
 name: SCS Compatible
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible.yaml
+variables:
+  - os_cloud
 versions:
+  - version: v5
+    standards:
+      - name: Secure Connections
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0122-v1-secure-connections.md
+        parameters:
+          - mozilla_tls_profile_version: "5.7"
+          - mozilla_tls_profile_preset: "intermediate"
+        check_tools:
+          - executable: ./iaas/secure-connections/tls-checker.py
+            args: --os-cloud {os_cloud} --mozilla-profile-json ./iaas/secure-connections/mozilla-tls-profiles/{mozilla_tls_profile_version}.json --mozilla-profile-level {mozilla_tls_profile_preset}
+            id: tls-configuration-check
+      - name: Standard flavors
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0103-v1-standard-flavors.md
+        check_tools:
+          - executable: ./iaas/standard-flavors/flavors-openstack.py
+            args: "./iaas/scs-0103-v1-flavors.yaml"
+      - name: Standard images
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0104-v1-standard-images.md
+        check_tools:
+          - executable: ./iaas/standard-images/images-openstack.py
+            args: "./iaas/scs-0104-v1-flavors.yaml"
+      - name: Flavor naming
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0100-v3-flavor-naming.md
+        check_tools:
+          - executable: ./iaas/flavor-naming/flavor-names-openstack.py
+            args: "--mand=./iaas/scs-0100-v3-flavors.yaml"
+      - name: Image metadata
+        url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0102-v1-image-metadata.md
+        check_tools:
+          - executable: ./iaas/image-metadata/image-md-check.py
+            args: -s -v
+      - name: OpenStack Powered Compute v2022.11
+        url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
+        condition: mandatory
+        # Unfortunately, no wrapper to run refstack yet, needs to be added
   - version: v4
     standards:
       - name: Standard flavors
