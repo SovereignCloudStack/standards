@@ -1,0 +1,11 @@
+# this file specifies all clusters that have to be provisioned for the tests to run
+clusters:
+  default:
+    branch: default
+    kubeconfig: kubeconfig.yaml
+  v1.29:
+    branch: "1.29"
+    kubeconfig: kubecfg129.yaml
+  v1.30:
+    branch: "1.30"
+    kubeconfig: kubecfg130.yaml

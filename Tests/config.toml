@@ -33,6 +33,17 @@ subjects = [
 workers = 4
 
 
+[presets.all-kaas]
+scopes = [
+    "scs-compatible-kaas",
+]
+subjects = [
+    "cloud-kaas-a",
+    #"cloud-kaas-b",
+]
+workers = 4
+
+
 [scopes.scs-compatible-iaas]
 spec = "./scs-compatible-iaas.yaml"
 
@@ -41,3 +52,9 @@ spec = "./scs-compatible-iaas.yaml"
 # (this is the only mapping declaration that supports using Python string interpolation)
 [subjects._.mapping]
 os_cloud = "{subject}"
+subject_root = "{subject}"
+
+
+[subjects._.kubernetes_setup]
+kube_plugin = "kind"
+clusterspec = "kaas/clusterspec.yaml"
