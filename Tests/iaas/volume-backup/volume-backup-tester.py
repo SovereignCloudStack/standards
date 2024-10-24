@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Volume Backup API tester for Block Storage API
 
 This test script executes basic operations on the Block Storage API centered

@@ -154,6 +154,57 @@ modules:
         tags: [mandatory]
         description: >
           Must fulfill all requirements of <https://docs.scs.community/standards/scs-0104-v1-standard-images>
+  - id: scs-0114-v1
+    name: Volume Types
+    url: https://docs.scs.community/standards/scs-0114-v1-volume-type-standard
+    run:
+      - executable: ./iaas/volume-types/volume-types-check.py
+        args: -c {os_cloud} -d
+    testcases:
+      - id: volume-types-check
+        tags: [mandatory]
+        description: >
+          Must fulfill all requirements of <https://docs.scs.community/standards/scs-0114-v1-volume-type-standard>
+  - id: scs-0115-v1
+    name: Default rules for security groups
+    url: https://docs.scs.community/standards/scs-0115-v1-default-rules-for-security-groups
+    run:
+      - executable: ./iaas/security-groups/default-security-group-rules.py
+        args: --os-cloud {os_cloud} --debug
+    testcases:
+      - id: security-groups-default-rules-check
+        tags: [mandatory]
+        description: >
+          Must fulfill all requirements of <https://docs.scs.community/standards/scs-0115-v1-default-rules-for-security-groups>
+  - id: scs-0116-v1
+    name: Key manager
+    url: https://docs.scs.community/standards/scs-0116-v1-key-manager-standard
+    run:
+      - executable: ./iaas/key-manager/check-for-key-manager.py
+        args: --os-cloud {os_cloud} --debug
+    testcases:
+      - id: key-manager-check
+        tags: [mandatory]
+        description: >
+          Must fulfill all requirements of <https://docs.scs.community/standards/scs-0116-v1-key-manager-standard>
+  - id: scs-0117-v1
+    name: Volume backup
+    url: https://docs.scs.community/standards/scs-0117-v1-volume-backup-service
+    run:
+      - executable: ./iaas/volume-backup/volume-backup-tester.py
+        args: --os-cloud {os_cloud} --debug
+    testcases:
+      - id: volume-backup-check
+        tags: [mandatory]
+        description: >
+          Must fulfill all requirements of <https://docs.scs.community/standards/scs-0117-v1-volume-backup-service>
+  - id: scs-0121-v1
+    name: Availability Zones
+    testcases:
+      - id: availability-zones-check
+        tags: [mandatory]
+        description: >
+          Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard>
 timeline:
   - date: 2024-08-23
     versions:
@@ -202,6 +253,11 @@ versions:
       - ref: scs-0104-v1
         parameters:
           image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images-v5.yaml
+      - scs-0114-v1
+      - scs-0115-v1
+      - scs-0116-v1
+      - scs-0117-v1
+      - scs-0121-v1
     targets:
       main: mandatory
   - version: v4
