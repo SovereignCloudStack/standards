@@ -86,16 +86,36 @@ Only under these circumstances deployments with older or alternative IaaS Layer 
 This option could be taken for granted, but to actually advise using it may encourage CSPs to take a closer look on their life-cycle management and security risk handling.
 And CSPs using OpenStack could even be encouraged to upgrade their deployments.
 
+#### What timeframe is needed to fix the issue?
+
+CSPs should be encouraged to fix security issues as fast as possible.
+Some security issues are very easy to exploit so as soon as the vulnerability is disclosed attacks on deployments will start.
+Other vulnerabilities may need much knowladge and more time to be exploited.
+Also the impact of different vulnerabilites will differ.
+
+So it can be concluded that some security issues need to be fixed immediately while for others it is okay to take some time.
+The BSI already has some guidance[^1] on how fast CSPs should response.
+From the moment a vulnerability is disclosed these are the advised reaction times ranked by the severity of the vulnerability:
+
+1. Critical (CVSS = 9.0 – 10.0): 3 hours
+2. High (CVSS = 7.0 – 8.9): 3 days
+3. Mid (CVSS = 4.0 – 6.9): 1 month
+4. Low (CVSS = 0.1 – 3.9): 3 months
+
+[^1]: [C5 criteria catalog with timeframes for responses on page 75.](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Publikationen/Broschueren/C5_2020.pdf?__blob=publicationFile&v=3)
+
+This standard will follow this guidance and refer to these timeframes as "reasonable timeframes".
+
 ## Standard for a minimum IaaS Layer Software version
 
-If a deployment is affected by a security issue and a maintained[^1] version of OpenStack is used as implementation for IaaS Layer software, security patches noted in OSSNs and OSSAs MUST be integrated within a reasonable timeframe.
-Otherwise the CSP MUST implement security bug fixes themself within a reasonable timeframe, when the deplyoment is affected by a security issue.
+If a deployment is affected by a security issue and a maintained[^2] version of OpenStack is used as implementation for IaaS Layer software, security patches noted in OSSNs and OSSAs MUST be integrated within a reasonable timeframe according to the severity of the security issue[^1].
+Otherwise the CSP MUST implement security bug fixes themself within a reasonable timeframe, when the deplyoment is affected by a security issue according to the severity of the security issue[^1].
 
-In both cases proof of the update MUST be send to the OSBA, so that the compliance will not be revoked.
+In both cases a notice of the update MUST be send to the OSBA, so that the compliance will not be revoked.
 
 An open SBOM list MAY be used to propagate the current version of the software and may be used as proof of updates.
 
-[^1]: [OpenStack versions and their current status](https://releases.openstack.org)
+[^2]: [OpenStack versions and their current status](https://releases.openstack.org)
 
 ## Conformance Tests
 
