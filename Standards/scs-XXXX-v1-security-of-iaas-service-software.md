@@ -125,4 +125,4 @@ Tests on the integration of security patches itself are difficult.
 And even if tests for certain security issues are possible, then those might be received as an attack.
 This is the reason there will be no conformance test.
 
-Rather the standard requiring that CSPs provide proof of the fixed vulnerabilites themself.
+Rather the standard requiring that CSPs provide notice of the fixed vulnerabilites themself.
