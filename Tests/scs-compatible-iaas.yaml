@@ -200,11 +200,23 @@ modules:
           Must fulfill all requirements of <https://docs.scs.community/standards/scs-0117-v1-volume-backup-service>
   - id: scs-0121-v1
     name: Availability Zones
+    url: https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard
     testcases:
       - id: availability-zones-check
         tags: [mandatory]
         description: >
           Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard>
+  - id: scs-0302-v1
+    name: Domain Manager Role
+    url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role
+    # run:
+    #   - executable: ./iam/domain-manager/domain-manager-check.py
+    #     args: --os-cloud {os_cloud} --debug --domain-config ...
+    testcases:
+      - id: domain-manager-check
+        tags: [mandatory]
+        description: >
+          Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0302-v1-domain-manager-role>
 timeline:
   - date: 2024-08-23
     versions:
@@ -258,6 +270,7 @@ versions:
       - scs-0116-v1
       - scs-0117-v1
       - scs-0121-v1
+      - scs-0302-v1
     targets:
       main: mandatory
   - version: v4
