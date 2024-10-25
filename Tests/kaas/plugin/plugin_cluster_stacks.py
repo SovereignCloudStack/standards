@@ -193,10 +193,11 @@ class PluginClusterStacks(KubernetesClusterPlugin):
             raise RuntimeError(f"Error waiting for kubeadmcontrolplane to be available: {error}")
 
         # Step 11: Get kubeconfig of the workload k8s cluster
+        self.kubeconfig_cs_cluster_path = f"{self.kubeconfig_filepath}/{self.kubeconfig_cs_cluster_filename}"
         try:
-            kubeconfig_command = f"clusterctl get kubeconfig {self.cs_cluster_name} > ./{self.kubeconfig_cs_cluster_filename}"
+            kubeconfig_command = f"clusterctl get kubeconfig {self.cs_cluster_name} > {self.kubeconfig_cs_cluster_path}"
             subprocess.run(kubeconfig_command, shell=True, check=True)
-            print(f"Kubeconfig of the workload k8s cluster has been saved to {self.kubeconfig_cs_cluster_filename}.")
+            print(f"Kubeconfig of the workload k8s cluster has been saved to {self.kubeconfig_cs_cluster_path}.")
         except subprocess.CalledProcessError as error:
             raise RuntimeError(f"Error getting kubeconfig of the workload k8s cluster: {error}")
 
@@ -210,7 +211,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         # Step 13: Wait for all system pods in the workload k8s cluster to become ready
         try:
             wait_pods_command = (
-                f"kubectl wait -n kube-system --for=condition=Ready --timeout=300s pod --all --kubeconfig {self.kubeconfig_cs_cluster_filename}"
+                f"kubectl wait -n kube-system --for=condition=Ready --timeout=300s pod --all --kubeconfig {self.kubeconfig_cs_cluster_path}"
             )
             subprocess.run(wait_pods_command, shell=True, check=True)
             print("All system pods in the workload Kubernetes cluster are ready.")
@@ -220,18 +221,20 @@ class PluginClusterStacks(KubernetesClusterPlugin):
     def _delete_cluster(self):
         # Step 1: Check if the cluster exists and if so delete it
         try:
-            check_cluster_command = f"kubectl get cluster {self.cs_cluster_name} --kubeconfig {self.kubeconfig}"
+            check_cluster_command = f"kubectl get cluster {self.cs_cluster_name} --kubeconfig kubeconfig"
             result = subprocess.run(check_cluster_command, shell=True, check=True, capture_output=True, text=True)
 
             if result.returncode == 0:
                 print(f"Cluster {self.cs_cluster_name} exists. Proceeding with deletion.")
                 # Step 2: Delete the cluster with a timeout
                 delete_cluster_command = (
-                    f"kubectl delete cluster {self.cs_cluster_name} --kubeconfig {self.kubeconfig}"
-                    f"--timeout=300s"
+                    f"kubectl delete cluster {self.cs_cluster_name} --kubeconfig kubeconfig --timeout=300s"
                 )
-                subprocess.run(delete_cluster_command, shell=True, check=True)
-                print(f"Cluster {self.cs_cluster_name} deleted successfully.")
+                try:
+                    subprocess.run(delete_cluster_command, shell=True, check=True, timeout=300)
+                    print(f"Cluster {self.cs_cluster_name} deleted successfully.")
+                except subprocess.TimeoutExpired:
+                    raise TimeoutError(f"Timed out while deleting the cluster {self.cs_cluster_name}.")
             else:
                 print(f"No cluster named {self.cs_cluster_name} found. Nothing to delete.")
 
@@ -239,10 +242,20 @@ class PluginClusterStacks(KubernetesClusterPlugin):
             if "NotFound" in error.stderr:
                 print(f"Cluster {self.cs_cluster_name} not found. Skipping deletion.")
             else:
-                print(f"Error checking for cluster existence: {error}")
-                raise
-        # Todo: Maybe it is worth to remove the kubeconfig file
-        # Step 2: Delete the Kind cluster
+                raise RuntimeError(f"Error checking for cluster existence: {error}")
+
+        # Step 3: Remove the kubeconfig file if it exists
+        kubeconfig_path = self.kubeconfig_cs_cluster_path
+        if os.path.exists(kubeconfig_path):
+            try:
+                os.remove(kubeconfig_path)
+                print(f"Kubeconfig file at {kubeconfig_path} has been successfully removed.")
+            except OSError as e:
+                print(f"Error while trying to remove kubeconfig file: {e}")
+        else:
+            print(f"Kubeconfig file at {kubeconfig_path} does not exist or has already been removed.")
+
+        # Step 4: Delete the Kind cluster
         try:
             self.cluster = KindCluster(self.cluster_name)
             self.cluster.delete()
