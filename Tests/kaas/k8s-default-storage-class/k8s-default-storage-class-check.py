@@ -19,24 +19,19 @@ Check given cloud for conformance with SCS standard regarding
 Default StorageClass and PersistentVolumeClaims, to be found under /Standards/scs-0211-v1-kaas-default-storage-class.md
 
 """
-
 import getopt
-import sys
-import time
+import inspect
 import json
 import logging
+import logging.config
 import os
-import inspect
+import sys
+import time
 
+from helper import (SCSTestException, gen_sonobuoy_result_file,
+                    initialize_logging, print_usage, setup_k8s_client)
 from kubernetes import client
 from kubernetes.client.rest import ApiException
-from helper import gen_sonobuoy_result_file
-from helper import SCSTestException
-from helper import initialize_logging
-from helper import print_usage
-from helper import setup_k8s_client
-
-import logging.config
 
 logger = logging.getLogger("k8s-default-storage-class-check")
 
@@ -197,11 +192,16 @@ class TestEnvironment:
         self.kubeconfig = kubeconfig
 
     def prepare(self):
+        """
+          Sets up k8s client in preparation of the testing.
+          Checks whether the test pod and/or pvc already exists in the test namespace.
+          If so, it returns True indecating cleanup has to be executed first.
+        """
         try:
             logger.debug("setup_k8s_client(kubeconfig)")
             self.k8s_core_api, self.k8s_storage_api = setup_k8s_client(self.kubeconfig)
         except Exception as exception_message:
-            logger.info(f"L{inspect.currentframe().f_lineno} {exception_message}")
+            logger.error(f"L{inspect.currentframe().f_lineno} {exception_message}")
             self.return_message = f"{exception_message}"
             self.return_code = 1
 
@@ -225,7 +225,7 @@ class TestEnvironment:
                     return True
             return False
         except ApiException as e:
-            logger.debug(f"Error preparing Environment: {e}")
+            logger.error(f"Error preparing Environment: {e}")
             return False
 
     def clean(self):
@@ -236,14 +236,14 @@ class TestEnvironment:
                 self.pod_name, self.namespace
             )
         except:
-            logger.debug(f"The pod {self.pod_name} couldn't be deleted.", exc_info=True)
+            logger.error(f"The pod {self.pod_name} couldn't be deleted.", exc_info=True)
         try:
             logger.debug(f"delete pvc:{self.pvc_name}")
             api_response = self.k8s_core_api.delete_namespaced_persistent_volume_claim(
                 self.pvc_name, self.namespace
             )
         except:
-            logger.debug(f"The PVC {self.pvc_name} couldn't be deleted.", exc_info=True)
+            logger.error(f"The PVC {self.pvc_name} couldn't be deleted.", exc_info=True)
         return api_response
 
     def __enter__(self):
@@ -268,18 +268,18 @@ class TestEnvironment:
         if isinstance(exc_value, SCSTestException):
             self.return_message = exc_value.args[0]
             self.return_code = exc_value.return_code
-            print(f"SCSTestException occurred with return_code: {self.return_code}")
+            logger.debug(f"SCSTestException occurred with return_code: {self.return_code}")
         else:
             # No specific exception, handle normally
-            print(f"Exiting the context with return_code: {self.return_code}")
+            logger.debug(f"Exiting the context with return_code: {self.return_code}")
         logger.debug(f"return_code:{self.return_code} {self.return_message}")
 
         gen_sonobuoy_result_file(
             self.return_code, self.return_message, os.path.basename(__file__)
         )
-        print(f"Exiting the context {self.k8s_core_api}")
+        logger.debug(f"Exiting the context {self.k8s_core_api}")
         if exc_type:
-            logger.debug(f"An exception occurred: {exc_value}")
+            logger.error(f"An exception occurred: {exc_value}")
         # Return True if the exception should be suppressed, otherwise False
         return False
 
@@ -289,7 +289,7 @@ def main(argv):
     try:
         opts, args = getopt.gnu_getopt(argv, "k:hd:", ["kubeconfig=", "help", "debug"])
     except getopt.GetoptError as exc:
-        logger.debug(f"{exc}", file=sys.stderr)
+        logger.error(f"{exc}", file=sys.stderr)
         print_usage()
         return 1
 
@@ -324,14 +324,14 @@ def main(argv):
         k8s_core_api = env.k8s_core_api
 
         try:
-            logger.info("check_default_storageclass()")
+            logger.debug("check_default_storageclass()")
             default_class_name = check_default_storageclass(env.k8s_storage_api)
         except SCSTestException as test_exception:
-            logger.info(f"L{inspect.currentframe().f_lineno} {test_exception}")
+            logger.error(f"L{inspect.currentframe().f_lineno} {test_exception}")
             env.return_message = f"{test_exception}"
             env.return_code = test_exception.return_code
         except Exception as exception_message:
-            logger.info(f"L{inspect.currentframe().f_lineno} {exception_message}")
+            logger.error(f"L{inspect.currentframe().f_lineno} {exception_message}")
             env.return_message = f"{exception_message}"
             env.return_code = 1
 
@@ -359,7 +359,7 @@ def main(argv):
                 k8s_core_api
             )
         except SCSTestException as test_exception:
-            logger.info(f"L{inspect.currentframe().f_lineno} {test_exception}")
+            logger.error(f"L{inspect.currentframe().f_lineno} {test_exception}")
             env.return_message = f"{test_exception}"
             env.return_code = test_exception.return_code
         except Exception as exception_message:
