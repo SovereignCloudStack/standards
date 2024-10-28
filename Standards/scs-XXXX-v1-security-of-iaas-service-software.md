@@ -86,6 +86,12 @@ Only under these circumstances deployments with older or alternative IaaS Layer 
 This option could be taken for granted, but to actually advise using it may encourage CSPs to take a closer look on their life-cycle management and security risk handling.
 And CSPs using OpenStack could even be encouraged to upgrade their deployments.
 
+#### Dependencies of the IaaS Layer Software
+
+While the IaaS service software like OpenStack itself is monitored and security issues announced in OSSNs and OSSAs, these services have lots of dependecies, that are not monitored by the same entity.
+When dependencies have security issues, there might be no OSSN or OSSA, so CSPs also need to watch CVEs concerning these dependencies themself.
+Those dependencies must also be updated in a reasonable timeframe, when a security issue is disclosed.
+
 #### What timeframe is needed to fix the issue?
 
 CSPs should be encouraged to fix security issues as fast as possible.
@@ -112,6 +118,8 @@ If a deployment is affected by a security issue and a maintained[^2] version of 
 Otherwise the CSP MUST implement security bug fixes themself within a reasonable timeframe, when the deplyoment is affected by a security issue according to the severity of the security issue[^1].
 
 In both cases a notice of the update MUST be send to the OSBA, so that the compliance will not be revoked.
+
+If a deployment uses a dependency of the IaaS service software which is affected ba a security issue, this software also MUST be updated with security patches within a reasonable timeframe[^1].
 
 An open SBOM list MAY be used to propagate the current version of the software and may be used as proof of updates.
 
