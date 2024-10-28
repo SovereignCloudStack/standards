@@ -19,12 +19,16 @@ def initialize_logging():
 
 def print_usage(file=sys.stderr):
     """Help output"""
-    print("""Usage: k8s_storageclass_check.py [options]
+    print(
+        """Usage: k8s_storageclass_check.py [options]
 This tool checks the requested k8s default storage class according to the SCS Standard 0211 "kaas-default-storage-class".
 Options:
  [-k/--kubeconfig PATH_TO_KUBECONFIG] sets kubeconfig file to access kubernetes api
  [-d/--debug] enables DEBUG logging channel
-""",end='',file=file)
+""",
+        end="",
+        file=file,
+    )
 
 
 class SCSTestException(Exception):

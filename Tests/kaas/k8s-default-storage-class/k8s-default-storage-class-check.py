@@ -28,8 +28,13 @@ import os
 import sys
 import time
 
-from helper import (SCSTestException, gen_sonobuoy_result_file,
-                    initialize_logging, print_usage, setup_k8s_client)
+from helper import (
+    SCSTestException,
+    gen_sonobuoy_result_file,
+    initialize_logging,
+    print_usage,
+    setup_k8s_client,
+)
 from kubernetes import client
 from kubernetes.client.rest import ApiException
 
@@ -193,9 +198,9 @@ class TestEnvironment:
 
     def prepare(self):
         """
-          Sets up k8s client in preparation of the testing.
-          Checks whether the test pod and/or pvc already exists in the test namespace.
-          If so, it returns True indecating cleanup has to be executed first.
+        Sets up k8s client in preparation of the testing.
+        Checks whether the test pod and/or pvc already exists in the test namespace.
+        If so, it returns True indecating cleanup has to be executed first.
         """
         try:
             logger.debug("setup_k8s_client(kubeconfig)")
@@ -268,7 +273,9 @@ class TestEnvironment:
         if isinstance(exc_value, SCSTestException):
             self.return_message = exc_value.args[0]
             self.return_code = exc_value.return_code
-            logger.debug(f"SCSTestException occurred with return_code: {self.return_code}")
+            logger.debug(
+                f"SCSTestException occurred with return_code: {self.return_code}"
+            )
         else:
             # No specific exception, handle normally
             logger.debug(f"Exiting the context with return_code: {self.return_code}")
