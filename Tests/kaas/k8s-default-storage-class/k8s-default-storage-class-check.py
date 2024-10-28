@@ -240,14 +240,14 @@ class TestEnvironment:
             api_response = self.k8s_core_api.delete_namespaced_pod(
                 self.pod_name, self.namespace
             )
-        except:
+        except Exception:
             logger.error(f"The pod {self.pod_name} couldn't be deleted.", exc_info=True)
         try:
             logger.debug(f"delete pvc:{self.pvc_name}")
             api_response = self.k8s_core_api.delete_namespaced_persistent_volume_claim(
                 self.pvc_name, self.namespace
             )
-        except:
+        except Exception:
             logger.error(f"The PVC {self.pvc_name} couldn't be deleted.", exc_info=True)
         return api_response
 
