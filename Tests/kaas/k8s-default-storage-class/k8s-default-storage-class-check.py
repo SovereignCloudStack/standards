@@ -307,18 +307,6 @@ def main(argv):
         logger.critical("You need to have OS_CLOUD set or pass --kubeconfig=CLOUD.")
         return 2
 
-    # Setup kubernetes client
-    # return_code = 0
-    # return_message = "return_message: FAILED"
-    # try:
-    #     logger.debug("setup_k8s_client(kubeconfig)")
-    #     k8s_core_api, k8s_storage_api = setup_k8s_client(kubeconfig)
-    # except Exception as exception_message:
-    #     logger.info(f"L{inspect.currentframe().f_lineno} {exception_message}")
-    #     return_message = f"{exception_message}"
-    #     return_code = 1
-
-    # with TestEnvironment(k8s_core_api, return_code, return_message) as env:
     with TestEnvironment(kubeconfig) as env:
         # Check if default storage class is defined (MANDATORY)
         k8s_core_api = env.k8s_core_api
