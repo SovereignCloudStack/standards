@@ -11,10 +11,11 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: scs-compliance-check
+  IMAGE_NAME_COMPLIANCE_CHECK: scs-compliance-check
+  IMAGE_NAME_KAAS_SONOBUOY: scs-kaas-compliance-tests
 
 jobs:
-  build-and-push-image:
+  build-and-push-scs-compliance-check-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -35,12 +36,43 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_COMPLIANCE_CHECK }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: "./Tests/"
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  build-and-push-scs-compliance-check-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_KAAS_SONOBUOY }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: "./Tests/kaas/kaas-sonobuoy-tests"
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
