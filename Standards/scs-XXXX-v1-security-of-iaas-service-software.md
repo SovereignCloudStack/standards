@@ -23,7 +23,9 @@ Unpatched versions should not be used in deployments as they are a security risk
 
 ## Motivation
 
-In software projects like e.g. OpenStack the software will be modified and receive bug fixes continuously and will receive releases of new versions on a regular basis.
+On the IaaS Layer the software, that needs to be considered in the scope of this standard, is mainly the APIs of IaaS Services.
+Also there might be shared libraries and other dependencies, that could be considered part of the IaaS Layer.
+In software projects like e.g. OpenStack that provide the main services and all APIs, the software will be modified and receive bug fixes continuously and will receive releases of new versions on a regular basis.
 Older releases will at some point not receive updates anymore, because maintaining more and more releases simultaneously requires too much manpower.
 Thus older versions will also eventually not receive security updates anymore.
 Using versions which do not receive updates anymore threatens the baseline security of deployments and should be avoided under all circumstances.
