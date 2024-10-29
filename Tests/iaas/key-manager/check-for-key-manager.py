@@ -43,8 +43,8 @@ def check_for_member_role(conn: openstack.connection.Connection) -> None:
 def check_presence_of_key_manager(conn: openstack.connection.Connection) -> None:
     try:
         services = conn.service_catalog
-    except Exception as e:
-        loggger.critical("Could not access Catalog endpoint.")
+    except Exception:
+        logger.critical("Could not access Catalog endpoint.")
         raise
 
     for svc in services:
@@ -94,7 +94,7 @@ def check_key_manager_permissions(conn: openstack.connection.Connection) -> None
                 raise ValueError(f"Secret '{secret_name}' was not discoverable by the user")
         finally:
             conn.key_manager.delete_secret(new_secret)
-    except openstack.exceptions.ForbiddenException as e:
+    except openstack.exceptions.ForbiddenException:
         logger.debug('exception details', exc_info=True)
         logger.error(
             "Users with the 'member' role can use Key Manager API: FAIL"
