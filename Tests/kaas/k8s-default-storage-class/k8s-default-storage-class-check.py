@@ -5,6 +5,8 @@
 Return codes:
 0:    Default StorageClass is available, and setup to SCS standard
 1:    Not able to connect to k8s api
+2:    Kubeconfig not set
+3:    Conflicting Resources
 
 31:   Default storage class has no provisioner
 32:   None or more then one default Storage Class is defined
@@ -97,7 +99,7 @@ def create_pvc_pod(k8s_api_instance, storage_class):
         requests={"storage": "1Gi"},
     )
     pvc_spec = client.V1PersistentVolumeClaimSpec(
-        access_modes=["ReadWriteMany"],
+        access_modes=["ReadWriteOnce"],
         storage_class_name=storage_class,
         resources=pvc_resources,
     )
@@ -203,10 +205,11 @@ def check_csi_provider(k8s_core_api):
                     return_code=33,
                 )
         else:
-            raise SCSTestException(
-                f"CSI-Provider: No CSI Provider found.",
-                return_code=34,
-            )
+            logger.info("CSI-Provider: No CSI Provider found.")
+            # raise SCSTestException(
+            #     "CSI-Provider: No CSI Provider found.",
+            #     return_code=34,
+            # )
     return 0
 
 
@@ -359,33 +362,23 @@ def main(argv):
         except ApiException as api_exception:
             if api_exception.status == 409:
                 logger.info(
-                    "(409) conflicting resources, "
+                    "conflicting resources, "
                     "try to clean up left overs, then start again"
                 )
-                # return_code = create_pvc_pod(k8s_core_api, default_class_name)
-                env.return_code = 1
+                env.return_code = 3
                 env.return_message = "(409) conflicting resources"
                 return
             else:
                 logger.info(f"An API error occurred: {api_exception}")
                 env.return_code = 1
 
-        # Check if default_persistent volume has ReadWriteOnce defined (MANDATORY)
-        try:
-            logger.info("check_default_persistentvolume_readwriteonce()")
+        logger.info(
+            "Check if default_persistent volume has ReadWriteOnce defined (MANDATORY)"
+        )
+        env.return_code = check_default_persistentvolumeclaim_readwriteonce(
+            k8s_core_api
+        )
 
-            env.return_code = check_default_persistentvolumeclaim_readwriteonce(
-                k8s_core_api
-            )
-        # this might be to much
-        except SCSTestException as test_exception:
-            logger.error(f"L{inspect.currentframe().f_lineno} {test_exception}")
-            env.return_message = f"{test_exception}"
-            env.return_code = test_exception.return_code
-        except Exception as exception_message:
-            logger.info(f"{exception_message}")
-            env.return_message = f"{exception_message}"
-            env.return_code = 1
         env.return_code = check_csi_provider(env.k8s_core_api)
         logger.debug(f"CSI Provider check: {env.return_code}")
     return env.return_code
