@@ -97,7 +97,7 @@ def create_pvc_pod(k8s_api_instance, storage_class):
         requests={"storage": "1Gi"},
     )
     pvc_spec = client.V1PersistentVolumeClaimSpec(
-        access_modes=["ReadWriteOnce"],
+        access_modes=["ReadWriteMany"],
         storage_class_name=storage_class,
         resources=pvc_resources,
     )
