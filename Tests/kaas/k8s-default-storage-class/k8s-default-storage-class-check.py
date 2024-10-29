@@ -8,6 +8,8 @@ Return codes:
 
 31:   Default storage class has no provisioner
 32:   None or more then one default Storage Class is defined
+33:   CSI provider does not belong to the recommended providers
+(34:  No CSI provider found)
 
 41:   Not able to bind PersitantVolume to PersitantVolumeClaim
 42:   ReadWriteOnce is not a supported access mode
@@ -45,6 +47,7 @@ NAMESPACE = "default"
 PVC_NAME = "test-k-pvc"
 PV_NAME = "test-k-pv"
 POD_NAME = "test-k-pod"
+ALLOWED_CSI_PROV = ["cinder", "rookCeph", "longhorn"]
 
 
 def check_default_storageclass(k8s_client_storage):
@@ -151,6 +154,7 @@ def create_pvc_pod(k8s_api_instance, storage_class):
             "pod is not Running not able to setup test Environment",
             return_code=13,
         )
+    return 0
 
 
 def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance):
@@ -185,7 +189,27 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance):
     return 0
 
 
-# with TestEnvironment(k8s_core_api, return_code, return_message) as env:
+def check_csi_provider(k8s_core_api):
+    pods = k8s_core_api.list_namespaced_pod(namespace="kube-system")
+    csi_list = []
+    for pod in pods.items:
+        if "csi" in pod.metadata.name:
+            if pod.metadata.name in ALLOWED_CSI_PROV:
+                csi_list.append(pod.metadata.name)
+                logger.info(f"CSI-Provider: {pod.metadata.name}")
+            else:
+                raise SCSTestException(
+                    f"CSI-Provider: {pod.metadata.name} not recommended",
+                    return_code=33,
+                )
+        else:
+            raise SCSTestException(
+                f"CSI-Provider: No CSI Provider found.",
+                return_code=34,
+            )
+    return 0
+
+
 class TestEnvironment:
     def __init__(self, kubeconfig):
         self.namespace = NAMESPACE
@@ -279,7 +303,7 @@ class TestEnvironment:
         else:
             # No specific exception, handle normally
             logger.debug(f"Exiting the context with return_code: {self.return_code}")
-        logger.debug(f"return_code:{self.return_code} {self.return_message}")
+        logger.debug(f"{self.return_message}")
 
         gen_sonobuoy_result_file(
             self.return_code, self.return_message, os.path.basename(__file__)
@@ -353,6 +377,7 @@ def main(argv):
             env.return_code = check_default_persistentvolumeclaim_readwriteonce(
                 k8s_core_api
             )
+        # this might be to much
         except SCSTestException as test_exception:
             logger.error(f"L{inspect.currentframe().f_lineno} {test_exception}")
             env.return_message = f"{test_exception}"
@@ -361,6 +386,8 @@ def main(argv):
             logger.info(f"{exception_message}")
             env.return_message = f"{exception_message}"
             env.return_code = 1
+        env.return_code = check_csi_provider(env.k8s_core_api)
+        logger.debug(f"CSI Provider check: {env.return_code}")
     return env.return_code
 
 
