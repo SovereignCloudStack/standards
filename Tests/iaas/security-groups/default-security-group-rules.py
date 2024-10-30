@@ -55,8 +55,6 @@ def test_rules(cloud_name: str):
             ethertype = rule["ethertype"]
             r_custom_sg = rule["used_in_non_default_sg"]
             r_default_sg = rule["used_in_default_sg"]
-            r_custom_sg = rule.used_in_non_default_sg
-            r_default_sg = rule.used_in_default_sg
             if direction == "ingress":
                 ingress_rules += 1
                 # we allow ingress from the same security group
@@ -128,7 +126,7 @@ def delete_security_group(conn, sg_id):
     try:
         conn.network.find_security_group(name_or_id=sg_id)
     except Exception:
-        print(f"Security group {sg_id} was deleted successfully.")
+        print(f"Security group {sg_id} was not deleted successfully.")
 
 
 def altern_test_rules(cloud_name: str):
