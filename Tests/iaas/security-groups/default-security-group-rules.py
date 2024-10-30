@@ -10,6 +10,9 @@ import os
 import argparse
 from openstack.exceptions import ResourceNotFound
 
+SG_NAME = "default-test-sg"
+DESCRIPTION = "default-test-sg"
+
 
 def connect(cloud_name: str) -> openstack.connection.Connection:
     """Create a connection to an OpenStack cloud
@@ -106,9 +109,7 @@ def test_rules(cloud_name: str):
     return result_dict
 
 
-def create_security_group(
-    conn, sg_name: str = "default-test-sg", description: str = "default-test-sg"
-):
+def create_security_group(conn, sg_name: str = SG_NAME, description: str = DESCRIPTION):
     """Create security group in openstack
 
     Args:
