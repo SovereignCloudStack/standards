@@ -86,15 +86,15 @@ def check_default_storageclass(k8s_client_storage):
     return default_storage_class
 
 
-def create_pvc_pod(k8s_api_instance, storage_class):
+def create_pvc_pod(k8s_api_instance, storage_class, pvc_name = PVC_NAME, pod_name = POD_NAME, pv_name = PV_NAME, namespace = NAMESPACE, num_retries = NUM_RETRIES):
     """
     1. Create PersistantVolumeClaim
     2. Create pod which uses the PersitantVolumeClaim
     """
     # 1. Create PersistantVolumeClaim
-    logger.debug(f"create pvc: {PVC_NAME}")
+    logger.debug(f"create pvc: {pvc_name}")
 
-    pvc_meta = client.V1ObjectMeta(name=PVC_NAME)
+    pvc_meta = client.V1ObjectMeta(name=pvc_name)
     pvc_resources = client.V1ResourceRequirements(
         requests={"storage": "1Gi"},
     )
@@ -112,11 +112,11 @@ def create_pvc_pod(k8s_api_instance, storage_class):
     )
 
     # 2. Create a pod which makes use of the PersitantVolumeClaim
-    logger.debug(f"create pod: {POD_NAME}")
+    logger.debug(f"create pod: {pod_name}")
 
     pod_vol = client.V1Volume(
         name=PV_NAME,
-        persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(PVC_NAME),
+        persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(pvc_name),
     )
     pod_con = client.V1Container(
         name="nginx",
@@ -130,7 +130,7 @@ def create_pvc_pod(k8s_api_instance, storage_class):
     pod_body = client.V1Pod(
         api_version="v1",
         kind="Pod",
-        metadata=client.V1ObjectMeta(name=POD_NAME),
+        metadata=client.V1ObjectMeta(name=pod_name),
         spec=pod_spec,
     )
 
@@ -141,7 +141,7 @@ def create_pvc_pod(k8s_api_instance, storage_class):
     pod_status = pod_info["status"]["phase"]
 
     retries = 0
-    while pod_status != "Running" and retries <= NUM_RETRIES:
+    while pod_status != "Running" and retries <= num_retries:
         api_response = k8s_api_instance.read_namespaced_pod(
             POD_NAME, NAMESPACE, _preload_content=False
         )
