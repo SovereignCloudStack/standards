@@ -304,7 +304,7 @@ class TestEnvironment:
                 f"SCSTestException occurred with return_code: {self.return_code}"
             )
         else:
-            # No specific exception, handle normally
+            # No specific exception, handle normally returnmessage aus exception übernehmen, dann kann return_code
             logger.debug(f"Exiting the context with return_code: {self.return_code}")
         logger.debug(f"{self.return_message}")
 
@@ -348,11 +348,11 @@ def main(argv):
         try:
             logger.debug("check_default_storageclass()")
             default_class_name = check_default_storageclass(env.k8s_storage_api)
-        except SCSTestException as test_exception:
+        except SCSTestException as test_exception: # delete
             logger.error(f"L{inspect.currentframe().f_lineno} {test_exception}")
             env.return_message = f"{test_exception}"
             env.return_code = test_exception.return_code
-        except Exception as exception_message:
+        except Exception as exception_message: # nochmal prüfen ob SCSTest spezifischer
             logger.error(f"L{inspect.currentframe().f_lineno} {exception_message}")
             env.return_message = f"{exception_message}"
             env.return_code = 1
