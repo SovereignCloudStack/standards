@@ -127,15 +127,16 @@ def main():
     # parse cloud name for lookup in clouds.yaml
     cloud = args.os_cloud or os.environ.get("OS_CLOUD", None)
     if not cloud:
-        raise RuntimeError(
+        logger.critical(
             "You need to have the OS_CLOUD environment variable set to your cloud "
             "name or pass it via --os-cloud"
         )
+        return 2
 
     with openstack.connect(cloud=cloud) as conn:
         if not check_for_member_role(conn):
             logger.critical("Cannot test key-manager permissions. User has wrong roles")
-            return 1
+            return 2
         if check_presence_of_key_manager(conn):
             return check_key_manager_permissions(conn)
         else:
@@ -145,9 +146,11 @@ def main():
 
 if __name__ == "__main__":
     try:
-        sys.exit(main())
-    except SystemExit:
+        sys.exit(main() or 0)
+    except SystemExit as e:
+        if e.code < 2:
+            print("key-manager-check: " + ('PASS', 'FAIL')[min(1, e.code)])
         raise
     except BaseException:
         logger.critical("exception", exc_info=True)
-        sys.exit(1)
+        sys.exit(2)
