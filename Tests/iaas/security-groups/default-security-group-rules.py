@@ -32,21 +32,24 @@ def count_ingress_egress(rules, short=False):
     ingress_rules = 0
     egress_rules = 0
     if short:
+        print("short")
         egress_ipv4 = 0
         egress_ipv6 = 0
     else:
+        print("not short")
         ingress_from_same_sg = 0
         egress_ipv4_default_sg = 0
         egress_ipv4_custom_sg = 0
         egress_ipv6_default_sg = 0
         egress_ipv6_custom_sg = 0
-
+    print("43_success")
     if not rules:
         print("No default security group rules defined.")
     else:
         for rule in rules:
             direction = rule["direction"]
             ethertype = rule["ethertype"]
+            print("50_success")
             if not short:
                 r_custom_sg = rule["used_in_non_default_sg"]
                 r_default_sg = rule["used_in_default_sg"]
@@ -122,7 +125,8 @@ def count_ingress_egress(rules, short=False):
             "Expected rules for egress for IPv4 and IPv6 "
             "both for default and custom security groups."
         )
-    ingress_rules, egress_rules
+    print("done")
+    return ingress_rules, egress_rules
 
 
 def test_rules(cloud_name: str):
@@ -285,7 +289,7 @@ def altern_test_rules(cloud_name: str):
     #     "both for default and custom security groups."
     # )
 
-    ingress_rules, egress_rules = count_ingress_egress(rules.security_group_rules)
+    ingress_rules, egress_rules = count_ingress_egress(rules.security_group_rules, True)
     delete_security_group(connection, sg_id)
 
     result_dict = {"Ingress Rules": ingress_rules, "Egress Rules": egress_rules}
