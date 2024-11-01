@@ -233,6 +233,28 @@
           VCsXjf0qBBMrzz6HP9z95Bk44fiJ3L/LkA3Iij961dYrQXbZKDrKOiX/QPwrcSrVmjmew
           UbPexJFHgvTCqjadoLejSt9cUd9lVzhuzLJ8CS+CcCMbZOno6qathrd2B88riQaPNIGNu
           gfkNT9R63ZzKB1qIA2n5RZi7SH9DPIUd0AwLMn2bhp3uok5pNAPP/4/1RkQiCA=
+      scaleup_occ2_ac_id: !encrypted/pkcs1-oaep
+        - N2duwkcMdOXw6wF0deE/0BPM1M/URt3eWmrnBJ89VHeCDENGfTfDHcWPYs3wW4rSRCG6t
+          gqgNuA049OvOhL7rtjNHZ6yIj6xEHH/YdqT4UxjXPS9GFwoJXDtE8rIGjK3KU8GfUgKnG
+          DLplyyzGzx5j39rJAS628InmC56aip47rO1J4HQE9Ku25Wb06R7ykx+0ZOWr0HXjV/VsV
+          uwfyL+DPgewbL+4u8/XkcI0FwAM9/KkF/CcYUq5aVMdQS2foatTQW0C2idg+pffSTRaau
+          VF44rkVfzsCOz4MYAFpLIaL9Zxx1FifaPOd0oi6rEFjGd6vFtFCHk1BRpKmOITLyx3Te5
+          zVffSkQAsqpn/4er8800bjQzxXvqmQmR0QwPM7dhvRnrNbTSCA/Awm5BPaUgeCZFN3MPN
+          Mc0XIaEwjuJvDK6fqj5tJrVIs5bxAmqRDj8d76AlJcOdDxHicTHgR3aUG4AKOWkUsskgQ
+          3xR8lPh31O/HgzG9tq6o/DCPA1O9wyyOyT7KwJAaRASPCA1O80ZAzhZUNUVyut6dYEwaS
+          QXP4IaEJOxP8EkxR7FDEuO99UFZ7TXQ1CF7ots4wIs5tEpQvcdLnvBjJckp0fNBFTuGMm
+          FCvhgBK30NC93U4DxQv6xZBhqtvHYjHcTOXvz2fryRJT2teMN+eI+RDdV1Jj8Y=
+      scaleup_occ2_ac_secret: !encrypted/pkcs1-oaep
+        - LfUHhslK41JDp3CpslWGGA4bZ3udZh4KnytcXohkdbchb8QVt8eNc4nD0ti0/XS18YKwq
+          DlHOWw2rDJZ8RGIXENVUYzDbECoBErE8IAqQE0q3oS/8Oq0NYOFTGvvlKuue7U4s87Pwi
+          YFi+Q0Rv7vO8cWFVtbRHK+Hw6pC42Biq2T+tuVBCLqylIMViXpuEy9UpFLEv59zr6EHa9
+          uB3xkjnpWuabe7vrG+LQHc0pJ5tNhcLiOnJggU5Ef02FBy+t6xvuJW8f6cXCnRRj1q0fl
+          D/vTmC7avwHnWC+J4WLL69HCwW05I7iHftVSWOXQgRzMBd4D4ND2OXfsWElu0eOV5XG6X
+          JsQH8lDnVN/lqaDAOYR4fk4+9yt3RURwvNL5FUnDK1t7LAI4X0gcvLrQAfzgOlpBYDXSK
+          0kbUzqwivuw1v2zO/gxQU+J28PsOfZaKf/7ZZyj3e/tiq4wBpvPb0mVBwWXigKqzr+QED
+          Iy2u/g3x2qdcTpXR/RPq+xiXM2B2rw1V5gdkscdL+avXtTF7hT9HrcayHx3HDZ/h6aGPD
+          RWIJ8bstl+x2Q4zExgR13amWM8ZR1iLGCN20U/ZAaqANCqjDbrSVSTjTPzYtNFwAXwxkB
+          3NHhPDHZ1MIdr6IJE4IZ4TCMsIeTA2UHNfF4RCzeDSIJ+CXOQxUFWOxZkf97WY=
       syseleven_dus2_ac_id: !encrypted/pkcs1-oaep
         - SjwtIvJO7DkLJDmS+T/Z5utFBa22hmPRBd8mzonJHGgURB2W7fmXFreD9NPrLfbt7ujKi
           KNqJm8k1Vr1F3Mu+Osr0BWSnq5makwVt2ikBY4qPbL8iyVXsByaT/HNPLCOokqy+REpfu
