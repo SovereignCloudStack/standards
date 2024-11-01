@@ -31,25 +31,23 @@ def count_ingress_egress(rules, short=False):
     # count all overall ingress rules and egress rules.
     ingress_rules = 0
     egress_rules = 0
-    if short:
-        print("short")
-        egress_ipv4 = 0
-        egress_ipv6 = 0
-    else:
+    if not short:
         print("not short")
         ingress_from_same_sg = 0
         egress_ipv4_default_sg = 0
         egress_ipv4_custom_sg = 0
         egress_ipv6_default_sg = 0
         egress_ipv6_custom_sg = 0
-    print("43_success")
+    else:
+        print("short")
+        egress_ipv4 = 0
+        egress_ipv6 = 0
     if not rules:
         print("No default security group rules defined.")
     else:
         for rule in rules:
             direction = rule["direction"]
             ethertype = rule["ethertype"]
-            print("50_success")
             if not short:
                 r_custom_sg = rule["used_in_non_default_sg"]
                 r_default_sg = rule["used_in_default_sg"]
@@ -125,7 +123,6 @@ def count_ingress_egress(rules, short=False):
             "Expected rules for egress for IPv4 and IPv6 "
             "both for default and custom security groups."
         )
-    print("done")
     return ingress_rules, egress_rules
 
 
@@ -141,69 +138,6 @@ def test_rules(cloud_name: str):
             f"Please check your cloud connection and authorization."
         )
 
-    # # count all overall ingress rules and egress rules.
-    # ingress_rules = 0
-    # ingress_from_same_sg = 0
-    # egress_rules = 0
-    # egress_ipv4_default_sg = 0
-    # egress_ipv4_custom_sg = 0
-    # egress_ipv6_default_sg = 0
-    # egress_ipv6_custom_sg = 0
-    # if not rules:
-    #     print("No default security group rules defined.")
-    # else:
-    #     for rule in rules:
-    #         direction = rule["direction"]
-    #         ethertype = rule["ethertype"]
-    #         r_custom_sg = rule["used_in_non_default_sg"]
-    #         r_default_sg = rule["used_in_default_sg"]
-    #         if direction == "ingress":
-    #             ingress_rules += 1
-    #             # we allow ingress from the same security group
-    #             # but only for the default security group
-    #             r_group_id = rule.remote_group_id
-    #             if r_group_id == "PARENT" and not r_custom_sg:
-    #                 ingress_from_same_sg += 1
-    #         elif direction == "egress" and ethertype == "IPv4":
-    #             egress_rules += 1
-    #             if rule.remote_ip_prefix:
-    #                 # this rule does not allow traffic to all external ips
-    #                 continue
-    #             if r_custom_sg:
-    #                 egress_ipv4_custom_sg += 1
-    #             if r_default_sg:
-    #                 egress_ipv4_default_sg += 1
-    #         elif direction == "egress" and ethertype == "IPv6":
-    #             egress_rules += 1
-    #             if rule.remote_ip_prefix:
-    #                 # this rule does not allow traffic to all external ips
-    #                 continue
-    #             if r_custom_sg:
-    #                 egress_ipv6_custom_sg += 1
-    #             if r_default_sg:
-    #                 egress_ipv6_default_sg += 1
-
-    # test whether there are no other than the allowed ingress rules
-    # assert ingress_rules == ingress_from_same_sg, (
-    #     f"Expected only ingress rules for default security groups, "
-    #     f"that allow ingress traffic from the same group. "
-    #     f"But there are more - in total {ingress_rules} ingress rules. "
-    #     f"There should be only {ingress_from_same_sg} ingress rules."
-    # )
-    # assert (
-    #     egress_rules > 0
-    # ), f"Expected to have more than {egress_rules} egress rules present."
-    # var_list = [
-    #     egress_ipv4_default_sg,
-    #     egress_ipv4_custom_sg,
-    #     egress_ipv6_default_sg,
-    #     egress_ipv6_custom_sg,
-    # ]
-    # assert all([var > 0 for var in var_list]), (
-    #     "Not all expected egress rules are present. "
-    #     "Expected rules for egress for IPv4 and IPv6 "
-    #     "both for default and custom security groups."
-    # )
     ingress_rules, egress_rules = count_ingress_egress(rules)
     result_dict = {"Ingress Rules": ingress_rules, "Egress Rules": egress_rules}
     return result_dict
@@ -249,45 +183,6 @@ def altern_test_rules(cloud_name: str):
         rules = connection.network.find_security_group(name_or_id=sg_id)
     except Exception:
         print("Security group was not created successfully.")
-
-    # # count all overall ingress rules and egress rules.
-    # ingress_rules = 0
-    # egress_rules = 0
-    # egress_ipv4 = 0
-    # egress_ipv6 = 0
-    # if not rules:
-    #     print("No default security group rules defined.")
-    # else:
-    #     for rule in rules.security_group_rules:
-    #         direction = rule["direction"]
-    #         ethertype = rule["ethertype"]
-    #         if direction == "ingress":
-    #             ingress_rules += 1
-    #         elif direction == "egress" and ethertype == "IPv4":
-    #             egress_rules += 1
-    #             egress_ipv4 += 1
-    #         elif direction == "egress" and ethertype == "IPv6":
-    #             egress_rules += 1
-    #             egress_ipv6 += 1
-
-    # # test whether there are no ingress rules
-    # assert ingress_rules == 0, (
-    #     f"Expected no default ingress rules for security groups, "
-    #     f"But there are {ingress_rules} ingress rules. "
-    #     f"There should be only none."
-    # )
-    # assert (
-    #     egress_rules > 0
-    # ), f"Expected to have more than {egress_rules} egress rules present."
-    # var_list = [
-    #     egress_ipv4,
-    #     egress_ipv6,
-    # ]
-    # assert all([var > 0 for var in var_list]), (
-    #     "Not all expected egress rules are present. "
-    #     "Expected rules for egress for IPv4 and IPv6 "
-    #     "both for default and custom security groups."
-    # )
 
     ingress_rules, egress_rules = count_ingress_egress(rules.security_group_rules, True)
     delete_security_group(connection, sg_id)
