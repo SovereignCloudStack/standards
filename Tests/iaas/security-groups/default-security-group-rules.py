@@ -123,9 +123,10 @@ def create_security_group(conn, sg_name: str = SG_NAME, description: str = DESCR
 
 def delete_security_group(conn, sg_id):
     conn.network.delete_security_group(sg_id)
+    # in case of a successful delete finding the sg will throw an exception
     try:
         conn.network.find_security_group(name_or_id=sg_id)
-    except Exception:
+    except ResourceNotFound:
         print(f"Security group {sg_id} was deleted successfully.")
 
 
