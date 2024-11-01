@@ -544,13 +544,13 @@ async def get_status(
     return convert_result_rows_to_dict2(rows2, get_scopes(), include_report=True)
 
 
-def render_view(view, view_type, base_url='/', title=None, **kwargs):
+def render_view(view, view_type, detail_page='detail', base_url='/', title=None, **kwargs):
     media_type = {ViewType.markdown: 'text/markdown'}.get(view_type, 'text/html')
     stage1 = stage2 = view[view_type]
     if view_type is ViewType.page:
         stage1 = view[ViewType.fragment]
     def scope_url(uuid): return f"{base_url}page/scope/{uuid}"  # noqa: E306,E704
-    def detail_url(subject, scope): return f"{base_url}page/detail/{subject}/{scope}"  # noqa: E306,E704
+    def detail_url(subject, scope): return f"{base_url}page/{detail_page}/{subject}/{scope}"  # noqa: E306,E704
     def report_url(report): return f"{base_url}reports/{report}"  # noqa: E306,E704
     fragment = templates_map[stage1].render(detail_url=detail_url, report_url=report_url, scope_url=scope_url, **kwargs)
     if view_type != ViewType.markdown and stage1.endswith('.md'):
@@ -618,7 +618,11 @@ async def get_table_full(
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, approved_only=False)
     results2 = convert_result_rows_to_dict2(rows2, get_scopes())
-    return render_view(VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, title="SCS compliance overview")
+    return render_view(
+        VIEW_TABLE, view_type, results=results2,
+        detail_page='detail_full', base_url=settings.base_url,
+        title="SCS compliance overview",
+    )
 
 
 @app.get("/{view_type}/scope/{scopeuuid}")
