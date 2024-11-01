@@ -126,7 +126,7 @@ def delete_security_group(conn, sg_id):
     try:
         conn.network.find_security_group(name_or_id=sg_id)
     except Exception:
-        print(f"Security group {sg_id} was not deleted successfully.")
+        print(f"Security group {sg_id} was deleted successfully.")
 
 
 def altern_test_rules(cloud_name: str):
