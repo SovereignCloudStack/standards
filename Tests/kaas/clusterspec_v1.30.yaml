@@ -1,0 +1,5 @@
+# this file specifies all clusters that have to be provisioned for the tests to run
+clusters:
+  v1.30:
+    branch: "1.30"
+    kubeconfig: kubecfg130.yaml
