@@ -388,8 +388,7 @@ async def collect_cve_versions(session: aiohttp.ClientSession) -> set:
 
 
 async def run_trivy_scan(image: str) -> dict:
-    """
-    Run Trivy scan on the specified image and return the results as a dictionary.
+    """Run Trivy scan on the specified image and return the results as a dictionary.
 
     Args:
         image (str): The Docker image to scan.
@@ -560,10 +559,10 @@ async def main(argv):
 
     try:
         logger.info(
-            f"""Initiating scan on the Kubernetes cluster specified by kubeconfig at '{config.kubeconfig}'
-            {' with context ' + config.context if config.context else ''}. 
+            f"""Initiating scan on the Kubernetes cluster specified by kubeconfig at {config.kubeconfig} 
+            with context {config.context if config.context else ''}. 
             Fetching cluster information and verifying access.""")
-        cluster = await get_k8s_cluster_info(config.kubeconfig, config.context)
+        await get_k8s_cluster_info(config.kubeconfig, config.context)
         await scan_k8s_images(config.kubeconfig)
 
     except CriticalException as e:
