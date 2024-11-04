@@ -558,8 +558,8 @@ async def main(argv):
 
     try:
         logger.info(
-            f"""Initiating scan on the Kubernetes cluster specified by kubeconfig at {config.kubeconfig} 
-            with context {config.context if config.context else ''}. 
+            f"""Initiating scan on the Kubernetes cluster specified by kubeconfig at {config.kubeconfig}
+            with context {config.context if config.context else ''}.
             Fetching cluster information and verifying access.""")
         await get_k8s_cluster_info(config.kubeconfig, config.context)
         await scan_k8s_images(config.kubeconfig)
