@@ -29,6 +29,21 @@ DEFAULT_PREFIX = "scs-test-"
 WAIT_TIMEOUT = 60
 
 
+class ConformanceTestException(Exception):
+    pass
+
+
+def ensure(condition: bool, error_message: str):
+    """
+    Custom replacement for the `assert` statement that is not removed by the
+    -O optimization parameter.
+    If the condition does not evaluate to `True`, a ConformanceTestException
+    will be raised containing the specified error_message string.
+    """
+    if not condition:
+        raise ConformanceTestException(error_message)
+
+
 def connect(cloud_name: str, password: typing.Optional[str] = None
             ) -> openstack.connection.Connection:
     """Create a connection to an OpenStack cloud
@@ -64,17 +79,20 @@ def test_backup(conn: openstack.connection.Connection,
     """
 
     # CREATE VOLUME
-    print("Creating volume ...")
+    volume_name = f"{prefix}volume"
+    print(f"Creating volume '{volume_name}' ...")
     volume = conn.block_storage.create_volume(
-        name=f"{prefix}volume",
+        name=volume_name,
         size=1
     )
-    assert volume is not None, (
-        "Initial volume creation failed"
+    ensure(
+        volume is not None,
+        f"Creation of initial volume '{volume_name}' failed"
     )
     volume_id = volume.id
-    assert conn.block_storage.get_volume(volume_id) is not None, (
-        "Retrieving initial volume by ID failed"
+    ensure(
+        conn.block_storage.get_volume(volume_id) is not None,
+        f"Retrieving initial volume by ID '{volume_id}' failed"
     )
 
     print(
@@ -85,7 +103,8 @@ def test_backup(conn: openstack.connection.Connection,
     while conn.block_storage.get_volume(volume_id).status != "available":
         time.sleep(1.0)
         seconds_waited += 1
-        assert seconds_waited < timeout, (
+        ensure(
+            seconds_waited < timeout,
             f"Timeout reached while waiting for volume to reach status "
             f"'available' (volume id: {volume_id}) after {seconds_waited} "
             f"seconds"
@@ -98,11 +117,13 @@ def test_backup(conn: openstack.connection.Connection,
         name=f"{prefix}volume-backup",
         volume_id=volume_id
     )
-    assert backup is not None, (
+    ensure(
+        backup is not None,
         "Backup creation failed"
     )
     backup_id = backup.id
-    assert conn.block_storage.get_backup(backup_id) is not None, (
+    ensure(
+        conn.block_storage.get_backup(backup_id) is not None,
         "Retrieving backup by ID failed"
     )
 
@@ -111,7 +132,8 @@ def test_backup(conn: openstack.connection.Connection,
     while conn.block_storage.get_backup(backup_id).status != "available":
         time.sleep(1.0)
         seconds_waited += 1
-        assert seconds_waited < timeout, (
+        ensure(
+            seconds_waited < timeout,
             f"Timeout reached while waiting for backup to reach status "
             f"'available' (backup id: {backup_id}) after {seconds_waited} "
             f"seconds"
@@ -119,8 +141,8 @@ def test_backup(conn: openstack.connection.Connection,
     print("Create backup from volume: PASS")
 
     # RESTORE BACKUP
-    print("Restoring backup to volume ...")
     restored_volume_name = f"{prefix}restored-backup"
+    print(f"Restoring backup to volume '{restored_volume_name}' ...")
     conn.block_storage.restore_backup(
         backup_id,
         name=restored_volume_name
@@ -134,7 +156,8 @@ def test_backup(conn: openstack.connection.Connection,
     while conn.block_storage.find_volume(restored_volume_name) is None:
         time.sleep(1.0)
         seconds_waited += 1
-        assert seconds_waited < timeout, (
+        ensure(
+            seconds_waited < timeout,
             f"Timeout reached while waiting for restored volume to be created "
             f"(volume name: {restored_volume_name}) after {seconds_waited} "
             f"seconds"
@@ -148,7 +171,8 @@ def test_backup(conn: openstack.connection.Connection,
     while conn.block_storage.get_volume(volume_id).status != "available":
         time.sleep(1.0)
         seconds_waited += 1
-        assert seconds_waited < timeout, (
+        ensure(
+            seconds_waited < timeout,
             f"Timeout reached while waiting for restored volume reach status "
             f"'available' (volume id: {volume_id}) after {seconds_waited} "
             f"seconds"
@@ -170,9 +194,10 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
         while get_func(resource_id).status not in expected_status:
             time.sleep(1.0)
             seconds_waited += 1
-            assert seconds_waited < timeout, (
+            ensure(
+                seconds_waited < timeout,
                 f"Timeout reached while waiting for {resource_type} during "
-                f"cleanup to be in status '{expected_status}' "
+                f"cleanup to be in status {expected_status} "
                 f"({resource_type} id: {resource_id}) after {seconds_waited} "
                 f"seconds"
             )
@@ -200,7 +225,8 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
     ) > 0:
         time.sleep(1.0)
         seconds_waited += 1
-        assert seconds_waited < timeout, (
+        ensure(
+            seconds_waited < timeout,
             f"Timeout reached while waiting for all backups with prefix "
             f"'{prefix}' to finish deletion"
         )
@@ -262,10 +288,11 @@ def main():
     cloud = os.environ.get("OS_CLOUD", None)
     if args.os_cloud:
         cloud = args.os_cloud
-    assert cloud, (
-        "You need to have the OS_CLOUD environment variable set to your "
-        "cloud name or pass it via --os-cloud"
-    )
+    if not cloud:
+        raise Exception(
+            "You need to have the OS_CLOUD environment variable set to your "
+            "cloud name or pass it via --os-cloud"
+        )
     conn = connect(
         cloud,
         password=getpass.getpass("Enter password: ") if args.ask else None
