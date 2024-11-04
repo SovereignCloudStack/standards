@@ -441,9 +441,8 @@ async def get_k8s_pod_images(kubeconfig, context=None) -> list[str]:
         return list(images)
 
 
-async def scan_k8s_images(kubeconfig, context=None) -> None:
+async def scan_k8s_images(images_to_scan) -> None:
     """Scan the images used in the Kubernetes cluster for vulnerabilities."""
-    images_to_scan = await get_k8s_pod_images(kubeconfig, context)
 
     for image in images_to_scan:
         logger.info(f"Scanning image: {image}")
