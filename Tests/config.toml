@@ -38,8 +38,9 @@ scopes = [
     "scs-compatible-kaas",
 ]
 subjects = [
-    "cloud-kaas-a",
-    #"cloud-kaas-b",
+    "cspA-default",
+    "cspA-1.29",
+    "cspA-1.30",
 ]
 workers = 4
 
