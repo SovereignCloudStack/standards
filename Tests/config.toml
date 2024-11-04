@@ -49,6 +49,9 @@ workers = 1  # better restrict this with clusters running on local machine
 [scopes.scs-compatible-iaas]
 spec = "./scs-compatible-iaas.yaml"
 
+[scopes.scs-compatible-kaas]
+spec = "./scs-compatible-kaas.yaml"
+
 
 [scopes.scs-compatible-kaas]
 spec = "./scs-compatible-kaas.yaml"
