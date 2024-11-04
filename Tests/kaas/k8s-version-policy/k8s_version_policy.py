@@ -468,7 +468,7 @@ async def get_k8s_cluster_info(kubeconfig, context=None) -> ClusterInfo:
         version_api = kubernetes_asyncio.client.VersionApi(api)
         response = await version_api.get_code()
         version = parse_version(response.git_version)
-        return ClusterInfo(version, cluster_config.current_context['name'], kubeconfig=kubeconfig)
+        return ClusterInfo(version, cluster_config.current_context['name'])
 
 
 def check_k8s_version_recency(
@@ -553,8 +553,6 @@ async def main(argv):
         logger.critical("The EOL data in %s is outdated and we cannot reliably run this script.", EOLDATA_FILE)
         return 1
 
-    kubeconfig_path = config.kubeconfig
-
     connector = aiohttp.TCPConnector(limit=5)
     async with aiohttp.ClientSession(connector=connector) as session:
         cve_affected_ranges = await collect_cve_versions(session)
@@ -562,7 +560,7 @@ async def main(argv):
 
     try:
         logger.info(
-            f"""Initiating scan on the Kubernetes cluster specified by kubeconfig at '{kubeconfig_path}'
+            f"""Initiating scan on the Kubernetes cluster specified by kubeconfig at '{config.kubeconfig}'
             {' with context ' + config.context if config.context else ''}. 
             Fetching cluster information and verifying access.""")
         cluster = await get_k8s_cluster_info(config.kubeconfig, config.context)
