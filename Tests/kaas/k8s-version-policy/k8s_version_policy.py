@@ -281,7 +281,6 @@ class VersionRange:
 class ClusterInfo:
     version: K8sVersion
     name: str
-    kubeconfig: str
 
 
 async def request_cve_data(session: aiohttp.ClientSession, cveid: str) -> dict:
@@ -426,7 +425,6 @@ async def run_trivy_scan(image: str) -> dict:
 
 async def get_k8s_pod_images(kubeconfig, context=None) -> list[str]:
     """Get the list of container images used by all the pods in the Kubernetes cluster."""
-    cluster_config = await kubernetes_asyncio.config.load_kube_config(kubeconfig, context)
 
     async with kubernetes_asyncio.client.ApiClient() as api:
         v1 = kubernetes_asyncio.client.CoreV1Api(api)
@@ -563,9 +561,12 @@ async def main(argv):
     releases_data = fetch_k8s_releases_data()
 
     try:
-        logger.info(f"Checking cluster specified by {kubeconfig_path}")
+        logger.info(
+            f"""Initiating scan on the Kubernetes cluster specified by kubeconfig at '{kubeconfig_path}'
+            {' with context ' + config.context if config.context else ''}. 
+            Fetching cluster information and verifying access.""")
         cluster = await get_k8s_cluster_info(config.kubeconfig, config.context)
-        await scan_k8s_images(cluster.kubeconfig)
+        await scan_k8s_images(config.kubeconfig)
 
     except CriticalException as e:
         logger.critical(e)
