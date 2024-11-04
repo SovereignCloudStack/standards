@@ -301,8 +301,10 @@ def main():
         cleanup(conn, prefix=args.prefix, timeout=args.timeout)
     else:
         cleanup(conn, prefix=args.prefix, timeout=args.timeout)
-        test_backup(conn, prefix=args.prefix, timeout=args.timeout)
-        cleanup(conn, prefix=args.prefix, timeout=args.timeout)
+        try:
+            test_backup(conn, prefix=args.prefix, timeout=args.timeout)
+        finally:
+            cleanup(conn, prefix=args.prefix, timeout=args.timeout)
 
 
 if __name__ == "__main__":
