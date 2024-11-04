@@ -164,10 +164,10 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
     """
 
     def wait_for_resource(resource_type: str, resource_id: str,
-                          expected_status="available") -> None:
+                          expected_status=["available"]) -> None:
         seconds_waited = 0
         get_func = getattr(conn.block_storage, f"get_{resource_type}")
-        while get_func(resource_id).status != expected_status:
+        while get_func(resource_id).status not in expected_status:
             time.sleep(1.0)
             seconds_waited += 1
             assert seconds_waited < timeout, (
@@ -184,7 +184,7 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
     for backup in backups:
         if backup.name.startswith(prefix):
             try:
-                wait_for_resource("backup", backup.id)
+                wait_for_resource("backup", backup.id, ["available", "error"])
             except openstack.exceptions.ResourceNotFound:
                 # if the resource has vanished on
                 # its own in the meantime ignore it
@@ -209,7 +209,7 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
     for volume in volumes:
         if volume.name.startswith(prefix):
             try:
-                wait_for_resource("volume", volume.id)
+                wait_for_resource("volume", volume.id, ["available", "error"])
             except openstack.exceptions.ResourceNotFound:
                 # if the resource has vanished on
                 # its own in the meantime ignore it
