@@ -181,10 +181,12 @@ def test_backup(conn: openstack.connection.Connection,
 
 
 def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
-            timeout=WAIT_TIMEOUT):
+            timeout=WAIT_TIMEOUT) -> bool:
     """
     Looks up volume and volume backup resources matching the given prefix and
     deletes them.
+    Returns False if there were any errors during cleanup which might leave
+    resources behind. Otherwise returns True to indicate cleanup success.
     """
 
     def wait_for_resource(resource_type: str, resource_id: str,
@@ -205,6 +207,7 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
     print(f"\nPerforming cleanup for resources with the "
           f"'{prefix}' prefix ...")
 
+    cleanup_was_successful = True
     backups = conn.block_storage.backups()
     for backup in backups:
         if backup.name.startswith(prefix):
@@ -214,8 +217,11 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
                 # if the resource has vanished on
                 # its own in the meantime ignore it
                 continue
-            print(f"↳ deleting volume backup '{backup.id}' ...")
-            conn.block_storage.delete_backup(backup.id)
+            except ConformanceTestException as e:
+                print("WARNING:", str(e))
+            else:
+                print(f"↳ deleting volume backup '{backup.id}' ...")
+                conn.block_storage.delete_backup(backup.id)
 
     # wait for all backups to be cleaned up before attempting to remove volumes
     seconds_waited = 0
@@ -225,11 +231,17 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
     ) > 0:
         time.sleep(1.0)
         seconds_waited += 1
-        ensure(
-            seconds_waited < timeout,
-            f"Timeout reached while waiting for all backups with prefix "
-            f"'{prefix}' to finish deletion"
-        )
+        try:
+            ensure(
+                seconds_waited < timeout,
+                f"Timeout reached while waiting for all backups with prefix "
+                f"'{prefix}' to finish deletion during cleanup after "
+                f"{seconds_waited} seconds"
+            )
+        except ConformanceTestException as e:
+            print("WARNING:", str(e))
+            cleanup_was_successful = False
+            break
 
     volumes = conn.block_storage.volumes()
     for volume in volumes:
@@ -240,8 +252,14 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
                 # if the resource has vanished on
                 # its own in the meantime ignore it
                 continue
-            print(f"↳ deleting volume '{volume.id}' ...")
-            conn.block_storage.delete_volume(volume.id)
+            except ConformanceTestException as e:
+                print("WARNING:", str(e))
+                cleanup_was_successful = False
+            else:
+                print(f"↳ deleting volume '{volume.id}' ...")
+                conn.block_storage.delete_volume(volume.id)
+
+    return cleanup_was_successful
 
 
 def main():
@@ -298,13 +316,21 @@ def main():
         password=getpass.getpass("Enter password: ") if args.ask else None
     )
     if args.cleanup_only:
-        cleanup(conn, prefix=args.prefix, timeout=args.timeout)
+        if not cleanup(conn, prefix=args.prefix, timeout=args.timeout):
+            raise Exception(
+                f"Cleanup was not successful, there may be leftover resources "
+                f"with the '{args.prefix}' prefix"
+            )
     else:
         cleanup(conn, prefix=args.prefix, timeout=args.timeout)
         try:
             test_backup(conn, prefix=args.prefix, timeout=args.timeout)
         finally:
-            cleanup(conn, prefix=args.prefix, timeout=args.timeout)
+            if not cleanup(conn, prefix=args.prefix, timeout=args.timeout):
+                print(
+                    f"There may be leftover resources with the "
+                    f"'{args.prefix}' prefix that could not be cleaned up!"
+                )
 
 
 if __name__ == "__main__":
