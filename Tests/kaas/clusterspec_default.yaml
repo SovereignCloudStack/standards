@@ -1,5 +1,0 @@
-# this file specifies all clusters that have to be provisioned for the tests to run
-clusters:
-  default:
-    branch: default
-    kubeconfig: kubeconfig.yaml

@@ -22,16 +22,14 @@ def init_plugin(plugin_kind, config=None):
     return plugin_maker(config)
 
 
-def run_plugin_create(plugin_kind, clusterspec):
+def run_plugin_create(plugin_kind, clusterspec_cluster, clusterspec):
     plugin = init_plugin(plugin_kind)
-    for cluster_id, cluster_info in clusterspec.items():
-        plugin.create(cluster_id, cluster_info['branch'], os.path.abspath(cluster_info['kubeconfig']))
+    plugin.create(clusterspec_cluster, clusterspec[clusterspec_cluster]['branch'], os.path.abspath(clusterspec[clusterspec_cluster]['kubeconfig']))
 
 
-def run_plugin_delete(plugin_kind, clusterspec):
+def run_plugin_delete(plugin_kind, clusterspec_cluster, clusterspec):
     plugin = init_plugin(plugin_kind)
-    for cluster_id in clusterspec:
-        plugin.delete(cluster_id)
+    plugin.delete(clusterspec_cluster)
 
 
 def load_spec(clusterspec_path):
@@ -47,17 +45,19 @@ def cli():
 @cli.command()
 @click.argument('plugin_kind', type=click.Choice(list(PLUGIN_LOOKUP), case_sensitive=False))
 @click.argument('clusterspec_path', type=click.Path(exists=True, dir_okay=False))
-def create(plugin_kind, clusterspec_path):
+@click.argument('clusterspec_cluster', type=str, default="default")
+def create(plugin_kind, clusterspec_path, clusterspec_cluster):
     clusterspec = load_spec(clusterspec_path)['clusters']
-    run_plugin_create(plugin_kind, clusterspec)
+    run_plugin_create(plugin_kind, clusterspec_cluster, clusterspec)
 
 
 @cli.command()
 @click.argument('plugin_kind', type=click.Choice(list(PLUGIN_LOOKUP), case_sensitive=False))
 @click.argument('clusterspec_path', type=click.Path(exists=True, dir_okay=False))
-def delete(plugin_kind, clusterspec_path):
+@click.argument('clusterspec_cluster', type=str, default="default")
+def delete(plugin_kind, clusterspec_path, clusterspec_cluster):
     clusterspec = load_spec(clusterspec_path)['clusters']
-    run_plugin_delete(plugin_kind, clusterspec)
+    run_plugin_delete(plugin_kind, clusterspec_cluster, clusterspec)
 
 
 if __name__ == '__main__':

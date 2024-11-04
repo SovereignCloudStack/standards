@@ -47,18 +47,8 @@ versions:
     include:
       - ref: cncf-k8s-conformance
         parameters:
-          kubeconfig: kubeconfig.yaml
+          result_dir_name: "sonobuoy_cncf_results"
       - ref: scs-0210-v2
-        parameters:
-          kubeconfig: kubeconfig.yaml
-      - ref: scs-0210-v2
-        parameters:
-          kubeconfig: kubecfg129.yaml
-      - ref: scs-0210-v2
-        parameters:
-          kubeconfig: kubecfg130.yaml
       - ref: scs-0214-v2
-        parameters:
-          kubeconfig: kubeconfig.yaml
     targets:
       main: mandatory

@@ -39,14 +39,17 @@ scopes = [
 ]
 subjects = [
     "cspA-default",
-    "cspA-1.29",
-    "cspA-1.30",
+    "cspA-v1.29",
+    "cspA-v1.30",
 ]
 workers = 4
 
 
 [scopes.scs-compatible-iaas]
 spec = "./scs-compatible-iaas.yaml"
+
+[scopes.scs-compatible-kaas]
+spec = "./scs-compatible-kaas.yaml"
 
 
 # default subject (not a real subject, but used to declare a default mapping)
@@ -57,5 +60,20 @@ subject_root = "{subject}"
 
 
 [subjects._.kubernetes_setup]
-kube_plugin = "kind"
-clusterspec = "kaas/clusterspec.yaml"
+kube_plugin         = "kind"
+clusterspec         = "kaas/clusterspec.yaml"
+clusterspec_cluster = "default"
+
+
+
+[subjects."cspA-v1.29".kubernetes_setup]
+kube_plugin         = "kind"
+clusterspec_cluster = "v1.29"
+
+
+
+[subjects."cspA-v1.30".kubernetes_setup]
+kube_plugin         = "kind"
+clusterspec_cluster = "v1.30"
+
+

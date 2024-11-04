@@ -94,6 +94,7 @@ class Config:
                 'create',
                 kubernetes_setup['kube_plugin'],
                 self.abspath(kubernetes_setup['clusterspec']),
+                kubernetes_setup['clusterspec_cluster'],
             ],
             'cwd': subject_root,
         }
@@ -108,6 +109,7 @@ class Config:
                 'delete',
                 kubernetes_setup['kube_plugin'],
                 self.abspath(kubernetes_setup['clusterspec']),
+                kubernetes_setup['clusterspec_cluster'],
             ],
             'cwd': subject_root,
         }
