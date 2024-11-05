@@ -17,6 +17,7 @@ import getpass
 import os
 import time
 import typing
+import logging
 
 import openstack
 
@@ -80,7 +81,7 @@ def test_backup(conn: openstack.connection.Connection,
 
     # CREATE VOLUME
     volume_name = f"{prefix}volume"
-    print(f"Creating volume '{volume_name}' ...")
+    logging.info(f"Creating volume '{volume_name}' ...")
     volume = conn.block_storage.create_volume(
         name=volume_name,
         size=1
@@ -95,7 +96,7 @@ def test_backup(conn: openstack.connection.Connection,
         f"Retrieving initial volume by ID '{volume_id}' failed"
     )
 
-    print(
+    logging.info(
         f"↳ waiting for volume with ID '{volume_id}' to reach status "
         f"'available' ..."
     )
@@ -109,10 +110,10 @@ def test_backup(conn: openstack.connection.Connection,
             f"'available' (volume id: {volume_id}) after {seconds_waited} "
             f"seconds"
         )
-    print("Create empty volume: PASS")
+    logging.info("Create empty volume: PASS")
 
     # CREATE BACKUP
-    print("Creating backup from volume ...")
+    logging.info("Creating backup from volume ...")
     backup = conn.block_storage.create_backup(
         name=f"{prefix}volume-backup",
         volume_id=volume_id
@@ -127,7 +128,7 @@ def test_backup(conn: openstack.connection.Connection,
         "Retrieving backup by ID failed"
     )
 
-    print(f"↳ waiting for backup '{backup_id}' to become available ...")
+    logging.info(f"↳ waiting for backup '{backup_id}' to become available ...")
     seconds_waited = 0
     while conn.block_storage.get_backup(backup_id).status != "available":
         time.sleep(1.0)
@@ -138,17 +139,17 @@ def test_backup(conn: openstack.connection.Connection,
             f"'available' (backup id: {backup_id}) after {seconds_waited} "
             f"seconds"
         )
-    print("Create backup from volume: PASS")
+    logging.info("Create backup from volume: PASS")
 
     # RESTORE BACKUP
     restored_volume_name = f"{prefix}restored-backup"
-    print(f"Restoring backup to volume '{restored_volume_name}' ...")
+    logging.info(f"Restoring backup to volume '{restored_volume_name}' ...")
     conn.block_storage.restore_backup(
         backup_id,
         name=restored_volume_name
     )
 
-    print(
+    logging.info(
         f"↳ waiting for restoration target volume '{restored_volume_name}' "
         f"to be created ..."
     )
@@ -163,7 +164,7 @@ def test_backup(conn: openstack.connection.Connection,
             f"seconds"
         )
     # wait for the volume restoration to finish
-    print(
+    logging.info(
         f"↳ waiting for restoration target volume '{restored_volume_name}' "
         f"to reach 'available' status ..."
     )
@@ -177,7 +178,7 @@ def test_backup(conn: openstack.connection.Connection,
             f"'available' (volume id: {volume_id}) after {seconds_waited} "
             f"seconds"
         )
-    print("Restore volume from backup: PASS")
+    logging.info("Restore volume from backup: PASS")
 
 
 def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
@@ -204,8 +205,8 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
                 f"seconds"
             )
 
-    print(f"\nPerforming cleanup for resources with the "
-          f"'{prefix}' prefix ...")
+    logging.info(f"Performing cleanup for resources with the "
+                 f"'{prefix}' prefix ...")
 
     cleanup_was_successful = True
     backups = conn.block_storage.backups()
@@ -218,9 +219,9 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
                 # its own in the meantime ignore it
                 continue
             except ConformanceTestException as e:
-                print("WARNING:", str(e))
+                logging.warning(str(e))
             else:
-                print(f"↳ deleting volume backup '{backup.id}' ...")
+                logging.info(f"↳ deleting volume backup '{backup.id}' ...")
                 conn.block_storage.delete_backup(backup.id)
 
     # wait for all backups to be cleaned up before attempting to remove volumes
@@ -233,9 +234,8 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
         seconds_waited += 1
         if seconds_waited >= timeout:
             cleanup_was_successful = False
-            print(
-                "WARNING:"
-                "Timeout reached while waiting for all backups with prefix "
+            logging.warning(
+                f"Timeout reached while waiting for all backups with prefix "
                 f"'{prefix}' to finish deletion during cleanup after "
                 f"{seconds_waited} seconds"
             )
@@ -251,10 +251,10 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
                 # its own in the meantime ignore it
                 continue
             except ConformanceTestException as e:
-                print("WARNING:", str(e))
+                logging.warning(str(e))
                 cleanup_was_successful = False
             else:
-                print(f"↳ deleting volume '{volume.id}' ...")
+                logging.info(f"↳ deleting volume '{volume.id}' ...")
                 conn.block_storage.delete_volume(volume.id)
 
     return cleanup_was_successful
@@ -299,6 +299,10 @@ def main():
     )
     args = parser.parse_args()
     openstack.enable_logging(debug=args.debug)
+    logging.basicConfig(
+        format="%(levelname)s: %(message)s",
+        level=logging.DEBUG if args.debug else logging.INFO,
+    )
 
     # parse cloud name for lookup in clouds.yaml
     cloud = os.environ.get("OS_CLOUD", None)
@@ -325,7 +329,7 @@ def main():
             test_backup(conn, prefix=args.prefix, timeout=args.timeout)
         finally:
             if not cleanup(conn, prefix=args.prefix, timeout=args.timeout):
-                print(
+                logging.info(
                     f"There may be leftover resources with the "
                     f"'{args.prefix}' prefix that could not be cleaned up!"
                 )
