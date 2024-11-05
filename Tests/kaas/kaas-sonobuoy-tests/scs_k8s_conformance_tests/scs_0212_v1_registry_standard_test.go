@@ -7,11 +7,9 @@ import (
 	"os"
 	"testing"
 
-	"path/filepath"
-
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/rest"
 )
 
 // list of common Harbor components.
@@ -26,8 +24,8 @@ var HarborComponentNames = []string{
 
 func Test_scs_0212_registry_standard_test(t *testing.T) {
 	// Set up the Kubernetes client
-	// config, err := rest.InClusterConfig()
-	config, err := clientcmd.BuildConfigFromFlags("", filepath.Join(homeDir(), ".kube", "config"))
+	config, err := rest.InClusterConfig()
+	// config, err := clientcmd.BuildConfigFromFlags("", filepath.Join(homeDir(), ".kube", "config"))
 	if err != nil {
 		log.Fatalf("Failed to create rest config: %v", err)
 	}
@@ -53,6 +51,7 @@ func Test_scs_0212_registry_standard_test(t *testing.T) {
 // check deployments for the registry
 func checkDeployments(clientset *kubernetes.Clientset) error {
 	deployments, err := clientset.AppsV1().Deployments("").List(context.TODO(), v1.ListOptions{})
+	harborDeployments := 0
 	if err != nil {
 		return fmt.Errorf("failed to list deployments: %v", err)
 	}
@@ -61,8 +60,14 @@ func checkDeployments(clientset *kubernetes.Clientset) error {
 		for _, componentName := range HarborComponentNames {
 			if containsString(deployment.Name, componentName) {
 				fmt.Printf("Found Harbor deployment: %s in namespace: %s\n", deployment.Name, deployment.Namespace)
+				harborDeployments++
 			}
 		}
+	}
+	if harborDeployments > 0 {
+		fmt.Printf("Harbor deployments found\n")
+	} else {
+		fmt.Printf("Harbor was not found in deployments\n")
 	}
 	return nil
 }
@@ -70,6 +75,7 @@ func checkDeployments(clientset *kubernetes.Clientset) error {
 // check services for the registry components
 func checkServices(clientset *kubernetes.Clientset) error {
 	services, err := clientset.CoreV1().Services("").List(context.TODO(), v1.ListOptions{})
+	harborServices := 0
 	if err != nil {
 		return fmt.Errorf("failed to list services: %v", err)
 	}
@@ -78,8 +84,14 @@ func checkServices(clientset *kubernetes.Clientset) error {
 		for _, componentName := range HarborComponentNames {
 			if containsString(service.Name, componentName) {
 				fmt.Printf("Found Harbor service: %s in namespace: %s\n", service.Name, service.Namespace)
+				harborServices++
 			}
 		}
+	}
+	if harborServices > 0 {
+		fmt.Printf("Harbor services found\n")
+	} else {
+		fmt.Printf("Harbor was not found services\n")
 	}
 	return nil
 }
@@ -91,6 +103,7 @@ func containsString(str, substr string) bool {
 
 func homeDir() string {
 	if h := os.Getenv("HOME"); h != "" {
+		println(h)
 		return h
 	}
 	return ""
