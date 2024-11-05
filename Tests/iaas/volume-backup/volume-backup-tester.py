@@ -222,6 +222,10 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
                 # its own in the meantime ignore it
                 continue
             except ConformanceTestException as e:
+                # This exception happens if the backup state does not reach any
+                # of the desired ones specified above. We do not need to set
+                # cleanup_was_successful to False here since any remaining ones
+                # will be caught in the next loop down below anyway.
                 logging.warning(str(e))
             else:
                 logging.info(f"↳ deleting volume backup '{backup.id}' ...")
