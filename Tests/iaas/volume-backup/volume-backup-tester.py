@@ -213,7 +213,10 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
     for backup in backups:
         if backup.name.startswith(prefix):
             try:
-                wait_for_resource("backup", backup.id, expected_status=("available", "error"))
+                wait_for_resource(
+                    "backup", backup.id,
+                    expected_status=("available", "error")
+                )
             except openstack.exceptions.ResourceNotFound:
                 # if the resource has vanished on
                 # its own in the meantime ignore it
@@ -222,7 +225,15 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
                 logging.warning(str(e))
             else:
                 logging.info(f"↳ deleting volume backup '{backup.id}' ...")
-                conn.block_storage.delete_backup(backup.id)
+                # Setting ignore_missing to False here will make an exception
+                # bubble up in case the cinder-backup service is not present.
+                # Since we already catch ResourceNotFound for the backup above,
+                # the absence of the cinder-backup service is the only
+                # NotFoundException that is left to be thrown here.
+                # We treat this as a fatal due to the cinder-backup service
+                # being mandatory.
+                conn.block_storage.delete_backup(
+                    backup.id, ignore_missing=False)
 
     # wait for all backups to be cleaned up before attempting to remove volumes
     seconds_waited = 0
