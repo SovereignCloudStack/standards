@@ -22,8 +22,8 @@ def init_plugin(plugin_kind, config=None):
     return plugin_maker(config)
 
 
-def run_plugin_create(plugin_kind, clusterspec_cluster, clusterspec):
-    plugin = init_plugin(plugin_kind)
+def run_plugin_create(plugin_kind, plugin_config, clusterspec_cluster, clusterspec):
+    plugin = init_plugin(plugin_kind, plugin_config)
     plugin.create(clusterspec_cluster, clusterspec[clusterspec_cluster]['branch'], os.path.abspath(clusterspec[clusterspec_cluster]['kubeconfig']))
 
 
@@ -44,11 +44,12 @@ def cli():
 
 @cli.command()
 @click.argument('plugin_kind', type=click.Choice(list(PLUGIN_LOOKUP), case_sensitive=False))
+@click.argument('plugin_config', type=click.Path(exists=True, dir_okay=False))
 @click.argument('clusterspec_path', type=click.Path(exists=True, dir_okay=False))
 @click.argument('clusterspec_cluster', type=str, default="default")
-def create(plugin_kind, clusterspec_path, clusterspec_cluster):
+def create(plugin_kind, plugin_config, clusterspec_path, clusterspec_cluster):
     clusterspec = load_spec(clusterspec_path)['clusters']
-    run_plugin_create(plugin_kind, clusterspec_cluster, clusterspec)
+    run_plugin_create(plugin_kind, plugin_config, clusterspec_cluster, clusterspec)
 
 
 @cli.command()

@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import final
 import os
 import os.path
@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger("interface")
 
 
-class KubernetesClusterPlugin(ABC):
+class KubernetesClusterPlugin():
     """
     An abstract base class for custom Kubernetes cluster provider plugins.
     It represents an interface class from which the api provider-specific
@@ -21,9 +21,9 @@ class KubernetesClusterPlugin(ABC):
     working_directory = None
 
     @final
-    def __init__(self, config=None):
+    def __init__(self, config_file=None):
         logger.info(f"Init provider plug-in of type {self.__class__.__name__}")
-        self.config = config
+        self.config = config_file
         logger.debug(self.config)
         self.working_directory = os.getcwd()
         logger.debug(f"Working from {self.working_directory}")
@@ -56,12 +56,7 @@ class KubernetesClusterPlugin(ABC):
         self.cluster_name = name
         self.cluster_version = version
 
-        self._create_cluster()  # TODO: maybe we do not need to use try exept here?
-        # try:
-        #     self._create_cluster()
-        # except Exception as e:
-        #     logging.exception(e)
-        #     self._delete_cluster()
+        self._create_cluster()
 
         if kubeconfig_filepath:
             shutil.move(self.kubeconfig, kubeconfig_filepath)

@@ -62,6 +62,7 @@ subject_root  = "{subject}"
 
 [subjects._.kubernetes_setup]
 kube_plugin         = "kind"
+kube_plugin_config  = "../playbooks/kubernetes_cluster_configs/kind_cluster_config.yaml"
 clusterspec         = "kaas/clusterspec.yaml"
 clusterspec_cluster = "current-k8s-release"
 
