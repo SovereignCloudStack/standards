@@ -281,18 +281,16 @@ class PrecomputedScope:
             by_validity[self.versions[vname].validity].append(vname)
         # go through worsening validity values until a passing version is found
         relevant = []
+        best_passed = None
         for validity in ('effective', 'warn', 'deprecated'):
             vnames = by_validity[validity]
             relevant.extend(vnames)
             if any(version_results[vname]['result'] == 1 for vname in vnames):
+                best_passed = validity
                 break
         # always include draft (but only at the end)
         relevant.extend(by_validity['draft'])
         passed = [vname for vname in relevant if version_results[vname]['result'] == 1]
-        if passed:
-            summary = 1 if self.versions[passed[0]].validity in ('effective', 'warn') else -1
-        else:
-            summary = 0
         return {
             'name': self.name,
             'versions': version_results,
@@ -302,7 +300,7 @@ class PrecomputedScope:
                 vname + ASTERISK_LOOKUP[self.versions[vname].validity]
                 for vname in passed
             ]),
-            'summary': summary,
+            'best_passed': best_passed,
         }
 
     def update_lookup(self, target_dict):
@@ -727,8 +725,13 @@ def pick_filter(results, subject, scope):
 def summary_filter(scope_results):
     """Jinja filter to construct summary from `scope_results`"""
     passed_str = scope_results.get('passed_str', '') or '–'
-    summary = scope_results.get('summary', 0)
-    color = {1: '✅'}.get(summary, '🛑')  # instead of 🟢🔴 (hard to distinguish for color-blind folks)
+    best_passed = scope_results.get('best_passed')
+    # avoid simple 🟢🔴 (hard to distinguish for color-blind folks)
+    color = {
+        'effective': '✅',
+        'warn': '✅',  # forgo differentiation here in favor of simplicity (will be apparent in version list)
+        'deprecated': '🟧',
+    }.get(best_passed, '🛑')
     return f'{color} {passed_str}'
 
 
