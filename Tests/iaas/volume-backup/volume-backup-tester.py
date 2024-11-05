@@ -332,22 +332,22 @@ def main():
         cloud,
         password=getpass.getpass("Enter password: ") if args.ask else None
     )
+
+    if not cleanup(conn, prefix=args.prefix, timeout=args.timeout):
+        raise Exception(
+            f"Cleanup was not successful, there may be leftover resources "
+            f"with the '{args.prefix}' prefix"
+        )
     if args.cleanup_only:
+        return
+    try:
+        test_backup(conn, prefix=args.prefix, timeout=args.timeout)
+    finally:
         if not cleanup(conn, prefix=args.prefix, timeout=args.timeout):
-            raise Exception(
-                f"Cleanup was not successful, there may be leftover resources "
-                f"with the '{args.prefix}' prefix"
+            logging.info(
+                f"There may be leftover resources with the "
+                f"'{args.prefix}' prefix that could not be cleaned up!"
             )
-    else:
-        cleanup(conn, prefix=args.prefix, timeout=args.timeout)
-        try:
-            test_backup(conn, prefix=args.prefix, timeout=args.timeout)
-        finally:
-            if not cleanup(conn, prefix=args.prefix, timeout=args.timeout):
-                logging.info(
-                    f"There may be leftover resources with the "
-                    f"'{args.prefix}' prefix that could not be cleaned up!"
-                )
 
 
 if __name__ == "__main__":
