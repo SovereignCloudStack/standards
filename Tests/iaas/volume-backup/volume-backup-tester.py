@@ -231,16 +231,14 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
     ) > 0:
         time.sleep(1.0)
         seconds_waited += 1
-        try:
-            ensure(
-                seconds_waited < timeout,
-                f"Timeout reached while waiting for all backups with prefix "
+        if seconds_waited >= timeout:
+            cleanup_was_successful = False
+            print(
+                "WARNING:"
+                "Timeout reached while waiting for all backups with prefix "
                 f"'{prefix}' to finish deletion during cleanup after "
                 f"{seconds_waited} seconds"
             )
-        except ConformanceTestException as e:
-            print("WARNING:", str(e))
-            cleanup_was_successful = False
             break
 
     volumes = conn.block_storage.volumes()
