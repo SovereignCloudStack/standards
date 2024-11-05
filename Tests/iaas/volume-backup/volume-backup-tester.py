@@ -45,7 +45,7 @@ def wait_for_resource(
         seconds_waited += 1
         if seconds_waited >= timeout:
             raise RuntimeError(
-                f"Timed out after {seconds_waited} s: waiting for {resource_type} {resource_id} "
+                f"Timed out after {seconds_waited} s: waiting for resource {resource_id} "
                 f"to be in status {expected_status} (current: {resource and resource.status})"
             )
         resource = get_func(resource_id)
@@ -184,7 +184,7 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
             logging.debug("traceback", exc_info=True)
             logging.warning(str(e))
             cleanup_issues += 1
-    
+
     if cleanup_issues:
         logging.info(
             f"Some resources with the '{prefix}' prefix were not cleaned up!"
@@ -248,7 +248,7 @@ def main():
 
     with openstack.connect(cloud, password=password) as conn:
         if not cleanup(conn, prefix=args.prefix, timeout=args.timeout):
-            raise RuntimeError(f"Initial cleanup failed")
+            raise RuntimeError("Initial cleanup failed")
         if args.cleanup_only:
             logging.info("Cleanup-only run finished.")
             return
