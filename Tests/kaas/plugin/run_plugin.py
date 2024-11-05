@@ -10,8 +10,8 @@ from plugin_static import PluginStatic
 
 
 PLUGIN_LOOKUP = {
-  "kind": PluginKind,
-  "static": PluginStatic,
+    "kind": PluginKind,
+    "static": PluginStatic,
 }
 
 
