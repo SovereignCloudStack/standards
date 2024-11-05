@@ -27,8 +27,8 @@ def run_plugin_create(plugin_kind, plugin_config, clusterspec_cluster, clustersp
     plugin.create(clusterspec_cluster, clusterspec[clusterspec_cluster]['branch'], os.path.abspath(clusterspec[clusterspec_cluster]['kubeconfig']))
 
 
-def run_plugin_delete(plugin_kind, clusterspec_cluster, clusterspec):
-    plugin = init_plugin(plugin_kind)
+def run_plugin_delete(plugin_kind, plugin_config, clusterspec_cluster, clusterspec):
+    plugin = init_plugin(plugin_kind, plugin_config)
     plugin.delete(clusterspec_cluster)
 
 
@@ -54,11 +54,12 @@ def create(plugin_kind, plugin_config, clusterspec_path, clusterspec_cluster):
 
 @cli.command()
 @click.argument('plugin_kind', type=click.Choice(list(PLUGIN_LOOKUP), case_sensitive=False))
+@click.argument('plugin_config', type=click.Path(exists=True, dir_okay=False))
 @click.argument('clusterspec_path', type=click.Path(exists=True, dir_okay=False))
 @click.argument('clusterspec_cluster', type=str, default="default")
-def delete(plugin_kind, clusterspec_path, clusterspec_cluster):
+def delete(plugin_kind, plugin_config, clusterspec_path, clusterspec_cluster):
     clusterspec = load_spec(clusterspec_path)['clusters']
-    run_plugin_delete(plugin_kind, clusterspec_cluster, clusterspec)
+    run_plugin_delete(plugin_kind, plugin_config, clusterspec_cluster, clusterspec)
 
 
 if __name__ == '__main__':

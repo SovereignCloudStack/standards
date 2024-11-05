@@ -109,6 +109,7 @@ class Config:
                 sys.executable, self.run_plugin_py,
                 'delete',
                 kubernetes_setup['kube_plugin'],
+                self.abspath(kubernetes_setup['kube_plugin_config']),
                 self.abspath(kubernetes_setup['clusterspec']),
                 kubernetes_setup['clusterspec_cluster'],
             ],
