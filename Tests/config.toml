@@ -66,10 +66,10 @@ clusterspec         = "kaas/clusterspec.yaml"
 clusterspec_cluster = "current-k8s-release"
 
 
-[subjects."cspA-v1.30".kubernetes_setup]
+[subjects.cspA-current-1.kubernetes_setup]
 clusterspec_cluster = "current-k8s-release-1"
 
 
-[subjects."cspA-v1.29".kubernetes_setup]
+[subjects.cspA-current-2.kubernetes_setup]
 clusterspec_cluster = "current-k8s-release-2"
 
