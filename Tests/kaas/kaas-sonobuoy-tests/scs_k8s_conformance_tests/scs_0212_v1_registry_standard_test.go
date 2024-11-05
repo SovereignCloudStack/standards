@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"testing"
+
+	"path/filepath"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 // list of common Harbor components.
@@ -23,7 +26,8 @@ var HarborComponentNames = []string{
 
 func Test_scs_0212_registry_standard_test(t *testing.T) {
 	// Set up the Kubernetes client
-	config, err := rest.InClusterConfig()
+	// config, err := rest.InClusterConfig()
+	config, err := clientcmd.BuildConfigFromFlags("", filepath.Join(homeDir(), ".kube", "config"))
 	if err != nil {
 		log.Fatalf("Failed to create rest config: %v", err)
 	}
@@ -83,4 +87,11 @@ func checkServices(clientset *kubernetes.Clientset) error {
 // containsString checks if a string is contained in another string (case-insensitive).
 func containsString(str, substr string) bool {
 	return len(str) > 0 && len(substr) > 0 && (str == substr || (len(str) > len(substr) && str[:len(substr)] == substr))
+}
+
+func homeDir() string {
+	if h := os.Getenv("HOME"); h != "" {
+		return h
+	}
+	return ""
 }
