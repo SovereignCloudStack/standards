@@ -11,7 +11,6 @@ Return codes:
 31:   Default storage class has no provisioner
 32:   None or more then one default Storage Class is defined
 33:   CSI provider does not belong to the recommended providers
-(34:  No CSI provider found)
 
 41:   Not able to bind PersitantVolume to PersitantVolumeClaim
 42:   ReadWriteOnce is not a supported access mode
@@ -58,7 +57,6 @@ def check_default_storageclass(k8s_client_storage):
     storageclasses_dict = json.loads(storageclasses)
 
     ndefault_class = 0
-
     for item in storageclasses_dict["items"]:
         storage_class_name = item["metadata"]["name"]
         annotations = item["metadata"]["annotations"]
@@ -74,7 +72,6 @@ def check_default_storageclass(k8s_client_storage):
             "This means the default storage class has no provisioner.",
             return_code=31,
         )
-
     if ndefault_class != 1:
         raise SCSTestException(
             "More then one or none default StorageClass is defined! ",
@@ -86,7 +83,15 @@ def check_default_storageclass(k8s_client_storage):
     return default_storage_class
 
 
-def create_pvc_pod(k8s_api_instance, storage_class, pvc_name = PVC_NAME, pod_name = POD_NAME, pv_name = PV_NAME, namespace = NAMESPACE, num_retries = NUM_RETRIES):
+def create_pvc_pod(
+    k8s_api_instance,
+    storage_class,
+    pvc_name=PVC_NAME,
+    pod_name=POD_NAME,
+    pv_name=PV_NAME,
+    namespace=NAMESPACE,
+    num_retries=NUM_RETRIES,
+):
     """
     1. Create PersistantVolumeClaim
     2. Create pod which uses the PersitantVolumeClaim
@@ -108,14 +113,14 @@ def create_pvc_pod(k8s_api_instance, storage_class, pvc_name = PVC_NAME, pod_nam
     )
 
     api_response = k8s_api_instance.create_namespaced_persistent_volume_claim(
-        NAMESPACE, body_pvc
+        namespace, body_pvc
     )
 
     # 2. Create a pod which makes use of the PersitantVolumeClaim
     logger.debug(f"create pod: {pod_name}")
 
     pod_vol = client.V1Volume(
-        name=PV_NAME,
+        name=pv_name,
         persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(pvc_name),
     )
     pod_con = client.V1Container(
@@ -123,7 +128,7 @@ def create_pvc_pod(k8s_api_instance, storage_class, pvc_name = PVC_NAME, pod_nam
         image="nginx",
         ports=[client.V1ContainerPort(container_port=80)],
         volume_mounts=[
-            client.V1VolumeMount(name=PV_NAME, mount_path="/usr/share/nginx/html")
+            client.V1VolumeMount(name=pv_name, mount_path="/usr/share/nginx/html")
         ],
     )
     pod_spec = client.V1PodSpec(volumes=[pod_vol], containers=[pod_con])
@@ -143,7 +148,7 @@ def create_pvc_pod(k8s_api_instance, storage_class, pvc_name = PVC_NAME, pod_nam
     retries = 0
     while pod_status != "Running" and retries <= num_retries:
         api_response = k8s_api_instance.read_namespaced_pod(
-            POD_NAME, NAMESPACE, _preload_content=False
+            pod_name, namespace, _preload_content=False
         )
         pod_info = json.loads(api_response.read().decode("utf-8"))
         pod_status = pod_info["status"]["phase"]
@@ -159,7 +164,9 @@ def create_pvc_pod(k8s_api_instance, storage_class, pvc_name = PVC_NAME, pod_nam
     return 0
 
 
-def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance):
+def check_default_persistentvolumeclaim_readwriteonce(
+    k8s_api_instance, pvc_name=PVC_NAME
+):
     """
     3. Check if PV got succesfully created using ReadWriteOnce
     """
@@ -174,8 +181,8 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance):
     logger.debug("searching for corresponding pv")
     for pv in pv_list:
         logger.debug(f"parsing pv: {pv['metadata']['name']}")
-        if pv["spec"]["claimRef"]["name"] == PVC_NAME:
-            logger.debug(f"found pv to pvc: {PVC_NAME}")
+        if pv["spec"]["claimRef"]["name"] == pvc_name:
+            logger.debug(f"found pv to pvc: {pvc_name}")
 
             if pv["status"]["phase"] != "Bound":
                 raise SCSTestException(
@@ -191,12 +198,12 @@ def check_default_persistentvolumeclaim_readwriteonce(k8s_api_instance):
     return 0
 
 
-def check_csi_provider(k8s_core_api):
+def check_csi_provider(k8s_core_api, allowed_csi_prov=ALLOWED_CSI_PROV):
     pods = k8s_core_api.list_namespaced_pod(namespace="kube-system")
     csi_list = []
     for pod in pods.items:
         if "csi" in pod.metadata.name:
-            if pod.metadata.name in ALLOWED_CSI_PROV:
+            if pod.metadata.name in allowed_csi_prov:
                 csi_list.append(pod.metadata.name)
                 logger.info(f"CSI-Provider: {pod.metadata.name}")
             else:
@@ -206,10 +213,6 @@ def check_csi_provider(k8s_core_api):
                 )
         else:
             logger.info("CSI-Provider: No CSI Provider found.")
-            # raise SCSTestException(
-            #     "CSI-Provider: No CSI Provider found.",
-            #     return_code=34,
-            # )
     return 0
 
 
@@ -344,18 +347,15 @@ def main(argv):
     with TestEnvironment(kubeconfig) as env:
         # Check if default storage class is defined (MANDATORY)
         k8s_core_api = env.k8s_core_api
-
+        logger.debug("check_default_storageclass()")
         try:
-            logger.debug("check_default_storageclass()")
             default_class_name = check_default_storageclass(env.k8s_storage_api)
-        except SCSTestException as test_exception: # delete
-            logger.error(f"L{inspect.currentframe().f_lineno} {test_exception}")
-            env.return_message = f"{test_exception}"
-            env.return_code = test_exception.return_code
-        except Exception as exception_message: # nochmal prüfen ob SCSTest spezifischer
-            logger.error(f"L{inspect.currentframe().f_lineno} {exception_message}")
-            env.return_message = f"{exception_message}"
+        except SCSTestException:
+            raise
+        except Exception:
             env.return_code = 1
+            logger.debug("check_default_storageclass() failed")
+            return env.return_code
 
         try:
             env.return_code = create_pvc_pod(k8s_core_api, default_class_name)
