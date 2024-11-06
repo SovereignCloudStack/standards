@@ -40,7 +40,6 @@ def count_ingress_egress(rules, short=False):
     ingress_rules = 0
     egress_rules = 0
     if not short:
-        ingress_from_same_sg = 0
         egress_ipv4_default_sg = 0
         egress_ipv4_custom_sg = 0
         egress_ipv6_default_sg = 0
@@ -64,7 +63,7 @@ def count_ingress_egress(rules, short=False):
                     # but only for the default security group
                     r_group_id = rule.remote_group_id
                     if r_group_id == "PARENT" and not r_custom_sg:
-                        ingress_from_same_sg += 1
+                        ingress_rules -= 1
             elif direction == "egress" and ethertype == "IPv4":
                 egress_rules += 1
                 if not short:
@@ -94,8 +93,6 @@ def count_ingress_egress(rules, short=False):
             f"Expected to have more than {egress_rules} egress rules present."
         )
     if not short:
-        if ingress_rules == ingress_from_same_sg:
-            ingress_rules -= 1
         var_list = [
             egress_ipv4_default_sg,
             egress_ipv4_custom_sg,
@@ -217,8 +214,8 @@ def main():
         cloud = args.os_cloud
     if not cloud:
         raise ValueError(
-        "You need to have the OS_CLOUD environment variable set to your cloud "
-        "name or pass it via --os-cloud"
+            "You need to have the OS_CLOUD environment variable set to your cloud "
+            "name or pass it via --os-cloud"
         )
     try:
         print(test_rules(cloud))
