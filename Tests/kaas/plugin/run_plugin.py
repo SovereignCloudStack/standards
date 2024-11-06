@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import logging
 import os.path
-
 import click
 import yaml
+
 
 from plugin_kind import PluginKind
 from plugin_static import PluginStatic
@@ -24,12 +24,12 @@ def init_plugin(plugin_kind, config=None):
 
 def run_plugin_create(plugin_kind, plugin_config, clusterspec_cluster, clusterspec):
     plugin = init_plugin(plugin_kind, plugin_config)
-    plugin.create(clusterspec_cluster, clusterspec[clusterspec_cluster]['branch'], os.path.abspath(clusterspec[clusterspec_cluster]['kubeconfig']))
+    plugin.create_cluster(clusterspec_cluster, clusterspec[clusterspec_cluster]['branch'], os.path.abspath(clusterspec[clusterspec_cluster]['kubeconfig']))
 
 
 def run_plugin_delete(plugin_kind, plugin_config, clusterspec_cluster, clusterspec):
     plugin = init_plugin(plugin_kind, plugin_config)
-    plugin.delete(clusterspec_cluster)
+    plugin.delete_cluster(clusterspec_cluster)
 
 
 def load_spec(clusterspec_path):

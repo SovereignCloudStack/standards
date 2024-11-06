@@ -1,5 +1,10 @@
+import shutil
+import os
+import os.path
 from interface import KubernetesClusterPlugin
 from pytest_kind import KindCluster
+import logging
+logger = logging.getLogger("plugin_kind")
 
 
 class PluginKind(KubernetesClusterPlugin):
@@ -7,9 +12,20 @@ class PluginKind(KubernetesClusterPlugin):
     Plugin to handle the provisioning of kubernetes cluster for
     conformance testing purpose with the use of Kind
     """
+    def __init__(self, config_file=None):
+        logger.info(f"Init provider plug-in of type {self.__class__.__name__}")
+        self.config = config_file
+        logger.debug(self.config)
+        self.working_directory = os.getcwd()
+        logger.debug(f"Working from {self.working_directory}")
 
-    def _create_cluster(self):
-        cluster_version = self.cluster_version
+    def create_cluster(self, cluster_name="scs-cluster", version=None, kubeconfig_filepath=None):
+        """
+        This method is to be called to create a k8s cluster
+        :param: kubernetes_version:
+        :return: kubeconfig_filepath
+        """
+        cluster_version = version
         if cluster_version == '1.29':
             cluster_version = 'v1.29.8'
         elif cluster_version == '1.30':
@@ -17,13 +33,18 @@ class PluginKind(KubernetesClusterPlugin):
         elif cluster_version == '1.31' or cluster_version == 'default':
             cluster_version = 'v1.31.1'
         cluster_image = f"kindest/node:{cluster_version}"
-        self.cluster = KindCluster(name=self.cluster_name, image=cluster_image)
+        self.cluster = KindCluster(name=cluster_name, image=cluster_image)
         if self.config is None:
             self.cluster.create()
         else:
             self.cluster.create(self.config)
         self.kubeconfig = str(self.cluster.kubeconfig_path.resolve())
+        if kubeconfig_filepath:
+            shutil.move(self.kubeconfig, kubeconfig_filepath)
+        else:
+            kubeconfig_filepath = str(self.kubeconfig)
+        return kubeconfig_filepath
 
-    def _delete_cluster(self):
-        self.cluster = KindCluster(self.cluster_name)
+    def delete_cluster(self, cluster_name=None):
+        self.cluster = KindCluster(cluster_name)
         self.cluster.delete()
