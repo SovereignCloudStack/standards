@@ -15,8 +15,15 @@ This standard specifies a minimal set of networking features that users can expe
 
 ## Terminology
 
-Example (abbr. Ex)
-  This is the description for an example terminology.
+The following terms are used throughout this document:
+
+| Term | Meaning |
+|------|---------|
+| KaaS, managed Kubernetes | Kubernetes as a Service, automated on-demand deployment of Kubernetes clusters. |
+| CSP | Cloud Service Provider, the provider of the KaaS infrastructure. |
+| CNI | Container Network Interface, a standardized networking interface for container runtimes. |
+| CNI plugin, networking plugin | Kubernetes bindings for a CNI implementation, translates Kubernetes API concepts into more basic container networking concepts. |
+| network policy | A set of rules to restrict network traffic in a Kubernetes cluster. |
 
 ## Motivation
 
@@ -49,7 +56,7 @@ The wide support among CNI plugins makes them a good target for SCS standardizat
 Basic network policies are namespaced resources, and can only filter traffic to and from pods in their own namespace.
 In a newly created namespace without policies the default behavior will apply, which is to not restrict traffic at all.
 
-It can be desirable to automatically create default network policies in new namespaces, using an operator such as Kyverno.
+It can be desirable to automatically create default network policies in new namespaces, using a policy operator such as Kyverno.
 A CSP could provide such an operator and offer a number of default policies, like blocking connections to other namespaces by default, or blocking access to the OpenStack metadata service.
 
 Any user with permissions to manage their own network policies in a namespace will of course be able to remove or modify any default network policies in that namespace.
@@ -73,7 +80,7 @@ Unlike the L3/L4-based LoadBalancer Service type, Ingress provides L7 load balan
 This functionality can be provided within the cluster by a pod-based ingress controller such as `ingress-nginx`, that exposes Ingress resources as Services.
 
 However, there are also Ingress controllers that integrate with underlying infrastructure and may help to reduce overhead.
-Examples for this are the Cilium CNI plugin, which comes with built-in Ingress support, and the Octavia ingress controller, which may be a good choice if OpenStack Octavia is already used to provide L3/L4 load balancing.
+Examples for this are the Cilium CNI plugin, which comes with built-in Ingress support, and the Octavia Ingress controller, which may be a good choice if OpenStack Octavia is already used to provide L3/L4 load balancing.
 
 The CSPs that manage the underlying infrastructure can of course make the best choice for such an integrated Ingress controller, so they should be encouraged to do so.
 Even with a CSP-provided default Ingress controller present, users will be able to use alternative Ingress controllers by creating a new `IngressClass`, which can then be referenced in Ingress resources.
