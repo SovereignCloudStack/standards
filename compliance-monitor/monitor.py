@@ -96,6 +96,11 @@ class ViewType(Enum):
     fragment = "fragment"
 
 
+VIEW_REPORT = {
+    ViewType.markdown: 'report.md',
+    ViewType.fragment: 'report.md',
+    ViewType.page: 'overview.html',
+}
 VIEW_DETAIL = {
     ViewType.markdown: 'details.md',
     ViewType.fragment: 'details.md',
@@ -111,7 +116,7 @@ VIEW_SCOPE = {
     ViewType.fragment: 'scope.md',
     ViewType.page: 'overview.html',
 }
-REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_DETAIL, VIEW_TABLE, VIEW_SCOPE) for fn in view.values()))
+REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_REPORT, VIEW_DETAIL, VIEW_TABLE, VIEW_SCOPE) for fn in view.values()))
 
 
 # do I hate these globals, but I don't see another way with these frameworks
@@ -276,18 +281,16 @@ class PrecomputedScope:
             by_validity[self.versions[vname].validity].append(vname)
         # go through worsening validity values until a passing version is found
         relevant = []
+        best_passed = None
         for validity in ('effective', 'warn', 'deprecated'):
             vnames = by_validity[validity]
             relevant.extend(vnames)
             if any(version_results[vname]['result'] == 1 for vname in vnames):
+                best_passed = validity
                 break
         # always include draft (but only at the end)
         relevant.extend(by_validity['draft'])
         passed = [vname for vname in relevant if version_results[vname]['result'] == 1]
-        if passed:
-            summary = 1 if self.versions[passed[0]].validity in ('effective', 'warn') else -1
-        else:
-            summary = 0
         return {
             'name': self.name,
             'versions': version_results,
@@ -297,7 +300,7 @@ class PrecomputedScope:
                 vname + ASTERISK_LOOKUP[self.versions[vname].validity]
                 for vname in passed
             ]),
-            'summary': summary,
+            'best_passed': best_passed,
         }
 
     def update_lookup(self, target_dict):
@@ -544,20 +547,46 @@ async def get_status(
     return convert_result_rows_to_dict2(rows2, get_scopes(), include_report=True)
 
 
-def render_view(view, view_type, base_url='/', title=None, **kwargs):
+def _build_report_url(base_url, report, *args, **kwargs):
+    if kwargs.get('download'):
+        return f"{base_url}reports/{report}"
+    url = f"{base_url}page/report/{report}"
+    if len(args) == 2:  # version, testcase_id --> add corresponding fragment specifier
+        url += f"#{args[0]}_{args[1]}"
+    return url
+
+
+def render_view(view, view_type, detail_page='detail', base_url='/', title=None, **kwargs):
     media_type = {ViewType.markdown: 'text/markdown'}.get(view_type, 'text/html')
     stage1 = stage2 = view[view_type]
     if view_type is ViewType.page:
         stage1 = view[ViewType.fragment]
     def scope_url(uuid): return f"{base_url}page/scope/{uuid}"  # noqa: E306,E704
-    def detail_url(subject, scope): return f"{base_url}page/detail/{subject}/{scope}"  # noqa: E306,E704
-    def report_url(report): return f"{base_url}reports/{report}"  # noqa: E306,E704
+    def detail_url(subject, scope): return f"{base_url}page/{detail_page}/{subject}/{scope}"  # noqa: E306,E704
+    def report_url(report, *args, **kwargs): return _build_report_url(base_url, report, *args, **kwargs)  # noqa: E306,E704
     fragment = templates_map[stage1].render(detail_url=detail_url, report_url=report_url, scope_url=scope_url, **kwargs)
     if view_type != ViewType.markdown and stage1.endswith('.md'):
         fragment = markdown(fragment, extensions=['extra'])
     if stage1 != stage2:
         fragment = templates_map[stage2].render(fragment=fragment, title=title)
     return Response(content=fragment, media_type=media_type)
+
+
+@app.get("/{view_type}/report/{report_uuid}")
+async def get_report_view(
+    request: Request,
+    account: Annotated[Optional[tuple[str, str]], Depends(auth)],
+    conn: Annotated[connection, Depends(get_conn)],
+    view_type: ViewType,
+    report_uuid: str,
+):
+    with conn.cursor() as cur:
+        specs = db_get_report(cur, report_uuid)
+    if not specs:
+        raise HTTPException(status_code=404)
+    spec = specs[0]
+    check_role(account, spec['subject'], ROLES['read_any'])
+    return render_view(VIEW_REPORT, view_type, report=spec, base_url=settings.base_url, title=f'Report {report_uuid}')
 
 
 @app.get("/{view_type}/detail/{subject}/{scopeuuid}")
@@ -618,7 +647,11 @@ async def get_table_full(
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, approved_only=False)
     results2 = convert_result_rows_to_dict2(rows2, get_scopes())
-    return render_view(VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, title="SCS compliance overview")
+    return render_view(
+        VIEW_TABLE, view_type, results=results2,
+        detail_page='detail_full', base_url=settings.base_url,
+        title="SCS compliance overview",
+    )
 
 
 @app.get("/{view_type}/scope/{scopeuuid}")
@@ -692,8 +725,13 @@ def pick_filter(results, subject, scope):
 def summary_filter(scope_results):
     """Jinja filter to construct summary from `scope_results`"""
     passed_str = scope_results.get('passed_str', '') or '–'
-    summary = scope_results.get('summary', 0)
-    color = {1: '✅'}.get(summary, '🛑')  # instead of 🟢🔴 (hard to distinguish for color-blind folks)
+    best_passed = scope_results.get('best_passed')
+    # avoid simple 🟢🔴 (hard to distinguish for color-blind folks)
+    color = {
+        'effective': '✅',
+        'warn': '✅',  # forgo differentiation here in favor of simplicity (will be apparent in version list)
+        'deprecated': '🟧',
+    }.get(best_passed, '🛑')
     return f'{color} {passed_str}'
 
 
