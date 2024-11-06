@@ -28,18 +28,24 @@ def connect(cloud_name: str) -> openstack.connection.Connection:
 
 
 def count_ingress_egress(rules, short=False):
-    # count all overall ingress rules and egress rules.
+    """
+    counts all verall ingress rules and egress rules, depending on the requested testing mode
+    :param object rules
+    :param bool short
+        if short is true, the testing mode is set on short for older os versions
+    :returns:
+      ingress_rules integer count
+      egress_rules integer count
+    """
     ingress_rules = 0
     egress_rules = 0
     if not short:
-        print("not short")
         ingress_from_same_sg = 0
         egress_ipv4_default_sg = 0
         egress_ipv4_custom_sg = 0
         egress_ipv6_default_sg = 0
         egress_ipv6_custom_sg = 0
     else:
-        print("short")
         egress_ipv4 = 0
         egress_ipv6 = 0
     if not rules:
@@ -83,42 +89,34 @@ def count_ingress_egress(rules, short=False):
                         egress_ipv6_default_sg += 1
                 else:
                     egress_ipv6 += 1
-    if not short:
-        assert ingress_rules == ingress_from_same_sg, (
-            f"Expected only ingress rules for default security groups, "
-            f"that allow ingress traffic from the same group. "
-            f"But there are more - in total {ingress_rules} ingress rules. "
-            f"There should be only {ingress_from_same_sg} ingress rules."
+    if not egress_rules > 0:
+        raise ValueError(
+            f"Expected to have more than {egress_rules} egress rules present."
         )
-        assert (
-            egress_rules > 0
-        ), f"Expected to have more than {egress_rules} egress rules present."
+    if not short:
+        if ingress_rules == ingress_from_same_sg:
+            ingress_rules -= 1
         var_list = [
             egress_ipv4_default_sg,
             egress_ipv4_custom_sg,
             egress_ipv6_default_sg,
             egress_ipv6_custom_sg,
         ]
-        assert all([var > 0 for var in var_list]), (
-            "Not all expected egress rules are present. "
-            "Expected rules for egress for IPv4 and IPv6 "
-            "both for default and custom security groups."
-        )
     else:
-        # test whether there are no ingress rules
-        assert ingress_rules == 0, (
-            f"Expected no default ingress rules for security groups, "
-            f"But there are {ingress_rules} ingress rules. "
-            f"There should be only none."
-        )
-        assert (
-            egress_rules > 0
-        ), f"Expected to have more than {egress_rules} egress rules present."
         var_list = [
             egress_ipv4,
             egress_ipv6,
         ]
-        assert all([var > 0 for var in var_list]), (
+    # test whether there are no unallowed ingress rules
+    if not ingress_rules == 0:
+        raise ValueError(
+            f"Expected no default ingress rules for security groups, "
+            f"But there are {ingress_rules} ingress rules. "
+            f"There should be only none."
+        )
+    # test whether all expected egress rules are present
+    if not all(var > 0 for var in var_list):
+        raise ValueError(
             "Not all expected egress rules are present. "
             "Expected rules for egress for IPv4 and IPv6 "
             "both for default and custom security groups."
@@ -137,20 +135,23 @@ def test_rules(cloud_name: str):
             f"The default Security Group Rules could not be accessed. "
             f"Please check your cloud connection and authorization."
         )
-
+    if not any(rule for rule in rules):
+        raise
     ingress_rules, egress_rules = count_ingress_egress(rules)
-    result_dict = {"Ingress Rules": ingress_rules, "Egress Rules": egress_rules}
+    result_dict = {
+        "Unallowed Ingress Rules": ingress_rules,
+        "Egress Rules": egress_rules,
+    }
     return result_dict
 
 
 def create_security_group(conn, sg_name: str = SG_NAME, description: str = DESCRIPTION):
     """Create security group in openstack
 
-    Args:
-        sec_group_name (str): Name of security group
-        description (str): Description of security group
+    :param sec_group_name (str): Name of security group
+    :param description (str): Description of security group
 
-    Returns:
+    :returns:
         ~openstack.network.v2.security_group.SecurityGroup: The new security group or None
     """
     sg = conn.network.create_security_group(name=sg_name, description=description)
@@ -187,7 +188,10 @@ def altern_test_rules(cloud_name: str):
     ingress_rules, egress_rules = count_ingress_egress(rules.security_group_rules, True)
     delete_security_group(connection, sg_id)
 
-    result_dict = {"Ingress Rules": ingress_rules, "Egress Rules": egress_rules}
+    result_dict = {
+        "Unallowed Ingress Rules": ingress_rules,
+        "Egress Rules": egress_rules,
+    }
     return result_dict
 
 
@@ -211,10 +215,11 @@ def main():
     cloud = os.environ.get("OS_CLOUD", None)
     if args.os_cloud:
         cloud = args.os_cloud
-    assert cloud, (
+    if not cloud:
+        raise ValueError(
         "You need to have the OS_CLOUD environment variable set to your cloud "
         "name or pass it via --os-cloud"
-    )
+        )
     try:
         print(test_rules(cloud))
     except ResourceNotFound as e:
