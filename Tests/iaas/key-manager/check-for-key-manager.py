@@ -77,23 +77,6 @@ def check_key_manager_permissions(conn: openstack.connection.Connection) -> None
     has sufficient access to the Key Manager API functionality.
     """
     secret_name = "scs-member-role-test-secret"
-    if not check_for_member_role(conn):
-        logger.warning("Cannot test key-manager permissions. " "User has wrong roles")
-        return None
-
-    def _find_secret(secret_name_or_id: str):
-        """Replacement method for finding secrets.
-
-        Mimicks the behavior of Connection.key_manager.find_secret()
-        but fixes an issue with the internal implementation raising an
-        exception due to an unexpected microversion parameter.
-        """
-        secrets = conn.key_manager.secrets()
-        for s in secrets:
-            if s.name == secret_name_or_id or s.id == secret_name_or_id:
-                return s
-        return None
-
     try:
         existing_secret = _find_secret(conn, secret_name)
         if existing_secret:
@@ -105,21 +88,25 @@ def check_key_manager_permissions(conn: openstack.connection.Connection) -> None
             secret_type="opaque",
             payload="foo",
         )
-
-        new_secret = _find_secret(secret_name)
-        assert new_secret, (
-            f"Secret created with name '{secret_name}' was not discoverable by "
-            f"the user"
+        try:
+            new_secret = _find_secret(conn, secret_name)
+            if not new_secret:
+                raise ValueError(f"Secret '{secret_name}' was not discoverable by the user")
+        finally:
+            conn.key_manager.delete_secret(new_secret)
+    except openstack.exceptions.ForbiddenException:
+        logger.debug('exception details', exc_info=True)
+        logger.error(
+            "Users with the 'member' role can use Key Manager API: FAIL"
         )
-        conn.key_manager.delete_secret(new_secret)
-    except openstack.exceptions.ForbiddenException as e:
-        print("Users of the 'member' role can use Key Manager API: FAIL")
-        print(f"ERROR: {str(e)}")
-        exit(1)
-    print("Users of the 'member' role can use Key Manager API: PASS")
+        return 1
+    logger.info(
+        "Users with the 'member' role can use Key Manager API: PASS"
+    )
 
 
 def main():
+    initialize_logging()
     parser = argparse.ArgumentParser(description="SCS Mandatory IaaS Service Checker")
     parser.add_argument(
         "--os-cloud",

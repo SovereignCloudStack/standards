@@ -128,7 +128,6 @@ class CountingHandler(logging.Handler):
         self.bylevel[record.levelno] += 1
 
 
-
 def main():
     parser = argparse.ArgumentParser(
         description="SCS Default Security Group Rules Checker",
