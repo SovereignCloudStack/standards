@@ -2,7 +2,7 @@
 title: Volume Backup Functionality
 type: Standard
 status: Stable
-stabilized_at: 2024-09-17
+stabilized_at: 2024-11-13
 track: IaaS
 ---
 
