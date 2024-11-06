@@ -46,7 +46,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  build-and-push-scs-compliance-check-image:
+  build-and-push-scs-kaas-compliance-tests-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
