@@ -23,7 +23,8 @@ def init_plugin(plugin_kind, config=None):
 
 def run_plugin_create(plugin_kind, plugin_config, clusterspec_cluster, clusterspec):
     plugin = init_plugin(plugin_kind, plugin_config)
-    plugin.create_cluster(clusterspec_cluster, clusterspec[clusterspec_cluster]['branch'], os.path.abspath(clusterspec[clusterspec_cluster]['kubeconfig']))
+    clusterinfo = clusterspec[clusterspec_cluster]
+    plugin.create_cluster(clusterspec_cluster, clusterinfo['branch'], os.path.abspath(clusterinfo['kubeconfig']))
 
 
 def run_plugin_delete(plugin_kind, plugin_config, clusterspec_cluster, clusterspec):
