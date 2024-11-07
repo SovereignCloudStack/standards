@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 import logging
 import os.path
+
 import click
 import yaml
 
-
 from plugin_kind import PluginKind
 from plugin_static import PluginStatic
-
 
 PLUGIN_LOOKUP = {
     "kind": PluginKind,
