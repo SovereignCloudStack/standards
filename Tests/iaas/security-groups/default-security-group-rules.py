@@ -90,7 +90,7 @@ def delete_security_group(conn, sg_id):
         conn.network.find_security_group(name_or_id=sg_id)
     except ResourceNotFound:
         logger.debug(f"Security group {sg_id} was deleted successfully.")
-    except Exception as e:
+    except Exception:
         logger.critical(f"Security group {sg_id} was not deleted successfully")
         raise
 
@@ -107,12 +107,12 @@ def altern_test_rules(connection: openstack.connection.Connection):
 def test_rules(connection: openstack.connection.Connection):
     try:
         rules = list(connection.network.default_security_group_rules())
-    except ResourceNotFound as e:
+    except ResourceNotFound:
         logger.info(
             "API call failed. OpenStack components might not be up to date. "
             "Falling back to old-style test method. "
         )
-        logger.debug(f"traceback", exc_info=True)
+        logger.debug("traceback", exc_info=True)
         altern_test_rules(connection)
     else:
         check_default_rules(rules)
@@ -129,7 +129,7 @@ class CountingHandler(logging.Handler):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="SCS Default Security Group Rules Checker"
+        description="SCS Default Security Group Rules Checker",
     )
     parser.add_argument(
         "--os-cloud",
@@ -138,7 +138,7 @@ def main():
         "to the OS_CLOUD environment variable",
     )
     parser.add_argument(
-        "--debug", action="store_true", help="Enable OpenStack SDK debug logging"
+        "--debug", action="store_true", help="Enable debug logging",
     )
     args = parser.parse_args()
     openstack.enable_logging(debug=args.debug)
