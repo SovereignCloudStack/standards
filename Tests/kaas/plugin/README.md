@@ -65,17 +65,9 @@ To set the `GIT_ACCESS_TOKEN`, run the following command in your terminal:
 export GIT_ACCESS_TOKEN=<your-github-token>
 ```
 
-### Configuring clusterspec.yaml file
+### Configuring config file for cluster-stacks plugin
 
-The `clusterspec.yaml` file is used to set parameters for creating a Kubernetes cluster with the `cluster-stacks` plugin. This file allows you to specify details related to the cluster-stack, Git integration, and cluster configurations.
-
-### Mandatory Parameter
-
-The only mandatory parameter in `clusterspec.yaml` is `clouds_yaml_path` field, which points to the `clouds.yaml` file for OpenStack. If other parameters are omitted, the default values will be used.
-
-### Optional Parameters
-
-You can include additional parameters in `clusterspec.yaml` to customize the cluster setup. These optional parameters are grouped below by their category.
+The config file is used to set parameters for creating a Kubernetes cluster with the `cluster-stacks` plugin. This file allows you to specify details related to the cluster-stack, Git integration, and cluster configurations. These optional parameters are grouped below by their category.
 
 #### Cluster-Stack Related Parameters
 
@@ -83,7 +75,6 @@ These parameters configure specific settings for the cluster-stack:
 
 ```yaml
 cs_name: <cs_name>                  # Default: "scs"
-cs_k8s_version: <cs_k8s_version>    # Default: "1.29"
 cs_version: <cs_version>            # Default: "v1"
 cs_channel: <cs_channel>            # Default: "stable"
 cs_cloudname: <cs_cloudname>        # Default: "openstack"
@@ -104,7 +95,6 @@ git_repo_name: <git_repo_name>    # Default: "cluster-stacks"
 Set these parameters to customize the configuration for your cluster.
 
 ```yaml
-cs_cluster_name: <cs_cluster_name>              # Default: "cs-cluster"
 cs_pod_cidr: <cs_pod_cidr>                      # Default: "192.168.0.0/16"
 cs_service_cidr: <cs_service_cidr>              # Default: "10.96.0.0/12"
 cs_external_id: <cs_external_id>                # Default: A generated UUID

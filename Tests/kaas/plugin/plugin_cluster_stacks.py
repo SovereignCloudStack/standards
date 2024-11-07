@@ -1,4 +1,6 @@
 import os
+import yaml
+import shutil
 import subprocess
 import base64
 import time
@@ -45,20 +47,20 @@ def wait_for_capi_pods_ready(timeout=240, interval=15):
                         # Check pod phase and all containers readiness
                         if phase != "Running" or "false" in readiness_states:
                             all_pods_ready = False
-                            print(f"Pod {pod_name} in {namespace} is not ready. Phase: {phase}, Ready: {readiness_states}")
+                            logger.info(f"Pod {pod_name} in {namespace} is not ready. Phase: {phase}, Ready: {readiness_states}")
                 else:
-                    print(f"Error fetching pods in {namespace}: {result.stderr}")
+                    logger.info(f"Error fetching pods in {namespace}: {result.stderr}")
                     all_pods_ready = False
 
             except subprocess.CalledProcessError as error:
-                print(f"Error checking pods in {namespace}: {error}")
+                logger.error(f"Error checking pods in {namespace}: {error}")
                 all_pods_ready = False
 
         if all_pods_ready:
-            print("All CAPI system pods are ready.")
+            logger.info("All CAPI system pods are ready.")
             return True
 
-        print("Waiting for all CAPI pods to become ready...")
+        logger.info("Waiting for all CAPI pods to become ready...")
         time.sleep(interval)
 
     raise TimeoutError(f"Timed out after {timeout} seconds waiting for CAPI and CAPO system pods to become ready.")
@@ -93,31 +95,31 @@ def wait_for_cso_pods_ready(timeout=240, interval=15):
                     # Check pod phase and all containers readiness
                     if phase != "Running" or "false" in readiness_states:
                         all_pods_ready = False
-                        print(f"Pod {pod_name} in {cso_namespace} is not ready. Phase: {phase}, Ready: {readiness_states}")
+                        logger.info(f"Pod {pod_name} in {cso_namespace} is not ready. Phase: {phase}, Ready: {readiness_states}")
             else:
-                print(f"Error fetching pods in {cso_namespace}: {result.stderr}")
+                logger.error(f"Error fetching pods in {cso_namespace}: {result.stderr}")
                 all_pods_ready = False
 
         except subprocess.CalledProcessError as error:
-            print(f"Error checking pods in {cso_namespace}: {error}")
+            logger.error(f"Error checking pods in {cso_namespace}: {error}")
             all_pods_ready = False
 
         if all_pods_ready:
-            print("All CSO pods in 'cso-system' namespace are ready.")
+            logger.info("All CSO pods in 'cso-system' namespace are ready.")
             return True
 
-        print("Waiting for CSO pods in 'cso-system' namespace to become ready...")
+        logger.info("Waiting for CSO pods in 'cso-system' namespace to become ready...")
         time.sleep(interval)
 
     raise TimeoutError(f"Timed out after {timeout} seconds waiting for CSO pods in 'cso-system' namespace to become ready.")
 
 
-def wait_for_workload_pods_ready(namespace="kube-system", timeout=420, kubeconfig_path=None):
+def wait_for_workload_pods_ready(namespace="kube-system", timeout=600, kubeconfig_path=None):
     """
     Waits for all pods in a specific namespace on a workload Kubernetes cluster to become ready.
 
     :param namespace: The Kubernetes namespace where pods are located (default is "kube-system").
-    :param timeout: The timeout in seconds to wait for pods to become ready (default is 420).
+    :param timeout: The timeout in seconds to wait for pods to become ready (default is 600).
     :param kubeconfig_path: Path to the kubeconfig file for the target Kubernetes cluster.
     :raises RuntimeError: If pods are not ready within the specified timeout.
     """
@@ -129,87 +131,111 @@ def wait_for_workload_pods_ready(namespace="kube-system", timeout=420, kubeconfi
 
         # Run the command
         subprocess.run(wait_pods_command, shell=True, check=True)
-        print(f"All pods in namespace '{namespace}' in the workload Kubernetes cluster are ready.")
+        logger.info("All pods in namespace '{namespace}' in the workload Kubernetes cluster are ready.")
 
     except subprocess.CalledProcessError as error:
         raise RuntimeError(f"Error waiting for pods in namespace '{namespace}' to become ready: {error}")
 
 
+def load_config(config_path):
+    """
+    Loads the configuration from a YAML file.
+    """
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Configuration file {config_path} not found.")
+
+    with open(config_path, 'r') as file:
+        config = yaml.safe_load(file) or {}
+        return config
+
+
+def setup_environment_variables(self):
+    # Cluster Stack Parameters
+    self.clouds_yaml_path = self.config.get('clouds_yaml_path', '~/.config/openstack/clouds.yaml')
+    self.cs_k8s_version = self.cluster_version
+    self.cs_name = self.config.get('cs_name', 'scs')
+    self.cs_version = self.config.get('cs_version', 'v1')
+    self.cs_channel = self.config.get('cs_channel', 'stable')
+    self.cs_cloudname = self.config.get('cs_cloudname', 'openstack')
+    self.cs_secretname = self.cs_cloudname
+
+    # CSP-related variables and additional cluster configuration
+    self.kubeconfig_cs_cluster_filename = f"kubeconfig-{self.cluster_name}.yaml"
+    self.cs_class_name = f"openstack-{self.cs_name}-{str(self.cs_k8s_version).replace('.', '-')}-{self.cs_version}"
+    self.cs_namespace = self.config.get("cs_namespace", "default")
+    self.cs_pod_cidr = self.config.get('cs_pod_cidr', '192.168.0.0/16')
+    self.cs_service_cidr = self.config.get('cs_service_cidr', '10.96.0.0/12')
+    self.cs_external_id = self.config.get('cs_external_id', 'ebfe5546-f09f-4f42-ab54-094e457d42ec')
+    self.cs_k8s_patch_version = self.config.get('cs_k8s_patch_version', '6')
+
+    if not self.clouds_yaml_path:
+        raise ValueError("CLOUDS_YAML_PATH environment variable not set.")
+
+    required_env = {
+        'CLUSTER_TOPOLOGY': 'true',
+        'EXP_CLUSTER_RESOURCE_SET': 'true',
+        'EXP_RUNTIME_SDK': 'true',
+        'CS_NAME': self.cs_name,
+        'CS_K8S_VERSION': self.cs_k8s_version,
+        'CS_VERSION': self.cs_version,
+        'CS_CHANNEL': self.cs_channel,
+        'CS_CLOUDNAME': self.cs_cloudname,
+        'CS_SECRETNAME': self.cs_secretname,
+        'CS_CLASS_NAME': self.cs_class_name,
+        'CS_NAMESPACE': self.cs_namespace,
+        'CS_POD_CIDR': self.cs_pod_cidr,
+        'CS_SERVICE_CIDR': self.cs_service_cidr,
+        'CS_EXTERNAL_ID': self.cs_external_id,
+        'CS_K8S_PATCH_VERSION': self.cs_k8s_patch_version,
+        'CS_CLUSTER_NAME': self.cluster_name,
+    }
+    # Update the environment variables
+    os.environ.update({key: str(value) for key, value in required_env.items()})
+
+
+def setup_git_env(self):
+    # Setup Git environment variables
+    git_provider = self.config.get('git_provider', 'github')
+    git_org_name = self.config.get('git_org_name', 'SovereignCloudStack')
+    git_repo_name = self.config.get('git_repo_name', 'cluster-stacks')
+
+    os.environ.update({
+        'GIT_PROVIDER_B64': base64.b64encode(git_provider.encode()).decode('utf-8'),
+        'GIT_ORG_NAME_B64': base64.b64encode(git_org_name.encode()).decode('utf-8'),
+        'GIT_REPOSITORY_NAME_B64': base64.b64encode(git_repo_name.encode()).decode('utf-8')
+    })
+
+    git_access_token = os.getenv('GIT_ACCESS_TOKEN')
+    if git_access_token:
+        os.environ['GIT_ACCESS_TOKEN_B64'] = base64.b64encode(git_access_token.encode()).decode('utf-8')
+    else:
+        raise ValueError("GIT_ACCESS_TOKEN environment variable not set.")
+
+
 class PluginClusterStacks(KubernetesClusterPlugin):
-    def __init__(self, config=None):
-        super().__init__(config)
-        self.cluster_info = config if config else {}
-        self._setup_environment_variables()
-        self._setup_git_env()
+    def __init__(self, config_file=None):
+        self.config = load_config(config_file) if config_file else {}
+        logger.debug(self.config)
+        self.working_directory = os.getcwd()
+        logger.debug(f"Working from {self.working_directory}")
 
-    def _setup_environment_variables(self):
-        # Cluster Stack Parameters
-        self.clouds_yaml_path = self.cluster_info.get('clouds_yaml_path')
-        self.cs_k8s_version = self.cluster_info.get('cs_k8s_version', '1.29')
-        self.cs_name = self.cluster_info.get('cs_name', 'scs')
-        self.cs_version = self.cluster_info.get('cs_version', 'v1')
-        self.cs_channel = self.cluster_info.get('cs_channel', 'stable')
-        self.cs_cloudname = self.cluster_info.get('cs_cloudname', 'openstack')
-        self.cs_secretname = self.cs_cloudname
+    def create_cluster(self, cluster_name="scs-cluster", version=None, kubeconfig_filepath=None):
+        self.cluster_name = cluster_name
+        self.cluster_version = version
 
-        # CSP-related variables and additional cluster configuration
-        self.cs_cluster_name = self.cluster_info.get('cs_cluster_name', 'cs-cluster')
-        self.kubeconfig_cs_cluster_filename = f"kubeconfig-{self.cs_cluster_name}"
-        self.cs_class_name = f"openstack-{self.cs_name}-{str(self.cs_k8s_version).replace('.', '-')}-{self.cs_version}"
-        self.cs_namespace = os.getenv("CS_NAMESPACE", "default")
-        self.cs_pod_cidr = self.cluster_info.get('cs_pod_cidr', '192.168.0.0/16')
-        self.cs_service_cidr = self.cluster_info.get('cs_service_cidr', '10.96.0.0/12')
-        self.cs_external_id = self.cluster_info.get('cs_external_id', 'ebfe5546-f09f-4f42-ab54-094e457d42ec')
-        self.cs_k8s_patch_version = self.cluster_info.get('cs_k8s_patch_version', '6')
+        # Setup variables
+        setup_environment_variables(self)
+        setup_git_env(self)
 
-        if not self.clouds_yaml_path:
-            raise ValueError("CLOUDS_YAML_PATH environment variable not set.")
-
-        required_env = {
-            'CLUSTER_TOPOLOGY': 'true',
-            'EXP_CLUSTER_RESOURCE_SET': 'true',
-            'EXP_RUNTIME_SDK': 'true',
-            'CS_NAME': self.cs_name,
-            'CS_K8S_VERSION': self.cs_k8s_version,
-            'CS_VERSION': self.cs_version,
-            'CS_CHANNEL': self.cs_channel,
-            'CS_CLOUDNAME': self.cs_cloudname,
-            'CS_SECRETNAME': self.cs_secretname,
-            'CS_CLASS_NAME': self.cs_class_name,
-            'CS_NAMESPACE': self.cs_namespace,
-            'CS_POD_CIDR': self.cs_pod_cidr,
-            'CS_SERVICE_CIDR': self.cs_service_cidr,
-            'CS_EXTERNAL_ID': self.cs_external_id,
-            'CS_K8S_PATCH_VERSION': self.cs_k8s_patch_version,
-            'CS_CLUSTER_NAME': self.cs_cluster_name,
-        }
-        # Update the environment variables
-        os.environ.update({key: str(value) for key, value in required_env.items()})
-
-    def _setup_git_env(self):
-        # Setup Git environment variables
-        git_provider = self.cluster_info.get('git_provider', 'github')
-        git_org_name = self.cluster_info.get('git_org_name', 'SovereignCloudStack')
-        git_repo_name = self.cluster_info.get('git_repo_name', 'cluster-stacks')
-
-        os.environ.update({
-            'GIT_PROVIDER_B64': base64.b64encode(git_provider.encode()).decode('utf-8'),
-            'GIT_ORG_NAME_B64': base64.b64encode(git_org_name.encode()).decode('utf-8'),
-            'GIT_REPOSITORY_NAME_B64': base64.b64encode(git_repo_name.encode()).decode('utf-8')
-        })
-
-        git_access_token = os.getenv('GIT_ACCESS_TOKEN')
-        if git_access_token:
-            os.environ['GIT_ACCESS_TOKEN_B64'] = base64.b64encode(git_access_token.encode()).decode('utf-8')
-        else:
-            raise ValueError("GIT_ACCESS_TOKEN environment variable not set.")
-
-    def _create_cluster(self):
         # Create the Kind cluster
-        self.cluster = KindCluster(self.cluster_name)
+        self.cluster = KindCluster(name=cluster_name)
         self.cluster.create()
         self.kubeconfig = str(self.cluster.kubeconfig_path.resolve())
-        os.environ['KUBECONFIG'] = self.kubeconfig
+        if kubeconfig_filepath:
+            shutil.move(self.kubeconfig, kubeconfig_filepath)
+        else:
+            kubeconfig_filepath = str(self.kubeconfig)
+        os.environ['KUBECONFIG'] = kubeconfig_filepath
 
         # Initialize clusterctl with OpenStack as the infrastructure provider
         self._run_subprocess(["clusterctl", "init", "--infrastructure", "openstack"], "Error during clusterctl init")
@@ -241,34 +267,36 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         self._retrieve_kubeconfig()
 
         # Wait for workload system pods to be ready
+        print(self.kubeconfig_cs_cluster_filename)
         wait_for_workload_pods_ready(kubeconfig_path=self.kubeconfig_cs_cluster_filename)
 
-    def _delete_cluster(self):
+    def delete_cluster(self, cluster_name=None, kubeconfig_filepath=None):
+        kubeconfig_cs_cluster_filename = f"kubeconfig-{cluster_name}.yaml"
         try:
             # Check if the cluster exists
-            check_cluster_command = f"kubectl get cluster {self.cs_cluster_name} --kubeconfig {self.cluster_info.get('kubeconfig')}"
+            check_cluster_command = f"kubectl get cluster {cluster_name} --kubeconfig {kubeconfig_filepath}"
             result = subprocess.run(check_cluster_command, shell=True, check=True, capture_output=True, text=True)
 
             # Proceed with deletion only if the cluster exists
             if result.returncode == 0:
-                delete_command = f"kubectl delete cluster {self.cs_cluster_name} --timeout=600s --kubeconfig {self.cluster_info.get('kubeconfig')}"
+                delete_command = f"kubectl delete cluster {cluster_name} --timeout=600s --kubeconfig {kubeconfig_filepath}"
                 self._run_subprocess(delete_command, "Timeout while deleting the cluster", shell=True)
 
         except subprocess.CalledProcessError as error:
             if "NotFound" in error.stderr:
-                logger.info(f"Cluster {self.cs_cluster_name} not found. Skipping deletion.")
+                logger.info(f"Cluster {cluster_name} not found. Skipping deletion.")
             else:
                 raise RuntimeError(f"Error checking for cluster existence: {error}")
 
         # Delete kind cluster
-        self.cluster = KindCluster(self.cluster_name)
+        self.cluster = KindCluster(cluster_name)
         self.cluster.delete()
 
         # Remove kubeconfigs
-        if os.path.exists(self.kubeconfig_cs_cluster_filename):
-            os.remove(self.kubeconfig_cs_cluster_filename)
-        if os.path.exists(self.cluster_info.get('kubeconfig')):
-            os.remove(self.cluster_info.get('kubeconfig'))
+        if os.path.exists(kubeconfig_cs_cluster_filename):
+            os.remove(kubeconfig_cs_cluster_filename)
+        if os.path.exists(kubeconfig_filepath):
+            os.remove(kubeconfig_filepath)
 
     def _apply_yaml_with_envsubst(self, yaml_file, error_msg):
         try:
@@ -320,7 +348,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
 
     def _retrieve_kubeconfig(self):
         kubeconfig_command = (
-            f"clusterctl get kubeconfig {self.cs_cluster_name} > {self.kubeconfig_cs_cluster_filename}"
+            f"clusterctl get kubeconfig {self.cluster_name} > {self.kubeconfig_cs_cluster_filename}"
         )
         self._run_subprocess(kubeconfig_command, "Error retrieving kubeconfig", shell=True)
 

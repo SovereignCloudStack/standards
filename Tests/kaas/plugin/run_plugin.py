@@ -52,7 +52,7 @@ def create(plugin_kind, plugin_config, clusterspec_path, cluster_id):
 @click.argument('cluster_id', type=str, default="default")
 def delete(plugin_kind, plugin_config, clusterspec_path, cluster_id):
     plugin = init_plugin(plugin_kind, plugin_config)
-    plugin.delete_cluster(cluster_id)
+    plugin.delete_cluster(cluster_id, os.path.abspath(clusterinfo['kubeconfig']))
 
 
 if __name__ == '__main__':

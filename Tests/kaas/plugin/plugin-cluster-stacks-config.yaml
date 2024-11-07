@@ -1,0 +1,19 @@
+# This is an example of the config for a cluster-stacks plugin filled with a default values
+
+clouds_yaml_path: "~/.config/openstack/clouds.yaml"  # Path to OpenStack clouds.yaml file
+cs_name: "scs"  # Cluster Stack Name
+cs_version: "v1"  # Cluster Stack Version
+cs_channel: "stable"  # Release channel
+cs_cloudname: "openstack"  # Cloud name from OpenStack clouds.yaml
+cs_namespace: "default"  # Namespace for the Cluster Stack deployment
+
+# Git Configuration
+git_provider: "github"  # Git provider (e.g., GitHub, GitLab)
+git_org_name: "SovereignCloudStack"  # Organization name on Git provider
+git_repo_name: "cluster-stacks"  # Repository name on Git provider
+
+# Cluster Information
+cs_pod_cidr: "192.168.0.0/16"  # Pod CIDR for networking
+cs_service_cidr: "10.96.0.0/12"  # Service CIDR for networking
+cs_external_id: "ebfe5546-f09f-4f42-ab54-094e457d42ec"  # External ID for the Cluster Stack
+cs_k8s_patch_version: "6"  # Kubernetes patch version to use
