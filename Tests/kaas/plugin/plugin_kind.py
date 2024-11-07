@@ -15,7 +15,7 @@ class PluginKind(KubernetesClusterPlugin):
     conformance testing purpose with the use of Kind
     """
     def __init__(self, config_file=None):
-        logger.info(f"Init PluginKind")
+        logger.info("Init PluginKind")
         self.config = config_file
         logger.debug(self.config)
         self.working_directory = os.getcwd()
