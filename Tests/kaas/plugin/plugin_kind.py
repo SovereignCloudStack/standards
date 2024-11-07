@@ -1,6 +1,6 @@
-import shutil
 import os
 import os.path
+from pathlib import Path
 from interface import KubernetesClusterPlugin
 from pytest_kind import KindCluster
 import logging
@@ -19,7 +19,7 @@ class PluginKind(KubernetesClusterPlugin):
         self.working_directory = os.getcwd()
         logger.debug(f"Working from {self.working_directory}")
 
-    def create_cluster(self, cluster_name="scs-cluster", version=None, kubeconfig_filepath=None):
+    def create_cluster(self, cluster_name="scs-cluster", version=None, kubeconfig=None):
         """
         This method is to be called to create a k8s cluster
         :param: kubernetes_version:
@@ -33,17 +33,16 @@ class PluginKind(KubernetesClusterPlugin):
         elif cluster_version == '1.31' or cluster_version == 'default':
             cluster_version = 'v1.31.1'
         cluster_image = f"kindest/node:{cluster_version}"
-        self.cluster = KindCluster(name=cluster_name, image=cluster_image)
+        kubeconfig_filepath = Path(kubeconfig)
+        if kubeconfig_filepath is None:
+            raise ValueError("kubeconfig_filepath is missing")
+        else:
+            self.cluster = KindCluster(name=cluster_name, image=cluster_image, kubeconfig=kubeconfig_filepath)
         if self.config is None:
             self.cluster.create()
         else:
             self.cluster.create(self.config)
-        self.kubeconfig = str(self.cluster.kubeconfig_path.resolve())
-        if kubeconfig_filepath:
-            shutil.move(self.kubeconfig, kubeconfig_filepath)
-        else:
-            kubeconfig_filepath = str(self.kubeconfig)
-        return kubeconfig_filepath
+        return str(self.cluster.kubeconfig_path.resolve())
 
     def delete_cluster(self, cluster_name=None):
         self.cluster = KindCluster(cluster_name)
