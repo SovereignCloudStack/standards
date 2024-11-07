@@ -2,7 +2,7 @@
 title: Domain Manager configuration for Keystone
 type: Standard
 status: Stable
-stabilized_at: 2024-11-07
+stabilized_at: 2024-11-13
 track: IAM
 ---
 
