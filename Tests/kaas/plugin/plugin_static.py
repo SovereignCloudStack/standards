@@ -1,3 +1,5 @@
+import shutil
+
 from interface import KubernetesClusterPlugin
 
 
@@ -7,8 +9,11 @@ class PluginStatic(KubernetesClusterPlugin):
     using a kubeconfig file
     """
 
-    def create_cluster(self):
-        self.kubeconfig = self.kubeconfig
+    def __init__(self, config_file=None):
+        self.kubeconfig_path = config_file
 
-    def delete_cluster(self):
+    def create_cluster(self, cluster_name="scs-cluster", version=None, kubeconfig=None):
+        shutil.copyfile(self.kubeconfig_path, kubeconfig)
+
+    def delete_cluster(self, cluster_name=None, version=None):
         pass
