@@ -4,36 +4,36 @@ This script tests the absence of any ingress default security group rule
 except for ingress rules from the same Security Group. Furthermore the
 presence of default rules for egress traffic is checked.
 """
-
 import argparse
+from collections import Counter
+import logging
 import os
+import sys
 
 import openstack
 from openstack.exceptions import ResourceNotFound
 
-SG_NAME = "default-test-sg"
-DESCRIPTION = "default-test-sg"
+logger = logging.getLogger(__name__)
+
+SG_NAME = "scs-test-default-sg"
+DESCRIPTION = "scs-test-default-sg"
 
 
-def count_ingress_egress(rules, short=False):
+def check_default_rules(rules, short=False):
     """
     counts all verall ingress rules and egress rules, depending on the requested testing mode
-    :param object rules
+
     :param bool short
-        if short is true, the testing mode is set on short for older os versions
-    :returns:
-      ingress_rules integer count
-      egress_rules integer count
+        if short is True, the testing mode is set on short for older OpenStack versions
     """
-    ingress_rules = 0
-    egress_rules = 0
+    ingress_rules = egress_rules = 0
     egress_vars = {'IPv4': {}, 'IPv6': {}}
     for key, value in egress_vars.items():
         value['default'] = 0
         if not short:
             value['custom'] = 0
     if not rules:
-        print("No default security group rules defined.")
+        logger.info("No default security group rules defined.")
     for rule in rules:
         direction = rule["direction"]
         ethertype = rule["ethertype"]
@@ -41,8 +41,7 @@ def count_ingress_egress(rules, short=False):
             if not short:
                 # we allow ingress from the same security group
                 # but only for the default security group
-                r_group_id = rule.remote_group_id
-                if r_group_id == "PARENT" and not rule["used_in_non_default_sg"]:
+                if rule.remote_group_id == "PARENT" and not rule["used_in_non_default_sg"]:
                     continue
             ingress_rules += 1
         elif direction == "egress" and ethertype in egress_vars:
@@ -60,34 +59,22 @@ def count_ingress_egress(rules, short=False):
                 egress_vars[ethertype]['custom'] += 1
     # test whether there are no unallowed ingress rules
     if ingress_rules:
-        raise ValueError(
-            f"Expected no default ingress rules for security groups, "
-            f"But there are {ingress_rules} ingress rules. "
-        )
+        logger.error(f"Expected no default ingress rules, found {ingress_rules}.")
     # test whether all expected egress rules are present
     missing = [(key, key2) for key, val in egress_vars.items() for key2, val2 in val.items() if not val2]
     if missing:
-        raise ValueError(
-            "Expected rules for egress for IPv4 and IPv6 "
-            "both for default and custom security groups. "
+        logger.error(
+            "Expected rules for egress for IPv4 and IPv6 both for default and custom security groups. "
             f"Missing rule types: {', '.join(str(x) for x in missing)}"
         )
-    return {
+    logger.info(str({
         "Unallowed Ingress Rules": ingress_rules,
         "Egress Rules": egress_rules,
-    }
-
-
-def test_rules(connection: openstack.connection.Connection):
-    rules = connection.network.default_security_group_rules()
-    return count_ingress_egress(rules)
+    }))
 
 
 def create_security_group(conn, sg_name: str = SG_NAME, description: str = DESCRIPTION):
     """Create security group in openstack
-
-    :param sec_group_name (str): Name of security group
-    :param description (str): Description of security group
 
     :returns:
         ~openstack.network.v2.security_group.SecurityGroup: The new security group or None
@@ -102,18 +89,42 @@ def delete_security_group(conn, sg_id):
     try:
         conn.network.find_security_group(name_or_id=sg_id)
     except ResourceNotFound:
-        print(f"Security group {sg_id} was deleted successfully.")
+        logger.debug(f"Security group {sg_id} was deleted successfully.")
     except Exception as e:
-        print(f"Security group {sg_id} was not deleted successfully" f"Exception: {e}")
+        logger.critical(f"Security group {sg_id} was not deleted successfully")
+        raise
 
 
 def altern_test_rules(connection: openstack.connection.Connection):
     sg_id = create_security_group(connection)
     try:
         sg = connection.network.find_security_group(name_or_id=sg_id)
-        return count_ingress_egress(sg.security_group_rules, True)
+        check_default_rules(sg.security_group_rules, short=True)
     finally:
         delete_security_group(connection, sg_id)
+
+
+def test_rules(connection: openstack.connection.Connection):
+    try:
+        rules = list(connection.network.default_security_group_rules())
+    except ResourceNotFound as e:
+        logger.info(
+            "API call failed. OpenStack components might not be up to date. "
+            "Falling back to old-style test method. "
+        )
+        logger.debug(f"traceback", exc_info=True)
+        altern_test_rules(connection)
+    else:
+        check_default_rules(rules)
+
+
+class CountingHandler(logging.Handler):
+    def __init__(self, level=logging.NOTSET):
+        super().__init__(level=level)
+        self.bylevel = Counter()
+
+    def handle(self, record):
+        self.bylevel[record.levelno] += 1
 
 
 def main():
@@ -131,6 +142,14 @@ def main():
     )
     args = parser.parse_args()
     openstack.enable_logging(debug=args.debug)
+    logging.basicConfig(
+        format="%(levelname)s: %(message)s",
+        level=logging.DEBUG if args.debug else logging.INFO,
+    )
+
+    # count the number of log records per level (used for summary and return code)
+    counting_handler = CountingHandler(level=logging.INFO)
+    logger.addHandler(counting_handler)
 
     # parse cloud name for lookup in clouds.yaml
     cloud = args.os_cloud or os.environ.get("OS_CLOUD", None)
@@ -141,19 +160,21 @@ def main():
         )
 
     with openstack.connect(cloud) as conn:
-        try:
-            print(test_rules(conn))
-        except ResourceNotFound as e:
-            print(
-                "Resource could not be found. OpenStack components might not be up to date. "
-                "Falling back to old-style test method. "
-                f"Error: {e}"
-            )
-            print(altern_test_rules(conn))
-        except Exception as e:
-            print(f"Error occured: {e}")
-            raise
+        test_rules(conn)
+
+    c = counting_handler.bylevel
+    logger.debug(f"Total critical / error / warning: {c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.WARNING]}")
+    if not c[logging.CRITICAL]:
+        print("security-groups-default-rules-check: " + ('PASS', 'FAIL')[min(1, c[logging.ERROR])])
+    return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        sys.exit(main())
+    except SystemExit:
+        raise
+    except BaseException as exc:
+        logging.debug("traceback", exc_info=True)
+        logging.critical(str(exc))
+        sys.exit(1)
