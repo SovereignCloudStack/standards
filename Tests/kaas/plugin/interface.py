@@ -8,6 +8,9 @@ class KubernetesClusterPlugin():
 
     To implement fill the methods `create_cluster` and `delete_cluster` with
     api provider-specific functionalities for creating and deleting clusters.
+    The `create_cluster` method must ensure that the kubeconfigfile is provided
+    at the position in the file system defined by the parameter
+    `kubeconfig_filepath`
 
     - Implement `create_cluster` and `delete_cluster` methods
     - Create `__init__(self, config_file=None)` method to handle api specific
@@ -24,31 +27,29 @@ class KubernetesClusterPlugin():
               def __init__(self, config_file=None):
                   self.config = config_file
 
-              def create_cluster(self):
-                  self.cluster = ClusterAPI(name=cluster_name, image=cluster_image)
+              def create_cluster(self, cluster_name="scs-cluster", version=None, kubeconfig_filepath=None):
+                  self.cluster = ClusterAPI(name=cluster_name, image=cluster_image, kubeconfig_filepath)
                   self.cluster.create(self.config)
-                  kubeconfig_filepath = str(self.cluster.kubeconfig_path.resolve())
-                  return self.kubeconfig_filepath
 
-              def delete_cluster(self):
+              def delete_cluster(self, cluster_name=None, version=None):
                   self.cluster = ClusterAPI(cluster_name)
                   self.cluster.delete()
         ..
     """
 
-    def create_cluster(self, cluster_name="scs-cluster", version=None, kubeconfig_filepath=None) -> (str):
+    def create_cluster(self, cluster_name="scs-cluster", version=None, kubeconfig_filepath=None):
         """
         This method is to be called to create a k8s cluster
         :param: cluster_name:
         :param: version:
         :param: kubeconfig_filepath:
-        :return: kubeconfig_filepath
         """
         raise NotImplementedError
 
-    def delete_cluster(self, cluster_name=None):
+    def delete_cluster(self, cluster_name=None, version=None):
         """
         This method is to be called in order to unprovision a cluster
         :param: cluster_name:
+        :param: version:
         """
         raise NotImplementedError

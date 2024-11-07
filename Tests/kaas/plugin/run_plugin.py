@@ -21,17 +21,6 @@ def init_plugin(plugin_kind, config=None):
     return plugin_maker(config)
 
 
-def run_plugin_create(plugin_kind, plugin_config, clusterspec_cluster, clusterspec):
-    plugin = init_plugin(plugin_kind, plugin_config)
-    clusterinfo = clusterspec[clusterspec_cluster]
-    plugin.create_cluster(clusterspec_cluster, clusterinfo['branch'], os.path.abspath(clusterinfo['kubeconfig']))
-
-
-def run_plugin_delete(plugin_kind, plugin_config, clusterspec_cluster, clusterspec):
-    plugin = init_plugin(plugin_kind, plugin_config)
-    plugin.delete_cluster(clusterspec_cluster)
-
-
 def load_spec(clusterspec_path):
     with open(clusterspec_path, "rb") as fileobj:
         return yaml.load(fileobj, Loader=yaml.SafeLoader)
@@ -49,7 +38,10 @@ def cli():
 @click.argument('clusterspec_cluster', type=str, default="default")
 def create(plugin_kind, plugin_config, clusterspec_path, clusterspec_cluster):
     clusterspec = load_spec(clusterspec_path)['clusters']
-    run_plugin_create(plugin_kind, plugin_config, clusterspec_cluster, clusterspec)
+    plugin = init_plugin(plugin_kind, plugin_config)
+    clusterinfo = clusterspec[clusterspec_cluster]
+    cluster_id = clusterspec_cluster
+    plugin.create_cluster(cluster_id, clusterinfo['branch'], os.path.abspath(clusterinfo['kubeconfig']))
 
 
 @cli.command()
@@ -59,7 +51,10 @@ def create(plugin_kind, plugin_config, clusterspec_path, clusterspec_cluster):
 @click.argument('clusterspec_cluster', type=str, default="default")
 def delete(plugin_kind, plugin_config, clusterspec_path, clusterspec_cluster):
     clusterspec = load_spec(clusterspec_path)['clusters']
-    run_plugin_delete(plugin_kind, plugin_config, clusterspec_cluster, clusterspec)
+    clusterinfo = clusterspec[clusterspec_cluster]
+    cluster_id = clusterspec_cluster
+    plugin = init_plugin(plugin_kind, plugin_config)
+    plugin.delete_cluster(cluster_id, clusterinfo['branch'])
 
 
 if __name__ == '__main__':

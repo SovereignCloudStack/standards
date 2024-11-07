@@ -15,7 +15,7 @@ class PluginKind(KubernetesClusterPlugin):
     conformance testing purpose with the use of Kind
     """
     def __init__(self, config_file=None):
-        logger.info(f"Init provider plug-in of type {self.__class__.__name__}")
+        logger.info(f"Init PluginKind")
         self.config = config_file
         logger.debug(self.config)
         self.working_directory = os.getcwd()
@@ -44,8 +44,7 @@ class PluginKind(KubernetesClusterPlugin):
             self.cluster.create()
         else:
             self.cluster.create(self.config)
-        return str(self.cluster.kubeconfig_path.resolve())
 
-    def delete_cluster(self, cluster_name=None):
+    def delete_cluster(self, cluster_name=None, version=None):
         self.cluster = KindCluster(cluster_name)
         self.cluster.delete()
