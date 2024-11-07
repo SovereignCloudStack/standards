@@ -50,5 +50,6 @@ class KubernetesClusterPlugin():
         """
         This method is to be called in order to unprovision a cluster
         :param: cluster_name:
+        :param: version:
         """
         raise NotImplementedError
