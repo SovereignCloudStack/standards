@@ -214,7 +214,7 @@ modules:
     #     args: --os-cloud {os_cloud} --debug --domain-config ...
     testcases:
       - id: domain-manager-check
-        tags: [mandatory]
+        tags: [domain-manager]
         description: >
           Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0302-v1-domain-manager-role>
 timeline:
@@ -273,6 +273,7 @@ versions:
       - scs-0302-v1
     targets:
       main: mandatory
+      domain-manager: domain-manager
   - version: v4
     stabilized_at: 2024-02-28
     include:
