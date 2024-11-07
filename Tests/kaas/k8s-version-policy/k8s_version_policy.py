@@ -458,6 +458,11 @@ async def scan_k8s_images(images_to_scan) -> None:
                     )
 
 
+async def get_images_and_scan(kubeconfig, context=None) -> None:
+    images_to_scan = await get_k8s_pod_images(kubeconfig, context)
+    await scan_k8s_images(images_to_scan)
+
+
 async def get_k8s_cluster_info(kubeconfig, context=None) -> ClusterInfo:
     """Get the k8s version of the cluster under test."""
     cluster_config = await kubernetes_asyncio.config.load_kube_config(kubeconfig, context)
@@ -562,7 +567,9 @@ async def main(argv):
             with context {config.context if config.context else ''}.
             Fetching cluster information and verifying access.""")
         await get_k8s_cluster_info(config.kubeconfig, config.context)
-        await scan_k8s_images(config.kubeconfig)
+        await get_images_and_scan(config.kubeconfig, config.context)
+        # images_to_scan = await get_k8s_pod_images(config.kubeconfig, config.context)
+        # await scan_k8s_images(images_to_scan=images_to_scan)
 
     except CriticalException as e:
         logger.critical(e)
