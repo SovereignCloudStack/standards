@@ -568,8 +568,6 @@ async def main(argv):
             Fetching cluster information and verifying access.""")
         await get_k8s_cluster_info(config.kubeconfig, config.context)
         await get_images_and_scan(config.kubeconfig, config.context)
-        # images_to_scan = await get_k8s_pod_images(config.kubeconfig, config.context)
-        # await scan_k8s_images(images_to_scan=images_to_scan)
 
     except CriticalException as e:
         logger.critical(e)
