@@ -5,7 +5,7 @@ from pathlib import Path
 
 from interface import KubernetesClusterPlugin
 from pytest_kind import KindCluster
-import logging
+
 logger = logging.getLogger("plugin_kind")
 
 logger = logging.getLogger(__name__)
