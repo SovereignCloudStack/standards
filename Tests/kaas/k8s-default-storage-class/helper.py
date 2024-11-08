@@ -2,7 +2,6 @@ import yaml
 import sys
 import logging
 from kubernetes import client, config
-import os
 
 manual_result_file_template = {
     "name": None,
@@ -70,9 +69,6 @@ def gen_sonobuoy_result_file(error_n: int, error_msg: str, test_file_name: str):
     result_file["name"] = test_name
     result_file["status"] = test_status
     result_file["details"]["messages"] = error_msg
-
-    directory_path = os.path.dirname(f"./{test_name}.result.yaml")
-    os.makedirs(directory_path, exist_ok=True)
 
     with open(f"./{test_name}.result.yaml", "w") as file:
         yaml.dump(result_file, file)
