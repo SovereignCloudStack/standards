@@ -86,6 +86,9 @@ def main(argv):
         nm2 = _fnmck.outname(ret2)
         if nm1 != nm2:
             print(f"WARNING: {nm1} != {nm2}")
+        snm = _fnmck.outname(ret.shorten())
+        if snm != nm1:
+            print(f"Shortened name: {snm}")
         argv = argv[1:]
         scs = 1
 

@@ -72,7 +72,7 @@ def parse(cfg, version, name, output='none'):
             if flavorname is None:
                 print(f"NOT an SCS flavor: {namestr}")
             elif output == 'prose':
-                printv(name, end=': ')
+                printv(namestr, end=': ')
                 print(f"{prettyname(flavorname)}")
             elif output == 'yaml':
                 print(yaml.dump(flavorname_to_dict(flavorname), explicit_start=True))

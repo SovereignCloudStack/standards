@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<title>{{ title or 'SCS compliance overview' }}</title>
+</head>
+<body>
 <style type="text/css">
     table {border-collapse:collapse;}
     table td, table th {vertical-align:top;padding:0.75rem;border:1px solid #dadde1;}
     table th {font-weight:700;background-color:#00000008;}
     html {text-rendering:optimizelegibility;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";}
+    li {margin:0.33em 0;}
+    pre.line {margin: 0;}
 </style>
-<head>
-<meta charset="utf-8">
-<title>{{ title or 'SCS compliance overview' }}</title>
-</head>
-<body>{{fragment}}</body>
+{% if title %}<h1>{{title}}</h1>
+{% endif %}{{fragment}}</body>
 </html>

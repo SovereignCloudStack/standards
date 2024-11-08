@@ -27,6 +27,7 @@ services:
     environment:
       - SCM_DB_HOST=postgres
       - SCM_DB_PASSWORD_FILE=/run/secrets/db_password
+      - SCM_BASE_URL=https://compliance.sovereignit.cloud/
     volumes:
       - ../Tests:/Tests
       - ./bootstrap.yaml:/code/bootstrap.yaml

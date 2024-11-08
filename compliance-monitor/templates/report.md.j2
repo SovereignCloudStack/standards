@@ -1,0 +1,66 @@
+## General info
+
+- uuid: [{{ report.run.uuid }}]({{ report_url(report.run.uuid, download=True) }})
+- subject: {{ report.subject }}
+- scope: [{{ report.spec.name }}]({{ scope_url(report.spec.uuid) }})
+- checked at: {{ report.checked_at }}
+
+## Results
+
+{% for version, version_results in report.versions.items() %}{% if version_results %}
+### {{ version }}
+
+| test case | result | invocation |
+|---|---|---|
+{% for testcase_id, result_data in version_results.items() -%}
+| {{ testcase_id }} {: #{{ version + '_' + testcase_id }} } | {{ result_data.result | verdict_check }} | [{{ result_data.invocation }}](#{{ result_data.invocation }}) |
+{% endfor %}
+{% endif %}{% endfor %}
+
+## Run
+
+### Variable assignment
+
+| key | value |
+|---|---|
+{% for key, value in report.run.assignment.items() -%}
+| `{{ key }}` | `{{ value }}` |
+{% endfor %}
+
+### Check tool invocations
+
+{% for invid, invdata in report.run.invocations.items() %}
+#### Invocation {{invid}} {: #{{ invid }} }
+
+- cmd: `{{ invdata.cmd }}`
+- rc: {{ invdata.rc }}
+- channel summary
+{%- for channel in ('critical', 'error', 'warning') %}
+{%- if invdata[channel] %}
+    - **{{ channel }}: {{ invdata[channel] }}**
+{%- else %}
+    - {{ channel }}: –
+{%- endif %}
+{%- endfor %}
+- results
+{%- for resultid, result in invdata.results.items() %}
+    - {{ resultid }}: {{ result | verdict_check }}
+{%- endfor %}
+
+{% if invdata.stdout -%}
+<details><summary>Captured stdout</summary>
+```text
+{{ '\n'.join(invdata.stdout) }}
+```
+</details>
+{%- endif %}
+
+{% if invdata.stderr -%}
+<details {% if invdata.warning or invdata.error or invdata.critical %}open{% endif %}><summary>Captured stderr</summary>
+{%- for line in invdata.stderr %}
+<pre class="line">{% if line.split(':', 1)[0].lower() in ('warning', 'error', 'critical') %}{{ '<strong>' + line + '</strong>' }}{% else %}{{ line }}{% endif %}</pre>
+{%- endfor %}
+</details>
+{%- endif %}
+
+{% endfor %}
