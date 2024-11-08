@@ -24,20 +24,20 @@ class KubernetesClusterPlugin():
 
           class PluginX(KubernetesClusterPlugin):
 
-              def __init__(self, config_file=None):
+              def __init__(self, config_file):
                   self.config = config_file
 
-              def create_cluster(self, cluster_name="scs-cluster", version=None, kubeconfig_filepath=None):
+              def create_cluster(self, cluster_name, version, kubeconfig_filepath):
                   self.cluster = ClusterAPI(name=cluster_name, image=cluster_image, kubeconfig_filepath)
                   self.cluster.create(self.config)
 
-              def delete_cluster(self, cluster_name=None, version=None):
+              def delete_cluster(self, cluster_name, version):
                   self.cluster = ClusterAPI(cluster_name)
                   self.cluster.delete()
         ..
     """
 
-    def create_cluster(self, cluster_name="scs-cluster", version=None, kubeconfig_filepath=None):
+    def create_cluster(self, cluster_name, version, kubeconfig_filepath):
         """
         This method is to be called to create a k8s cluster
         :param: cluster_name:
@@ -46,7 +46,7 @@ class KubernetesClusterPlugin():
         """
         raise NotImplementedError
 
-    def delete_cluster(self, cluster_name=None, version=None):
+    def delete_cluster(self, cluster_name, version):
         """
         This method is to be called in order to unprovision a cluster
         :param: cluster_name:

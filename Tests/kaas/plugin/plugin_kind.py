@@ -14,14 +14,14 @@ class PluginKind(KubernetesClusterPlugin):
     Plugin to handle the provisioning of kubernetes cluster for
     conformance testing purpose with the use of Kind
     """
-    def __init__(self, config_file=None):
+    def __init__(self, config_file):
         logger.info("Init PluginKind")
         self.config = config_file
         logger.debug(self.config)
         self.working_directory = os.getcwd()
         logger.debug(f"Working from {self.working_directory}")
 
-    def create_cluster(self, cluster_name="scs-cluster", version=None, kubeconfig=None):
+    def create_cluster(self, cluster_name, version, kubeconfig):
         """
         This method is to be called to create a k8s cluster
         :param: kubernetes_version:
@@ -45,6 +45,6 @@ class PluginKind(KubernetesClusterPlugin):
         else:
             self.cluster.create(self.config)
 
-    def delete_cluster(self, cluster_name=None, version=None):
+    def delete_cluster(self, cluster_name, version):
         self.cluster = KindCluster(cluster_name)
         self.cluster.delete()
