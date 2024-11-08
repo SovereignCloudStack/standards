@@ -103,8 +103,8 @@ def s3_conn(creds, conn=None):
             print("WARNING: Trust all Certificates in S3, "
                   f"OpenStack uses {cacert}", file=sys.stderr)
             vrfy = False
-    return boto3.resource('s3', aws_access_key_id=creds["AKI"],
-                          aws_secret_access_key=creds["SAK"],
+    return boto3.resource('s3', aws_access_key_id=creds["AK"],
+                          aws_secret_access_key=creds["SK"],
                           endpoint_url=creds["HOST"],
                           verify=vrfy)
 
@@ -149,19 +149,19 @@ def s3_from_ostack(creds, conn, endpoint):
     if len(ec2_creds):
         # FIXME: Assume cloud is not evil
         ec2_dict = eval(ec2_creds[0].blob, {"null": None})
-        creds["AKI"] = ec2_dict["access"]
-        creds["SAK"] = ec2_dict["secret"]
+        creds["AK"] = ec2_dict["access"]
+        creds["SK"] = ec2_dict["secret"]
         return
     # Generate keyid and secret
-    aki = uuid.uuid4().hex
-    sak = uuid.uuid4().hex
-    blob = f'{{"access": "{aki}", "secret": "{sak}"}}'
+    ak = uuid.uuid4().hex
+    sk = uuid.uuid4().hex
+    blob = f'{{"access": "{ak}", "secret": "{sk}"}}'
     try:
         conn.identity.create_credential(type="ec2", blob=blob,
                                         user_id=conn.current_user_id,
                                         project_id=conn.current_project_id)
-        creds["AKI"] = aki
-        creds["SAK"] = sak
+        creds["AK"] = ak
+        creds["SK"] = sk
     except BaseException as exc:
         print(f"WARNING: ec2 creds creation failed: {exc!s}", file=sys.stderr)
         # pass
@@ -211,8 +211,8 @@ def check_for_s3_and_swift(cloud_name: str, s3_credentials=None):
     s3_from_ostack(s3_creds, connection, endpoint)
     # Overrides (var names are from libs3, in case you wonder)
     s3_from_env(s3_creds, "HOST", "S3_HOSTNAME", "https://")
-    s3_from_env(s3_creds, "AKI", "S3_ACCESS_KEY_ID")
-    s3_from_env(s3_creds, "SAK", "S3_SECRET_ACCESS_KEY")
+    s3_from_env(s3_creds, "AK", "S3_ACCESS_KEY_ID")
+    s3_from_env(s3_creds, "SK", "S3_SECRET_ACCESS_KEY")
 
     s3 = s3_conn(s3_creds, connection)
     s3_buckets = list_s3_buckets(s3)
@@ -282,8 +282,8 @@ def main():
         if (not args.s3_access) or (not args.s3_access_secret):
             print("WARNING: test for external s3 needs access key and access secret.")
         s3_credentials = {
-            "AKI": args.s3_access,
-            "SAK": args.s3_access_secret,
+            "AK": args.s3_access,
+            "SK": args.s3_access_secret,
             "HOST": args.s3_endpoint
         }
     elif args.s3_access or args.s3_access_secret:
