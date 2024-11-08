@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Domain Manager policy configuration checker
 
 This script uses the OpenStack SDK to validate the proper implementation
