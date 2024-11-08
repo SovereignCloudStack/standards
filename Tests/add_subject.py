@@ -13,11 +13,10 @@ import re
 import shutil
 import subprocess
 import sys
-import tempfile
 
 try:
     from passlib.context import CryptContext
-    import argon2
+    import argon2  # noqa:F401
 except ImportError:
     print('Missing passlib and/or argon2. Please do:\npip install passlib argon2_cffi', file=sys.stderr)
     sys.exit(1)
@@ -39,7 +38,7 @@ def main(argv, cwd):
         raise RuntimeError(f"Keyfile {keyfile_path} already present. Please proceed manually")
     if os.path.exists(tokenfile_path):
         raise RuntimeError(f"Tokenfile {tokenfile_path} already present. Please proceed manually")
-    if not(SUBJECT_RE.fullmatch(subject)):
+    if not SUBJECT_RE.fullmatch(subject):
         raise RuntimeError(f"Subject name {subject!r} using disallowed characters")
     sanitized_subject = subject.replace('-', '_')
     print("Creating API key...")
