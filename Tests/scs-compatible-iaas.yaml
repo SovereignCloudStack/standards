@@ -203,7 +203,7 @@ modules:
     url: https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard
     testcases:
       - id: availability-zones-check
-        tags: [mandatory]
+        tags: [availability-zones]
         description: >
           Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard>
   - id: scs-0302-v1
@@ -273,7 +273,7 @@ versions:
       - scs-0302-v1
     targets:
       main: mandatory
-      domain-manager: domain-manager
+      preview: domain-manager/availability-zones
   - version: v4
     stabilized_at: 2024-02-28
     include:
