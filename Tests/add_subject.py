@@ -66,7 +66,7 @@ They are required for submitting test reports. You MUST keep them secure and saf
 
 Insert the following snippet into compliance-monitor/bootstrap.yaml:
 
-  - {subject}:
+  - subject: {subject}
     api_keys:
       - "{hash_}"
     keys:
