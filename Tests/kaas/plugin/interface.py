@@ -13,7 +13,7 @@ class KubernetesClusterPlugin():
     `kubeconfig_filepath`
 
     - Implement `create_cluster` and `delete_cluster` methods
-    - Create `__init__(self, config_file=None)` method to handle api specific
+    - Create `__init__(self, config_file)` method to handle api specific
       configurations.
 
     Example:
