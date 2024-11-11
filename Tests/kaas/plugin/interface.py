@@ -31,7 +31,7 @@ class KubernetesClusterPlugin():
                   self.cluster = ClusterAPI(name=cluster_name, image=cluster_image, kubeconfig_filepath)
                   self.cluster.create(self.config)
 
-              def delete_cluster(self, cluster_name, version):
+              def delete_cluster(self, cluster_name):
                   self.cluster = ClusterAPI(cluster_name)
                   self.cluster.delete()
         ..
@@ -46,10 +46,9 @@ class KubernetesClusterPlugin():
         """
         raise NotImplementedError
 
-    def delete_cluster(self, cluster_name, version):
+    def delete_cluster(self, cluster_name):
         """
         This method is to be called in order to unprovision a cluster
         :param: cluster_name:
-        :param: version:
         """
         raise NotImplementedError

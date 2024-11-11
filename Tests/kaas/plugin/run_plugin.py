@@ -54,7 +54,7 @@ def delete(plugin_kind, plugin_config, clusterspec_path, clusterspec_cluster):
     clusterinfo = clusterspec[clusterspec_cluster]
     cluster_id = clusterspec_cluster
     plugin = init_plugin(plugin_kind, plugin_config)
-    plugin.delete_cluster(cluster_id, clusterinfo['branch'])
+    plugin.delete_cluster(cluster_id)
 
 
 if __name__ == '__main__':

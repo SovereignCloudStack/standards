@@ -45,6 +45,6 @@ class PluginKind(KubernetesClusterPlugin):
         else:
             self.cluster.create(self.config)
 
-    def delete_cluster(self, cluster_name, version):
+    def delete_cluster(self, cluster_name):
         self.cluster = KindCluster(cluster_name)
         self.cluster.delete()
