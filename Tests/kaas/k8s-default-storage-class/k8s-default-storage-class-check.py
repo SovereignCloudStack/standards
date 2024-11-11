@@ -60,8 +60,7 @@ def check_default_storageclass(k8s_client_storage):
     for item in storageclasses_dict["items"]:
         storage_class_name = item["metadata"]["name"]
         annotations = item["metadata"]["annotations"]
-
-        if annotations["storageclass.kubernetes.io/is-default-class"] == "true":
+        if annotations.get("storageclass.kubernetes.io/is-default-class") == "true":
             ndefault_class += 1
             default_storage_class = storage_class_name
             provisioner = item["provisioner"]
@@ -225,6 +224,7 @@ class TestEnvironment:
         self.return_code = 0
         self.return_message = "return_message: FAILED"
         self.kubeconfig = kubeconfig
+        self.cleanup = False
 
     def prepare(self):
         """
@@ -297,7 +297,9 @@ class TestEnvironment:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.clean()
+        logger.debug("exiting")
+        if self.cleanup:
+          self.clean()
         if self.return_code == 0:
             self.return_message = "all tests passed"
         if isinstance(exc_value, SCSTestException):
@@ -356,7 +358,7 @@ def main(argv):
             env.return_code = 1
             logger.debug("check_default_storageclass() failed")
             return env.return_code
-
+        env.cleanup = True
         try:
             env.return_code = create_pvc_pod(k8s_core_api, default_class_name)
         except ApiException as api_exception:
