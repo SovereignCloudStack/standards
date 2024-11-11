@@ -202,7 +202,7 @@ def check_csi_provider(k8s_core_api, allowed_csi_prov=ALLOWED_CSI_PROV):
     csi_list = []
     for pod in pods.items:
         if "csi" in pod.metadata.name:
-            if pod.metadata.name in allowed_csi_prov:
+            if any(provider in pod.metadata.name for provider in allowed_csi_prov):
                 csi_list.append(pod.metadata.name)
                 logger.info(f"CSI-Provider: {pod.metadata.name}")
             else:
@@ -210,8 +210,8 @@ def check_csi_provider(k8s_core_api, allowed_csi_prov=ALLOWED_CSI_PROV):
                     f"CSI-Provider: {pod.metadata.name} not recommended",
                     return_code=33,
                 )
-        else:
-            logger.info("CSI-Provider: No CSI Provider found.")
+    if not csi_list:
+      logger.info("CSI-Provider: No CSI Provider found.")
     return 0
 
 
@@ -297,7 +297,6 @@ class TestEnvironment:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        logger.debug("exiting")
         if self.cleanup:
           self.clean()
         if self.return_code == 0:
@@ -305,18 +304,17 @@ class TestEnvironment:
         if isinstance(exc_value, SCSTestException):
             self.return_message = exc_value.args[0]
             self.return_code = exc_value.return_code
-            logger.debug(
+            logger.info(
                 f"SCSTestException occurred with return_code: {self.return_code}"
             )
         else:
             # No specific exception, handle normally returnmessage aus exception übernehmen, dann kann return_code
-            logger.debug(f"Exiting the context with return_code: {self.return_code}")
-        logger.debug(f"{self.return_message}")
+            logger.info(f"Exiting the context with return_code: {self.return_code}")
+        logger.info(f"{self.return_message}")
 
         gen_sonobuoy_result_file(
             self.return_code, self.return_message, os.path.basename(__file__)
         )
-        logger.debug(f"Exiting the context {self.k8s_core_api}")
         if exc_type:
             logger.error(f"An exception occurred: {exc_value}")
         # Return True if the exception should be suppressed, otherwise False
@@ -382,7 +380,6 @@ def main(argv):
         )
 
         env.return_code = check_csi_provider(env.k8s_core_api)
-        logger.debug(f"CSI Provider check: {env.return_code}")
     return env.return_code
 
 
