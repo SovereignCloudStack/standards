@@ -114,7 +114,7 @@ def wait_for_cso_pods_ready(timeout=240, interval=15):
     raise TimeoutError(f"Timed out after {timeout} seconds waiting for CSO pods in 'cso-system' namespace to become ready.")
 
 
-def wait_for_workload_pods_ready(namespace="kube-system", timeout=600, kubeconfig_path=None):
+def wait_for_workload_pods_ready(namespace="kube-system", timeout=600, kubeconfig_path=None, max_retries=3, delay=30):
     """
     Waits for all pods in a specific namespace on a workload Kubernetes cluster to become ready.
 
@@ -123,18 +123,23 @@ def wait_for_workload_pods_ready(namespace="kube-system", timeout=600, kubeconfi
     :param kubeconfig_path: Path to the kubeconfig file for the target Kubernetes cluster.
     :raises RuntimeError: If pods are not ready within the specified timeout.
     """
-    try:
-        kubeconfig_option = f"--kubeconfig {kubeconfig_path}" if kubeconfig_path else ""
-        wait_pods_command = (
-            f"kubectl wait -n {namespace} --for=condition=Ready --timeout={timeout}s pod --all {kubeconfig_option}"
-        )
+    for attempt in range(max_retries):
+        try:
+            kubeconfig_option = f"--kubeconfig {kubeconfig_path}" if kubeconfig_path else ""
+            wait_pods_command = (
+                f"kubectl wait -n {namespace} --for=condition=Ready --timeout={timeout}s pod --all {kubeconfig_option}"
+            )
 
-        # Run the command
-        subprocess.run(wait_pods_command, shell=True, check=True)
-        logger.info("All pods in namespace '{namespace}' in the workload Kubernetes cluster are ready.")
+            # Run the command
+            subprocess.run(wait_pods_command, shell=True, check=True)
+            logger.info(f"All pods in namespace {namespace} in the workload Kubernetes cluster are ready.")
+            return True
 
-    except subprocess.CalledProcessError as error:
-        raise RuntimeError(f"Error waiting for pods in namespace '{namespace}' to become ready: {error}")
+        except subprocess.CalledProcessError as error:
+            logger.warning(f"Attempt {attempt+1}/{max_retries} failed with error: {error}. Retrying in {delay} seconds...")
+            time.sleep(delay)
+
+    raise RuntimeError(f"Error waiting for pods in namespace '{namespace}' to become ready.")
 
 
 def load_config(config_path):
@@ -270,7 +275,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         print(self.kubeconfig_cs_cluster_filename)
         wait_for_workload_pods_ready(kubeconfig_path=self.kubeconfig_cs_cluster_filename)
 
-    def delete_cluster(self, cluster_name=None, kubeconfig_filepath=None):
+    def delete_cluster(self, cluster_name=None, version=None, kubeconfig_filepath=None):
         kubeconfig_cs_cluster_filename = f"kubeconfig-{cluster_name}.yaml"
         try:
             # Check if the cluster exists
