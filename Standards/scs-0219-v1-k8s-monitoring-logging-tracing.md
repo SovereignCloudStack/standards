@@ -15,7 +15,7 @@ These mechanisms consist of:
 * Monitoring
 * Tracing
 
-The aim of this decision record is to examine how Kubernetes handles thoes mechanisms.
+The aim of this decision record is to examine how Kubernetes handles those mechanisms.
 Derived from this, this decision record provides a suggestion on how a Kubernetes cluster SHOULD be configured in order to provide meaningful and comprehensible information via logging, monitoring and tracing.
 
 
