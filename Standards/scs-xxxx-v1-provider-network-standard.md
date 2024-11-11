@@ -100,12 +100,14 @@ This seems to be more of a niche use-case, however, and may warrant the creation
 For public clouds, external access generally means access to (and from) the internet, with allocation of public IP addresses.
 Providing a standardized approach for the allocation of public IP addresses is the main motivation for this standard.
 
-However, the SCS Standards are intended to be applicable not just to public clouds, but also to private or even air-gaped cloud environments.
-One way to reconcile these requirements would be to find a common basis between public and private clouds, and then build the standard around that, scoping individual rules where necessary.
+However, the SCS Standards are intended to be applicable not just to public clouds, but also to private or even air-gapped cloud environments which have different requirements for IP address allocation.
+One way to reconcile these requirements would be to limit the scope the requirements of this standard to only apply to cloud environment that support the allocation of public IP addresses.
 
-However, private and public clouds may have quite different requirements.
-Public IPv4 addresses, for example, are sparse and expensive, so having tight quotas and support for NAT makes a lot of sense in a public cloud, but may be completely unnecessary in a private environment without public IPs.
-So, rather than trying to find common ground between the networking requirements of all SCS clouds, the requirements of this standard will be scoped to only apply to cloud environment that support the allocation of public IP addresses.
+There are common networking use-cases between public and private clouds, however, like the very common requirement to connect to virtual servers via SSH.
+For users (or any automated tooling that users might deploy) to have a standardized way of connecting to virtual servers in their projects is very valuable, regardless of whether this access happens across the Internet or within an isolated internal network or VPN.
+
+So instead of standardizing allocation of public IP addresses for some clouds, it might be more useful to require the allocation of IP addresses that are reachable for API users in all clouds.
+Public clouds can then have the additional requirement that those allocated addresses must also be public.
 
 #### IPv6
 
@@ -169,7 +171,7 @@ It is possible to have both an IPv4 and an IPv6 subnet pool where `is_default` i
 The behavior is undefined when more than one network in the project is marked as default, or more than one subnet pool per address family.
 
 So, it is strongly advisable to only have one default defined for each.
-It seems sensible to standardize on using SCS-mandated resources as auto-allocation defaults, as this is likely to be the expected behavior from users.
+It seems sensible to standardize on using SCS-mandated resources as auto-allocation defaults, as this is likely to be the behavior expected by users.
 It can also be useful for both users and automated compliance tests to determine the defaults in the presence of multiple provider networks.
 
 #### Disable Networking RBAC for Users
@@ -199,23 +201,39 @@ So, just specifying mandatory features rather than a certain set of extensions m
 
 ## Standard
 
-If CSPs offer public IP addresses to projects, they **MUST** provide a provider network to every project to allocate public addresses.
-This provider network will in the following be referred to as the _standard provider network_.
+### External Addresses
+
+We define an _external_ address as an IPv4 or IPv6 address that is accessible to a user of the SCS-compliant OpenStack API.
+For public clouds, external addresses **MUST** be either IPv4 public addresses or IPv6 global unicast addresses (GUA).
+
+The CSP **MUST** offer allocation of external IPv6 addresses to user projects.
+The CSP **SHOULD** offer allocation of external IPv4 addresses to user projects.
+
+### Standard Provider Network
+
+The CSP **MUST** provide every user project with a provider network that can route any external addresses that are allocated to the project.
+For external addresses from pool-allocated subnets, this requires support for dynamic routing.
+This provider network will in the following will be referred to as the _standard provider network_.
+
+The standard provider network **MUST** have the `is_default` flag set to `True`, and it **MUST** be the only provider network in the project with `is_default` set to `True`.
 To avoid ambiguity, the standard provider network **SHOULD** be the only provider network available to projects by default.
 
 The standard provider network **MUST** be an external network, allowing it to be used as external gateway by virtual routers.
-The standard provider network **MUST** have the `is_default` flag set to True, and it **MUST** be the only network to do so.
-The standard provider network **MAY** be a shared network, allowing direct attachment of virtual servers.
-If the standard provider network is a shared network, it **MUST** enable port security to prevent projects from interfering with each other.
+It **MAY** also be a shared network, allowing direct attachment of virtual servers.
+If the standard provider network is a shared network, then it **MUST** be configured allocate external addresses for directly attached servers and ports, and it **MUST** enable port security to prevent projects from interfering with each other.
 
-If CSPs offer public IP addresses at all, they **MUST** provide a shared subnet pool for the allocation of at least one public /64 IPv6 prefix per project.
-This subnet pool **MUST** have the `is_default` flag set to True, and it **MUST** be the only IPv6 subnet pool to do so.
-If CSPs offer public IP addresses, they **SHOULD** also offer public IPv4 addresses.
-If they do offer public IPv4 addresses, they **MUST** provide at least one public Floating IP per project, but **MAY** also provide a shared subnet pool for the allocation of public IPv4 prefixes to project networks.
-If CSPs offer a subnet pool for the allocation of public IPv4 prefixes, it **MUST** have the `is_default` flag set to True, and it **MUST** be the only IPv4 subnet pool to do so.
+### IPv6 Allocation
 
-CSPs **MUST** externally route any public IP addresses allocated from subnets of the standard provider network.
-CSPs **MUST** provide dynamic routing for all project-allocated public IP-prefixes via the standard provider network.
+The CSP **MUST** provide a shared subnet pool for the allocation of at least one /64 prefix for external IPv6 addresses per project.
+This subnet pool **MUST** have the `is_default` flag set to `True`, and it **MUST** be the only shared IPv6 subnet pool in the project with `is_default` set to `True`.
+
+### IPv4 Allocation
+
+If the CSP offers external IPv4 addresses, they **MUST** provide at least one external Floating IP per project that can be allocated from the standard provider network.
+The CSP **MAY** also provide a shared subnet pool for the allocation of prefixes for external IPv4 addresses to project networks.
+If such a subnet pool is provided, it **MUST** have the `is_default` flag set to `True`, and it **MUST** be the only shared IPv4 subnet pool in the project with `is_default` set to `True`.
+
+### RBAC Restrictions
 
 By default, users **SHOULD** be prohibited by policy from creating Networking RBAC rules, to prevent the creation of faux provider networks.
 The necessary policy change to implement this restriction for the Neutron API can be found in the Networking RBAC documentation [^rbac].
