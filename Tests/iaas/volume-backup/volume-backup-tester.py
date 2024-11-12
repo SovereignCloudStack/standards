@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Volume Backup API tester for Block Storage API
 
 This test script executes basic operations on the Block Storage API centered
@@ -14,7 +15,9 @@ of simplicity).
 
 import argparse
 import getpass
+import logging
 import os
+import sys
 import time
 import typing
 
@@ -29,28 +32,23 @@ DEFAULT_PREFIX = "scs-test-"
 WAIT_TIMEOUT = 60
 
 
-def connect(cloud_name: str, password: typing.Optional[str] = None
-            ) -> openstack.connection.Connection:
-    """Create a connection to an OpenStack cloud
-
-    :param string cloud_name:
-        The name of the configuration to load from clouds.yaml.
-
-    :param string password:
-        Optional password override for the connection.
-
-    :returns: openstack.connnection.Connection
-    """
-
-    if password:
-        return openstack.connect(
-            cloud=cloud_name,
-            password=password
-        )
-    else:
-        return openstack.connect(
-            cloud=cloud_name,
-        )
+def wait_for_resource(
+    get_func: typing.Callable[[str], openstack.resource.Resource],
+    resource_id: str,
+    expected_status=("available", ),
+    timeout=WAIT_TIMEOUT,
+) -> None:
+    seconds_waited = 0
+    resource = get_func(resource_id)
+    while resource is None or resource.status not in expected_status:
+        time.sleep(1.0)
+        seconds_waited += 1
+        if seconds_waited >= timeout:
+            raise RuntimeError(
+                f"Timed out after {seconds_waited} s: waiting for resource {resource_id} "
+                f"to be in status {expected_status} (current: {resource and resource.status})"
+            )
+        resource = get_func(resource_id)
 
 
 def test_backup(conn: openstack.connection.Connection,
@@ -64,133 +62,90 @@ def test_backup(conn: openstack.connection.Connection,
     """
 
     # CREATE VOLUME
-    print("Creating volume ...")
-    volume = conn.block_storage.create_volume(
-        name=f"{prefix}volume",
-        size=1
-    )
-    assert volume is not None, (
-        "Initial volume creation failed"
-    )
+    volume_name = f"{prefix}volume"
+    logging.info(f"Creating volume '{volume_name}' ...")
+    volume = conn.block_storage.create_volume(name=volume_name, size=1)
+    if volume is None:
+        raise RuntimeError(f"Creation of initial volume '{volume_name}' failed")
     volume_id = volume.id
-    assert conn.block_storage.get_volume(volume_id) is not None, (
-        "Retrieving initial volume by ID failed"
-    )
+    if conn.block_storage.get_volume(volume_id) is None:
+        raise RuntimeError(f"Retrieving initial volume by ID '{volume_id}' failed")
 
-    print(
+    logging.info(
         f"↳ waiting for volume with ID '{volume_id}' to reach status "
         f"'available' ..."
     )
-    seconds_waited = 0
-    while conn.block_storage.get_volume(volume_id).status != "available":
-        time.sleep(1.0)
-        seconds_waited += 1
-        assert seconds_waited < timeout, (
-            f"Timeout reached while waiting for volume to reach status "
-            f"'available' (volume id: {volume_id}) after {seconds_waited} "
-            f"seconds"
-        )
-    print("Create empty volume: PASS")
+    wait_for_resource(conn.block_storage.get_volume, volume_id, timeout=timeout)
+    logging.info("Create empty volume: PASS")
 
     # CREATE BACKUP
-    print("Creating backup from volume ...")
-    backup = conn.block_storage.create_backup(
-        name=f"{prefix}volume-backup",
-        volume_id=volume_id
-    )
-    assert backup is not None, (
-        "Backup creation failed"
-    )
+    logging.info("Creating backup from volume ...")
+    backup = conn.block_storage.create_backup(name=f"{prefix}volume-backup", volume_id=volume_id)
+    if backup is None:
+        raise RuntimeError("Backup creation failed")
     backup_id = backup.id
-    assert conn.block_storage.get_backup(backup_id) is not None, (
-        "Retrieving backup by ID failed"
-    )
+    if conn.block_storage.get_backup(backup_id) is None:
+        raise RuntimeError("Retrieving backup by ID failed")
 
-    print(f"↳ waiting for backup '{backup_id}' to become available ...")
-    seconds_waited = 0
-    while conn.block_storage.get_backup(backup_id).status != "available":
-        time.sleep(1.0)
-        seconds_waited += 1
-        assert seconds_waited < timeout, (
-            f"Timeout reached while waiting for backup to reach status "
-            f"'available' (backup id: {backup_id}) after {seconds_waited} "
-            f"seconds"
-        )
-    print("Create backup from volume: PASS")
+    logging.info(f"↳ waiting for backup '{backup_id}' to become available ...")
+    wait_for_resource(conn.block_storage.get_backup, backup_id, timeout=timeout)
+    logging.info("Create backup from volume: PASS")
 
     # RESTORE BACKUP
-    print("Restoring backup to volume ...")
     restored_volume_name = f"{prefix}restored-backup"
-    conn.block_storage.restore_backup(
-        backup_id,
-        name=restored_volume_name
-    )
+    logging.info(f"Restoring backup to volume '{restored_volume_name}' ...")
+    conn.block_storage.restore_backup(backup_id, name=restored_volume_name)
 
-    print(
+    logging.info(
         f"↳ waiting for restoration target volume '{restored_volume_name}' "
         f"to be created ..."
     )
-    seconds_waited = 0
-    while conn.block_storage.find_volume(restored_volume_name) is None:
-        time.sleep(1.0)
-        seconds_waited += 1
-        assert seconds_waited < timeout, (
-            f"Timeout reached while waiting for restored volume to be created "
-            f"(volume name: {restored_volume_name}) after {seconds_waited} "
-            f"seconds"
-        )
+    wait_for_resource(conn.block_storage.find_volume, restored_volume_name, timeout=timeout)
     # wait for the volume restoration to finish
-    print(
+    logging.info(
         f"↳ waiting for restoration target volume '{restored_volume_name}' "
         f"to reach 'available' status ..."
     )
     volume_id = conn.block_storage.find_volume(restored_volume_name).id
-    while conn.block_storage.get_volume(volume_id).status != "available":
-        time.sleep(1.0)
-        seconds_waited += 1
-        assert seconds_waited < timeout, (
-            f"Timeout reached while waiting for restored volume reach status "
-            f"'available' (volume id: {volume_id}) after {seconds_waited} "
-            f"seconds"
-        )
-    print("Restore volume from backup: PASS")
+    wait_for_resource(conn.block_storage.get_volume, volume_id, timeout=timeout)
+    logging.info("Restore volume from backup: PASS")
 
 
 def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
-            timeout=WAIT_TIMEOUT):
+            timeout=WAIT_TIMEOUT) -> bool:
     """
     Looks up volume and volume backup resources matching the given prefix and
     deletes them.
+    Returns False if there were any errors during cleanup which might leave
+    resources behind. Otherwise returns True to indicate cleanup success.
     """
 
-    def wait_for_resource(resource_type: str, resource_id: str,
-                          expected_status="available") -> None:
-        seconds_waited = 0
-        get_func = getattr(conn.block_storage, f"get_{resource_type}")
-        while get_func(resource_id).status != expected_status:
-            time.sleep(1.0)
-            seconds_waited += 1
-            assert seconds_waited < timeout, (
-                f"Timeout reached while waiting for {resource_type} during "
-                f"cleanup to be in status '{expected_status}' "
-                f"({resource_type} id: {resource_id}) after {seconds_waited} "
-                f"seconds"
-            )
+    logging.info(f"Performing cleanup for resources with the '{prefix}' prefix ...")
 
-    print(f"\nPerforming cleanup for resources with the "
-          f"'{prefix}' prefix ...")
-
+    cleanup_issues = 0  # count failed cleanup operations
     backups = conn.block_storage.backups()
     for backup in backups:
-        if backup.name.startswith(prefix):
-            try:
-                wait_for_resource("backup", backup.id)
-            except openstack.exceptions.ResourceNotFound:
-                # if the resource has vanished on
-                # its own in the meantime ignore it
-                continue
-            print(f"↳ deleting volume backup '{backup.id}' ...")
+        if not backup.name.startswith(prefix):
+            continue
+        try:
+            # we can only delete if status is available or error, so try and wait
+            wait_for_resource(
+                conn.block_storage.get_backup,
+                backup.id,
+                expected_status=("available", "error"),
+                timeout=timeout,
+            )
+            logging.info(f"↳ deleting volume backup '{backup.id}' ...")
             conn.block_storage.delete_backup(backup.id)
+        except openstack.exceptions.ResourceNotFound:
+            # if the resource has vanished on its own in the meantime ignore it
+            continue
+        except Exception as e:
+            # Most common exception would be a timeout in wait_for_resource.
+            # We do not need to increment cleanup_issues here since
+            # any remaining ones will be caught in the next loop down below anyway.
+            logging.debug("traceback", exc_info=True)
+            logging.warning(str(e))
 
     # wait for all backups to be cleaned up before attempting to remove volumes
     seconds_waited = 0
@@ -200,22 +155,42 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
     ) > 0:
         time.sleep(1.0)
         seconds_waited += 1
-        assert seconds_waited < timeout, (
-            f"Timeout reached while waiting for all backups with prefix "
-            f"'{prefix}' to finish deletion"
-        )
+        if seconds_waited >= timeout:
+            cleanup_issues += 1
+            logging.warning(
+                f"Timeout reached while waiting for all backups with prefix "
+                f"'{prefix}' to finish deletion during cleanup after "
+                f"{seconds_waited} seconds"
+            )
+            break
 
     volumes = conn.block_storage.volumes()
     for volume in volumes:
-        if volume.name.startswith(prefix):
-            try:
-                wait_for_resource("volume", volume.id)
-            except openstack.exceptions.ResourceNotFound:
-                # if the resource has vanished on
-                # its own in the meantime ignore it
-                continue
-            print(f"↳ deleting volume '{volume.id}' ...")
+        if not volume.name.startswith(prefix):
+            continue
+        try:
+            wait_for_resource(
+                conn.block_storage.get_volume,
+                volume.id,
+                expected_status=("available", "error"),
+                timeout=timeout,
+            )
+            logging.info(f"↳ deleting volume '{volume.id}' ...")
             conn.block_storage.delete_volume(volume.id)
+        except openstack.exceptions.ResourceNotFound:
+            # if the resource has vanished on its own in the meantime ignore it
+            continue
+        except Exception as e:
+            logging.debug("traceback", exc_info=True)
+            logging.warning(str(e))
+            cleanup_issues += 1
+
+    if cleanup_issues:
+        logging.info(
+            f"Some resources with the '{prefix}' prefix were not cleaned up!"
+        )
+
+    return not cleanup_issues
 
 
 def main():
@@ -257,26 +232,43 @@ def main():
     )
     args = parser.parse_args()
     openstack.enable_logging(debug=args.debug)
+    logging.basicConfig(
+        format="%(levelname)s: %(message)s",
+        level=logging.DEBUG if args.debug else logging.INFO,
+    )
 
     # parse cloud name for lookup in clouds.yaml
-    cloud = os.environ.get("OS_CLOUD", None)
-    if args.os_cloud:
-        cloud = args.os_cloud
-    assert cloud, (
-        "You need to have the OS_CLOUD environment variable set to your "
-        "cloud name or pass it via --os-cloud"
-    )
-    conn = connect(
-        cloud,
-        password=getpass.getpass("Enter password: ") if args.ask else None
-    )
-    if args.cleanup_only:
-        cleanup(conn, prefix=args.prefix, timeout=args.timeout)
-    else:
-        cleanup(conn, prefix=args.prefix, timeout=args.timeout)
-        test_backup(conn, prefix=args.prefix, timeout=args.timeout)
-        cleanup(conn, prefix=args.prefix, timeout=args.timeout)
+    cloud = args.os_cloud or os.environ.get("OS_CLOUD", None)
+    if not cloud:
+        raise Exception(
+            "You need to have the OS_CLOUD environment variable set to your "
+            "cloud name or pass it via --os-cloud"
+        )
+    password = getpass.getpass("Enter password: ") if args.ask else None
+
+    with openstack.connect(cloud, password=password) as conn:
+        if not cleanup(conn, prefix=args.prefix, timeout=args.timeout):
+            raise RuntimeError("Initial cleanup failed")
+        if args.cleanup_only:
+            logging.info("Cleanup-only run finished.")
+            return
+        try:
+            test_backup(conn, prefix=args.prefix, timeout=args.timeout)
+        except BaseException:
+            print('volume-backup-check: FAIL')
+            raise
+        else:
+            print('volume-backup-check: PASS')
+        finally:
+            cleanup(conn, prefix=args.prefix, timeout=args.timeout)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        sys.exit(main())
+    except SystemExit:
+        raise
+    except BaseException as exc:
+        logging.debug("traceback", exc_info=True)
+        logging.critical(str(exc))
+        sys.exit(1)

@@ -24,7 +24,7 @@ No recent test results available.
 {% set res = version_result.results[testcase_id] if testcase_id in version_result.results else dict(result=0) -%}
 | {% if res.result != 1 %}⚠️ {% endif %}{{ testcase.id }} |
 {#- #} {% if res.report -%}
-[{{ res.result | verdict_check }}]({{ report_url(res.report) }})
+[{{ res.result | verdict_check }}]({{ report_url(res.report, version, testcase_id) }})
 {%- else -%}
 {{ res.result | verdict_check }}
 {%- endif -%}

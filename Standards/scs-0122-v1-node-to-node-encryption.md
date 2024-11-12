@@ -1,7 +1,7 @@
 ---
 title: _End-to-End Encryption between Customer Workloads_
 type: Decision Record
-status: Proposal
+status: Draft
 track: IaaS
 ---
 
