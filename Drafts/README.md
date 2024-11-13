@@ -1,5 +1,7 @@
-# Design-Docs
+# Drafts Archive
 
-Design Documents, Architecture etc. for SCS and related technology
+**DEPRECATION NOTICE**
 
-Here we collect docs that cover overarching SCS topics or topics that otherwise do not belong to an existing repository.
+**Please do not create new files in this folder.**
+The contents of this folder are for archival purposes only.  
+New drafts belong in the [`Standards/`](../Standards) folder instead and adhere to the lifecycle described in [scs-0001-v1-sovereign-cloud-standards](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0001-v1-sovereign-cloud-standards.md).
