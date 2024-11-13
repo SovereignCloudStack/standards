@@ -53,33 +53,23 @@ ALLOWED_CSI_PROV = ["cinder", "rookCeph", "longhorn"]
 
 def check_default_storageclass(k8s_client_storage):
     api_response = k8s_client_storage.list_storage_class(_preload_content=False)
-    storageclasses = api_response.read().decode("utf-8")
-    storageclasses_dict = json.loads(storageclasses)
-
-    ndefault_class = 0
-    for item in storageclasses_dict["items"]:
-        storage_class_name = item["metadata"]["name"]
-        annotations = item["metadata"]["annotations"]
-        if annotations.get("storageclass.kubernetes.io/is-default-class") == "true":
-            ndefault_class += 1
-            default_storage_class = storage_class_name
-            provisioner = item["provisioner"]
-
+    storageclasses = json.loads(api_response.read().decode("utf-8"))
+    # pick out name and provisioner for each default storage class
+    defaults = [
+        (item["metadata"]["name"], item["provisioner"])
+        for item in storageclasses['items']
+        if item["metadata"]["annotations"].get("storageclass.kubernetes.io/is-default-class") == "true"
+    ]
+    if len(defaults) != 1:
+        names = ', '.join(item[0] for item in defaults)
+        logger.error(f"Precisely one default storage class required, found {names or 'none'}")
+        raise SCSTestException('...', return_code=32)
+    name, provisioner = defaults[0]
+    logger.info(f"Default storage class and provisioner: {name}, {provisioner}")
     if provisioner == "kubernetes.io/no-provisioner":
-        raise SCSTestException(
-            f"Provisioner is set to: {provisioner}.",
-            "This means the default storage class has no provisioner.",
-            return_code=31,
-        )
-    if ndefault_class != 1:
-        raise SCSTestException(
-            "More then one or none default StorageClass is defined! ",
-            f"Number of defined default StorageClasses = {ndefault_class} ",
-            return_code=32,
-        )
-
-    logger.info(f"One default Storage Class found:'{default_storage_class}'")
-    return default_storage_class
+        logger.error("Default storage class missing provisioner")
+        raise SCSTestException('...', return_code=31)
+    return name
 
 
 def create_pvc_pod(
