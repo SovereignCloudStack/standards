@@ -8,8 +8,8 @@ supplements:
 ---
 ## List of compliant CNI Plugins
 
-The Kubernetes Network Policy SIG maintains a [list of work-in-progress implementations](https://network-policy-api.sigs.k8s.io/implementations/) of the AdminNetworkPolicy and BaselineAdminNetworkPolicy resources.
-Besides their own validation implementation of [kube-network-policies](https://github.com/kubernetes-sigs/kube-network-policies), at the time of writing they list the following CNI plugins:
+The Kubernetes Network Policy API working group maintains a [list of work-in-progress implementations](https://network-policy-api.sigs.k8s.io/implementations/) of the AdminNetworkPolicy and BaselineAdminNetworkPolicy resources.
+Besides their own proof-of-concept implementation of [kube-network-policies](https://github.com/kubernetes-sigs/kube-network-policies), at the time of writing they list the following CNI plugins:
 
 - [OVN-Kubernetes](https://github.com/ovn-org/ovn-kubernetes/)
 - [Antrea](https://github.com/antrea-io/antrea/)
