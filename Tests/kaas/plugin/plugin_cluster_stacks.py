@@ -275,7 +275,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         print(self.kubeconfig_cs_cluster_filename)
         wait_for_workload_pods_ready(kubeconfig_path=self.kubeconfig_cs_cluster_filename)
 
-    def delete_cluster(self, cluster_name=None, version=None, kubeconfig_filepath=None):
+    def delete_cluster(self, cluster_name=None, kubeconfig_filepath=None):
         kubeconfig_cs_cluster_filename = f"kubeconfig-{cluster_name}.yaml"
         try:
             # Check if the cluster exists
