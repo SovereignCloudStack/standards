@@ -4,15 +4,35 @@ url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/
 variables:
   - subject_root  # directory containing the kubeconfig files for the subject under test
 modules:
+
+
+
   - id: cncf-k8s-conformance
     name: CNCF Kubernetes conformance
     url: https://github.com/cncf/k8s-conformance/tree/master
-    #run:
-    #  - executable: ./kaas/plugin/run_sonobuoy_executor.py
-    #    args: -k {subject_root}/kubeconfig.yaml -r {result_dir_path} -c 'cncf-conformance'
+    run:
+      - executable: ./kaas/sonobuoy_handler/run_sonobuoy.py
+        #~ args: -k {subject_root}/kubeconfig.yaml -r {subject_root}/sono-results -c 'cncf-conformance'  -a '--mode=certified-conformance'
+        args: -k {subject_root}/kubeconfig.yaml -r {subject_root}/sono-results -c 'cncf-k8s-conformance'  -a '--plugin-env e2e.E2E_DRYRUN=true'
     testcases:
       - id: cncf-k8s-conformance
         tags: [mandatory]
+
+
+
+  #~ - id: scs-XXXX-v1
+    #~ name: Kubernetes network policy 
+    #~ url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-XXXX-v1-kaas-networking.md
+    #parameters:
+ #~ ￼      #mode: sonobouy mode to run
+    #~ run:
+      #~ - executable: ./kaas/sonobuoy_handler/run_sonobuoy.py
+        #~ args: -k {subject_root}/kubeconfig.yaml -r {subject_root}/sono-results -c 'cncf-debug' -a '--e2e-focus "NetworkPolicy"'
+    #~ testcases:
+      #~ - id: cncf-k8s-conformance
+        #~ tags: [mandatory]
+
+
   - id: scs-0210-v2
     name: Kubernetes version policy
     url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0210-v2-k8s-version-policy.md
@@ -40,7 +60,8 @@ versions:
   - version: v1
     include:
       - ref: cncf-k8s-conformance
-      - ref: scs-0210-v2
-      - ref: scs-0214-v2
+      #~ - ref: scs-XXXX-v1
+      #~ - ref: scs-0210-v2
+      #~ - ref: scs-0214-v2
     targets:
       main: mandatory
