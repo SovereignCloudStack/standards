@@ -341,7 +341,7 @@ def main(argv):
         if opt[0] == "-d" or opt[0] == "--debug":
             logging.getLogger().setLevel(logging.DEBUG)
     if not kubeconfig:
-        logger.critical("You need to have OS_CLOUD set or pass --kubeconfig=CLOUD.")
+        logger.critical("You need to pass --kubeconfig=CLOUD.")
         return 2
 
     with TestEnvironment(kubeconfig) as env:
