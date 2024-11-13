@@ -105,7 +105,7 @@ def create_pvc_pod(
         namespace, body_pvc
     )
 
-    # 2. Create a pod which makes use of the PersitantVolumeClaim
+    # 2. Create a pod which makes use of the PersistantVolumeClaim
     logger.debug(f"create pod: {pod_name}")
 
     pod_vol = client.V1Volume(
@@ -129,7 +129,7 @@ def create_pvc_pod(
     )
 
     api_response = k8s_api_instance.create_namespaced_pod(
-        NAMESPACE, pod_body, _preload_content=False
+        namespace, pod_body, _preload_content=False,
     )
     pod_info = json.loads(api_response.read().decode("utf-8"))
     pod_status = pod_info["status"]["phase"]
