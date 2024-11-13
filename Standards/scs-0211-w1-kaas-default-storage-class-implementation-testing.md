@@ -2,7 +2,7 @@
 title: "SCS KaaS default storage class: Implementation and Testing Notes"
 type: Supplement
 track: KaaS
-status: Proposal
+status: Draft
 supplements:
   - scs-0211-v1-kaas-default-storage-class.md
 ---

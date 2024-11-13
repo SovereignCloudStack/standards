@@ -1,7 +1,8 @@
 ---
 title: Default Rules for Security Groups
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2024-11-13
 track: IaaS
 ---
 
