@@ -211,10 +211,9 @@ def setup_git_env(self):
     })
 
     git_access_token = os.getenv('GIT_ACCESS_TOKEN')
-    if git_access_token:
-        os.environ['GIT_ACCESS_TOKEN_B64'] = base64.b64encode(git_access_token.encode()).decode('utf-8')
-    else:
+    if not git_access_token:
         raise ValueError("GIT_ACCESS_TOKEN environment variable not set.")
+    os.environ['GIT_ACCESS_TOKEN_B64'] = base64.b64encode(git_access_token.encode()).decode('utf-8')
 
 
 class PluginClusterStacks(KubernetesClusterPlugin):
