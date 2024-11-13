@@ -48,6 +48,7 @@ NAMESPACE = "default"
 PVC_NAME = "test-k-pvc"
 PV_NAME = "test-k-pv"
 POD_NAME = "test-k-pod"
+# A list of CSI-Providers that are
 ALLOWED_CSI_PROV = ["cinder", "rookCeph", "longhorn"]
 
 
@@ -161,8 +162,12 @@ def check_default_persistentvolumeclaim_readwriteonce(
     """
     # 3. Check if PV got succesfully created using ReadWriteOnce
     logger.debug("check if the created PV supports ReadWriteOnce")
-
     api_response = k8s_api_instance.list_persistent_volume(_preload_content=False)
+    if not api_response:
+        raise SCSTestException(
+                    "No persistent volume found",
+                    return_code=1,
+                )
 
     pv_info = json.loads(api_response.read().decode("utf-8"))
     pv_list = pv_info["items"]
