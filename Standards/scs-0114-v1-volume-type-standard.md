@@ -1,8 +1,9 @@
 ---
-title: Volume Type Standard
+title: SCS Volume Types
 type: Standard
-status: Draft
-track:  IaaS
+status: Stable
+stabilized_at: 2024-11-13
+track: IaaS
 ---
 
 ## Introduction
