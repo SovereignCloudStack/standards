@@ -47,28 +47,28 @@ While following new releases closely already provides a deployment with recent b
 Differences between releases will accumulate eventually and may render older releases non-compliant to the SCS standards at some point.
 
 On the other hand on the IaaS Level there aren't many breaking changes introduced by releases and also most standards will also work with older releases.
-Security Updates and Bug fixes are also provided by OpenStack for a few older releases with the state `maintained`.
-Additionally the [SCS reference implementation](https://github.com/SovereignCloudStack/release-notes/blob/main/Release7.md) is integrating OpenStack releases after half a year - so about the time when a new release is cut by OpenStack.
-Considering a CSP that wants to use only SLURP releases and waiting for the reference implementation will already be over a year or 2 releases behind, which cannot be considered as using the current version of IaaS Layer Software.
+Security updates and bug fixes are also provided by OpenStack for a few older releases with the state `maintained` according to the OpenStack releases overview[^2].
+Additionally the [SCS reference implementation](https://github.com/SovereignCloudStack/release-notes/blob/main/Release7.md) is integrating OpenStack releases after half a year - so about the time when a new release is published by OpenStack.
+Considering a CSP that wants to use only SLURP releases and waits for the reference implementation to adopt them, will already lag over a year (i.e. 2 OpenStack releases) behind the latest release, this cannot be considered as using the current version of IaaS Layer Software.
 Thus this option can be discarded.
 
 #### Allow only maintained versions of Software
 
 While following closely to the newest releases could be advised, there are several downsides to requiring this workflow, even if it would be only for SLURP releases.
-Following the SCS reference implementation for example would also lead into being a little bit behind the newest release.
+Following the SCS reference implementation for example would also lead into being a little bit behind the newest OpenStack release.
 But this is not as bad as it may seem to be, because security related fixes and bug fixes are backported to older but still `maintained` releases.
-All releases that are still maintained can be looked up at the releases page from OpenStack[^1].
+All releases that are still maintained can be looked up at the releases page from OpenStack[^2].
 
 Allowing maintained versions would give CSPs a little bit more time to update and test their environments, while still receiving relevant security updates and bug fixes.
-Also CSPs that want to become SCS-compliant may not have the burden to upgrade their deployments, but can test before an upgrade, where they need to put in additional work to become SCS-compliant.
+Also CSPs that want to become SCS-compliant will not have to take on the burden to upgrade their deployments to very recent releases immediately, but can instead test with an existing release before an upgrade and identify where they need to put in additional work to become SCS-compliant.
 
-One problem is, that there might be new features implemented in the newest versions of the software, which are desired by other standards to be SCS-compliant.
+One problem is, that there might be new features implemented in the newest versions of the software, which are desired by other SCS standards to be SCS-compliant.
 In that case allowing all maintained versions would lead to a two-year timespan customers would need to wait for before such a feature becomes available in all SCS-compliant deployments.
 In case of security relevant features this is not advisable.
 
 #### Standards implicitly define the minimum versions of Software
 
-Instead of requiring a defined minimum software version, it could be derived from the standards.
+Instead of requiring a defined minimum software version centrally, it could be derived from the individual standards.
 Because: Whenever there is a new wanted behavior a standard should be created and a resonable timeframe given to CSPs to adopt a software version that can fulfill the new standard.
 Through the combination of all standards that are in place, the minimum version for the IaaS service software is implicitly given.
 
@@ -91,18 +91,18 @@ And CSPs using OpenStack could even be encouraged to upgrade their deployments.
 #### Dependencies of the IaaS Layer Software
 
 While the IaaS service software like OpenStack itself is monitored and security issues announced in OSSNs and OSSAs, these services have lots of dependecies, that are not monitored by the same entity.
-When dependencies have security issues, there might be no OSSN or OSSA, so CSPs also need to watch CVEs concerning these dependencies themself.
+When dependencies have security issues, there might be no OSSN or OSSA, so CSPs also need to watch CVEs concerning these dependencies themselves.
 Those dependencies must also be updated in a reasonable timeframe, when a security issue is disclosed.
 
 #### What timeframe is needed to fix the issue?
 
 CSPs should be encouraged to fix security issues as fast as possible.
 Some security issues are very easy to exploit so as soon as the vulnerability is disclosed attacks on deployments will start.
-Other vulnerabilities may need much knowladge and more time to be exploited.
-Also the impact of different vulnerabilites will differ.
+Other vulnerabilities may need much knowledge and more time to be exploited.
+Also the impact of different vulnerabilities will differ.
 
 So it can be concluded that some security issues need to be fixed immediately while for others it is okay to take some time.
-The BSI already has some guidance[^1] on how fast CSPs should response.
+The BSI already has some guidance[^1] on how fast CSPs should respond.
 From the moment a vulnerability is disclosed these are the advised reaction times ranked by the severity of the vulnerability:
 
 1. Critical (CVSS = 9.0 – 10.0): 3 hours
@@ -121,7 +121,7 @@ Otherwise the CSP MUST implement security bug fixes themself within a reasonable
 
 In both cases a notice of the update MUST be send to the OSBA, so that the compliance will not be revoked.
 
-If a deployment uses a dependency of the IaaS service software which is affected ba a security issue, this software also MUST be updated with security patches within a reasonable timeframe[^1].
+If a deployment uses a dependency of the IaaS service software which is affected by a security issue, this software also MUST be updated with security patches within a reasonable timeframe[^1].
 
 An open SBOM list MAY be used to propagate the current version of the software and may be used as proof of updates.
 
@@ -132,7 +132,7 @@ An open SBOM list MAY be used to propagate the current version of the software a
 In case of provided SBOMs the version numbers of the software could be checked.
 But this is not a requirement, so there cannot be such a test.
 Tests on the integration of security patches itself are difficult.
-And even if tests for certain security issues are possible, then those might be received as an attack.
+And even if tests for certain security issues are possible, then those might be interpreted as an attack.
 This is the reason there will be no conformance test.
 
-Rather the standard requiring that CSPs provide notice of the fixed vulnerabilites themself.
+Rather the standard requires that CSPs provide notice of the fixed vulnerabilites themselves.
