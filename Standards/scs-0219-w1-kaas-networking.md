@@ -4,7 +4,7 @@ type: Supplement
 track: KaaS
 status: Draft
 supplements:
-  - scs-XXXX-v1-kaas-networking.md
+  - scs-0219-v1-kaas-networking.md
 ---
 ## List of compliant CNI Plugins
 
