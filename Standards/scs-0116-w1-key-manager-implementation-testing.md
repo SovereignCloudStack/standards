@@ -2,7 +2,7 @@
 title: "SCS Key Manager Standard: Implementation and Testing Notes"
 type: Supplement
 track: IaaS
-status: Proposal
+status: Draft
 supplements:
   - scs-0116-v1-key-manager-standard.md
 ---
