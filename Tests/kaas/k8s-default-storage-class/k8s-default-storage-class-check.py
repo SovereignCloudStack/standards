@@ -7,6 +7,7 @@ Return codes:
 1:    Not able to connect to k8s api
 2:    Kubeconfig not set
 3:    Conflicting Resources
+4:    Resource not found
 
 31:   Default storage class has no provisioner
 32:   None or more then one default Storage Class is defined
@@ -105,6 +106,8 @@ def create_pvc_pod(
     api_response = k8s_api_instance.create_namespaced_persistent_volume_claim(
         namespace, body_pvc
     )
+    k8s_api_instance.read_namespaced_persistent_volume_claim(name=pvc_name, namespace=namespace)
+    logger.debug(f"created pvc successfully")
 
     # 2. Create a pod which makes use of the PersistantVolumeClaim
     logger.debug(f"create pod: {pod_name}")
@@ -132,8 +135,11 @@ def create_pvc_pod(
     api_response = k8s_api_instance.create_namespaced_pod(
         namespace, pod_body, _preload_content=False,
     )
+    k8s_api_instance.read_namespaced_pod(name=pod_name, namespace=namespace)
+    logger.debug(f"created pod successfully")
     pod_info = json.loads(api_response.read().decode("utf-8"))
     pod_status = pod_info["status"]["phase"]
+
 
     retries = 0
     while pod_status != "Running" and retries <= num_retries:
@@ -255,13 +261,13 @@ class TestEnvironment:
                     return True
             return False
         except ApiException as e:
-            logger.error(f"Error preparing Environment: {e}")
-            return False
+                logger.error(f"Error preparing Environment: {e}")
+                return False
 
     def clean(self):
         api_response = None
         try:
-            logger.debug(f"delete pod:{self.pod_name}")
+            logger.debug(f"delete pod: {self.pod_name}")
             api_response = self.k8s_core_api.delete_namespaced_pod(
                 self.pod_name, self.namespace
             )
@@ -280,10 +286,10 @@ class TestEnvironment:
         retries = 0
         while retries <= 2:
             if self.prepare():
-                self.clean()
                 logger.debug(
                     f"Deleting Leftovers in namespace {self.namespace} from previous test runs"
                 )
+                self.clean()
                 time.sleep(2)
             else:
                 logger.debug(f"Entering the context {self.k8s_core_api}")
@@ -355,7 +361,16 @@ def main(argv):
         try:
             env.return_code = create_pvc_pod(k8s_core_api, default_class_name)
         except ApiException as api_exception:
-            if api_exception.status == 409:
+            logger.info(f"code {api_exception.status}")
+            if api_exception.status == 404:
+                logger.info(
+                    "resource not found, "
+                    "failed to build resources correctly"
+                )
+                env.return_code = 4
+                env.return_message = "(404) resource not found"
+                return
+            elif api_exception.status == 409:
                 logger.info(
                     "conflicting resources, "
                     "try to clean up left overs, then start again"
@@ -365,7 +380,8 @@ def main(argv):
                 return
             else:
                 logger.info(f"An API error occurred: {api_exception}")
-                env.return_code = 1
+                env.return_code = api_exception.status
+                return
 
         logger.info(
             "Check if default_persistent volume has ReadWriteOnce defined (MANDATORY)"
