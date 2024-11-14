@@ -12,19 +12,14 @@ logger = logging.getLogger("PluginClusterStacks")
 
 
 # Helper functions
-def wait_for_capi_pods_ready(timeout=240, interval=15):
+def wait_for_pods(namespaces, timeout=240, interval=15):
     """
-    Waits for all CAPI pods in specific namespaces to reach the 'Running' state with all containers ready.
+    Waits for all pods in specified namespaces to reach the 'Running' state with all containers ready.
 
+    :param namespaces: List of namespaces to check for pod readiness.
     :param timeout: Total time to wait in seconds before giving up.
     :param interval: Time to wait between checks in seconds.
     """
-    namespaces = [
-        "capi-kubeadm-bootstrap-system",
-        "capi-kubeadm-control-plane-system",
-        "capi-system",
-    ]
-
     start_time = time.time()
 
     while time.time() - start_time < timeout:
@@ -49,7 +44,7 @@ def wait_for_capi_pods_ready(timeout=240, interval=15):
                             all_pods_ready = False
                             logger.info(f"Pod {pod_name} in {namespace} is not ready. Phase: {phase}, Ready: {readiness_states}")
                 else:
-                    logger.info(f"Error fetching pods in {namespace}: {result.stderr}")
+                    logger.error(f"Error fetching pods in {namespace}: {result.stderr}")
                     all_pods_ready = False
 
             except subprocess.CalledProcessError as error:
@@ -57,61 +52,13 @@ def wait_for_capi_pods_ready(timeout=240, interval=15):
                 all_pods_ready = False
 
         if all_pods_ready:
-            logger.info("All CAPI system pods are ready.")
+            logger.info("All specified pods are ready in all namespaces.")
             return True
 
-        logger.info("Waiting for all CAPI pods to become ready...")
+        logger.info("Waiting for all pods in specified namespaces to become ready...")
         time.sleep(interval)
 
-    raise TimeoutError(f"Timed out after {timeout} seconds waiting for CAPI and CAPO system pods to become ready.")
-
-
-def wait_for_cso_pods_ready(timeout=240, interval=15):
-    """
-    Waits for all CSO (Cluster Stack Operator) pods in the 'cso-system' namespace to reach 'Running' with containers ready.
-
-    :param timeout: Total time to wait in seconds before giving up.
-    :param interval: Time to wait between checks in seconds.
-    """
-    cso_namespace = "cso-system"
-    start_time = time.time()
-
-    while time.time() - start_time < timeout:
-        all_pods_ready = True
-
-        try:
-            # Get pod status in the 'cso-system' namespace
-            result = subprocess.run(
-                f"kubectl get pods -n {cso_namespace} -o=jsonpath='{{range .items[*]}}{{.metadata.name}} {{.status.phase}} {{range .status.containerStatuses[*]}}{{.ready}} {{end}}{{\"\\n\"}}{{end}}'",
-                shell=True, capture_output=True, text=True, check=True
-            )
-
-            if result.returncode == 0:
-                pods_status = result.stdout.strip().splitlines()
-                for pod_status in pods_status:
-                    pod_info = pod_status.split()
-                    pod_name, phase, *readiness_states = pod_info
-
-                    # Check pod phase and all containers readiness
-                    if phase != "Running" or "false" in readiness_states:
-                        all_pods_ready = False
-                        logger.info(f"Pod {pod_name} in {cso_namespace} is not ready. Phase: {phase}, Ready: {readiness_states}")
-            else:
-                logger.error(f"Error fetching pods in {cso_namespace}: {result.stderr}")
-                all_pods_ready = False
-
-        except subprocess.CalledProcessError as error:
-            logger.error(f"Error checking pods in {cso_namespace}: {error}")
-            all_pods_ready = False
-
-        if all_pods_ready:
-            logger.info("All CSO pods in 'cso-system' namespace are ready.")
-            return True
-
-        logger.info("Waiting for CSO pods in 'cso-system' namespace to become ready...")
-        time.sleep(interval)
-
-    raise TimeoutError(f"Timed out after {timeout} seconds waiting for CSO pods in 'cso-system' namespace to become ready.")
+    raise TimeoutError(f"Timed out after {timeout} seconds waiting for pods in namespaces {namespaces} to become ready.")
 
 
 def wait_for_workload_pods_ready(namespace="kube-system", timeout=600, kubeconfig_path=None, max_retries=3, delay=30):
@@ -245,7 +192,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         self._run_subprocess(["clusterctl", "init", "--infrastructure", "openstack"], "Error during clusterctl init")
 
         # Wait for all CAPI pods to be ready
-        wait_for_capi_pods_ready()
+        wait_for_pods(["capi-kubeadm-bootstrap-system", "capi-kubeadm-control-plane-system", "capi-system"])
 
         # Apply infrastructure components
         self._apply_yaml_with_envsubst("cso-infrastructure-components.yaml", "Error applying CSO infrastructure components")
@@ -259,7 +206,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         )
         self._run_subprocess(helm_command, "Error deploying CSP-helper chart", shell=True)
 
-        wait_for_cso_pods_ready()
+        wait_for_pods(["cso-system"])
 
         # Create Cluster Stack definition and workload cluster
         self._apply_yaml_with_envsubst("clusterstack.yaml", "Error applying clusterstack.yaml")
