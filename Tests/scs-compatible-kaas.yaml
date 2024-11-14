@@ -17,22 +17,15 @@ modules:
     testcases:
       - id: cncf-k8s-conformance
         tags: [mandatory]
-
-
-
-  #~ - id: scs-XXXX-v1
-    #~ name: Kubernetes network policy 
-    #~ url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-XXXX-v1-kaas-networking.md
-    #parameters:
- #~ ￼      #mode: sonobouy mode to run
-    #~ run:
-      #~ - executable: ./kaas/sonobuoy_handler/run_sonobuoy.py
-        #~ args: -k {subject_root}/kubeconfig.yaml -r {subject_root}/sono-results -c 'cncf-debug' -a '--e2e-focus "NetworkPolicy"'
-    #~ testcases:
-      #~ - id: cncf-k8s-conformance
-        #~ tags: [mandatory]
-
-
+  - id: scs-0219-v1
+    name: KaaS networking requirements
+    url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0219-v1-kaas-networking.md
+    run:
+      - executable: ./kaas/sonobuoy_handler/run_sonobuoy.py
+        args: -k {subject_root}/kubeconfig.yaml -r {subject_root}/sono-results -c 'network-policy-support' -a '--e2e-focus "NetworkPolicy"'
+    testcases:
+      - id: network-policy-support
+        tags: [mandatory]
   - id: scs-0210-v2
     name: Kubernetes version policy
     url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0210-v2-k8s-version-policy.md
