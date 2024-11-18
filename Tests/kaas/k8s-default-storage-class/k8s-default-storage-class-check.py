@@ -92,22 +92,22 @@ def create_pvc_pod(
     # 1. Create PersistantVolumeClaim
     logger.debug(f"create pvc: {pvc_name}")
 
-    pvc_meta = client.V1ObjectMeta(name=pvc_name)
-    pvc_resources = client.V1ResourceRequirements(
-        requests={"storage": "1Gi"},
-    )
-    pvc_spec = client.V1PersistentVolumeClaimSpec(
-        access_modes=["ReadWriteOnce"],
-        storage_class_name=storage_class,
-        resources=pvc_resources,
-    )
-    body_pvc = client.V1PersistentVolumeClaim(
-        api_version="v1", kind="PersistentVolumeClaim", metadata=pvc_meta, spec=pvc_spec
-    )
+    # pvc_meta = client.V1ObjectMeta(name=pvc_name)
+    # pvc_resources = client.V1ResourceRequirements(
+    #     requests={"storage": "1Gi"},
+    # )
+    # pvc_spec = client.V1PersistentVolumeClaimSpec(
+    #     access_modes=["ReadWriteOnce"],
+    #     storage_class_name=storage_class,
+    #     resources=pvc_resources,
+    # )
+    # body_pvc = client.V1PersistentVolumeClaim(
+    #     api_version="v1", kind="PersistentVolumeClaim", metadata=pvc_meta, spec=pvc_spec
+    # )
 
-    api_response = k8s_api_instance.create_namespaced_persistent_volume_claim(
-        namespace, body_pvc
-    )
+    # api_response = k8s_api_instance.create_namespaced_persistent_volume_claim(
+    #     namespace, body_pvc
+    # )
     try:
       k8s_api_instance.read_namespaced_persistent_volume_claim(name=pvc_name, namespace=namespace)
       logger.debug("created pvc successfully")
