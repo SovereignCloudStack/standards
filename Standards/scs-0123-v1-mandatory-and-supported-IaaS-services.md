@@ -56,7 +56,7 @@ The following IaaS APIs MAY be present in SCS-compliant IaaS deployment, e.g. im
 | Supported API | corresponding OpenStack Service | description |
 |-----|-----|-----|
 | **bare-metal** | Ironic | Bare Metal provisioning service |
-| **billing** | Cloudkitty | Rating/Billing service |
+| **billing** | CloudKitty | Rating/Billing service |
 | **dns** | Designate | DNS service |
 | **ha** | Masakari | Instances High Availability service |
 | **key-manager** | Barbican | Key Manager service |
