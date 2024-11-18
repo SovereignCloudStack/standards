@@ -15,6 +15,8 @@ Return codes:
 
 41:   Not able to bind PersitantVolume to PersitantVolumeClaim
 42:   ReadWriteOnce is not a supported access mode
+43:   PVC not found
+44:   Pod not found
 
 All return codes between (and including) 1-19 as well as all return codes ending on 9
 can be seen as failures.
@@ -89,7 +91,7 @@ def create_pvc_pod(
     """
     # 1. Create PersistantVolumeClaim
     logger.debug(f"create pvc: {pvc_name}")
-
+    creationflag = 2
     pvc_meta = client.V1ObjectMeta(name=pvc_name)
     pvc_resources = client.V1ResourceRequirements(
         requests={"storage": "1Gi"},
@@ -106,8 +108,9 @@ def create_pvc_pod(
     api_response = k8s_api_instance.create_namespaced_persistent_volume_claim(
         namespace, body_pvc
     )
-    k8s_api_instance.read_namespaced_persistent_volume_claim(name=pvc_name, namespace=namespace)
-    logger.debug("created pvc successfully")
+    if k8s_api_instance.read_namespaced_persistent_volume_claim(name=pvc_name, namespace=namespace):
+        creationflag -=1
+        logger.debug(f"created pvc successfully {creationflag}")
 
     # 2. Create a pod which makes use of the PersistantVolumeClaim
     logger.debug(f"create pod: {pod_name}")
@@ -135,8 +138,9 @@ def create_pvc_pod(
     api_response = k8s_api_instance.create_namespaced_pod(
         namespace, pod_body, _preload_content=False,
     )
-    k8s_api_instance.read_namespaced_pod(name=pod_name, namespace=namespace)
-    logger.debug("created pod successfully")
+    if k8s_api_instance.read_namespaced_pod(name=pod_name, namespace=namespace):
+      creationflag-=1
+      logger.debug(f"created pod successfully {creationflag}")
     pod_info = json.loads(api_response.read().decode("utf-8"))
     pod_status = pod_info["status"]["phase"]
 
@@ -221,7 +225,6 @@ class TestEnvironment:
         self.return_code = 0
         self.return_message = "return_message: FAILED"
         self.kubeconfig = kubeconfig
-        self.cleanup = False
 
     def prepare(self):
         """
@@ -353,11 +356,9 @@ def main(argv):
             env.return_code = 1
             logger.debug("check_default_storageclass() failed")
             return env.return_code
-            # logger.debug("check_default_storageclass() failed")
-            # return 1
-        env.cleanup = True
         try:
             env.return_code = create_pvc_pod(k8s_core_api, default_class_name)
+            logger.debug(f"create: {env.return_code}")
         except ApiException as api_exception:
             logger.info(f"code {api_exception.status}")
             if api_exception.status == 404:
