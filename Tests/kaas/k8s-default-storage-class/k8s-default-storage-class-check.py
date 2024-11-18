@@ -91,7 +91,9 @@ def create_pvc_pod(
     """
     # 1. Create PersistantVolumeClaim
     logger.debug(f"create pvc: {pvc_name}")
+
     creationflag = 2
+
     pvc_meta = client.V1ObjectMeta(name=pvc_name)
     pvc_resources = client.V1ResourceRequirements(
         requests={"storage": "1Gi"},
@@ -108,9 +110,16 @@ def create_pvc_pod(
     api_response = k8s_api_instance.create_namespaced_persistent_volume_claim(
         namespace, body_pvc
     )
-    if k8s_api_instance.read_namespaced_persistent_volume_claim(name=pvc_name, namespace=namespace):
-        creationflag -=1
+    try k8s_api_instance.read_namespaced_persistent_volume_claim(name=pvc_name, namespace=namespace):
         logger.debug(f"created pvc successfully {creationflag}")
+    except ApiException as api_exception:
+      logger.info(f"code {api_exception.status}")
+      if api_exception.status == 404:
+          logger.info(
+              "pod not found, "
+              "failed to build resources correctly"
+          )
+          return 43
 
     # 2. Create a pod which makes use of the PersistantVolumeClaim
     logger.debug(f"create pod: {pod_name}")
@@ -138,9 +147,17 @@ def create_pvc_pod(
     api_response = k8s_api_instance.create_namespaced_pod(
         namespace, pod_body, _preload_content=False,
     )
-    if k8s_api_instance.read_namespaced_pod(name=pod_name, namespace=namespace):
-      creationflag-=1
-      logger.debug(f"created pod successfully {creationflag}")
+    try:
+      k8s_api_instance.read_namespaced_pod(name=pod_name, namespace=namespace):
+      logger.debug(f"created pod successfully")
+    except ApiException as api_exception:
+          logger.info(f"code {api_exception.status}")
+          if api_exception.status == 404:
+              logger.info(
+                  "pod not found, "
+                  "failed to build resources correctly"
+              )
+              return 44
     pod_info = json.loads(api_response.read().decode("utf-8"))
     pod_status = pod_info["status"]["phase"]
 
