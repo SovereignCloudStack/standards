@@ -61,18 +61,23 @@ def check_default_storageclass(k8s_client_storage):
     # pick out name and provisioner for each default storage class
     defaults = [
         (item["metadata"]["name"], item["provisioner"])
-        for item in storageclasses['items']
-        if item["metadata"]["annotations"].get("storageclass.kubernetes.io/is-default-class") == "true"
+        for item in storageclasses["items"]
+        if item["metadata"]["annotations"].get(
+            "storageclass.kubernetes.io/is-default-class"
+        )
+        == "true"
     ]
     if len(defaults) != 1:
-        names = ', '.join(item[0] for item in defaults)
-        logger.error(f"Precisely one default storage class required, found {names or 'none'}")
-        raise SCSTestException('...', return_code=32)
+        names = ", ".join(item[0] for item in defaults)
+        logger.error(
+            f"Precisely one default storage class required, found {names or 'none'}"
+        )
+        raise SCSTestException("...", return_code=32)
     name, provisioner = defaults[0]
     logger.info(f"Default storage class and provisioner: {name}, {provisioner}")
     if provisioner == "kubernetes.io/no-provisioner":
         logger.error("Default storage class missing provisioner")
-        raise SCSTestException('...', return_code=31)
+        raise SCSTestException("...", return_code=31)
     return name
 
 
@@ -109,16 +114,15 @@ def create_pvc_pod(
         namespace, body_pvc
     )
     try:
-      k8s_api_instance.read_namespaced_persistent_volume_claim(name=pvc_name, namespace=namespace)
-      logger.debug("created pvc successfully")
+        k8s_api_instance.read_namespaced_persistent_volume_claim(
+            name=pvc_name, namespace=namespace
+        )
+        logger.debug("created pvc successfully")
     except ApiException as api_exception:
-      logger.info(f"code {api_exception.status}")
-      if api_exception.status == 404:
-          logger.info(
-              "pvc not found, "
-              "failed to build resources correctly"
-          )
-          return 43
+        logger.info(f"code {api_exception.status}")
+        if api_exception.status == 404:
+            logger.info("pvc not found, " "failed to build resources correctly")
+            return 43
 
     # 2. Create a pod which makes use of the PersistantVolumeClaim
     logger.debug(f"create pod: {pod_name}")
@@ -144,19 +148,18 @@ def create_pvc_pod(
     )
 
     api_response = k8s_api_instance.create_namespaced_pod(
-        namespace, pod_body, _preload_content=False,
+        namespace,
+        pod_body,
+        _preload_content=False,
     )
     try:
-      k8s_api_instance.read_namespaced_pod(name=pod_name, namespace=namespace)
-      logger.debug(f"created pod successfully")
+        k8s_api_instance.read_namespaced_pod(name=pod_name, namespace=namespace)
+        logger.debug(f"created pod successfully")
     except ApiException as api_exception:
-          logger.info(f"code {api_exception.status}")
-          if api_exception.status == 404:
-              logger.info(
-                  "pod not found, "
-                  "failed to build resources correctly"
-              )
-              return 44
+        logger.info(f"code {api_exception.status}")
+        if api_exception.status == 404:
+            logger.info("pod not found, " "failed to build resources correctly")
+            return 44
     pod_info = json.loads(api_response.read().decode("utf-8"))
     pod_status = pod_info["status"]["phase"]
 
@@ -189,7 +192,10 @@ def check_default_persistentvolumeclaim_readwriteonce(
     logger.debug("check if the created PV supports ReadWriteOnce")
     api_response = k8s_api_instance.list_persistent_volume(_preload_content=False)
     if not api_response:
-        raise SCSTestException("No persistent volume found",return_code=1, )
+        raise SCSTestException(
+            "No persistent volume found",
+            return_code=1,
+        )
 
     pv_info = json.loads(api_response.read().decode("utf-8"))
     pv_list = pv_info["items"]
@@ -315,16 +321,15 @@ class TestEnvironment:
     def __exit__(self, exc_type, exc_value, traceback):
         if self.return_code != 43:
             try:
-              self.clean()
+                self.clean()
             except ApiException as api_exception:
-              logger.info(f"code {api_exception.status}")
-              if api_exception.status == 404: # might be obsolete
-                  logger.info(
-                      "resource not found, "
-                      "failed to build resources correctly"
-                  )
-                  self.return_code = 4
-                  self.return_message = "(404) resource not found"
+                logger.info(f"code {api_exception.status}")
+                if api_exception.status == 404:  # might be obsolete
+                    logger.info(
+                        "resource not found, " "failed to build resources correctly"
+                    )
+                    self.return_code = 4
+                    self.return_message = "(404) resource not found"
         if self.return_code == 0:
             self.return_message = "all tests passed"
         if isinstance(exc_value, SCSTestException):
@@ -375,7 +380,9 @@ def main(argv):
         k8s_core_api = env.k8s_core_api
         logger.debug("check_default_storageclass()")
         try:
-            default_class_name = check_default_storageclass(env.k8s_storage_api) #raise Exception
+            default_class_name = check_default_storageclass(
+                env.k8s_storage_api
+            )  # raise Exception
         except SCSTestException:
             raise
         except Exception:
@@ -407,9 +414,9 @@ def main(argv):
             #     env.return_message = "(409) conflicting resources"
             #     return
             # else:
-                logger.info(f"An API error occurred: {api_exception}")
-                env.return_code = api_exception.status
-                return
+            logger.info(f"An API error occurred: {api_exception}")
+            env.return_code = api_exception.status
+            return
 
         logger.info(
             "Check if default_persistent volume has ReadWriteOnce defined (MANDATORY)"
