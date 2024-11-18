@@ -7,7 +7,7 @@ spec:
   command:
   - bash
   args: ["-c","go tool test2json ./custom.test -test.v | tee ${SONOBUOY_RESULTS_DIR}/out.json ; echo ${SONOBUOY_RESULTS_DIR}/out.json > ${SONOBUOY_RESULTS_DIR}/done"]
-  image: registry.dnation.cloud/test-mg/scsconformance:dev #ghcr.io/sovereigncloudstack/standards/scs-kaas-conformance:dev
+  image: ghcr.io/sovereigncloudstack/standards/scs-kaas-conformance:dev
   env:
   - name: NS_PREFIX
     value: custom
