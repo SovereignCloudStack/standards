@@ -298,8 +298,8 @@ class TestEnvironment:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if self.return_code != 4:
-          self.clean()
+        # if self.return_code != 4:
+        #   self.clean()
         if self.return_code == 0:
             self.return_message = "all tests passed"
         if isinstance(exc_value, SCSTestException):
