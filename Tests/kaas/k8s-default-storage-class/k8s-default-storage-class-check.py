@@ -64,7 +64,8 @@ def check_default_storageclass(k8s_client_storage):
         for item in storageclasses["items"]
         if item["metadata"]["annotations"].get(
             "storageclass.kubernetes.io/is-default-class"
-        ) == "true"
+        )
+        == "true"
     ]
     if len(defaults) != 1:
         names = ", ".join(item[0] for item in defaults)
@@ -395,27 +396,26 @@ def main(argv):
                 env.return_message = "(404) resource not found"
                 return
         except ApiException as api_exception:
-            # logger.info(f"code {api_exception.status}")
-            # if api_exception.status == 404: # might be obsolete
-            #     logger.info(
-            #         "resource not found, "
-            #         "failed to build resources correctly"
-            #     )
-            #     env.return_code = 4
-            #     env.return_message = "(404) resource not found"
-            #     return
-            # elif api_exception.status == 409:# might be obsolete
-            #     logger.info(
-            #         "conflicting resources, "
-            #         "try to clean up left overs, then start again"
-            #     )
-            #     env.return_code = 3
-            #     env.return_message = "(409) conflicting resources"
-            #     return
-            # else:
-            logger.info(f"An API error occurred: {api_exception}")
-            env.return_code = api_exception.status
-            return
+            logger.info(f"code {api_exception.status}")
+            if api_exception.status == 409:  # might be obsolete
+                logger.info(
+                    "conflicting resources, "
+                    "try to clean up left overs, then start again"
+                )
+                env.return_code = 3
+                env.return_message = "(409) conflicting resources"
+                return
+            elif api_exception.status == 404:  # might be obsolete
+                logger.info(
+                    "resource not found, " "failed to build resources correctly"
+                )
+                env.return_code = 4
+                env.return_message = "(404) resource not found"
+                return
+            else:
+                logger.info(f"An API error occurred: {api_exception}")
+                env.return_code = api_exception.status
+                return
 
         logger.info(
             "Check if default_persistent volume has ReadWriteOnce defined (MANDATORY)"
