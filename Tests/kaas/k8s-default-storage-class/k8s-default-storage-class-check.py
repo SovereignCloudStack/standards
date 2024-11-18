@@ -115,7 +115,7 @@ def create_pvc_pod(
       logger.info(f"code {api_exception.status}")
       if api_exception.status == 404:
           logger.info(
-              "pod not found, "
+              "pvc not found, "
               "failed to build resources correctly"
           )
           return 43
@@ -313,7 +313,7 @@ class TestEnvironment:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if self.return_code != 4:
+        if self.return_code != 43:
             self.clean()
         if self.return_code == 0:
             self.return_message = "all tests passed"
@@ -375,9 +375,12 @@ def main(argv):
         try:
             env.return_code = create_pvc_pod(k8s_core_api, default_class_name)
             logger.debug(f"create: {env.return_code}")
+            if env.return_code != 0:
+                env.return_message = "(404) resource not found"
+                return
         except ApiException as api_exception:
             logger.info(f"code {api_exception.status}")
-            if api_exception.status == 404:
+            if api_exception.status == 404: # might be obsolete
                 logger.info(
                     "resource not found, "
                     "failed to build resources correctly"
@@ -385,7 +388,7 @@ def main(argv):
                 env.return_code = 4
                 env.return_message = "(404) resource not found"
                 return
-            elif api_exception.status == 409:
+            elif api_exception.status == 409:# might be obsolete
                 logger.info(
                     "conflicting resources, "
                     "try to clean up left overs, then start again"
