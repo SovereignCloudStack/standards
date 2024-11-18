@@ -2,6 +2,7 @@ import yaml
 import sys
 import logging
 from kubernetes import client, config
+import os
 
 manual_result_file_template = {
     "name": None,
@@ -13,7 +14,7 @@ logger = logging.getLogger("helper")
 
 
 def initialize_logging():
-    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.DEBUG)
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.INFO)
 
 
 def print_usage(file=sys.stderr):
@@ -34,11 +35,11 @@ class SCSTestException(Exception):
     """Raised when an Specific test did not pass"""
 
     def __init__(self, *args, return_code: int):
+        super().__init__(*args)
         self.return_code = return_code
 
 
 def setup_k8s_client(kubeconfigfile=None):
-
     if kubeconfigfile:
         logger.debug(f"using kubeconfig file '{kubeconfigfile}'")
         config.load_kube_config(kubeconfigfile)
@@ -56,19 +57,15 @@ def setup_k8s_client(kubeconfigfile=None):
 
 
 def gen_sonobuoy_result_file(error_n: int, error_msg: str, test_file_name: str):
-
-    test_name = test_file_name.replace(".py", "")
-
+    test_name = test_file_name.removesuffix(".py")
     test_status = "passed"
-
     if error_n != 0:
         test_status = test_name + "_" + str(error_n)
+        result_file = manual_result_file_template
+        result_file["name"] = test_name
+        result_file["status"] = test_status
+        result_file["details"]["messages"] = error_msg
 
-    result_file = manual_result_file_template
-
-    result_file["name"] = test_name
-    result_file["status"] = test_status
-    result_file["details"]["messages"] = error_msg
-
-    with open(f"./{test_name}.result.yaml", "w") as file:
-        yaml.dump(result_file, file)
+        script_directory = os.path.dirname(os.path.abspath(__file__))
+        with open(f"{script_directory}/{test_name}.result.yaml", "w") as file:
+            yaml.dump(result_file, file)

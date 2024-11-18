@@ -1,8 +1,10 @@
 aiohttp
 click
+kubernetes
 kubernetes_asyncio
+openstacksdk
 python-dateutil
 PyYAML
-openstacksdk
 requests
 tomli
+
