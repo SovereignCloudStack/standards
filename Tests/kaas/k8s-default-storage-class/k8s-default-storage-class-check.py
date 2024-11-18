@@ -92,8 +92,6 @@ def create_pvc_pod(
     # 1. Create PersistantVolumeClaim
     logger.debug(f"create pvc: {pvc_name}")
 
-    creationflag = 2
-
     pvc_meta = client.V1ObjectMeta(name=pvc_name)
     pvc_resources = client.V1ResourceRequirements(
         requests={"storage": "1Gi"},
@@ -110,8 +108,9 @@ def create_pvc_pod(
     api_response = k8s_api_instance.create_namespaced_persistent_volume_claim(
         namespace, body_pvc
     )
-    try k8s_api_instance.read_namespaced_persistent_volume_claim(name=pvc_name, namespace=namespace):
-        logger.debug(f"created pvc successfully {creationflag}")
+    try:
+      k8s_api_instance.read_namespaced_persistent_volume_claim(name=pvc_name, namespace=namespace)
+      logger.debug("created pvc successfully")
     except ApiException as api_exception:
       logger.info(f"code {api_exception.status}")
       if api_exception.status == 404:
@@ -148,7 +147,7 @@ def create_pvc_pod(
         namespace, pod_body, _preload_content=False,
     )
     try:
-      k8s_api_instance.read_namespaced_pod(name=pod_name, namespace=namespace):
+      k8s_api_instance.read_namespaced_pod(name=pod_name, namespace=namespace)
       logger.debug(f"created pod successfully")
     except ApiException as api_exception:
           logger.info(f"code {api_exception.status}")
