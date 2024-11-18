@@ -1,4 +1,17 @@
 #!/usr/bin/env python3
+# AN IMPORTANT NOTE ON CONCURRENCY:
+# This server is based on uvicorn and, as such, is not multi-threaded.
+# (It could use multiple processes, but we don't do that yet.)
+# Consequently, we don't need to use any measures for thread-safety.
+# However, if we do at some point enable the use of multiple processes,
+# we should make sure that all processes are "on the same page" with regard
+# to basic data such as certificate scopes, templates, and accounts.
+# One way to achieve this synchronicity could be to use the Postgres server
+# more, however, I hope that more efficient ways are possible.
+# Also, it is quite likely that the signal SIGHUP could no longer be used
+# to trigger a re-load. In any case, the `uvicorn.run` call would have to be
+# fundamentally changed:
+# > You must pass the application as an import string to enable 'reload' or 'workers'.
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from enum import Enum
@@ -7,11 +20,9 @@ import logging
 import os
 import os.path
 from shutil import which
+import signal
 from subprocess import run
 from tempfile import NamedTemporaryFile
-# _thread: low-level library, but (contrary to the name) not private
-# https://docs.python.org/3/library/_thread.html
-from _thread import allocate_lock, get_ident
 from typing import Annotated, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
@@ -30,8 +41,7 @@ from sql import (
     db_find_account, db_update_account, db_update_publickey, db_filter_publickeys, db_get_reports,
     db_get_keys, db_insert_report, db_get_recent_results2, db_patch_approval2, db_get_report,
     db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys, db_clear_delegates,
-    db_patch_subject, db_get_subjects, db_insert_result2, db_get_relevant_results2, db_add_delegate,
-    db_find_subjects,
+    db_find_subjects, db_insert_result2, db_get_relevant_results2, db_add_delegate,
 )
 
 
@@ -86,6 +96,11 @@ class ViewType(Enum):
     fragment = "fragment"
 
 
+VIEW_REPORT = {
+    ViewType.markdown: 'report.md',
+    ViewType.fragment: 'report.md',
+    ViewType.page: 'overview.html',
+}
 VIEW_DETAIL = {
     ViewType.markdown: 'details.md',
     ViewType.fragment: 'details.md',
@@ -96,7 +111,12 @@ VIEW_TABLE = {
     ViewType.fragment: 'overview.md',
     ViewType.page: 'overview.html',
 }
-REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_DETAIL, VIEW_TABLE) for fn in view.values()))
+VIEW_SCOPE = {
+    ViewType.markdown: 'scope.md',
+    ViewType.fragment: 'scope.md',
+    ViewType.page: 'overview.html',
+}
+REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_REPORT, VIEW_DETAIL, VIEW_TABLE, VIEW_SCOPE) for fn in view.values()))
 
 
 # do I hate these globals, but I don't see another way with these frameworks
@@ -112,10 +132,7 @@ env = Environment()  # populate this on startup (final section of this file)
 templates_map = {
     k: None for k in REQUIRED_TEMPLATES
 }
-# map thread id (cf. `get_ident`) to a dict that maps scope uuids to scope documents
-# -- access this using function `get_scopes`
-_scopes = defaultdict(dict)  # thread-local storage (similar to threading.local, but more efficient)
-_scopes_lock = allocate_lock()  # mutex lock so threads can add their local storage without races
+_scopes = {}  # map scope uuid to `PrecomputedScope` instance
 
 
 class TimestampEncoder(json.JSONEncoder):
@@ -211,8 +228,6 @@ def import_bootstrap(bootstrap_path, conn):
             db_filter_apikeys(cur, accountid, lambda keyid, *_: keyid in keyids)
             keyids = set(db_update_publickey(cur, accountid, key) for key in account.get("keys", ()))
             db_filter_publickeys(cur, accountid, lambda keyid, *_: keyid in keyids)
-        for subject, record in subjects.items():
-            db_patch_subject(cur, {'subject': subject, **record})
         conn.commit()
 
 
@@ -266,10 +281,12 @@ class PrecomputedScope:
             by_validity[self.versions[vname].validity].append(vname)
         # go through worsening validity values until a passing version is found
         relevant = []
+        best_passed = None
         for validity in ('effective', 'warn', 'deprecated'):
             vnames = by_validity[validity]
             relevant.extend(vnames)
             if any(version_results[vname]['result'] == 1 for vname in vnames):
+                best_passed = validity
                 break
         # always include draft (but only at the end)
         relevant.extend(by_validity['draft'])
@@ -283,6 +300,7 @@ class PrecomputedScope:
                 vname + ASTERISK_LOOKUP[self.versions[vname].validity]
                 for vname in passed
             ]),
+            'best_passed': best_passed,
         }
 
     def update_lookup(self, target_dict):
@@ -321,19 +339,8 @@ def import_cert_yaml_dir(yaml_path, target_dict):
 
 
 def get_scopes():
-    """returns thread-local copy of the scopes dict"""
-    ident = get_ident()
-    with _scopes_lock:
-        yaml_path = _scopes['_yaml_path']
-        counter = _scopes['_counter']
-        current = _scopes.get(ident)
-        if current is None:
-            _scopes[ident] = current = {'_counter': -1}
-    if current['_counter'] != counter:
-        current.clear()
-        import_cert_yaml_dir(yaml_path, current)
-        current['_counter'] = counter
-    return current
+    """returns the scopes dict"""
+    return _scopes
 
 
 def import_templates(template_dir, env, templates):
@@ -540,19 +547,46 @@ async def get_status(
     return convert_result_rows_to_dict2(rows2, get_scopes(), include_report=True)
 
 
-def render_view(view, view_type, results, base_url='/', title=None):
+def _build_report_url(base_url, report, *args, **kwargs):
+    if kwargs.get('download'):
+        return f"{base_url}reports/{report}"
+    url = f"{base_url}page/report/{report}"
+    if len(args) == 2:  # version, testcase_id --> add corresponding fragment specifier
+        url += f"#{args[0]}_{args[1]}"
+    return url
+
+
+def render_view(view, view_type, detail_page='detail', base_url='/', title=None, **kwargs):
     media_type = {ViewType.markdown: 'text/markdown'}.get(view_type, 'text/html')
     stage1 = stage2 = view[view_type]
     if view_type is ViewType.page:
         stage1 = view[ViewType.fragment]
-    def detail_url(subject, scope): return f"{base_url}page/detail/{subject}/{scope}"  # noqa: E306,E704
-    def report_url(report): return f"{base_url}reports/{report}"  # noqa: E306,E704
-    fragment = templates_map[stage1].render(results=results, detail_url=detail_url, report_url=report_url)
+    def scope_url(uuid): return f"{base_url}page/scope/{uuid}"  # noqa: E306,E704
+    def detail_url(subject, scope): return f"{base_url}page/{detail_page}/{subject}/{scope}"  # noqa: E306,E704
+    def report_url(report, *args, **kwargs): return _build_report_url(base_url, report, *args, **kwargs)  # noqa: E306,E704
+    fragment = templates_map[stage1].render(detail_url=detail_url, report_url=report_url, scope_url=scope_url, **kwargs)
     if view_type != ViewType.markdown and stage1.endswith('.md'):
         fragment = markdown(fragment, extensions=['extra'])
     if stage1 != stage2:
         fragment = templates_map[stage2].render(fragment=fragment, title=title)
     return Response(content=fragment, media_type=media_type)
+
+
+@app.get("/{view_type}/report/{report_uuid}")
+async def get_report_view(
+    request: Request,
+    account: Annotated[Optional[tuple[str, str]], Depends(auth)],
+    conn: Annotated[connection, Depends(get_conn)],
+    view_type: ViewType,
+    report_uuid: str,
+):
+    with conn.cursor() as cur:
+        specs = db_get_report(cur, report_uuid)
+    if not specs:
+        raise HTTPException(status_code=404)
+    spec = specs[0]
+    check_role(account, spec['subject'], ROLES['read_any'])
+    return render_view(VIEW_REPORT, view_type, report=spec, base_url=settings.base_url, title=f'Report {report_uuid}')
 
 
 @app.get("/{view_type}/detail/{subject}/{scopeuuid}")
@@ -569,7 +603,7 @@ async def get_detail(
         rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS,
         subjects=(subject, ), scopes=(scopeuuid, ),
     )
-    return render_view(VIEW_DETAIL, view_type, results2, base_url=settings.base_url, title=f'{subject} compliance')
+    return render_view(VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url, title=f'{subject} compliance')
 
 
 @app.get("/{view_type}/detail_full/{subject}/{scopeuuid}")
@@ -587,7 +621,7 @@ async def get_detail_full(
     results2 = convert_result_rows_to_dict2(
         rows2, get_scopes(), include_report=True, subjects=(subject, ), scopes=(scopeuuid, ),
     )
-    return render_view(VIEW_DETAIL, view_type, results2, base_url=settings.base_url, title=f'{subject} compliance')
+    return render_view(VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url, title=f'{subject} compliance')
 
 
 @app.get("/{view_type}/table")
@@ -599,7 +633,7 @@ async def get_table(
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, approved_only=True)
     results2 = convert_result_rows_to_dict2(rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS)
-    return render_view(VIEW_TABLE, view_type, results2, base_url=settings.base_url, title="SCS compliance overview")
+    return render_view(VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, title="SCS compliance overview")
 
 
 @app.get("/{view_type}/table_full")
@@ -613,7 +647,33 @@ async def get_table_full(
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, approved_only=False)
     results2 = convert_result_rows_to_dict2(rows2, get_scopes())
-    return render_view(VIEW_TABLE, view_type, results2, base_url=settings.base_url, title="SCS compliance overview")
+    return render_view(
+        VIEW_TABLE, view_type, results=results2,
+        detail_page='detail_full', base_url=settings.base_url,
+        title="SCS compliance overview",
+    )
+
+
+@app.get("/{view_type}/scope/{scopeuuid}")
+async def get_scope(
+    request: Request,
+    conn: Annotated[connection, Depends(get_conn)],
+    view_type: ViewType,
+    scopeuuid: str,
+):
+    spec = get_scopes()[scopeuuid].spec
+    versions = spec['versions']
+    relevant = sorted([name for name, version in versions.items() if version['_explicit_validity']])
+    modules_chart = {}
+    for name in relevant:
+        for include in versions[name]['include']:
+            module_id = include['module']['id']
+            row = modules_chart.get(module_id)
+            if row is None:
+                row = modules_chart[module_id] = {'module': include['module'], 'columns': {}}
+            row['columns'][name] = include
+    rows = sorted(list(modules_chart.values()), key=lambda row: row['module']['id'])
+    return render_view(VIEW_SCOPE, view_type, spec=spec, relevant=relevant, rows=rows, base_url=settings.base_url, title=spec['name'])
 
 
 @app.get("/pages")
@@ -657,48 +717,22 @@ async def post_results(
     conn.commit()
 
 
-@app.get("/subjects")
-async def get_subjects(
-    request: Request,
-    account: Annotated[tuple[str, str], Depends(auth)],
-    conn: Annotated[connection, Depends(get_conn)],
-    active: Optional[bool] = None, limit: int = 10, skip: int = 0,
-):
-    """get subjects, potentially filtered by activity status"""
-    check_role(account, roles=ROLES['read_any'])
-    with conn.cursor() as cur:
-        return db_get_subjects(cur, active, limit, skip)
+def pick_filter(results, subject, scope):
+    """Jinja filter to pick scope results from `results` for given `subject` and `scope`"""
+    return results.get(subject, {}).get(scope, {})
 
 
-@app.post("/subjects")
-async def post_subjects(
-    request: Request,
-    account: Annotated[tuple[str, str], Depends(auth)],
-    conn: Annotated[connection, Depends(get_conn)],
-):
-    """post approvals to this endpoint"""
-    check_role(account, roles=ROLES['admin'])
-    content_type = request.headers['content-type']
-    if content_type not in ('application/json', ):
-        raise HTTPException(status_code=500, detail="Unsupported content type")
-    body = await request.body()
-    document = json.loads(body.decode("utf-8"))
-    records = [document] if isinstance(document, dict) else document
-    with conn.cursor() as cur:
-        for record in records:
-            db_patch_subject(cur, record)
-    conn.commit()
-
-
-def passed_filter(results, subject, scope):
-    """Jinja filter to pick list of passed versions from `results` for given `subject` and `scope`"""
-    subject_data = results.get(subject)
-    if not subject_data:
-        return ""
-    scope_data = subject_data.get(scope)
-    if not scope_data:
-        return ""
-    return scope_data['passed_str']
+def summary_filter(scope_results):
+    """Jinja filter to construct summary from `scope_results`"""
+    passed_str = scope_results.get('passed_str', '') or '–'
+    best_passed = scope_results.get('best_passed')
+    # avoid simple 🟢🔴 (hard to distinguish for color-blind folks)
+    color = {
+        'effective': '✅',
+        'warn': '✅',  # forgo differentiation here in favor of simplicity (will be apparent in version list)
+        'deprecated': '🟧',
+    }.get(best_passed, '🛑')
+    return f'{color} {passed_str}'
 
 
 def verdict_filter(value):
@@ -713,22 +747,31 @@ def verdict_check_filter(value):
     return {1: '✔', -1: '✘'}.get(value, '⚠')
 
 
+def reload_static_config(*args, do_ensure_schema=False):
+    # allow arbitrary arguments so it can readily be used as signal handler
+    logger.info("loading static config")
+    scopes = {}
+    import_cert_yaml_dir(settings.yaml_path, scopes)
+    # import successful: only NOW destructively update global _scopes
+    _scopes.clear()
+    _scopes.update(scopes)
+    import_templates(settings.template_path, env=env, templates=templates_map)
+    validate_templates(templates=templates_map)
+    with mk_conn(settings=settings) as conn:
+        if do_ensure_schema:
+            db_ensure_schema(conn)
+        import_bootstrap(settings.bootstrap_path, conn=conn)
+
+
 if __name__ == "__main__":
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
     env.filters.update(
-        passed=passed_filter,
+        pick=pick_filter,
+        summary=summary_filter,
         verdict=verdict_filter,
         verdict_check=verdict_check_filter,
         markdown=markdown,
     )
-    with mk_conn(settings=settings) as conn:
-        db_ensure_schema(conn)
-        import_bootstrap(settings.bootstrap_path, conn=conn)
-        _scopes.update({
-            '_yaml_path': settings.yaml_path,
-            '_counter': 0,
-        })
-        _ = get_scopes()  # make sure they can be read
-        import_templates(settings.template_path, env=env, templates=templates_map)
-        validate_templates(templates=templates_map)
+    reload_static_config(do_ensure_schema=True)
+    signal.signal(signal.SIGHUP, reload_static_config)
     uvicorn.run(app, host='0.0.0.0', port=8080, log_level="info", workers=1)

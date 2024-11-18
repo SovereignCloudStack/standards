@@ -34,21 +34,13 @@ For test development with Sonobuoy, [KinD](https://kind.sigs.k8s.io/) is used as
     make dev-setup
     ```
 
-1. Set environment variables
-
-    ```bash
-    export IMAGE_VERSION_TAG="dev"
-    export K8S_HOST=<kind-cluster-ip>
-    export K8S_PORT=<kind-cluster-port>
-    ```
-
-2. Build the image and upload it to the KinD cluster
+1. Build the image and upload it to the KinD cluster
 
     ```bash
     make dev-build
     ```
 
-3. Execute the Sonobuoy plugin
+2. Execute the Sonobuoy plugin
 
     ```bash
     make dev-run
@@ -61,7 +53,7 @@ For test development with Sonobuoy, [KinD](https://kind.sigs.k8s.io/) is used as
     sonobuoy status
     ```
 
-4. Retrieve the Results
+3. Retrieve the Results
 
    Once Sonobuoy is done running the plugin you can retrieve the results as following:
 
@@ -69,7 +61,7 @@ For test development with Sonobuoy, [KinD](https://kind.sigs.k8s.io/) is used as
     make dev-result
     ```
 
-5. Clean the Sonobuoy testcase from the KinD cluster
+4. Clean the Sonobuoy testcase from the KinD cluster
 
    Cleaning up all Kubernetes resources which were placed on the KinD cluster by sonobuoy
 
@@ -77,10 +69,21 @@ For test development with Sonobuoy, [KinD](https://kind.sigs.k8s.io/) is used as
     make dev-clean
     ```
 
-6. Purge everything
+These steps can also be carried out in short form using the following command:
 
-   Deleting the KinD cluster
+```bash
+make dev-rerun
+```
 
-    ```bash
-    make dev-purge
-    ```
+Finnaly to remove the kind cluster simply use:
+
+```bash
+make dev-purge
+```
+
+## Execution of only certain test functions for development purposes
+
+```bash
+export TESTFUNCTION_CODE=<standard number code>
+make test-function
+```

@@ -40,6 +40,8 @@ Arguments:
 Options:
  [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)
  [-d/--debug] enables DEBUG logging channel
+ [-V/--image-visibility VIS_LIST] filters images by visibility
+                                  (default: 'public,community'; use '*' to disable)
 """, end='', file=file)
 
 
@@ -61,7 +63,7 @@ def main(argv):
     logger.addHandler(counting_handler)
 
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:hd", ["os-cloud=", "help", "debug"])
+        opts, args = getopt.gnu_getopt(argv, "c:hdV:", ["os-cloud=", "help", "debug", "image-visibility="])
     except getopt.GetoptError as exc:
         logger.critical(f"{exc}")
         print_usage()
@@ -74,6 +76,7 @@ def main(argv):
 
     yaml_path = args[0]
     cloud = os.environ.get("OS_CLOUD")
+    image_visibility = set()
     for opt in opts:
         if opt[0] == "-h" or opt[0] == "--help":
             print_usage()
@@ -82,10 +85,15 @@ def main(argv):
             cloud = opt[1]
         if opt[0] == "-d" or opt[0] == "--debug":
             logging.getLogger().setLevel(logging.DEBUG)
+        if opt[0] == "-V" or opt[0] == "--image-visibility":
+            image_visibility.update([v.strip() for v in opt[1].split(',')])
 
     if not cloud:
         logger.critical("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.")
         return 1
+
+    if not image_visibility:
+        image_visibility.update(("public", "community"))
 
     # we only support local files; but we allow specifying the following URLs for the sake of
     # better documentation
@@ -113,11 +121,15 @@ def main(argv):
         logger.debug(f"Fetching image list from cloud '{cloud}'")
         with openstack.connect(cloud=cloud, timeout=32) as conn:
             present_images = conn.list_images(show_all=True)
-            by_name = {
-                image.name: image
-                for image in present_images
-            }
-        logger.debug(f"Images present: {', '.join(sorted(by_name))}")
+        if '*' not in image_visibility:
+            logger.debug(f"Images: filter for visibility {', '.join(sorted(image_visibility))}")
+            present_images = [img for img in present_images if img.visibility in image_visibility]
+        all_image_names = [f"{img.name} ({img.visibility})" for img in present_images]
+        logger.debug(f"Images: {', '.join(all_image_names) or '(NONE)'}")
+        by_name = {
+            image.name: image
+            for image in present_images
+        }
 
         logger.debug(f"Checking {len(image_specs)} image specs against {len(present_images)} images")
         for image_spec in image_specs:

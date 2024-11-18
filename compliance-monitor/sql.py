@@ -7,7 +7,6 @@ SCHEMA_VERSIONS = ['v1', 'v2', 'v3']
 # use ... (Ellipsis) here to indicate that no default value exists (will lead to error if no value is given)
 ACCOUNT_DEFAULTS = {'subject': ..., 'api_key': ..., 'roles': ...}
 PUBLIC_KEY_DEFAULTS = {'public_key': ..., 'public_key_type': ..., 'public_key_name': ...}
-SUBJECT_DEFAULTS = {'subject': ..., 'name': ..., 'provider': None, 'active': False}
 
 
 class SchemaVersionError(Exception):
@@ -77,12 +76,6 @@ def db_ensure_schema_common(cur: cursor):
         keyname text,
         accountid integer NOT NULL REFERENCES account ON DELETE CASCADE ON UPDATE CASCADE,
         UNIQUE (accountid, keyname)
-    );
-    CREATE TABLE IF NOT EXISTS subject (
-        subject text PRIMARY KEY,
-        active boolean,
-        name text,
-        provider text
     );
     CREATE TABLE IF NOT EXISTS report (
         reportid SERIAL PRIMARY KEY,
@@ -409,29 +402,3 @@ def db_patch_approval2(cur: cursor, record):
     RETURNING resultid;''', record)
     resultid, = cur.fetchone()
     return resultid
-
-
-def db_get_subjects(cur: cursor, active: bool, limit, skip):
-    """list subjects"""
-    columns = ('subject', 'active', 'name', 'provider')
-    cur.execute(sql.SQL('''
-    SELECT subject, active, name, provider
-    FROM subject
-    {where_clause}
-    LIMIT %(limit)s OFFSET %(skip)s;''').format(
-        where_clause=make_where_clause(
-            None if active is None else sql.SQL('active = %(active)s'),
-        ),
-    ), {"limit": limit, "skip": skip, "active": active})
-    return [{col: val for col, val in zip(columns, row)} for row in cur.fetchall()]
-
-
-def db_patch_subject(cur: cursor, record: dict):
-    sanitized = sanitize_record(record, SUBJECT_DEFAULTS)
-    cur.execute('''
-    INSERT INTO subject (subject, active, name, provider)
-    VALUES (%(subject)s, %(active)s, %(name)s, %(provider)s)
-    ON CONFLICT (subject)
-    DO UPDATE
-    SET active = EXCLUDED.active, name = EXCLUDED.name, provider = EXCLUDED.provider
-    ;''', sanitized)
