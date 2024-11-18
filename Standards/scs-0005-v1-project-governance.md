@@ -22,7 +22,6 @@ This happens together with the _Forum SCS-Standards_ of the Open Source Business
 underline this alignment, the _Forum SCS-Standards_ is part of the _SCS Project Board_.
 The _SCS Project Board_ itself is elected by the _SCS Community_.
 
-
 ### Definitions
 
 #### _SCS Project_
@@ -32,7 +31,6 @@ The _SCS Project_ is the Open-Source project that consists of the software, docu
 #### _SCS Community_
 
 The collective of people, companies, and organizations promoting the idea of the _SCS Project_ as well as the people working on the various aspects.
-
 
 ## Election of the _SCS Project Board_
 
@@ -53,7 +51,7 @@ nominated for the board. Likewise, one can nominate oneself.
 
 ### Eligible for voting
 
-Every person who is a member of the github organization "Sovereign Cloud Stack" is eligible for voting.
+Every person who is a member of the GitHub organization "Sovereign Cloud Stack" is eligible for voting.
 
 ### Mechanisms
 
