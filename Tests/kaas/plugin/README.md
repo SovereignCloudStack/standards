@@ -74,10 +74,11 @@ The config file is used to set parameters for creating a Kubernetes cluster with
 These parameters configure specific settings for the cluster-stack:
 
 ```yaml
-cs_name: <cs_name>                  # Default: "scs"
-cs_version: <cs_version>            # Default: "v1"
-cs_channel: <cs_channel>            # Default: "stable"
-cs_cloudname: <cs_cloudname>        # Default: "openstack"
+cs_name: <cs_name>                  # Cluster Stack Name, default: "scs"
+cs_version: <cs_version>            # Cluster Stack Version
+cs_channel: <cs_channel>            # Release channel
+cs_cloudname: <cs_cloudname>        # Cloud name from OpenStack clouds.yaml
+cs_namespace: "default"             # Namespace for the Cluster Stack deployment
 ```
 
 #### Git-Related Parameters
@@ -85,9 +86,9 @@ cs_cloudname: <cs_cloudname>        # Default: "openstack"
 The [Cluster Stack Operator](https://github.com/sovereignCloudStack/cluster-stack-operator/) (CSO) utilizing the [Cluster Stack Provider OpenStack](https://github.com/SovereignCloudStack/cluster-stacks/tree/main/providers/openstack) (CSPO) must be directed to the Cluster Stacks repository housing releases for the OpenStack provider. Modify the following parameters if you wish to redirect CSO and CSPO to an alternative Git repository
 
 ```yaml
-git_provider: <git_provider>      # Default: "github"
-git_org_name: <git_org_name>      # Default: "SovereignCloudStack"
-git_repo_name: <git_repo_name>    # Default: "cluster-stacks"
+git_provider: <git_provider>      # Git provider, default: "github"
+git_org_name: <git_org_name>      # Organization name on Git provider, default: "SovereignCloudStack"
+git_repo_name: <git_repo_name>    # Repository name on Git provider, default: "cluster-stacks"
 ```
 
 #### Cluster Parameters
@@ -95,8 +96,8 @@ git_repo_name: <git_repo_name>    # Default: "cluster-stacks"
 Set these parameters to customize the configuration for your cluster.
 
 ```yaml
-cs_pod_cidr: <cs_pod_cidr>                      # Default: "192.168.0.0/16"
-cs_service_cidr: <cs_service_cidr>              # Default: "10.96.0.0/12"
-cs_external_id: <cs_external_id>                # Default: A generated UUID
-cs_k8s_patch_version: <cs_k8s_patch_version>    # Default: "6"
+cs_pod_cidr: <cs_pod_cidr>                      # Pod CIDR for networking
+cs_service_cidr: <cs_service_cidr>              # Service CIDR for networking
+cs_external_id: <cs_external_id>                # External ID for the Cluster Stack
+cs_k8s_patch_version: <cs_k8s_patch_version>    # Kubernetes patch version to use
 ```

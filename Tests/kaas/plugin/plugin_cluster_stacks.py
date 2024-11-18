@@ -175,9 +175,9 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         self._apply_yaml_with_envsubst("cluster.yaml", "Error applying cluster.yaml", kubeconfig=self.kubeconfig_mgmnt_path)
 
         # Get and wait on kubeadmcontrolplane and retrieve workload cluster kubeconfig
-        kcp_name = self._get_kubeadm_control_plane_name(kubeconfig=self.kubeconfig_mgmnt_path)
-        self._wait_kcp_ready(kcp_name, kubeconfig=self.kubeconfig_mgmnt_path)
-        self._retrieve_kubeconfig(kubeconfig=self.kubeconfig_mgmnt_path)
+        kcp_name = self._get_kubeadm_control_plane_name(namespace=self.cs_namespace, kubeconfig=self.kubeconfig_mgmnt_path)
+        self._wait_kcp_ready(kcp_name, namespace=self.cs_namespace, kubeconfig=self.kubeconfig_mgmnt_path)
+        self._retrieve_kubeconfig(namespace=self.cs_namespace, kubeconfig=self.kubeconfig_mgmnt_path)
 
         # Wait for workload system pods to be ready
         # wait_for_workload_pods_ready(kubeconfig_path=self.kubeconfig_cs_cluster)
@@ -188,12 +188,12 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         kubeconfig_cs_cluster_filename = kubeconfig_filepath
         try:
             # Check if the cluster exists
-            check_cluster_command = f"kubectl get cluster {cluster_name}"
+            check_cluster_command = f"kubectl get cluster {cluster_name} -n {self.cs_namespace}"
             result = self._run_subprocess(check_cluster_command, "Failed to get cluster resource", shell=True, capture_output=True, text=True, kubeconfig=self.kubeconfig_mgmnt_path)
 
             # Proceed with deletion only if the cluster exists
             if result.returncode == 0:
-                delete_command = f"kubectl delete cluster {cluster_name} --timeout=600s"
+                delete_command = f"kubectl delete cluster {cluster_name} --timeout=600s -n {self.cs_namespace}"
                 self._run_subprocess(delete_command, "Timeout while deleting the cluster", shell=True, kubeconfig=self.kubeconfig_mgmnt_path)
 
         except subprocess.CalledProcessError as error:
@@ -237,10 +237,12 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         except subprocess.CalledProcessError as error:
             raise RuntimeError(f"{error_msg}: {error}")
 
-    def _get_kubeadm_control_plane_name(self, kubeconfig=None):
+    def _get_kubeadm_control_plane_name(self, namespace="default", kubeconfig=None):
         """
-        Retrieves the name of the KubeadmControlPlane resource for the Kubernetes cluster.
+        Retrieves the name of the KubeadmControlPlane resource for the Kubernetes cluster
+        in the specified namespace.
 
+        :param namespace: The namespace to search for the KubeadmControlPlane resource.
         :param kubeconfig: Optional path to the kubeconfig file for the target Kubernetes cluster.
 
         :return: The name of the KubeadmControlPlane resource as a string.
@@ -250,7 +252,8 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         for _ in range(max_retries):
             try:
                 kcp_command = (
-                    "kubectl get kubeadmcontrolplane -o=jsonpath='{.items[0].metadata.name}'"
+                    f"kubectl get kubeadmcontrolplane -n {namespace} "
+                    "-o=jsonpath='{.items[0].metadata.name}'"
                 )
                 kcp_name = self._run_subprocess(kcp_command, "Error retrieving kcp_name", shell=True, capture_output=True, text=True, kubeconfig=kubeconfig)
                 logger.info(kcp_name)
@@ -265,16 +268,17 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         else:
             raise RuntimeError("Failed to get kubeadmcontrolplane name")
 
-    def _wait_kcp_ready(self, kcp_name, kubeconfig=None):
+    def _wait_kcp_ready(self, kcp_name, namespace="default", kubeconfig=None):
         """
         Waits for the specified KubeadmControlPlane resource to become 'Available'.
 
         :param kcp_name: The name of the KubeadmControlPlane resource to check for availability.
+        :param namespace: The namespace where the KubeadmControlPlane resource is.
         :param kubeconfig: Optional path to the kubeconfig file for the target Kubernetes cluster.
         """
         try:
             self._run_subprocess(
-                f"kubectl wait kubeadmcontrolplane/{kcp_name} --for=condition=Available --timeout=600s",
+                f"kubectl wait kubeadmcontrolplane/{kcp_name} --for=condition=Available --timeout=600s -n {namespace}",
                 "Error waiting for kubeadmcontrolplane availability",
                 shell=True,
                 kubeconfig=kubeconfig
@@ -282,14 +286,15 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         except subprocess.CalledProcessError as error:
             raise RuntimeError(f"Error waiting for kubeadmcontrolplane to be ready: {error}")
 
-    def _retrieve_kubeconfig(self, kubeconfig=None):
+    def _retrieve_kubeconfig(self, namespace="default", kubeconfig=None):
         """
         Retrieves the kubeconfig for the specified cluster and saves it to a local file.
 
+        :param namespace: The namespace of the cluster to retrieve the kubeconfig for.
         :param kubeconfig: Optional path to the kubeconfig file for the target Kubernetes cluster.
         """
         kubeconfig_command = (
-            f"sudo -E clusterctl get kubeconfig {self.cluster_name} > {self.kubeconfig_cs_cluster}"
+            f"sudo -E clusterctl get kubeconfig {self.cluster_name} -n {namespace} > {self.kubeconfig_cs_cluster}"
         )
         self._run_subprocess(kubeconfig_command, "Error retrieving kubeconfig", shell=True, kubeconfig=kubeconfig)
 
