@@ -32,11 +32,13 @@ ENV_KEYS = {'cs_name', 'cs_version', 'cs_channel', 'cs_cloudname', 'cs_secretnam
 # Helper functions
 def wait_for_pods(self, namespaces, timeout=240, interval=15, kubeconfig=None):
     """
-    Waits for all pods in specified namespaces to reach the 'Running' state with all containers ready.
+    Waits for all pods in specified namespaces to reach the condition 'Ready'.
 
     :param namespaces: List of namespaces to check for pod readiness.
     :param timeout: Total time to wait in seconds before giving up.
     :param interval: Time to wait between checks in seconds.
+    :param kubeconfig: Optional path to the kubeconfig file for the target Kubernetes cluster.
+    :return: True if all pods are ready within the given timeout, raises TimeoutError otherwise.
     """
     start_time = time.time()
 
@@ -46,25 +48,16 @@ def wait_for_pods(self, namespaces, timeout=240, interval=15, kubeconfig=None):
         for namespace in namespaces:
             try:
                 # Get pod status in the namespace
-                command = (
-                    f"kubectl get pods -n {namespace} --kubeconfig {kubeconfig} "
-                    f"-o=jsonpath='{{range .items[*]}}{{.metadata.name}} {{.status.phase}} {{range .status.containerStatuses[*]}}{{.ready}} {{end}}{{\"\\n\"}}{{end}}'"
+                wait_pods_command = (
+                    f"kubectl wait -n {namespace} --for=condition=Ready --timeout={timeout}s pod --all"
                 )
-                result = self._run_subprocess(command, f"Error fetching pods in {namespace}", shell=True, capture_output=True, text=True)
+                result = self._run_subprocess(wait_pods_command, f"Error fetching pods in {namespace}", shell=True, capture_output=True, text=True, kubeconfig=kubeconfig)
 
-                if result.returncode == 0:
-                    pods_status = result.stdout.strip().splitlines()
-                    for pod_status in pods_status:
-                        pod_info = pod_status.split()
-                        pod_name, phase, *readiness_states = pod_info
-
-                        # Check pod phase and all containers readiness
-                        if phase != "Running" or "false" in readiness_states:
-                            all_pods_ready = False
-                            logger.info(f"Pod {pod_name} in {namespace} is not ready. Phase: {phase}, Ready: {readiness_states}")
-                else:
-                    logger.error(f"Error fetching pods in {namespace}: {result.stderr}")
+                if result.returncode != 0:
+                    logger.warning(f"Not all pods in namespace {namespace} are ready. Details: {result.stderr}")
                     all_pods_ready = False
+                else:
+                    logger.info(f"All pods in namespace {namespace} are ready.")
 
             except subprocess.CalledProcessError as error:
                 logger.error(f"Error checking pods in {namespace}: {error}")
@@ -78,34 +71,6 @@ def wait_for_pods(self, namespaces, timeout=240, interval=15, kubeconfig=None):
         time.sleep(interval)
 
     raise TimeoutError(f"Timed out after {timeout} seconds waiting for pods in namespaces {namespaces} to become ready.")
-
-
-def wait_for_workload_pods_ready(namespace="kube-system", timeout=600, kubeconfig_path=None, max_retries=3, delay=30):
-    """
-    Waits for all pods in a specific namespace on a workload Kubernetes cluster to become ready.
-
-    :param namespace: The Kubernetes namespace where pods are located (default is "kube-system").
-    :param timeout: The timeout in seconds to wait for pods to become ready (default is 600).
-    :param kubeconfig_path: Path to the kubeconfig file for the target Kubernetes cluster.
-    :raises RuntimeError: If pods are not ready within the specified timeout.
-    """
-    for attempt in range(max_retries):
-        try:
-            kubeconfig_option = f"--kubeconfig {kubeconfig_path}" if kubeconfig_path else ""
-            wait_pods_command = (
-                f"kubectl wait -n {namespace} --for=condition=Ready --timeout={timeout}s pod --all {kubeconfig_option}"
-            )
-
-            # Run the command
-            subprocess.run(wait_pods_command, shell=True, check=True)
-            logger.info(f"All pods in namespace {namespace} in the workload Kubernetes cluster are ready.")
-            return True
-
-        except subprocess.CalledProcessError as error:
-            logger.warning(f"Attempt {attempt+1}/{max_retries} failed with error: {error}. Retrying in {delay} seconds...")
-            time.sleep(delay)
-
-    raise RuntimeError(f"Error waiting for pods in namespace '{namespace}' to become ready.")
 
 
 def load_config(config_path):
@@ -122,6 +87,11 @@ def setup_environment_variables(self):
     """
     Constructs and returns a dictionary of required environment variables
     based on the configuration.
+
+    :raises ValueError: If the `GIT_ACCESS_TOKEN` environment variable is not set.
+
+    :return: A dictionary of required environment variables with necessary values and
+             encodings for Kubernetes and Git-related configurations.
     """
     # Calculate values that need to be set dynamically
     if hasattr(self, 'cluster_version'):
@@ -210,7 +180,8 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         self._retrieve_kubeconfig(kubeconfig=self.kubeconfig_mgmnt_path)
 
         # Wait for workload system pods to be ready
-        wait_for_workload_pods_ready(kubeconfig_path=self.kubeconfig_cs_cluster)
+        # wait_for_workload_pods_ready(kubeconfig_path=self.kubeconfig_cs_cluster)
+        wait_for_pods(self, ["kube-system"], timeout=600, interval=15, kubeconfig=self.kubeconfig_cs_cluster)
 
     def delete_cluster(self, cluster_name=None, kubeconfig_filepath=None):
         self.cluster_name = cluster_name
@@ -242,6 +213,13 @@ class PluginClusterStacks(KubernetesClusterPlugin):
             os.remove(self.kubeconfig_mgmnt_path)
 
     def _apply_yaml_with_envsubst(self, yaml_file, error_msg, kubeconfig=None):
+        """
+        Applies a Kubernetes YAML configuration file to the cluster, substituting environment variables as needed.
+
+        :param yaml_file: The name of the YAML file to apply.
+        :param kubeconfig: Optional path to a kubeconfig file, which specifies which Kubernetes cluster
+                        to apply the YAML configuration to.
+        """
         try:
             # Determine if the file is a local path or a URL
             if os.path.isfile(yaml_file):
@@ -260,6 +238,13 @@ class PluginClusterStacks(KubernetesClusterPlugin):
             raise RuntimeError(f"{error_msg}: {error}")
 
     def _get_kubeadm_control_plane_name(self, kubeconfig=None):
+        """
+        Retrieves the name of the KubeadmControlPlane resource for the Kubernetes cluster.
+
+        :param kubeconfig: Optional path to the kubeconfig file for the target Kubernetes cluster.
+
+        :return: The name of the KubeadmControlPlane resource as a string.
+        """
         max_retries = 6
         delay_between_retries = 10
         for _ in range(max_retries):
@@ -281,6 +266,12 @@ class PluginClusterStacks(KubernetesClusterPlugin):
             raise RuntimeError("Failed to get kubeadmcontrolplane name")
 
     def _wait_kcp_ready(self, kcp_name, kubeconfig=None):
+        """
+        Waits for the specified KubeadmControlPlane resource to become 'Available'.
+
+        :param kcp_name: The name of the KubeadmControlPlane resource to check for availability.
+        :param kubeconfig: Optional path to the kubeconfig file for the target Kubernetes cluster.
+        """
         try:
             self._run_subprocess(
                 f"kubectl wait kubeadmcontrolplane/{kcp_name} --for=condition=Available --timeout=600s",
@@ -292,12 +283,29 @@ class PluginClusterStacks(KubernetesClusterPlugin):
             raise RuntimeError(f"Error waiting for kubeadmcontrolplane to be ready: {error}")
 
     def _retrieve_kubeconfig(self, kubeconfig=None):
+        """
+        Retrieves the kubeconfig for the specified cluster and saves it to a local file.
+
+        :param kubeconfig: Optional path to the kubeconfig file for the target Kubernetes cluster.
+        """
         kubeconfig_command = (
             f"sudo -E clusterctl get kubeconfig {self.cluster_name} > {self.kubeconfig_cs_cluster}"
         )
         self._run_subprocess(kubeconfig_command, "Error retrieving kubeconfig", shell=True, kubeconfig=kubeconfig)
 
     def _run_subprocess(self, command, error_msg, shell=False, capture_output=False, text=False, kubeconfig=None):
+        """
+        Executes a subprocess command with the specified environment variables and parameters.
+
+        :param command: The shell command to be executed. This can be a string or a list of arguments to pass to the subprocess.
+        :param error_msg: A custom error message to be logged and raised if the subprocess fails.
+        :param shell: Whether to execute the command through the shell (default: `False`).
+        :param capture_output: Whether to capture the command's standard output and standard error (default: `False`).
+        :param text: Whether to treat the command's output and error as text (default: `False`).
+        :param kubeconfig: Optional path to the kubeconfig file for the target Kubernetes cluster.
+
+        :return: The result of the `subprocess.run` command
+        """
         try:
             env = setup_environment_variables(self)
             env['PATH'] = f'/usr/local/bin:/usr/bin:{self.working_directory}'
