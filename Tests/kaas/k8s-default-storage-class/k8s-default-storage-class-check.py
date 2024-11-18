@@ -15,8 +15,8 @@ Return codes:
 
 41:   Not able to bind PersitantVolume to PersitantVolumeClaim
 42:   ReadWriteOnce is not a supported access mode
-43:   PVC not found
-44:   Pod not found
+43:   Resource not found PVC not found
+44:   Resource not found Pod not found
 
 All return codes between (and including) 1-19 as well as all return codes ending on 9
 can be seen as failures.
@@ -92,22 +92,22 @@ def create_pvc_pod(
     # 1. Create PersistantVolumeClaim
     logger.debug(f"create pvc: {pvc_name}")
 
-    # pvc_meta = client.V1ObjectMeta(name=pvc_name)
-    # pvc_resources = client.V1ResourceRequirements(
-    #     requests={"storage": "1Gi"},
-    # )
-    # pvc_spec = client.V1PersistentVolumeClaimSpec(
-    #     access_modes=["ReadWriteOnce"],
-    #     storage_class_name=storage_class,
-    #     resources=pvc_resources,
-    # )
-    # body_pvc = client.V1PersistentVolumeClaim(
-    #     api_version="v1", kind="PersistentVolumeClaim", metadata=pvc_meta, spec=pvc_spec
-    # )
+    pvc_meta = client.V1ObjectMeta(name=pvc_name)
+    pvc_resources = client.V1ResourceRequirements(
+        requests={"storage": "1Gi"},
+    )
+    pvc_spec = client.V1PersistentVolumeClaimSpec(
+        access_modes=["ReadWriteOnce"],
+        storage_class_name=storage_class,
+        resources=pvc_resources,
+    )
+    body_pvc = client.V1PersistentVolumeClaim(
+        api_version="v1", kind="PersistentVolumeClaim", metadata=pvc_meta, spec=pvc_spec
+    )
 
-    # api_response = k8s_api_instance.create_namespaced_persistent_volume_claim(
-    #     namespace, body_pvc
-    # )
+    api_response = k8s_api_instance.create_namespaced_persistent_volume_claim(
+        namespace, body_pvc
+    )
     try:
       k8s_api_instance.read_namespaced_persistent_volume_claim(name=pvc_name, namespace=namespace)
       logger.debug("created pvc successfully")
@@ -314,7 +314,17 @@ class TestEnvironment:
 
     def __exit__(self, exc_type, exc_value, traceback):
         if self.return_code != 43:
-            self.clean()
+            try:
+              self.clean()
+            except ApiException as api_exception:
+              logger.info(f"code {api_exception.status}")
+              if api_exception.status == 404: # might be obsolete
+                  logger.info(
+                      "resource not found, "
+                      "failed to build resources correctly"
+                  )
+                  self.return_code = 4
+                  self.return_message = "(404) resource not found"
         if self.return_code == 0:
             self.return_message = "all tests passed"
         if isinstance(exc_value, SCSTestException):
@@ -379,24 +389,24 @@ def main(argv):
                 env.return_message = "(404) resource not found"
                 return
         except ApiException as api_exception:
-            logger.info(f"code {api_exception.status}")
-            if api_exception.status == 404: # might be obsolete
-                logger.info(
-                    "resource not found, "
-                    "failed to build resources correctly"
-                )
-                env.return_code = 4
-                env.return_message = "(404) resource not found"
-                return
-            elif api_exception.status == 409:# might be obsolete
-                logger.info(
-                    "conflicting resources, "
-                    "try to clean up left overs, then start again"
-                )
-                env.return_code = 3
-                env.return_message = "(409) conflicting resources"
-                return
-            else:
+            # logger.info(f"code {api_exception.status}")
+            # if api_exception.status == 404: # might be obsolete
+            #     logger.info(
+            #         "resource not found, "
+            #         "failed to build resources correctly"
+            #     )
+            #     env.return_code = 4
+            #     env.return_message = "(404) resource not found"
+            #     return
+            # elif api_exception.status == 409:# might be obsolete
+            #     logger.info(
+            #         "conflicting resources, "
+            #         "try to clean up left overs, then start again"
+            #     )
+            #     env.return_code = 3
+            #     env.return_message = "(409) conflicting resources"
+            #     return
+            # else:
                 logger.info(f"An API error occurred: {api_exception}")
                 env.return_code = api_exception.status
                 return
