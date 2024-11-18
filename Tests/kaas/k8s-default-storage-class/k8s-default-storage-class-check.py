@@ -64,8 +64,7 @@ def check_default_storageclass(k8s_client_storage):
         for item in storageclasses["items"]
         if item["metadata"]["annotations"].get(
             "storageclass.kubernetes.io/is-default-class"
-        )
-        == "true"
+        ) == "true"
     ]
     if len(defaults) != 1:
         names = ", ".join(item[0] for item in defaults)
