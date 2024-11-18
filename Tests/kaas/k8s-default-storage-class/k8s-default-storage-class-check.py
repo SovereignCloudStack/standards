@@ -169,7 +169,7 @@ def check_default_persistentvolumeclaim_readwriteonce(
     logger.debug("check if the created PV supports ReadWriteOnce")
     api_response = k8s_api_instance.list_persistent_volume(_preload_content=False)
     if not api_response:
-      raise SCSTestException("No persistent volume found",return_code=1,)
+        raise SCSTestException("No persistent volume found",return_code=1, )
 
     pv_info = json.loads(api_response.read().decode("utf-8"))
     pv_list = pv_info["items"]
@@ -257,8 +257,8 @@ class TestEnvironment:
                     return True
             return False
         except ApiException as e:
-                logger.error(f"Error preparing Environment: {e}")
-                return False
+            logger.error(f"Error preparing Environment: {e}")
+            return False
 
     def clean(self):
         api_response = None
@@ -295,7 +295,7 @@ class TestEnvironment:
 
     def __exit__(self, exc_type, exc_value, traceback):
         if self.return_code != 4:
-          self.clean()
+            self.clean()
         if self.return_code == 0:
             self.return_message = "all tests passed"
         if isinstance(exc_value, SCSTestException):
@@ -346,8 +346,7 @@ def main(argv):
         k8s_core_api = env.k8s_core_api
         logger.debug("check_default_storageclass()")
         try:
-            default_class_name = check_default_storageclass(env.k8s_storage_api)
-            #raise Exception
+            default_class_name = check_default_storageclass(env.k8s_storage_api) #raise Exception
         except SCSTestException:
             raise
         except Exception:
