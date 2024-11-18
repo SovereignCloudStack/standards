@@ -64,7 +64,7 @@ The following IaaS APIs MAY be present in SCS-compliant IaaS deployment, e.g. im
 | **orchestration** | Heat | Orchestration service |
 | **shared-file-systems** | Manila | Shared File Systems service |
 | **telemetry** | Ceilometer | Telemetry service |
-| **time-series-databse** | Gnocchi | Time Series Database service |
+| **time-series-database** | Gnocchi | Time Series Database service |
 
 ## Unsupported IaaS APIs
 
