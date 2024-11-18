@@ -2,7 +2,7 @@
 title: "SCS Flavor Naming Standard: Implementation and Testing Notes"
 type: Supplement
 track: IaaS
-status: Proposal
+status: Draft
 supplements:
   - scs-0100-v1-flavor-naming.md
   - scs-0100-v2-flavor-naming.md

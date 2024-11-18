@@ -1,8 +1,8 @@
 ---
 title: Domain Manager implementation notes
 type: Supplement
-track: IaaS
-status: Proposal
+track: IAM
+status: Draft
 supplements:
   - scs-0302-v1-domain-manager-role.md
 ---
