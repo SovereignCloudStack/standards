@@ -107,7 +107,7 @@ def create_pvc_pod(
         namespace, body_pvc
     )
     k8s_api_instance.read_namespaced_persistent_volume_claim(name=pvc_name, namespace=namespace)
-    logger.debug(f"created pvc successfully")
+    logger.debug("created pvc successfully")
 
     # 2. Create a pod which makes use of the PersistantVolumeClaim
     logger.debug(f"create pod: {pod_name}")
@@ -136,10 +136,9 @@ def create_pvc_pod(
         namespace, pod_body, _preload_content=False,
     )
     k8s_api_instance.read_namespaced_pod(name=pod_name, namespace=namespace)
-    logger.debug(f"created pod successfully")
+    logger.debug("created pod successfully")
     pod_info = json.loads(api_response.read().decode("utf-8"))
     pod_status = pod_info["status"]["phase"]
-
 
     retries = 0
     while pod_status != "Running" and retries <= num_retries:
@@ -170,10 +169,7 @@ def check_default_persistentvolumeclaim_readwriteonce(
     logger.debug("check if the created PV supports ReadWriteOnce")
     api_response = k8s_api_instance.list_persistent_volume(_preload_content=False)
     if not api_response:
-        raise SCSTestException(
-                    "No persistent volume found",
-                    return_code=1,
-                )
+      raise SCSTestException("No persistent volume found",return_code=1,)
 
     pv_info = json.loads(api_response.read().decode("utf-8"))
     pv_list = pv_info["items"]
@@ -212,7 +208,7 @@ def check_csi_provider(k8s_core_api, allowed_csi_prov=ALLOWED_CSI_PROV):
                     return_code=33,
                 )
     if not csi_list:
-      logger.info("CSI-Provider: No CSI Provider found.")
+        logger.info("CSI-Provider: No CSI Provider found.")
     return 0
 
 
@@ -298,8 +294,8 @@ class TestEnvironment:
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        # if self.return_code != 4:
-        #   self.clean()
+        if self.return_code != 4:
+          self.clean()
         if self.return_code == 0:
             self.return_message = "all tests passed"
         if isinstance(exc_value, SCSTestException):
