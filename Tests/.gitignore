@@ -1,3 +1,2 @@
 htmlcov/
 .coverage
-./Tests/iaas/security-groups/default-security-group-rules.py
