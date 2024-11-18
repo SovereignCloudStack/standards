@@ -162,34 +162,33 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         self.clouds_yaml_path = os.path.expanduser(self.config.get('clouds_yaml_path'))
         self.cs_namespace = self.config.get('cs_namespace')
         logger.debug(f"Working from {self.working_directory}")
+        self.kubeconfig_mgmnt_path = "kubeconfig-mgmnt.yaml"
 
     def create_cluster(self, cluster_name="scs-cluster", version=None, kubeconfig_filepath=None):
         self.cluster_name = cluster_name
         self.cluster_version = version
-        self.kubeconfig_cs_cluster_filename = f"kubeconfig-{cluster_name}.yaml"
+        self.kubeconfig_cs_cluster = kubeconfig_filepath
 
         # Create the Kind cluster
         self.cluster = KindCluster(name=cluster_name)
         self.cluster.create()
-        self.kubeconfig = str(self.cluster.kubeconfig_path.resolve())
-        if kubeconfig_filepath:
-            shutil.move(self.kubeconfig, kubeconfig_filepath)
-        else:
-            kubeconfig_filepath = str(self.kubeconfig)
+        self.kubeconfig_mgmnt = str(self.cluster.kubeconfig_path.resolve())
+        if self.kubeconfig_mgmnt:
+            shutil.move(self.kubeconfig_mgmnt, self.kubeconfig_mgmnt_path)
 
         # Initialize clusterctl with OpenStack as the infrastructure provider
         self._run_subprocess(
             ["sudo", "-E", "clusterctl", "init", "--infrastructure", "openstack"],
             "Error during clusterctl init",
-            kubeconfig=kubeconfig_filepath
+            kubeconfig=self.kubeconfig_mgmnt_path
         )
 
         # Wait for all CAPI pods to be ready
-        wait_for_pods(self, ["capi-kubeadm-bootstrap-system", "capi-kubeadm-control-plane-system", "capi-system"], kubeconfig=kubeconfig_filepath)
+        wait_for_pods(self, ["capi-kubeadm-bootstrap-system", "capi-kubeadm-control-plane-system", "capi-system"], kubeconfig=self.kubeconfig_mgmnt_path)
 
         # Apply infrastructure components
-        self._apply_yaml_with_envsubst("cso-infrastructure-components.yaml", "Error applying CSO infrastructure components", kubeconfig=kubeconfig_filepath)
-        self._apply_yaml_with_envsubst("cspo-infrastructure-components.yaml", "Error applying CSPO infrastructure components", kubeconfig=kubeconfig_filepath)
+        self._apply_yaml_with_envsubst("cso-infrastructure-components.yaml", "Error applying CSO infrastructure components", kubeconfig=self.kubeconfig_mgmnt_path)
+        self._apply_yaml_with_envsubst("cspo-infrastructure-components.yaml", "Error applying CSPO infrastructure components", kubeconfig=self.kubeconfig_mgmnt_path)
 
         # Deploy CSP-helper chart
         helm_command = (
@@ -197,34 +196,34 @@ class PluginClusterStacks(KubernetesClusterPlugin):
             f"--create-namespace https://github.com/SovereignCloudStack/openstack-csp-helper/releases/latest/download/openstack-csp-helper.tgz "
             f"-f {self.clouds_yaml_path}"
         )
-        self._run_subprocess(helm_command, "Error deploying CSP-helper chart", shell=True, kubeconfig=kubeconfig_filepath)
+        self._run_subprocess(helm_command, "Error deploying CSP-helper chart", shell=True, kubeconfig=self.kubeconfig_mgmnt_path)
 
-        wait_for_pods(self, ["cso-system"], kubeconfig=kubeconfig_filepath)
+        wait_for_pods(self, ["cso-system"], kubeconfig=self.kubeconfig_mgmnt_path)
 
         # Create Cluster Stack definition and workload cluster
-        self._apply_yaml_with_envsubst("clusterstack.yaml", "Error applying clusterstack.yaml", kubeconfig=kubeconfig_filepath)
-        self._apply_yaml_with_envsubst("cluster.yaml", "Error applying cluster.yaml", kubeconfig=kubeconfig_filepath)
+        self._apply_yaml_with_envsubst("clusterstack.yaml", "Error applying clusterstack.yaml", kubeconfig=self.kubeconfig_mgmnt_path)
+        self._apply_yaml_with_envsubst("cluster.yaml", "Error applying cluster.yaml", kubeconfig=self.kubeconfig_mgmnt_path)
 
         # Get and wait on kubeadmcontrolplane and retrieve workload cluster kubeconfig
-        kcp_name = self._get_kubeadm_control_plane_name(kubeconfig=kubeconfig_filepath)
-        self._wait_kcp_ready(kcp_name, kubeconfig=kubeconfig_filepath)
-        self._retrieve_kubeconfig(kubeconfig=kubeconfig_filepath)
+        kcp_name = self._get_kubeadm_control_plane_name(kubeconfig=self.kubeconfig_mgmnt_path)
+        self._wait_kcp_ready(kcp_name, kubeconfig=self.kubeconfig_mgmnt_path)
+        self._retrieve_kubeconfig(kubeconfig=self.kubeconfig_mgmnt_path)
 
         # Wait for workload system pods to be ready
-        wait_for_workload_pods_ready(kubeconfig_path=self.kubeconfig_cs_cluster_filename)
+        wait_for_workload_pods_ready(kubeconfig_path=self.kubeconfig_cs_cluster)
 
     def delete_cluster(self, cluster_name=None, kubeconfig_filepath=None):
         self.cluster_name = cluster_name
-        kubeconfig_cs_cluster_filename = f"kubeconfig-{cluster_name}.yaml"
+        kubeconfig_cs_cluster_filename = kubeconfig_filepath
         try:
             # Check if the cluster exists
             check_cluster_command = f"kubectl get cluster {cluster_name}"
-            result = self._run_subprocess(check_cluster_command, "Failed to get cluster resource", shell=True, capture_output=True, text=True, kubeconfig={kubeconfig_filepath})
+            result = self._run_subprocess(check_cluster_command, "Failed to get cluster resource", shell=True, capture_output=True, text=True, kubeconfig=self.kubeconfig_mgmnt_path)
 
             # Proceed with deletion only if the cluster exists
             if result.returncode == 0:
                 delete_command = f"kubectl delete cluster {cluster_name} --timeout=600s"
-                self._run_subprocess(delete_command, "Timeout while deleting the cluster", shell=True, kubeconfig=kubeconfig_filepath)
+                self._run_subprocess(delete_command, "Timeout while deleting the cluster", shell=True, kubeconfig=self.kubeconfig_mgmnt_path)
 
         except subprocess.CalledProcessError as error:
             if "NotFound" in error.stderr:
@@ -239,8 +238,8 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         # Remove kubeconfigs
         if os.path.exists(kubeconfig_cs_cluster_filename):
             os.remove(kubeconfig_cs_cluster_filename)
-        if os.path.exists(kubeconfig_filepath):
-            os.remove(kubeconfig_filepath)
+        if os.path.exists(self.kubeconfig_mgmnt_path):
+            os.remove(self.kubeconfig_mgmnt_path)
 
     def _apply_yaml_with_envsubst(self, yaml_file, error_msg, kubeconfig=None):
         try:
@@ -294,7 +293,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
 
     def _retrieve_kubeconfig(self, kubeconfig=None):
         kubeconfig_command = (
-            f"clusterctl get kubeconfig {self.cluster_name} > {self.kubeconfig_cs_cluster_filename}"
+            f"sudo -E clusterctl get kubeconfig {self.cluster_name} > {self.kubeconfig_cs_cluster}"
         )
         self._run_subprocess(kubeconfig_command, "Error retrieving kubeconfig", shell=True, kubeconfig=kubeconfig)
 
@@ -305,7 +304,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
             if kubeconfig:
                 env['KUBECONFIG'] = kubeconfig
 
-            # Run the subprocess with the custom environment
+            # Run the subprocess with the environment
             result = subprocess.run(command, shell=shell, capture_output=capture_output, text=text, check=True, env=env)
 
             return result
