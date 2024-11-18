@@ -1,7 +1,8 @@
 ---
 title: Mandatory and Supported IaaS Services
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2024-11-18
 track: IaaS
 ---
 
@@ -40,7 +41,7 @@ The following IaaS APIs MUST be present in SCS-compliant IaaS deployments and co
 :::caution
 
 S3 API implementations may differ in certain offered features.
-CSPs must publicly describe, which implementation they use in their deployment.
+CSPs must publicly describe the endpoints of their S3 solutions and which implementations they use in their deployment.
 Users should always research whether a needed feature is supported in the offered implementation.
 
 :::
