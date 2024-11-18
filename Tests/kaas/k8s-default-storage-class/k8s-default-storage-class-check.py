@@ -49,7 +49,7 @@ NAMESPACE = "default"
 PVC_NAME = "test-k-pvc"
 PV_NAME = "test-k-pv"
 POD_NAME = "test-k-pod"
-# A list of CSI-Providers that are
+# A list of suggested CSI-Providers that work accordingly to the standards
 ALLOWED_CSI_PROV = ["cinder", "rookCeph", "longhorn"]
 
 
@@ -351,12 +351,15 @@ def main(argv):
         logger.debug("check_default_storageclass()")
         try:
             default_class_name = check_default_storageclass(env.k8s_storage_api)
+            #raise Exception
         except SCSTestException:
             raise
         except Exception:
             env.return_code = 1
             logger.debug("check_default_storageclass() failed")
             return env.return_code
+            # logger.debug("check_default_storageclass() failed")
+            # return 1
         env.cleanup = True
         try:
             env.return_code = create_pvc_pod(k8s_core_api, default_class_name)
