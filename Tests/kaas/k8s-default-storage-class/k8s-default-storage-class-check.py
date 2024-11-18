@@ -64,8 +64,7 @@ def check_default_storageclass(k8s_client_storage):
         for item in storageclasses["items"]
         if item["metadata"]["annotations"].get(
             "storageclass.kubernetes.io/is-default-class"
-        )
-        == "true"
+        ) == "true"
     ]
     if len(defaults) != 1:
         names = ", ".join(item[0] for item in defaults)
@@ -154,7 +153,7 @@ def create_pvc_pod(
     )
     try:
         k8s_api_instance.read_namespaced_pod(name=pod_name, namespace=namespace)
-        logger.debug(f"created pod successfully")
+        logger.debug("created pod successfully")
     except ApiException as api_exception:
         logger.info(f"code {api_exception.status}")
         if api_exception.status == 404:
