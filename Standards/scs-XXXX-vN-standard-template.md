@@ -1,7 +1,7 @@
 ---
 title: _Descriptive title_
 type: Standard  # | Procedural
-status: Proposal
+status: Draft
 track: Global  # | IaaS | Ops | KaaS | IAM
 ---
 
