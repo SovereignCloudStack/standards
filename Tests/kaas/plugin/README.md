@@ -6,7 +6,6 @@
 
 * [docker](https://docs.docker.com/engine/install/)
 * [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
-* [sonobuoy](https://sonobuoy.io/docs/v0.57.1/#installation)
 
 ### setup for development
 
