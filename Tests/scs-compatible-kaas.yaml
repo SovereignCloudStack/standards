@@ -9,9 +9,6 @@ modules:
   - id: cncf-k8s-conformance
     name: CNCF Kubernetes conformance
     url: https://github.com/cncf/k8s-conformance/tree/master
-    #run:
-    #  - executable: ./kaas/plugin/run_sonobuoy_executor.py
-    #    args: -k {subject_root}/kubeconfig.yaml -r {result_dir_path} -c 'cncf-conformance'
     testcases:
       - id: cncf-k8s-conformance
         tags: [mandatory]
