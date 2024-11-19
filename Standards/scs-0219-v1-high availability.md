@@ -22,7 +22,7 @@ logical failure zones to reduce risks from localized failures.
 ## Motivation 
 
 High availability (HA) is essential for ensuring the reliable operation of Kubernetes clusters, especially in production
-environments where downtime can lead to significant operational and financial impacts.
+environments where downtime can lead to significant operational breakdown.
 
 Failures in single hosts are far more common than the outage of an entire room, zone, or availability zone (AZ).
 Hosts can fail due to a variety of reasons, including:
@@ -47,3 +47,9 @@ card (NIC) malfunctions, or planned maintenance operations like firmware updates
 These events occur significantly more often in data centers than the complete failure of a room, rack, or
 availability zone (AZ). As such, prioritizing distribution across physical hosts provides a practical and robust
 baseline for HA, even in environments where multi-AZ configurations are not feasible.
+
+## Documents 
+
+* [Creating Highly Available Clusters with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/)
+* [Community Discussions and Notes](https://github.com/SovereignCloudStack/standards/issues/639)
+* [Options for Highly Available Topology](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/ha-topology/)
