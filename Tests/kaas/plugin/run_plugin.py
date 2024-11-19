@@ -14,11 +14,11 @@ PLUGIN_LOOKUP = {
 }
 
 
-def init_plugin(plugin_kind, config=None):
+def init_plugin(plugin_kind, config_path):
     plugin_maker = PLUGIN_LOOKUP.get(plugin_kind)
     if plugin_maker is None:
         raise ValueError(f"unknown plugin '{plugin_kind}'")
-    return plugin_maker(config)
+    return plugin_maker(config_path)
 
 
 def load_spec(clusterspec_path):

@@ -14,9 +14,9 @@ class PluginKind(KubernetesClusterPlugin):
     Plugin to handle the provisioning of kubernetes cluster for
     conformance testing purpose with the use of Kind
     """
-    def __init__(self, config_file):
+    def __init__(self, config_path):
         logger.info("Init PluginKind")
-        self.config = config_file
+        self.config = config_path
         logger.debug(self.config)
         self.working_directory = os.getcwd()
         logger.debug(f"Working from {self.working_directory}")

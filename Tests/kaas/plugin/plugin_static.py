@@ -9,8 +9,8 @@ class PluginStatic(KubernetesClusterPlugin):
     using a kubeconfig file
     """
 
-    def __init__(self, config_file):
-        self.kubeconfig_path = config_file
+    def __init__(self, config_path):
+        self.kubeconfig_path = config_path
 
     def create_cluster(self, cluster_name, version, kubeconfig):
         shutil.copyfile(self.kubeconfig_path, kubeconfig)
