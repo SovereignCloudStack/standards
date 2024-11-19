@@ -468,7 +468,6 @@ func Test_scs_0217_sonobuoy_Control_Plane_Ports_Security(t *testing.T) {
 }
 
 // Test_K8s_Endpoints_HTTPS checks if all Kubernetes endpoints are secured via HTTPS.
-// Test_K8s_Endpoints_HTTPS checks if all Kubernetes endpoints are secured via HTTPS.
 func Test_scs_0217_sonobuoy_K8s_Endpoints_HTTPS(t *testing.T) {
 	f := features.New("Kubernetes endpoint security").Assess(
 		"All Kubernetes endpoints should be secured via HTTPS",

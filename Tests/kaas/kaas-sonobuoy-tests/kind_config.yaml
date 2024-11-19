@@ -12,6 +12,9 @@ kubeadmConfigPatches:
     apiServer:
       extraArgs:
         enable-admission-plugins: "NodeRestriction,PodSecurity"
+        oidc-issuer-url: https://localhost:8443
+        oidc-client-id: kubernetes
+        oidc-username-claim: sub
 nodes:
 - role: control-plane
 - role: worker
