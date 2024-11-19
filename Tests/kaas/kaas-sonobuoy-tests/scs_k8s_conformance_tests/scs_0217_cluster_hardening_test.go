@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -50,6 +51,331 @@ type KubeletConfig struct {
 	} `json:"kubeletconfig"`
 }
 
+// ==================== Helper Functions ====================
+
+// getNodeEndpoint returns the response from pinging a node endpoint.
+func getNodeEndpoint(client rest.Interface, nodeName, endpoint string) (rest.Result, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	req := client.Get().
+		Resource("nodes").
+		Name(nodeName).
+		SubResource("proxy").
+		Suffix(endpoint)
+
+	result := req.Do(ctx)
+	if result.Error() != nil {
+		logrus.Warningf("Could not get %v endpoint for node %v: %v", endpoint, nodeName, result.Error())
+	}
+	return result, result.Error()
+}
+
+// fetchAndSaveEndpointData fetches data from a node endpoint and saves it to a file.
+func fetchAndSaveEndpointData(client rest.Interface, nodeName, endpoint, filePath string) error {
+	result, err := getNodeEndpoint(client, nodeName, endpoint)
+	if err != nil {
+		return err
+	}
+
+	resultBytes, err := result.Raw()
+	if err != nil {
+		return err
+	}
+
+	if err := os.WriteFile(filePath, resultBytes, 0644); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// gatherNodeData collects non-resource information about a node.
+func gatherNodeData(nodeNames []string, restclient rest.Interface, outputDir string) error {
+	for _, name := range nodeNames {
+		out := path.Join(outputDir, name)
+		logrus.Infof("Creating host results for %v under %v\n", name, out)
+		if err := os.MkdirAll(out, 0755); err != nil {
+			return err
+		}
+
+		configzPath := path.Join(out, "configz.json")
+		if err := fetchAndSaveEndpointData(restclient, name, "configz", configzPath); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// readKubeletConfigFromFile reads and parses the Kubelet configuration from a file.
+func readKubeletConfigFromFile(path string) (*KubeletConfig, error) {
+	fmt.Printf("Reading Kubelet config from file: %s\n", path)
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open Kubelet config file: %w", err)
+	}
+	defer file.Close()
+
+	bytes, err := io.ReadAll(file)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read Kubelet config file: %w", err)
+	}
+
+	var kubeletConfig KubeletConfig
+	if err := json.Unmarshal(bytes, &kubeletConfig); err != nil {
+		return nil, fmt.Errorf("failed to parse Kubelet config file: %w", err)
+	}
+
+	return &kubeletConfig, nil
+}
+
+// checkPortOpen tries to establish a TCP connection to the given IP and port.
+// It returns true if the port is open and false if the connection is refused or times out.
+func checkPortOpen(ip, port string, timeout time.Duration) bool {
+	address := net.JoinHostPort(ip, port)
+	conn, err := net.DialTimeout("tcp", address, timeout)
+	if err != nil {
+		// Connection failed, the port is likely closed
+		return false
+	}
+	// Connection succeeded, the port is open
+	conn.Close()
+	return true
+}
+
+// checkPortAccessibility verifies if a port is accessible or not, logging the result.
+func checkPortAccessibility(t *testing.T, ip, port string, shouldBeAccessible bool) {
+	isOpen := checkPortOpen(ip, port, connectionTimeout)
+	if isOpen && !shouldBeAccessible {
+		t.Errorf("Error: port %s on node %s should not be accessible, but it is open", port, ip)
+	} else if !isOpen && shouldBeAccessible {
+		t.Errorf("Error: port %s on node %s should be accessible, but it is not", port, ip)
+	} else if isOpen && shouldBeAccessible {
+		t.Logf("Port %s on node %s is accessible as expected", port, ip)
+	} else {
+		t.Logf("Port %s on node %s is correctly restricted", port, ip)
+	}
+}
+
+// isPortSecuredWithHTTPS checks if a specific IP and port combination is secured via HTTPS.
+func isPortSecuredWithHTTPS(ip string, port int32, timeout time.Duration) bool {
+	address := net.JoinHostPort(ip, fmt.Sprintf("%d", port))
+
+	conn, err := tls.DialWithDialer(
+		&net.Dialer{Timeout: timeout},
+		"tcp",
+		address,
+		&tls.Config{InsecureSkipVerify: true},
+	)
+	if err != nil {
+		return false
+	}
+	defer conn.Close()
+
+	return true
+}
+
+// checkPodSecurityAdmissionControllerEnabled checks if the PodSecurity admission controller is enabled in kube-apiserver pods
+func checkPodSecurityAdmissionControllerEnabled(t *testing.T, kubeClient *kubernetes.Clientset) {
+	// List all pods in the kube-system namespace with label "component=kube-apiserver"
+	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.Background(), v1.ListOptions{
+		LabelSelector: "component=kube-apiserver",
+	})
+	if err != nil {
+		t.Fatal("failed to list kube-apiserver pods:", err)
+	}
+
+	// Check each kube-apiserver pod
+	for _, pod := range podList.Items {
+		t.Logf("Checking pod: %s for PodSecurity admission controller", pod.Name)
+		for _, container := range pod.Spec.Containers {
+			admissionPluginsFound := false
+			// Look for the enable-admission-plugins flag in container command
+			for _, cmd := range container.Command {
+				if strings.Contains(cmd, "--enable-admission-plugins=") {
+					admissionPluginsFound = true
+
+					// Extract the plugins list and check if PodSecurity is one of them
+					plugins := strings.Split(cmd, "=")[1]
+					if strings.Contains(plugins, "PodSecurity") {
+						t.Logf("PodSecurity admission plugin is enabled in container: %s of pod: %s", container.Name, pod.Name)
+					} else {
+						t.Errorf("Error: PodSecurity admission plugin is not enabled in container: %s of pod: %s", container.Name, pod.Name)
+					}
+					break
+				}
+			}
+
+			if !admissionPluginsFound {
+				t.Errorf("Error: --enable-admission-plugins flag not found in container: %s of pod: %s", container.Name, pod.Name)
+			}
+		}
+	}
+}
+
+// checkPodSecurityPoliciesEnforced checks if Baseline and Restricted policies are enforced on namespaces
+func checkPodSecurityPoliciesEnforced(t *testing.T, kubeClient *kubernetes.Clientset) {
+	// List all namespaces
+	namespaceList, err := kubeClient.CoreV1().Namespaces().List(context.Background(), v1.ListOptions{})
+	if err != nil {
+		t.Fatal("failed to list namespaces:", err)
+	}
+
+	// Check for the "pod-security.kubernetes.io/enforce" annotation in each namespace
+	for _, namespace := range namespaceList.Items {
+		annotations := namespace.Annotations
+		enforcePolicy, ok := annotations["pod-security.kubernetes.io/enforce"]
+		if !ok {
+			t.Logf("Warning: Namespace %s does not have an enforce policy annotation", namespace.Name)
+			continue
+		}
+
+		// Check if the policy is either Baseline or Restricted
+		if enforcePolicy == "baseline" || enforcePolicy == "restricted" {
+			t.Logf("Namespace %s enforces the %s policy", namespace.Name, enforcePolicy)
+		} else {
+			t.Errorf("Error: Namespace %s does not enforce Baseline or Restricted policy, but has %s", namespace.Name, enforcePolicy)
+		}
+	}
+}
+
+// checkAuthorizationmethods checks if authorization methods are correctly sets in k8s cluster based on standard
+func checkAuthorizationmethods(t *testing.T, kubeClient *kubernetes.Clientset) {
+	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.Background(), v1.ListOptions{
+		LabelSelector: "component=kube-apiserver",
+	})
+	if err != nil {
+		t.Fatal("failed to list kube-apiserver pods:", err)
+	}
+
+	// Check each kube-apiserver pod
+	for _, pod := range podList.Items {
+		t.Logf("Checking pod: %s for authorization modes", pod.Name)
+		for _, container := range pod.Spec.Containers {
+			authModeFound := false
+			// Look for the --authorization-mode flag in container command
+			for _, cmd := range container.Command {
+				if strings.Contains(cmd, "--authorization-mode=") {
+					authModeFound = true
+
+					modes := strings.Split(cmd, "=")[1]
+					authModes := strings.Split(modes, ",")
+
+					nodeAuthEnabled := false
+					otherAuthEnabled := false
+
+					for _, mode := range authModes {
+						mode = strings.TrimSpace(mode)
+						if mode == "Node" {
+							nodeAuthEnabled = true
+						}
+						if mode == "ABAC" || mode == "RBAC" || mode == "Webhook" {
+							otherAuthEnabled = true
+						}
+					}
+
+					// Validate the presence of required authorization methods
+					if nodeAuthEnabled && otherAuthEnabled {
+						t.Logf("Node authorization is enabled and at least one method (ABAC, RBAC or Webhook) is enabled.")
+					} else if !nodeAuthEnabled {
+						t.Errorf("Error: Node authorization is not enabled in api-server pod: %s", pod.Name)
+					} else if !otherAuthEnabled {
+						t.Errorf("Error: None of ABAC, RBAC, or Webhook authorization methods are enabled in api-server pod: %s", pod.Name)
+					}
+					break
+				}
+			}
+
+			// If the --authorization-mode flag is not found
+			if !authModeFound {
+				t.Errorf("Error: --authorization-mode flag not found in api-server pod: %s", pod.Name)
+			}
+		}
+	}
+}
+
+// checkKubeAPIServerETCDTLS checks whether the kube-apiserver communicates with etcd over TLS.
+func checkKubeAPIServerETCDTLS(t *testing.T, kubeClient *kubernetes.Clientset) {
+	// List kube-apiserver pods
+	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.Background(), v1.ListOptions{
+		LabelSelector: "component=kube-apiserver",
+	})
+	if err != nil {
+		t.Fatal("failed to list kube-apiserver pods:", err)
+	}
+
+	// Expected etcd TLS flags
+	requiredFlags := []string{
+		"--etcd-certfile=",
+		"--etcd-keyfile=",
+		"--etcd-cafile=",
+	}
+
+	// Check each kube-apiserver pod
+	for _, pod := range podList.Items {
+		for _, container := range pod.Spec.Containers {
+			// Gather all the commands into a single string for easier matching
+			cmdLine := strings.Join(container.Command, " ")
+			t.Logf("TEST: Checking container: %s of pod: %s", container.Name, pod.Name)
+
+			// Check if all required etcd TLS flags are present
+			allFlagsPresent := true
+			for _, flag := range requiredFlags {
+				if !strings.Contains(cmdLine, flag) {
+					t.Errorf("Missing flag %s in container: %s of pod: %s", flag, container.Name, pod.Name)
+					allFlagsPresent = false
+				}
+			}
+
+			if allFlagsPresent {
+				t.Logf("kube-apiserver communicates with etcd using TLS in container: %s of pod: %s", container.Name, pod.Name)
+			} else {
+				t.Errorf("Error: kube-apiserver does not use all required TLS flags for etcd communication in container: %s of pod: %s", container.Name, pod.Name)
+			}
+		}
+	}
+}
+
+// checkIsolationETCD checks whether the etcd is isolated from k8s cluster.
+func checkIsolationETCD(t *testing.T, kubeClient *kubernetes.Clientset) {
+	// List kube-apiserver pods
+	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.Background(), v1.ListOptions{
+		LabelSelector: "component=kube-apiserver",
+	})
+	if err != nil {
+		t.Fatal("failed to list kube-apiserver pods:", err)
+	}
+
+	// Check each kube-apiserver pod
+	for _, pod := range podList.Items {
+		for _, container := range pod.Spec.Containers {
+			etcdServersFound := false
+			for _, cmd := range container.Command {
+				if strings.Contains(cmd, "--etcd-servers=") {
+					etcdServersFound = true
+					etcdServers := strings.Split(cmd, "--etcd-servers=")[1]
+					etcdEndpoints := strings.Split(etcdServers, ",")
+
+					// Verify that etcd is not running on localhost
+					for _, endpoint := range etcdEndpoints {
+						if strings.Contains(endpoint, "localhost") || strings.Contains(endpoint, "127.0.0.1") {
+							t.Logf("Warning: etcd should be isolated from k8s cluster, currently it is running on localhost: %s", endpoint)
+						} else {
+							t.Logf("ETCD is isolated at endpoint: %s", endpoint)
+						}
+					}
+				}
+			}
+
+			if !etcdServersFound {
+				t.Errorf("Error: --etcd-servers flag is missing in kube-apiserver pod: %s", pod.Name)
+			}
+		}
+	}
+}
+
+// ==================== Test Cases ====================
+
 // Test_scs_0217_sonobuoy_Kubelet_ReadOnly_Port_Disabled checks
 // if the Kubelet's read-only port (10255) is disabled on all nodes.
 // If the port is open, it will log a warning.
@@ -67,7 +393,7 @@ func Test_scs_0217_sonobuoy_Kubelet_ReadOnly_Port_Disabled(t *testing.T) {
 				t.Fatal("failed to create Kubernetes client:", err)
 			}
 
-			nodeList, err := kubeClient.CoreV1().Nodes().List(context.TODO(), v1.ListOptions{})
+			nodeList, err := kubeClient.CoreV1().Nodes().List(context.Background(), v1.ListOptions{})
 			if err != nil {
 				t.Fatal("failed to get node list:", err)
 			}
@@ -114,7 +440,7 @@ func Test_scs_0217_sonobuoy_Control_Plane_Ports_Security(t *testing.T) {
 				"node-role.kubernetes.io/control-plane": "",
 			}.AsSelector().String()
 
-			err := cfg.Client().Resources().List(context.TODO(), nodes, resources.WithLabelSelector(labelSelector))
+			err := cfg.Client().Resources().List(context.Background(), nodes, resources.WithLabelSelector(labelSelector))
 			if err != nil {
 				t.Fatal("failed to list control plane nodes:", err)
 			}
@@ -142,31 +468,39 @@ func Test_scs_0217_sonobuoy_Control_Plane_Ports_Security(t *testing.T) {
 }
 
 // Test_K8s_Endpoints_HTTPS checks if all Kubernetes endpoints are secured via HTTPS.
+// Test_K8s_Endpoints_HTTPS checks if all Kubernetes endpoints are secured via HTTPS.
 func Test_scs_0217_sonobuoy_K8s_Endpoints_HTTPS(t *testing.T) {
 	f := features.New("Kubernetes endpoint security").Assess(
 		"All Kubernetes endpoints should be secured via HTTPS",
 		func(ctx context.Context, t *testing.T, cfg *envconf.Config) context.Context {
-			// Get the list of endpoints in the cluster
+			requiredHTTPSPorts := map[string]bool{
+				apiServerPort:         true,
+				controllerManagerPort: true,
+				schedulerPort:         true,
+				kubeletApiPort:        true,
+			}
+
+			// Add etcd ports
+			for port := etcdPortRangeStart; port <= etcdPortRangeEnd; port++ {
+				requiredHTTPSPorts[strconv.Itoa(port)] = true
+			}
+
 			endpoints := &corev1.EndpointsList{}
-			err := cfg.Client().Resources().List(context.TODO(), endpoints)
-			if err != nil {
+			if err := cfg.Client().Resources().List(context.Background(), endpoints); err != nil {
 				t.Fatal("failed to list endpoints:", err)
 			}
 
-			// Iterate over the endpoints and check if they're secured via HTTPS
 			for _, ep := range endpoints.Items {
 				for _, subset := range ep.Subsets {
 					for _, addr := range subset.Addresses {
-						nodeIP := addr.IP
 						for _, port := range subset.Ports {
-							portName := port.Name
-							portNum := port.Port
-
-							// Check if the endpoint is secured via HTTPS
-							if isPortSecuredWithHTTPS(nodeIP, portNum, connectionTimeout) {
-								t.Logf("Endpoint %s:%d (%s) is secured via HTTPS", nodeIP, portNum, portName)
-							} else {
-								t.Errorf("Error: Endpoint %s:%d (%s) is not secured via HTTPS", nodeIP, portNum, portName)
+							portStr := strconv.Itoa(int(port.Port))
+							if requiredHTTPSPorts[portStr] {
+								if isPortSecuredWithHTTPS(addr.IP, port.Port, connectionTimeout) {
+									t.Logf("Endpoint %s:%d (%s) is secured via HTTPS", addr.IP, port.Port, port.Name)
+								} else {
+									t.Errorf("Error: Endpoint %s:%d (%s) is not secured via HTTPS", addr.IP, port.Port, port.Name)
+								}
 							}
 						}
 					}
@@ -194,7 +528,7 @@ func Test_scs_0217_sonobuoy_Kubelet_HTTPS_Anonymous_Auth_Disabled(t *testing.T) 
 				t.Fatal("failed to create Kubernetes client:", err)
 			}
 
-			nodeList, err := kubeClient.CoreV1().Nodes().List(context.TODO(), v1.ListOptions{})
+			nodeList, err := kubeClient.CoreV1().Nodes().List(context.Background(), v1.ListOptions{})
 			if err != nil {
 				t.Fatal("failed to get node list:", err)
 			}
@@ -247,7 +581,7 @@ func Test_scs_0217_sonobuoy_Kubelet_Webhook_Authorization_Enabled(t *testing.T) 
 				t.Fatal("failed to create Kubernetes client:", err)
 			}
 
-			nodeList, err := kubeClient.CoreV1().Nodes().List(context.TODO(), v1.ListOptions{})
+			nodeList, err := kubeClient.CoreV1().Nodes().List(context.Background(), v1.ListOptions{})
 			if err != nil {
 				t.Fatal("failed to get node list:", err)
 			}
@@ -302,7 +636,7 @@ func Test_scs_0217_sonobuoy_NodeRestriction_Admission_Controller_Enabled_in_Kube
 			}
 
 			// List all pods in the kube-system namespace with label "component=kube-apiserver"
-			podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), v1.ListOptions{
+			podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.Background(), v1.ListOptions{
 				LabelSelector: "component=kube-apiserver",
 			})
 			if err != nil {
@@ -406,7 +740,7 @@ func Test_scs_0217_sonobuoy_Authentication_Methods(t *testing.T) {
 				t.Fatal("failed to create Kubernetes client:", err)
 			}
 
-			podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), v1.ListOptions{
+			podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.Background(), v1.ListOptions{
 				LabelSelector: "component=kube-apiserver",
 			})
 			if err != nil {
@@ -501,325 +835,4 @@ func Test_scs_0217_etcd_isolation(t *testing.T) {
 		})
 
 	testenv.Test(t, f.Feature())
-}
-
-// checkPortOpen tries to establish a TCP connection to the given IP and port.
-// It returns true if the port is open and false if the connection is refused or times out.
-func checkPortOpen(ip, port string, timeout time.Duration) bool {
-	address := net.JoinHostPort(ip, port)
-	conn, err := net.DialTimeout("tcp", address, timeout)
-	if err != nil {
-		// Connection failed, the port is likely closed
-		return false
-	}
-	// Connection succeeded, the port is open
-	conn.Close()
-	return true
-}
-
-// checkPortAccessibility verifies if a port is accessible or not, logging the result.
-func checkPortAccessibility(t *testing.T, ip, port string, shouldBeAccessible bool) {
-	isOpen := checkPortOpen(ip, port, connectionTimeout)
-	if isOpen && !shouldBeAccessible {
-		t.Errorf("Error: port %s on node %s should not be accessible, but it is open", port, ip)
-	} else if !isOpen && shouldBeAccessible {
-		t.Errorf("Error: port %s on node %s should be accessible, but it is not", port, ip)
-	} else if isOpen && shouldBeAccessible {
-		t.Logf("Port %s on node %s is accessible as expected", port, ip)
-	} else {
-		t.Logf("Port %s on node %s is correctly restricted", port, ip)
-	}
-}
-
-// isPortSecuredWithHTTPS checks if a specific IP and port combination is secured via HTTPS.
-func isPortSecuredWithHTTPS(ip string, port int32, timeout time.Duration) bool {
-	address := net.JoinHostPort(ip, fmt.Sprintf("%d", port))
-
-	conn, err := tls.DialWithDialer(
-		&net.Dialer{Timeout: timeout},
-		"tcp",
-		address,
-		&tls.Config{InsecureSkipVerify: true},
-	)
-	if err != nil {
-		return false
-	}
-	defer conn.Close()
-
-	return true
-}
-
-// readKubeletConfigFromFile reads and parses the Kubelet configuration from a file.
-func readKubeletConfigFromFile(path string) (*KubeletConfig, error) {
-	fmt.Printf("Reading Kubelet config from file: %s\n", path)
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open Kubelet config file: %w", err)
-	}
-	defer file.Close()
-
-	bytes, err := io.ReadAll(file)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read Kubelet config file: %w", err)
-	}
-
-	var kubeletConfig KubeletConfig
-	if err := json.Unmarshal(bytes, &kubeletConfig); err != nil {
-		return nil, fmt.Errorf("failed to parse Kubelet config file: %w", err)
-	}
-
-	return &kubeletConfig, nil
-}
-
-// gatherNodeData collects non-resource information about a node.
-func gatherNodeData(nodeNames []string, restclient rest.Interface, outputDir string) error {
-	for _, name := range nodeNames {
-		out := path.Join(outputDir, name)
-		logrus.Infof("Creating host results for %v under %v\n", name, out)
-		if err := os.MkdirAll(out, 0755); err != nil {
-			return err
-		}
-
-		configzPath := path.Join(out, "configz.json")
-		if err := fetchAndSaveEndpointData(restclient, name, "configz", configzPath); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// fetchAndSaveEndpointData fetches data from a node endpoint and saves it to a file.
-func fetchAndSaveEndpointData(client rest.Interface, nodeName, endpoint, filePath string) error {
-	result, err := getNodeEndpoint(client, nodeName, endpoint)
-	if err != nil {
-		return err
-	}
-
-	resultBytes, err := result.Raw()
-	if err != nil {
-		return err
-	}
-
-	if err := os.WriteFile(filePath, resultBytes, 0644); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// getNodeEndpoint returns the response from pinging a node endpoint.
-func getNodeEndpoint(client rest.Interface, nodeName, endpoint string) (rest.Result, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	req := client.Get().
-		Resource("nodes").
-		Name(nodeName).
-		SubResource("proxy").
-		Suffix(endpoint)
-
-	result := req.Do(ctx)
-	if result.Error() != nil {
-		logrus.Warningf("Could not get %v endpoint for node %v: %v", endpoint, nodeName, result.Error())
-	}
-	return result, result.Error()
-}
-
-// checkPodSecurityAdmissionControllerEnabled checks if the PodSecurity admission controller is enabled in kube-apiserver pods
-func checkPodSecurityAdmissionControllerEnabled(t *testing.T, kubeClient *kubernetes.Clientset) {
-	// List all pods in the kube-system namespace with label "component=kube-apiserver"
-	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), v1.ListOptions{
-		LabelSelector: "component=kube-apiserver",
-	})
-	if err != nil {
-		t.Fatal("failed to list kube-apiserver pods:", err)
-	}
-
-	// Check each kube-apiserver pod
-	for _, pod := range podList.Items {
-		t.Logf("Checking pod: %s for PodSecurity admission controller", pod.Name)
-		for _, container := range pod.Spec.Containers {
-			admissionPluginsFound := false
-			// Look for the enable-admission-plugins flag in container command
-			for _, cmd := range container.Command {
-				if strings.Contains(cmd, "--enable-admission-plugins=") {
-					admissionPluginsFound = true
-
-					// Extract the plugins list and check if PodSecurity is one of them
-					plugins := strings.Split(cmd, "=")[1]
-					if strings.Contains(plugins, "PodSecurity") {
-						t.Logf("PodSecurity admission plugin is enabled in container: %s of pod: %s", container.Name, pod.Name)
-					} else {
-						t.Errorf("Error: PodSecurity admission plugin is not enabled in container: %s of pod: %s", container.Name, pod.Name)
-					}
-					break
-				}
-			}
-
-			if !admissionPluginsFound {
-				t.Errorf("Error: --enable-admission-plugins flag not found in container: %s of pod: %s", container.Name, pod.Name)
-			}
-		}
-	}
-}
-
-// checkPodSecurityPoliciesEnforced checks if Baseline and Restricted policies are enforced on namespaces
-func checkPodSecurityPoliciesEnforced(t *testing.T, kubeClient *kubernetes.Clientset) {
-	// List all namespaces
-	namespaceList, err := kubeClient.CoreV1().Namespaces().List(context.TODO(), v1.ListOptions{})
-	if err != nil {
-		t.Fatal("failed to list namespaces:", err)
-	}
-
-	// Check for the "pod-security.kubernetes.io/enforce" annotation in each namespace
-	for _, namespace := range namespaceList.Items {
-		annotations := namespace.Annotations
-		enforcePolicy, ok := annotations["pod-security.kubernetes.io/enforce"]
-		if !ok {
-			t.Logf("Warning: Namespace %s does not have an enforce policy annotation", namespace.Name)
-			continue
-		}
-
-		// Check if the policy is either Baseline or Restricted
-		if enforcePolicy == "baseline" || enforcePolicy == "restricted" {
-			t.Logf("Namespace %s enforces the %s policy", namespace.Name, enforcePolicy)
-		} else {
-			t.Errorf("Error: Namespace %s does not enforce Baseline or Restricted policy, but has %s", namespace.Name, enforcePolicy)
-		}
-	}
-}
-
-// checkAuthorizationmethods checks if authorization methods are correctly sets in k8s cluster based on standard
-func checkAuthorizationmethods(t *testing.T, kubeClient *kubernetes.Clientset) {
-	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), v1.ListOptions{
-		LabelSelector: "component=kube-apiserver",
-	})
-	if err != nil {
-		t.Fatal("failed to list kube-apiserver pods:", err)
-	}
-
-	// Check each kube-apiserver pod
-	for _, pod := range podList.Items {
-		t.Logf("Checking pod: %s for authorization modes", pod.Name)
-		for _, container := range pod.Spec.Containers {
-			authModeFound := false
-			// Look for the --authorization-mode flag in container command
-			for _, cmd := range container.Command {
-				if strings.Contains(cmd, "--authorization-mode=") {
-					authModeFound = true
-
-					modes := strings.Split(cmd, "=")[1]
-					authModes := strings.Split(modes, ",")
-
-					nodeAuthEnabled := false
-					otherAuthEnabled := false
-
-					for _, mode := range authModes {
-						mode = strings.TrimSpace(mode)
-						if mode == "Node" {
-							nodeAuthEnabled = true
-						}
-						if mode == "ABAC" || mode == "RBAC" || mode == "Webhook" {
-							otherAuthEnabled = true
-						}
-					}
-
-					// Validate the presence of required authorization methods
-					if nodeAuthEnabled && otherAuthEnabled {
-						t.Logf("Node authorization is enabled and at least one method (ABAC, RBAC or Webhook) is enabled.")
-					} else if !nodeAuthEnabled {
-						t.Errorf("Error: Node authorization is not enabled in api-server pod: %s", pod.Name)
-					} else if !otherAuthEnabled {
-						t.Errorf("Error: None of ABAC, RBAC, or Webhook authorization methods are enabled in api-server pod: %s", pod.Name)
-					}
-					break
-				}
-			}
-
-			// If the --authorization-mode flag is not found
-			if !authModeFound {
-				t.Errorf("Error: --authorization-mode flag not found in api-server pod: %s", pod.Name)
-			}
-		}
-	}
-}
-
-// checkKubeAPIServerETCDTLS checks whether the kube-apiserver communicates with etcd over TLS.
-func checkKubeAPIServerETCDTLS(t *testing.T, kubeClient *kubernetes.Clientset) {
-	// List kube-apiserver pods
-	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), v1.ListOptions{
-		LabelSelector: "component=kube-apiserver",
-	})
-	if err != nil {
-		t.Fatal("failed to list kube-apiserver pods:", err)
-	}
-
-	// Expected etcd TLS flags
-	requiredFlags := []string{
-		"--etcd-certfile=",
-		"--etcd-keyfile=",
-		"--etcd-cafile=",
-	}
-
-	// Check each kube-apiserver pod
-	for _, pod := range podList.Items {
-		for _, container := range pod.Spec.Containers {
-			// Gather all the commands into a single string for easier matching
-			cmdLine := strings.Join(container.Command, " ")
-			t.Logf("TEST: Checking container: %s of pod: %s", container.Name, pod.Name)
-
-			// Check if all required etcd TLS flags are present
-			allFlagsPresent := true
-			for _, flag := range requiredFlags {
-				if !strings.Contains(cmdLine, flag) {
-					t.Errorf("Missing flag %s in container: %s of pod: %s", flag, container.Name, pod.Name)
-					allFlagsPresent = false
-				}
-			}
-
-			if allFlagsPresent {
-				t.Logf("kube-apiserver communicates with etcd using TLS in container: %s of pod: %s", container.Name, pod.Name)
-			} else {
-				t.Errorf("Error: kube-apiserver does not use all required TLS flags for etcd communication in container: %s of pod: %s", container.Name, pod.Name)
-			}
-		}
-	}
-}
-
-// checkIsolationETCD checks whether the etcd is isolated from k8s cluster.
-func checkIsolationETCD(t *testing.T, kubeClient *kubernetes.Clientset) {
-	// List kube-apiserver pods
-	podList, err := kubeClient.CoreV1().Pods("kube-system").List(context.TODO(), v1.ListOptions{
-		LabelSelector: "component=kube-apiserver",
-	})
-	if err != nil {
-		t.Fatal("failed to list kube-apiserver pods:", err)
-	}
-
-	// Check each kube-apiserver pod
-	for _, pod := range podList.Items {
-		for _, container := range pod.Spec.Containers {
-			etcdServersFound := false
-			for _, cmd := range container.Command {
-				if strings.Contains(cmd, "--etcd-servers=") {
-					etcdServersFound = true
-					etcdServers := strings.Split(cmd, "--etcd-servers=")[1]
-					etcdEndpoints := strings.Split(etcdServers, ",")
-
-					// Verify that etcd is not running on localhost
-					for _, endpoint := range etcdEndpoints {
-						if strings.Contains(endpoint, "localhost") || strings.Contains(endpoint, "127.0.0.1") {
-							t.Logf("Warning: etcd should be isolated from k8s cluster, currently it is running on localhost: %s", endpoint)
-						} else {
-							t.Logf("ETCD is isolated at endpoint: %s", endpoint)
-						}
-					}
-				}
-			}
-
-			if !etcdServersFound {
-				t.Errorf("Error: --etcd-servers flag is missing in kube-apiserver pod: %s", pod.Name)
-			}
-		}
-	}
 }
