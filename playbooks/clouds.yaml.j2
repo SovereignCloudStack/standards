@@ -83,6 +83,15 @@ clouds:
       application_credential_id: "{{ clouds_conf.regio_a_ac_id }}"
       application_credential_secret: "{{ clouds_conf.regio_a_ac_secret }}"
     auth_type: "v3applicationcredential"
+  scaleup-occ2:
+    auth_type: v3applicationcredential
+    auth:
+      auth_url: https://keystone.occ2.scaleup.cloud
+      application_credential_id: "{{ clouds_conf.scaleup_occ2_ac_id }}"
+      application_credential_secret: "{{ clouds_conf.scaleup_occ2_ac_secret }}"
+    region_name: "RegionOne"
+    interface: "public"
+    identity_api_version: 3
   syseleven-dus2:
     interface: public
     identity_api_verion: 3

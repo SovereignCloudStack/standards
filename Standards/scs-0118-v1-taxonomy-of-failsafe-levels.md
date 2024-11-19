@@ -1,5 +1,5 @@
 ---
-title: Taxonomy of Failsafe Levels
+title: SCS Taxonomy of Failsafe Levels
 type: Decision Record
 status: Draft
 track: IaaS

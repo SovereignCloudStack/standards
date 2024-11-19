@@ -1,5 +1,5 @@
 ---
-title: SCS Image Metadata Standard
+title: SCS Image Metadata
 type: Standard
 stabilized_at: 2022-10-31
 status: Stable

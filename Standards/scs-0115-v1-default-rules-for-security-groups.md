@@ -1,7 +1,8 @@
 ---
 title: Default Rules for Security Groups
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2024-11-13
 track: IaaS
 ---
 
@@ -25,7 +26,7 @@ Administrator (abbr. Admin)
 
 ### Default Security Groups, Custom Security Groups and default Security Group Rules
 
-To properly understand the concepts in this standard and avoid ambiguity, is very important to distinguish between the following similar-sounding but different resources in the OpenStack Networking API:
+To properly understand the concepts in this standard and avoid ambiguity, it is very important to distinguish between the following similar-sounding but different resources in the OpenStack Networking API:
 
 1. default Security Group
 2. custom Security Group
@@ -59,10 +60,10 @@ Therefore, this standard proposes default Security Group rules that MUST be set 
 
 ## Design Considerations
 
-Up to the 2023.1 release (antelope) the default Security Group rules are hardcoded in the OpenStack code.
-We should not require to change this behavior through code changes in deployments.
+Up to the 2023.1 release (Antelope) the default Security Group rules are defined in the OpenStack code.
+We should not require changing this behavior through code changes in deployments.
 
-Beginning with the 2023.2 release (bobcat) the default Security Group rules can now be edited by administrators through an API.
+Beginning with the 2023.2 release (Bobcat) the default Security Group rules can now be edited by administrators through an API.
 All rules that should be present as default in Security Groups have to be configured by admins through this API.
 
 There are two ways to approach a standard for the default rules of Security Groups.

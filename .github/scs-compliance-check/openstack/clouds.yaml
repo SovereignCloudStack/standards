@@ -89,6 +89,14 @@ clouds:
     auth:
       auth_url: https://identity.l1a.cloudandheat.com/v3
       application_credential_id: "7ab4e3339ea04255bc131868974cfe63"
+  scaleup-occ2:
+    auth_type: v3applicationcredential
+    auth:
+      auth_url: https://keystone.occ2.scaleup.cloud
+      application_credential_id: "5d2eea4e8bf8448092490b4190d4430a"
+    region_name: "RegionOne"
+    interface: "public"
+    identity_api_version: 3
   syseleven-dus2:
     interface: public
     identity_api_verion: 3
