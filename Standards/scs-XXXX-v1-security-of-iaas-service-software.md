@@ -110,7 +110,7 @@ From the moment a vulnerability is disclosed these are the advised reaction time
 3. Mid (CVSS = 4.0 – 6.9): 1 month
 4. Low (CVSS = 0.1 – 3.9): 3 months
 
-[^1]: [C5 criteria catalog with timeframes for responses on page 75.](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Publikationen/Broschueren/C5_2020.pdf?__blob=publicationFile&v=3)
+[^1]: [C5 criteria catalog with timeframes for responses on page 70.](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/CloudComputing/ComplianceControlsCatalogue/2020/C5_2020.pdf?__blob=publicationFile&v=3)
 
 This standard will follow this guidance and refer to these timeframes as "reasonable timeframes".
 
