@@ -88,26 +88,18 @@ As such, severe risks are associated with unauthorized access to this interface 
 
 This is acknowledged in the OpenStack Security Note [OSSN-0007](https://wiki.openstack.org/wiki/OSSN/OSSN-0007), which recommends either configuring SASL and/or TLS for libvirt connections or utilizing the UNIX socket in combination with SSH.
 
-The OpenStack kolla-ansible documentation on Nova libvirt connections states[^1]:
+The OpenStack [kolla-ansible documentation](https://docs.openstack.org/kolla-ansible/latest/reference/compute/libvirt-guide.html#sasl-authentication) on Nova libvirt connections state:
 
 > This should not be considered as providing a secure, encrypted channel, since the username/password SASL mechanisms available for TCP are no longer considered cryptographically secure.
-
-[^1]: https://docs.openstack.org/kolla-ansible/latest/reference/compute/libvirt-guide.html#sasl-authentication
 
 This leaves only TLS or UNIX socket with SSH as viable options for securing the channel.
 
 #### TLS for libvirt and live migration
 
-Since the Stein release of OpenStack, Nova supports QEMU-native TLS[^2] which protects the migration data streams using TLS.
-It requires to add `LIBVIRTD_ARGS="--listen"` to the QEMU configuration, which will lead to TLS being active on the libvirt interface per default (due to `listen_tls` defaulting to being enabled[^3]).
+Since the Stein release of OpenStack, Nova supports [QEMU-native TLS](https://docs.openstack.org/nova/latest/admin/secure-live-migration-with-qemu-native-tls.html) which protects the migration data streams using TLS.
+It requires to add `LIBVIRTD_ARGS="--listen"` to the [QEMU configuration](https://libvirt.org/remote.html#libvirtd-configuration-file), which will lead to TLS being active on the libvirt interface per default (due to `listen_tls` defaulting to being enabled).
 This protects data streams for migration as well as the hypervisor control channel data flow with TLS but does not restrict access.
-Client certificates must be deployed additionally and libvirt configured accordingly[^4] in order to meaningfully restrict access to the interface as advised by the OSSN-0007 document.
-
-[^2]: https://docs.openstack.org/nova/latest/admin/secure-live-migration-with-qemu-native-tls.html
-
-[^3]: https://libvirt.org/remote.html#libvirtd-configuration-file
-
-[^4]: https://wiki.libvirt.org/TLSDaemonConfiguration.html#restricting-access
+Client certificates must be deployed additionally and libvirt configured accordingly[^4] in order to meaningfully restrict access to the interface as advised by the OSSN-0007 document, see restricting-access in [Libvirt doc](https://wiki.libvirt.org/TLSDaemonConfiguration.html#restricting-access).
 
 #### Local UNIX socket and SSH live migration
 
