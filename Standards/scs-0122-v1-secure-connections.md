@@ -104,7 +104,7 @@ Client certificates must be deployed additionally and libvirt configured accordi
 #### Local UNIX socket and SSH live migration
 
 As an alternative to the TLS setup, libvirt can be configured to use a local UNIX socket and Nova can be configured to use SSH to this socket for live migrations instead.
-The regular libvirt port can then be limited to localhost (`127.0.0.1`) which will make it inaccessible from outside the host but still enables local connections to use it.  
+The regular libvirt port can then be limited to localhost (`127.0.0.1`) which will make it inaccessible from outside the host but still enables local connections to use it.
 The challenge of this approach lies in restricting the SSH access on the compute nodes appropriately to avoid full root access across compute nodes for the SSH user identity that Nova will use for live migration.
 This can be addressed by restricting the command set that is available and the paths that are accessible to these target SSH user identities on compute nodes, limiting them to the scope strictly required by the live migration.
 
@@ -192,7 +192,7 @@ Upon closer inspection, this consists of two problems to address:
 
 When considering problem no. 1 in an isolated fashion, the QEMU-native TLS approach could be considered preferable simply due to it being officially recommended and documented by upstream OpenStack and tightly integrated into QEMU.
 
-However, once problem no. 2 is taken into account, the choice does not seem as obvious anymore due to the fact that in order to properly authenticate clients in the TLS case, X.509 client certificate authentication along with a corresponding PKI as well as key management would be required.  
+However, once problem no. 2 is taken into account, the choice does not seem as obvious anymore due to the fact that in order to properly authenticate clients in the TLS case, X.509 client certificate authentication along with a corresponding PKI as well as key management would be required.
 Although similar aspects would be relevant for the SSH approach where SSH key and identity management as well as proper permission restriction would need to be implemented, the SSH approach could turn out less complex due to the fact that the foundation for SSH identities most likely already exists on a node-level and does not need to rely on a full PKI.
 
 To properly compare both possible approaches of securing the libvirt interface, extensive testing and evaulation would be necessary along with a sophisticated key and node identity management for compute nodes which this standard alone does not provide.
