@@ -1,5 +1,5 @@
 ---
-title: "SCS Availability Zone Standard: Implementation and Testing Notes"
+title: "SCS Availability Zones: Implementation and Testing Notes"
 type: Supplement
 track: IaaS
 status: Draft

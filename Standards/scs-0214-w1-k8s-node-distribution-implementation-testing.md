@@ -2,7 +2,7 @@
 title: "Kubernetes Node Distribution and Availability: Implementation and Testing Notes"
 type: Supplement
 track: KaaS
-status: Proposal
+status: Draft
 supplements:
   - scs-0214-v1-k8s-node-distribution.md
   - scs-0214-v2-k8s-node-distribution.md
