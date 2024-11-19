@@ -1,0 +1,3 @@
+kubeconfig: "../../playbooks/k8s_configs/moin_cluster_kubeconfig.yaml"
+workloadcluster: "../../playbooks/k8s_configs/moin_cluster_workloadcluster.yaml"
+namespace: "kaas-playground1"

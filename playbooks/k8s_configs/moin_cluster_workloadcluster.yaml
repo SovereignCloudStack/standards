@@ -1,0 +1,18 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: scs-cluster-129
+  labels:
+    managed-secret: cloud-config
+spec:
+  topology:
+    variables:
+    class: openstack-scs-1-29-v4
+    controlPlane:
+      replicas: 3
+    version: v1.29.10
+    workers:
+      machineDeployments:
+        - class: default-worker
+          name: md-0
+          replicas: 3

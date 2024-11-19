@@ -42,6 +42,10 @@ subjects = [
     "kind-current",
     "kind-current-1",
     "kind-current-2",
+    #"moin-cluster-current",
+    #"moin-cluster-current-1",
+    "moin-cluster-current-2",
+
 ]
 workers = 1  # better restrict this with clusters running on local machine
 
@@ -80,5 +84,23 @@ clusterspec_cluster = "current-k8s-release-1"
 [subjects.kind-current-2.kubernetes_setup]
 kube_plugin         = "kind"
 kube_plugin_config  = "kaas/kind_config.yaml"
+clusterspec_cluster = "current-k8s-release-2"
+
+
+[subjects.moin-cluster-current.kubernetes_setup]
+kube_plugin         = "cluster-stacks-api"
+kube_plugin_config  = "../playbooks/k8s_configs/moin_cluster_config.yaml"
+clusterspec_cluster = "current-k8s-release"
+
+
+[subjects.moin-cluster-current-1.kubernetes_setup]
+kube_plugin         = "cluster-stacks-api"
+kube_plugin_config  = "../playbooks/k8s_configs/moin_cluster_config.yaml"
+clusterspec_cluster = "current-k8s-release-1"
+
+
+[subjects.moin-cluster-current-2.kubernetes_setup]
+kube_plugin         = "cluster-stacks-api"
+kube_plugin_config  = "../playbooks/k8s_configs/moin_cluster_config.yaml"
 clusterspec_cluster = "current-k8s-release-2"
 

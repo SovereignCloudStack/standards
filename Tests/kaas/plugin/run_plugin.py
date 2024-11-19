@@ -7,10 +7,15 @@ import yaml
 
 from plugin_kind import PluginKind
 from plugin_static import PluginStatic
+from plugin_cluster_stacks import PluginClusterStacks
+from plugin_cluster_stacks_remote_api import PluginClusterStacksRemoteAPI
+
 
 PLUGIN_LOOKUP = {
     "kind": PluginKind,
     "static": PluginStatic,
+    "cluster-stacks": PluginClusterStacks,
+    "cluster-stacks-api": PluginClusterStacksRemoteAPI,
 }
 
 
