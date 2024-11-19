@@ -53,8 +53,19 @@ nominated for the board. Likewise, one can nominate oneself.
 
 Every person who is a member of the GitHub organization "Sovereign Cloud Stack" is eligible for voting.
 
+### Electoral management
+
+The voting process is governed by the _Forum SCS-Standards_.
+
 ### Mechanisms
 
 Each voting person has eight (8) points that can be cast during the voting process.
 The points can be distributed between four candidates.
 The four candidates with the highest number of points overall are then elected.
+
+
+## Roles in the _SCS Project Board_
+
+Among the elected Project Board a spokesperson is nominated.
+
+
