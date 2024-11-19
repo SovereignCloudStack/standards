@@ -57,8 +57,8 @@ spec = "./scs-compatible-kaas.yaml"
 # default subject (not a real subject, but used to declare a default mapping)
 # (this is the only mapping declaration that supports using Python string interpolation)
 [subjects._.mapping]
-os_cloud      = "{subject}"
-subject_root  = "{subject}"
+os_cloud = "{subject}"
+subject_root = "{subject}"
 
 
 [subjects._.kubernetes_setup]
@@ -67,18 +67,18 @@ clusterspec         = "kaas/clusterspec.yaml"
 
 [subjects.cspA-current.kubernetes_setup]
 kube_plugin         = "kind"
-kube_plugin_config  = "../playbooks/k8s_configs/kind_config.yaml"
+kube_plugin_config  = "kaas/kind_config.yaml"
 clusterspec_cluster = "current-k8s-release"
 
 
 [subjects.cspA-current-1.kubernetes_setup]
 kube_plugin         = "kind"
-kube_plugin_config  = "../playbooks/k8s_configs/kind_config.yaml"
+kube_plugin_config  = "kaas/kind_config.yaml"
 clusterspec_cluster = "current-k8s-release-1"
 
 
 [subjects.cspA-current-2.kubernetes_setup]
 kube_plugin         = "kind"
-kube_plugin_config  = "../playbooks/k8s_configs/kind_config.yaml"
+kube_plugin_config  = "kaas/kind_config.yaml"
 clusterspec_cluster = "current-k8s-release-2"
 
