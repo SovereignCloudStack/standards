@@ -8,8 +8,6 @@ from pytest_kind import KindCluster
 
 logger = logging.getLogger(__name__)
 
-logger = logging.getLogger(__name__)
-
 
 class PluginKind(KubernetesClusterPlugin):
     """

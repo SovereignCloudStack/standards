@@ -17,11 +17,7 @@ modules:
         tags: [mandatory]
   - id: scs-0210-v2
     name: Kubernetes version policy
-<<<<<<< HEAD
     url: https://docs.scs.community/standards/scs-0210-v2-k8s-version-policy
-=======
-    url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0210-v2-k8s-version-policy.md
->>>>>>> Rearange configuration files
     run:
       - executable: ./kaas/k8s-version-policy/k8s_version_policy.py
         args: -k {subject_root}/kubeconfig.yaml
