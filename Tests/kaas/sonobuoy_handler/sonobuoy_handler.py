@@ -65,7 +65,7 @@ class SonobuoyHandler:
         return command_string
 
     def _sonobuoy_run(self):
-        logger.debug(f"sonobuoy run")
+        logger.debug("sonobuoy run")
         check_args = ["--wait"]
         check_args += [str(arg) for arg in self.args]
         subprocess.run(
@@ -85,7 +85,7 @@ class SonobuoyHandler:
         )
 
     def _sonobouy_status_result(self):
-        logger.debug(f"sonobuoy status")
+        logger.debug("sonobuoy status")
         process = subprocess.run(
             self._build_command("status", ["--json"]),
             shell=True,
