@@ -35,12 +35,11 @@ def cli():
 @click.argument('plugin_kind', type=click.Choice(list(PLUGIN_LOOKUP), case_sensitive=False))
 @click.argument('plugin_config', type=click.Path(exists=True, dir_okay=False))
 @click.argument('clusterspec_path', type=click.Path(exists=True, dir_okay=False))
-@click.argument('clusterspec_cluster', type=str, default="default")
-def create(plugin_kind, plugin_config, clusterspec_path, clusterspec_cluster):
+@click.argument('cluster_id', type=str, default="default")
+def create(plugin_kind, plugin_config, clusterspec_path, cluster_id):
     clusterspec = load_spec(clusterspec_path)['clusters']
     plugin = init_plugin(plugin_kind, plugin_config)
-    clusterinfo = clusterspec[clusterspec_cluster]
-    cluster_id = clusterspec_cluster
+    clusterinfo = clusterspec[cluster_id]
     plugin.create_cluster(cluster_id, clusterinfo['branch'], os.path.abspath(clusterinfo['kubeconfig']))
 
 
@@ -48,9 +47,8 @@ def create(plugin_kind, plugin_config, clusterspec_path, clusterspec_cluster):
 @click.argument('plugin_kind', type=click.Choice(list(PLUGIN_LOOKUP), case_sensitive=False))
 @click.argument('plugin_config', type=click.Path(exists=True, dir_okay=False))
 @click.argument('clusterspec_path', type=click.Path(exists=True, dir_okay=False))
-@click.argument('clusterspec_cluster', type=str, default="default")
-def delete(plugin_kind, plugin_config, clusterspec_path, clusterspec_cluster):
-    cluster_id = clusterspec_cluster
+@click.argument('cluster_id', type=str, default="default")
+def delete(plugin_kind, plugin_config, clusterspec_path, cluster_id):
     plugin = init_plugin(plugin_kind, plugin_config)
     plugin.delete_cluster(cluster_id)
 
