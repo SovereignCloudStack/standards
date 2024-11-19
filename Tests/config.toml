@@ -43,7 +43,7 @@ subjects = [
     "kind-current-1",
     "kind-current-2",
 ]
-workers = 4
+workers = 1  # better restrict this with clusters running on local machine
 
 
 [scopes.scs-compatible-iaas]
