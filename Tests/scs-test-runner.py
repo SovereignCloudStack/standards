@@ -225,8 +225,8 @@ def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml):
         commands = [cfg.build_check_command(job[0], job[1], output) for job, output in zip(jobs, outputs)]
         _run_commands(commands, num_workers=num_workers)
         _concat_files(outputs, report_yaml_tmp)
-        subprocess.run(cfg.build_sign_command(report_yaml_tmp))
-        subprocess.run(cfg.build_upload_command(report_yaml_tmp, monitor_url))
+        subprocess.run(**cfg.build_sign_command(report_yaml_tmp))
+        subprocess.run(**cfg.build_upload_command(report_yaml_tmp, monitor_url))
         if report_yaml is not None:
             _move_file(report_yaml_tmp, report_yaml)
     return 0
