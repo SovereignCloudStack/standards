@@ -34,14 +34,14 @@ subjects = [
 workers = 4
 
 
-[presets.all-kaas]
+[presets.kaas-dev]
 scopes = [
     "scs-compatible-kaas",
 ]
 subjects = [
-    "cspA-current",
-    "cspA-current-1",
-    "cspA-current-2",
+    "kind-current",
+    "kind-current-1",
+    "kind-current-2",
 ]
 workers = 4
 
@@ -65,19 +65,19 @@ subject_root = "{subject}"
 clusterspec         = "kaas/clusterspec.yaml"
 
 
-[subjects.cspA-current.kubernetes_setup]
+[subjects.kind-current.kubernetes_setup]
 kube_plugin         = "kind"
 kube_plugin_config  = "kaas/kind_config.yaml"
 clusterspec_cluster = "current-k8s-release"
 
 
-[subjects.cspA-current-1.kubernetes_setup]
+[subjects.kind-current-1.kubernetes_setup]
 kube_plugin         = "kind"
 kube_plugin_config  = "kaas/kind_config.yaml"
 clusterspec_cluster = "current-k8s-release-1"
 
 
-[subjects.cspA-current-2.kubernetes_setup]
+[subjects.kind-current-2.kubernetes_setup]
 kube_plugin         = "kind"
 kube_plugin_config  = "kaas/kind_config.yaml"
 clusterspec_cluster = "current-k8s-release-2"
