@@ -2,7 +2,9 @@ name: SCS-compatible KaaS
 uuid: 1fffebe6-fd4b-44d3-a36c-fc58b4bb0180
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-kaas.yaml
 variables:
-  - subject_root  # directory containing the kubeconfig files for the subject under test
+  - subject_root
+    # directory containing the kubeconfig file for the subject under test
+    # (note that we consider each kubernetes branch a test subject of its own)
 modules:
   - id: cncf-k8s-conformance
     name: CNCF Kubernetes conformance
@@ -15,7 +17,7 @@ modules:
         tags: [mandatory]
   - id: scs-0210-v2
     name: Kubernetes version policy
-    url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0210-v2-k8s-version-policy.md
+    url: https://docs.scs.community/standards/scs-0210-v2-k8s-version-policy
     run:
       - executable: ./kaas/k8s-version-policy/k8s_version_policy.py
         args: -k {subject_root}/kubeconfig.yaml
@@ -24,7 +26,7 @@ modules:
         tags: [mandatory]
   - id: scs-0214-v2
     name: Kubernetes node distribution and availability
-    url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Standards/scs-0214-v1-k8s-node-distribution.md
+    url: https://docs.scs.community/standards/scs-0214-v2-k8s-node-distribution
     run:
       - executable: ./kaas/k8s-node-distribution/k8s_node_distribution_check.py
         args: -k {subject_root}/kubeconfig.yaml
@@ -32,15 +34,14 @@ modules:
       - id: node-distribution-check
         tags: [mandatory]
 timeline:
-  # empty timeline might confuse tools, so put one "dummy" entry here
   - date: 2024-02-28
     versions:
       v1: draft
 versions:
   - version: v1
     include:
-      - ref: cncf-k8s-conformance
-      - ref: scs-0210-v2
-      - ref: scs-0214-v2
+      - cncf-k8s-conformance
+      - scs-0210-v2
+      - scs-0214-v2
     targets:
       main: mandatory
