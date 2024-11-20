@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+  reverse-proxy:
+    image: traefik:v2.11
+    # Enables the web UI and tells Traefik to listen to docker
+    command: >
+        --api.insecure=true
+        --providers.docker
+        --entryPoints.web.address=:80
+        --entryPoints.websecure.address=:443
+        --certificatesresolvers.myresolver.acme.email=matthias.buechse@cloudandheat.com
+        --certificatesresolvers.myresolver.acme.storage=/acme/acme.json
+        --certificatesresolvers.myresolver.acme.tlschallenge=true
+    #     --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web
+    ports:
+      - "80:80"
+      - "443:443"
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./acme:/acme
+  web:
+    build: .
+    ports:
+      - "127.0.0.1:5000:8080"
+    environment:
+      - SCM_DB_HOST=postgres
+      - SCM_DB_PASSWORD_FILE=/run/secrets/db_password
+      - SCM_BASE_URL=https://compliance.sovereignit.cloud/
+    volumes:
+      - ../Tests:/Tests
+      - ./bootstrap.yaml:/code/bootstrap.yaml
+      - ./templates:/code/templates
+    labels:
+      - traefik.http.routers.web.entryPoints=web
+      - traefik.http.routers.web.rule=Host(`localhost`) && PathPrefix(`/`)
+      - traefik.http.routers.websecure.entryPoints=websecure
+      - traefik.http.routers.websecure.rule=Host(`compliance.sovereignit.cloud`) && PathPrefix(`/`)
+      - traefik.http.routers.websecure.tls=true
+      - traefik.http.routers.websecure.tls.certresolver=myresolver
+    secrets:
+      - db_password
+  postgres:
+    image: postgres
+    volumes:
+      - $HOME/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+    ports:
+      - "127.0.0.1:8001:5432"
+    secrets:
+      - db_password
+    labels:
+      # do not publish this service publicly
+      - "traefik.http.routers.postgres.entrypoints=traefik"
+
+secrets:
+   db_password:
+     file: db_password.txt

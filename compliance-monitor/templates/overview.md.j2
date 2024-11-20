@@ -1,0 +1,48 @@
+{#
+we could of course iterate over results etc., but hardcode the table (except the actual results, of course)
+for the time being to have the highest degree of control
+-#}
+
+Version numbers are suffixed by a symbol depending on state: * for _draft_, † for _warn_ (soon to be deprecated), and †† for _deprecated_.
+
+{% set iaas = '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f' -%}
+| Name  | Description  | Operator  | [SCS-compatible IaaS](https://docs.scs.community/standards/scs-compatible-iaas/)  | HealthMon  |
+|-------|--------------|-----------|----------------------|:----------:|
+| [gx-scs](https://github.com/SovereignCloudStack/docs/blob/main/community/cloud-resources/plusserver-gx-scs.md) | Dev environment provided for SCS & GAIA-X context | plusserver GmbH | 
+{#- #} [{{ results | pick('gx-scs', iaas) | summary }}]({{ detail_url('gx-scs', iaas) }}) {# -#}
+| [HM](https://health.gx-scs.sovereignit.cloud:3000/) |
+| [aov.cloud](https://www.aov.de/) | Community cloud for customers | aov IT.Services GmbH |
+{#- #} [{{ results | pick('aov', iaas) | summary }}]({{ detail_url('aov', iaas) }}) {# -#}
+| [HM](https://health.aov.cloud/) |
+| [CNDS](https://cnds.io/) | Public cloud for customers | artcodix GmbH |
+{#- #} [{{ results | pick('artcodix', iaas) | summary }}]({{ detail_url('artcodix', iaas) }}) {# -#}
+| [HM](https://ohm.muc.cloud.cnds.io/) |
+| [pluscloud open](https://www.plusserver.com/en/products/pluscloud-open)<br />(4 regions) | Public cloud for customers  | plusserver GmbH | {# #}
+{#- #}prod1: [{{ results | pick('pco-prod1', iaas) | summary }}]({{ detail_url('pco-prod1', iaas) }}){# -#}
+<br />
+{#- #}prod2: [{{ results | pick('pco-prod2', iaas) | summary }}]({{ detail_url('pco-prod2', iaas) }}){# -#}
+<br />
+{#- #}prod3: [{{ results | pick('pco-prod3', iaas) | summary }}]({{ detail_url('pco-prod3', iaas) }}){# -#}
+<br />
+{#- #}prod4: [{{ results | pick('pco-prod4', iaas) | summary }}]({{ detail_url('pco-prod4', iaas) }}) {# -#}
+| [HM1](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-pco)<br />[HM2](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-prod2)<br />[HM3](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-prod3)<br />[HM4](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-prod4) |
+| PoC KDO | Cloud PoC for FITKO | KDO Service GmbH / OSISM GmbH |
+{#- #} [{{ results | pick('poc-kdo', iaas) | summary }}]({{ detail_url('poc-kdo', iaas) }}) {# -#}
+|  (soon) |
+| PoC WG-Cloud OSBA | Cloud PoC for FITKO | Cloud&amp;Heat Technologies GmbH |
+{#- #} [{{ results | pick('poc-wgcloud', iaas) | summary }}]({{ detail_url('poc-wgcloud', iaas) }}) {# -#}
+| [HM](https://health.poc-wgcloud.osba.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?var-mycloud=poc-wgcloud&orgId=1) |
+| [REGIO.cloud](https://regio.digital) | Public cloud for customers | OSISM GmbH |
+{#- #} [{{ results | pick('regio-a', iaas) | summary }}]({{ detail_url('regio-a', iaas) }}) {# -#}
+| [HM](https://apimon.services.regio.digital/public-dashboards/17cf094a47404398a5b8e35a4a3968d4?orgId=1&refresh=5m) |
+| [ScaleUp Open Cloud](https://www.scaleuptech.com/cloud-hosting/) | Public cloud for customers | ScaleUp Technologies GmbH & Co. KG |
+{#- #} [{{ results | pick('scaleup-occ2', iaas) | summary }}]({{ detail_url('scaleup-occ2', iaas) }}) {# -#}
+| [HM](https://health.occ2.scaleup.sovereignit.cloud) |
+| [syseleven](https://www.syseleven.de/en/products-services/openstack-cloud/)<br />(2 SCS regions) | Public OpenStack Cloud | SysEleven GmbH | {# #}
+{#- #}dus2: [{{ results | pick('syseleven-dus2', iaas) | summary }}]({{ detail_url('syseleven-dus2', iaas) }}){# -#}
+<br />
+{#- #}ham1: [{{ results | pick('syseleven-ham1', iaas) | summary }}]({{ detail_url('syseleven-ham1', iaas) }}) {# -#}
+| (soon)<br />(soon) |
+| [Wavestack](https://www.noris.de/wavestack-cloud/) | Public cloud for customers | noris network AG/Wavecon GmbH |
+{#- #} [{{ results | pick('wavestack', iaas) | summary }}]({{ detail_url('wavestack', iaas) }}) {# -#}
+| [HM](https://health.wavestack1.sovereignit.cloud:3000/) |

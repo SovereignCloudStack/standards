@@ -43,13 +43,14 @@
         {
           "name": "double-spaces",
           "message": "Avoid double spaces",
-          "searchPattern": "/([^\\s>])  ([^\\s|])/g",
+          "searchPattern": "/([^\\s>|])  ([^\\s|])/g",
           "replace": "$1 $2",
-          "skipCode": true
+          "skipCode": true,
+	  "tables": false
         }
       ]
     }
   },
   "customRules": ["markdownlint-rule-search-replace"],
-  "ignores": ["node_modules", ".github"]
+  "ignores": ["node_modules", ".github", ".git"]
 }

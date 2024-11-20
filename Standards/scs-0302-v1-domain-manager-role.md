@@ -1,17 +1,27 @@
 ---
 title: Domain Manager configuration for Keystone
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2024-11-13
 track: IAM
 ---
 
 ## Introduction
 
 SCS Clouds should provide a way to grant Domain Manager rights to SCS Customers which provides IAM self-service capabilities within an OpenStack domain.
-This is not properly implemented in the default OpenStack configuration and requires specific adjustments to the Keystone identity management configuration.
+Such capabilities should enable the SCS customer to manage identity resources within their domain without involving the provider of the cloud.
 To avoid conflict with the unscoped `admin` role in OpenStack we want to refer to this new persona as "Domain Manager", introducing the `manager` role in the API for domains.
 
-### Glossary
+:::info
+
+The Domain Manager functionality will be a native part of the official OpenStack beginning with release 2024.2 ("Dalmatian").
+
+To implement the Domain Manager in SCS clouds using an OpenStack release older than 2024.2, please refer to the supplemental [implementation notes for this standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0302-w1-domain-manager-implementation-notes.md).
+The implementation notes document describes an alternative implementation that can be used for OpenStack 2024.1 and older releases.
+
+:::
+
+## Terminology
 
 The following special terms are used throughout this standard document:
 
@@ -31,21 +41,11 @@ The following special terms are used throughout this standard document:
 
 [^1]: [OpenStack Documentation: Role-Based Access Control Overview](https://static.opendev.org/docs/patrole/latest/rbac-overview.html)
 
-### Impact
-
-Applying this standard modifies the API policy configuration of Keystone and introduces a new persona to Keystone to enable IAM self-service for customers within a domain.
-Once assigned, this persona allows special Domain Manager users within a domain to manage users, project, groups and role assignments as part of the IAM self-service.
-
-However, the configuration change introduced by this standard does not automatically assign the Domain Manager persona to any users per default.
-Assigning the new persona and granting customers the resulting self-service capabilities is a deliberate action to be taken by the CSP on a per-tenant (i.e. per domain) basis.
-
-Omitting the provisioning of any Domain Manager users (i.e. not assigning the new persona to any user) will result in an OpenStack cloud that behaves identically to a configuration without the standard applied, making the actual usage of the functionality a CSP's choice and entirely optional.
-
 ## Motivation
 
 In the default configuration of Keystone, only users with the `admin` role may manage the IAM resources such as projects, groups and users and their relation through role assignments.
-The `admin` role in OpenStack Keystone is not properly scoped when assigned within a domain or project only as due to hard-coded architectural limitations in OpenStack, a user with the `admin` role may escalate their privileges outside of their assigned project or domain boundaries.
-Thus, it is not possible to properly give customers a self-service functionality in regards to project, group and user management with the default configuration.
+The `admin` role in OpenStack Keystone is not properly scoped when assigned within a domain or project only as due to hard-coded architectural limitations in OpenStack, a user with the `admin` role may escalate their privileges outside their assigned project or domain boundaries.
+Thus, it is not possible to properly give customers a self-service functionality in regard to project, group and user management with the default configuration.
 
 To address this, this standard defines a new Domain Manager persona implemented using a domain-scoped `manager` role in conjunction with appropriate Keystone API policy adjustments to establish a standardized extension to the default Keystone configuration allowing for IAM self-service capabilities for customers within domains.
 
@@ -59,7 +59,7 @@ To address this, this standard defines a new Domain Manager persona implemented 
 ## Design Considerations
 
 - the Domain Manager persona MUST support managing projects, groups and users within a specific domain
-- the Domain Manager persona MUST be properly scoped to a domain, it MUST NOT gain access to resources outside of its owning domain
+- the Domain Manager persona MUST be properly scoped to a domain, it MUST NOT gain access to resources outside its owning domain
 - the Domain Manager persona MUST NOT be able to manipulate existing roles or create new roles
 - the Domain Manager persona MUST only be able to assign specific non-administrative\* roles to their managed users where the applicable roles are defined by the CSP
 - Domain Managers MUST NOT be able to abuse the role assignment functionalities to escalate their own privileges or those of other users beyond the roles defined by the CSP
@@ -78,7 +78,7 @@ This results in special permissions being granted to users possessing the role w
 This poses severe security risks as the proper scoping of the `admin` role is impossible.
 **Due to this, this approach was discarded early.**
 
-Upstream (OpenStack) is in the process of addressing this across the services but it has not been fully implemented yet, especially for domains[^3].
+Upstream (OpenStack) is in the process of addressing this across the services, but it has not been fully implemented yet, especially for domains[^3].
 
 [^2]: [Launchpad bug: "admin"-ness not properly scoped](https://bugs.launchpad.net/keystone/+bug/968696)
 
@@ -94,180 +94,52 @@ This means that by creating a new role and extending Keystone's API policy confi
 
 [^4]: [OpenStack Documentation: Administering Applications that use oslo.policy](https://docs.openstack.org/oslo.policy/latest/admin/index.html)
 
-## Open questions
-
-### Limitations
-
-The approach described in this standard imposes the following limitations:
-
-1. as a result of the "`identity:list_domains`" rule (see below), Domain Managers are able to see all domains[^5] via "`openstack domain list`" and can inspect the metadata of other domains with "`openstack domain show`"
-2. as a result of the "`identity:list_roles`" rule (see below), Domain Managers are able to see all roles via "`openstack role list`" and can inspect the metadata of other roles with "`openstack role show`"
-
-**As a result of points 1 and 2, metadata of all domains and roles will be exposed to all Domain Managers!**
-
-If a CSP deems either of these points critical, they may abstain from granting the `"manager"` role to any user in a domain scope, effectively disabling the Domain Manager functionality. See [Impact](#impact).
-
-[^5]: see the [corresponding Launchpad bug at Keystone](https://bugs.launchpad.net/keystone/+bug/2041611)
-
 ## Decision
 
-A role named "`manager`" is to be created via the Keystone API and the policy adjustments quoted below are to be applied.
+A role named "`manager`" MUST be present in the identity service.
 
-### Policy adjustments
+The identity service MUST implement the Domain Manager functionality for this role.
+The implementation details depend on the OpenStack Keystone version used.
+See the sections below for reference.
 
-The following policy has to be applied to Keystone in a verbatim fashion.
-The only parts of the policy definitions that may be changed are:
+### For OpenStack Keystone 2024.2 or later
 
-1. The "`base_*`" definitions to align them to the correct OpenStack defaults matching the OpenStack release of the environment in case those differ from this template.
-2. The "`is_domain_managed_role`" definition (see next section below).
+For OpenStack Keystone 2024.2 or later the Domain Manager persona is already integrated natively.
+To guarantee proper scope protection, the Identity API MUST be configured with "`enforce_scope`" and "`enforce_new_defaults`" enabled for the oslo.policy library.
 
-```yaml
-# SCS Domain Manager policy configuration
+Example entries for the `keystone.conf` configuration file:
 
-# Section A: OpenStack base definitons
-# The entries beginning with "base_<rule>" should be exact copies of the
-# default "identity:<rule>" definitions for the target OpenStack release.
-# They will be extended upon for the manager role below this section.
-"base_get_domain": "(role:reader and system_scope:all) or token.domain.id:%(target.domain.id)s or token.project.domain.id:%(target.domain.id)s"
-"base_list_domains": "(role:reader and system_scope:all)"
-"base_list_roles": "(role:reader and system_scope:all)"
-"base_get_role": "(role:reader and system_scope:all)"
-"base_list_users": "(role:reader and system_scope:all) or (role:reader and domain_id:%(target.domain_id)s)"
-"base_get_user": "(role:reader and system_scope:all) or (role:reader and token.domain.id:%(target.user.domain_id)s) or user_id:%(target.user.id)s"
-"base_create_user": "(role:admin and system_scope:all) or (role:admin and token.domain.id:%(target.user.domain_id)s)"
-"base_update_user": "(role:admin and system_scope:all) or (role:admin and token.domain.id:%(target.user.domain_id)s)"
-"base_delete_user": "(role:admin and system_scope:all) or (role:admin and token.domain.id:%(target.user.domain_id)s)"
-"base_list_projects": "(role:reader and system_scope:all) or (role:reader and domain_id:%(target.domain_id)s)"
-"base_get_project": "(role:reader and system_scope:all) or (role:reader and domain_id:%(target.project.domain_id)s) or project_id:%(target.project.id)s"
-"base_create_project": "(role:admin and system_scope:all) or (role:admin and domain_id:%(target.project.domain_id)s)"
-"base_update_project": "(role:admin and system_scope:all) or (role:admin and domain_id:%(target.project.domain_id)s)"
-"base_delete_project": "(role:admin and system_scope:all) or (role:admin and domain_id:%(target.project.domain_id)s)"
-"base_list_user_projects": "(role:reader and system_scope:all) or (role:reader and domain_id:%(target.user.domain_id)s) or user_id:%(target.user.id)s"
-"base_check_grant": "(role:reader and system_scope:all) or ((role:reader and domain_id:%(target.user.domain_id)s and domain_id:%(target.project.domain_id)s) or (role:reader and domain_id:%(target.user.domain_id)s and domain_id:%(target.domain.id)s) or (role:reader and domain_id:%(target.group.domain_id)s and domain_id:%(target.project.domain_id)s) or (role:reader and domain_id:%(target.group.domain_id)s and domain_id:%(target.domain.id)s)) and (domain_id:%(target.role.domain_id)s or None:%(target.role.domain_id)s)"
-"base_list_grants": "(role:reader and system_scope:all) or (role:reader and domain_id:%(target.user.domain_id)s and domain_id:%(target.project.domain_id)s) or (role:reader and domain_id:%(target.user.domain_id)s and domain_id:%(target.domain.id)s) or (role:reader and domain_id:%(target.group.domain_id)s and domain_id:%(target.project.domain_id)s) or (role:reader and domain_id:%(target.group.domain_id)s and domain_id:%(target.domain.id)s)"
-"base_create_grant": "(role:admin and system_scope:all) or ((role:admin and domain_id:%(target.user.domain_id)s and domain_id:%(target.project.domain_id)s) or (role:admin and domain_id:%(target.user.domain_id)s and domain_id:%(target.domain.id)s) or (role:admin and domain_id:%(target.group.domain_id)s and domain_id:%(target.project.domain_id)s) or (role:admin and domain_id:%(target.group.domain_id)s and domain_id:%(target.domain.id)s)) and (domain_id:%(target.role.domain_id)s or None:%(target.role.domain_id)s)"
-"base_revoke_grant": "(role:admin and system_scope:all) or ((role:admin and domain_id:%(target.user.domain_id)s and domain_id:%(target.project.domain_id)s) or (role:admin and domain_id:%(target.user.domain_id)s and domain_id:%(target.domain.id)s) or (role:admin and domain_id:%(target.group.domain_id)s and domain_id:%(target.project.domain_id)s) or (role:admin and domain_id:%(target.group.domain_id)s and domain_id:%(target.domain.id)s)) and (domain_id:%(target.role.domain_id)s or None:%(target.role.domain_id)s)"
-"base_list_role_assignments": "(role:reader and system_scope:all) or (role:reader and domain_id:%(target.domain_id)s)"
-"base_list_groups": "(role:reader and system_scope:all) or (role:reader and domain_id:%(target.group.domain_id)s)"
-"base_get_group": "(role:reader and system_scope:all) or (role:reader and domain_id:%(target.group.domain_id)s)"
-"base_create_group": "(role:admin and system_scope:all) or (role:admin and domain_id:%(target.group.domain_id)s)"
-"base_update_group": "(role:admin and system_scope:all) or (role:admin and domain_id:%(target.group.domain_id)s)"
-"base_delete_group": "(role:admin and system_scope:all) or (role:admin and domain_id:%(target.group.domain_id)s)"
-"base_list_groups_for_user": "(role:reader and system_scope:all) or (role:reader and domain_id:%(target.user.domain_id)s) or user_id:%(user_id)s"
-"base_list_users_in_group": "(role:reader and system_scope:all) or (role:reader and domain_id:%(target.group.domain_id)s)"
-"base_remove_user_from_group": "(role:admin and system_scope:all) or (role:admin and domain_id:%(target.group.domain_id)s and domain_id:%(target.user.domain_id)s)"
-"base_check_user_in_group": "(role:reader and system_scope:all) or (role:reader and domain_id:%(target.group.domain_id)s and domain_id:%(target.user.domain_id)s)"
-"base_add_user_to_group": "(role:admin and system_scope:all) or (role:admin and domain_id:%(target.group.domain_id)s and domain_id:%(target.user.domain_id)s)"
-
-# Section B: Domain Manager Extensions
-
-# classify domain managers with a special role
-"is_domain_manager": "role:manager"
-
-# specify a rule that whitelists roles which domain admins are permitted
-# to assign and revoke within their domain
-"is_domain_managed_role": "'member':%(target.role.name)s or 'load-balancer_member':%(target.role.name)s"
-
-# allow domain admins to retrieve their own domain (does not need changes)
-"identity:get_domain": "rule:base_get_domain or rule:admin_required"
-
-# list_domains is needed for GET /v3/domains?name=... requests
-# this is mandatory for things like
-# `create user --domain $DOMAIN_NAME $USER_NAME` to correctly discover
-# domains by name
-"identity:list_domains": "rule:is_domain_manager or rule:base_list_domains or rule:admin_required"
-
-# list_roles is needed for GET /v3/roles?name=... requests
-# this is mandatory for things like `role add ... $ROLE_NAME`` to correctly
-# discover roles by name
-"identity:list_roles": "rule:is_domain_manager or rule:base_list_roles or rule:admin_required"
-
-# get_role is needed for GET /v3/roles/{role_id} requests
-# this is mandatory for the OpenStack SDK to properly process role assignments
-# which are issued by role id instead of name
-"identity:get_role": "(rule:is_domain_manager and rule:is_domain_managed_role) or rule:base_get_role or rule:admin_required"
-
-# allow domain admins to manage users within their domain
-"identity:list_users": "(rule:is_domain_manager and token.domain.id:%(target.domain_id)s) or rule:base_list_users or rule:admin_required"
-"identity:get_user": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or rule:base_get_user or rule:admin_required"
-"identity:create_user": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or rule:base_create_user or rule:admin_required"
-"identity:update_user": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or rule:base_update_user or rule:admin_required"
-"identity:delete_user": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or rule:base_delete_user or rule:admin_required"
-
-# allow domain admins to manage projects within their domain
-"identity:list_projects": "(rule:is_domain_manager and token.domain.id:%(target.domain_id)s) or rule:base_list_projects or rule:admin_required"
-"identity:get_project": "(rule:is_domain_manager and token.domain.id:%(target.project.domain_id)s) or rule:base_get_project or rule:admin_required"
-"identity:create_project": "(rule:is_domain_manager and token.domain.id:%(target.project.domain_id)s) or rule:base_create_project or rule:admin_required"
-"identity:update_project": "(rule:is_domain_manager and token.domain.id:%(target.project.domain_id)s) or rule:base_update_project or rule:admin_required"
-"identity:delete_project": "(rule:is_domain_manager and token.domain.id:%(target.project.domain_id)s) or rule:base_delete_project or rule:admin_required"
-"identity:list_user_projects": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or rule:base_list_user_projects or rule:admin_required"
-
-# allow domain managers to manage role assignments within their domain
-# (restricted to specific roles by the 'is_domain_managed_role' rule)
-#
-# project-level role assignment to user within domain
-"is_domain_user_project_grant": "token.domain.id:%(target.user.domain_id)s and token.domain.id:%(target.project.domain_id)s"
-# project-level role assignment to group within domain
-"is_domain_group_project_grant": "token.domain.id:%(target.group.domain_id)s and token.domain.id:%(target.project.domain_id)s"
-# domain-level role assignment to group
-"is_domain_level_group_grant": "token.domain.id:%(target.group.domain_id)s and token.domain.id:%(target.domain.id)s"
-# domain-level role assignment to user
-"is_domain_level_user_grant": "token.domain.id:%(target.user.domain_id)s and token.domain.id:%(target.domain.id)s"
-"domain_manager_grant": "rule:is_domain_manager and (rule:is_domain_user_project_grant or rule:is_domain_group_project_grant or rule:is_domain_level_group_grant or rule:is_domain_level_user_grant)"
-"identity:check_grant": "rule:domain_manager_grant or rule:base_check_grant or rule:admin_required"
-"identity:list_grants": "rule:domain_manager_grant or rule:base_list_grants or rule:admin_required"
-"identity:create_grant": "(rule:domain_manager_grant and rule:is_domain_managed_role) or rule:base_create_grant or rule:admin_required"
-"identity:revoke_grant": "(rule:domain_manager_grant and rule:is_domain_managed_role) or rule:base_revoke_grant or rule:admin_required"
-"identity:list_role_assignments": "(rule:is_domain_manager and token.domain.id:%(target.domain_id)s) or rule:base_list_role_assignments or rule:admin_required"
-
-
-# allow domain managers to manage groups within their domain
-"identity:list_groups": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s) or (role:reader and system_scope:all) or rule:base_list_groups or rule:admin_required"
-"identity:get_group": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s) or (role:reader and system_scope:all) or rule:base_get_group or rule:admin_required"
-"identity:create_group": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s) or rule:base_create_group or rule:admin_required"
-"identity:update_group": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s) or rule:base_update_group or rule:admin_required"
-"identity:delete_group": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s) or rule:base_delete_group or rule:admin_required"
-"identity:list_groups_for_user": "(rule:is_domain_manager and token.domain.id:%(target.user.domain_id)s) or rule:base_list_groups_for_user or rule:admin_required"
-"identity:list_users_in_group": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s) or rule:base_list_users_in_group or rule:admin_required"
-"identity:remove_user_from_group": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s and token.domain.id:%(target.user.domain_id)s) or rule:base_remove_user_from_group or rule:admin_required"
-"identity:check_user_in_group": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s and token.domain.id:%(target.user.domain_id)s) or rule:base_check_user_in_group or rule:admin_required"
-"identity:add_user_to_group": "(rule:is_domain_manager and token.domain.id:%(target.group.domain_id)s and token.domain.id:%(target.user.domain_id)s) or rule:base_add_user_to_group or rule:admin_required"
+```ini
+[oslo_policy]
+enforce_new_defaults = True
+enforce_scope = True
 ```
 
-Note that the policy file begins with a list of "`base_*`" rule definitions ("Section A").
-These mirror the default policies of recent OpenStack releases.
-They are used as a basis for the domain-manager-specific changes which are implemented in "Section B" where they are referenced to via "`or rule:base_*`" accordingly.
-The section of "`base_*`" rules is meant for easy maintenance/update of default rules while keeping the domain-manager-specific rules separate.
+The "`is_domain_managed_role`" policy rule MAY be adjusted using a dedicated `policy.yaml` file for the Identity API in order to adjust the set of roles a Domain Manager is able to assign/revoke.
+When doing so, the `admin` role MUST NOT be added to this set.
 
-> **Note:**
-> The "`or rule:admin_required`" appendix to the rule defintions in "Section B" is included for backwards compatibility with environments not yet fully configured for the new secure RBAC standard[^6].
+#### Note about upgrading from SCS Domain Manager to native integration
 
-[^6]: [OpenStack Technical Committee Governance Documents: Consistent and Secure Default RBAC](https://governance.openstack.org/tc/goals/selected/consistent-and-secure-rbac.html)
+In case the Identity API was upgraded from an older version where the policy-based Domain Manager implementation of SCS described in the [implementation notes for this standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0302-w1-domain-manager-implementation-notes.md) was still in use, the policies described there MUST be removed.
+The only exception to this is the "`is_domain_managed_role`" rule in case any adjustments have been made to that rule and the CSP wants to preserve them.
 
-#### Specifying manageable roles via "`is_domain_managed_role`"
+### For OpenStack Keystone 2024.1 or below
 
-The "`is_domain_managed_role`" rule of the above policy template may be adjusted according to the requirements of the CSP and infrastructure architecture to specify different or multiple roles as manageable by Domain Managers as long as the policy rule adheres to the following:
+For OpenStack Keystone 2024.1 or below, the Domain Manager functionality MUST be implemented using API policies.
+For details, refer to the [implementation notes for this standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0302-w1-domain-manager-implementation-notes.md).
 
-- the "`is_domain_managed_role`" rule MUST NOT contain the "`admin`" role, neither directly nor transitively
-- the "`is_domain_managed_role`" rule MUST define all applicable roles directly, it MUST NOT contain a "`rule:`" reference within itself
-
-##### Example: permitting multiple roles
-
-The following example permits the "`reader`" role to be assigned/revoked by a Domain Manager in addition to the default "`member`" and "`load-balancer_member`" roles.
-Further roles can be appended using the logical `or` directive.
-
-```yaml
-"is_domain_managed_role": "'member':%(target.role.name)s or 'load-balancer_member':%(target.role.name)s or 'reader':%(target.role.name)s"
-```
-
-**Note regarding the `manager` role**
-
-When adjusting the "`is_domain_managed_role`" rule a CSP might opt to also include the "`manager`" role itself in the manageable roles, resulting in Domain Managers being able to propagate the Domain Manager capabilities to other users within their domain.
-This increases the self-service capabilities of the customer but introduces risks of Domain Managers also being able to revoke this role from themselves or each other (within their domain) in an unintended fashion.
-
-CSPs have to carefully evaluate whether Domain Manager designation authority should reside solely on their side or be part of the customer self-service scope and decide about adding "`'manager':%(target.role.name)s`" to the rule accordingly.
+For the release 2024.1 and below, changing the "`enforce_scope`" and "`enforce_new_defaults`" options for the Identity API is not necessary for the Domain Manager implementation.
 
 ## Related Documents
+
+### Upstream contribution spec for the Domain Manager functionality
+
+**Description:** Upstream Identity service specification to introduce the Domain Manager functionality natively in OpenStack Keystone.
+After implementing the Domain Manager functionality as described in the [implementation notes for this standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0302-w1-domain-manager-implementation-notes.md), the SCS project contributed the functionality to the official OpenStack project.
+This eventually resulted in the feature being integrated natively in OpenStack Keystone starting with the 2024.2 release.
+The specification was the starting point of the contribution.
+
+**Link:** [OpenStack Identity Specs: Domain Manager Persona for domain-scoped self-service administration](https://specs.openstack.org/openstack/keystone-specs/specs/keystone/2024.1/domain-manager-persona.html)
 
 ### "admin"-ness not properly scoped
 
@@ -374,4 +246,4 @@ Rationale:
 Links / Comments / References:
 
 - [SIG IAM meeting protocol entry](https://input.scs.community/2023-scs-sig-iam#Domain-Admin-rights-for-SCS-IaaS-Customers-184)
-- [issue commment about decision](https://github.com/SovereignCloudStack/issues/issues/184#issuecomment-1670985934)
+- [issue comment about decision](https://github.com/SovereignCloudStack/issues/issues/184#issuecomment-1670985934)

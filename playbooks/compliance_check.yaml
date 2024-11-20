@@ -3,30 +3,20 @@
   hosts: all
   tasks:
     - name: Run compliance script
-      ansible.builtin.shell: |
-        python3 ~/Tests/scs-compliance-check.py ~/Tests/scs-compatible-iaas.yaml -s {{ cloud }} -a os_cloud={{ cloud }} -o {{ cloud }}-iaas.yaml -C
-      register: result
+      # write report.yaml into the proper directory so it will be transferred back by base job
+      # -- this then works regardless of VM/pod
+      ansible.builtin.command:
+        cmd: >
+          python3 Tests/scs-test-runner.py --config Tests/config.toml --debug
+          run --preset {{ preset }}
+          --output "{{ ansible_user_dir }}/zuul-output/artifacts/report.yaml"
+        chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
       changed_when: true
-      # failed_when: result.rc != 0
-      # ^^^ this task does not fail; the only failure would be if the yaml file didn't get produced,
-      # but then the task "Copy result YAML" would fail anyway
-
-    - ansible.builtin.debug:
-        msg: "{{ result.stdout }} {{ result.stderr }}"
-
-    - name: Copy result YAML
-      ansible.builtin.synchronize:
-        dest: "{{ zuul.executor.log_root }}/{{ cloud }}-iaas.yaml"
-        mode: pull
-        src: "{{ cloud }}-iaas.yaml"
-        verify_host: true
-        owner: no
-        group: no
 
     - name: Return artifact URL
       zuul_return:
         data:
           zuul:
             artifacts:
-              - name: "{{ cloud }}-iaas.yaml"
-                url: "{{ cloud }}-iaas.yaml"
+              - name: "report.yaml"
+                url: "artifacts/report.yaml"

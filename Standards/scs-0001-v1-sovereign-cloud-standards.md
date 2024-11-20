@@ -18,12 +18,12 @@ It strives for interoperable and sovereign cloud stacks
 which can be deployed and used by a wide range of organizations and individuals.
 Wherever feasible,
 transparency and openness both in respect to the inner workings of the platforms standardised by SCS,
-as well as the SCS organisation itself
+as well as the SCS organization itself
 are a paradigm we intend to live.
 
 ## Requirements
 
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
+The keywords "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
 In addition, "FORBIDDEN" is to be interpreted equivalent to "MUST NOT".
 
@@ -107,7 +107,7 @@ embedded in the markdown header.
 | Field name      | Requirement                                                                | Description                                                                           |
 | --------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | `type`          | REQUIRED                                                                   | one of `Procedural`, `Standard`, `Decision Record`, or `Supplement`                   |
-| `status`        | REQUIRED                                                                   | one of `Proposal`, `Draft`, `Stable`, `Deprecated`, or `Rejected`                     |
+| `status`        | REQUIRED                                                                   | one of `Draft`, `Stable`, `Deprecated`, or `Rejected`                                 |
 | `track`         | REQUIRED                                                                   | one of `Global`, `IaaS`, `KaaS`, `IAM`, `Ops`                                         |
 | `supplements`   | REQUIRED precisely when `type` is `Supplement`                             | list of documents that are extended by this document (e.g., multiple major versions)  |
 | `deprecated_at`  | REQUIRED if `status` is `Deprecated`                                       | ISO formatted date indicating the date after which the deprecation is in effect       |
@@ -167,11 +167,11 @@ In addition, the following OPTIONAL sections should be considered:
 ## Process
 
 The lifecycle of an SCS document goes through the following phases:
-Proposal, Draft, Stable, Deprecated, and Rejected.
+Draft, Stable, Deprecated, and Rejected.
 
 ```mermaid
 graph TD
-    A[Proposal] -->|Pull Request| B[Draft]
+    A["Draft (Proposal)"] -->|Pull Request| B[Draft]
     B -->|Pull Request| D[Stable]
     B -->|Pull Request| E[Rejected]
     D -->|Pull Request| F[Deprecated]
@@ -195,8 +195,15 @@ Supplements may be kept in Draft state, because they are not authoritative.
 To propose a new SCS document,
 a community participant creates a pull request on GitHub
 against the [standards repository in the SovereignCloudStack organisation][scs-standards-repo].
+In the beginning, the pull request will contain a draft of an SCS document and
+the community participant should present it to the SCS community.
+They may refer to the [SCS Community page](https://docs.scs.community/community/)
+for an overview of applicable means of communication and online meetings
+to get in touch with the SCS community.
+Community participants are encouraged to present their proposal to the SCS community early on.
+Note that the proposal draft's content does not need to be finished in any way at this stage.
 
-The pull request MUST add exactly one SCS document,
+The pull request for the proposal MUST add exactly one SCS document,
 in the `Standards` folder.
 In the proposal phase,
 the document number MUST be replaced with `xxxx` in the file name,
@@ -209,7 +216,7 @@ for a Supplement of `scs-0100-v3-flavor-naming.md`,
 the file name might be `scs-0100-w1-flavor-naming-implementation-testing.md` (note the `w1`!).
 
 The metadata MUST indicate the intended `track` and `type` of the document,
-and the `status` MUST be set to `Proposal`;
+and the `status` MUST be set to `Draft`;
 for a Supplement, the `supplements` field MUST be set
 to a list of documents (usually containing one element).
 
@@ -217,7 +224,8 @@ Upon acceptance by the group of people identified by the `track`,
 a number is assigned
 (the next unused number)
 and the proposer is asked
-to rename the file to replace the `xxxx` with that number.
+to rename the file to replace the `xxxx` with that number
+before the merge of the pull request.
 
 **Note:**
 Documents on the `Design Record` track MAY be proposed or accepted directly into `Stable` state,
@@ -291,13 +299,13 @@ and the old document SHOULD be deprecated.
 
 ### Deprecation phase (Deprecated)
 
-Should a document become obsolete,
-it can be deprecated.
+When a document is no longer deemed fit for production use,
+it can be marked as deprecated.
 
-Obsoletions SHOULD be announced ahead of their execution by setting the
+Deprecations SHOULD be announced ahead of their execution by setting the
 `deprecated_at` field to a future date and moving the `status` to `Deprecated`.
 This signals current and future implementors
-that the subject matter of the document
+that the subject of the document
 is not considered necessary or state of the art anymore.
 
 If one or more replacement documents for the document exists,
@@ -349,7 +357,7 @@ The advantages of such an approach are:
 The disadvantages of that approach are:
 
 - It is possible to make breaking changes after stabilization.
-  Potentially, an hypothetical SCS-1234 document might refer to something completely different
+  Potentially, a hypothetical SCS-1234 document might refer to something completely different
   in a hypothetical R15 release than what it meant in R5,
   if there have been sufficient, gradual breaking changes to the document.
 

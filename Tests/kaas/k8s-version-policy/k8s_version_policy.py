@@ -45,7 +45,7 @@ import yaml
 
 
 MINOR_VERSION_CADENCE = timedelta(days=120)
-PATCH_VERSION_CADENCE = timedelta(weeks=1)
+PATCH_VERSION_CADENCE = timedelta(weeks=2)
 CVE_VERSION_CADENCE = timedelta(days=2)
 CVE_SEVERITY = 8  # CRITICAL
 
@@ -517,6 +517,8 @@ async def main(argv):
         "Total error / warning: "
         f"{c[logging.ERROR]} / {c[logging.WARNING]}"
     )
+    if not c[logging.CRITICAL]:
+        print("version-policy-check: " + ('PASS', 'FAIL')[min(1, c[logging.ERROR])])
     return min(127, c[logging.ERROR])  # cap at 127 due to OS restrictions
 
 

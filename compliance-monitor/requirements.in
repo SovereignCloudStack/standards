@@ -1,0 +1,9 @@
+argon2_cffi
+bcrypt
+fastapi
+jinja2
+markdown
+passlib
+psycopg2
+ruamel.yaml
+uvicorn[standard]

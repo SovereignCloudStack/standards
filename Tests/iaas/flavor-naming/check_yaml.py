@@ -17,8 +17,8 @@ import yaml
 from flavor_names import parser_v2, flavorname_to_dict
 
 
-REQUIRED_FIELDS = ['name-v1', 'name-v2', 'name', 'cpus', 'ram', 'cpu-type']
-DEFAULTS = {'disk0-type': 'network'}
+REQUIRED_FIELDS = ['scs:name-v1', 'scs:name-v2', 'name', 'cpus', 'ram', 'scs:cpu-type']
+DEFAULTS = {'scs:disk0-type': 'network'}
 
 
 class Undefined:
@@ -47,7 +47,7 @@ class Checker:
             self.emit(f"flavor spec missing keys {', '.join(missing)}: {flavor_spec}")
             return
         name = flavor_spec['name']
-        name_v2 = flavor_spec['name-v2']
+        name_v2 = flavor_spec['scs:name-v2']
         try:
             flavorname = parser_v2(name_v2)
         except Exception:

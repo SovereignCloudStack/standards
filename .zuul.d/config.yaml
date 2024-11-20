@@ -5,11 +5,7 @@
     merge-mode: "squash-merge"
     periodic-daily:
       jobs:
-        - scs-check-pco-prod1
-        - scs-check-pco-prod2
-        - scs-check-pco-prod3
-        - scs-check-regio-a
-        - scs-check-wavestack
+        - scs-check-all
     periodic-hourly:
       jobs:
         - scs-check-gx-scs-main
@@ -22,6 +18,7 @@
 - job:
     name: scs-check-adr-syntax
     parent: base
+    nodeset: pod-fedora-40
     pre-run: playbooks/pre.yaml
     run: playbooks/adr_syntax.yaml
 - job:
@@ -30,8 +27,9 @@
     secrets:
      - name: clouds_conf
        secret: SECRET_STANDARDS
+    nodeset: pod-fedora-40
     vars:
-      cloud: gx-scs
+      preset: default
     pre-run:
      - playbooks/pre.yaml
      - playbooks/pre_cloud.yaml
@@ -41,27 +39,7 @@
     parent: scs-check-gx-scs
     branches: main
 - job:
-    name: scs-check-pco-prod3
+    name: scs-check-all
     parent: scs-check-gx-scs-main
     vars:
-      cloud: pco-prod3
-- job:
-    name: scs-check-pco-prod2
-    parent: scs-check-gx-scs-main
-    vars:
-      cloud: pco-prod2
-- job:
-    name: scs-check-pco-prod1
-    parent: scs-check-gx-scs-main
-    vars:
-      cloud: pco-prod1
-- job:
-    name: scs-check-regio-a
-    parent: scs-check-gx-scs-main
-    vars:
-      cloud: regio-a
-- job:
-    name: scs-check-wavestack
-    parent: scs-check-gx-scs-main
-    vars:
-      cloud: wavestack
+      preset: all

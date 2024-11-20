@@ -1,0 +1,20 @@
+sonobuoy-config:
+  driver: Job
+  plugin-name: scs-kaas-conformance
+  result-format: gojson
+  description: A testsuite for testing the scs conformance of k8s clusters.
+spec:
+  command:
+  - bash
+  args: ["-c","go tool test2json ./custom.test -test.v | tee ${SONOBUOY_RESULTS_DIR}/out.json ; echo ${SONOBUOY_RESULTS_DIR}/out.json > ${SONOBUOY_RESULTS_DIR}/done"]
+  image: ghcr.io/sovereigncloudstack/standards/scs-kaas-conformance:dev
+  env:
+  - name: NS_PREFIX
+    value: custom
+  - name: SONOBUOY_PROGRESS_PORT
+    value: "8099"
+  name: plugin
+  resources: {}
+  volumeMounts:
+  - mountPath: /tmp/sonobuoy/results
+    name: results

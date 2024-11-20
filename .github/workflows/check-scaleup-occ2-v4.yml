@@ -1,0 +1,23 @@
+name: "Compliance IaaS v4 of scaleup-occ2"
+
+on:
+  # Trigger compliance check every day at 4:30 UTC
+  schedule:
+    - cron:  '30 4 * * *'
+  # Trigger compliance check after Docker image has been built
+  workflow_run:
+    workflows: [Build and publish scs-compliance-check Docker image]
+    types:
+      - completed
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
+jobs:
+  check-scaleup-occ2:
+    uses: ./.github/workflows/scs-compliance-check-with-application-credential.yml
+    with:
+      version: v4
+      layer: iaas
+      cloud: scaleup-occ2
+      secret_name: OS_PASSWORD_SCALEUP_OCC2
+    secrets: inherit

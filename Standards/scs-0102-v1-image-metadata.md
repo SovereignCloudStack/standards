@@ -1,5 +1,5 @@
 ---
-title: SCS Image Metadata Standard
+title: SCS Image Metadata
 type: Standard
 stabilized_at: 2022-10-31
 status: Stable
@@ -16,7 +16,7 @@ description: |
 ## Motivation
 
 Many clouds offer standard Operating System images for their users' convenience.
-To make them really useful, they should contain meta data (properties) to allow
+To make them really useful, they should contain metadata (properties) to allow
 users to understand what they can expect using these images.
 
 The specification is targeting images that are managed by the service provider,
@@ -53,7 +53,7 @@ in the [OpenStack Image documentation](https://docs.openstack.org/glance/latest/
 The following properties are considered mandatory:
 
 - `architecture`, `hypervisor_type`
-- `min_disk_size` (in GiB), `min_ram` (in MiB)
+- `min_disk` (in GiB), `min_ram` (in MiB)
 - `os_version`, `os_distro`
 - `hw_rng_model`, `hw_disk_bus` (`scsi` recommended, and then setting `hw_scsi_model` is also recommended)
 
@@ -78,7 +78,7 @@ level).
 
 Technically, the thus updated image is a new image and will thus carry a new UUID.
 It is recommended that the old image gets renamed (e.g. build date or patch level attached)
-and hidden (`os_hidden=true`), but remains accessible via its (unchanged) UUID for some
+and hidden (`os_hidden=True`), but remains accessible via its (unchanged) UUID for some
 time.
 
 The update handling by the provider is described via the properties `replace_frequency`,
@@ -119,7 +119,7 @@ the issue becomes public and a tested fix is available as maintenance update fro
 distribution_. A value of 0 indicates a best-effort approach without firm SLAs; the field not
 being present indicates no commitment. A value of 48 would indicate that the provider
 commits to a new image within 48hrs. A critical issue is defined as a security vulnerability
-with a CVSS score of 9.0 or higher that affects a package that is included in the image.
+with a CVSS score of 9.0 or higher that affects software that is included in the image.
 
 The `provided_until` field is supposed to contain a date in `YYYY-MM-DD` format that
 indicates until when an image under this name will be provided and (according to the
@@ -142,7 +142,10 @@ by its UUID.
 
 Note that the old images must be hidden from the image catalogue or renamed (or both)
 to avoid failing referencing by name. Note that `last-N` may be limited by the `provided_until`
-date.
+date. We recommend providers that keep old images according to the advertized `uuid_validity`
+to hide older images (setting the `os_hidden` property to `True`). If the outdated images must
+remain visible, the recommendation is to rename the images by attaching a datestamp in the
+format " `YYYYMMDD`" to the name where the date must reflect the `build_date` of the image.
 
 The three properties `uuid_validity`, `provided_until` and `replace_frequency` are mandatory;
 the field `hotfix_hours` is optional.
@@ -164,13 +167,13 @@ The provider makes an effort to replace images upon critical security issues out
 - Mandatory: `image_source` needs to be a URL to point to a place from which the image can be downloaded.
   (Note: This may be set to the string "private" to indicate that the image can not be freely
   downloaded.)
-- Mandatory: `image_description` needs to be an URL (or text) with release notes and other human readable
+- Mandatory: `image_description` needs to be a URL (or text) with release notes and other human-readable
   data about the image.
 
 - Recommended _tag_: `managed_by_VENDOR`
 
 Note that for most images that come straight from an upstream source, `image_description` should point
-to a an upstream web page where these images are described. If download links are available as well
+to an upstream web page where these images are described. If download links are available as well
 on that page, `image_source` can point to the same page, otherwise a more direct link to the image
 should be used, e.g. directly linking the `.qcow2` or `.img` file.
 If providers have their own image building machinery or do some post-processing on top of
@@ -187,7 +190,7 @@ upstream images, they should point to the place where they document and offer th
   the patch status.
 - Mandatory: `image_original_user` is the default login user for the operating system which can connect
   to the image via the injected SSH key or provided password. (This can be set to `none` if no default
-  user name exists for the operating system.)
+  username exists for the operating system.)
 - Optional: `patchlevel` can be set to an operating specific patch level that describes the
   patch status — typically we would expect the `image_build_date` to be sufficient.
 
@@ -208,10 +211,10 @@ might not use any of these properties, except maybe `maintained_until`. Note tha
 Windows images would typically require `license_included`, `subscription_included`.
 A boolean property that is not present is considered to be `false`.
 
-- Optional: `license_included` (boolean) indicates whether or not the flavor fee
+- Optional: `license_included` (boolean) indicates whether the flavor fee
   includes the licenses required to use this image. This field is mandatory for
   images that contain software that requires commercial licenses.
-- Optional: `license_required` (boolean) indicates whether or not a customer must bring
+- Optional: `license_required` (boolean) indicates whether a customer must bring
   its own license to be license compliant. This can not be true at the same time as the
   previous setting. This field is mandatory IF customers need to bring their own
   license to use the image.

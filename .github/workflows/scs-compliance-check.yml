@@ -15,7 +15,7 @@ on:
       secret_name:
         required: true
         type: string
-  
+
 jobs:
   scs-compliance-check:
     runs-on: ubuntu-latest
@@ -32,10 +32,13 @@ jobs:
               auth:
                 password: ${{ secrets[inputs.secret_name] }}
           EOF
+      - name: "Clean up any lingering resources from previous run"
+        if: ${{ inputs.layer == 'iaas' && inputs.version == 'v4' }}
+        run: "cd /scs-compliance && ./cleanup.py -c ${{ inputs.cloud }} --prefix _scs- --ipaddr 10.1.0. --debug"
       - name: "Run scs-compliance-check"
         run: "cd /scs-compliance && ./scs-compliance-check.py scs-compatible-${{ inputs.layer }}.yaml --version ${{ inputs.version }} -o result.yaml -s ${{ inputs.cloud }} -a os_cloud=${{ inputs.cloud }}"
       - name: "Upload results"
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: result
           path: /scs-compliance/result.yaml

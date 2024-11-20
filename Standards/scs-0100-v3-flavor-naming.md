@@ -14,7 +14,7 @@ description: |
 
 ## Introduction
 
-This is the standard v3.1 for SCS Release 5.
+This is the standard v3.2 for SCS Release 8.
 Note that we intend to only extend it (so it's always backwards compatible),
 but try to avoid changing in incompatible ways.
 (See at the end for the v1 to v2 transition where we have not met that
@@ -41,8 +41,8 @@ Note that not all relevant properties of flavors can be discovered; creating a s
 to address this is a separate but related effort to the name standardization.
 Commonly used infrastructure-as-code tools do not provide a way to use discoverability
 features to express something like "I want a flavor with 2 vCPUs, 8GiB of RAM, a local
-20GB SSD disk and Infiniband support but I don't care whether it's AMD or intel" in a
-reasonable manner. Using flavor names to express this will thus continue to be useful
+20GB SSD disk and Infiniband support, but I don't care whether it's AMD or intel" in a
+reasonable manner. Using flavor names to express this will thus continue to be useful,
 and we don't expect the need for standardization of flavor names to go away until
 the commonly used IaC tools work on a higher abstraction layer than they currently do.
 
@@ -76,7 +76,7 @@ encoding all details) as well as very detailed longer names.
 | `SCS-` | N`L/V/T/C`\[`i`\] | `-`N\[`u`\]\[`o`\] | \[`-`\[M`x`\]N\[`n/h/s/p`\]\] | \[`_`EXT\]      |
 
 Note that N and M are placeholders for numbers here.
-The optional fields are denoted in brackets (and have opt: in the header.
+The optional fields are denoted in brackets (and have `opt:` in the header).
 See below for extensions.
 
 Note that all letters are case-sensitive.
@@ -131,7 +131,7 @@ the lack of workload management that would prevent worst case performance < 20% 
 #### Insufficient microcode
 
 Not using these mitigations must be indicated by an additional `i` suffix for insecure
-(weak protection against CPU vulns through insufficient microcode, lack of disabled hyperthreading
+(weak protection against CPU vulnerabilities through insufficient microcode, lack of disabled hyperthreading
 on L1TF susceptible CPUs w/o effective core scheduling or disabled protections on the host/hypervisor).
 
 #### Examples
@@ -150,7 +150,7 @@ on L1TF susceptible CPUs w/o effective core scheduling or disabled protections o
 
 Cloud providers should use ECC memory.
 Memory oversubscription should not be used.
-It is allowed to specify half GiBs (e.g. 3.5), though this is should not be done for larger memory sizes (>= 10GiB).
+It is allowed to specify half GiBs (e.g. 3.5), though this should not be done for larger memory sizes (>= 10GiB).
 
 #### No ECC
 
@@ -366,13 +366,15 @@ The options for arch are as follows:
 The generation is vendor specific and can be left out, but it can only be specified in
 conjunction with a vendor. At present, these values are possible:
 
-| Generation | i (Intel x86-64) | z (AMD x86-64) |  a (AArch64)       | r (RISC-V) |
-| ---------- | ---------------- | -------------- | ------------------ | ---------- |
-| 0          | pre Skylake      | pre Zen        | pre Cortex A76     | TBD        |
-| 1          | Skylake          | Zen-1 (Naples) | A76/NeoN1 class    | TBD        |
-| 2          | Cascade Lake     | Zen-2 (Rome)   | A78/x1/NeoV1 class | TBD        |
-| 3          | Ice Lake         | Zen-3 (Milan)  | A71x/NeoN2 (ARMv9) | TBD        |
-| 4          | Sapphire Rapids  | Zen-4 (Genoa)  |                    | TBD        |
+| Generation | i (Intel x86-64)  | z (AMD x86-64) |  a (AArch64)         | r (RISC-V) |
+| ---------- | ----------------- | -------------- | -------------------- | ---------- |
+| 0          | pre Skylake       | pre Zen        | pre Cortex A76       | TBD        |
+| 1          | Skylake           | Zen-1 (Naples) | A76/NeoN1 class      | TBD        |
+| 2          | Cascade Lake      | Zen-2 (Rome)   | A78/x1/NeoV1 class   | TBD        |
+| 3          | Ice Lake          | Zen-3 (Milan)  | A71x/NeoN2/V2(ARMv9) | TBD        |
+| 4          | Sapphire Rapids   | Zen-4 (Genoa)  | AmpereOne (ARMv8.6)  | TBD        |
+| 5          | Sierra Forest(E)  | Zen-5 (Turin)  | A72x/NeoN3/V3(Av9.2) | TBD        |
+| 6          | Granite Rapids(P) |                |                      | TBD        |
 
 It is recommended to leave out the `0` when specifying the old generation; this will
 help the parser tool, which assumes 0 for an unspecified value and does leave it
@@ -384,8 +386,11 @@ out when generating the name for comparison. In other words: 0 has a meaning of
 We don't differentiate between Zen-4 (Genoa) and Zen-4c (Bergamo); L3 cache per
 Siena core is smaller on Bergamo and the frequency lower but the cores are otherwise
 identical. As we already have a qualifier `h` that allows to specify higher frequencies
-(which Genoa thus may use more and Bergamo less or not), we have enough distinction
-capabilities.
+(which Genoa thus may use more and Bergamo not), we have enough distinction
+capabilities. The same applies to Zen-5 (Turin) and Zen-5c (Turin Dense).
+For intel with the server E-cores (Crestmont), these received their own
+generation assignment, as the difference to the server P-cores (Redwood Cove)
+is more significant.
 
 :::
 
@@ -412,7 +417,7 @@ capabilities.
 
 ### [OPTIONAL] GPU support
 
-Format: `_`\[`G/g`\]X\[N\]\[`-`M\]\[`h`\]
+Format: `_`\[`G/g`\]X\[N\[`-`M\[`h`\]\[`-`V\[`h`\]\]\]\]
 
 This extension provides more details on the specific GPU:
 
@@ -420,7 +425,9 @@ This extension provides more details on the specific GPU:
 - vendor (X)
 - generation (N)
 - number (M) of processing units that are exposed (for pass-through) or assigned; see table below for vendor-specific terminology
-- high-performance indicator (`h`)
+- high-frequency indicator (`h`) for compute units
+- amount of video memory (V) in GiB
+- an indicator for high-bandwidth memory
 
 Note that the vendor letter X is mandatory, generation and processing units are optional.
 
@@ -430,18 +437,34 @@ Note that the vendor letter X is mandatory, generation and processing units are 
 | `A`      | AMD    | compute units (CUs)             |
 | `I`      | Intel  | execution units (EUs)           |
 
-For nVidia, the generation N can be f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=turing, a=Ampere, l=Ada Lovelace, ...,
-for AMD GCN-x=0.x, RDNA1=1, RDNA2=2, RDNA3=3,
-for Intel Gen9=0.9, Xe(12.1)=1, ...
+For nVidia, the generation N can be f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=turing, a=Ampere, l=Ada Lovelace, g=Grace Hopper, ...,
+for AMD GCN-x=0.x, RDNA1=1, C/RDNA2=2, C/RDNA3=3, C/RDNA3.5=3.5, C/RDNA4=4, ...
+for Intel Gen9=0.9, Xe(12.1/DG1)=1, Xe(12.2)=2, Arc(12.7/DG2)=3 ...
 (Note: This may need further work to properly reflect what's out there.)
 
-The optional `h` suffix to the compute unit count indicates high-performance (e.g. high freq or special
-high bandwidth gfx memory such as HBM);
-`h` can be duplicated for even higher performance.
+The optional `h` suffix to the compute unit count indicates high-frequency GPU compute units.
+It is not normally recommended to use it except if there are several variants of cards within
+a generation of GPUs and with similar number of SMs/CUs/EUs.
+In case there are even more than two variants, the letter `h` can be duplicated for even
+higher frquencies.
 
-Example: `SCS-16V-64-500s_GNa-14h`
-This flavor has a pass-through GPU nVidia Ampere with 14 SMs and either high-bandwidth memory or specially high frequencies.
-Looking through GPU specs you could guess it's 1/4 of an A30.
+Please note that there are GPUs from one generation and vendor that have vastly different sizes
+(or different fractions are being passed to an instance with multi-instance-GPUs). The number
+M allows to differentiate between them and have an indicator of the compute capability and
+parallelism. M can not at all be compared between different generations let alone different
+vendors.
+
+The amount of video memory dedicated to the instance can be indicated by V (in binary
+Gigabytes). This number needs to be an integer - fractional memory sizes must be rounded
+down. An optional `h` can be used to indicate high bandwidth memory (such as HBM2+) with
+bandwidths well above 1GiB/s.
+
+Example: `SCS-16V-64-500s_GNa-14-6h`
+This flavor has a pass-through GPU nVidia Ampere with 14 SMs and 6 GiB of high-bandwidth video
+memory. Looking through GPU specs you could guess it's 1/4 of an A30.
+
+We have a table with common GPUs in the
+[implementation hints for this standard](scs-0100-w1-flavor-naming-implementation-testing.md)
 
 ### [OPTIONAL] Infiniband
 
@@ -485,14 +508,14 @@ an image is considered broken by the SCS team.
 
 ## Proposal Examples
 
-| Example                   | Decoding                                                                                       |
-| ------------------------- | ---------------------------------------------------------------------------------------------- |
-| SCS-2C-4-10n              | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk                                        |
-| SCS-8Ti-32-50p_i1         | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe                       |
-| SCS-1L-1u-5               | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)                      |
-| SCS-16T-64-200s_GNa-64_ib | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Infiniband, 64 Passthrough nVidia Ampere SMs |
-| SCS-4C-16-2x200p_a1       | 4 dedicated Arm64 cores (A76 class), 16GiB RAM, 2x200GB local NVMe drives                      |
-| SCS-1V-0.5                | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)                                          |
+| Example                        | Decoding                                                                                       |
+| ------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `SCS-2C-4-10n`                 | 2 dedicated cores (x86-64), 4GiB RAM, 10GB network disk                                        |
+| `SCS-8Ti-32-50p_i1`            | 8 dedicated hyperthreads (insecure), Skylake, 32GiB RAM, 50GB local NVMe                       |
+| `SCS-1L-1u-5`                  | 1 vCPU (heavily oversubscribed), 1GiB Ram (no ECC), 5GB disk (unspecific)                      |
+| `SCS-16T-64-200s_GNa-72-24_ib` | 16 dedicated threads, 64GiB RAM, 200GB local SSD, Infiniband, 72 Passthrough nVidia Ampere SMs |
+| `SCS-4C-16-2x200p_a1`          | 4 dedicated Arm64 cores (A76 class), 16GiB RAM, 2x200GB local NVMe drives                      |
+| `SCS-1V-0.5`                   | 1 vCPU, 0.5GiB RAM, no disk (boot from cinder volume)                                          |
 
 ## Previous standard versions
 
@@ -541,7 +564,7 @@ However, we have been reaching out to the OpenStack Public Cloud SIG and the ALA
 members to seek further alignment.
 
 Getting upstream OpenStack support for flavor aliases would provide more flexibility
-and ease migrations between providers, also providers that don't offer the SCS-
+and ease migrations between providers, also providers that don't offer the `SCS-`
 flavors.
 
 We also would like to see upstream `extra_specs` standardizing the discoverability of some
