@@ -132,7 +132,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         self.cs_namespace = self.config.get('cs_namespace')
         logger.debug(f"Working from {self.working_directory}")
 
-    def create_cluster(self, cluster_name="scs-cluster", version=None, kubeconfig_filepath=None):
+    def create_cluster(self, cluster_name=None, version=None, kubeconfig_filepath=None):
         self.cluster_name = cluster_name
         self.cluster_version = version
         self.kubeconfig_cs_cluster = kubeconfig_filepath
