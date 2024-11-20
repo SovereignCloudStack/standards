@@ -1,7 +1,8 @@
 ---
 title: Mandatory and Supported IaaS Services
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2024-11-20
 track: IaaS
 ---
 
@@ -40,7 +41,7 @@ The following IaaS APIs MUST be present in SCS-compliant IaaS deployments and co
 :::caution
 
 S3 API implementations may differ in certain offered features.
-CSPs must publicly describe, which implementation they use in their deployment.
+CSPs must publicly describe the endpoints of their S3 solutions and which implementations they use in their deployment.
 Users should always research whether a needed feature is supported in the offered implementation.
 
 :::
@@ -56,20 +57,19 @@ The following IaaS APIs MAY be present in SCS-compliant IaaS deployment, e.g. im
 | Supported API | corresponding OpenStack Service | description |
 |-----|-----|-----|
 | **bare-metal** | Ironic | Bare Metal provisioning service |
-| **billing** | Cloudkitty | Rating/Billing service |
+| **billing** | CloudKitty | Rating/Billing service |
 | **dns** | Designate | DNS service |
 | **ha** | Masakari | Instances High Availability service |
 | **key-manager** | Barbican | Key Manager service |
 | **object-store** | Swift | Object Store with different possible backends |
 | **orchestration** | Heat | Orchestration service |
 | **shared-file-systems** | Manila | Shared File Systems service |
-| **telemetry** | Ceilometer | Telemetry service |
-| **time-series-databse** | Gnocchi | Time Series Database service |
+| **time-series-database** | Gnocchi | Time Series Database service |
 
 ## Unsupported IaaS APIs
 
 All other OpenStack services, whose APIs are not mentioned in the mandatory or supported lists will not be tested for their compatibility and conformance in SCS clouds by the SCS community.
-Those services MAY be integrated into IaaS deployments by a Cloud Service Provider on their own responsibility but the SCS will not assume they are present and potential issues that occur during deployment or usage have to be handled by the CSP on their own accord.
+Those services MAY be integrated into IaaS deployments by a Cloud Service Provider on their own responsibility but SCS will not assume they are present and potential issues that occur during deployment or usage have to be handled by the CSP on their own accord.
 The SCS standard offers no guarantees for compatibility or reliability of services categorized as unsupported.
 
 ## Related Documents
@@ -78,5 +78,5 @@ The SCS standard offers no guarantees for compatibility or reliability of servic
 
 ## Conformance Tests
 
-The presence of the mandatory OpenStack APIs will be tested in [this test-script](https://github.com/SovereignCloudStack/standards/blob/mandatory-and-supported-IaaS-services/Tests/iaas/mandatory-services/mandatory-iaas-services.py).
-The test will further check, whether the object store endpoint is compatible to s3.
+The presence of the mandatory OpenStack APIs will be tested in [this test-script](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/mandatory-services/mandatory-iaas-services.py)
+The test will further check whether the object-store endpoint is compatible to s3.

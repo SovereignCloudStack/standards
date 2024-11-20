@@ -2,7 +2,7 @@
 title: "SCS Taxonomy of Failsafe Levels: Examples of Failure Cases and their impact on IaaS and KaaS resources"
 type: Supplement
 track: IaaS
-status: Proposal
+status: Draft
 supplements:
   - scs-0118-v1-taxonomy-of-failsafe-levels.md
 ---

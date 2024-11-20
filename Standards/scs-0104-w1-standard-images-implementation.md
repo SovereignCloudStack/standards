@@ -2,7 +2,7 @@
 title: "SCS Standard Images: Implementation Notes"
 type: Supplement
 track: IaaS
-status: Proposal
+status: Draft
 supplements:
   - scs-0104-v1-standard-images.md
 ---
