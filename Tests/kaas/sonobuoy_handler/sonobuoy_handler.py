@@ -30,9 +30,8 @@ class SonobuoyHandler:
         self.check_name = check_name
         logger.debug(f"kubeconfig: {kubeconfig} ")
         if kubeconfig is None:
-            raise Exception("No kubeconfig provided")
-        else:
-            self.kubeconfig_path = kubeconfig
+            raise RuntimeError("No kubeconfig provided")
+        self.kubeconfig_path = kubeconfig
         self.working_directory = os.getcwd()
         self.result_dir_name = result_dir_name
         self.sonobuoy = shutil.which('sonobuoy')
@@ -63,14 +62,14 @@ class SonobuoyHandler:
         return counter
 
     def _eval_result(self, counter):
+        """evaluate test results and return return code"""
         result_str = ', '.join(f"{counter[key]} {key}" for key in ('passed', 'failed', 'skipped'))
         result_message = f"sonobuoy reports {result_str}"
         if counter['failed']:
             logger.error(result_message)
-            self.return_code = 3
-        else:
-            logger.info(result_message)
-            self.return_code = 0
+            return 3
+        logger.info(result_message)
+        return 0
 
     def _preflight_check(self):
         """
@@ -117,15 +116,18 @@ class SonobuoyHandler:
         This method is to be called to run the plugin
         """
         logger.info(f"running sonobuoy for testcase {self.check_name}")
-        self.return_code = 11
         self._preflight_check()
-        self._sonobuoy_run()
-        self._eval_result(self._sonobuoy_status_result())
+        try:
+            self._sonobuoy_run()
+            return_code = self._eval_result(self._sonobuoy_status_result())
+            print(self.check_name + ": " + ("PASS", "FAIL")[min(1, return_code)])
+            return return_code
 
-        # ERROR: currently disabled do to: "error retrieving results: unexpected EOF"
-        #  might be related to following bug: https://github.com/vmware-tanzu/sonobuoy/issues/1633
-        # self._sonobuoy_retrieve_result(self)
-
-        self._sonobuoy_delete()
-        print(self.check_name + ": " + ("PASS", "FAIL")[min(1, self.return_code)])
-        return self.return_code
+            # ERROR: currently disabled due to: "error retrieving results: unexpected EOF"
+            #  might be related to following bug: https://github.com/vmware-tanzu/sonobuoy/issues/1633
+            # self._sonobuoy_retrieve_result(self)
+        except BaseException:
+            logger.exception("something went wrong")
+            return 112
+        finally:
+            self._sonobuoy_delete()
