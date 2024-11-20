@@ -218,7 +218,7 @@ modules:
         description: >
           Must fulfill all requirements of <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services> (except for documentation requirements, which are tested manually with service-apis-docs-check).
       - id: service-apis-docs-check
-        tags: [mandatory]
+        tags: [service-apis-docs]
         description: >
           Note: manual check! Must fulfill documentation requirements of <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services>.
   - id: scs-0302-v1
@@ -304,7 +304,7 @@ versions:
       - scs-0302-v1
     targets:
       main: mandatory
-      preview: domain-manager/availability-zones
+      preview: domain-manager/availability-zones/service-apis-docs
   - version: v4
     stabilized_at: 2024-02-28
     include:
