@@ -1,24 +1,22 @@
-from kubernetes import client, config
+import json
+import logging
 import os
 import subprocess
-import logging
+
+from kubernetes import client, config
 from junitparser import JUnitXml
-import json
 
 logger = logging.getLogger(__name__)
 
 
 def setup_k8s_client(kubeconfigfile=None):
-
-    if kubeconfigfile:
-        logger.debug(f"loading kubeconfig file '{kubeconfigfile}'")
-        config.load_kube_config(kubeconfigfile)
-        logger.info("kubeconfigfile loaded successfully")
-    else:
+    if not kubeconfigfile:
         logger.error("no kubeconfig file provided")
-        return None
-    k8s_api_client = client.CoreV1Api()
-    return k8s_api_client
+        return  # XXX smelly: why not raise an exception here?
+    logger.debug(f"loading kubeconfig file '{kubeconfigfile}'")
+    config.load_kube_config(kubeconfigfile)
+    logger.info("kubeconfigfile loaded successfully")
+    return client.CoreV1Api()
 
 
 class SonobuoyHandler:
@@ -51,43 +49,35 @@ class SonobuoyHandler:
         )
         self.args = args
 
-    def _build_command(self, process, args):
-        command = (
-            [
-                "sonobuoy",
-                "--kubeconfig",
-                self.kubeconfig_path,
-            ] + [process] + args
+    def _build_command(self, process, *args):
+        return " ".join(
+            ("sonobuoy", "--kubeconfig", self.kubeconfig_path, process) + args
         )
-        command_string = ""
-        for entry in command:
-            command_string += entry + " "
-        return command_string
 
     def _sonobuoy_run(self):
         logger.debug("sonobuoy run")
         check_args = ["--wait"]
         check_args += [str(arg) for arg in self.args]
         subprocess.run(
-            self._build_command("run", check_args),
+            self._build_command("run", *check_args),
             shell=True,
             capture_output=True,
             check=True,
         )
 
-    def _sonobouy_delete(self):
+    def _sonobuoy_delete(self):
         logger.info("removing sonobuoy resources from cluster")
         subprocess.run(
-            self._build_command("delete", ["--wait"]),
+            self._build_command("delete", "--wait"),
             shell=True,
             capture_output=True,
             check=True,
         )
 
-    def _sonobouy_status_result(self):
+    def _sonobuoy_status_result(self):
         logger.debug("sonobuoy status")
         process = subprocess.run(
-            self._build_command("status", ["--json"]),
+            self._build_command("status", "--json"),
             shell=True,
             capture_output=True,
             check=True,
@@ -117,12 +107,9 @@ class SonobuoyHandler:
 
     def _preflight_check(self):
         """
-        Prefligth test to ensure that everything is set up correctly for execution
-        :param: None
-        :return: None
+        Preflight test to ensure that everything is set up correctly for execution
         """
         logger.info("check kubeconfig")
-        print("check kubeconfig")
         self.k8s_api_client = setup_k8s_client(self.kubeconfig_path)
 
         for api in client.ApisApi().get_api_versions().groups:
@@ -135,7 +122,7 @@ class SonobuoyHandler:
                 versions.append(name)
             logger.info(f"[supported api]: {api.name:<40} {','.join(versions)}")
 
-        logger.debug("checks if sonobuoy is availabe")
+        logger.debug("checks if sonobuoy is available")
         return_value = os.system(
             f"sonobuoy version --kubeconfig='{self.kubeconfig_path}'"
         )
@@ -144,19 +131,15 @@ class SonobuoyHandler:
 
     def _sonobuoy_retrieve_result(self):
         """
-        This method invokes sonobouy to store the results in a subdirectory of
+        This method invokes sonobuoy to store the results in a subdirectory of
         the working directory. The Junit results file contained in it is then
         analyzed in order to interpret the relevant information it containes
-        :param: result_file_name:
-        :return: None
         """
         logger.debug(f"retrieving results to {self.result_dir_name}")
-        print(f"retrieving results to {self.result_dir_name}")
-        result_dir = self.working_directory + "/" + self.result_dir_name
+        result_dir = os.path.join(self.working_directory, self.result_dir_name)
         if os.path.exists(result_dir):
-            raise Exception("result directory allready excisting")
-        else:
-            os.mkdir(result_dir)
+            raise Exception("result directory already existing")
+        os.mkdir(result_dir)
 
         os.system(
             # ~ f"sonobuoy retrieve {result_dir} -x --filename='{result_dir}' --kubeconfig='{self.kubeconfig_path}'"
@@ -175,19 +158,17 @@ class SonobuoyHandler:
                     passed_test_cases += 1
                 elif case.is_skipped is True:
                     skipped_test_cases += 1
-                    # ~ logger.warning(f"SKIPPED:{case.name}")  # TODO:!!! decide if skipped is error or warning only ?
                 else:
                     failed_test_cases += 1
-                    logger.error(f"ERROR: {case.name}")
-                    print(f"ERROR: {case.name}")
+                    logger.error(f"{case.name}")
 
         result_message = f" {passed_test_cases} passed, {failed_test_cases} failed, {skipped_test_cases} skipped"
-        if failed_test_cases == 0 and skipped_test_cases == 0:
+        if failed_test_cases:  # TODO: add `or skipped_test_cases`?
+            logger.error(result_message)
+            self.return_code = 3
+        else:
             logger.info(result_message)
             self.return_code = 0
-        else:
-            logger.error("ERROR:" + result_message)
-            self.return_code = 3
 
     def run(self):
         """
@@ -196,12 +177,12 @@ class SonobuoyHandler:
         self.return_code = 11
         self._preflight_check()
         self._sonobuoy_run()
-        self._sonobouy_status_result()
+        self._sonobuoy_status_result()
 
         # ERROR: currently disabled do to: "error retrieving results: unexpected EOF"
-        #  migth be related to following bug: https://github.com/vmware-tanzu/sonobuoy/issues/1633
+        #  might be related to following bug: https://github.com/vmware-tanzu/sonobuoy/issues/1633
         # self._sonobuoy_retrieve_result(self)
 
-        self._sonobouy_delete()
+        self._sonobuoy_delete()
         print(self.check_name + ": " + ("PASS", "FAIL")[min(1, self.return_code)])
         return self.return_code
