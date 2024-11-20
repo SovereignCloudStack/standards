@@ -49,6 +49,7 @@ In addition to the core requirements, ensure the following are set up:
 * An **OpenStack** environment configured and accessible.
 * A `clouds.yaml` file defining OpenStack credentials and endpoints.
 * An installing the envsubst via this command:
+
   ```bash
   GOBIN=/tmp go install github.com/drone/envsubst/v2/cmd/envsubst@latest
   ```
@@ -57,7 +58,7 @@ In addition to the core requirements, ensure the following are set up:
 
 Before running the `cluster-stacks` plugin, you need to set up the following environment variable:
 
-- **GIT_ACCESS_TOKEN**: This token is required for Git operations, especially if your repository is private.
+* **GIT_ACCESS_TOKEN**: This token is required for Git operations, especially if your repository is private.
 
 To set the `GIT_ACCESS_TOKEN`, run the following command in your terminal:
 

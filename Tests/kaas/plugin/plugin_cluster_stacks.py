@@ -122,7 +122,7 @@ def setup_environment_variables(self):
 
 
 class PluginClusterStacks(KubernetesClusterPlugin):
-    def __init__(self, config_file=None):
+    def __init__(self, config_file):
         self.config = load_config(config_file) if config_file else {}
         logger.debug(self.config)
         self.working_directory = os.getcwd()
@@ -132,7 +132,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         self.cs_namespace = self.config.get('cs_namespace')
         logger.debug(f"Working from {self.working_directory}")
 
-    def create_cluster(self, cluster_name=None, version=None, kubeconfig_filepath=None):
+    def create_cluster(self, cluster_name, version, kubeconfig_filepath):
         self.cluster_name = cluster_name
         self.cluster_version = version
         self.kubeconfig_cs_cluster = kubeconfig_filepath
@@ -176,10 +176,9 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         self._retrieve_kubeconfig(namespace=self.cs_namespace, kubeconfig=self.kubeconfig_mgmnt)
 
         # Wait for workload system pods to be ready
-        # wait_for_workload_pods_ready(kubeconfig_path=self.kubeconfig_cs_cluster)
         wait_for_pods(self, ["kube-system"], timeout=600, interval=15, kubeconfig=self.kubeconfig_cs_cluster)
 
-    def delete_cluster(self, cluster_name=None, kubeconfig_filepath=None):
+    def delete_cluster(self, cluster_name, kubeconfig_filepath):
         self.cluster_name = cluster_name
         kubeconfig_cs_cluster_filename = kubeconfig_filepath
 

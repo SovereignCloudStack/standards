@@ -51,6 +51,8 @@ def create(plugin_kind, plugin_config, clusterspec_path, cluster_id):
 @click.argument('clusterspec_path', type=click.Path(exists=True, dir_okay=False))
 @click.argument('cluster_id', type=str, default="default")
 def delete(plugin_kind, plugin_config, clusterspec_path, cluster_id):
+    clusterspec = load_spec(clusterspec_path)['clusters']
+    clusterinfo = clusterspec[cluster_id]
     plugin = init_plugin(plugin_kind, plugin_config)
     plugin.delete_cluster(cluster_id, os.path.abspath(clusterinfo['kubeconfig']))
 
