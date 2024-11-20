@@ -22,6 +22,18 @@ Node distribution metadata is provided through the usage of the labels
 At the moment, not all labels are set automatically by most K8s cluster utilities, which incurs
 additional setup and maintenance costs.
 
+In order to achieve compliance, the `topology.scs.community/host-id` tag has to be set manually for now. It should be done after the cluster deployment, when all nodes are ready and IDs of host machines are accessible by the user. The nodes can be labeled using the following command:
+
+```
+kubectl label nodes <node-name> "topology.scs.community/host-id"=<hostID>
+```
+
+The steps necessary to get hostID of a virtual or baremetal machine running a node can be different for each CSP, but using `openstack` as an example:
+
+```
+openstack server list -f json | jq -r '.[].ID'
+```
+
 ## Automated tests
 
 ### Notes
