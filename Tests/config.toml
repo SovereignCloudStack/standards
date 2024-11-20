@@ -54,15 +54,11 @@ spec = "./scs-compatible-iaas.yaml"
 spec = "./scs-compatible-kaas.yaml"
 
 
-[scopes.scs-compatible-kaas]
-spec = "./scs-compatible-kaas.yaml"
-
-
 # default subject (not a real subject, but used to declare a default mapping)
 # (this is the only mapping declaration that supports using Python string interpolation)
 [subjects._.mapping]
-os_cloud      = "{subject}"
-subject_root  = "{subject}"
+os_cloud = "{subject}"
+subject_root = "{subject}"
 
 
 [subjects._.kubernetes_setup]
