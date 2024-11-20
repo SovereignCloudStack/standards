@@ -1,22 +1,14 @@
+from collections import Counter
 import json
 import logging
 import os
+import shlex
+import shutil
 import subprocess
 
-from kubernetes import client, config
 from junitparser import JUnitXml
 
 logger = logging.getLogger(__name__)
-
-
-def setup_k8s_client(kubeconfigfile=None):
-    if not kubeconfigfile:
-        logger.error("no kubeconfig file provided")
-        return  # XXX smelly: why not raise an exception here?
-    logger.debug(f"loading kubeconfig file '{kubeconfigfile}'")
-    config.load_kube_config(kubeconfigfile)
-    logger.info("kubeconfigfile loaded successfully")
-    return client.CoreV1Api()
 
 
 class SonobuoyHandler:
@@ -33,10 +25,9 @@ class SonobuoyHandler:
         check_name="sonobuoy_handler",
         kubeconfig=None,
         result_dir_name="sonobuoy_results",
-        args=None,
+        args=(),
     ):
         self.check_name = check_name
-        logger.info(f"Inital {__name__} for {self.check_name}")
         logger.debug(f"kubeconfig: {kubeconfig} ")
         if kubeconfig is None:
             raise Exception("No kubeconfig provided")
@@ -44,90 +35,49 @@ class SonobuoyHandler:
             self.kubeconfig_path = kubeconfig
         self.working_directory = os.getcwd()
         self.result_dir_name = result_dir_name
-        logger.debug(
-            f"Working from {self.working_directory} placing results at {self.result_dir_name}"
-        )
-        self.args = args
+        self.sonobuoy = shutil.which('sonobuoy')
+        logger.debug(f"working from {self.working_directory}")
+        logger.debug(f"placing results at {self.result_dir_name}")
+        logger.debug(f"sonobuoy executable at {self.sonobuoy}")
+        self.args = (arg0 for arg in args for arg0 in shlex.split(str(arg)))
 
-    def _build_command(self, process, *args):
-        return " ".join(
-            ("sonobuoy", "--kubeconfig", self.kubeconfig_path, process) + args
-        )
+    def _invoke_sonobuoy(self, *args, **kwargs):
+        inv_args = (self.sonobuoy, "--kubeconfig", self.kubeconfig_path) + args
+        logger.debug(f'invoking {" ".join(inv_args)}')
+        return subprocess.run(args=inv_args, capture_output=True, check=True, **kwargs)
 
     def _sonobuoy_run(self):
-        logger.debug("sonobuoy run")
-        check_args = ["--wait"]
-        check_args += [str(arg) for arg in self.args]
-        subprocess.run(
-            self._build_command("run", *check_args),
-            shell=True,
-            capture_output=True,
-            check=True,
-        )
+        self._invoke_sonobuoy("run", "--wait", *self.args)
 
     def _sonobuoy_delete(self):
-        logger.info("removing sonobuoy resources from cluster")
-        subprocess.run(
-            self._build_command("delete", "--wait"),
-            shell=True,
-            capture_output=True,
-            check=True,
-        )
+        self._invoke_sonobuoy("delete", "--wait")
 
     def _sonobuoy_status_result(self):
-        logger.debug("sonobuoy status")
-        process = subprocess.run(
-            self._build_command("status", "--json"),
-            shell=True,
-            capture_output=True,
-            check=True,
-        )
+        process = self._invoke_sonobuoy("status", "--json")
         json_data = json.loads(process.stdout)
+        counter = Counter()
         for entry in json_data["plugins"]:
-            print(f"plugin:{entry['plugin']}:{entry['result-status']}")
-        failed_test_cases = 0
-        passed_test_cases = 0
-        skipped_test_cases = 0
-        for result, count in json_data["plugins"][0]["result-counts"].items():
-            if result == "passed":
-                passed_test_cases = count
-            if result == "failed":
-                failed_test_cases = count
-                logger.error(f"ERROR: failed: {count}")
-            if result == "skipped":
-                skipped_test_cases = count
-                logger.error(f"ERROR: skipped: {count}")
-        result_message = f" {passed_test_cases} passed, {failed_test_cases} failed, {skipped_test_cases} skipped"
-        if failed_test_cases == 0 and skipped_test_cases == 0:
+            logger.debug(f"plugin:{entry['plugin']}:{entry['result-status']}")
+            for result, count in entry["result-counts"].items():
+                counter[result] += count
+        return counter
+
+    def _eval_result(self, counter):
+        result_str = ', '.join(f"{counter[key]} {key}" for key in ('passed', 'failed', 'skipped'))
+        result_message = f"sonobuoy reports {result_str}"
+        if counter['failed']:
+            logger.error(result_message)
+            self.return_code = 3
+        else:
             logger.info(result_message)
             self.return_code = 0
-        else:
-            logger.error("ERROR:" + result_message)
-            self.return_code = 3
 
     def _preflight_check(self):
         """
         Preflight test to ensure that everything is set up correctly for execution
         """
-        logger.info("check kubeconfig")
-        self.k8s_api_client = setup_k8s_client(self.kubeconfig_path)
-
-        for api in client.ApisApi().get_api_versions().groups:
-            versions = []
-            for v in api.versions:
-                name = ""
-                if v.version == api.preferred_version.version and len(api.versions) > 1:
-                    name += "*"
-                name += v.version
-                versions.append(name)
-            logger.info(f"[supported api]: {api.name:<40} {','.join(versions)}")
-
-        logger.debug("checks if sonobuoy is available")
-        return_value = os.system(
-            f"sonobuoy version --kubeconfig='{self.kubeconfig_path}'"
-        )
-        if return_value != 0:
-            raise Exception("sonobuoy is not installed")
+        if not self.sonobuoy:
+            raise RuntimeError("sonobuoy executable not found; is it in PATH?")
 
     def _sonobuoy_retrieve_result(self):
         """
@@ -141,6 +91,7 @@ class SonobuoyHandler:
             raise Exception("result directory already existing")
         os.mkdir(result_dir)
 
+        # XXX use self._invoke_sonobuoy
         os.system(
             # ~ f"sonobuoy retrieve {result_dir} -x --filename='{result_dir}' --kubeconfig='{self.kubeconfig_path}'"
             f"sonobuoy retrieve {result_dir} --kubeconfig='{self.kubeconfig_path}'"
@@ -149,35 +100,27 @@ class SonobuoyHandler:
             f"parsing JUnit result from {result_dir + '/plugins/e2e/results/global/junit_01.xml'} "
         )
         xml = JUnitXml.fromfile(result_dir + "/plugins/e2e/results/global/junit_01.xml")
-        failed_test_cases = 0
-        passed_test_cases = 0
-        skipped_test_cases = 0
+        counter = Counter()
         for suite in xml:
             for case in suite:
-                if case.is_passed is True:
-                    passed_test_cases += 1
+                if case.is_passed is True:  # XXX why `is True`???
+                    counter['passed'] += 1
                 elif case.is_skipped is True:
-                    skipped_test_cases += 1
+                    counter['skipped'] += 1
                 else:
-                    failed_test_cases += 1
+                    counter['failed'] += 1
                     logger.error(f"{case.name}")
-
-        result_message = f" {passed_test_cases} passed, {failed_test_cases} failed, {skipped_test_cases} skipped"
-        if failed_test_cases:  # TODO: add `or skipped_test_cases`?
-            logger.error(result_message)
-            self.return_code = 3
-        else:
-            logger.info(result_message)
-            self.return_code = 0
+        return counter
 
     def run(self):
         """
         This method is to be called to run the plugin
         """
+        logger.info(f"running sonobuoy for testcase {self.check_name}")
         self.return_code = 11
         self._preflight_check()
         self._sonobuoy_run()
-        self._sonobuoy_status_result()
+        self._eval_result(self._sonobuoy_status_result())
 
         # ERROR: currently disabled do to: "error retrieving results: unexpected EOF"
         #  might be related to following bug: https://github.com/vmware-tanzu/sonobuoy/issues/1633
