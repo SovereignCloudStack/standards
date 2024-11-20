@@ -1,7 +1,8 @@
 ---
 title: Kubernetes Node Distribution and Availability
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2024-11-21
 replaces: scs-0214-v1-k8s-node-distribution.md
 track: KaaS
 ---
@@ -100,18 +101,10 @@ These labels MUST be kept up to date with the current state of the deployment.
   The field gets autopopulated most of the time by either the kubelet or external mechanisms
   like the cloud controller.
 
-- `topology.scs.community/host-id`
-
-  This is an SCS-specific label; it MUST contain the hostID of the physical machine running
-  the hypervisor (NOT: the hostID of a virtual machine). Here, the hostID is an arbitrary identifier,
-  which need not contain the actual hostname, but it should nonetheless be unique to the host.
-  This helps identify the distribution over underlying physical machines,
-  which would be masked if VM hostIDs were used.
-
 ## Conformance Tests
 
 The script `k8s-node-distribution-check.py` checks the nodes available with a user-provided
-kubeconfig file. Based on the labels `topology.scs.community/host-id`,
+kubeconfig file. Based on the labels
 `topology.kubernetes.io/zone`, `topology.kubernetes.io/region` and `node-role.kubernetes.io/control-plane`,
 the script then determines whether the nodes are distributed according to this standard.
 If this isn't the case, the script produces an error.

@@ -16,11 +16,7 @@ Worker nodes can also be distributed over "failure zones", but this isn't a requ
 Distribution must be shown through labelling, so that users can access these information.
 
 Node distribution metadata is provided through the usage of the labels
-`topology.kubernetes.io/region`, `topology.kubernetes.io/zone` and
-`topology.scs.community/host-id` respectively.
-
-At the moment, not all labels are set automatically by most K8s cluster utilities, which incurs
-additional setup and maintenance costs.
+`topology.kubernetes.io/region` and `topology.kubernetes.io/zone`.
 
 ## Automated tests
 

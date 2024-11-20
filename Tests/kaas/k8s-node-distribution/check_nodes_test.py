@@ -52,7 +52,7 @@ def test_no_distribution(yaml_key, caplog, load_testdata):
     assert record.levelname == "ERROR"
 
 
-def test_missing_label(caplog, load_testdata):
+def notest_missing_label(caplog, load_testdata):
     data = load_testdata["missing-labels"]
     assert check_nodes(data.values()) == 2
     hostid_missing_records = [

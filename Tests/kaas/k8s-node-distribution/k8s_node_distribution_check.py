@@ -22,7 +22,6 @@ and comparing them. This doesn't always attest to a good distribution
 and does require these labels to be set, but should yield overall pretty
 good initial results.
 
-    topology.scs.openstack.org/host-id  # previously kubernetes.io/hostname
     topology.kubernetes.io/zone
     topology.kubernetes.io/region
     node-role.kubernetes.io/control-plane
@@ -47,7 +46,6 @@ import sys
 LABELS = (
     "topology.kubernetes.io/region",
     "topology.kubernetes.io/zone",
-    "topology.scs.community/host-id",
 )
 
 logger = logging.getLogger(__name__)
