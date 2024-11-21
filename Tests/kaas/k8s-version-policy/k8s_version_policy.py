@@ -171,7 +171,7 @@ K8sVersion.MINIMUM = K8sVersion(0, 0)
 
 
 def parse_version(version_str: str) -> K8sVersion:
-    cleansed = version_str.strip().removeprefix("v")
+    cleansed = version_str.strip().removeprefix("v").split("+")[0]
     try:
         major, minor, patch = cleansed.split(".")
         return K8sVersion(int(major), int(minor), int(patch))
