@@ -52,6 +52,7 @@ PVC_NAME = "test-k-pvc"
 PV_NAME = "test-k-pv"
 POD_NAME = "test-k-pod"
 # A list of suggested CSI-Providers that work accordingly to the standards
+# except: Longhorn only prtially compliant with redundant storage within/across AZs
 ALLOWED_CSI_PROV = ["cinder", "rookCeph", "longhorn"]
 
 
@@ -402,14 +403,14 @@ def main(argv):
                     "try to clean up left overs, then start again"
                 )
                 env.return_code = 3
-                env.return_message = "(409) conflicting resources"
+                env.return_message = "(Api Error: 409) conflicting resources"
                 return
             elif api_exception.status == 404:  # might be obsolete
                 logger.info(
                     "resource not found, " "failed to build resources correctly"
                 )
                 env.return_code = 4
-                env.return_message = "(404) resource not found"
+                env.return_message = "(Api Error: 404) resource not found"
                 return
             else:
                 logger.info(f"An API error occurred: {api_exception}")
