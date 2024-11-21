@@ -11,8 +11,8 @@ modules:
     url: https://github.com/cncf/k8s-conformance/tree/master
     run:
       - executable: ./kaas/sonobuoy_handler/run_sonobuoy.py
-        #~ args: -k {subject_root}/kubeconfig.yaml -r {subject_root}/sono-results -c 'cncf-k8s-conformance'  -a '--mode=certified-conformance'
-        args: -k {subject_root}/kubeconfig.yaml -r {subject_root}/sono-results -c 'cncf-k8s-conformance'  -a '--plugin-env e2e.E2E_DRYRUN=true'
+        args: -k {subject_root}/kubeconfig.yaml -r {subject_root}/sono-results -c 'cncf-k8s-conformance'  -a '--mode=certified-conformance'
+        #~ args: -k {subject_root}/kubeconfig.yaml -r {subject_root}/sono-results -c 'cncf-k8s-conformance'  -a '--plugin-env e2e.E2E_DRYRUN=true'
     testcases:
       - id: cncf-k8s-conformance
         tags: [mandatory]
