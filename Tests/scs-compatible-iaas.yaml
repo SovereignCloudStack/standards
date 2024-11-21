@@ -238,7 +238,7 @@ timeline:
       v5: effective
       v4: warn
       v3: deprecated
-  - date: 2024-11-16
+  - date: 2024-11-21
     versions:
       v5: effective
       v4: effective
