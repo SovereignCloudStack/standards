@@ -236,7 +236,7 @@ If such a subnet pool is provided, it **MUST** have the `is_default` flag set to
 ### RBAC Restrictions
 
 By default, users **SHOULD** be prohibited by policy from creating Networking RBAC rules, to prevent the creation of faux provider networks.
-The necessary policy change to implement this restriction for the Neutron API can be found in the Networking RBAC documentation [^rbac].
+The necessary policy change is described in the implementation notes to this standard.
 
 ## Conformance Tests
 
@@ -250,4 +250,3 @@ The necessary policy change to implement this restriction for the Neutron API ca
 [^pf]: <https://docs.openstack.org/api-ref/network/v2/index.html#floating-ips-port-forwarding>
 [^ds]: <https://docs.openstack.org/neutron/2024.1/admin/config-ipv6.html>
 [^aa]: <https://docs.openstack.org/neutron/2024.1/admin/config-auto-allocation.html>
-[^rbac]: <https://docs.openstack.org/neutron/2024.1/admin/config-rbac.html#preventing-regular-users-from-sharing-objects-with-each-other>
