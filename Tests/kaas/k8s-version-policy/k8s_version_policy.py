@@ -96,7 +96,7 @@ class HelpException(BaseException):
 
 
 class CriticalException(BaseException):
-    """Exception raised if the critical CVE are found"""
+    """Raise an exception if a critical CVE is found"""
 
 
 class Config:
