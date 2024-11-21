@@ -28,10 +28,10 @@ In order to achieve compliance, the `topology.scs.community/host-id` tag has to 
 kubectl label nodes <node-name> "topology.scs.community/host-id"=<hostID>
 ```
 
-The steps necessary to get hostID of a virtual or baremetal machine running a node can be different for each CSP, but using `openstack` as an example:
+The steps necessary to get hostID of a virtual or baremetal machine running a node can be different for each CSP. For example, using `openstack`, we can list machine names (which should correspond to node names) with their respective hostIDs using the following command:
 
 ```
-openstack server list -f json | jq -r '.[].ID'
+openstack server list -f json | jq -r '.[].ID' | while read id; do openstack server show $id -f json; done | jq '{ (.name): .hostId }'
 ```
 
 ## Automated tests
