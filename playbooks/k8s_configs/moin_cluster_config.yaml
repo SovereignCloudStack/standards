@@ -1,3 +1,16 @@
-kubeconfig: "../../playbooks/k8s_configs/moin_cluster_kubeconfig.yaml"
-workloadcluster: "../../playbooks/k8s_configs/moin_cluster_workloadcluster.yaml"
-namespace: "kaas-playground1"
+kubeconfig: "moin_cluster_kubeconfig.yaml"
+workloadcluster: "moin_cluster_workloadcluster.yaml"
+clusterstack: "moin_cluster_clusterstack.yaml"
+namespace: "kaas-playground8"
+
+# Cluster-stack related configuration
+cs_name: "scs"  # Cluster Stack Name
+cs_version: "v1"  # Cluster Stack Version
+cs_channel: "stable"  # Release channel
+cs_secretname: "openstack"  # Cloud name from OpenStack clouds.yaml
+
+# Cluster Information
+cs_pod_cidr: "192.168.0.0/16"  # Pod CIDR for networking
+cs_service_cidr: "10.96.0.0/12"  # Service CIDR for networking
+cs_external_id: "ebfe5546-f09f-4f42-ab54-094e457d42ec"  # External ID for the Cluster Stack
+cs_k8s_patch_version: "9"  # Kubernetes patch version to use

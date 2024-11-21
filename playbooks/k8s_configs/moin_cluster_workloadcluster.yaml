@@ -1,16 +1,23 @@
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
-  name: scs-cluster-129
+  name: ${CS_CLUSTER_NAME}
+  namespace: ${CS_NAMESPACE}
   labels:
     managed-secret: cloud-config
 spec:
   topology:
     variables:
-    class: openstack-scs-1-29-v4
+      - name: controller_flavor
+        value: "SCS-2V-4-50"
+      - name: worker_flavor
+        value: "SCS-2V-4-50"
+      - name: external_id
+        value: ${CS_EXTERNAL_ID}
+    class: ${CS_CLASS_NAME}
     controlPlane:
       replicas: 3
-    version: v1.29.10
+    version: v${CS_K8S_VERSION}.${CS_K8S_PATCH_VERSION}
     workers:
       machineDeployments:
         - class: default-worker
