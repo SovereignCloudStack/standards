@@ -36,7 +36,7 @@ specified in `clouds.yaml`.
 Given a kubeconfig file `path/to/kubeconfig.yaml`, run
 
 ```shell
-./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml -s SUBJECT scs-compatible-kaas.yaml
+./scs-compliance-check.py -v -a subject_root=path/to/ -s SUBJECT scs-compatible-kaas.yaml
 ```
 
 Replace `SUBJECT` with an arbitrary, but meaningful subject name.
