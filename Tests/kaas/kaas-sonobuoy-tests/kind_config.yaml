@@ -3,18 +3,6 @@ apiVersion: kind.x-k8s.io/v1alpha4
 networking:
   apiServerAddress: 127.0.0.1
   apiServerPort: 6443
-kubeadmConfigPatches:
-  - |
-    apiVersion: kubeadm.k8s.io/v1beta3
-    kind: ClusterConfiguration
-    metadata:
-      name: config
-    apiServer:
-      extraArgs:
-        enable-admission-plugins: "NodeRestriction,PodSecurity"
-        oidc-issuer-url: https://localhost:8443
-        oidc-client-id: kubernetes
-        oidc-username-claim: sub
 nodes:
 - role: control-plane
 - role: worker
