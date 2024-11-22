@@ -139,6 +139,9 @@ class PluginClusterStacksRemoteAPI(KubernetesClusterPlugin):
         # Create cluster-stack resource
         self._apply_yaml(self.clusterstack, "Error applying clusterstack.yaml", kubeconfig=self.kubeconfig_mgmnt)
 
+        # Wait for cluster-stack resource to be ready
+        self._wait_for_clusterstack_ready(namespace=self.cs_namespace, timeout=600)
+
         # Create workload cluster
         self._apply_yaml(
             self.workloadclusters,
@@ -201,6 +204,26 @@ class PluginClusterStacksRemoteAPI(KubernetesClusterPlugin):
 
         except subprocess.CalledProcessError as error:
             raise RuntimeError(f"{error_msg}: {error}")
+
+    def _wait_for_clusterstack_ready(self, namespace, timeout=600):
+        """
+        Waits for the clusterstack resource in the management cluster to reach the condition 'Ready'.
+
+        :param namespace: The namespace to search for the clusterstack resource.
+        :param timeout: The maximum time to wait in seconds.
+        :raises RuntimeError: If the clusterstack resource does not become ready within the timeout.
+        """
+        try:
+            command = f"kubectl wait clusterstack/clusterstack -n {namespace} --for=condition=Ready --timeout={timeout}s"
+            self._run_subprocess(
+                command,
+                "Error waiting for clusterstack to be ready",
+                shell=True,
+                kubeconfig=self.kubeconfig_mgmnt
+            )
+            logger.info("Clusterstack is ready.")
+        except subprocess.CalledProcessError as error:
+            raise RuntimeError(f"Clusterstack did not become ready within {timeout} seconds: {error}")
 
     def _get_kubeadm_control_plane_name(self, namespace="default", kubeconfig=None):
         """
