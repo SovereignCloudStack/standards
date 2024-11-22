@@ -1,0 +1,35 @@
+# Cluster resource template
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: ${CS_CLUSTER_NAME}
+  namespace: ${CS_NAMESPACE}
+  labels:
+    managed-secret: cloud-config
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+        - ${CS_POD_CIDR}
+    serviceDomain: cluster.local
+    services:
+      cidrBlocks:
+        - ${CS_SERVICE_CIDR}
+  topology:
+    variables:
+      - name: controller_flavor
+        value: "SCS-2V-4-50"
+      - name: worker_flavor
+        value: "SCS-2V-4-50"
+      - name: external_id
+        value: ${CS_EXTERNAL_ID}
+    class: ${CS_CLASS_NAME}
+    controlPlane:
+      replicas: 1
+    version: v${CS_K8S_VERSION}.${CS_K8S_PATCH_VERSION}
+    workers:
+      machineDeployments:
+        - class: default-worker
+          failureDomain: nova
+          name: default-worker
+          replicas: 3
