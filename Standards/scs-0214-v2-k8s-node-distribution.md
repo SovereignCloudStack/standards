@@ -83,12 +83,6 @@ These labels MUST be kept up to date with the current state of the deployment.
 
 - `topology.kubernetes.io/zone`
 
-  Corresponds with the label described in [K8s labels documentation](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone).
-  It provides a logical zone of failure on the side of the provider, e.g. a server rack
-  in the same electrical circuit or multiple machines bound to the internet through a
-  singular network structure. How this is defined exactly is up to the plans of the provider.
-  The field gets autopopulated most of the time by either the kubelet or external mechanisms
-  like the cloud controller.
 
 - `topology.kubernetes.io/region`
 
