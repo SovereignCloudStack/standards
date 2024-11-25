@@ -41,7 +41,7 @@ of the whole cluster.
 ## Design Considerations
 
 Most design considerations of this standard follow the previously written Decision Record
-[Kubernetes Nodes Anti Affinity](https://github.com/SovereignCloudStack/standards/blob/main/Standards/)[scs-0213-v1]) as well as the Kubernetes documents about
+[Kubernetes Nodes Anti Affinity](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0213-v1-k8s-nodes-anti-affinity.md) as well as the Kubernetes documents about
 [High Availability](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/) and [Best practices for large clusters](https://kubernetes.io/docs/setup/best-practices/cluster-large/).
 
 SCS wishes to prefer distributed, highly-available systems due to their obvious advantages
