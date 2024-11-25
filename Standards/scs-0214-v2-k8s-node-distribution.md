@@ -41,15 +41,15 @@ of the whole cluster.
 ## Design Considerations
 
 Most design considerations of this standard follow the previously written Decision Record
-[Kubernetes Nodes Anti Affinity][scs-0213-v1] as well as the Kubernetes documents about
-[High Availability][k8s-ha] and [Best practices for large clusters][k8s-large-clusters].
+[Kubernetes Nodes Anti Affinity](https://github.com/SovereignCloudStack/standards/blob/main/Standards/)[scs-0213-v1]) as well as the Kubernetes documents about
+[High Availability](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/) and [Best practices for large clusters](https://kubernetes.io/docs/setup/best-practices/cluster-large/).
 
 SCS wishes to prefer distributed, highly-available systems due to their obvious advantages
 like fault-tolerance and data redundancy. But it also understands the costs and overhead
 for the providers associated with this effort, since the infrastructure needs to have
 hardware which will just be used to provide fail-over safety or duplication.
 
-The document [Best practices for large clusters][k8s-large-clusters] describes the concept of a failure zone.
+The document [Best practices for large clusters](https://kubernetes.io/docs/setup/best-practices/cluster-large/) describes the concept of a failure zone.
 This term isn't defined any further, but can in this context be described as a number of
 physical (computing) machines in such a vicinity to each other (either through physical
 or logical interconnection in some way), that specific problems inside this zone would put
@@ -67,7 +67,7 @@ This standard formulates the requirement for the distribution of Kubernetes node
 to provide a fault-tolerant and available Kubernetes cluster infrastructure.
 
 The control plane nodes MUST be distributed over multiple physical machines.
-Kubernetes provides [best-practices][k8s-zones] on this topic, which are also RECOMMENDED by SCS.
+Kubernetes provides [best-practices](https://kubernetes.io/docs/setup/best-practices/multiple-zones/) on this topic, which are also RECOMMENDED by SCS.
 
 At least one control plane instance MUST be run in each "failure zone" used for the cluster,
 more instances per "failure zone" are possible to provide fault-tolerance inside a zone.
@@ -92,7 +92,7 @@ These labels MUST be kept up to date with the current state of the deployment.
 
 - `topology.kubernetes.io/region`
 
-  Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
+  Corresponds with the label described in [K8s labels documentation](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone).
   It describes the combination of one or more failure zones into a region or domain, therefore
   showing a larger entity of logical failure zone. An example for this could be a building
   containing racks that are put into such a zone, since they're all prone to failure, if e.g.
@@ -121,9 +121,3 @@ It also produces warnings and informational outputs, e.g., if labels don't seem 
 
 This is version 2 of the standard; it extends [version 1](scs-0214-v1-k8s-node-distribution.md) with the
 requirements regarding node labeling.
-
-[k8s-ha]: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/
-[k8s-large-clusters]: https://kubernetes.io/docs/setup/best-practices/cluster-large/
-[scs-0213-v1]: https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0213-v1-k8s-nodes-anti-affinity.md
-[k8s-labels-docs]: 
-[k8s-zones]: https://kubernetes.io/docs/setup/best-practices/multiple-zones/
