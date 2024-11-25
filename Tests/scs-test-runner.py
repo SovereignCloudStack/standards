@@ -17,9 +17,15 @@ import time
 import click
 import tomli
 
-
 logger = logging.getLogger(__name__)
 MONITOR_URL = "https://compliance.sovereignit.cloud/"
+
+
+def ensure_dir(path):
+    try:
+        os.makedirs(path)
+    except FileExistsError:
+        pass
 
 
 class Config:
@@ -27,6 +33,7 @@ class Config:
         self.cwd = os.path.abspath(os.path.dirname(sys.argv[0]) or os.getcwd())
         self.scs_compliance_check = os.path.join(self.cwd, 'scs-compliance-check.py')
         self.cleanup_py = os.path.join(self.cwd, 'cleanup.py')
+        self.run_plugin_py = os.path.join(self.cwd, 'kaas', 'plugin', 'run_plugin.py')
         self.ssh_keygen = shutil.which('ssh-keygen')
         self.curl = shutil.which('curl')
         self.secrets = {}
@@ -58,42 +65,80 @@ class Config:
         mapping.update(self.subjects.get(subject, {}).get('mapping', {}))
         return mapping
 
+    def get_kubernetes_setup(self, subject):
+        default_kubernetes_setup = self.subjects.get('_', {}).get('kubernetes_setup', {})
+        kubernetes_setup = dict(default_kubernetes_setup)
+        kubernetes_setup.update(self.subjects.get(subject, {}).get('kubernetes_setup', {}))
+        return kubernetes_setup
+
     def abspath(self, path):
         return os.path.join(self.cwd, path)
 
     def build_check_command(self, scope, subject, output):
         # TODO figure out when to supply --debug here (but keep separated from our --debug)
-        cmd = [
+        args = [
             sys.executable, self.scs_compliance_check, self.abspath(self.scopes[scope]['spec']),
             '--debug', '-C', '-o', output, '-s', subject,
         ]
         for key, value in self.get_subject_mapping(subject).items():
-            cmd.extend(['-a', f'{key}={value}'])
-        return cmd
+            args.extend(['-a', f'{key}={value}'])
+        return {'args': args}
+
+    def build_provision_command(self, subject):
+        kubernetes_setup = self.get_kubernetes_setup(subject)
+        subject_root = self.abspath(self.get_subject_mapping(subject).get('subject_root') or '.')
+        ensure_dir(subject_root)
+        return {
+            'args': [
+                sys.executable, self.run_plugin_py,
+                'create',
+                kubernetes_setup['kube_plugin'],
+                self.abspath(kubernetes_setup['kube_plugin_config']),
+                self.abspath(kubernetes_setup['clusterspec']),
+                kubernetes_setup['clusterspec_cluster'],
+            ],
+            'cwd': subject_root,
+        }
+
+    def build_unprovision_command(self, subject):
+        kubernetes_setup = self.get_kubernetes_setup(subject)
+        subject_root = self.abspath(self.get_subject_mapping(subject).get('subject_root') or '.')
+        ensure_dir(subject_root)
+        return {
+            'args': [
+                sys.executable, self.run_plugin_py,
+                'delete',
+                kubernetes_setup['kube_plugin'],
+                self.abspath(kubernetes_setup['kube_plugin_config']),
+                self.abspath(kubernetes_setup['clusterspec']),
+                kubernetes_setup['clusterspec_cluster'],
+            ],
+            'cwd': subject_root,
+        }
 
     def build_cleanup_command(self, subject):
         # TODO figure out when to supply --debug here (but keep separated from our --debug)
-        return [
+        return {'args': [
             sys.executable, self.cleanup_py,
             '-c', self.get_subject_mapping(subject)['os_cloud'],
             '--prefix', '_scs-',
             '--ipaddr', '10.1.0.',
             '--debug',
-        ]
+        ]}
 
     def build_sign_command(self, target_path):
-        return [
+        return {'args': [
             self.ssh_keygen,
             '-Y', 'sign',
             '-f', self.abspath(self.secrets['keyfile']),
             '-n', 'report',
             target_path,
-        ]
+        ]}
 
     def build_upload_command(self, target_path, monitor_url):
         if not monitor_url.endswith('/'):
             monitor_url += '/'
-        return [
+        return {'args': [
             self.curl,
             '--fail-with-body',
             '--data-binary', f'@{target_path}.sig',
@@ -101,7 +146,7 @@ class Config:
             '-H', 'Content-Type: application/x-signed-yaml',
             '-H', f'Authorization: Basic {self.auth_token}',
             f'{monitor_url}reports',
-        ]
+        ]}
 
 
 @click.group()
@@ -123,7 +168,7 @@ def _run_commands(commands, num_workers=5):
     processes = []
     while commands or processes:
         while commands and len(processes) < num_workers:
-            processes.append(subprocess.Popen(commands.pop()))
+            processes.append(subprocess.Popen(**commands.pop()))
         processes[:] = [p for p in processes if p.poll() is None]
         time.sleep(0.5)
 
@@ -180,22 +225,14 @@ def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml):
         commands = [cfg.build_check_command(job[0], job[1], output) for job, output in zip(jobs, outputs)]
         _run_commands(commands, num_workers=num_workers)
         _concat_files(outputs, report_yaml_tmp)
-        subprocess.run(cfg.build_sign_command(report_yaml_tmp))
-        subprocess.run(cfg.build_upload_command(report_yaml_tmp, monitor_url))
+        subprocess.run(**cfg.build_sign_command(report_yaml_tmp))
+        subprocess.run(**cfg.build_upload_command(report_yaml_tmp, monitor_url))
         if report_yaml is not None:
             _move_file(report_yaml_tmp, report_yaml)
     return 0
 
 
-@cli.command()
-@click.option('--subject', 'subjects', type=str)
-@click.option('--preset', 'preset', type=str)
-@click.option('--num-workers', 'num_workers', type=int, default=5)
-@click.pass_obj
-def cleanup(cfg, subjects, preset, num_workers):
-    """
-    clean up any lingering resources
-    """
+def _run_command_for_subjects(cfg, subjects, preset, num_workers, command):
     if not subjects and not preset:
         preset = 'default'
     if preset:
@@ -208,10 +245,47 @@ def cleanup(cfg, subjects, preset, num_workers):
         subjects = [subject.strip() for subject in subjects.split(',')] if subjects else []
     if not subjects:
         raise click.UsageError('subject(s) must be non-empty')
-    logger.debug(f'cleaning up for subject(s) {", ".join(subjects)}, num_workers: {num_workers}')
-    commands = [cfg.build_cleanup_command(subject) for subject in subjects]
+    logger.debug(f'running {command} for subject(s) {", ".join(subjects)}, num_workers: {num_workers}')
+    m = getattr(cfg, f'build_{command}_command')
+    commands = [m(subject) for subject in subjects]
     _run_commands(commands, num_workers=num_workers)
     return 0
+
+
+@cli.command()
+@click.option('--subject', 'subjects', type=str)
+@click.option('--preset', 'preset', type=str)
+@click.option('--num-workers', 'num_workers', type=int, default=5)
+@click.pass_obj
+def cleanup(cfg, subjects, preset, num_workers):
+    """
+    clean up any lingering IaaS resources
+    """
+    return _run_command_for_subjects(cfg, subjects, preset, num_workers, "cleanup")
+
+
+@cli.command()
+@click.option('--subject', 'subjects', type=str)
+@click.option('--preset', 'preset', type=str)
+@click.option('--num-workers', 'num_workers', type=int, default=5)
+@click.pass_obj
+def provision(cfg, subjects, preset, num_workers):
+    """
+    create k8s clusters
+    """
+    return _run_command_for_subjects(cfg, subjects, preset, num_workers, "provision")
+
+
+@cli.command()
+@click.option('--subject', 'subjects', type=str)
+@click.option('--preset', 'preset', type=str)
+@click.option('--num-workers', 'num_workers', type=int, default=5)
+@click.pass_obj
+def unprovision(cfg, subjects, preset, num_workers):
+    """
+    clean up k8s clusters
+    """
+    return _run_command_for_subjects(cfg, subjects, preset, num_workers, "unprovision")
 
 
 if __name__ == '__main__':
