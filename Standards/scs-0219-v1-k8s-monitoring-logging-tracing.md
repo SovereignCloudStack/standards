@@ -27,8 +27,7 @@ Therefore, a standardized concept for the setup of the overall mechanisms as wel
 
 This concept SHALL define monitoring and logging in a federated structure.
 Therefore, a monitoring and logging stack MUST be deployed on each k8s cluster. 
-A central monitoring can then fetch data from the clusters individual monitoring stacks.
-
+A central monitoring system can then fetch data from the individual clusters' monitoring stacks to Grafana to visualize the collected metrics.
 
 ### Monitoring
 
@@ -38,8 +37,9 @@ A central monitoring can then fetch data from the clusters individual monitoring
 
 SCS KaaS infrastructure monitoring SHOULD be used as a diagnostic tool to alert operators and end users to system-related issues by analyzing metrics.
 Therefore, it includes the collection and visualization of the corresponding metrics.
-Optionally, an alerting mechanism COULD also be standardized.
-This SHOULD contain a minimal set of important metrics that signal problematic conditions of a cluster in any case. 
+
+Alongside, an alerting mechanism MUST also be standardized.
+This MUST contain a minimal set of important metrics that signal problematic conditions of a cluster in any case.
 
 > TODO: Describe one examples here in more detail
 
@@ -61,7 +61,7 @@ In order for an end user to be sure that these metrics are accessible, a cluster
 #### Prometheus Operator
 
 One of the most commonly used monitoring tools in connection with Kubernetes is Prometheus
-Therefore, every k8s cluster CLOUD have a [prometheus-operator][prometheus-operator] deployed to all control plane clusters as an optional default.
+Therefore, every k8s cluster COULD have a [prometheus-operator][prometheus-operator] deployed to all control plane nodes per default.
 The operator SHOULD at least be rolled out to all control plane nodes.
 
 
@@ -79,9 +79,6 @@ Therefore, the SCS stack SHOULD also optionally provide a logging stack that sol
 
 ### Tracing
 
-> see: [Traces For Kubernetes System Components][system-traces]
-
-
 
 [k8s-debug]: https://kubernetes.io/docs/tasks/debug/
 [prometheus-operator]: https://github.com/prometheus-operator/prometheus-operator
@@ -96,3 +93,5 @@ Therefore, the SCS stack SHOULD also optionally provide a logging stack that sol
 [monitor-node-health]: https://kubernetes.io/docs/tasks/debug/debug-cluster/monitor-node-health/
 [k8s-logging]: https://kubernetes.io/docs/concepts/cluster-administration/logging/
 [mutual-auth]: https://en.wikipedia.org/wiki/Mutual_authentication
+[kubernetes-metrics-server-repo]: https://github.com/kubernetes-sigs/metrics-server?tab=readme-ov-file#kubernetes-metrics-server
+
