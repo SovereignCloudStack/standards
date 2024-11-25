@@ -196,7 +196,7 @@ class PluginClusterStacksRemoteAPI(KubernetesClusterPlugin):
         try:
             # Determine if the file is a local path or a URL
             if os.path.isfile(yaml_file):
-                command = f"/tmp/envsubst < {yaml_file} | kubectl apply -f -"
+                command = f"envsubst < {yaml_file} | kubectl apply -f -"
             else:
                 raise ValueError(f"Unknown file: {yaml_file}")
 

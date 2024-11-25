@@ -48,11 +48,6 @@ In addition to the core requirements, ensure the following are set up:
 
 * An **OpenStack** environment configured and accessible.
 * A `clouds.yaml` file defining OpenStack credentials and endpoints.
-* An installing the envsubst via this command:
-
-  ```bash
-  GOBIN=/tmp go install github.com/drone/envsubst/v2/cmd/envsubst@latest
-  ```
 
 ### Environment Variables
 
