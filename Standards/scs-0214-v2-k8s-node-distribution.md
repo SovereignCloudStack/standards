@@ -101,15 +101,6 @@ These labels MUST be kept up to date with the current state of the deployment.
   The field gets autopopulated most of the time by either the kubelet or external mechanisms
   like the cloud controller.
 
-## Conformance Tests
-
-The script `k8s-node-distribution-check.py` checks the nodes available with a user-provided
-kubeconfig file. Based on the labels
-`topology.kubernetes.io/zone`, `topology.kubernetes.io/region` and `node-role.kubernetes.io/control-plane`,
-the script then determines whether the nodes are distributed according to this standard.
-If this isn't the case, the script produces an error.
-It also produces warnings and informational outputs, e.g., if labels don't seem to be set.
-
 ## Previous standard versions
 
 This is version 2 of the standard; it extends [version 1](scs-0214-v1-k8s-node-distribution.md) with the

@@ -20,17 +20,11 @@ Node distribution metadata is provided through the usage of the labels
 
 ## Automated tests
 
-### Notes
+Currently, automated testing is not readily possible because we cannot access information about
+the underlying host of a node (as opposed to its region and zone). Therefore, the test will only output
+a tentative result.
 
-The test for the [SCS K8s Node Distribution and Availability](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0214-v2-k8s-node-distribution.md)
-checks if control-plane nodes are distributed over different failure zones (distributed into
-physical machines, zones and regions) by observing their labels defined by the standard.
-
-### Implementation
-
-The script [`k8s_node_distribution_check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/kaas/k8s-node-distribution/k8s_node_distribution_check.py)
-connects to an existing K8s cluster and checks if a distribution can be detected with the labels
-set for the nodes of this cluster.
+The current implementation can be found in the script [`k8s_node_distribution_check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/kaas/k8s-node-distribution/k8s_node_distribution_check.py).
 
 ## Manual tests
 

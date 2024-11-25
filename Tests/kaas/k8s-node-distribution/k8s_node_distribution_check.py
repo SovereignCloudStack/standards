@@ -162,12 +162,11 @@ def compare_labels(node_list, node_type="control"):
             )
             return
 
-    if node_type == "control":
-        raise DistributionException("The distribution of nodes described in the standard couldn't be detected.")
-    elif node_type == "worker":
-        logger.warning("No node distribution could be detected for the worker nodes. "
-                       "This produces only a warning, since it is just a recommendation.")
-        return
+    #
+    # if node_type == "control":
+    #     raise DistributionException("The distribution of nodes described in the standard couldn't be detected.")
+    logger.warning("No node distribution could be detected for the worker nodes. "
+                   "This produces only a warning, since it is just a recommendation.")
 
 
 def check_nodes(nodes):
