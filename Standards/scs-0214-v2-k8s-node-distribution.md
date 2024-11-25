@@ -83,7 +83,7 @@ These labels MUST be kept up to date with the current state of the deployment.
 
 - `topology.kubernetes.io/zone`
 
-  Corresponds with the label described in [K8s labels documentation][k8s-labels-docs].
+  Corresponds with the label described in [K8s labels documentation](https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone).
   It provides a logical zone of failure on the side of the provider, e.g. a server rack
   in the same electrical circuit or multiple machines bound to the internet through a
   singular network structure. How this is defined exactly is up to the plans of the provider.
@@ -125,5 +125,5 @@ requirements regarding node labeling.
 [k8s-ha]: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/
 [k8s-large-clusters]: https://kubernetes.io/docs/setup/best-practices/cluster-large/
 [scs-0213-v1]: https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0213-v1-k8s-nodes-anti-affinity.md
-[k8s-labels-docs]: https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone
+[k8s-labels-docs]: 
 [k8s-zones]: https://kubernetes.io/docs/setup/best-practices/multiple-zones/
