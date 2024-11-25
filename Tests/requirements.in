@@ -6,4 +6,5 @@ python-dateutil
 PyYAML
 openstacksdk  # TODO: move into iaas/requirements.in
 requests
+sslyze
 tomli
