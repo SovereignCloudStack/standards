@@ -50,6 +50,7 @@ def main(argv, cwd):
     token = base64.b64encode(f"{subject}:{password}".encode('utf-8'))
     hash_ = CRYPTCTX.hash(password)
     with open(tokenfile_path, "wb") as fileobj:
+        os.fchmod(fileobj.fileno(), 0o600)
         fileobj.write(token)
     print("Creating key file using `ssh-keygen`...")
     subprocess.check_call([SSH_KEYGEN, '-t', 'ed25519', '-C', sanitized_subject, '-f', keyfile_path, '-N', '', '-q'])
