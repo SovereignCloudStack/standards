@@ -2,7 +2,7 @@
 title: "SCS Image Metadata: Implementation and Testing Notes"
 type: Supplement
 track: IaaS
-status: Proposal
+status: Draft
 supplements:
   - scs-0102-v1-image-metadata.md
 ---

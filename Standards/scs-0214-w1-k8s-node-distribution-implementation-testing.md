@@ -2,7 +2,7 @@
 title: "Kubernetes Node Distribution and Availability: Implementation and Testing Notes"
 type: Supplement
 track: KaaS
-status: Proposal
+status: Draft
 supplements:
   - scs-0214-v1-k8s-node-distribution.md
   - scs-0214-v2-k8s-node-distribution.md
@@ -16,25 +16,15 @@ Worker nodes can also be distributed over "failure zones", but this isn't a requ
 Distribution must be shown through labelling, so that users can access these information.
 
 Node distribution metadata is provided through the usage of the labels
-`topology.kubernetes.io/region`, `topology.kubernetes.io/zone` and
-`topology.scs.community/host-id` respectively.
-
-At the moment, not all labels are set automatically by most K8s cluster utilities, which incurs
-additional setup and maintenance costs.
+`topology.kubernetes.io/region` and `topology.kubernetes.io/zone`.
 
 ## Automated tests
 
-### Notes
+Currently, automated testing is not readily possible because we cannot access information about
+the underlying host of a node (as opposed to its region and zone). Therefore, the test will only output
+a tentative result.
 
-The test for the [SCS K8s Node Distribution and Availability](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0214-v2-k8s-node-distribution.md)
-checks if control-plane nodes are distributed over different failure zones (distributed into
-physical machines, zones and regions) by observing their labels defined by the standard.
-
-### Implementation
-
-The script [`k8s_node_distribution_check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/kaas/k8s-node-distribution/k8s_node_distribution_check.py)
-connects to an existing K8s cluster and checks if a distribution can be detected with the labels
-set for the nodes of this cluster.
+The current implementation can be found in the script [`k8s_node_distribution_check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/kaas/k8s-node-distribution/k8s_node_distribution_check.py).
 
 ## Manual tests
 

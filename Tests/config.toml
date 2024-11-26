@@ -34,11 +34,51 @@ subjects = [
 workers = 4
 
 
+[presets.kaas-dev]
+scopes = [
+    "scs-compatible-kaas",
+]
+subjects = [
+    "kind-current",
+    "kind-current-1",
+    "kind-current-2",
+]
+workers = 1  # better restrict this with clusters running on local machine
+
+
 [scopes.scs-compatible-iaas]
 spec = "./scs-compatible-iaas.yaml"
+
+
+[scopes.scs-compatible-kaas]
+spec = "./scs-compatible-kaas.yaml"
 
 
 # default subject (not a real subject, but used to declare a default mapping)
 # (this is the only mapping declaration that supports using Python string interpolation)
 [subjects._.mapping]
 os_cloud = "{subject}"
+subject_root = "{subject}"
+
+
+[subjects._.kubernetes_setup]
+clusterspec         = "kaas/clusterspec.yaml"
+
+
+[subjects.kind-current.kubernetes_setup]
+kube_plugin         = "kind"
+kube_plugin_config  = "kaas/kind_config.yaml"
+clusterspec_cluster = "current-k8s-release"
+
+
+[subjects.kind-current-1.kubernetes_setup]
+kube_plugin         = "kind"
+kube_plugin_config  = "kaas/kind_config.yaml"
+clusterspec_cluster = "current-k8s-release-1"
+
+
+[subjects.kind-current-2.kubernetes_setup]
+kube_plugin         = "kind"
+kube_plugin_config  = "kaas/kind_config.yaml"
+clusterspec_cluster = "current-k8s-release-2"
+

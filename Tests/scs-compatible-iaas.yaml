@@ -206,6 +206,21 @@ modules:
         tags: [availability-zones]
         description: >
           Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard>
+  - id: scs-0123-v1
+    name: Mandatory and Supported IaaS Services
+    url: https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services
+    run:
+      - executable: ./iaas/mandatory-services/mandatory-iaas-services.py
+        args: --os-cloud {os_cloud} --debug
+    testcases:
+      - id: service-apis-check
+        tags: [mandatory]
+        description: >
+          Must fulfill all requirements of <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services> (except for documentation requirements, which are tested manually with service-apis-docs-check).
+      - id: service-apis-docs-check
+        tags: [service-apis-docs]
+        description: >
+          Note: manual check! Must fulfill documentation requirements of <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services>.
   - id: scs-0302-v1
     name: Domain Manager Role
     url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role
@@ -218,6 +233,16 @@ modules:
         description: >
           Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0302-v1-domain-manager-role>
 timeline:
+  - date: 2025-01-01
+    versions:
+      v5: effective
+      v4: warn
+      v3: deprecated
+  - date: 2024-11-21
+    versions:
+      v5: effective
+      v4: effective
+      v3: deprecated
   - date: 2024-11-08
     versions:
       v5: draft
@@ -261,6 +286,7 @@ timeline:
       v1: effective
 versions:
   - version: v5
+    stabilized_at: 2024-11-14
     include:
       - opc-v2022.11
       - scs-0100-v3.1
@@ -278,7 +304,7 @@ versions:
       - scs-0302-v1
     targets:
       main: mandatory
-      preview: domain-manager/availability-zones
+      preview: domain-manager/availability-zones/service-apis-docs
   - version: v4
     stabilized_at: 2024-02-28
     include:

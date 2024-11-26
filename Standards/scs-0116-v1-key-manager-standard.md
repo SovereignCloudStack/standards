@@ -1,7 +1,8 @@
 ---
-title: Key Manager Standard
+title: SCS Key Manager Standard
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2024-11-13
 track: IaaS
 ---
 
