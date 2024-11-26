@@ -11,6 +11,7 @@ import os
 import os.path
 import re
 import shutil
+import signal
 import subprocess
 import sys
 
@@ -86,3 +87,4 @@ if __name__ == "__main__":
         sys.exit(1)
     except KeyboardInterrupt:
         print("Interrupted", file=sys.stderr)
+        sys.exit(128 + signal.SIGINT)
