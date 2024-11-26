@@ -53,6 +53,7 @@ modules:
           Must fulfill all requirements of <https://docs.scs.community/standards/scs-0219-v1-kaas-networking>
 timeline:
   - date: 2024-11-26
+    versions:
       v1: effective
   - date: 2024-02-28
     versions:
