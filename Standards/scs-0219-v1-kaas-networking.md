@@ -1,7 +1,8 @@
 ---
 title: KaaS Networking Standard
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2024-11-21
 track: KaaS
 ---
 

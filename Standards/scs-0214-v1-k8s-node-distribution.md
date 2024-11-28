@@ -84,4 +84,3 @@ If the standard is used by a provider, the following decisions are binding and v
 [k8s-ha]: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/
 [k8s-large-clusters]: https://kubernetes.io/docs/setup/best-practices/cluster-large/
 [scs-0213-v1]: https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0213-v1-k8s-nodes-anti-affinity.md
-[k8s-labels-docs]: https://kubernetes.io/docs/reference/labels-annotations-taints/#topologykubernetesiozone

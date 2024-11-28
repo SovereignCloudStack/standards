@@ -4,7 +4,7 @@ type: Supplement
 track: IaaS
 status: Draft
 supplements:
-  - scs-XXXX-v1-security-of-iaas-service-software.md
+  - scs-0124-v1-security-of-iaas-service-software.md
 ---
 
 ## Testing or Detecting security updates in software

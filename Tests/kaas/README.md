@@ -1,4 +1,4 @@
-# Plugin for provisioning k8s clusters and performing conformance tests on these clusters
+# Test suite for SCS-compatible KaaS
 
 ## Development environment
 
@@ -6,6 +6,7 @@
 
 * [docker](https://docs.docker.com/engine/install/)
 * [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+* [sonobuoy](https://sonobuoy.io/docs/v0.57.1/#installation)
 
 ### setup for development
 
@@ -19,7 +20,6 @@
    (venv) curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
    (venv) python3.10 -m pip install --upgrade pip
    (venv) python3.10 -m pip --version
-
    ```
 
 2. Install dependencies:

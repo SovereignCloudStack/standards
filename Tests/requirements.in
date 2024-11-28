@@ -1,8 +1,10 @@
 aiohttp
+boto3  # TODO: move into iaas/requirements.in
 click
-kubernetes_asyncio
+kubernetes_asyncio  # TODO: move into kaas/requirements.in
 python-dateutil
 PyYAML
-openstacksdk
+openstacksdk  # TODO: move into iaas/requirements.in
 requests
+sslyze
 tomli

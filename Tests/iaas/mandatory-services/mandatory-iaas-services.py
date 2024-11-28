@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Mandatory APIs checker
 This script retrieves the endpoint catalog from Keystone using the OpenStack
 SDK and checks whether all mandatory APi endpoints, are present.
@@ -26,28 +27,8 @@ mandatory_services = ["compute", "identity", "image", "network",
 block_storage_service = ["volume", "volumev3", "block-storage"]
 
 
-def connect(cloud_name: str) -> openstack.connection.Connection:
-    """Create a connection to an OpenStack cloud
-    :param string cloud_name:
-        The name of the configuration to load from clouds.yaml.
-    :returns: openstack.connnection.Connection
-    """
-    return openstack.connect(
-        cloud=cloud_name,
-    )
-
-
-def check_presence_of_mandatory_services(cloud_name: str, s3_credentials=None):
-    try:
-        connection = connect(cloud_name)
-        services = connection.service_catalog
-    except Exception as e:
-        print(str(e))
-        raise Exception(
-            f"Connection to cloud '{cloud_name}' was not successfully. "
-            f"The Catalog endpoint could not be accessed. "
-            f"Please check your cloud connection and authorization."
-        )
+def check_presence_of_mandatory_services(conn: openstack.connection.Connection, s3_credentials=None):
+    services = conn.service_catalog
 
     if s3_credentials:
         mandatory_services.remove("object-store")
@@ -55,25 +36,21 @@ def check_presence_of_mandatory_services(cloud_name: str, s3_credentials=None):
         svc_type = svc['type']
         if svc_type in mandatory_services:
             mandatory_services.remove(svc_type)
-            continue
-        if svc_type in block_storage_service:
+        elif svc_type in block_storage_service:
             block_storage_service.remove(svc_type)
 
     bs_service_not_present = 0
     if len(block_storage_service) == 3:
         # neither block-storage nor volume nor volumev3 is present
         # we must assume, that there is no volume service
-        logger.error("FAIL: No block-storage (volume) endpoint found.")
+        logger.error("No block-storage (volume) endpoint found.")
         mandatory_services.append(block_storage_service[0])
         bs_service_not_present = 1
-    if not mandatory_services:
-        # every mandatory service API had an endpoint
-        return 0 + bs_service_not_present
-    else:
-        # there were multiple mandatory APIs not found
-        logger.error(f"FAIL: The following endpoints are missing: "
-                     f"{mandatory_services}")
-        return len(mandatory_services) + bs_service_not_present
+    if mandatory_services:
+        # some mandatory APIs were not found
+        logger.error(f"The following endpoints are missing: "
+                     f"{', '.join(mandatory_services)}.")
+    return len(mandatory_services) + bs_service_not_present
 
 
 def list_containers(conn):
@@ -167,8 +144,8 @@ def s3_from_ostack(creds, conn, endpoint):
         # pass
 
 
-def check_for_s3_and_swift(cloud_name: str, s3_credentials=None):
-    # If we get credentials we assume, that there is no Swift and only test s3
+def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials=None):
+    # If we get credentials, we assume that there is no Swift and only test s3
     if s3_credentials:
         try:
             s3 = s3_conn(s3_credentials)
@@ -183,58 +160,46 @@ def check_for_s3_and_swift(cloud_name: str, s3_credentials=None):
         if s3_buckets == [TESTCONTNAME]:
             del_bucket(s3, TESTCONTNAME)
         # everything worked, and we don't need to test for Swift:
-        print("SUCCESS: S3 exists")
+        logger.info("SUCCESS: S3 exists")
         return 0
     # there were no credentials given, so we assume s3 is accessable via
     # the service catalog and Swift might exist too
-    try:
-        connection = connect(cloud_name)
-        connection.authorize()
-    except Exception as e:
-        print(str(e))
-        raise Exception(
-            f"Connection to cloud '{cloud_name}' was not successfully. "
-            f"The Catalog endpoint could not be accessed. "
-            f"Please check your cloud connection and authorization."
-        )
     s3_creds = {}
     try:
-        endpoint = connection.object_store.get_endpoint()
-    except Exception as e:
-        logger.error(
-            f"FAIL: No object store endpoint found in cloud "
-            f"'{cloud_name}'. No testing for the s3 service possible. "
-            f"Details: %s", e
+        endpoint = conn.object_store.get_endpoint()
+    except Exception:
+        logger.exception(
+            "No object store endpoint found. No testing for the s3 service possible."
         )
         return 1
     # Get S3 endpoint (swift) and ec2 creds from OpenStack (keystone)
-    s3_from_ostack(s3_creds, connection, endpoint)
+    s3_from_ostack(s3_creds, conn, endpoint)
     # Overrides (var names are from libs3, in case you wonder)
     s3_from_env(s3_creds, "HOST", "S3_HOSTNAME", "https://")
     s3_from_env(s3_creds, "AK", "S3_ACCESS_KEY_ID")
     s3_from_env(s3_creds, "SK", "S3_SECRET_ACCESS_KEY")
 
-    s3 = s3_conn(s3_creds, connection)
+    s3 = s3_conn(s3_creds, conn)
     s3_buckets = list_s3_buckets(s3)
     if not s3_buckets:
         s3_buckets = create_bucket(s3, TESTCONTNAME)
         assert s3_buckets
 
     # If we got till here, s3 is working, now swift
-    swift_containers = list_containers(connection)
+    swift_containers = list_containers(conn)
     # if not swift_containers:
-    #    swift_containers = create_container(connection, TESTCONTNAME)
+    #    swift_containers = create_container(conn, TESTCONTNAME)
     result = 0
     if Counter(s3_buckets) != Counter(swift_containers):
-        print("WARNING: S3 buckets and Swift Containers differ:\n"
-              f"S3: {sorted(s3_buckets)}\nSW: {sorted(swift_containers)}")
+        logger.warning("S3 buckets and Swift Containers differ:\n"
+                       f"S3: {sorted(s3_buckets)}\nSW: {sorted(swift_containers)}")
         result = 1
     else:
-        print("SUCCESS: S3 and Swift exist and agree")
+        logger.info("SUCCESS: S3 and Swift exist and agree")
     # Clean up
     # FIXME: Cleanup created EC2 credential
     # if swift_containers == [TESTCONTNAME]:
-    #    del_container(connection, TESTCONTNAME)
+    #    del_container(conn, TESTCONTNAME)
     # Cleanup created S3 bucket
     if s3_buckets == [TESTCONTNAME]:
         del_bucket(s3, TESTCONTNAME)
@@ -266,34 +231,47 @@ def main():
         help="Enable OpenStack SDK debug logging"
     )
     args = parser.parse_args()
+    logging.basicConfig(
+        format="%(levelname)s: %(message)s",
+        level=logging.DEBUG if args.debug else logging.INFO,
+    )
     openstack.enable_logging(debug=args.debug)
 
     # parse cloud name for lookup in clouds.yaml
-    cloud = os.environ.get("OS_CLOUD", None)
-    if args.os_cloud:
-        cloud = args.os_cloud
-    assert cloud, (
-        "You need to have the OS_CLOUD environment variable set to your cloud "
-        "name or pass it via --os-cloud"
-    )
+    cloud = args.os_cloud or os.environ.get("OS_CLOUD", None)
+    if not cloud:
+        raise RuntimeError(
+            "You need to have the OS_CLOUD environment variable set to your "
+            "cloud name or pass it via --os-cloud"
+        )
 
     s3_credentials = None
     if args.s3_endpoint:
         if (not args.s3_access) or (not args.s3_access_secret):
-            print("WARNING: test for external s3 needs access key and access secret.")
+            logger.warning("test for external s3 needs access key and access secret.")
         s3_credentials = {
             "AK": args.s3_access,
             "SK": args.s3_access_secret,
             "HOST": args.s3_endpoint
         }
     elif args.s3_access or args.s3_access_secret:
-        print("WARNING: access to s3 was given, but no endpoint provided.")
+        logger.warning("access to s3 was given, but no endpoint provided.")
 
-    result = check_presence_of_mandatory_services(cloud, s3_credentials)
-    result = result + check_for_s3_and_swift(cloud, s3_credentials)
+    with openstack.connect(cloud) as conn:
+        result = check_presence_of_mandatory_services(conn, s3_credentials)
+        result += check_for_s3_and_swift(conn, s3_credentials)
+
+    print('service-apis-check: ' + ('PASS', 'FAIL')[min(1, result)])
 
     return result
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        sys.exit(main())
+    except SystemExit:
+        raise
+    except BaseException as exc:
+        logging.debug("traceback", exc_info=True)
+        logging.critical(str(exc))
+        sys.exit(1)
