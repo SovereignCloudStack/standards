@@ -22,7 +22,6 @@ and comparing them. This doesn't always attest to a good distribution
 and does require these labels to be set, but should yield overall pretty
 good initial results.
 
-    topology.scs.openstack.org/host-id  # previously kubernetes.io/hostname
     topology.kubernetes.io/zone
     topology.kubernetes.io/region
     node-role.kubernetes.io/control-plane
@@ -47,7 +46,6 @@ import sys
 LABELS = (
     "topology.kubernetes.io/region",
     "topology.kubernetes.io/zone",
-    "topology.scs.community/host-id",
 )
 
 logger = logging.getLogger(__name__)
@@ -164,12 +162,11 @@ def compare_labels(node_list, node_type="control"):
             )
             return
 
-    if node_type == "control":
-        raise DistributionException("The distribution of nodes described in the standard couldn't be detected.")
-    elif node_type == "worker":
-        logger.warning("No node distribution could be detected for the worker nodes. "
-                       "This produces only a warning, since it is just a recommendation.")
-        return
+    #
+    # if node_type == "control":
+    #     raise DistributionException("The distribution of nodes described in the standard couldn't be detected.")
+    logger.warning("No node distribution could be detected for the worker nodes. "
+                   "This produces only a warning, since it is just a recommendation.")
 
 
 def check_nodes(nodes):
