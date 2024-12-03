@@ -30,6 +30,7 @@ subjects = [
     "syseleven-dus2",
     "syseleven-ham1",
     "wavestack",
+    "cc-rrze",
 ]
 workers = 4
 
