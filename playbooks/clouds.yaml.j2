@@ -119,3 +119,12 @@ clouds:
       application_credential_id: "{{ clouds_conf.wavestack_ac_id }}"
       application_credential_secret: "{{ clouds_conf.wavestack_ac_secret }}"
     auth_type: "v3applicationcredential"
+  cc-rrze:
+    region_name: "DE-ERL"
+    interface: "public"
+    identity_api_version: 3
+    auth_type: "v3applicationcredential"
+    auth:
+      auth_url: AUTH_URL
+      application_credential_id: "{{ clouds_conf.cc-rrze_ac_id }}"
+      application_credential_secret: "{{ clouds_conf.cc-rrze_a_ac_secret }}"
