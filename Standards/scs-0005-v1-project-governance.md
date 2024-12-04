@@ -34,7 +34,7 @@ The collective of people, companies, and organizations promoting the idea of the
 
 ### _SCS Github Organisation_
 
-The _SCS Github Organisation_ is this: [https://github.com/sovereigncloudstack](https://github.com/sovereigncloudstack)
+The _SCS Github Organisation_ is this: https://github.com/sovereigncloudstack](https://github.com/sovereigncloudstack)
 
 ## Joining the SCS Github Organisation
 
@@ -79,4 +79,7 @@ The four candidates with the highest number of points overall are then elected.
 
 ## Roles in the _SCS Project Board_
 
-Among the elected Project Board a spokesperson is nominated.
+Among the elected Project Board a spokesperson is nominated. The spokesperson is 
+elected by a simple majority vote among the members of the project board. The
+spokesperson is elected for the whole term.
+
