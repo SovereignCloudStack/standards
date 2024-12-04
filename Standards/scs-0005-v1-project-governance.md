@@ -32,6 +32,20 @@ The _SCS Project_ is the Open-Source project that consists of the software, docu
 
 The collective of people, companies, and organizations promoting the idea of the _SCS Project_ as well as the people working on the various aspects.
 
+### _SCS Github Organisation_
+
+The _SCS Github Organisation_ is this: [https://github.com/sovereigncloudstack](https://github.com/sovereigncloudstack)
+
+## Joining the SCS Github Organisation
+
+Since being part of the github organisation comes with a set of responsibilities, joining the SCS Github Organisation can be done by:
+
+- being invited by the _SCS Project Board_ 
+- submitting a request to be onboarded as a member to the _SCS Project Board_
+- have to existing members of the github organization that nominate you
+
+One of these items is sufficient.
+
 ## Election of the _SCS Project Board_
 
 ### Term
