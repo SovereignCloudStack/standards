@@ -34,7 +34,7 @@ The collective of people, companies, and organizations promoting the idea of the
 
 ### _SCS GitHub Organization_
 
-The _SCS GitHub Organization_ is this: https://github.com/sovereigncloudstack](https://github.com/sovereigncloudstack)
+The _SCS GitHub Organization_ is this: [https://github.com/sovereigncloudstack](https://github.com/sovereigncloudstack)
 
 ## Joining the SCS GitHub Organization
 
