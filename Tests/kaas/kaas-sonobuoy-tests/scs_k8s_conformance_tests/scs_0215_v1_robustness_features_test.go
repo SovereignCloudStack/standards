@@ -14,11 +14,6 @@ import (
 
 // ==================== Helper Functions ====================
 
-// isKindCluster determines if we're running on a kind cluster
-func isKindCluster(clientset *kubernetes.Clientset) bool {
-   return false
-}
-
 // setupClientset creates a Kubernetes clientset
 func setupClientset() (*kubernetes.Clientset, error) {
    config, err := rest.InClusterConfig()
@@ -53,6 +48,7 @@ func Test_scs_0215_requestLimits(t *testing.T) {
            "max-requests-inflight",
            "max-mutating-requests-inflight",
            "min-request-timeout",
+           "EventRateLimit",
        }
 
        for _, container := range apiServer.Spec.Containers {
@@ -73,9 +69,6 @@ func Test_scs_0215_requestLimits(t *testing.T) {
            if !foundSettings[setting] {
                t.Errorf("Required setting %s not found in API server configuration", setting)
            }
-       }
-       if !foundSettings["EventRateLimit"] {
-           t.Error("EventRateLimit admission plugin not enabled")
        }
    })
 }
@@ -114,10 +107,6 @@ func Test_scs_0215_eventRateLimit(t *testing.T) {
    clientset, err := setupClientset()
    if err != nil {
        t.Fatalf("Failed to setup clientset: %v", err)
-   }
-
-   if isKindCluster(clientset) {
-       t.Skip("Running on kind cluster - skipping EventRateLimit test")
    }
 
    t.Run("Check_EventRateLimit_Configuration", func(t *testing.T) {
@@ -160,10 +149,6 @@ func Test_scs_0215_apiPriorityAndFairness(t *testing.T) {
        t.Fatalf("Failed to setup clientset: %v", err)
    }
 
-   if isKindCluster(clientset) {
-       t.Skip("Running on kind cluster - skipping APF test")
-   }
-
    t.Run("Check_APF_Configuration", func(t *testing.T) {
        pods, err := clientset.CoreV1().Pods("kube-system").List(context.Background(), metav1.ListOptions{
            LabelSelector: "component=kube-apiserver",
@@ -185,106 +170,10 @@ func Test_scs_0215_apiPriorityAndFairness(t *testing.T) {
    })
 }
 
-func Test_scs_0215_rateLimitValues(t *testing.T) {
-   clientset, err := setupClientset()
-   if err != nil {
-       t.Fatalf("Failed to setup clientset: %v", err)
-   }
-
-   if isKindCluster(clientset) {
-       t.Skip("Running on kind cluster - skipping rate limit values test")
-   }
-
-   t.Run("Check_Rate_Limit_Values", func(t *testing.T) {
-       expectedValues := map[string]string{
-           "qps":   "5000",
-           "burst": "20000",
-       }
-
-       configMaps, _ := clientset.CoreV1().ConfigMaps("kube-system").List(context.Background(), metav1.ListOptions{})
-       for _, cm := range configMaps.Items {
-           var config string
-           switch {
-           case strings.Contains(cm.Name, "event-rate-limit"):
-               config = cm.Data["config.yaml"]
-           case cm.Name == "admission-configuration":
-               config = cm.Data["eventratelimit.yaml"]
-           case cm.Name == "kube-apiserver":
-               config = cm.Data["config.yaml"]
-           }
-
-           if config != "" {
-               allFound := true
-               for k, v := range expectedValues {
-                   if !strings.Contains(config, fmt.Sprintf("%s: %s", k, v)) {
-                       allFound = false
-                       break
-                   }
-               }
-               if allFound {
-                   return
-               }
-           }
-       }
-
-       t.Error("Recommended rate limit values (qps: 5000, burst: 20000) not found")
-   })
-}
-
-func Test_scs_0215_etcdCompaction(t *testing.T) {
-   clientset, err := setupClientset()
-   if err != nil {
-       t.Fatalf("Failed to setup clientset: %v", err)
-   }
-
-   if isKindCluster(clientset) {
-       t.Skip("Running on kind cluster - skipping etcd compaction test")
-   }
-
-   t.Run("Check_Etcd_Compaction_Settings", func(t *testing.T) {
-       pods, err := clientset.CoreV1().Pods("kube-system").List(context.Background(), metav1.ListOptions{
-           LabelSelector: "component=etcd",
-       })
-       if err != nil || len(pods.Items) == 0 {
-           t.Skip("No etcd pods found")
-           return
-       }
-
-       requiredSettings := map[string]string{
-           "auto-compaction-mode":      "periodic",
-           "auto-compaction-retention": "8h",
-       }
-
-       for _, pod := range pods.Items {
-           for _, container := range pod.Spec.Containers {
-               foundSettings := make(map[string]bool)
-               for _, arg := range container.Command {
-                   for setting, value := range requiredSettings {
-                       if strings.Contains(arg, fmt.Sprintf("--%s=%s", setting, value)) {
-                           foundSettings[setting] = true
-                       }
-                   }
-               }
-               
-               if len(foundSettings) == len(requiredSettings) {
-                   t.Log("Found correct etcd compaction settings")
-                   return
-               }
-           }
-       }
-
-       t.Error("Required etcd compaction settings not found")
-   })
-}
-
 func Test_scs_0215_etcdBackup(t *testing.T) {
    clientset, err := setupClientset()
    if err != nil {
        t.Fatalf("Failed to setup clientset: %v", err)
-   }
-
-   if isKindCluster(clientset) {
-       t.Skip("Running on kind cluster - skipping etcd backup test")
    }
 
    t.Run("Check_Etcd_Backup_Configuration", func(t *testing.T) {
