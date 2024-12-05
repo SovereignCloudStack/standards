@@ -5,4 +5,3 @@ For the termin 2024-12 - 2025-12 the following people are nominated / have nomin
 | Name | Github Handle | E-Mail |
 | -----| ------------- | ------ |
 |      |               |        |
-
