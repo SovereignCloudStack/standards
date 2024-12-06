@@ -51,7 +51,7 @@ One of these items is sufficient.
 ### Term
 
 The _SCS Project Board_ is elected for the term of one year. Elections are done
-in November. The December serves as a transition period.
+within the last six weeks of the calendar year.
 
 ### Seats on the board
 
