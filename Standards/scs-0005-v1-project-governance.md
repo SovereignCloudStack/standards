@@ -71,12 +71,12 @@ Every person who is a member of the GitHub organization "Sovereign Cloud Stack" 
 ### Electoral management
 
 The voting process is governed by the _Forum SCS-Standards_.
+Voting is done using the [Condorcet Internet Voting Service](https://civs.cs.cornell.edu). This is the same system as is [being used by the OpenInfra foundation](https://wiki.openstack.org/wiki/Election_Officiating_Guidelines#Running_the_election_itself).
 
 ### Mechanisms
 
-Each voting person has eight (8) points that can be cast during the voting process.
-The points can be distributed between four candidates.
-The four candidates with the highest number of points overall are then elected.
+Each eligble voter is asked to rank the canidates according to their priorities.
+The four favorite choices among all voters will be elected into the _SCS Project Board_.
 
 ## Roles in the _SCS Project Board_
 
