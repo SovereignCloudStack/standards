@@ -40,7 +40,7 @@ The _SCS GitHub Organization_ is this: [https://github.com/sovereigncloudstack](
 
 Since being part of the GitHub organization comes with a set of responsibilities, joining the SCS GitHub Organization can be done by:
 
-- being invited by the _SCS Project Board_ 
+- being invited by the _SCS Project Board_
 - submitting a request to be onboarded as a member to the _SCS Project Board_
 - have to existing members of the GitHub organization that nominate you
 
@@ -89,7 +89,6 @@ The four favorite choices among all voters will be elected into the _SCS Project
 
 ## Roles in the _SCS Project Board_
 
-Among the elected Project Board a spokesperson is nominated. The spokesperson is 
+Among the elected Project Board a spokesperson is nominated. The spokesperson is
 elected by a simple majority vote among the members of the project board. The
 spokesperson is elected for the whole term.
-
