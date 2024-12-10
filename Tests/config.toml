@@ -19,6 +19,7 @@ scopes = [
 subjects = [
     "gx-scs",
     "artcodix",
+    "cc-rrze",
     "pco-prod1",
     "pco-prod2",
     "pco-prod3",
@@ -30,7 +31,6 @@ subjects = [
     "syseleven-dus2",
     "syseleven-ham1",
     "wavestack",
-    "cc-rrze",
 ]
 workers = 4
 

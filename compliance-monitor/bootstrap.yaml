@@ -25,6 +25,15 @@ accounts:
   - subject: artcodix
     delegates:
       - zuul_ci
+  - subject: cc-rrze
+    delegates:
+      - zuul_ci
+    api_keys:
+      - "$argon2id$v=19$m=65536,t=3,p=4$iLG29t7be88ZY6w1Rui91w$9UwkTMLBMxq/1QyeVfJcc95fhQtY1AC48Rex4S8ZSIU"
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIF8kQx6ur/WSSY9ThK/mwhrl/VsYnjRk44GSXBy3VfKI"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "primary
   - subject: pco-prod1
     delegates:
       - zuul_ci
@@ -66,12 +75,3 @@ accounts:
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
         public_key_type: "ssh-ed25519"
         public_key_name: "primary"
-  - subject: cc-rrze
-    delegates:
-      - zuul_ci
-    api_keys:
-      - "$argon2id$v=19$m=65536,t=3,p=4$iLG29t7be88ZY6w1Rui91w$9UwkTMLBMxq/1QyeVfJcc95fhQtY1AC48Rex4S8ZSIU"
-    keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIF8kQx6ur/WSSY9ThK/mwhrl/VsYnjRk44GSXBy3VfKI"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "primary
