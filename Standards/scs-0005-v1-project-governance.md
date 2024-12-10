@@ -79,7 +79,8 @@ The voting will be open for a week.
 
 ### Announcement
 
-The voting will be announced on the SCS-Members Mailinglist as well as on the [Generl & Announcements Matrix Room](#scs-general:matrix.org). Enlisted voters will receive e-mails to their with the IAM system registered e-mail address.
+
+The voting will be announced on the SCS-Members Mailinglist as well as on the [General & Announcements Matrix Room](#scs-general:matrix.org). Enlisted voters will receive e-mails to the email address used in the SCS community's Identity Management system.
 
 ### Mechanisms
 
