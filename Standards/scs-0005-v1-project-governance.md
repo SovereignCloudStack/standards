@@ -66,7 +66,7 @@ The nomination is done by adding the person with the following data to the file 
 
 ### Eligible for voting
 
-Every person who is a member of the GitHub organization "Sovereign Cloud Stack" is eligible for voting. In order to be able to vote an onboarding onto the IAM of the SCS Project needs to happen.
+Every person who is a member of the GitHub organization "Sovereign Cloud Stack" is eligible for voting. In order to be able to vote an onboarding onto the Identity Management of the SCS community needs to happen.
 
 ### Electoral management
 
