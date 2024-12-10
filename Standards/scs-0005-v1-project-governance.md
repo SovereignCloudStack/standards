@@ -66,12 +66,20 @@ The nomination is done by adding the person with the following data to the file 
 
 ### Eligible for voting
 
-Every person who is a member of the GitHub organization "Sovereign Cloud Stack" is eligible for voting.
+Every person who is a member of the GitHub organization "Sovereign Cloud Stack" is eligible for voting. In order to be able to vote an onboarding onto the IAM of the SCS Project needs to happen.
 
 ### Electoral management
 
 The voting process is governed by the _Forum SCS-Standards_.
 Voting is done using the [Condorcet Internet Voting Service](https://civs.cs.cornell.edu). This is the same system as is [being used by the OpenInfra foundation](https://wiki.openstack.org/wiki/Election_Officiating_Guidelines#Running_the_election_itself).
+
+### Voting period
+
+The voting will be open for a week.
+
+### Announcement
+
+The voting will be announced on the SCS-Members Mailinglist as well as on the [Generl & Announcements Matrix Room](#scs-general:matrix.org). Enlisted voters will receive e-mails to their with the IAM system registered e-mail address.
 
 ### Mechanisms
 
