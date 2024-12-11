@@ -45,6 +45,8 @@ Since being part of the GitHub organization comes with a set of responsibilities
 
 One of these items is sufficient.
 
+Actively contributing to one or several of the projects under the governance of the SCS project board should typically result in a membership. Please be aware of our [Code of Conduct](https://github.com/SovereignCloudStack/.github/blob/main/CODE_OF_CONDUCT.md).
+
 ## Election of the _SCS Project Board_
 
 ### Term
