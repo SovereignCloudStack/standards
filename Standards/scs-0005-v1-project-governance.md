@@ -82,7 +82,7 @@ The voting will be announced on the SCS-Members Mailinglist as well as on the [G
 
 ### Mechanisms
 
-Each eligble voter is asked to rank the canidates according to their priorities.
+Each eligible voter is asked to rank the candidates according to their priorities.
 The four favorite choices among all voters will be elected into the _SCS Project Board_.
 
 ## Roles in the _SCS Project Board_
