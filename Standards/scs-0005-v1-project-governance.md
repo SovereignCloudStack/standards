@@ -41,7 +41,7 @@ Since being part of the GitHub organization comes with a set of responsibilities
 
 - being invited by the _SCS Project Board_
 - submitting a request to be onboarded as a member to the _SCS Project Board_
-- have to existing members of the GitHub organization that nominate you
+- have existing members of the GitHub organization nominate you
 
 One of these items is sufficient.
 
