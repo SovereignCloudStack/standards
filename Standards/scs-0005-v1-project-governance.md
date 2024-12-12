@@ -56,7 +56,6 @@ Members of the _SCS Project Board_ are also designated as **owners** of the SCS 
 
 This alignment ensures that governance roles in the SCS Project Board directly translate into operational responsibilities within the GitHub organization.
 
-
 ## Joining the SCS GitHub Organization
 
 Since being part of the GitHub organization comes with a set of responsibilities, joining the SCS GitHub Organization can be done by:
