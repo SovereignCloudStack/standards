@@ -31,9 +31,31 @@ The _SCS Project_ is the Open-Source project that consists of the software, docu
 
 The collective of people, companies, and organizations promoting the idea of the _SCS Project_ as well as the people working on the various aspects.
 
-### _SCS GitHub Organization_
+#### _SCS GitHub Organization_
 
 The _SCS GitHub Organization_ is this: [https://github.com/sovereigncloudstack](https://github.com/sovereigncloudstack)
+
+### Roles in the _SCS GitHub Organization_
+
+#### Members
+
+Joining the SCS GitHub Organization as a contributor results in being assigned the **member role** in the organization. Members are contributors or collaborators who:
+
+- Actively contribute to projects within the organization.
+- Have repository-specific access based on their contributions.
+- Are eligible to vote in elections and nominate candidates for the _SCS Project Board_.
+- Must adhere to the [Code of Conduct](https://github.com/SovereignCloudStack/.github/blob/main/CODE_OF_CONDUCT.md).
+
+#### Owners
+
+Members of the _SCS Project Board_ are also designated as **owners** of the SCS GitHub organization. Owners have administrative privileges, including:
+
+- Managing organization-level settings.
+- Onboarding new members.
+- Enforcing compliance with governance and community standards.
+
+This alignment ensures that governance roles in the SCS Project Board directly translate into operational responsibilities within the GitHub organization.
+
 
 ## Joining the SCS GitHub Organization
 
