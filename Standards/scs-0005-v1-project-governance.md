@@ -84,7 +84,7 @@ the delegate of the _Forum SCS-Standards_. The other four seats are voted upon.
 
 Every person who is part of the Sovereign Cloud Stack GitHub organization can be
 nominated for the board. Likewise, one can nominate oneself.
-The nomination is done by adding the person with the following data to the file corresponding to the term in the Community-Governance folder in the [Standards](https://github.com/sovereignCloudStack/standards/) repository. Obviously, the person, that is to be nominated, should be asked before being added to the file.
+The nomination is done by adding the person with the required data to the file corresponding to the term in the "Community-Governance" folder in the [Standards](https://github.com/sovereignCloudStack/standards/) repository. Obviously, the person, that is to be nominated, should be asked before being added to the file.
 
 ### Eligible for voting
 
