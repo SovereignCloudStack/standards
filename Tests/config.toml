@@ -19,6 +19,7 @@ scopes = [
 subjects = [
     "gx-scs",
     "artcodix",
+    "cc-rrze",
     "pco-prod1",
     "pco-prod2",
     "pco-prod3",
