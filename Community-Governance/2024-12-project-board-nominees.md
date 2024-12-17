@@ -2,7 +2,8 @@
 
 For the term 2024-12 - 2025-12 the following people are nominated / have nominated themselves:
 
-| Name              | Github Handle | E-Mail               |
-| ------------------| ------------- | -------------------- |
-| Christian Berendt | @berendt      | <berendt@osism.tech> |
-| Kurt Garloff      | @garloff      | <scs@garloff.de>     |
+| Name              | Github Handle | E-Mail                              |
+| ------------------| ------------- | ----------------------------------- |
+| Christian Berendt | @berendt      | <berendt@osism.tech>                |
+| Kurt Garloff      | @garloff      | <scs@garloff.de>                    |
+| Matthias Buechse  | @mbuechse     | <matthias.buechse@cloudandheat.com> |
