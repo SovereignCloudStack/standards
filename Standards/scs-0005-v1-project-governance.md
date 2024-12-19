@@ -1,5 +1,5 @@
 ---
-title: Sovereign Cloud Standards
+title: Governance of the SCS community
 type: Procedural
 status: Draft
 track: Global
