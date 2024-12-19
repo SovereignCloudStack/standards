@@ -11,3 +11,4 @@ For the term 2024-12 - 2025-12 the following people are nominated / have nominat
 | Janis Kemper      | @janiskemper   | <janis.kemper@syself.com>           |
 | Tobias Wolf       | @NotTheEvilOne | <wolf@b1-systems.de>                |
 | Jonas Schäfer     | @horazont      | <jonas.schaefer@cloudandheat.com>   |
+| Matej Feder       | @matofeder     | <matej.feder@dnation.cloud>         |
