@@ -233,10 +233,15 @@ modules:
         description: >
           Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0302-v1-domain-manager-role>
 timeline:
-  - date: 2025-01-01
+  - date: 2025-02-01
     versions:
-      v5: effective
+      v5.1: effective
       v4: warn
+      v3: deprecated
+  - date: 2024-12-19
+    versions:
+      v5.1: effective
+      v4: effective
       v3: deprecated
   - date: 2024-11-21
     versions:
@@ -285,6 +290,27 @@ timeline:
     versions:
       v1: effective
 versions:
+  - version: v5.1  # copy of v5, but with include "scs-0123-v1", which had simply been forgotten
+    stabilized_at: 2024-12-19
+    include:
+      - opc-v2022.11
+      - scs-0100-v3.1
+      - scs-0101-v1
+      - scs-0102-v1
+      - scs-0103-v1
+      - ref: scs-0104-v1
+        parameters:
+          image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images-v5.yaml
+      - scs-0114-v1
+      - scs-0115-v1
+      - scs-0116-v1
+      - scs-0117-v1
+      - scs-0121-v1
+      - scs-0123-v1
+      - scs-0302-v1
+    targets:
+      main: mandatory
+      preview: domain-manager/availability-zones/service-apis-docs
   - version: v5
     stabilized_at: 2024-11-14
     include:
