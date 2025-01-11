@@ -3,7 +3,7 @@ name: "Compliance IaaS v4 of pco-prod1"
 on:
   # Trigger compliance check every day at 4:35 UTC
   schedule:
-    - cron:  '30 4 * * *'
+    - cron:  '35 4 * * *'
   # Trigger compliance check after Docker image has been built
   workflow_run:
     workflows: [Build and publish scs-compliance-check Docker image]
