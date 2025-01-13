@@ -10,22 +10,18 @@ clouds:
     interface: "public"
     identity_api_version: 3
   pco-prod1:
+    auth_type: "v3applicationcredential"
     auth:
       auth_url: https://prod1.api.pco.get-cloud.io:5000
-      username: "u500924-svc-standards"
-      project_id: 204eba6723954d0d900d1144b4c9e48d
-      project_name: "p500924-scs-healthmonitor"
-      user_domain_name: "d500924"
+      application_credential_id: "22801bcede0746a192abec1805c8c4e5"
     region_name: "prod1"
     interface: "public"
     identity_api_version: 3
   pco-prod2:
+    auth_type: "v3applicationcredential"
     auth:
       auth_url: https://prod2.api.pco.get-cloud.io:5000
-      username: "u500924-svc-standards"
-      project_id: 6e54c8e75b744902a4c5f4389cdb0529
-      project_name: "p500924-scs-healthmonitor"
-      user_domain_name: "d500924"
+      application_credential_id: "df41234ebc334d2cb99c586e8ad0056d"
     region_name: "prod2"
     interface: "public"
     identity_api_version: 3
@@ -33,7 +29,7 @@ clouds:
     auth_type: "v3applicationcredential"
     auth:
       auth_url: https://prod3.api.pco.get-cloud.io:5000
-      application_credential_id: "fe66c4c8cd3b4ea08262424783e1c58f"
+      application_credential_id: "f5864cd2b0ce4fb3ba9d7e4d5e6e0674"
     region_name: "prod3"
     interface: "public"
     identity_api_version: 3
@@ -42,17 +38,15 @@ clouds:
     auth:
       auth_url: https://prod4.api.pco.get-cloud.io:5000
       #project_id: 6a97f8c649d342429cbe5d0f943602b0
-      application_credential_id: "11ecfb998b474b99ab044f5b20cb23d6"
+      application_credential_id: "d265546ca8ef47e99d743c67e1230897"
     region_name: "prod4"
     interface: "public"
     identity_api_version: 3
   wavestack:
+    auth_type: "v3applicationcredential"
     auth:
       auth_url: https://api.wavestack.de:5000
-      username: "scs-standards"
-      project_id: 00de553df86949b49365baee6375fb5a
-      project_name: "scs-standards"
-      user_domain_name: "scs"
+      application_credential_id: "4cc7d7eca878454993fbe5b0c8ffbd35"
     region_name: "MUC5"
     interface: "public"
     identity_api_version: 3

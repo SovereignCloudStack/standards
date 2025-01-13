@@ -14,10 +14,10 @@ on:
   
 jobs:
   check-wavestack:
-    uses: ./.github/workflows/scs-compliance-check.yml
+    uses: ./.github/workflows/scs-compliance-check-with-application-credential.yml
     with:
       version: v3
       layer: iaas
       cloud: "wavestack"
-      secret_name: "OS_PASSWORD_WAVESTACK"
+      secret_name: "OS_ACSECRET_WAVESTACK"
     secrets: inherit
