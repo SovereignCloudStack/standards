@@ -19,5 +19,5 @@ jobs:
       version: v3
       layer: iaas
       cloud: "pco-prod4"
-      secret_name: "OS_PASSWORD_PCOPROD4"
+      secret_name: "OS_ACSECRET_PCOPROD4"
     secrets: inherit
