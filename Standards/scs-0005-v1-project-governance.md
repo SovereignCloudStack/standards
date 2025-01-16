@@ -1,7 +1,8 @@
 ---
 title: Governance of the SCS community
 type: Procedural
-status: Draft
+status: Stable
+stabilized_at: 2025-01-16
 track: Global
 description: |
   SCS-0005 outlines the structure and governance of the SCS community by the SCS Project Board and how this is elected.
