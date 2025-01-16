@@ -46,9 +46,6 @@ accounts:
   - subject: pco-prod4
     delegates:
       - zuul_ci
-  - subject: poc-kdo
-    delegates:
-      - zuul_ci
   - subject: poc-wgcloud
     delegates:
       - zuul_ci
