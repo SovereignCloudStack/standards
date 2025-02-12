@@ -95,9 +95,9 @@ User management (creation, activation, deactivation, deletion) SHOULD be
 possible using OpenStack APIs.
 
 When an external IdP is being used (IdP federation) there is still an
-expectation that local users may be required by customers. As such creation of
+expectation that local users may be required by customers. As such, creation of
 users (pre-creating federated users or regular local users) within customer
-domain SHOULD me possible. Keystone does not allow certain operations on
+domain SHOULD be possible. Keystone does not allow certain operations on
 federated users (i.e. password change, MFA, name) as such allowing customers to
 manage users using OpenStack APIs should not conflict with any additional
 requirements.
