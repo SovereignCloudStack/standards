@@ -17,7 +17,7 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
 
 ## Regulations
 
-0. Certificates are issued by the SCS certification assessment body (initially the SCS project in the OSB Alliance e.V., to be succeeded by the Forum SCS-Standards in the very same OSB Alliance). An interested party has to apply for certification with this body, which in turn determines the rules that govern what parties are eligible for application (fees may apply).
+0. Certificates are issued by the SCS certification assessment body. This is either the _Forum SCS-Standards_, part of the Open Source Business Alliance e.V. (OSBA), or an organization appointed by the _Forum SCS-Standards_ . An interested party has to apply for certification with this body, which in turn determines the rules that govern what parties are eligible for application (fees may apply).
 
 1. Each certificate issued pertains to a given combination of subject (i.e., cloud environment), scope (such as _SCS-compatible IaaS_, and version of that scope. The certificate is only valid for that combination and for the time frame that ends when the scope expires, or for six months if the expiration date for the scope is not yet fixed.
 
