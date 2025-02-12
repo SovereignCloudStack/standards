@@ -78,7 +78,7 @@ Domain Manager as SHOULD implement.
 It is strongly suggested to rely on the Domain concept of Keystone to implement
 multi-tenancy.
 
-Usage of domains by itself allows to implement form of self-service management
+Usage of domains by itself allows to implement a form of self-service management
 by the customer. Only identity resources are owned by domains (with projects
 being also identity resources). Other services use projects to for resources
 isolation. They do not need to be domain aware.
