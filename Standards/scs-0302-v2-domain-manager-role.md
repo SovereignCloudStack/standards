@@ -135,7 +135,7 @@ to delete all resources before deleting the project.
 - Leave orphaned resources. In this scenario project is being deleted by the API
 with custom cleanup procedures being responsible for dropping orphant resources.
 
-Leaving orphant resources MAY NOT be allowed.
+Leaving orphaned resources MAY NOT be allowed.
 
 Forbidding project deletion making customer responsible for the cleanup SHOULD
 be preferred since it allows preventing the accidental deletion of the
