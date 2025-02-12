@@ -54,7 +54,7 @@ capability MUST be available using native cloud APIs.
 
 Customer must be able to activate or deactivate project access without
 requesting CSP support. This capability provides possibility to temporarily
-disable users to authorize into certain project by modifying`enabled` property
+disable users to authorize into certain project by modifying `enabled` property
 of the project. Further control of the project name, description, options and
 tags MUST be provided to the customer using native Keystone API.
 
