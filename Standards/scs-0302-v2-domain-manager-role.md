@@ -110,7 +110,7 @@ forcing degrading of the capability requirement.
 
 Management of groups SHOULD be possible using OpenStack APIs.
 
-In case of federated Identities there it is possible that groups on the IdP
+In the case of federated Identities the possibility exists that groups on the IdP
 side do not match groups on the cloud provider side. In addition to that there
 might be a need to combine federated and local users. This would only be
 possible when groups are managed by the OpenStack.
