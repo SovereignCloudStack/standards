@@ -27,7 +27,7 @@ and mandatory to provide better granularity while still giving guidance with
 the goal to provide a smooth user experience for the end users.
 
 Requiring customer to use CSP specific APIs to manage identity data is
-contradicting with the idea of certification as such. It hinders customers from
+contradicting the idea of standardization  as such. It hinders customers from
 having a smooth user experience across different cloud providers forcing them
 to adapt their management strategies on such clouds. Moreover it represent a
 lock-in what is contradicting with the idea of SovereignCloudStack.
