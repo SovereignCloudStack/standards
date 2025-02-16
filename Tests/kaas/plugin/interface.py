@@ -46,9 +46,10 @@ class KubernetesClusterPlugin():
         """
         raise NotImplementedError
 
-    def delete_cluster(self, cluster_name):
+    def delete_cluster(self, cluster_name, kubeconfig_filepath):
         """
         This method is to be called in order to unprovision a cluster
         :param: cluster_name:
+        :param: kubeconfig_filepath:
         """
         raise NotImplementedError
