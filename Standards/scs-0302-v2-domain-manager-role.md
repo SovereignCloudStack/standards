@@ -133,7 +133,7 @@ request is received. In this scenario CSP is implementing custom functionality
 to delete all resources before deleting the project.
 
 - Leave orphaned resources. In this scenario project is being deleted by the API
-with custom cleanup procedures being responsible for dropping orphant resources.
+with custom cleanup procedures being responsible for dropping orphaned resources.
 
 Leaving orphaned resources MAY NOT be allowed.
 
