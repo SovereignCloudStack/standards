@@ -3,16 +3,17 @@ uuid: 1fffebe6-fd4b-44d3-a36c-fc58b4bb0180
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-kaas.yaml
 variables:
   - subject_root
-    # directory containing the kubeconfig file for the subject under test
+    # working directory for the subject under test
     # (note that we consider each kubernetes branch a test subject of its own)
+  - kubeconfig
 modules:
   - id: cncf-k8s-conformance
     name: CNCF Kubernetes conformance
     url: https://github.com/cncf/k8s-conformance/tree/master
     run:
       - executable: ./kaas/sonobuoy_handler/run_sonobuoy.py
-        args: -k {subject_root}/kubeconfig.yaml -r {subject_root}/sono-results -c 'cncf-k8s-conformance'  -a '--mode=certified-conformance'
-        #~ args: -k {subject_root}/kubeconfig.yaml -r {subject_root}/sono-results -c 'cncf-k8s-conformance'  -a '--plugin-env e2e.E2E_DRYRUN=true'
+        args: -k {kubeconfig} -r {subject_root}/sono-results -c 'cncf-k8s-conformance'  -a '--mode=certified-conformance'
+        #~ args: -k {kubeconfig} -r {subject_root}/sono-results -c 'cncf-k8s-conformance'  -a '--plugin-env e2e.E2E_DRYRUN=true'
     testcases:
       - id: cncf-k8s-conformance
         tags: [mandatory]
@@ -23,7 +24,7 @@ modules:
     url: https://docs.scs.community/standards/scs-0210-v2-k8s-version-policy
     run:
       - executable: ./kaas/k8s-version-policy/k8s_version_policy.py
-        args: -k {subject_root}/kubeconfig.yaml
+        args: -k {kubeconfig}
     testcases:
       - id: version-policy-check
         tags: [mandatory]
@@ -34,7 +35,7 @@ modules:
     url: https://docs.scs.community/standards/scs-0214-v2-k8s-node-distribution
     run:
       - executable: ./kaas/k8s-node-distribution/k8s_node_distribution_check.py
-        args: -k {subject_root}/kubeconfig.yaml
+        args: -k {kubeconfig}
     testcases:
       - id: node-distribution-check
         tags: [mandatory]
@@ -45,7 +46,7 @@ modules:
     url: https://docs.scs.community/standards/scs-0219-v1-kaas-networking
     run:
       - executable: ./kaas/sonobuoy_handler/run_sonobuoy.py
-        args: -k {subject_root}/kubeconfig.yaml -r {subject_root}/sono-results -c 'kaas-networking-check' -a '--e2e-focus "NetworkPolicy"'
+        args: -k {kubeconfig} -r {subject_root}/sono-results -c 'kaas-networking-check' -a '--e2e-focus "NetworkPolicy"'
     testcases:
       - id: kaas-networking-check
         tags: [mandatory]
