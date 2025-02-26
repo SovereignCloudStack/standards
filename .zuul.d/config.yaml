@@ -8,10 +8,10 @@
         - scs-check-all
     periodic-hourly:
       jobs:
-        - scs-check-gx-scs-main
+        - scs-check-scs2-main
     post:
       jobs:
-        - scs-check-gx-scs
+        - scs-check-scs2
     check:
       jobs:
         - scs-check-adr-syntax
@@ -22,7 +22,7 @@
     pre-run: playbooks/pre.yaml
     run: playbooks/adr_syntax.yaml
 - job:
-    name: scs-check-gx-scs
+    name: scs-check-scs2
     parent: base
     secrets:
      - name: clouds_conf
@@ -35,11 +35,11 @@
      - playbooks/pre_cloud.yaml
     run: playbooks/compliance_check.yaml
 - job:
-    name: scs-check-gx-scs-main
-    parent: scs-check-gx-scs
+    name: scs-check-scs2-main
+    parent: scs-check-scs2
     branches: main
 - job:
     name: scs-check-all
-    parent: scs-check-gx-scs-main
+    parent: scs-check-scs2-main
     vars:
       preset: all
