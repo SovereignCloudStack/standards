@@ -9,6 +9,14 @@ clouds:
     region_name: "RegionOne"
     interface: "public"
     identity_api_version: 3
+  scs2:
+    auth_type: "v3applicationcredential"
+    auth:
+      auth_url: https://scs2.api.pco.get-cloud.io:5000
+      application_credential_id: "f8f301ccf04047589afac62665227edd"
+    region_name: "scs2"
+    interface: "public"
+    identity_api_version: 3
   pco-prod1:
     auth_type: "v3applicationcredential"
     auth:
