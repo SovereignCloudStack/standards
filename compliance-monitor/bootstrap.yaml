@@ -22,6 +22,9 @@ accounts:
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
         public_key_type: "ssh-ed25519"
         public_key_name: "primary"
+  - subject: scs2
+    delegates:
+      - zuul_ci
   - subject: artcodix
     delegates:
       - zuul_ci
