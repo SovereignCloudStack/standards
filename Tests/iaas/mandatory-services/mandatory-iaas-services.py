@@ -147,13 +147,13 @@ def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials
     if s3_credentials:
         try:
             s3 = s3_conn(s3_credentials)
-        except Exception as e:
+        except Exception:
             logger.debug("details", exc_info=True)
             logger.error("Connection to S3 failed.")
             return 1
         s3_buckets = list_s3_buckets(s3) or create_bucket(s3, TESTCONTNAME)
         if not s3_buckets:
-            raise RuntimeError(f"failed to create S3 bucket")
+            raise RuntimeError("failed to create S3 bucket")
         if s3_buckets == [TESTCONTNAME]:
             del_bucket(s3, TESTCONTNAME)
         # everything worked, and we don't need to test for Swift:
@@ -182,7 +182,7 @@ def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials
     s3 = s3_conn(s3_creds, conn)
     s3_buckets = list_s3_buckets(s3) or create_bucket(s3, TESTCONTNAME)
     if not s3_buckets:
-        raise RuntimeError(f"failed to create S3 bucket")
+        raise RuntimeError("failed to create S3 bucket")
 
     # If we got till here, s3 is working, now swift
     swift_containers = list_containers(conn)
