@@ -8,9 +8,9 @@ Version numbers are suffixed by a symbol depending on state: * for _draft_, † 
 {% set iaas = '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f' -%}
 | Name  | Description  | Operator  | [SCS-compatible IaaS](https://docs.scs.community/standards/scs-compatible-iaas/)  | HealthMon  |
 |-------|--------------|-----------|----------------------|:----------:|
-| [gx-scs](https://github.com/SovereignCloudStack/docs/blob/main/community/cloud-resources/plusserver-gx-scs.md) | Dev environment provided for SCS & GAIA-X context | plusserver GmbH | 
-{#- #} [{{ results | pick('gx-scs', iaas) | summary }}]({{ detail_url('gx-scs', iaas) }}) {# -#}
-| [HM](https://health.gx-scs.sovereignit.cloud:3000/) |
+| [scs2](https://docs.scs.community/community/cloud-resources/plusserver-gx-scs) | Dev/Test/Demo environment (2nd gen) provided for SCS & GAIA-X context | plusserver GmbH | 
+{#- #} [{{ results | pick('scs2', iaas) | summary }}]({{ detail_url('scs2', iaas) }}) {# -#}
+| [HM](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&refresh=5m&var-mycmd=All&var-mymethod=All&var-mywait=All&var-mybench=All&var-mycloud=gx-scs2) |
 | [aov.cloud](https://www.aov.de/) | Community cloud for customers | aov IT.Services GmbH |
 {#- #} [{{ results | pick('aov-cloud', iaas) | summary }}]({{ detail_url('aov-cloud', iaas) }}) {# -#}
 | [HM](https://health.aov.cloud/) |
