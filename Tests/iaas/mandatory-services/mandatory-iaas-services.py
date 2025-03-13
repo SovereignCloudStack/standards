@@ -77,8 +77,7 @@ def s3_conn(creds, conn=None):
         cacert = conn.config.config.get("cacert")
         # TODO: Handle self-signed certs (from ca_cert in openstack config)
         if cacert:
-            print("WARNING: Trust all Certificates in S3, "
-                  f"OpenStack uses {cacert}", file=sys.stderr)
+            logger.warning(f"Trust all Certificates in S3, OpenStack uses {cacert}")
             vrfy = False
     return boto3.resource('s3', aws_access_key_id=creds["AK"],
                           aws_secret_access_key=creds["SK"],
@@ -111,7 +110,7 @@ def s3_from_env(creds, fieldnm, env, prefix=""):
     if env in os.environ:
         creds[fieldnm] = prefix + os.environ[env]
     if fieldnm not in creds:
-        print(f"WARNING: s3_creds[{fieldnm}] not set", file=sys.stderr)
+        logger.warning(f"s3_creds[{fieldnm}] not set")
 
 
 def s3_from_ostack(creds, conn, endpoint):
@@ -144,7 +143,7 @@ def s3_from_ostack(creds, conn, endpoint):
         creds["SK"] = sk
         return crd.id
     except BaseException as excn:
-        print(f"WARNING: ec2 creds creation failed: {excn!s}", file=sys.stderr)
+        logger.warning(f"ec2 creds creation failed: {excn!s}")
         # pass
     return None
 
@@ -154,14 +153,13 @@ def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials
     if s3_credentials:
         try:
             s3 = s3_conn(s3_credentials)
-        except Exception as e:
-            print(str(e))
-            logger.error("FAIL: Connection to s3 failed.")
+        except Exception:
+            logger.debug("details", exc_info=True)
+            logger.error("Connection to S3 failed.")
             return 1
-        s3_buckets = list_s3_buckets(s3)
+        s3_buckets = list_s3_buckets(s3) or create_bucket(s3, TESTCONTNAME)
         if not s3_buckets:
-            s3_buckets = create_bucket(s3, TESTCONTNAME)
-            assert s3_buckets
+            raise RuntimeError("failed to create S3 bucket")
         if s3_buckets == [TESTCONTNAME]:
             del_bucket(s3, TESTCONTNAME)
         # everything worked, and we don't need to test for Swift:
@@ -184,11 +182,13 @@ def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials
     s3_from_env(s3_creds, "AK", "S3_ACCESS_KEY_ID")
     s3_from_env(s3_creds, "SK", "S3_SECRET_ACCESS_KEY")
 
+    # This is to be used for local debugging purposes ONLY
+    # logger.info(f"using credentials {s3_creds}")
+
     s3 = s3_conn(s3_creds, conn)
-    s3_buckets = list_s3_buckets(s3)
+    s3_buckets = list_s3_buckets(s3) or create_bucket(s3, TESTCONTNAME)
     if not s3_buckets:
-        s3_buckets = create_bucket(s3, TESTCONTNAME)
-        assert s3_buckets
+        raise RuntimeError("failed to create S3 bucket")
 
     # If we got till here, s3 is working, now swift
     swift_containers = list_containers(conn)
@@ -198,8 +198,8 @@ def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials
     # Compare number of buckets/containers
     # FIXME: Could compare list of sorted names
     if Counter(s3_buckets) != Counter(swift_containers):
-        logger.warning("S3 buckets and Swift Containers differ:\n"
-                       f"S3: {sorted(s3_buckets)}\nSW: {sorted(swift_containers)}")
+        logger.error("S3 buckets and Swift Containers differ:\n"
+                     f"S3: {sorted(s3_buckets)}\nSW: {sorted(swift_containers)}")
         result = 1
     else:
         logger.info("SUCCESS: S3 and Swift exist and agree")
@@ -245,7 +245,7 @@ def main():
         format="%(levelname)s: %(message)s",
         level=logging.DEBUG if args.debug else logging.INFO,
     )
-    openstack.enable_logging(debug=args.debug)
+    openstack.enable_logging(debug=False)
 
     # parse cloud name for lookup in clouds.yaml
     cloud = args.os_cloud or os.environ.get("OS_CLOUD", None)
