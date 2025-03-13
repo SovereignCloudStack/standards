@@ -8,13 +8,13 @@ As the s3 endpoint might differ, a missing one will only result in a warning.
 """
 
 import argparse
-import boto3
 from collections import Counter
 import logging
 import os
 import re
 import sys
 import uuid
+import boto3
 
 import openstack
 
@@ -143,9 +143,10 @@ def s3_from_ostack(creds, conn, endpoint):
         creds["AK"] = ak
         creds["SK"] = sk
         return crd.id
-    except BaseException as exc:
-        print(f"WARNING: ec2 creds creation failed: {exc!s}", file=sys.stderr)
+    except BaseException as excn:
+        print(f"WARNING: ec2 creds creation failed: {excn!s}", file=sys.stderr)
         # pass
+    return None
 
 
 def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials=None):
