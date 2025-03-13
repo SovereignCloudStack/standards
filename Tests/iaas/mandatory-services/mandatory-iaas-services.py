@@ -203,9 +203,6 @@ def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials
         result = 1
     else:
         logger.info("SUCCESS: S3 and Swift exist and agree")
-    # Clean up ec2 cred IF we created one
-    if ec2_cred:
-        conn.identity.delete_credential(ec2_cred)
     # No need to clean up swift container, as we did not create one
     # (If swift and S3 agree, there will be a S3 bucket that we clean up with S3.)
     # if swift_containers == [TESTCONTNAME]:
@@ -213,6 +210,9 @@ def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials
     # Cleanup created S3 bucket
     if s3_buckets == [TESTCONTNAME]:
         del_bucket(s3, TESTCONTNAME)
+    # Clean up ec2 cred IF we created one
+    if ec2_cred:
+        conn.identity.delete_credential(ec2_cred)
     return result
 
 
