@@ -13,13 +13,16 @@ import logging
 import os
 import re
 import sys
+import signal
 import uuid
 import boto3
 
 import openstack
 
-
+# Globals
 TESTCONTNAME = "scs-test-container"
+EC2CRED = None
+OSCONN = None
 
 logger = logging.getLogger(__name__)
 mandatory_services = ["compute", "identity", "image", "network",
@@ -28,8 +31,10 @@ block_storage_service = ["volume", "volumev3", "block-storage"]
 
 
 def check_presence_of_mandatory_services(conn: openstack.connection.Connection, s3_credentials=None):
+    "Go over list of mandatory services and ensure they are all in the catalog"
     services = conn.service_catalog
 
+    # We don't require swift if S3 can be found otherwise
     if s3_credentials:
         mandatory_services.remove("object-store")
     for svc in services:
@@ -113,10 +118,36 @@ def s3_from_env(creds, fieldnm, env, prefix=""):
         logger.warning(f"s3_creds[{fieldnm}] not set")
 
 
+def cleanup_ec2_cred(conn):
+    "Remove ec2_cred if created"
+    if conn and EC2CRED:
+        conn.identity.delete_credential(EC2CRED)
+
+
+def breakhandler(sig, frame):
+    "Clean up created ec2 credential is any and reraise signal"
+    # global OSCONN
+    # print(f"Handle signal {signal.strsignal(sig)}: Conn {os_conn}, clean cred {ec2_cred}", file=sys.stderr)
+    cleanup_ec2_cred(OSCONN)
+    signal.signal(sig, signal.SIG_DFL)
+    signal.raise_signal(sig)
+
+
+def install_sighandler(conn):
+    "Set OpenStack connection and install signal handler"
+    global OSCONN
+    OSCONN = conn
+    signal.signal(signal.SIGINT, breakhandler)
+    signal.signal(signal.SIGTERM, breakhandler)
+    signal.signal(signal.SIGHUP, breakhandler)
+    signal.signal(signal.SIGPIPE, breakhandler)
+
+
 def s3_from_ostack(creds, conn, endpoint):
-    """Set creds from openstack swift/keystone
-       Returns credential ID *if* an ec2 credential was created,
-       None otherwise."""
+    """Fill in creds from openstack swift/keystone
+       Sets global ec2_cred *if* an ec2 credential was created,
+    """
+    global EC2CRED
     rgx = re.compile(r"^(https*://[^/]*)/")
     match = rgx.match(endpoint)
     if match:
@@ -130,25 +161,27 @@ def s3_from_ostack(creds, conn, endpoint):
         ec2_dict = eval(ec2_creds[0].blob, {"null": None})
         creds["AK"] = ec2_dict["access"]
         creds["SK"] = ec2_dict["secret"]
-        return None
+        return
     # Generate keyid and secret
     ak = uuid.uuid4().hex
     sk = uuid.uuid4().hex
     blob = f'{{"access": "{ak}", "secret": "{sk}"}}'
     try:
+        install_sighandler(conn)
         crd = conn.identity.create_credential(type="ec2", blob=blob,
                                               user_id=conn.current_user_id,
                                               project_id=conn.current_project_id)
         creds["AK"] = ak
         creds["SK"] = sk
-        return crd.id
+        EC2CRED = crd.id
     except BaseException as excn:
         logger.warning(f"ec2 creds creation failed: {excn!s}")
         # pass
-    return None
+    return
 
 
 def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials=None):
+    "Check S3 presence; either from S3_ env or swift."
     # If we get credentials, we assume that there is no Swift and only test s3
     if s3_credentials:
         try:
@@ -176,7 +209,7 @@ def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials
         )
         return 1
     # Get S3 endpoint (swift) and ec2 creds from OpenStack (keystone)
-    ec2_cred = s3_from_ostack(s3_creds, conn, endpoint)
+    s3_from_ostack(s3_creds, conn, endpoint)
     # Overrides (var names are from libs3, in case you wonder)
     s3_from_env(s3_creds, "HOST", "S3_HOSTNAME", "https://")
     s3_from_env(s3_creds, "AK", "S3_ACCESS_KEY_ID")
@@ -211,12 +244,12 @@ def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials
     if s3_buckets == [TESTCONTNAME]:
         del_bucket(s3, TESTCONTNAME)
     # Clean up ec2 cred IF we created one
-    if ec2_cred:
-        conn.identity.delete_credential(ec2_cred)
+    cleanup_ec2_cred(conn)
     return result
 
 
 def main():
+    "Main function"
     parser = argparse.ArgumentParser(
         description="SCS Mandatory IaaS Service Checker")
     parser.add_argument(
