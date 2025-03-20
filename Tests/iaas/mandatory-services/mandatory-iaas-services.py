@@ -143,7 +143,7 @@ def s3_from_ostack(creds, conn, endpoint):
     if found_ec2:
         creds["AK"] = found_ec2["access"]
         creds["SK"] = found_ec2["secret"]
-        return None
+        return
     # Generate keyid and secret
     ak = uuid.uuid4().hex
     sk = uuid.uuid4().hex
@@ -152,13 +152,12 @@ def s3_from_ostack(creds, conn, endpoint):
         crd = conn.identity.create_credential(type="ec2", blob=blob,
                                               user_id=conn.current_user_id,
                                               project_id=conn.current_project_id)
-        creds["AK"] = ak
-        creds["SK"] = sk
-        return crd.id
-    except BaseException as excn:
-        logger.warning(f"ec2 creds creation failed: {excn!s}")
-        # pass
-    return None
+    except BaseException:
+        logger.warning(f"ec2 creds creation failed", exc_info=True)
+        return
+    creds["AK"] = ak
+    creds["SK"] = sk
+    return crd.id
 
 
 def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials=None):
