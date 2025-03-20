@@ -9,6 +9,7 @@ As the s3 endpoint might differ, a missing one will only result in a warning.
 
 import argparse
 from collections import Counter
+import json
 import logging
 import os
 import re
@@ -127,8 +128,11 @@ def s3_from_ostack(creds, conn, endpoint):
     ec2_creds = [cred for cred in conn.identity.credentials()
                  if cred.type == "ec2" and cred.project_id == project_id]
     for cred in ec2_creds:
-        # FIXME: Assume cloud is not evil
-        ec2_dict = eval(cred.blob, {"null": None})
+        try:
+            ec2_dict = json.loads(cred.blob)
+        except Exception:
+            logger.warning(f"unable to parse credential {cred!r}", exc_info=True)
+            continue
         # print(f"DEBUG: Cred: {ec2_dict}")
         creds["AK"] = ec2_dict["access"]
         creds["SK"] = ec2_dict["secret"]
