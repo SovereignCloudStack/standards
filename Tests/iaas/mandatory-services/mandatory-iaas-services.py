@@ -176,43 +176,45 @@ def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials
         )
         return 1
     # Get S3 endpoint (swift) and ec2 creds from OpenStack (keystone)
-    ec2_cred = s3_from_ostack(s3_creds, conn, endpoint)
-    # Overrides (var names are from libs3, in case you wonder)
-    s3_from_env(s3_creds, "HOST", "S3_HOSTNAME", "https://")
-    s3_from_env(s3_creds, "AK", "S3_ACCESS_KEY_ID")
-    s3_from_env(s3_creds, "SK", "S3_SECRET_ACCESS_KEY")
+    try:
+        ec2_cred = s3_from_ostack(s3_creds, conn, endpoint)
+        # Overrides (var names are from libs3, in case you wonder)
+        s3_from_env(s3_creds, "HOST", "S3_HOSTNAME", "https://")
+        s3_from_env(s3_creds, "AK", "S3_ACCESS_KEY_ID")
+        s3_from_env(s3_creds, "SK", "S3_SECRET_ACCESS_KEY")
 
-    # This is to be used for local debugging purposes ONLY
-    # logger.info(f"using credentials {s3_creds}")
+        # This is to be used for local debugging purposes ONLY
+        # logger.info(f"using credentials {s3_creds}")
 
-    s3 = s3_conn(s3_creds, conn)
-    s3_buckets = list_s3_buckets(s3) or create_bucket(s3, TESTCONTNAME)
-    if not s3_buckets:
-        raise RuntimeError("failed to create S3 bucket")
+        s3 = s3_conn(s3_creds, conn)
+        s3_buckets = list_s3_buckets(s3) or create_bucket(s3, TESTCONTNAME)
+        if not s3_buckets:
+            raise RuntimeError("failed to create S3 bucket")
 
-    # If we got till here, s3 is working, now swift
-    swift_containers = list_containers(conn)
-    # if not swift_containers:
-    #    swift_containers = create_container(conn, TESTCONTNAME)
-    result = 0
-    # Compare number of buckets/containers
-    # FIXME: Could compare list of sorted names
-    if Counter(s3_buckets) != Counter(swift_containers):
-        logger.error("S3 buckets and Swift Containers differ:\n"
-                     f"S3: {sorted(s3_buckets)}\nSW: {sorted(swift_containers)}")
-        result = 1
-    else:
-        logger.info("SUCCESS: S3 and Swift exist and agree")
-    # No need to clean up swift container, as we did not create one
-    # (If swift and S3 agree, there will be a S3 bucket that we clean up with S3.)
-    # if swift_containers == [TESTCONTNAME]:
-    #    del_container(conn, TESTCONTNAME)
-    # Cleanup created S3 bucket
-    if s3_buckets == [TESTCONTNAME]:
-        del_bucket(s3, TESTCONTNAME)
-    # Clean up ec2 cred IF we created one
-    if ec2_cred:
-        conn.identity.delete_credential(ec2_cred)
+        # If we got till here, s3 is working, now swift
+        swift_containers = list_containers(conn)
+        # if not swift_containers:
+        #    swift_containers = create_container(conn, TESTCONTNAME)
+        result = 0
+        # Compare number of buckets/containers
+        # FIXME: Could compare list of sorted names
+        if Counter(s3_buckets) != Counter(swift_containers):
+            logger.error("S3 buckets and Swift Containers differ:\n"
+                         f"S3: {sorted(s3_buckets)}\nSW: {sorted(swift_containers)}")
+            result = 1
+        else:
+            logger.info("SUCCESS: S3 and Swift exist and agree")
+        # No need to clean up swift container, as we did not create one
+        # (If swift and S3 agree, there will be a S3 bucket that we clean up with S3.)
+        # if swift_containers == [TESTCONTNAME]:
+        #    del_container(conn, TESTCONTNAME)
+        # Cleanup created S3 bucket
+        if s3_buckets == [TESTCONTNAME]:
+            del_bucket(s3, TESTCONTNAME)
+        # Clean up ec2 cred IF we created one
+    finally:
+        if ec2_cred:
+            conn.identity.delete_credential(ec2_cred)
     return result
 
 
