@@ -129,17 +129,18 @@ def s3_from_ostack(creds, conn, endpoint):
     for cred in ec2_creds:
         # FIXME: Assume cloud is not evil
         ec2_dict = eval(cred.blob, {"null": None})
+        # print(f"DEBUG: Cred: {ec2_dict}")
         creds["AK"] = ec2_dict["access"]
         creds["SK"] = ec2_dict["secret"]
         # Clean up old EC2 creds and jump over
-        if creds["SK"][-len(EC2MARKER):] == EC2MARKER:
+        if ec2_dict.get("owner") == EC2MARKER:
             conn.identity.delete_credential(cred)
             continue
         return None
     # Generate keyid and secret
     ak = uuid.uuid4().hex
-    sk = uuid.uuid4().hex + EC2MARKER
-    blob = f'{{"access": "{ak}", "secret": "{sk}"}}'
+    sk = uuid.uuid4().hex
+    blob = f'{{"access": "{ak}", "secret": "{sk}", "owner": "{EC2MARKER}"}}'
     try:
         crd = conn.identity.create_credential(type="ec2", blob=blob,
                                               user_id=conn.current_user_id,
