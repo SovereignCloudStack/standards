@@ -127,19 +127,22 @@ def s3_from_ostack(creds, conn, endpoint):
     project_id = conn.identity.get_project_id()
     ec2_creds = [cred for cred in conn.identity.credentials()
                  if cred.type == "ec2" and cred.project_id == project_id]
+    found_ec2 = None
     for cred in ec2_creds:
         try:
             ec2_dict = json.loads(cred.blob)
         except Exception:
             logger.warning(f"unable to parse credential {cred!r}", exc_info=True)
             continue
-        # print(f"DEBUG: Cred: {ec2_dict}")
-        creds["AK"] = ec2_dict["access"]
-        creds["SK"] = ec2_dict["secret"]
         # Clean up old EC2 creds and jump over
         if ec2_dict.get("owner") == EC2MARKER:
+            logger.debug(f"Removing leftover credential {ec2_dict['access']}}")
             conn.identity.delete_credential(cred)
             continue
+        found_ec2 = ec2_dict
+    if found_ec2:
+        creds["AK"] = found_ec2["access"]
+        creds["SK"] = found_ec2["secret"]
         return None
     # Generate keyid and secret
     ak = uuid.uuid4().hex
