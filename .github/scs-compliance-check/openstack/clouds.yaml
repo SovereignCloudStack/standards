@@ -1,12 +1,10 @@
 clouds:
-  gx-scs:
+  scs2:
+    auth_type: "v3applicationcredential"
     auth:
-      auth_url: https://api.gx-scs.sovereignit.cloud:5000
-      username: "u500924-svc-standards"
-      project_id: 3829cc7c8f034fc985f5055a1df6f247
-      project_name: "p500924-scs-healthmonitor"
-      user_domain_name: "d500924"
-    region_name: "RegionOne"
+      auth_url: https://scs2.api.pco.get-cloud.io:5000
+      application_credential_id: "f8f301ccf04047589afac62665227edd"
+    region_name: "scs2"
     interface: "public"
     identity_api_version: 3
   pco-prod1:
