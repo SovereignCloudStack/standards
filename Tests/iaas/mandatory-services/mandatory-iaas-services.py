@@ -136,7 +136,7 @@ def s3_from_ostack(creds, conn, endpoint):
             continue
         # Clean up old EC2 creds and jump over
         if ec2_dict.get("owner") == EC2MARKER:
-            logger.debug(f"Removing leftover credential {ec2_dict['access']}}")
+            logger.debug(f"Removing leftover credential {ec2_dict['access']}")
             conn.identity.delete_credential(cred)
             continue
         found_ec2 = ec2_dict
@@ -153,7 +153,7 @@ def s3_from_ostack(creds, conn, endpoint):
                                               user_id=conn.current_user_id,
                                               project_id=conn.current_project_id)
     except BaseException:
-        logger.warning(f"ec2 creds creation failed", exc_info=True)
+        logger.warning("ec2 creds creation failed", exc_info=True)
         return
     creds["AK"] = ak
     creds["SK"] = sk
