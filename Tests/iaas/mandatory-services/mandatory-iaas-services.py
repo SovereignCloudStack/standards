@@ -14,8 +14,8 @@ import os
 import re
 import sys
 import uuid
-import boto3
 
+import boto3
 import openstack
 
 
