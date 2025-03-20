@@ -20,6 +20,7 @@ import openstack
 
 
 TESTCONTNAME = "scs-test-container"
+EC2MARKER = "TmpMandSvcTest"
 
 logger = logging.getLogger(__name__)
 mandatory_services = ["compute", "identity", "image", "network",
@@ -125,15 +126,19 @@ def s3_from_ostack(creds, conn, endpoint):
     project_id = conn.identity.get_project_id()
     ec2_creds = [cred for cred in conn.identity.credentials()
                  if cred.type == "ec2" and cred.project_id == project_id]
-    if len(ec2_creds):
+    for cred in ec2_creds:
         # FIXME: Assume cloud is not evil
-        ec2_dict = eval(ec2_creds[0].blob, {"null": None})
+        ec2_dict = eval(cred.blob, {"null": None})
         creds["AK"] = ec2_dict["access"]
         creds["SK"] = ec2_dict["secret"]
+        # Clean up old EC2 creds and jump over
+        if creds["SK"][-len(EC2MARKER):] == EC2MARKER:
+            conn.identity.delete_credential(cred)
+            continue
         return None
     # Generate keyid and secret
     ak = uuid.uuid4().hex
-    sk = uuid.uuid4().hex
+    sk = uuid.uuid4().hex + EC2MARKER
     blob = f'{{"access": "{ak}", "secret": "{sk}"}}'
     try:
         crd = conn.identity.create_credential(type="ec2", blob=blob,
