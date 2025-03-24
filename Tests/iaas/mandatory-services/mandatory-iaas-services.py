@@ -8,18 +8,20 @@ As the s3 endpoint might differ, a missing one will only result in a warning.
 """
 
 import argparse
-import boto3
 from collections import Counter
+import json
 import logging
 import os
 import re
 import sys
 import uuid
 
+import boto3
 import openstack
 
 
 TESTCONTNAME = "scs-test-container"
+EC2MARKER = "TmpMandSvcTest"
 
 logger = logging.getLogger(__name__)
 mandatory_services = ["compute", "identity", "image", "network",
@@ -77,8 +79,7 @@ def s3_conn(creds, conn=None):
         cacert = conn.config.config.get("cacert")
         # TODO: Handle self-signed certs (from ca_cert in openstack config)
         if cacert:
-            print("WARNING: Trust all Certificates in S3, "
-                  f"OpenStack uses {cacert}", file=sys.stderr)
+            logger.warning(f"Trust all Certificates in S3, OpenStack uses {cacert}")
             vrfy = False
     return boto3.resource('s3', aws_access_key_id=creds["AK"],
                           aws_secret_access_key=creds["SK"],
@@ -111,37 +112,52 @@ def s3_from_env(creds, fieldnm, env, prefix=""):
     if env in os.environ:
         creds[fieldnm] = prefix + os.environ[env]
     if fieldnm not in creds:
-        print(f"WARNING: s3_creds[{fieldnm}] not set", file=sys.stderr)
+        logger.warning(f"s3_creds[{fieldnm}] not set")
 
 
 def s3_from_ostack(creds, conn, endpoint):
-    "Set creds from openstack swift/keystone"
+    """Set creds from openstack swift/keystone
+       Returns credential ID *if* an ec2 credential was created,
+       None otherwise."""
     rgx = re.compile(r"^(https*://[^/]*)/")
     match = rgx.match(endpoint)
     if match:
         creds["HOST"] = match.group(1)
-    # Use first ec2 cred if one exists
+    # Use first ec2 cred that matches the project (if one exists)
+    project_id = conn.identity.get_project_id()
     ec2_creds = [cred for cred in conn.identity.credentials()
-                 if cred.type == "ec2"]
-    if len(ec2_creds):
-        # FIXME: Assume cloud is not evil
-        ec2_dict = eval(ec2_creds[0].blob, {"null": None})
-        creds["AK"] = ec2_dict["access"]
-        creds["SK"] = ec2_dict["secret"]
+                 if cred.type == "ec2" and cred.project_id == project_id]
+    found_ec2 = None
+    for cred in ec2_creds:
+        try:
+            ec2_dict = json.loads(cred.blob)
+        except Exception:
+            logger.warning(f"unable to parse credential {cred!r}", exc_info=True)
+            continue
+        # Clean up old EC2 creds and jump over
+        if ec2_dict.get("owner") == EC2MARKER:
+            logger.debug(f"Removing leftover credential {ec2_dict['access']}")
+            conn.identity.delete_credential(cred)
+            continue
+        found_ec2 = ec2_dict
+    if found_ec2:
+        creds["AK"] = found_ec2["access"]
+        creds["SK"] = found_ec2["secret"]
         return
     # Generate keyid and secret
     ak = uuid.uuid4().hex
     sk = uuid.uuid4().hex
-    blob = f'{{"access": "{ak}", "secret": "{sk}"}}'
+    blob = f'{{"access": "{ak}", "secret": "{sk}", "owner": "{EC2MARKER}"}}'
     try:
-        conn.identity.create_credential(type="ec2", blob=blob,
-                                        user_id=conn.current_user_id,
-                                        project_id=conn.current_project_id)
-        creds["AK"] = ak
-        creds["SK"] = sk
-    except BaseException as exc:
-        print(f"WARNING: ec2 creds creation failed: {exc!s}", file=sys.stderr)
-        # pass
+        crd = conn.identity.create_credential(type="ec2", blob=blob,
+                                              user_id=conn.current_user_id,
+                                              project_id=conn.current_project_id)
+    except BaseException:
+        logger.warning("ec2 creds creation failed", exc_info=True)
+        return
+    creds["AK"] = ak
+    creds["SK"] = sk
+    return crd.id
 
 
 def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials=None):
@@ -149,14 +165,13 @@ def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials
     if s3_credentials:
         try:
             s3 = s3_conn(s3_credentials)
-        except Exception as e:
-            print(str(e))
-            logger.error("FAIL: Connection to s3 failed.")
+        except Exception:
+            logger.debug("details", exc_info=True)
+            logger.error("Connection to S3 failed.")
             return 1
-        s3_buckets = list_s3_buckets(s3)
+        s3_buckets = list_s3_buckets(s3) or create_bucket(s3, TESTCONTNAME)
         if not s3_buckets:
-            s3_buckets = create_bucket(s3, TESTCONTNAME)
-            assert s3_buckets
+            raise RuntimeError("failed to create S3 bucket")
         if s3_buckets == [TESTCONTNAME]:
             del_bucket(s3, TESTCONTNAME)
         # everything worked, and we don't need to test for Swift:
@@ -173,36 +188,45 @@ def check_for_s3_and_swift(conn: openstack.connection.Connection, s3_credentials
         )
         return 1
     # Get S3 endpoint (swift) and ec2 creds from OpenStack (keystone)
-    s3_from_ostack(s3_creds, conn, endpoint)
-    # Overrides (var names are from libs3, in case you wonder)
-    s3_from_env(s3_creds, "HOST", "S3_HOSTNAME", "https://")
-    s3_from_env(s3_creds, "AK", "S3_ACCESS_KEY_ID")
-    s3_from_env(s3_creds, "SK", "S3_SECRET_ACCESS_KEY")
+    try:
+        ec2_cred = s3_from_ostack(s3_creds, conn, endpoint)
+        # Overrides (var names are from libs3, in case you wonder)
+        s3_from_env(s3_creds, "HOST", "S3_HOSTNAME", "https://")
+        s3_from_env(s3_creds, "AK", "S3_ACCESS_KEY_ID")
+        s3_from_env(s3_creds, "SK", "S3_SECRET_ACCESS_KEY")
 
-    s3 = s3_conn(s3_creds, conn)
-    s3_buckets = list_s3_buckets(s3)
-    if not s3_buckets:
-        s3_buckets = create_bucket(s3, TESTCONTNAME)
-        assert s3_buckets
+        # This is to be used for local debugging purposes ONLY
+        # logger.info(f"using credentials {s3_creds}")
 
-    # If we got till here, s3 is working, now swift
-    swift_containers = list_containers(conn)
-    # if not swift_containers:
-    #    swift_containers = create_container(conn, TESTCONTNAME)
-    result = 0
-    if Counter(s3_buckets) != Counter(swift_containers):
-        logger.warning("S3 buckets and Swift Containers differ:\n"
-                       f"S3: {sorted(s3_buckets)}\nSW: {sorted(swift_containers)}")
-        result = 1
-    else:
-        logger.info("SUCCESS: S3 and Swift exist and agree")
-    # Clean up
-    # FIXME: Cleanup created EC2 credential
-    # if swift_containers == [TESTCONTNAME]:
-    #    del_container(conn, TESTCONTNAME)
-    # Cleanup created S3 bucket
-    if s3_buckets == [TESTCONTNAME]:
-        del_bucket(s3, TESTCONTNAME)
+        s3 = s3_conn(s3_creds, conn)
+        s3_buckets = list_s3_buckets(s3) or create_bucket(s3, TESTCONTNAME)
+        if not s3_buckets:
+            raise RuntimeError("failed to create S3 bucket")
+
+        # If we got till here, s3 is working, now swift
+        swift_containers = list_containers(conn)
+        # if not swift_containers:
+        #    swift_containers = create_container(conn, TESTCONTNAME)
+        result = 0
+        # Compare number of buckets/containers
+        # FIXME: Could compare list of sorted names
+        if Counter(s3_buckets) != Counter(swift_containers):
+            logger.error("S3 buckets and Swift Containers differ:\n"
+                         f"S3: {sorted(s3_buckets)}\nSW: {sorted(swift_containers)}")
+            result = 1
+        else:
+            logger.info("SUCCESS: S3 and Swift exist and agree")
+        # No need to clean up swift container, as we did not create one
+        # (If swift and S3 agree, there will be a S3 bucket that we clean up with S3.)
+        # if swift_containers == [TESTCONTNAME]:
+        #    del_container(conn, TESTCONTNAME)
+        # Cleanup created S3 bucket
+        if s3_buckets == [TESTCONTNAME]:
+            del_bucket(s3, TESTCONTNAME)
+        # Clean up ec2 cred IF we created one
+    finally:
+        if ec2_cred:
+            conn.identity.delete_credential(ec2_cred)
     return result
 
 
@@ -235,7 +259,7 @@ def main():
         format="%(levelname)s: %(message)s",
         level=logging.DEBUG if args.debug else logging.INFO,
     )
-    openstack.enable_logging(debug=args.debug)
+    openstack.enable_logging(debug=False)
 
     # parse cloud name for lookup in clouds.yaml
     cloud = args.os_cloud or os.environ.get("OS_CLOUD", None)
