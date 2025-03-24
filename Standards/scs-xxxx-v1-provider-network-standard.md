@@ -25,7 +25,7 @@ The following terms are used throughout this document:
 | CSP | Cloud Service Provider, provider managing the OpenStack infrastructure. |
 | Server | Server object in the OpenStack Compute API, usually represents a virtual machine, though there are also compute drivers for containers and bare metal servers. |
 | Virtual Network | A virtualized network managed by OpenStack, provides connectivity between servers and other network resources, such as virtual routers. |
-| Virtual Router | OpenStack resource that can be used to route and bridge between virtual networks and provide other features such as NAT |
+| Virtual Router | OpenStack resource that can be used to route and bridge between virtual networks and provide other features such as NAT. |
 | Subnet | Subdivision of available IP address space using address prefixes. In OpenStack also an abstraction for controlling IP address allocation in a virtual network. |
 | DHCP | Dynamic Host Configuration Protocol: Used to automatically configure hosts in a network with IP addresses, default routes, and other information such as DNS servers. |
 | Prefix | IP address prefix of a given bit-length N, written as _ADDRESS/N_. Divides addresses into a network and a host part, a shorter prefix allows more hosts but takes up more address space. |
@@ -213,7 +213,7 @@ The CSP **SHOULD** offer allocation of external IPv4 addresses to user projects.
 
 The CSP **MUST** provide every user project with a provider network that can route any external addresses that are allocated to the project.
 For external addresses from pool-allocated subnets, this requires support for dynamic routing.
-This provider network will in the following will be referred to as the _standard provider network_.
+This provider network in the following will be referred to as the _standard provider network_.
 
 The standard provider network **MUST** have the `is_default` flag set to `True`, and it **MUST** be the only provider network in the project with `is_default` set to `True`.
 To avoid ambiguity, the standard provider network **SHOULD** be the only provider network available to projects by default.
