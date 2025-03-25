@@ -1,7 +1,8 @@
 ---
 title: Regulations for achieving SCS-compatible certification
 type: Procedural
-status: Draft
+status: Stable
+stabilized_at: 2025-03-25
 track: Global
 ---
 
