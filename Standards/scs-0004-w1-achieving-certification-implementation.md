@@ -33,7 +33,7 @@ The precise rules that govern how certificates are issued or withdrawn are defin
 ## Self-testing and technical adjustments
 
 In order for a cloud service offering to obtain a certificate, it has to
-conform to all standards of the respective scope, which will be tested at
+conform to all mandatory requirements of all standards of the respective scope, which will be tested at
 regular intervals, and the results of these tests will be made available
 publicly.
 
