@@ -65,10 +65,7 @@ def _find_secret(conn: openstack.connection.Connection, secret_name_or_id: str):
     exception due to an unexpected microversion parameter.
     """
     secrets = conn.key_manager.secrets()
-    for s in secrets:
-        if s.name == secret_name_or_id or s.id == secret_name_or_id:
-            return s
-
+    return [ s for s in secrets if s.name == secret_name_or_id or s.id == secret_name_or_id ]
 
 def check_key_manager_permissions(conn: openstack.connection.Connection) -> None:
     """
@@ -78,9 +75,9 @@ def check_key_manager_permissions(conn: openstack.connection.Connection) -> None
     """
     secret_name = "scs-member-role-test-secret"
     try:
-        existing_secret = _find_secret(conn, secret_name)
-        if existing_secret:
-            conn.key_manager.delete_secret(existing_secret)
+        existing_secrets = _find_secret(conn, secret_name)
+        for secret in existing_secrets:
+            conn.key_manager.delete_secret(secret.id[secret.id.rfind('/')+1:])
 
         conn.key_manager.create_secret(
             name=secret_name,
