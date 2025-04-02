@@ -77,7 +77,16 @@ def check_key_manager_permissions(conn: openstack.connection.Connection) -> None
     try:
         existing_secrets = _find_secret(conn, secret_name)
         for secret in existing_secrets:
-            conn.key_manager.delete_secret(secret.id[secret.id.rfind('/')+1:])
+            # Workaround for SDK bugs:
+            # - The id field in reality is a href (containg the UUID at the end)
+            # - The delete_secret() function contrary to the documentation does
+            #   not accept openstack.key_managerv1.secret.Secret objects nor the
+            #   hrefs, just plain UUIDs.
+            uuid_part = secret.id.rfind('/') + 1
+            if uuid_part != 0:
+                conn.key_manager.delete_secret(secret.id[uuid_part:])
+            else:
+                conn.key_manager.delete_secret(secret.id)
 
         conn.key_manager.create_secret(
             name=secret_name,
