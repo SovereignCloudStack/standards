@@ -65,7 +65,8 @@ def _find_secret(conn: openstack.connection.Connection, secret_name_or_id: str):
     exception due to an unexpected microversion parameter.
     """
     secrets = conn.key_manager.secrets()
-    return [ s for s in secrets if s.name == secret_name_or_id or s.id == secret_name_or_id ]
+    return [s for s in secrets if s.name == secret_name_or_id or s.id == secret_name_or_id]
+
 
 def check_key_manager_permissions(conn: openstack.connection.Connection) -> None:
     """
