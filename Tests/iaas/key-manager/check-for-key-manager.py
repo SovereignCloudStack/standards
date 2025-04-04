@@ -57,12 +57,13 @@ def check_presence_of_key_manager(conn: openstack.connection.Connection) -> None
             return True
 
 
-def _find_secret(conn: openstack.connection.Connection, secret_name_or_id: str):
+def _find_secrets(conn: openstack.connection.Connection, secret_name_or_id: str):
     """Replacement method for finding secrets.
 
     Mimicks the behavior of Connection.key_manager.find_secret()
     but fixes an issue with the internal implementation raising an
     exception due to an unexpected microversion parameter.
+    Unlike find_secret(), we return a list with all secrets that match.
     """
     secrets = conn.key_manager.secrets()
     return [s for s in secrets if s.name == secret_name_or_id or s.id == secret_name_or_id]
@@ -76,13 +77,22 @@ def check_key_manager_permissions(conn: openstack.connection.Connection) -> None
     """
     secret_name = "scs-member-role-test-secret"
     try:
-        existing_secrets = _find_secret(conn, secret_name)
+        existing_secrets = _find_secrets(conn, secret_name)
         for secret in existing_secrets:
             # Workaround for SDK bugs:
             # - The id field in reality is a href (containg the UUID at the end)
             # - The delete_secret() function contrary to the documentation does
             #   not accept openstack.key_managerv1.secret.Secret objects nor the
             #   hrefs, just plain UUIDs.
+            # - It does not return an error when I try to delete a secret passing
+            #   an object or href, just silently does nothing.
+            # The code here assumes that the SDK (when fixed) will continue to
+            # accept UUIDs as argument for delete_secret() in the future.
+            # Code is robust against those being passed directly in the .id attr
+            # of the objects. (It would be even more robust to try to pass the
+            # object first, then the href, then the UUID extracted from the href,
+            # each time checking whether it was effective. But that's three delete
+            # plus list calls and very ugly.)
             uuid_part = secret.id.rfind('/') + 1
             if uuid_part != 0:
                 conn.key_manager.delete_secret(secret.id[uuid_part:])
