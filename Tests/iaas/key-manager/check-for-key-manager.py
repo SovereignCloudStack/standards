@@ -88,11 +88,8 @@ def _delete_secret(conn: openstack.connection.Connection, secret: openstack.key_
     each time checking whether it was effective. But that's three delete
     plus list calls and very ugly.)
     """
-    uuid_part = secret.id.rfind('/') + 1
-    if uuid_part != 0:
-        conn.key_manager.delete_secret(secret.id[uuid_part:])
-    else:
-        conn.key_manager.delete_secret(secret.id)
+    uuid = secret.id.rsplit('/', 1)[-1]
+    conn.key_manager.delete_secret(uuid)
 
 
 def check_key_manager_permissions(conn: openstack.connection.Connection) -> None:
