@@ -1,7 +1,7 @@
 ---
 title: SCS Provider Network Standard
 type: Standard
-status: Proposal
+status: Draft
 track: IaaS
 ---
 

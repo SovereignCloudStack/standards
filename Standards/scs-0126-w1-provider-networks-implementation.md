@@ -2,9 +2,9 @@
 title: "Provider Network Standard: Implementation Notes"
 type: Supplement
 track: IaaS
-status: Proposal
+status: Draft
 supplements:
-  - scs-xxxx-v1-provider-network-standard.md
+  - scs-0126-v1-provider-networks.md
 ---
 
 ### Policy adjustment for restricting Networking RBAC
