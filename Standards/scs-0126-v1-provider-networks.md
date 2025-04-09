@@ -244,9 +244,9 @@ The necessary policy change is described in the implementation notes to this sta
 
 ## References
 
-[^bgp]: <https://docs.openstack.org/neutron/2024.1/admin/config-bgp-dynamic-routing.html>
-[^ovn-bgp]: <https://docs.openstack.org/ovn-bgp-agent/2024.1/readme.html>
-[^pd]: <https://docs.openstack.org/neutron/2024.1/admin/config-ipv6.html#prefix-delegation>
-[^pf]: <https://docs.openstack.org/api-ref/network/v2/index.html#floating-ips-port-forwarding>
-[^ds]: <https://docs.openstack.org/neutron/2024.1/admin/config-ipv6.html>
-[^aa]: <https://docs.openstack.org/neutron/2024.1/admin/config-auto-allocation.html>
+[^bgp]: [Neutron BGP](https://docs.openstack.org/neutron/2024.1/admin/config-bgp-dynamic-routing.html)
+[^ovn-bgp]: [Neutron BGP Agent](https://docs.openstack.org/ovn-bgp-agent/2024.1/readme.html)
+[^pd]: [Prefix delegation](https://docs.openstack.org/neutron/2024.1/admin/config-ipv6.html#prefix-delegation)
+[^pf]: [Port forwarding](https://docs.openstack.org/api-ref/network/v2/index.html#floating-ips-port-forwarding)
+[^ds]: [Dual Stack](https://docs.openstack.org/neutron/2024.1/admin/config-ipv6.html)
+[^aa]: [Auto Allocation](https://docs.openstack.org/neutron/2024.1/admin/config-auto-allocation.html)
