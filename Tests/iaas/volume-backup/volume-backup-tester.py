@@ -29,7 +29,7 @@ DEFAULT_PREFIX = "scs-test-"
 
 # timeout in seconds for resource availability checks
 # (e.g. a volume becoming available)
-WAIT_TIMEOUT = 60
+WAIT_TIMEOUT = 80
 
 
 def wait_for_resource(
@@ -39,10 +39,12 @@ def wait_for_resource(
     timeout=WAIT_TIMEOUT,
 ) -> None:
     seconds_waited = 0
+    wait_delay = 0.5
     resource = get_func(resource_id)
     while resource is None or resource.status not in expected_status:
-        time.sleep(1.0)
-        seconds_waited += 1
+        time.sleep(wait_delay)
+        seconds_waited += wait_delay
+        wait_delay += 0.1
         if seconds_waited >= timeout:
             raise RuntimeError(
                 f"Timed out after {seconds_waited} s: waiting for resource {resource_id} "
