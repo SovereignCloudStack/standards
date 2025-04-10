@@ -1,11 +1,11 @@
 ---
 clouds:
-  gx-scs:
+  scs2:
     auth:
-      auth_url: https://api.gx-scs.sovereignit.cloud:5000
-      application_credential_id: "{{ clouds_conf.gx_scs_ac_id }}"
-      application_credential_secret: "{{ clouds_conf.gx_scs_ac_secret }}"
-    region_name: "RegionOne"
+      auth_url: https://scs2.api.pco.get-cloud.io:5000/
+      application_credential_id: "{{ clouds_conf.scs2_ac_id }}"
+      application_credential_secret: "{{ clouds_conf.scs2_ac_secret }}"
+    region_name: "scs2"
     interface: "public"
     identity_api_version: 3
     auth_type: "v3applicationcredential"

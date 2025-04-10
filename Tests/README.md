@@ -36,7 +36,7 @@ specified in `clouds.yaml`.
 Given a kubeconfig file `path/to/kubeconfig.yaml`, run
 
 ```shell
-./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml -s SUBJECT scs-compatible-kaas.yaml
+./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml -a subject_root=. -s SUBJECT scs-compatible-kaas.yaml
 ```
 
 Replace `SUBJECT` with an arbitrary, but meaningful subject name.
@@ -88,7 +88,7 @@ docker run -v ~/.config/openstack:/root/.config/openstack:ro scs-compliance-chec
 For KaaS:
 
 ```shell
-docker run -v /path/to/kubeconfig.yaml:/root/kubeconfig.yaml:ro scs-compliance-check -a kubeconfig=/root/kubeconfig.yaml -s SUBJECT scs-compatible-kaas.yaml
+docker run -v /path/to/kubeconfig.yaml:/root/kubeconfig.yaml:ro scs-compliance-check -a kubeconfig=/root/kubeconfig.yaml -a subject_root=. -s SUBJECT scs-compatible-kaas.yaml
 ```
 
 If you want to test against a cluster running on localhost (e.g., kind cluster), replace

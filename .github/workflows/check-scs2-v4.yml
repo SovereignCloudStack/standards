@@ -1,9 +1,9 @@
-name: "Compliance IaaS v3 of gx-scs"
+name: "Compliance IaaS v4 of scs2"
 
 on:
-  # Trigger compliance check every day at 4:30 UTC
+  # Trigger compliance check every day at 4:45 UTC
   schedule:
-    - cron:  '30 4 * * *'
+    - cron:  '45 4 * * *'
   # Trigger compliance check after Docker image has been built
   workflow_run:
     workflows: [Build and publish scs-compliance-check Docker image]
@@ -13,11 +13,11 @@ on:
   workflow_dispatch:
   
 jobs:
-  check-gx-scs:
-    uses: ./.github/workflows/scs-compliance-check.yml
+  check-scs2:
+    uses: ./.github/workflows/scs-compliance-check-with-application-credential.yml
     with:
-      version: v3
+      version: v4
       layer: iaas
-      cloud: "gx-scs"
-      secret_name: "OS_PASSWORD_GXSCS"
+      cloud: "scs2"
+      secret_name: "OS_ACSECRET_SCS2"
     secrets: inherit
