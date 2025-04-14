@@ -18,6 +18,18 @@ Distribution must be shown through labelling, so that users can access these inf
 Node distribution metadata is provided through the usage of the labels
 `topology.kubernetes.io/region` and `topology.kubernetes.io/zone`.
 
+In order to achieve compliance, the `topology.scs.community/host-id` tag has to be set manually for now. It should be done after the cluster deployment, when all nodes are ready and IDs of host machines are accessible by the user. The nodes can be labeled using the following command:
+
+```
+kubectl label nodes <node-name> "topology.scs.community/host-id"=<hostID>
+```
+
+The steps necessary to get hostID of a virtual or baremetal machine running a node can be different for each CSP. For example, using `openstack`, we can list machine names (which should correspond to node names) with their respective hostIDs using the following command:
+
+```
+openstack server list -f json | jq -r '.[].ID' | while read id; do openstack server show $id -f json; done | jq '{ (.name): .hostId }'
+```
+
 ## Automated tests
 
 Currently, automated testing is not readily possible because we cannot access information about
