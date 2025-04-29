@@ -64,6 +64,7 @@ Arguments:
 class Checker:
     def __init__(self):
         self.errors = 0
+        self.stable = collections.defaultdict(set)
 
     def emit(self, s):
         print(f"ERROR: {s}", file=sys.stderr)
@@ -91,6 +92,9 @@ class Checker:
         duplicates = sorted([fn for fn in mds if counts[fn[:12]] > 1])
         if duplicates:
             self.emit(f"duplicates found: {', '.join(duplicates)}")
+        for key, fns in self.stable.items():
+            if len(fns) > 1:
+                self.emit(f"duplicate stable: {fns}")
 
     def check_front_matter(self, fn, front):
         """Check the dict `front` of front matter
@@ -122,6 +126,8 @@ class Checker:
             self.emit(f"in {fn}: status is Stable or Deprecated, but stabilized_at date is missing")
         if status == "Rejected" and "rejected_at" not in front:
             self.emit(f"in {fn}: status is Rejected, but rejected_at date is missing")
+        if status == "Stable":
+            self.stable[fn[4:8]].add(fn)
 
 
 def _load_front_matter(path):
