@@ -14,6 +14,7 @@ of simplicity).
 """
 
 import argparse
+from functools import partial
 import getpass
 import logging
 import os
@@ -27,32 +28,70 @@ import openstack
 # used by the cleanup routine to identify resources that can be safely deleted
 DEFAULT_PREFIX = "scs-test-"
 
-# timeout in seconds for resource availability checks
-# (e.g. a volume becoming available)
-WAIT_TIMEOUT = 60
+
+def check_resources(
+    get_func: typing.Callable[[], [openstack.resource.Resource]],
+    prefix: str,
+) -> None:
+    remaining = [b for b in get_func() if b.name.startswith(prefix)]
+    if remaining:
+        raise RuntimeError(f"unexpected resources: {remaining}")
+
+
+def check_resource(
+    get_func: typing.Callable[[str], openstack.resource.Resource],
+    resource_id: str,
+    expected_status=("available", ),
+) -> None:
+    resource = get_func(resource_id)
+    if resource is None:
+        raise RuntimeError(f"resource {resource_id} not found")
+    if resource.status not in expected_status:
+        raise RuntimeError(
+            f"Expect resource {resource_id} in "
+            f"to be in status {expected_status} (current: {resource.status})"
+        )
+
+
+class TimeoutError(Exception):
+    pass
+
+
+def retry(
+    func: callable,
+    timeouts=(2, 3, 5, 10, 15, 25, 50),
+) -> None:
+    seconds_waited = 0
+    timeout_iter = iter(timeouts)
+    while True:
+        try:
+            func()
+        except Exception as e:
+            wait_delay = next(timeout_iter, None)
+            if wait_delay is None:
+                raise TimeoutError(f"Timed out after {seconds_waited} s: {e!s}")
+            time.sleep(wait_delay)
+            seconds_waited += wait_delay
+        else:
+            break
 
 
 def wait_for_resource(
     get_func: typing.Callable[[str], openstack.resource.Resource],
     resource_id: str,
     expected_status=("available", ),
-    timeout=WAIT_TIMEOUT,
 ) -> None:
-    seconds_waited = 0
-    resource = get_func(resource_id)
-    while resource is None or resource.status not in expected_status:
-        time.sleep(1.0)
-        seconds_waited += 1
-        if seconds_waited >= timeout:
-            raise RuntimeError(
-                f"Timed out after {seconds_waited} s: waiting for resource {resource_id} "
-                f"to be in status {expected_status} (current: {resource and resource.status})"
-            )
-        resource = get_func(resource_id)
+    retry(partial(check_resource, get_func, resource_id, expected_status))
 
 
-def test_backup(conn: openstack.connection.Connection,
-                prefix=DEFAULT_PREFIX, timeout=WAIT_TIMEOUT) -> None:
+def wait_for_resources(
+    get_func: typing.Callable[[], [openstack.resource.Resource]],
+    prefix: str,
+):
+    retry(partial(check_resources, get_func, prefix))
+
+
+def test_backup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX) -> None:
     """Execute volume backup tests on the connection
 
     This will create an empty volume, a backup of that empty volume and then
@@ -75,7 +114,7 @@ def test_backup(conn: openstack.connection.Connection,
         f"↳ waiting for volume with ID '{volume_id}' to reach status "
         f"'available' ..."
     )
-    wait_for_resource(conn.block_storage.get_volume, volume_id, timeout=timeout)
+    wait_for_resource(conn.block_storage.get_volume, volume_id)
     logging.info("Create empty volume: PASS")
 
     # CREATE BACKUP
@@ -88,7 +127,7 @@ def test_backup(conn: openstack.connection.Connection,
         raise RuntimeError("Retrieving backup by ID failed")
 
     logging.info(f"↳ waiting for backup '{backup_id}' to become available ...")
-    wait_for_resource(conn.block_storage.get_backup, backup_id, timeout=timeout)
+    wait_for_resource(conn.block_storage.get_backup, backup_id)
     logging.info("Create backup from volume: PASS")
 
     # RESTORE BACKUP
@@ -100,19 +139,18 @@ def test_backup(conn: openstack.connection.Connection,
         f"↳ waiting for restoration target volume '{restored_volume_name}' "
         f"to be created ..."
     )
-    wait_for_resource(conn.block_storage.find_volume, restored_volume_name, timeout=timeout)
+    wait_for_resource(conn.block_storage.find_volume, restored_volume_name)
     # wait for the volume restoration to finish
     logging.info(
         f"↳ waiting for restoration target volume '{restored_volume_name}' "
         f"to reach 'available' status ..."
     )
     volume_id = conn.block_storage.find_volume(restored_volume_name).id
-    wait_for_resource(conn.block_storage.get_volume, volume_id, timeout=timeout)
+    wait_for_resource(conn.block_storage.get_volume, volume_id)
     logging.info("Restore volume from backup: PASS")
 
 
-def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
-            timeout=WAIT_TIMEOUT) -> bool:
+def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX) -> bool:
     """
     Looks up volume and volume backup resources matching the given prefix and
     deletes them.
@@ -133,36 +171,27 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
                 conn.block_storage.get_backup,
                 backup.id,
                 expected_status=("available", "error"),
-                timeout=timeout,
             )
             logging.info(f"↳ deleting volume backup '{backup.id}' ...")
-            conn.block_storage.delete_backup(backup.id)
-        except openstack.exceptions.ResourceNotFound:
-            # if the resource has vanished on its own in the meantime ignore it
-            continue
+            conn.block_storage.delete_backup(backup.id, ignore_missing=False)
         except Exception as e:
+            if isinstance(e, openstack.exceptions.ResourceNotFound):
+                # if the resource has vanished on its own in the meantime ignore it
+                # however, ResourceNotFound will also be thrown if the service 'cinder-backup' is missing
+                if 'cinder-backup' in str(e):
+                    raise
+                continue
             # Most common exception would be a timeout in wait_for_resource.
             # We do not need to increment cleanup_issues here since
             # any remaining ones will be caught in the next loop down below anyway.
-            logging.debug("traceback", exc_info=True)
             logging.warning(str(e))
 
     # wait for all backups to be cleaned up before attempting to remove volumes
-    seconds_waited = 0
-    while len(
-        # list of all backups whose name starts with the prefix
-        [b for b in conn.block_storage.backups() if b.name.startswith(prefix)]
-    ) > 0:
-        time.sleep(1.0)
-        seconds_waited += 1
-        if seconds_waited >= timeout:
-            cleanup_issues += 1
-            logging.warning(
-                f"Timeout reached while waiting for all backups with prefix "
-                f"'{prefix}' to finish deletion during cleanup after "
-                f"{seconds_waited} seconds"
-            )
-            break
+    try:
+        wait_for_resources(conn.block_storage.backups, prefix)
+    except TimeoutError as e:
+        cleanup_issues += 1
+        logging.warning(str(e))
 
     volumes = conn.block_storage.volumes()
     for volume in volumes:
@@ -173,7 +202,6 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
                 conn.block_storage.get_volume,
                 volume.id,
                 expected_status=("available", "error"),
-                timeout=timeout,
             )
             logging.info(f"↳ deleting volume '{volume.id}' ...")
             conn.block_storage.delete_volume(volume.id)
@@ -219,19 +247,12 @@ def main():
         f"(default: '{DEFAULT_PREFIX}')"
     )
     parser.add_argument(
-        "--timeout", type=int,
-        default=WAIT_TIMEOUT,
-        help=f"Timeout in seconds for operations waiting for resources to "
-        f"become available such as creating volumes and volume backups "
-        f"(default: '{WAIT_TIMEOUT}')"
-    )
-    parser.add_argument(
         "--cleanup-only", action="store_true",
         help="Instead of executing tests, cleanup all resources "
         "with the prefix specified via '--prefix' (or its default)"
     )
     args = parser.parse_args()
-    openstack.enable_logging(debug=args.debug)
+    openstack.enable_logging(debug=False)
     logging.basicConfig(
         format="%(levelname)s: %(message)s",
         level=logging.DEBUG if args.debug else logging.INFO,
@@ -247,20 +268,20 @@ def main():
     password = getpass.getpass("Enter password: ") if args.ask else None
 
     with openstack.connect(cloud, password=password) as conn:
-        if not cleanup(conn, prefix=args.prefix, timeout=args.timeout):
+        if not cleanup(conn, prefix=args.prefix):
             raise RuntimeError("Initial cleanup failed")
         if args.cleanup_only:
             logging.info("Cleanup-only run finished.")
             return
         try:
-            test_backup(conn, prefix=args.prefix, timeout=args.timeout)
+            test_backup(conn, prefix=args.prefix)
         except BaseException:
             print('volume-backup-check: FAIL')
             raise
         else:
             print('volume-backup-check: PASS')
         finally:
-            cleanup(conn, prefix=args.prefix, timeout=args.timeout)
+            cleanup(conn, prefix=args.prefix)
 
 
 if __name__ == "__main__":
