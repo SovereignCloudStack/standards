@@ -27,34 +27,29 @@ import openstack
 # used by the cleanup routine to identify resources that can be safely deleted
 DEFAULT_PREFIX = "scs-test-"
 
-# timeout in seconds for resource availability checks
-# (e.g. a volume becoming available)
-WAIT_TIMEOUT = 80
-
 
 def wait_for_resource(
     get_func: typing.Callable[[str], openstack.resource.Resource],
     resource_id: str,
     expected_status=("available", ),
-    timeout=WAIT_TIMEOUT,
+    timeouts=(2, 3, 5, 10, 15, 25, 50),
 ) -> None:
     seconds_waited = 0
-    wait_delay = 0.5
+    timeout_iter = iter(timeouts)
     resource = get_func(resource_id)
     while resource is None or resource.status not in expected_status:
-        time.sleep(wait_delay)
-        seconds_waited += wait_delay
-        wait_delay += 0.1
-        if seconds_waited >= timeout:
+        wait_delay = next(timeout_iter, None)
+        if wait_delay is None:
             raise RuntimeError(
                 f"Timed out after {seconds_waited} s: waiting for resource {resource_id} "
                 f"to be in status {expected_status} (current: {resource and resource.status})"
             )
+        time.sleep(wait_delay)
+        seconds_waited += wait_delay
         resource = get_func(resource_id)
 
 
-def test_backup(conn: openstack.connection.Connection,
-                prefix=DEFAULT_PREFIX, timeout=WAIT_TIMEOUT) -> None:
+def test_backup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX) -> None:
     """Execute volume backup tests on the connection
 
     This will create an empty volume, a backup of that empty volume and then
@@ -77,7 +72,7 @@ def test_backup(conn: openstack.connection.Connection,
         f"↳ waiting for volume with ID '{volume_id}' to reach status "
         f"'available' ..."
     )
-    wait_for_resource(conn.block_storage.get_volume, volume_id, timeout=timeout)
+    wait_for_resource(conn.block_storage.get_volume, volume_id)
     logging.info("Create empty volume: PASS")
 
     # CREATE BACKUP
@@ -90,7 +85,7 @@ def test_backup(conn: openstack.connection.Connection,
         raise RuntimeError("Retrieving backup by ID failed")
 
     logging.info(f"↳ waiting for backup '{backup_id}' to become available ...")
-    wait_for_resource(conn.block_storage.get_backup, backup_id, timeout=timeout)
+    wait_for_resource(conn.block_storage.get_backup, backup_id)
     logging.info("Create backup from volume: PASS")
 
     # RESTORE BACKUP
@@ -102,19 +97,18 @@ def test_backup(conn: openstack.connection.Connection,
         f"↳ waiting for restoration target volume '{restored_volume_name}' "
         f"to be created ..."
     )
-    wait_for_resource(conn.block_storage.find_volume, restored_volume_name, timeout=timeout)
+    wait_for_resource(conn.block_storage.find_volume, restored_volume_name)
     # wait for the volume restoration to finish
     logging.info(
         f"↳ waiting for restoration target volume '{restored_volume_name}' "
         f"to reach 'available' status ..."
     )
     volume_id = conn.block_storage.find_volume(restored_volume_name).id
-    wait_for_resource(conn.block_storage.get_volume, volume_id, timeout=timeout)
+    wait_for_resource(conn.block_storage.get_volume, volume_id)
     logging.info("Restore volume from backup: PASS")
 
 
-def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
-            timeout=WAIT_TIMEOUT) -> bool:
+def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX) -> bool:
     """
     Looks up volume and volume backup resources matching the given prefix and
     deletes them.
@@ -135,7 +129,6 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
                 conn.block_storage.get_backup,
                 backup.id,
                 expected_status=("available", "error"),
-                timeout=timeout,
             )
             logging.info(f"↳ deleting volume backup '{backup.id}' ...")
             conn.block_storage.delete_backup(backup.id)
@@ -157,7 +150,7 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
     ) > 0:
         time.sleep(1.0)
         seconds_waited += 1
-        if seconds_waited >= timeout:
+        if seconds_waited >= 100:
             cleanup_issues += 1
             logging.warning(
                 f"Timeout reached while waiting for all backups with prefix "
@@ -175,7 +168,6 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX,
                 conn.block_storage.get_volume,
                 volume.id,
                 expected_status=("available", "error"),
-                timeout=timeout,
             )
             logging.info(f"↳ deleting volume '{volume.id}' ...")
             conn.block_storage.delete_volume(volume.id)
@@ -221,13 +213,6 @@ def main():
         f"(default: '{DEFAULT_PREFIX}')"
     )
     parser.add_argument(
-        "--timeout", type=int,
-        default=WAIT_TIMEOUT,
-        help=f"Timeout in seconds for operations waiting for resources to "
-        f"become available such as creating volumes and volume backups "
-        f"(default: '{WAIT_TIMEOUT}')"
-    )
-    parser.add_argument(
         "--cleanup-only", action="store_true",
         help="Instead of executing tests, cleanup all resources "
         "with the prefix specified via '--prefix' (or its default)"
@@ -249,20 +234,20 @@ def main():
     password = getpass.getpass("Enter password: ") if args.ask else None
 
     with openstack.connect(cloud, password=password) as conn:
-        if not cleanup(conn, prefix=args.prefix, timeout=args.timeout):
+        if not cleanup(conn, prefix=args.prefix):
             raise RuntimeError("Initial cleanup failed")
         if args.cleanup_only:
             logging.info("Cleanup-only run finished.")
             return
         try:
-            test_backup(conn, prefix=args.prefix, timeout=args.timeout)
+            test_backup(conn, prefix=args.prefix)
         except BaseException:
             print('volume-backup-check: FAIL')
             raise
         else:
             print('volume-backup-check: PASS')
         finally:
-            cleanup(conn, prefix=args.prefix, timeout=args.timeout)
+            cleanup(conn, prefix=args.prefix)
 
 
 if __name__ == "__main__":
