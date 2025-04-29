@@ -233,7 +233,7 @@ def main():
         "with the prefix specified via '--prefix' (or its default)"
     )
     args = parser.parse_args()
-    openstack.enable_logging(debug=args.debug)
+    openstack.enable_logging(debug=False)
     logging.basicConfig(
         format="%(levelname)s: %(message)s",
         level=logging.DEBUG if args.debug else logging.INFO,
