@@ -28,6 +28,8 @@ services:
       - SCM_DB_HOST=postgres
       - SCM_DB_PORT=5432
       - SCM_DB_PASSWORD_FILE=/run/secrets/db_password
+      - SCM_HC_USER=healthz
+      - SCM_HC_PASSWORD=healthzpassword
       - SCM_BASE_URL=https://compliance.sovereignit.cloud/
     volumes:
       - ../Tests:/Tests

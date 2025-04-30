@@ -64,6 +64,8 @@ class Settings:
         self.db_host = os.getenv("SCM_DB_HOST", "localhost")
         self.db_port = os.getenv("SCM_DB_PORT", 5432)
         self.db_user = os.getenv("SCM_DB_USER", "postgres")
+        self.hc_user = os.getenv("SCM_HC_USER", "healthz")
+        self.hc_password = os.getenv("SCM_HC_PASSWORD", "healthzpassword")
         password_file_path = os.getenv("SCM_DB_PASSWORD_FILE", None)
         if password_file_path:
             with open(os.path.abspath(password_file_path), "r") as fileobj:
@@ -123,6 +125,7 @@ REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_REPORT, VIEW_DETAIL, VIEW_TA
 # do I hate these globals, but I don't see another way with these frameworks
 app = FastAPI()
 security = HTTPBasic(realm="Compliance monitor", auto_error=True)  # use False for optional login
+optional_security = HTTPBasic(realm="Compliance monitor", auto_error=False)
 settings = Settings()
 # see https://passlib.readthedocs.io/en/stable/narr/quickstart.html
 cryptctx = CryptContext(
@@ -717,6 +720,39 @@ async def post_results(
         for record in records:
             db_patch_approval2(cur, record)
     conn.commit()
+
+
+@app.get("/healthz")
+async def get_healthz(
+    request: Request,
+):
+    """return monitor's health status"""
+    credentials = await optional_security(request)
+
+    # check credentials
+    if credentials is None:
+      # no credentials were set
+      check_db_connection()
+    elif credentials.username == settings.hc_user and credentials.password == settings.hc_password:
+      # healthz user
+      check_db_connection(authorized=True)
+    else:
+      # unauthorized user
+      check_db_connection()
+
+    return {"message": "OK"}
+
+def check_db_connection(authorized: bool = False):
+  # check database connection
+  try:
+    mk_conn(settings=settings)
+  except psycopg2.OperationalError as e:
+    if authorized:
+      # authorized user
+      raise HTTPException(status_code=500,
+                        detail="Database Connection Error. " + e.args[0].capitalize())
+    else:
+      raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 def pick_filter(results, subject, scope):
