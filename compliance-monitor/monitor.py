@@ -731,28 +731,29 @@ async def get_healthz(
 
     # check credentials
     if credentials is None:
-      # no credentials were set
-      check_db_connection()
+        # no credentials were set
+        check_db_connection()
     elif credentials.username == settings.hc_user and credentials.password == settings.hc_password:
-      # healthz user
-      check_db_connection(authorized=True)
+        # healthz user
+        check_db_connection(authorized=True)
     else:
-      # unauthorized user
-      check_db_connection()
+        # unauthorized user
+        check_db_connection()
 
     return {"message": "OK"}
 
+
 def check_db_connection(authorized: bool = False):
-  # check database connection
-  try:
-    mk_conn(settings=settings)
-  except psycopg2.OperationalError as e:
-    if authorized:
-      # authorized user
-      raise HTTPException(status_code=500,
-                        detail="Database Connection Error. " + e.args[0].capitalize())
-    else:
-      raise HTTPException(status_code=500, detail="Internal Server Error")
+    # check database connection
+    try:
+        mk_conn(settings=settings)
+    except psycopg2.OperationalError as e:
+        if authorized:
+            # authorized user
+            raise HTTPException(status_code=500,
+                                detail="Database Connection Error. " + e.args[0].capitalize())
+        else:
+            raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 def pick_filter(results, subject, scope):
