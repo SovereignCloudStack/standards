@@ -169,7 +169,7 @@ def db_get_schema_version(cur: cursor):
 
 
 def db_set_schema_version(cur: cursor, version: str):
-  cur.execute('''
+    cur.execute('''
     INSERT INTO meta (key, value)
     VALUES (%s, %s)
     ON CONFLICT (key)
