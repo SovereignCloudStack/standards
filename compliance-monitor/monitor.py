@@ -64,8 +64,9 @@ class Settings:
         self.db_host = os.getenv("SCM_DB_HOST", "localhost")
         self.db_port = os.getenv("SCM_DB_PORT", 5432)
         self.db_user = os.getenv("SCM_DB_USER", "postgres")
-        self.hc_user = os.getenv("SCM_HC_USER", "healthz")
-        self.hc_password = os.getenv("SCM_HC_PASSWORD", "healthzpassword")
+        # use default value of None for security reasons (won't be matched)
+        self.hc_user = os.getenv("SCM_HC_USER", None)
+        self.hc_password = os.getenv("SCM_HC_PASSWORD", None)
         password_file_path = os.getenv("SCM_DB_PASSWORD_FILE", None)
         if password_file_path:
             with open(os.path.abspath(password_file_path), "r") as fileobj:
@@ -723,37 +724,19 @@ async def post_results(
 
 
 @app.get("/healthz")
-async def get_healthz(
-    request: Request,
-):
-    """return monitor's health status"""
+async def get_healthz(request: Request):
+    """return compliance monitor's health status"""
     credentials = await optional_security(request)
+    authorized = credentials and \
+        credentials.username == settings.hc_user and credentials.password == settings.hc_password
 
-    # check credentials
-    if credentials is None:
-        # no credentials were set
-        check_db_connection()
-    elif credentials.username == settings.hc_user and credentials.password == settings.hc_password:
-        # healthz user
-        check_db_connection(authorized=True)
-    else:
-        # unauthorized user
-        check_db_connection()
-
-    return {"message": "OK"}
-
-
-def check_db_connection(authorized: bool = False):
-    # check database connection
     try:
         mk_conn(settings=settings)
-    except psycopg2.OperationalError as e:
-        if authorized:
-            # authorized user
-            raise HTTPException(status_code=500,
-                                detail="Database Connection Error. " + e.args[0].capitalize())
-        else:
-            raise HTTPException(status_code=500, detail="Internal Server Error")
+    except Exception as e:
+        detail = str(e) if authorized else 'internal server error'
+        return Response(status_code=500, content=detail, media_type='text/plain')
+
+    return Response()  # empty response with status 200
 
 
 def pick_filter(results, subject, scope):
