@@ -64,6 +64,9 @@ class Settings:
         self.db_host = os.getenv("SCM_DB_HOST", "localhost")
         self.db_port = os.getenv("SCM_DB_PORT", 5432)
         self.db_user = os.getenv("SCM_DB_USER", "postgres")
+        # use default value of None for security reasons (won't be matched)
+        self.hc_user = os.getenv("SCM_HC_USER", None)
+        self.hc_password = os.getenv("SCM_HC_PASSWORD", None)
         password_file_path = os.getenv("SCM_DB_PASSWORD_FILE", None)
         if password_file_path:
             with open(os.path.abspath(password_file_path), "r") as fileobj:
@@ -123,6 +126,7 @@ REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_REPORT, VIEW_DETAIL, VIEW_TA
 # do I hate these globals, but I don't see another way with these frameworks
 app = FastAPI()
 security = HTTPBasic(realm="Compliance monitor", auto_error=True)  # use False for optional login
+optional_security = HTTPBasic(realm="Compliance monitor", auto_error=False)
 settings = Settings()
 # see https://passlib.readthedocs.io/en/stable/narr/quickstart.html
 cryptctx = CryptContext(
@@ -717,6 +721,22 @@ async def post_results(
         for record in records:
             db_patch_approval2(cur, record)
     conn.commit()
+
+
+@app.get("/healthz")
+async def get_healthz(request: Request):
+    """return compliance monitor's health status"""
+    credentials = await optional_security(request)
+    authorized = credentials and \
+        credentials.username == settings.hc_user and credentials.password == settings.hc_password
+
+    try:
+        mk_conn(settings=settings)
+    except Exception as e:
+        detail = str(e) if authorized else 'internal server error'
+        return Response(status_code=500, content=detail, media_type='text/plain')
+
+    return Response()  # empty response with status 200
 
 
 def pick_filter(results, subject, scope):
