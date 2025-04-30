@@ -36,7 +36,7 @@ reported as an error:
 - the service `rngd` is not running,
 - the special file `/proc/sys/kernel/random/entropy_avail` does not contain
   the value 256 (pinned since kernel 5.18),
-- the number of FIPS 140-2 failures exceeds 3 out of 1000 blocks
+- the number of FIPS 140-2 failures exceeds 5 out of 1000 blocks
   tested, as determined by `cat /dev/random | rngtest -c 1000` .
 
 Note: The latter two items act as surrogates for the following item, which
@@ -50,6 +50,8 @@ The following items MUST be detected and reported as a warning:
 
 - any flavor missing the attribute `hw_rng:allowed=True`,
 - any image missing the attribute `hw_rng_model: virtio`,
+- the number of FIPS 140-2 failures exceeds 3 out of 1000 blocks
+  tested (compare with errors).
 
 Note that the requirement regarding the kernel patch level will not be
 checked, because of two reasons: (a) we already check the file `entropy_avail`

@@ -145,10 +145,16 @@ def check_fips_test(lines, image_name):
         if failure_re:
             fips_failures = failure_re.string[failure_re.regs[0][0]:failure_re.regs[0][1]].split(" ")[1]
             if int(fips_failures) <= 3:
-                return True  # this is the single 'successful' code path
+                return True  # strict test passed
+            logger.warning(
+                f"VM '{image_name}' didn't pass the strict FIPS 140-2 testing. "
+                f"Expected a maximum of 3 failures, got {fips_failures}."
+            )
+            if int(fips_failures) <= 5:
+                return True  # lenient test passed
             logger.error(
                 f"VM '{image_name}' didn't pass the FIPS 140-2 testing. "
-                f"Expected a maximum of 3 failures, got {fips_failures}."
+                f"Expected a maximum of 5 failures, got {fips_failures}."
             )
         else:
             logger.error(f"VM '{image_name}': failed to determine fips failures")
