@@ -26,6 +26,7 @@ services:
       - "127.0.0.1:5000:8080"
     environment:
       - SCM_DB_HOST=postgres
+      - SCM_DB_PORT=5432
       - SCM_DB_PASSWORD_FILE=/run/secrets/db_password
       - SCM_BASE_URL=https://compliance.sovereignit.cloud/
     volumes:

@@ -62,6 +62,7 @@ except ImportError:
 class Settings:
     def __init__(self):
         self.db_host = os.getenv("SCM_DB_HOST", "localhost")
+        self.db_port = os.getenv("SCM_DB_PORT", 5432)
         self.db_user = os.getenv("SCM_DB_USER", "postgres")
         password_file_path = os.getenv("SCM_DB_PASSWORD_FILE", None)
         if password_file_path:
@@ -144,7 +145,8 @@ class TimestampEncoder(json.JSONEncoder):
 
 
 def mk_conn(settings=settings):
-    return psycopg2.connect(host=settings.db_host, user=settings.db_user, password=settings.db_password)
+    return psycopg2.connect(host=settings.db_host, user=settings.db_user,
+                            password=settings.db_password, port=settings.db_port)
 
 
 def get_conn(settings=settings):
