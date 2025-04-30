@@ -169,9 +169,13 @@ def db_get_schema_version(cur: cursor):
 
 
 def db_set_schema_version(cur: cursor, version: str):
-    cur.execute('''
-    UPDATE meta SET value = %s WHERE key = %s
-    ;''', (version, SCHEMA_VERSION_KEY))
+  cur.execute('''
+    INSERT INTO meta (key, value)
+    VALUES (%s, %s)
+    ON CONFLICT (key)
+    DO UPDATE
+    SET value = EXCLUDED.value
+    ;''', (SCHEMA_VERSION_KEY, version))
 
 
 def db_upgrade_schema(conn: connection, cur: cursor):
