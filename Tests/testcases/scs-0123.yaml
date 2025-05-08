@@ -1,0 +1,37 @@
+testcases:
+- id: service-apis-check
+  tags: [scs-0123-v1]
+  description: >
+    All required services (besides block-storage) are discoverable; as listed in <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services>.
+  type: check-service-presence
+  data:
+    mode: all
+    types:
+    - compute
+    - identity
+    - image
+    - network
+    - load-balancer
+    - placement
+    - object-store
+- id: storage-apis-check
+  tags: [scs-0123-v1]
+  description: >
+    The block-storage API is discoverable; as listed in <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services>.
+  type: check-service-presence
+  data:
+    mode: any
+    types:
+    - volume
+    - volumev3
+    - block-storage
+- id: swift-s3-check
+  tags: [scs-0123-v1]
+  description: >
+    The object-storage API is compatible with S3; as described in <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services>.
+  type: swift-s3-check
+- id: service-apis-docs-check
+  tags: [scs-0123-v1,manual]
+  description: >
+    Note: manual check! Must fulfill documentation requirements of <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services>.
+  type: manual

@@ -1,0 +1,5 @@
+testcases:
+- id: volume-backup-check
+  tags: [scs-0117-v1]
+  description: Volume backup works.
+  type: volume-backup-check

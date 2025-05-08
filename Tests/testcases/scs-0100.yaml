@@ -1,0 +1,119 @@
+testcases:
+- id: flavor-name-syntax-check-v1
+  tags: [scs-0100-v1]
+  description: >
+    Flavor names comply with syntax described in
+    <https://docs.scs.community/standards/scs-0100-v1-flavor-naming>
+  type: flavor-name-syntax-check
+  data:
+    version: v1
+- id: flavor-name-syntax-check-v2-3
+  tags: [scs-0100-v2, scs-0100-v3.0, scs-0100-v3.1]
+  description: >
+    Flavor names comply with syntax described in
+    <https://docs.scs.community/standards/scs-0100-v3-flavor-naming>
+    (identical with v2)
+  type: flavor-name-syntax-check
+  data:
+    version: v2
+- id: flavor-name-semantics-check
+  tags: [scs-0100-v1, scs-0100-v2, scs-0100-v3.0, scs-0100-v3.1]
+  description: >
+    Flavor names tell the truth according to
+    <https://docs.scs.community/standards/scs-0100-v3-flavor-naming>
+    (subsumes v1 and v2 as well)
+  type: flavor-name-semantics-check
+- id: flavor-name-completeness-check-v1
+  tags: [scs-0100-v1]
+  description: >
+    All required standard flavors are present as described in
+    <https://docs.scs.community/standards/scs-0100-v1-flavor-naming>
+  type: flavor-name-presence-check
+  data:
+    names:
+    - "SCS-1V:4"
+    - "SCS-2V:8"
+    - "SCS-4V:16"
+    - "SCS-8V:32"
+    - "SCS-1V:2"
+    - "SCS-2V:4"
+    - "SCS-4V:8"
+    - "SCS-8V:16"
+    - "SCS-16V:32"
+    - "SCS-1V:8"
+    - "SCS-2V:16"
+    - "SCS-4V:32"
+    - "SCS-1L:1"
+- id: flavor-name-completeness-check-v1-rec
+  tags: [scs-0100-v1-rec]
+  description: >
+    All recommended standard flavors are present as described in
+    <https://docs.scs.community/standards/scs-0100-v1-flavor-naming>
+  type: flavor-name-presence-check
+  data:
+    names:
+    - "SCS-1V:4:10"
+    - "SCS-2V:8:20"
+    - "SCS-4V:16:50"
+    - "SCS-8V:32:100"
+    - "SCS-1V:2:5"
+    - "SCS-2V:4:10"
+    - "SCS-4V:8:20"
+    - "SCS-8V:16:50"
+    - "SCS-16V:32:100"
+    - "SCS-1V:8:20"
+    - "SCS-2V:16:50"
+    - "SCS-4V:32:100"
+    - "SCS-1L:1:5"
+- id: flavor-name-completeness-check-v2
+  tags: [scs-0100-v2, scs-0100-v3.0]
+  description: >
+    All required standard flavors are present as described in
+    <https://docs.scs.community/standards/scs-0100-v2-flavor-naming>
+  type: flavor-name-presence-check
+  data:
+    names:
+    - SCS-1V-4
+    - SCS-2V-8
+    - SCS-4V-16
+    - SCS-8V-32
+    - SCS-1V-2
+    - SCS-2V-4
+    - SCS-4V-8
+    - SCS-8V-16
+    - SCS-16V-32
+    - SCS-1V-8
+    - SCS-2V-16
+    - SCS-4V-32
+    - SCS-1L-1
+- id: flavor-name-completeness-check-v2-rec
+  tags: [scs-0100-v2-rec, scs-0100-v3.0-rec]
+  description: >
+    All recommended standard flavors are present as described in
+    <https://docs.scs.community/standards/scs-0100-v2-flavor-naming>
+  type: flavor-name-presence-check
+  data:
+    names:
+    - SCS-1V-4-10
+    - SCS-2V-8-20
+    - SCS-4V-16-50
+    - SCS-8V-32-100
+    - SCS-1V-2-5
+    - SCS-2V-4-10
+    - SCS-4V-8-20
+    - SCS-8V-16-50
+    - SCS-16V-32-100
+    - SCS-1V-8-20
+    - SCS-2V-16-50
+    - SCS-4V-32-100
+    - SCS-1L-1-5
+- id: flavor-name-completeness-check-ssd
+  tags: [scs-0100-v3.0]
+  description: >
+    All required flavors with local storage are present as mentioned in v3.0 of
+    <https://docs.scs.community/standards/scs-0100-v3-flavor-naming>
+  type: flavor-name-presence-check
+  data:
+    names:
+    - SCS-2V-4-20s
+    - SCS-4V-16-100s

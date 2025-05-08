@@ -1,0 +1,6 @@
+testcases:
+- id: domain-manager-check
+  tags: [scs-0302-v1,manual]
+  description: >
+    Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0302-v1-domain-manager-role>
+  type: manual

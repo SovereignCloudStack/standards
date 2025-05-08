@@ -1,0 +1,31 @@
+testcases:
+- id: entropy-check-flavor-properties
+  tags: [scs-0101-v1-rec]
+  description: >
+    Must have all flavor properties recommended in
+    <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings>
+  type: entropy-check-flavor-properties
+- id: entropy-check-image-properties
+  tags: [scs-0101-v1-rec]
+  description: >
+    Must have all image properties recommended in
+    <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings>
+  type: entropy-check-image-properties
+- id: entropy-check-rngd
+  tags: [scs-0101-v1]
+  description: >
+    Images of the test sample must have the service `rngd`; see
+    <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
+  type: entropy-check-rngd
+- id: entropy-check-entropy-avail
+  tags: [scs-0101-v1]
+  description: >
+    A test instance must have the correct `entropy_avail`; see
+    <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
+  type: entropy-check-entropy-avail
+- id: entropy-check-fips-test
+  tags: [scs-0101-v1]
+  description: >
+    A test instance must pass the "FIPS test"; see
+    <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
+  type: entropy-check-fips-test
