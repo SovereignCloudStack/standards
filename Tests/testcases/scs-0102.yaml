@@ -1,0 +1,5 @@
+testcases:
+- id: image-metadata-check
+  tags: [scs-0102-v1]
+  description: >
+    Must fulfill all requirements of <https://docs.scs.community/standards/scs-0102-v1-image-metadata>

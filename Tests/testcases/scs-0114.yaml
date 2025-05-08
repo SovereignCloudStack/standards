@@ -1,0 +1,15 @@
+testcases:
+- id: volume-type-encrypted
+  tags: [scs-0114-v1-rec]
+  description: An encrypted volume type can be discovered.
+  type: check-volume-type
+  data:
+    aspects:
+    - encrypted
+- id: volume-type-replicated
+  tags: [scs-0114-v1-rec]
+  description: A replicated volume type can be discovered.
+  type: check-volume-type
+  data:
+    aspects:
+    - replicated
