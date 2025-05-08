@@ -1,0 +1,12 @@
+testcases:
+- id: key-manager-presence-check
+  tags: [scs-0116-v1-rec]
+  description: Key manager service is discoverable.
+  type: check-service-presence
+  data:
+    types:
+    - key-manager
+- id: key-manager-permissions-check
+  tags: [scs-0116-v1]
+  description: Key manager is usable with member role.
+  type: check-key-manager

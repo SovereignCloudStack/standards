@@ -1,0 +1,100 @@
+testcases:
+# # image sources
+# ## capi
+- id: check-image-source-capi-2
+  tags: [scs-0104-v1-2]
+  type: check-image-source
+  data:
+    name: "ubuntu-capi-image"
+    # this name_scheme uses `-` to separate base name "ubuntu-capi-image" from version
+    # latest openstack-image-manager can be told to use `-` by setting `separator: "-"` on the image
+    name_scheme: "ubuntu-capi-image-v[0-9]\\.[0-9]+(\\.[0-9]+)?"
+    source: https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube
+- id: check-image-source-capi-1
+  tags: [scs-0104-v1-1]
+  type: check-image-source
+  data:
+    name: "ubuntu-capi-image"
+    name_scheme: "ubuntu-capi-image v[0-9]\\.[0-9]+(\\.[0-9]+)?"
+    source: https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube
+# ## Ubuntu
+- id: check-image-source-ubuntu-24.04
+  tags: [scs-0104-v1-2]
+  type: check-image-source
+  data:
+    name: "Ubuntu 24.04"
+    source:
+    - https://cloud-images.ubuntu.com/releases/noble/
+    - https://cloud-images.ubuntu.com/noble/
+- id: check-image-source-ubuntu-22.04
+  tags: [scs-0104-v1-1, scs-0104-v1-2]
+  type: check-image-source
+  data:
+    name: "Ubuntu 22.04"
+    source:
+    - https://cloud-images.ubuntu.com/releases/jammy/
+    - https://cloud-images.ubuntu.com/jammy/
+- id: check-image-source-ubuntu-20.04
+  tags: [scs-0104-v1-1, scs-0104-v1-2]
+  type: check-image-source
+  data:
+    name: "Ubuntu 20.04"
+    source:
+    - https://cloud-images.ubuntu.com/releases/focal/
+    - https://cloud-images.ubuntu.com/focal/
+# ## Debian
+- id: check-image-source-debian-12
+  tags: [scs-0104-v1-1, scs-0104-v1-2]
+  type: check-image-source
+  data:
+    name: "Debian 12"  # stable
+    source:
+    - https://cloud.debian.org/images/cloud/bookworm/
+    - https://cdimage.debian.org/cdimage/cloud/bookworm/
+- id: check-image-source-debian-11
+  tags: [scs-0104-v1-1, scs-0104-v1-2]
+  type: check-image-source
+  data:
+    name: "Debian 11"  # oldstable
+    source:
+    - https://cloud.debian.org/images/cloud/bullseye/
+    - https://cdimage.debian.org/cdimage/cloud/bullseye/
+- id: check-image-source-debian-10
+  tags: [scs-0104-v1-1, scs-0104-v1-2]
+  type: check-image-source
+  data:
+    name: "Debian 10"  # extended LTS since 2024-07-01, see https://wiki.debian.org/LTS/Extended
+    source:
+    - https://cloud.debian.org/images/cloud/buster/
+    - https://cdimage.debian.org/cdimage/cloud/buster/
+# # image presence
+# ## capi
+- id: check-image-capi-2
+  tags: [scs-0104-v1-2]
+  type: check-image
+  data:
+    name: "ubuntu-capi-image"
+    name_scheme: "ubuntu-capi-image-v[0-9]\\.[0-9]+(\\.[0-9]+)?"
+- id: check-image-capi-1
+  tags: [scs-0104-v1-1]
+  type: check-image
+  data:
+    name: "ubuntu-capi-image"
+    name_scheme: "ubuntu-capi-image v[0-9]\\.[0-9]+(\\.[0-9]+)?"
+# ## Ubuntu
+- id: check-image-ubuntu-24.04
+  tags: [scs-0104-v1-2]
+  type: check-image
+  data:
+    name: "Ubuntu 24.04"
+- id: check-image-ubuntu-22.04
+  tags: [scs-0104-v1-1]
+  type: check-image
+  data:
+    name: "Ubuntu 22.04"
+# ## Debian
+- id: check-image-debian-12
+  tags: [scs-0104-v1-2]
+  type: check-image
+  data:
+    name: "Debian 12"  # stable

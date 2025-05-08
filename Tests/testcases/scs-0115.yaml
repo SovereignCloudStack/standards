@@ -1,0 +1,9 @@
+testcases:
+# do monolithic test for the default security groups because it's hard to decompose, and frankly, I don't
+# see the correspondence between the test script and the standards requirements and recommendations
+# (the latter probably simply aren't checked?)
+- id: security-groups-default-rules-check
+  tags: [scs-0115-v1]
+  type: security-groups-default-rules-check
+  description: >
+    Must fulfill all requirements of <https://docs.scs.community/standards/scs-0115-v1-default-rules-for-security-groups>

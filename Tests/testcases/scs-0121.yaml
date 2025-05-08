@@ -1,0 +1,6 @@
+testcases:
+- id: availability-zones-check
+  tags: [scs-0121-v1,manual]
+  description: >
+    Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard>
+  type: manual

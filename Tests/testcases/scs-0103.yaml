@@ -1,0 +1,300 @@
+testcases:
+# required flavors as per scs-0103-v1
+- id: check-flavor-scs-1v-4
+  tags: [scs-0103-v1]
+  type: check-flavor
+  data:
+    name: SCS-1V-4
+    cpus: 1
+    "scs:cpu-type": shared-core
+    ram: 4
+    "scs:name-v1": SCS-1V:4
+    "scs:name-v2": SCS-1V-4
+- id: check-flavor-scs-2v-8
+  tags: [scs-0103-v1]
+  type: check-flavor
+  data:
+    name: SCS-2V-8
+    cpus: 2
+    "scs:cpu-type": shared-core
+    ram: 8
+    "scs:name-v1": SCS-2V:8
+    "scs:name-v2": SCS-2V-8
+- id: check-flavor-scs-4v-16
+  tags: [scs-0103-v1]
+  type: check-flavor
+  data:
+    name: SCS-4V-16
+    cpus: 4
+    "scs:cpu-type": shared-core
+    ram: 16
+    "scs:name-v1": SCS-4V:16
+    "scs:name-v2": SCS-4V-16
+- id: check-flavor-scs-8v-32
+  tags: [scs-0103-v1]
+  type: check-flavor
+  data:
+    name: SCS-8V-32
+    cpus: 8
+    "scs:cpu-type": shared-core
+    ram: 32
+    "scs:name-v1": SCS-8V:32
+    "scs:name-v2": SCS-8V-32
+- id: check-flavor-scs-1v-2
+  tags: [scs-0103-v1]
+  type: check-flavor
+  data:
+    name: SCS-1V-2
+    cpus: 1
+    "scs:cpu-type": shared-core
+    ram: 2
+    "scs:name-v1": SCS-1V:2
+    "scs:name-v2": SCS-1V-2
+- id: check-flavor-scs-2v-4
+  tags: [scs-0103-v1]
+  type: check-flavor
+  data:
+    name: SCS-2V-4
+    cpus: 2
+    "scs:cpu-type": shared-core
+    ram: 4
+    "scs:name-v1": SCS-2V:4
+    "scs:name-v2": SCS-2V-4
+- id: check-flavor-scs-4v-8
+  tags: [scs-0103-v1]
+  type: check-flavor
+  data:
+    name: SCS-4V-8
+    cpus: 4
+    "scs:cpu-type": shared-core
+    ram: 8
+    "scs:name-v1": SCS-4V:8
+    "scs:name-v2": SCS-4V-8
+- id: check-flavor-scs-8v-16
+  tags: [scs-0103-v1]
+  type: check-flavor
+  data:
+    name: SCS-8V-16
+    cpus: 8
+    "scs:cpu-type": shared-core
+    ram: 16
+    "scs:name-v1": SCS-8V:16
+    "scs:name-v2": SCS-8V-16
+- id: check-flavor-scs-16v-32
+  tags: [scs-0103-v1]
+  type: check-flavor
+  data:
+    name: SCS-16V-32
+    cpus: 16
+    "scs:cpu-type": shared-core
+    ram: 32
+    "scs:name-v1": SCS-16V:32
+    "scs:name-v2": SCS-16V-32
+- id: check-flavor-scs-1v-8
+  tags: [scs-0103-v1]
+  type: check-flavor
+  data:
+    name: SCS-1V-8
+    cpus: 1
+    "scs:cpu-type": shared-core
+    ram: 8
+    "scs:name-v1": SCS-1V:8
+    "scs:name-v2": SCS-1V-8
+- id: check-flavor-scs-2v-16
+  tags: [scs-0103-v1]
+  type: check-flavor
+  data:
+    name: SCS-2V-16
+    cpus: 2
+    "scs:cpu-type": shared-core
+    ram: 16
+    "scs:name-v1": SCS-2V:16
+    "scs:name-v2": SCS-2V-16
+- id: check-flavor-scs-4v-32
+  tags: [scs-0103-v1]
+  type: check-flavor
+  data:
+    name: SCS-4V-32
+    cpus: 4
+    "scs:cpu-type": shared-core
+    ram: 32
+    "scs:name-v1": SCS-4V:32
+    "scs:name-v2": SCS-4V-32
+- id: check-flavor-scs-1l-1
+  tags: [scs-0103-v1]
+  type: check-flavor
+  data:
+    name: SCS-1L-1
+    cpus: 1
+    "scs:cpu-type": crowded-core
+    ram: 1
+    "scs:name-v1": SCS-1L:1
+    "scs:name-v2": SCS-1L-1
+- id: check-flavor-scs-2v-4-20s
+  tags: [scs-0103-v1]
+  type: check-flavor
+  data:
+    name: SCS-2V-4-20s
+    cpus: 2
+    "scs:cpu-type": shared-core
+    ram: 4
+    disk: 20
+    "scs:disk0-type": ssd
+    "scs:name-v1": SCS-2V:4:20s
+    "scs:name-v2": SCS-2V-4-20s
+- id: check-flavor-scs-4v-16-100s
+  tags: [scs-0103-v1]
+  type: check-flavor
+  data:
+    name: SCS-4V-16-100s
+    cpus: 4
+    "scs:cpu-type": shared-core
+    ram: 16
+    disk: 100
+    "scs:disk0-type": ssd
+    "scs:name-v1": SCS-4V:16:100s
+    "scs:name-v2": SCS-4V-16-100s
+# recommended flavors as per scs-0103-v1
+- id: check-flavor-scs-1v-4-10
+  tags: [scs-0103-v1-rec]
+  type: check-flavor
+  data:
+    name: SCS-1V-4-10
+    cpus: 1
+    "scs:cpu-type": shared-core
+    ram: 4
+    disk: 10
+    "scs:name-v1": SCS-1V:4:10
+    "scs:name-v2": SCS-1V-4-10
+- id: check-flavor-scs-2v-8-20
+  tags: [scs-0103-v1-rec]
+  type: check-flavor
+  data:
+    name: SCS-2V-8-20
+    cpus: 2
+    "scs:cpu-type": shared-core
+    ram: 8
+    disk: 20
+    "scs:name-v1": SCS-2V:8:20
+    "scs:name-v2": SCS-2V-8-20
+- id: check-flavor-scs-4v-16-50
+  tags: [scs-0103-v1-rec]
+  type: check-flavor
+  data:
+    name: SCS-4V-16-50
+    cpus: 4
+    "scs:cpu-type": shared-core
+    ram: 16
+    disk: 50
+    "scs:name-v1": SCS-4V:16:50
+    "scs:name-v2": SCS-4V-16-50
+- id: check-flavor-scs-8v-32-100
+  tags: [scs-0103-v1-rec]
+  type: check-flavor
+  data:
+    name: SCS-8V-32-100
+    cpus: 8
+    "scs:cpu-type": shared-core
+    ram: 32
+    disk: 100
+    "scs:name-v1": SCS-8V:32:100
+    "scs:name-v2": SCS-8V-32-100
+- id: check-flavor-scs-1v-2-5
+  tags: [scs-0103-v1-rec]
+  type: check-flavor
+  data:
+    name: SCS-1V-2-5
+    cpus: 1
+    "scs:cpu-type": shared-core
+    ram: 2
+    disk: 5
+    "scs:name-v1": SCS-1V:2:5
+    "scs:name-v2": SCS-1V-2-5
+- id: check-flavor-scs-2v-4-10
+  tags: [scs-0103-v1-rec]
+  type: check-flavor
+  data:
+    name: SCS-2V-4-10
+    cpus: 2
+    "scs:cpu-type": shared-core
+    ram: 4
+    disk: 10
+    "scs:name-v1": SCS-2V:4:10
+    "scs:name-v2": SCS-2V-4-10
+- id: check-flavor-scs-4v-8-20
+  tags: [scs-0103-v1-rec]
+  type: check-flavor
+  data:
+    name: SCS-4V-8-20
+    cpus: 4
+    "scs:cpu-type": shared-core
+    ram: 8
+    disk: 20
+    "scs:name-v1": SCS-4V:8:20
+    "scs:name-v2": SCS-4V-8-20
+- id: check-flavor-scs-8v-16-50
+  tags: [scs-0103-v1-rec]
+  type: check-flavor
+  data:
+    name: SCS-8V-16-50
+    cpus: 8
+    "scs:cpu-type": shared-core
+    ram: 16
+    disk: 50
+    "scs:name-v1": SCS-8V:16:50
+    "scs:name-v2": SCS-8V-16-50
+- id: check-flavor-scs-16v-32-100
+  tags: [scs-0103-v1-rec]
+  type: check-flavor
+  data:
+    name: SCS-16V-32-100
+    cpus: 16
+    "scs:cpu-type": shared-core
+    ram: 32
+    disk: 100
+    "scs:name-v1": SCS-16V:32:100
+    "scs:name-v2": SCS-16V-32-100
+- id: check-flavor-scs-1v-8-20
+  tags: [scs-0103-v1-rec]
+  type: check-flavor
+  data:
+    name: SCS-1V-8-20
+    cpus: 1
+    "scs:cpu-type": shared-core
+    ram: 8
+    disk: 20
+    "scs:name-v1": SCS-1V:8:20
+    "scs:name-v2": SCS-1V-8-20
+- id: check-flavor-scs-2v-16-50
+  tags: [scs-0103-v1-rec]
+  type: check-flavor
+  data:
+    name: SCS-2V-16-50
+    cpus: 2
+    "scs:cpu-type": shared-core
+    ram: 16
+    disk: 50
+    "scs:name-v1": SCS-2V:16:50
+    "scs:name-v2": SCS-2V-16-50
+- id: check-flavor-scs-4v-32-100
+  tags: [scs-0103-v1-rec]
+  type: check-flavor
+  data:
+    name: SCS-4V-32-100
+    cpus: 4
+    "scs:cpu-type": shared-core
+    ram: 32
+    disk: 100
+    "scs:name-v1": SCS-4V:32:100
+    "scs:name-v2": SCS-4V-32-100
+- id: check-flavor-scs-1l-1-5
+  tags: [scs-0103-v1-rec]
+  type: check-flavor
+  data:
+    name: SCS-1L-1-5
+    cpus: 1
+    "scs:cpu-type": crowded-core
+    ram: 1
+    disk: 5
+    "scs:name-v1": SCS-1L:1:5
+    "scs:name-v2": SCS-1L-1-5
