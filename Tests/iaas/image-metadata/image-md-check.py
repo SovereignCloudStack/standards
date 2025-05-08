@@ -282,12 +282,16 @@ def validate_imageMD(img, outd_list):
     if img.min_ram < 64:
         print(f'WARNING: Image "{imgnm}": min_ram == {img.min_ram} MiB < 64 MiB', file=sys.stderr)
         warnings += 1
-        # errors += 1
+    if not img.min_ram:
+        print(f'ERROR: Image "{imgnm}": min_ram == 0', file=sys.stderr)
+        errors += 1
     if img.min_disk * GIB < img.size:
         print(f'WARNING: Image "{imgnm}": img size == {img.size / MIB:.0f} MiB, but min_disk == {img.min_disk * GIB / MIB:.0f} MiB',
               file=sys.stderr)
         warnings += 1
-        # errors += 1
+    if not img.min_disk:
+        print(f'ERROR: Image "{imgnm}": min_disk == 0', file=sys.stderr)
+        errors += 1
     # (6) tags os:*, managed_by_*
     # Nothing to do here ... we could do a warning if those are missing ...
 
