@@ -59,6 +59,8 @@ The following properties are considered mandatory:
 
 **Note**: Disk sizes tend to be measured in GB = 10^9 and not GiB = 2^30 in the disk industry, but OpenStack uses GiB.
 
+The value given vor `min_ram` MUST be sufficient for the VM to boot and survive for 10 s.
+
 The following property is recommended:
 
 - `hypervisor_type`
