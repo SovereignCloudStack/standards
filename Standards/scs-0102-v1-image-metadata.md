@@ -52,15 +52,22 @@ in the [OpenStack Image documentation](https://docs.openstack.org/glance/latest/
 
 The following properties are considered mandatory:
 
-- `architecture`, `hypervisor_type`
+- `architecture`
 - `min_disk` (in GiB), `min_ram` (in MiB)
 - `os_version`, `os_distro`
-- `hw_rng_model`, `hw_disk_bus` (`scsi` recommended, and then setting `hw_scsi_model` is also recommended)
+- `hw_disk_bus` (`scsi` recommended, and then setting `hw_scsi_model` is also recommended)
 
 **Note**: Disk sizes tend to be measured in GB = 10^9 and not GiB = 2^30 in the disk industry, but OpenStack uses GiB.
 
-The following properties are recommended (if the features are supported):
+The value given vor `min_ram` MUST be sufficient for the VM to boot and survive (for at least 10 s).
 
+The following property is recommended:
+
+- `hypervisor_type`
+
+The following further properties are recommended (if the features are supported):
+
+- `hw_rng_model`
 - `os_secure_boot`, `hw_firmware_type`
 - `hw_watchdog_action`, `hw_mem_encryption`, `hw_pmu`, `hw_video_ram`, `hw_vif_multiqueue_enabled`
 
