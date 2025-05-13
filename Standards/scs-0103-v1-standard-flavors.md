@@ -119,13 +119,14 @@ Note that this statement does not preclude the existence of additional flavors.
 
 ### Guarantees and properties
 
-The figures given in the table (number of CPUs, amount of RAM, root disk size) must match
-precisely the corresponding figures in the flavor.
+The figures given in the table (number of CPUs, amount of RAM, root disk size) must not
+overstate the corresponding figures in the flavor.
 
 In addition, the following properties must be set (in the `extra_specs`):
 
-- `scs:name-v1` to the recommended name, but with each dash AFTER the first one replaced by a colon,
-- `scs:name-v2` to the recommended name,
+- `scs:name-vN` (usually, but not necessarily, N=1) to the recommended name,
+  however with each dash AFTER the first one replaced by a colon,
+- `scs:name-vN` (usually, but not necessarily, N=2) to the recommended name,
 - `scs:cpu-type` to `shared-core` or `crowded-core`, reflecting the vCPU type,
 - `scs:disk0-type` not set if no disk is provided, otherwise set to `ssd` or some other
   value, reflecting the disk type.
