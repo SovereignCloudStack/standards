@@ -3,6 +3,8 @@ we could of course iterate over results etc., but hardcode the table (except the
 for the time being to have the highest degree of control
 -#}
 
+{% if unverified %}This table shows the most recent results, including unverified ones. Consumers are referred to the [verified table]({{base_url}}page/table). **Beware of false positives!**{% else %}This table shows the most recent **verified** results.{% endif %}
+
 Version numbers are suffixed by a symbol depending on state: * for _draft_, † for _warn_ (soon to be deprecated), and †† for _deprecated_.
 
 {% set iaas = '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f' -%}

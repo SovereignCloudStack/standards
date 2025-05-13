@@ -63,4 +63,8 @@
 </details>
 {%- endif %}
 
+{% if invdata.redacted -%}
+» [show unredacted (requires login) 🔒]({{report_url(report.run.uuid, full=True)}}#{{ invid }})
+{%- endif %}
+
 {% endfor %}

@@ -556,7 +556,8 @@ async def get_status(
 def _build_report_url(base_url, report, *args, **kwargs):
     if kwargs.get('download'):
         return f"{base_url}reports/{report}"
-    url = f"{base_url}page/report/{report}"
+    report_page = 'report_full' if kwargs.get('full') else 'report'
+    url = f"{base_url}page/{report_page}/{report}"
     if len(args) == 2:  # version, testcase_id --> add corresponding fragment specifier
         url += f"#{args[0]}_{args[1]}"
     return url
@@ -570,7 +571,7 @@ def render_view(view, view_type, detail_page='detail', base_url='/', title=None,
     def scope_url(uuid): return f"{base_url}page/scope/{uuid}"  # noqa: E306,E704
     def detail_url(subject, scope): return f"{base_url}page/{detail_page}/{subject}/{scope}"  # noqa: E306,E704
     def report_url(report, *args, **kwargs): return _build_report_url(base_url, report, *args, **kwargs)  # noqa: E306,E704
-    fragment = templates_map[stage1].render(detail_url=detail_url, report_url=report_url, scope_url=scope_url, **kwargs)
+    fragment = templates_map[stage1].render(base_url=base_url, detail_url=detail_url, report_url=report_url, scope_url=scope_url, **kwargs)
     if view_type != ViewType.markdown and stage1.endswith('.md'):
         fragment = markdown(fragment, extensions=['extra'])
     if stage1 != stage2:
@@ -578,8 +579,46 @@ def render_view(view, view_type, detail_page='detail', base_url='/', title=None,
     return Response(content=fragment, media_type=media_type)
 
 
+def _redact_report(report):
+    """remove all lines from script output in `report` that are not directly linked to any testcase"""
+    if 'run' not in report or 'invocations' not in report['run']:
+        return
+    for invdata in report['run']['invocations'].values():
+        stdout = invdata.get('stdout', [])
+        redacted = [line for line in stdout if line[-4:] in ('PASS', 'FAIL')]
+        if len(redacted) != len(stdout):
+            redacted.insert(0, '(the following has been redacted)')
+            invdata['stdout'] = redacted
+            invdata['redacted'] = True
+        stderr = invdata.get('stderr', [])
+        redacted = [line for line in stderr if line[:6] in ('WARNIN', 'ERROR:')]
+        if len(redacted) != len(stderr):
+            redacted.insert(0, '(the following has been redacted)')
+            invdata['stderr'] = redacted
+            invdata['redacted'] = True
+
+
 @app.get("/{view_type}/report/{report_uuid}")
 async def get_report_view(
+    request: Request,
+    conn: Annotated[connection, Depends(get_conn)],
+    view_type: ViewType,
+    report_uuid: str,
+):
+    with conn.cursor() as cur:
+        specs = db_get_report(cur, report_uuid)
+    if not specs:
+        raise HTTPException(status_code=404)
+    spec = specs[0]
+    _redact_report(spec)
+    return render_view(
+        VIEW_REPORT, view_type, report=spec, base_url=settings.base_url,
+        title=f'Report {report_uuid} (redacted)',
+    )
+
+
+@app.get("/{view_type}/report_full/{report_uuid}")
+async def get_report_view_full(
     request: Request,
     account: Annotated[Optional[tuple[str, str]], Depends(auth)],
     conn: Annotated[connection, Depends(get_conn)],
@@ -592,7 +631,10 @@ async def get_report_view(
         raise HTTPException(status_code=404)
     spec = specs[0]
     check_role(account, spec['subject'], ROLES['read_any'])
-    return render_view(VIEW_REPORT, view_type, report=spec, base_url=settings.base_url, title=f'Report {report_uuid}')
+    return render_view(
+        VIEW_REPORT, view_type, report=spec, base_url=settings.base_url,
+        title=f'Report {report_uuid} (full)',
+    )
 
 
 @app.get("/{view_type}/detail/{subject}/{scopeuuid}")
@@ -606,28 +648,32 @@ async def get_detail(
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, subject, scopeuuid, approved_only=True)
     results2 = convert_result_rows_to_dict2(
-        rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS,
+        rows2, get_scopes(), include_report=True, grace_period_days=GRACE_PERIOD_DAYS,
         subjects=(subject, ), scopes=(scopeuuid, ),
     )
-    return render_view(VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url, title=f'{subject} compliance')
+    return render_view(
+        VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url,
+        title=f'{subject} compliance',
+    )
 
 
 @app.get("/{view_type}/detail_full/{subject}/{scopeuuid}")
 async def get_detail_full(
     request: Request,
-    account: Annotated[Optional[tuple[str, str]], Depends(auth)],
     conn: Annotated[connection, Depends(get_conn)],
     view_type: ViewType,
     subject: str,
     scopeuuid: str,
 ):
-    check_role(account, subject, ROLES['read_any'])
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, subject, scopeuuid, approved_only=False)
     results2 = convert_result_rows_to_dict2(
         rows2, get_scopes(), include_report=True, subjects=(subject, ), scopes=(scopeuuid, ),
     )
-    return render_view(VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url, title=f'{subject} compliance')
+    return render_view(
+        VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url,
+        title=f'{subject} compliance (incl. unverified results)',
+    )
 
 
 @app.get("/{view_type}/table")
@@ -639,24 +685,24 @@ async def get_table(
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, approved_only=True)
     results2 = convert_result_rows_to_dict2(rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS)
-    return render_view(VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, title="SCS compliance overview")
+    return render_view(
+        VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, detail_page='detail',
+        title="SCS compliance overview",
+    )
 
 
 @app.get("/{view_type}/table_full")
 async def get_table_full(
     request: Request,
-    account: Annotated[Optional[tuple[str, str]], Depends(auth)],
     conn: Annotated[connection, Depends(get_conn)],
     view_type: ViewType,
 ):
-    check_role(account, None, ROLES['read_any'])
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, approved_only=False)
     results2 = convert_result_rows_to_dict2(rows2, get_scopes())
     return render_view(
-        VIEW_TABLE, view_type, results=results2,
-        detail_page='detail_full', base_url=settings.base_url,
-        title="SCS compliance overview",
+        VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, detail_page='detail_full',
+        title="SCS compliance overview (incl. unverified results)", unverified=True,
     )
 
 
