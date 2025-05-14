@@ -1,0 +1,25 @@
+apiVersion: clusterstack.x-k8s.io/v1alpha1
+kind: ClusterStack
+metadata:
+  name: '{{ cs_name }}'
+spec:
+  provider: hetzner
+  name: apalla
+  kubernetesVersion: '{{ kubernetesVersion }}'
+  channel: stable
+  autoSubscribe: true
+  providerRef:
+    name: '{{ cs_name }}'
+    kind: HetznerClusterStackReleaseTemplate
+    apiVersion: infrastructure.clusterstack.x-k8s.io/v1alpha1
+---
+apiVersion: infrastructure.clusterstack.x-k8s.io/v1alpha1
+kind: HetznerClusterStackReleaseTemplate
+metadata:
+  name: '{{ cs_name }}'
+spec:
+  template:
+    spec:
+      nodeImages:
+        - controlplaneamd64hcloud
+        - workeramd64hcloud

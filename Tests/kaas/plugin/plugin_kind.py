@@ -14,40 +14,20 @@ class PluginKind(KubernetesClusterPlugin):
     Plugin to handle the provisioning of kubernetes cluster for
     conformance testing purpose with the use of Kind
     """
-    def __init__(self, config_path):
-        logger.info("Init PluginKind")
-        self.config = config_path
+    def __init__(self, config, basepath='.'):
+        self.basepath = basepath
+        self.config = config
         logger.debug(self.config)
-        self.working_directory = os.getcwd()
-        logger.debug(f"Working from {self.working_directory}")
 
-    def create_cluster(self, cluster_name, version, kubeconfig):
-        """
-        This method is to be called to create a k8s cluster
-        :param: kubernetes_version:
-        :return: kubeconfig_filepath
-        """
-        cluster_version = version
-        # latest versions to be found under https://hub.docker.com/r/kindest/node/tags
-        if cluster_version == '1.29':
-            cluster_version = 'v1.29.14'
-        elif cluster_version == '1.30':
-            cluster_version = 'v1.30.10'
-        elif cluster_version == '1.31' or cluster_version == 'default':
-            cluster_version = 'v1.31.6'
-        elif cluster_version == '1.32':
-            cluster_version = 'v1.32.3'
-        cluster_image = f"kindest/node:{cluster_version}"
-        kubeconfig_filepath = Path(kubeconfig)
-        if kubeconfig_filepath is None:
-            raise ValueError("kubeconfig_filepath is missing")
-        else:
-            self.cluster = KindCluster(name=cluster_name, image=cluster_image, kubeconfig=kubeconfig_filepath)
-        if self.config is None:
-            self.cluster.create()
-        else:
-            self.cluster.create(self.config)
+    def create_cluster(self, kubeconfig_path):
+        cluster_name = self.config['name']
+        cluster_image = self.config['image']
+        cluster_yaml = self.config.get('cluster')
+        if cluster_yaml and not os.path.isabs(cluster_yaml):
+            cluster_yaml = os.path.normpath(os.path.join(self.basepath, cluster_yaml))
+        cluster = KindCluster(name=cluster_name, image=cluster_image, kubeconfig=Path(kubeconfig_path))        
+        cluster.create(cluster_yaml)
 
-    def delete_cluster(self, cluster_name):
-        self.cluster = KindCluster(cluster_name)
-        self.cluster.delete()
+    def delete_cluster(self):
+        cluster_name = self.config['name']
+        KindCluster(cluster_name).delete()
