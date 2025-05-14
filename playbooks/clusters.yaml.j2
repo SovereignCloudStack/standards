@@ -1,0 +1,32 @@
+---
+clusters:
+  syself-1.32:
+    kind: clusterstacks
+    config:
+      token: "{{ clouds_conf.syself_token }}"
+      kubernetesVersion: '1.32'
+      autoVars: syself  # will determine class and version automatically using kubernetesVersion
+      cluster: syself-cluster.yaml
+      clusterstack: syself-clusterstack.yaml
+      vars:
+        cs-name: hetzner-apalla-1-32
+  syself-1.31:
+    kind: clusterstacks
+    config:
+      token: "{{ clouds_conf.syself_token }}"
+      kubernetesVersion: '1.31'
+      autoVars: syself  # will determine class and version automatically using kubernetesVersion
+      cluster: syself-cluster.yaml
+      clusterstack: syself-clusterstack.yaml
+      vars:
+        cs-name: hetzner-apalla-1-31
+  syself-1.30:
+    kind: clusterstacks
+    config:
+      token: "{{ clouds_conf.syself_token }}"
+      kubernetesVersion: '1.30'
+      autoVars: syself  # will determine class and version automatically using kubernetesVersion
+      cluster: syself-cluster.yaml
+      clusterstack: syself-clusterstack.yaml
+      vars:
+        cs-name: hetzner-apalla-1-30

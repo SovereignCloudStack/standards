@@ -28,12 +28,15 @@ class PluginKind(KubernetesClusterPlugin):
         :return: kubeconfig_filepath
         """
         cluster_version = version
+        # latest versions to be found under https://hub.docker.com/r/kindest/node/tags
         if cluster_version == '1.29':
-            cluster_version = 'v1.29.8'
+            cluster_version = 'v1.29.14'
         elif cluster_version == '1.30':
-            cluster_version = 'v1.30.4'
+            cluster_version = 'v1.30.10'
         elif cluster_version == '1.31' or cluster_version == 'default':
-            cluster_version = 'v1.31.1'
+            cluster_version = 'v1.31.6'
+        elif cluster_version == '1.32':
+            cluster_version = 'v1.32.3'
         cluster_image = f"kindest/node:{cluster_version}"
         kubeconfig_filepath = Path(kubeconfig)
         if kubeconfig_filepath is None:
