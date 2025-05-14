@@ -13,7 +13,7 @@ class KubernetesClusterPlugin():
     `kubeconfig_filepath`
 
     - Implement `create_cluster` and `delete_cluster` methods
-    - Create `__init__(self, config_file)` method to handle api specific
+    - Create `__init__(self, config, basepath)` method to handle api specific
       configurations.
 
     Example:
@@ -24,31 +24,28 @@ class KubernetesClusterPlugin():
 
           class PluginX(KubernetesClusterPlugin):
 
-              def __init__(self, config_file):
-                  self.config = config_file
+              def __init__(self, config, basepath):
+                  self.config = config
+                  self.basepath = basepath  # find other config files here
 
-              def create_cluster(self, cluster_name, version, kubeconfig_filepath):
-                  self.cluster = ClusterAPI(name=cluster_name, image=cluster_image, kubeconfig_filepath)
-                  self.cluster.create(self.config)
+              def create_cluster(self, kubeconfig_path):
+                  self.cluster = ClusterAPI(name=self.config['name'], kubeconfig_filepath)
+                  self.cluster.create()
 
               def delete_cluster(self, cluster_name):
-                  self.cluster = ClusterAPI(cluster_name)
+                  self.cluster = ClusterAPI(name=self.config['name'])
                   self.cluster.delete()
         ..
     """
 
-    def create_cluster(self, cluster_name, version, kubeconfig_filepath):
+    def create_cluster(self, kubeconfig_path: str):
         """
         This method is to be called to create a k8s cluster
-        :param: cluster_name:
-        :param: version:
-        :param: kubeconfig_filepath:
         """
         raise NotImplementedError
 
-    def delete_cluster(self, cluster_name):
+    def delete_cluster(self):
         """
         This method is to be called in order to unprovision a cluster
-        :param: cluster_name:
         """
         raise NotImplementedError

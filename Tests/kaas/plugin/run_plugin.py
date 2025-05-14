@@ -5,11 +5,13 @@ import os.path
 import click
 import yaml
 
+from plugin_clusterstacks import PluginClusterStacks
 from plugin_kind import PluginKind
 from plugin_static import PluginStatic
 
 
 PLUGIN_LOOKUP = {
+    "clusterstacks": PluginClusterStacks,
     "kind": PluginKind,
     "static": PluginStatic,
 }
@@ -30,11 +32,12 @@ def load_config(path='clusters.yaml'):
     return cfg
 
 
-def init_plugin(plugin_kind, config):
+def init_plugin(plugin_kind, config, cwd='.'):
     plugin_maker = PLUGIN_LOOKUP.get(plugin_kind)
     if plugin_maker is None:
         raise ValueError(f"unknown plugin '{plugin_kind}'")
-    return plugin_maker(config, basepath=BASEPATH)
+    os.makedirs(cwd, exist_ok=True)
+    return plugin_maker(config, basepath=BASEPATH, cwd=cwd)
 
 
 @click.group()
@@ -49,8 +52,8 @@ def create(cfg, cluster_id):
     spec = cfg['clusters'][cluster_id]
     config = spec['config']
     config['name'] = cluster_id
-    kubeconfig_path = os.path.abspath(os.path.join(cluster_id, 'kubeconfig.yaml'))
-    init_plugin(spec['kind'], config).create_cluster(kubeconfig_path)
+    cwd = os.path.abspath(cluster_id)
+    init_plugin(spec['kind'], config, cwd).create_cluster()
 
 
 @cli.command()
@@ -60,7 +63,8 @@ def delete(cfg, cluster_id):
     spec = cfg['clusters'][cluster_id]
     config = spec['config']
     config['name'] = cluster_id
-    init_plugin(spec['kind'], config).delete_cluster()
+    cwd = os.path.abspath(cluster_id)
+    init_plugin(spec['kind'], config, cwd).delete_cluster()
 
 
 if __name__ == '__main__':

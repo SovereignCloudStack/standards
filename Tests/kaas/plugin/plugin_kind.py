@@ -14,18 +14,20 @@ class PluginKind(KubernetesClusterPlugin):
     Plugin to handle the provisioning of kubernetes cluster for
     conformance testing purpose with the use of Kind
     """
-    def __init__(self, config, basepath='.'):
+    def __init__(self, config, basepath='.', cwd='.'):
         self.basepath = basepath
+        self.cwd = cwd
         self.config = config
         logger.debug(self.config)
 
-    def create_cluster(self, kubeconfig_path):
+    def create_cluster(self):
         cluster_name = self.config['name']
         cluster_image = self.config['image']
         cluster_yaml = self.config.get('cluster')
         if cluster_yaml and not os.path.isabs(cluster_yaml):
             cluster_yaml = os.path.normpath(os.path.join(self.basepath, cluster_yaml))
-        cluster = KindCluster(name=cluster_name, image=cluster_image, kubeconfig=Path(kubeconfig_path))
+        kubeconfig = Path(os.path.join(self.cwd, 'kubeconfig.yaml'))
+        cluster = KindCluster(name=cluster_name, image=cluster_image, kubeconfig=kubeconfig)
         cluster.create(cluster_yaml)
 
     def delete_cluster(self):

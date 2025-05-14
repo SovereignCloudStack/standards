@@ -1,3 +1,4 @@
 pytest-kind
 kubernetes
+jinja2
 junitparser
