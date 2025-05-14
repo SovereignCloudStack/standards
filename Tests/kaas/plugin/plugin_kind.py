@@ -25,7 +25,7 @@ class PluginKind(KubernetesClusterPlugin):
         cluster_yaml = self.config.get('cluster')
         if cluster_yaml and not os.path.isabs(cluster_yaml):
             cluster_yaml = os.path.normpath(os.path.join(self.basepath, cluster_yaml))
-        cluster = KindCluster(name=cluster_name, image=cluster_image, kubeconfig=Path(kubeconfig_path))        
+        cluster = KindCluster(name=cluster_name, image=cluster_image, kubeconfig=Path(kubeconfig_path))
         cluster.create(cluster_yaml)
 
     def delete_cluster(self):
