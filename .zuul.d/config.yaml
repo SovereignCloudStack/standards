@@ -5,7 +5,8 @@
     merge-mode: "squash-merge"
     periodic-daily:
       jobs:
-        - scs-check-all
+        - scs-check-iaas
+        - scs-check-kaas
     periodic-hourly:
       jobs:
         - scs-check-scs2-main
