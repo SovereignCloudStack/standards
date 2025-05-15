@@ -6,7 +6,7 @@ import time
 
 from jinja2 import Environment
 import kubernetes
-from kubernetes.client import ApiClient, ApiException, CoreV1Api, CustomObjectsApi, V1DeleteOptions
+from kubernetes.client import ApiClient, ApiException, CoreV1Api, CustomObjectsApi
 import yaml
 
 from interface import KubernetesClusterPlugin
@@ -92,7 +92,7 @@ class _ClusterOps:
         while True:
             logger.debug(f'creating cluster object for {self.name}')
             try:
-                res = _kubectl_create_cr(co_api, self.namespace, cluster_dict)
+                _kubectl_create_cr(co_api, self.namespace, cluster_dict)
             except ApiException as e:
                 # 409 means that the object already exists
                 if e.status != 409:
@@ -105,7 +105,7 @@ class _ClusterOps:
                 logger.debug(f'cluster object for {self.name} already present in phase {phase}')
                 if phase.lower() in ('provisioned', 'provisioning'):
                     break
-                logger.debug(f'waiting 30 s for cluster to vanish or become provisioned')
+                logger.debug(f'waiting 30 s for cluster {self.name} to vanish or become provisioned')
                 time.sleep(30)
             else:
                 break
