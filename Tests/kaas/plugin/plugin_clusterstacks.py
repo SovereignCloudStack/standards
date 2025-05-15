@@ -124,10 +124,10 @@ class PluginClusterStacks(KubernetesClusterPlugin):
                     for item in res['items']
                     if item['spec']['clusterName'] == name
                 ]
-                working = [item[0] for item in items if item[1] != 'provisioned']
-                if items and not working:
+                in_progress = [item[0] for item in items if item[1] != 'running']
+                if items and not in_progress:
                     break
-                logger.debug(f'waiting 30 s for machines to become ready: {working}')
+                logger.debug(f'waiting 30 s for machines to become ready: {in_progress}')
                 time.sleep(30)
             # mimic `kubectl get secrets NAME -o=jsonpath='{.data.value}' | base64 -d  > kubeconfig.yaml`
             res = kubernetes.client.CoreV1Api(api_client).read_namespaced_secret(secret_name, self.namespace)
