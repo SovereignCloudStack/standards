@@ -25,7 +25,7 @@ class _ClusterOps:
 
     def _get_phase(self, co_api: _csh.CustomObjectsApi):
         try:
-            return _csh.get_cluster_status(co_api, self.namespace, self.name)['status']['phase']
+            return _csh.get_cluster_status(co_api, self.namespace, self.name)['status'].get('phase', 'n/a')
         except ApiException as e:
             if e.status != 404:
                 raise
