@@ -2,7 +2,7 @@ import base64
 import logging
 import os
 import os.path
-from pathlib import Path
+import time
 
 from jinja2 import Environment
 import kubernetes
@@ -85,10 +85,10 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         res = api_instance.list_namespaced_custom_object('clusterstack.x-k8s.io', 'v1alpha1', self.namespace, 'clusterstackreleases')
         # filter items by readiness and kubernetesVersion, select fields of interest: name, version
         items = [
-          (item['metadata']['name'], item['status']['kubernetesVersion'])
-          for item in res['items']
-          if item['status']['ready']
-          if item['status']['kubernetesVersion'].startswith(prefix)
+            (item['metadata']['name'], item['status']['kubernetesVersion'])
+            for item in res['items']
+            if item['status']['ready']
+            if item['status']['kubernetesVersion'].startswith(prefix)
         ]
         # sort filtered result by patch version
         items.sort(key=lambda item: item[1].rsplit('.', 1)[-1])
@@ -135,5 +135,4 @@ class PluginClusterStacks(KubernetesClusterPlugin):
                 fileobj.write(base64.standard_b64decode(res.data['value'].encode()))
 
     def delete_cluster(self):
-        cluster_name = self.config['name']
-        KindCluster(cluster_name).delete()
+        pass  # TODO
