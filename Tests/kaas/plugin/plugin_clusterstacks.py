@@ -4,8 +4,7 @@ import os.path
 import time
 
 from jinja2 import Environment
-import kubernetes
-from kubernetes.client import ApiClient, ApiException, CoreV1Api, CustomObjectsApi
+from kubernetes.client import ApiClient, ApiException
 import yaml
 
 from interface import KubernetesClusterPlugin
@@ -24,7 +23,7 @@ class _ClusterOps:
         self.name = name
         self.secret_name = f'{name}-kubeconfig'
 
-    def _get_phase(self, co_api: CustomObjectsApi):
+    def _get_phase(self, co_api: _csh.CustomObjectsApi):
         try:
             return _csh.get_cluster_status(co_api, self.namespace, self.name)['status']['phase']
         except ApiException as e:
@@ -32,7 +31,7 @@ class _ClusterOps:
                 raise
             return None
 
-    def create(self, co_api: CustomObjectsApi, cluster_dict):
+    def create(self, co_api: _csh.CustomObjectsApi, cluster_dict):
         # repeat this because it's possible that a cluster object exists that is in Deleting phase
         while True:
             logger.debug(f'creating cluster object for {self.name}')
@@ -55,7 +54,7 @@ class _ClusterOps:
             else:
                 break
 
-    def delete(self, co_api: CustomObjectsApi):
+    def delete(self, co_api: _csh.CustomObjectsApi):
         try:
             _csh.delete_cluster(co_api, self.namespace, self.name)
         except ApiException as e:
@@ -77,10 +76,10 @@ class _ClusterOps:
             logger.debug(f'cluster {self.name} still deleting; waiting 4 s for it to vanish')
             time.sleep(4)
 
-    def get_kubeconfig(self, core_api: CoreV1Api):
+    def get_kubeconfig(self, core_api: _csh.CoreV1Api):
         return _csh.get_secret_data(core_api, self.namespace, self.secret_name)
 
-    def wait_for_machines(self, co_api: CustomObjectsApi):
+    def wait_for_machines(self, co_api: _csh.CustomObjectsApi):
         logger.debug(f'checking if cluster {self.name} is ready')
         while True:
             # filter machines by cluster name
@@ -127,14 +126,14 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         self.vars['name'] = self.config['name']
         self.secrets = self.config['secrets']
         self.kubeconfig = yaml.load(self._render_template('kubeconfig'), Loader=yaml.SafeLoader)
-        self.client_config = kubernetes.client.Configuration()
+        self.client_config = _csh.Configuration()
         _csh.setup_client_config(self.client_config, self.kubeconfig, cwd=self.cwd)
         self.namespace = self.kubeconfig['contexts'][0]['context']['namespace']
 
     def _render_template(self, key):
         return self.template_map[key].render(**self.vars, **self.secrets)
 
-    def _auto_vars_syself(self, api_instance: kubernetes.client.CustomObjectsApi):
+    def _auto_vars_syself(self, api_instance: _csh.CustomObjectsApi):
         logging.debug('using autoVars/syself')
         # filter clusterstackreleases by readiness and kubernetesVersion
         version_prefix = f"v{self.config['kubernetesVersion']}."
@@ -152,7 +151,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         cs_class_name, cs_version = max(items, key=lambda item: int(item[1].rsplit('.', 1)[-1]))
         return {'cs_class_name': cs_class_name, 'cs_version': cs_version}
 
-    def _auto_vars(self, auto_vars_kind, co_api: CustomObjectsApi):
+    def _auto_vars(self, auto_vars_kind, co_api: _csh.CustomObjectsApi):
         if not auto_vars_kind:
             return
         if auto_vars_kind == 'syself':
@@ -179,8 +178,8 @@ class PluginClusterStacks(KubernetesClusterPlugin):
 
     def create_cluster(self):
         with ApiClient(self.client_config) as api_client:
-            core_api = CoreV1Api(api_client)
-            co_api = CustomObjectsApi(api_client)
+            core_api = _csh.CoreV1Api(api_client)
+            co_api = _csh.CustomObjectsApi(api_client)
             self._auto_vars(self.config.get('autoVars'), co_api)
             cluster_yaml = self._render_template('cluster')
             cluster_dict = yaml.load(cluster_yaml, Loader=yaml.SafeLoader)
@@ -192,5 +191,5 @@ class PluginClusterStacks(KubernetesClusterPlugin):
 
     def delete_cluster(self):
         with ApiClient(self.client_config) as api_client:
-            co_api = CustomObjectsApi(api_client)
+            co_api = _csh.CustomObjectsApi(api_client)
             _ClusterOps(self.namespace, self.config['name']).delete(co_api)

@@ -2,10 +2,10 @@
 import base64
 import os
 
-from kubernetes.client import CoreV1Api, CustomObjectsApi
+from kubernetes.client import Configuration, CoreV1Api, CustomObjectsApi
 
 
-def setup_client_config(client_config, kubeconfig, cwd='.'):
+def setup_client_config(client_config: Configuration, kubeconfig, cwd='.'):
     """transfer authentication data from kubeconfig to client_config, creating file `ca.crt`s"""
     token = kubeconfig['users'][0]['user']['token']
     client_config.api_key['authorization'] = 'Bearer {}'.format(token)
