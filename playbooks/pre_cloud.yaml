@@ -9,13 +9,13 @@
     #   ansible.builtin.pip:
     #     chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
     #     requirements: "Tests/iaas/requirements.txt"
-    #   when: iaas
+    #   when: iaas | bool
 
     - name: Install kaas dependencies
       ansible.builtin.pip:
         chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
         requirements: "Tests/kaas/requirements.txt"
-      when: kaas
+      when: kaas | bool
 
     - name: Create cloud config dir
       ansible.builtin.file:
@@ -70,11 +70,11 @@
         cmd: python3 Tests/scs-test-runner.py --config Tests/config.toml --debug cleanup --preset {{ preset }}
         chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
       changed_when: true
-      when: do_cleanup
+      when: do_cleanup | bool
 
     - name: Provision necessary clusters
       ansible.builtin.command:
         cmd: python3 Tests/scs-test-runner.py --config Tests/config.toml --debug provision --preset {{ preset }}
         chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
       changed_when: true
-      when: do_provision
+      when: do_provision | bool
