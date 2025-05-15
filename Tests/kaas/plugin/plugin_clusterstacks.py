@@ -4,15 +4,39 @@ import os
 import os.path
 from pathlib import Path
 
-from interface import KubernetesClusterPlugin
 from jinja2 import Environment
 import kubernetes
+from kubernetes.client.exceptions import ApiException
 import yaml
+
+from interface import KubernetesClusterPlugin
 
 logger = logging.getLogger(__name__)
 
 
 TEMPLATE_KEYS = ('cluster', 'clusterstack', 'kubeconfig')
+
+
+def _setup_client_config(client_config, kubeconfig, cwd='.'):
+    """transfer authentication data from kubeconfig to client_config, creating file `ca.crt`s"""
+    token = kubeconfig['users'][0]['user']['token']
+    client_config.api_key['authorization'] = 'Bearer {}'.format(token)
+    client_config.host = kubeconfig['clusters'][0]['cluster']['server']
+    client_config.ssl_ca_cert = os.path.abspath(os.path.join(cwd, 'ca.crt'))
+    with open(client_config.ssl_ca_cert, "wb") as fileobj:
+        fileobj.write(base64.standard_b64decode(
+            kubeconfig['clusters'][0]['cluster']['certificate-authority-data'].encode()
+        ))
+
+
+def _kubectl_apply_cr(api_client, namespace, resource_dict):
+    """mimic `kubectl apply` with a custom resource"""
+    api_instance = kubernetes.client.CustomObjectsApi(api_client)
+    group, ver = resource_dict['apiVersion'].split('/', 1)
+    plural = resource_dict['kind'].lower() + 's'
+    return api_instance.create_namespaced_custom_object(
+        group, ver, namespace, plural, resource_dict, field_manager='plugin_clusterstacks',
+    )
 
 
 def load_templates(env, basepath, fn_map, keys=TEMPLATE_KEYS):
@@ -45,18 +69,13 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         self.vars = self.config['vars']
         self.vars['name'] = self.config['name']
         self.secrets = self.config['secrets']
-        self.kubeconfig = yaml.load(
-            self.template_map['kubeconfig'].render(**self.vars, **self.secrets),
-            Loader=yaml.SafeLoader,
-        )
+        self.kubeconfig = yaml.load(self._render_template('kubeconfig'), Loader=yaml.SafeLoader)
         self.client_config = kubernetes.client.Configuration()
-        token = self.kubeconfig['users'][0]['user']['token']
-        self.client_config.api_key['authorization'] = 'Bearer {}'.format(token)
-        self.client_config.host = self.kubeconfig['clusters'][0]['cluster']['server']
-        self.client_config.ssl_ca_cert = os.path.abspath(os.path.join(self.cwd, 'ca.crt'))
-        with open(self.client_config.ssl_ca_cert, "wb") as fileobj:
-            fileobj.write(base64.standard_b64decode(self.kubeconfig['clusters'][0]['cluster']['certificate-authority-data'].encode()))
+        _setup_client_config(self.client_config, self.kubeconfig, cwd=self.cwd)
         self.namespace = self.kubeconfig['contexts'][0]['context']['namespace']
+
+    def _render_template(self, key):
+        return self.template_map[key].render(**self.vars, **self.secrets)
 
     def auto_vars_syself(self, api_client):
         # beware: the following is quite the incantation
@@ -82,15 +101,38 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         with kubernetes.client.ApiClient(self.client_config) as api_client:
             if self.config.get('autoVars') == 'syself':
                 self.auto_vars_syself(api_client)
-            # write out cluster.yaml for purposes of documentation; we won't use kubectl apply -f
-            cluster_yaml = self.template_map['cluster'].render(**self.vars)
+            # write out cluster.yaml for purposes of documentation
+            # we will however use the dict instead of calling the shell with `kubectl apply -f`
+            cluster_yaml = self._render_template('cluster')
             cluster_dict = yaml.load(cluster_yaml, Loader=yaml.SafeLoader)
             with open(os.path.join(self.cwd, 'cluster.yaml'), "w") as fileobj:
                 fileobj.write(cluster_yaml)
-            # kubernetes.utils.create_from_dict(api_client, cluster_dict)
-            api_instance = kubernetes.client.CustomObjectsApi(api_client)
-            # mimic `kubectl apply -f` (it's a bit more involved with the API)
-            res = api_instance.create_namespaced_custom_object('cluster.x-k8s.io', 'v1beta1', self.namespace, 'clusters', cluster_dict, field_manager='plugin_clusterstacks')
+            try:
+                _kubectl_apply_cr(api_client, self.namespace, cluster_dict)
+            except ApiException as e:
+                # 409 means that the object already exists; don't treat that as error
+                if e.status != 409:
+                    raise
+        name = self.config['name']
+        secret_name = f'{name}-kubeconfig'
+        api_instance = kubernetes.client.CustomObjectsApi(api_client)
+        while True:
+            # mimic `kubectl get machines` (it's a bit more involved with the API)
+            res = api_instance.list_namespaced_custom_object('cluster.x-k8s.io', 'v1beta1', self.namespace, 'machines')
+            items = [
+                (item['metadata']['name'], item['status']['phase'].lower())
+                for item in res['items']
+                if item['spec']['clusterName'] == name
+            ]
+            working = [item[0] for item in items if item[1] != 'provisioned']
+            if not working:
+                break
+            logger.debug('waiting 30 s for machines to become ready:', items)
+            time.sleep(30)
+        # mimic `kubectl get secrets NAME -o=jsonpath='{.data.value}' | base64 -d  > kubeconfig.yaml`
+        res = kubernetes.client.CoreV1Api(api_client).read_namespaced_secret(secret_name, self.namespace)
+        with open(os.path.join(self.cwd, 'kubeconfig.yaml'), 'wb') as fileobj:
+            fileobj.write(base64.standard_b64decode(res.data['value'].encode()))
 
     def delete_cluster(self):
         cluster_name = self.config['name']
