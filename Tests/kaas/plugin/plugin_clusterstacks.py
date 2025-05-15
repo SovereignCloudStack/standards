@@ -113,26 +113,26 @@ class PluginClusterStacks(KubernetesClusterPlugin):
                 # 409 means that the object already exists; don't treat that as error
                 if e.status != 409:
                     raise
-        name = self.config['name']
-        secret_name = f'{name}-kubeconfig'
-        api_instance = kubernetes.client.CustomObjectsApi(api_client)
-        while True:
-            # mimic `kubectl get machines` (it's a bit more involved with the API)
-            res = api_instance.list_namespaced_custom_object('cluster.x-k8s.io', 'v1beta1', self.namespace, 'machines')
-            items = [
-                (item['metadata']['name'], item['status']['phase'].lower())
-                for item in res['items']
-                if item['spec']['clusterName'] == name
-            ]
-            working = [item[0] for item in items if item[1] != 'provisioned']
-            if not working:
-                break
-            logger.debug('waiting 30 s for machines to become ready:', items)
-            time.sleep(30)
-        # mimic `kubectl get secrets NAME -o=jsonpath='{.data.value}' | base64 -d  > kubeconfig.yaml`
-        res = kubernetes.client.CoreV1Api(api_client).read_namespaced_secret(secret_name, self.namespace)
-        with open(os.path.join(self.cwd, 'kubeconfig.yaml'), 'wb') as fileobj:
-            fileobj.write(base64.standard_b64decode(res.data['value'].encode()))
+            name = self.config['name']
+            secret_name = f'{name}-kubeconfig'
+            api_instance = kubernetes.client.CustomObjectsApi(api_client)
+            while True:
+                # mimic `kubectl get machines` (it's a bit more involved with the API)
+                res = api_instance.list_namespaced_custom_object('cluster.x-k8s.io', 'v1beta1', self.namespace, 'machines')
+                items = [
+                    (item['metadata']['name'], item['status']['phase'].lower())
+                    for item in res['items']
+                    if item['spec']['clusterName'] == name
+                ]
+                working = [item[0] for item in items if item[1] != 'provisioned']
+                if not working:
+                    break
+                logger.debug('waiting 30 s for machines to become ready:', items)
+                time.sleep(30)
+            # mimic `kubectl get secrets NAME -o=jsonpath='{.data.value}' | base64 -d  > kubeconfig.yaml`
+            res = kubernetes.client.CoreV1Api(api_client).read_namespaced_secret(secret_name, self.namespace)
+            with open(os.path.join(self.cwd, 'kubeconfig.yaml'), 'wb') as fileobj:
+                fileobj.write(base64.standard_b64decode(res.data['value'].encode()))
 
     def delete_cluster(self):
         cluster_name = self.config['name']
