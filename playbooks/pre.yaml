@@ -8,8 +8,3 @@
       ansible.builtin.pip:
         chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
         requirements: "Tests/requirements.txt"
-    - name: Install kaas dependencies
-      ansible.builtin.pip:
-        chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
-        requirements: "Tests/kaas/requirements.txt"
-      when: '{{ kaas }}'

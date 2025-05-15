@@ -4,6 +4,18 @@
   roles:
     - role: bindep # https://zuul-ci.org/docs/zuul-jobs/latest/general-roles.html#role-bindep
   tasks:
+    # - name: Install iaas dependencies
+    #   ansible.builtin.pip:
+    #     chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
+    #     requirements: "Tests/iaas/requirements.txt"
+    #   when: '{{ iaas }}'
+
+    - name: Install kaas dependencies
+      ansible.builtin.pip:
+        chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
+        requirements: "Tests/kaas/requirements.txt"
+      when: '{{ kaas }}'
+
     - name: Create cloud config dir
       ansible.builtin.file:
         path: "~/.config/openstack"
