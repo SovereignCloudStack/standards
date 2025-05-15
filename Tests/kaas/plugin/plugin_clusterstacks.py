@@ -115,6 +115,10 @@ class PluginClusterStacks(KubernetesClusterPlugin):
     """
     Plugin to handle the provisioning of Kubernetes clusters based on ClusterStacks approach
     to be used for conformance testing
+
+    So far, tested with Syself implementation only. Other ClusterStacks implementations may
+    require a bit of adaptation, e.g., when it comes to the name of the secret that holds
+    the created cluster's kubeconfig.
     """
     def __init__(self, config, basepath='.', cwd='.'):
         self.basepath = basepath
