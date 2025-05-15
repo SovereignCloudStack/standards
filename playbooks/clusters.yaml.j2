@@ -4,6 +4,7 @@ clusters:
     kind: clusterstacks
     config:
       kubernetesVersion: '1.32'
+      name: 'syself-1-32'  # explicit name because dot in name not permissible
       autoVars: syself  # determine cs_class_name and cs_version automatically using kubernetesVersion
       templates:
         cluster: syself-cluster.yaml
@@ -17,6 +18,7 @@ clusters:
     kind: clusterstacks
     config:
       kubernetesVersion: '1.31'
+      name: 'syself-1-31'  # explicit name because dot in name not permissible
       autoVars: syself  # determine cs_class_name and cs_version automatically using kubernetesVersion
       templates:
         cluster: syself-cluster.yaml
@@ -30,6 +32,7 @@ clusters:
     kind: clusterstacks
     config:
       kubernetesVersion: '1.30'
+      name: 'syself-1-30'  # explicit name because dot in name not permissible
       autoVars: syself  # determine cs_class_name and cs_version automatically using kubernetesVersion
       templates:
         cluster: syself-cluster.yaml

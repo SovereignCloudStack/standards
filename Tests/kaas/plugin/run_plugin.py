@@ -41,8 +41,9 @@ def init_plugin(plugin_kind, config, cwd='.'):
 
 
 @click.group()
-def cli():
-    pass
+@click.option('-d', '--debug', 'debug', is_flag=True)
+def cli(debug=False):
+    logging.Logger.root.setLevel(logging.DEBUG if debug else logging.INFO)
 
 
 @cli.command()
@@ -51,7 +52,7 @@ def cli():
 def create(cfg, cluster_id):
     spec = cfg['clusters'][cluster_id]
     config = spec['config']
-    config['name'] = cluster_id
+    config.setdefault('name', cluster_id)
     cwd = os.path.abspath(cluster_id)
     init_plugin(spec['kind'], config, cwd).create_cluster()
 
@@ -62,7 +63,7 @@ def create(cfg, cluster_id):
 def delete(cfg, cluster_id):
     spec = cfg['clusters'][cluster_id]
     config = spec['config']
-    config['name'] = cluster_id
+    config.setdefault('name', cluster_id)
     cwd = os.path.abspath(cluster_id)
     init_plugin(spec['kind'], config, cwd).delete_cluster()
 

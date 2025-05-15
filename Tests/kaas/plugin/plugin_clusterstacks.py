@@ -12,6 +12,7 @@ import yaml
 from interface import KubernetesClusterPlugin
 
 logger = logging.getLogger(__name__)
+logging.getLogger("kubernetes").setLevel(logging.INFO)
 
 
 TEMPLATE_KEYS = ('cluster', 'clusterstack', 'kubeconfig')
@@ -63,7 +64,6 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         self.basepath = basepath
         self.cwd = cwd
         self.config = config
-        logger.debug(self.config)
         self.env = Environment()
         self.template_map = load_templates(self.env, self.basepath, self.config['templates'])
         self.vars = self.config['vars']
@@ -125,9 +125,9 @@ class PluginClusterStacks(KubernetesClusterPlugin):
                     if item['spec']['clusterName'] == name
                 ]
                 working = [item[0] for item in items if item[1] != 'provisioned']
-                if not working:
+                if items and not working:
                     break
-                logger.debug('waiting 30 s for machines to become ready:', items)
+                logger.debug(f'waiting 30 s for machines to become ready: {working}')
                 time.sleep(30)
             # mimic `kubectl get secrets NAME -o=jsonpath='{.data.value}' | base64 -d  > kubeconfig.yaml`
             res = kubernetes.client.CoreV1Api(api_client).read_namespaced_secret(secret_name, self.namespace)
