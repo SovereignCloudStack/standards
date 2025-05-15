@@ -31,6 +31,7 @@
     nodeset: pod-fedora-40
     vars:
       preset: default
+      kaas: false
       do_provision: false
       do_cleanup: true
     pre-run:
@@ -53,5 +54,6 @@
     parent: scs-check-scs2-main
     vars:
       preset: kaas
+      kaas: true
       do_provision: true
       do_cleanup: false
