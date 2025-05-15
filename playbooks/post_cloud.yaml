@@ -1,0 +1,17 @@
+---
+- name: Potentially cleanup cloud after run
+  hosts: all
+  tasks:
+    - name: Clean up any lingering resources
+      ansible.builtin.command:
+        cmd: python3 Tests/scs-test-runner.py --config Tests/config.toml --debug cleanup --preset {{ preset }}
+        chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
+      changed_when: true
+      when: '{{ do_cleanup }}'
+
+    - name: Unprovision clusters
+      ansible.builtin.command:
+        cmd: python3 Tests/scs-test-runner.py --config Tests/config.toml --debug unprovision --preset {{ preset }}
+        chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
+      changed_when: true
+      when: '{{ do_provision }}'
