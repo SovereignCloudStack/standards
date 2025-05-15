@@ -12,7 +12,7 @@ subjects = [
 ]
 
 
-[presets.all]
+[presets.iaas]
 scopes = [
     "scs-compatible-iaas",
 ]

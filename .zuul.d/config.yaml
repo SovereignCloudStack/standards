@@ -49,7 +49,7 @@
     name: scs-check-iaas
     parent: scs-check-scs2-main
     vars:
-      preset: all
+      preset: iaas
 - job:
     name: scs-check-kaas
     parent: scs-check-scs2-main
