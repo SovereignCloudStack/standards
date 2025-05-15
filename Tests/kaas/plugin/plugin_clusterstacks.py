@@ -1,4 +1,3 @@
-import base64
 import logging
 import os
 import os.path
@@ -10,67 +9,13 @@ from kubernetes.client import ApiClient, ApiException, CoreV1Api, CustomObjectsA
 import yaml
 
 from interface import KubernetesClusterPlugin
+import cs_helper as _csh
 
 logger = logging.getLogger(__name__)
 logging.getLogger("kubernetes").setLevel(logging.INFO)
 
 
 TEMPLATE_KEYS = ('cluster', 'clusterstack', 'kubeconfig')
-
-
-def _setup_client_config(client_config, kubeconfig, cwd='.'):
-    """transfer authentication data from kubeconfig to client_config, creating file `ca.crt`s"""
-    token = kubeconfig['users'][0]['user']['token']
-    client_config.api_key['authorization'] = 'Bearer {}'.format(token)
-    client_config.host = kubeconfig['clusters'][0]['cluster']['server']
-    client_config.ssl_ca_cert = os.path.abspath(os.path.join(cwd, 'ca.crt'))
-    with open(client_config.ssl_ca_cert, "wb") as fileobj:
-        fileobj.write(base64.standard_b64decode(
-            kubeconfig['clusters'][0]['cluster']['certificate-authority-data'].encode()
-        ))
-
-
-def _kubectl_create_cr(api_instance: CustomObjectsApi, namespace, resource_dict):
-    """mimic `kubectl apply` (rather create) with a custom resource"""
-    group, ver = resource_dict['apiVersion'].split('/', 1)
-    plural = resource_dict['kind'].lower() + 's'
-    return api_instance.create_namespaced_custom_object(
-        group, ver, namespace, plural, resource_dict, field_manager='plugin_clusterstacks',
-    )
-
-
-def _kubectl_get_clusterstackreleases(api_instance: CustomObjectsApi, namespace):
-    """mimic `kubectl get clusterstackreleases`"""
-    return api_instance.list_namespaced_custom_object(
-        'clusterstack.x-k8s.io', 'v1alpha1', namespace, 'clusterstackreleases',
-    )['items']
-
-
-def _kubectl_get_machines(api_instance: CustomObjectsApi, namespace):
-    """mimic `kubectl get machines`"""
-    return api_instance.list_namespaced_custom_object(
-        'cluster.x-k8s.io', 'v1beta1', namespace, 'machines',
-    )['items']
-
-
-def _kubectl_get_secret_data(api_instance: CoreV1Api, namespace, secret):
-    """mimic `kubectl get secrets NAME -o=jsonpath='{.data.value}' | base64 -d  > kubeconfig.yaml`"""
-    res = api_instance.read_namespaced_secret(secret, namespace)
-    return base64.standard_b64decode(res.data['value'].encode())
-
-
-def _get_cluster_status(api_instance: CustomObjectsApi, namespace, name):
-    return api_instance.get_namespaced_custom_object_status(
-        'cluster.x-k8s.io', 'v1beta1', namespace, 'clusters', name
-    )
-
-
-def _kubectl_delete_cluster(api_instance: CustomObjectsApi, namespace, name):
-    """mimic `kubectl delete cluster`"""
-    # beware: do not fiddle with propagation policy here, as this may lead to severe problems
-    return api_instance.delete_namespaced_custom_object(
-        'cluster.x-k8s.io', 'v1beta1', namespace, 'clusters', name,
-    )
 
 
 class _ClusterOps:
@@ -81,7 +26,7 @@ class _ClusterOps:
 
     def _get_phase(self, co_api: CustomObjectsApi):
         try:
-            return _get_cluster_status(co_api, self.namespace, self.name)['status']['phase']
+            return _csh.get_cluster_status(co_api, self.namespace, self.name)['status']['phase']
         except ApiException as e:
             if e.status != 404:
                 raise
@@ -92,7 +37,7 @@ class _ClusterOps:
         while True:
             logger.debug(f'creating cluster object for {self.name}')
             try:
-                _kubectl_create_cr(co_api, self.namespace, cluster_dict)
+                _csh.create_cr(co_api, self.namespace, cluster_dict)
             except ApiException as e:
                 # 409 means that the object already exists
                 if e.status != 409:
@@ -112,7 +57,7 @@ class _ClusterOps:
 
     def delete(self, co_api: CustomObjectsApi):
         try:
-            _kubectl_delete_cluster(co_api, self.namespace, self.name)
+            _csh.delete_cluster(co_api, self.namespace, self.name)
         except ApiException as e:
             if e.status == 404:
                 logger.debug(f'cluster {self.name} not present')
@@ -133,7 +78,7 @@ class _ClusterOps:
             time.sleep(4)
 
     def get_kubeconfig(self, core_api: CoreV1Api):
-        return _kubectl_get_secret_data(core_api, self.namespace, self.secret_name)
+        return _csh.get_secret_data(core_api, self.namespace, self.secret_name)
 
     def wait_for_machines(self, co_api: CustomObjectsApi):
         logger.debug(f'checking if cluster {self.name} is ready')
@@ -141,7 +86,7 @@ class _ClusterOps:
             # filter machines by cluster name
             items = [
                 (item['metadata']['name'], item['status'].get('phase', 'n/a'))
-                for item in _kubectl_get_machines(co_api, self.namespace)
+                for item in _csh.get_machines(co_api, self.namespace)
                 if item['spec']['clusterName'] == self.name
             ]
             in_progress = [item[0] for item in items if item[1].lower() != 'running']
@@ -169,8 +114,8 @@ def load_templates(env, basepath, fn_map, keys=TEMPLATE_KEYS):
 
 class PluginClusterStacks(KubernetesClusterPlugin):
     """
-    Plugin to handle the provisioning of kubernetes cluster for
-    conformance testing purpose with the use of Kind
+    Plugin to handle the provisioning of Kubernetes clusters based on ClusterStacks approach
+    to be used for conformance testing
     """
     def __init__(self, config, basepath='.', cwd='.'):
         self.basepath = basepath
@@ -183,7 +128,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         self.secrets = self.config['secrets']
         self.kubeconfig = yaml.load(self._render_template('kubeconfig'), Loader=yaml.SafeLoader)
         self.client_config = kubernetes.client.Configuration()
-        _setup_client_config(self.client_config, self.kubeconfig, cwd=self.cwd)
+        _csh.setup_client_config(self.client_config, self.kubeconfig, cwd=self.cwd)
         self.namespace = self.kubeconfig['contexts'][0]['context']['namespace']
 
     def _render_template(self, key):
@@ -196,7 +141,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         # select fields of interest: name, version
         items = [
             (item['metadata']['name'], item['status']['kubernetesVersion'])
-            for item in _kubectl_get_clusterstackreleases(api_instance, self.namespace)
+            for item in _csh.get_clusterstackreleases(api_instance, self.namespace)
             if item['status']['ready']
             if item['status']['kubernetesVersion'].startswith(version_prefix)
         ]

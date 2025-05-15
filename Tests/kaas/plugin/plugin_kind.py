@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 class PluginKind(KubernetesClusterPlugin):
     """
-    Plugin to handle the provisioning of kubernetes cluster for
-    conformance testing purpose with the use of Kind
+    Plugin to handle the provisioning of Kubernetes clusters based on Kind
+    to be used for conformance testing
     """
     def __init__(self, config, basepath='.', cwd='.'):
         self.basepath = basepath
