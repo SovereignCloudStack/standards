@@ -6,7 +6,7 @@ import time
 
 from jinja2 import Environment
 import kubernetes
-from kubernetes.client.exceptions import ApiException
+from kubernetes.client import ApiClient, ApiException, CoreV1Api, CustomObjectsApi, V1DeleteOptions
 import yaml
 
 from interface import KubernetesClusterPlugin
@@ -30,14 +30,126 @@ def _setup_client_config(client_config, kubeconfig, cwd='.'):
         ))
 
 
-def _kubectl_apply_cr(api_client, namespace, resource_dict):
-    """mimic `kubectl apply` with a custom resource"""
-    api_instance = kubernetes.client.CustomObjectsApi(api_client)
+def _kubectl_create_cr(api_instance: CustomObjectsApi, namespace, resource_dict):
+    """mimic `kubectl apply` (rather create) with a custom resource"""
     group, ver = resource_dict['apiVersion'].split('/', 1)
     plural = resource_dict['kind'].lower() + 's'
     return api_instance.create_namespaced_custom_object(
         group, ver, namespace, plural, resource_dict, field_manager='plugin_clusterstacks',
     )
+
+
+def _kubectl_get_clusterstackreleases(api_instance: CustomObjectsApi, namespace):
+    """mimic `kubectl get clusterstackreleases`"""
+    return api_instance.list_namespaced_custom_object(
+        'clusterstack.x-k8s.io', 'v1alpha1', namespace, 'clusterstackreleases',
+    )['items']
+
+
+def _kubectl_get_machines(api_instance: CustomObjectsApi, namespace):
+    """mimic `kubectl get machines`"""
+    return api_instance.list_namespaced_custom_object(
+        'cluster.x-k8s.io', 'v1beta1', namespace, 'machines',
+    )['items']
+
+
+def _kubectl_get_secret_data(api_instance: CoreV1Api, namespace, secret):
+    """mimic `kubectl get secrets NAME -o=jsonpath='{.data.value}' | base64 -d  > kubeconfig.yaml`"""
+    res = api_instance.read_namespaced_secret(secret, namespace)
+    return base64.standard_b64decode(res.data['value'].encode())
+
+
+def _get_cluster_status(api_instance: CustomObjectsApi, namespace, name):
+    return api_instance.get_namespaced_custom_object_status(
+        'cluster.x-k8s.io', 'v1beta1', namespace, 'clusters', name
+    )
+
+
+def _kubectl_delete_cluster(api_instance: CustomObjectsApi, namespace, name):
+    """mimic `kubectl delete cluster`"""
+    # beware: do not fiddle with propagation policy here, as this may lead to severe problems
+    return api_instance.delete_namespaced_custom_object(
+        'cluster.x-k8s.io', 'v1beta1', namespace, 'clusters', name,
+    )
+
+
+class _ClusterOps:
+    def __init__(self, namespace: str, name: str):
+        self.namespace = namespace
+        self.name = name
+        self.secret_name = f'{name}-kubeconfig'
+
+    def _get_phase(self, co_api: CustomObjectsApi):
+        try:
+            return _get_cluster_status(co_api, self.namespace, self.name)['status']['phase']
+        except ApiException as e:
+            if e.status != 404:
+                raise
+            return None
+
+    def create(self, co_api: CustomObjectsApi, cluster_dict):
+        # repeat this because it's possible that a cluster object exists that is in Deleting phase
+        while True:
+            logger.debug(f'creating cluster object for {self.name}')
+            try:
+                res = _kubectl_create_cr(co_api, self.namespace, cluster_dict)
+            except ApiException as e:
+                # 409 means that the object already exists
+                if e.status != 409:
+                    raise
+                # check status: if it's provisioning or provisioned, we are good
+                phase = self._get_phase(co_api)
+                if phase is None:
+                    logger.debug(f'cluster object for {self.name} was present, has disappeared, retry')
+                    continue
+                logger.debug(f'cluster object for {self.name} already present in phase {phase}')
+                if phase.lower() in ('provisioned', 'provisioning'):
+                    break
+                logger.debug(f'waiting 30 s for cluster to vanish or become provisioned')
+                time.sleep(30)
+            else:
+                break
+
+    def delete(self, co_api: CustomObjectsApi):
+        try:
+            _kubectl_delete_cluster(co_api, self.namespace, self.name)
+        except ApiException as e:
+            if e.status == 404:
+                logger.debug(f'cluster {self.name} not present')
+                return
+            raise
+        # wait a bit, because the phase attribute seems to be delayed a bit
+        # also, wait a bit longer, because if deletion was just requested (as is typical),
+        # it will take at least 5 s
+        logger.debug(f'cluster {self.name} deletion requested; waiting 5 s for it to vanish')
+        time.sleep(5)
+        while True:
+            phase = self._get_phase(co_api)
+            if phase is None:
+                break
+            if phase.lower() != 'deleting':
+                raise RuntimeError(f'cluster {self.name} in phase {phase}; expected: Deleting')
+            logger.debug(f'cluster {self.name} still deleting; waiting 4 s for it to vanish')
+            time.sleep(4)
+
+    def get_kubeconfig(self, core_api: CoreV1Api):
+        return _kubectl_get_secret_data(core_api, self.namespace, self.secret_name)
+
+    def wait_for_machines(self, co_api: CustomObjectsApi):
+        logger.debug(f'checking if cluster {self.name} is ready')
+        while True:
+            # filter machines by cluster name
+            items = [
+                (item['metadata']['name'], item['status'].get('phase', 'n/a'))
+                for item in _kubectl_get_machines(co_api, self.namespace)
+                if item['spec']['clusterName'] == self.name
+            ]
+            in_progress = [item[0] for item in items if item[1].lower() != 'running']
+            if items and not in_progress:
+                break
+            logger.debug(f'waiting 30 s for machines to become ready: {in_progress or "none yet"}')
+            time.sleep(30)
+        logger.debug(f'cluster {self.name} appears to be ready')
 
 
 def load_templates(env, basepath, fn_map, keys=TEMPLATE_KEYS):
@@ -77,62 +189,63 @@ class PluginClusterStacks(KubernetesClusterPlugin):
     def _render_template(self, key):
         return self.template_map[key].render(**self.vars, **self.secrets)
 
-    def auto_vars_syself(self, api_client):
-        # beware: the following is quite the incantation
-        prefix = f"v{self.config['kubernetesVersion']}"
-        api_instance = kubernetes.client.CustomObjectsApi(api_client)
-        # mimic `kubectl get clusterstackrelease` (it's a bit more involved with the API)
-        res = api_instance.list_namespaced_custom_object('clusterstack.x-k8s.io', 'v1alpha1', self.namespace, 'clusterstackreleases')
-        # filter items by readiness and kubernetesVersion, select fields of interest: name, version
+    def _auto_vars_syself(self, api_instance: kubernetes.client.CustomObjectsApi):
+        logging.debug('using autoVars/syself')
+        # filter clusterstackreleases by readiness and kubernetesVersion
+        version_prefix = f"v{self.config['kubernetesVersion']}."
+        # select fields of interest: name, version
         items = [
             (item['metadata']['name'], item['status']['kubernetesVersion'])
-            for item in res['items']
+            for item in _kubectl_get_clusterstackreleases(api_instance, self.namespace)
             if item['status']['ready']
-            if item['status']['kubernetesVersion'].startswith(prefix)
+            if item['status']['kubernetesVersion'].startswith(version_prefix)
         ]
-        # sort filtered result by patch version
-        items.sort(key=lambda item: item[1].rsplit('.', 1)[-1])
-        # select latest
-        cs_class_name, cs_version = items[-1]
-        self.vars.setdefault('cs_class_name', cs_class_name)
-        self.vars.setdefault('cs_version', cs_version)
+        logging.debug(f'matching ClusterStackReleases: {items}')
+        if not items:
+            raise RuntimeError(f'autoVars/syself failed: no ClusterStackRelease found for {version_prefix}x')
+        # select latest patch version (assume patch part is numeric)
+        cs_class_name, cs_version = max(items, key=lambda item: int(item[1].rsplit('.', 1)[-1]))
+        return {'cs_class_name': cs_class_name, 'cs_version': cs_version}
+
+    def _auto_vars(self, auto_vars_kind, co_api: CustomObjectsApi):
+        if not auto_vars_kind:
+            return
+        if auto_vars_kind == 'syself':
+            auto_vars = self._auto_vars_syself(co_api)
+        else:
+            raise RuntimeError(f'unknown kind of autoVars: {auto_vars_kind}')
+        logger.debug(f'applying autoVars/{auto_vars_kind}: {auto_vars}')
+        self.vars.update(auto_vars)
+
+    def _write_cluster_yaml(self, cluster_yaml):
+        # write out cluster.yaml for purposes of documentation
+        # we will however use the dict instead of calling the shell with `kubectl apply -f`
+        cluster_yaml_path = os.path.join(self.cwd, 'cluster.yaml')
+        logger.debug(f'writing out {cluster_yaml_path}')
+        with open(cluster_yaml_path, "w") as fileobj:
+            fileobj.write(cluster_yaml)
+
+    def _write_kubeconfig(self, kubeconfig):
+        # write out kubeconfig.yaml
+        kubeconfig_path = os.path.join(self.cwd, 'kubeconfig.yaml')
+        logger.debug(f'writing out {kubeconfig_path}')
+        with open(kubeconfig_path, 'wb') as fileobj:
+            fileobj.write(kubeconfig)
 
     def create_cluster(self):
-        with kubernetes.client.ApiClient(self.client_config) as api_client:
-            if self.config.get('autoVars') == 'syself':
-                self.auto_vars_syself(api_client)
-            # write out cluster.yaml for purposes of documentation
-            # we will however use the dict instead of calling the shell with `kubectl apply -f`
+        with ApiClient(self.client_config) as api_client:
+            core_api = CoreV1Api(api_client)
+            co_api = CustomObjectsApi(api_client)
+            self._auto_vars(self.config.get('autoVars'), co_api)
             cluster_yaml = self._render_template('cluster')
             cluster_dict = yaml.load(cluster_yaml, Loader=yaml.SafeLoader)
-            with open(os.path.join(self.cwd, 'cluster.yaml'), "w") as fileobj:
-                fileobj.write(cluster_yaml)
-            try:
-                _kubectl_apply_cr(api_client, self.namespace, cluster_dict)
-            except ApiException as e:
-                # 409 means that the object already exists; don't treat that as error
-                if e.status != 409:
-                    raise
-            name = self.config['name']
-            secret_name = f'{name}-kubeconfig'
-            api_instance = kubernetes.client.CustomObjectsApi(api_client)
-            while True:
-                # mimic `kubectl get machines` (it's a bit more involved with the API)
-                res = api_instance.list_namespaced_custom_object('cluster.x-k8s.io', 'v1beta1', self.namespace, 'machines')
-                items = [
-                    (item['metadata']['name'], item['status']['phase'].lower())
-                    for item in res['items']
-                    if item['spec']['clusterName'] == name
-                ]
-                in_progress = [item[0] for item in items if item[1] != 'running']
-                if items and not in_progress:
-                    break
-                logger.debug(f'waiting 30 s for machines to become ready: {in_progress}')
-                time.sleep(30)
-            # mimic `kubectl get secrets NAME -o=jsonpath='{.data.value}' | base64 -d  > kubeconfig.yaml`
-            res = kubernetes.client.CoreV1Api(api_client).read_namespaced_secret(secret_name, self.namespace)
-            with open(os.path.join(self.cwd, 'kubeconfig.yaml'), 'wb') as fileobj:
-                fileobj.write(base64.standard_b64decode(res.data['value'].encode()))
+            self._write_cluster_yaml(cluster_yaml)
+            cops = _ClusterOps(self.namespace, self.config['name'])
+            cops.create(co_api, cluster_dict)
+            cops.wait_for_machines(co_api)
+            self._write_kubeconfig(cops.get_kubeconfig(core_api))
 
     def delete_cluster(self):
-        pass  # TODO
+        with ApiClient(self.client_config) as api_client:
+            co_api = CustomObjectsApi(api_client)
+            _ClusterOps(self.namespace, self.config['name']).delete(co_api)

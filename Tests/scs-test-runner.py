@@ -85,35 +85,19 @@ class Config:
         return {'args': args}
 
     def build_provision_command(self, subject):
-        kubernetes_setup = self.get_kubernetes_setup(subject)
-        subject_root = self.abspath(self.get_subject_mapping(subject).get('subject_root') or '.')
-        ensure_dir(subject_root)
         return {
             'args': [
                 sys.executable, self.run_plugin_py,
-                'create',
-                kubernetes_setup['kube_plugin'],
-                self.abspath(kubernetes_setup['kube_plugin_config']),
-                self.abspath(kubernetes_setup['clusterspec']),
-                kubernetes_setup['clusterspec_cluster'],
+                '--debug', 'create', subject,
             ],
-            'cwd': subject_root,
         }
 
     def build_unprovision_command(self, subject):
-        kubernetes_setup = self.get_kubernetes_setup(subject)
-        subject_root = self.abspath(self.get_subject_mapping(subject).get('subject_root') or '.')
-        ensure_dir(subject_root)
         return {
             'args': [
                 sys.executable, self.run_plugin_py,
-                'delete',
-                kubernetes_setup['kube_plugin'],
-                self.abspath(kubernetes_setup['kube_plugin_config']),
-                self.abspath(kubernetes_setup['clusterspec']),
-                kubernetes_setup['clusterspec_cluster'],
+                '--debug', 'delete', subject,
             ],
-            'cwd': subject_root,
         }
 
     def build_cleanup_command(self, subject):
