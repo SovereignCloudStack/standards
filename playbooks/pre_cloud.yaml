@@ -2,7 +2,8 @@
 - name: Prepare cloud config and ensure clean env
   hosts: all
   roles:
-    - role: bindep # https://zuul-ci.org/docs/zuul-jobs/latest/general-roles.html#role-bindep
+    - role: bindep  # https://zuul-ci.org/docs/zuul-jobs/latest/general-roles.html#role-bindep
+    - role: ensure-pip  # https://zuul-ci.org/docs/zuul-jobs/latest/python-roles.html#role-ensure-pip
   tasks:
     # - name: Install iaas dependencies
     #   ansible.builtin.pip:
