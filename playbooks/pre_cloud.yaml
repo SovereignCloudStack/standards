@@ -5,11 +5,11 @@
     - role: bindep  # https://zuul-ci.org/docs/zuul-jobs/latest/general-roles.html#role-bindep
     - role: ensure-pip  # https://zuul-ci.org/docs/zuul-jobs/latest/python-roles.html#role-ensure-pip
   tasks:
-    # - name: Install iaas dependencies
-    #   ansible.builtin.pip:
-    #     chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
-    #     requirements: "Tests/iaas/requirements.txt"
-    #   when: iaas | bool
+    - name: Install iaas dependencies
+      ansible.builtin.pip:
+        chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
+        requirements: "Tests/iaas/requirements.txt"
+      when: iaas | bool
 
     - name: Install kaas dependencies
       ansible.builtin.pip:
