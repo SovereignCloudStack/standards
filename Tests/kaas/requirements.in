@@ -1,4 +1,5 @@
 pytest-kind
 kubernetes
+kubernetes_asyncio
 jinja2
 junitparser
