@@ -32,7 +32,7 @@ class Config:
     def __init__(self):
         self.cwd = os.path.abspath(os.path.dirname(sys.argv[0]) or os.getcwd())
         self.scs_compliance_check = os.path.join(self.cwd, 'scs-compliance-check.py')
-        self.cleanup_py = os.path.join(self.cwd, 'cleanup.py')
+        self.cleanup_py = os.path.join(self.cwd, 'iaas', 'cleanup.py')
         self.run_plugin_py = os.path.join(self.cwd, 'kaas', 'plugin', 'run_plugin.py')
         self.ssh_keygen = shutil.which('ssh-keygen')
         self.curl = shutil.which('curl')
