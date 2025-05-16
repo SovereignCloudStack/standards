@@ -23,6 +23,16 @@ class _ClusterOps:
         self.name = name
         self.secret_name = f'{name}-kubeconfig'
 
+    def _get_condition_ready(self, co_api: _csh.CustomObjectsApi):
+        # be defensive here, for none of the fields need exist in early stages of the object's life
+        status = _csh.get_cluster_status(co_api, self.namespace, self.name).get('status', {})
+        return bool([
+            cond
+            for cond in status.get('conditions', ())
+            if cond.get('type', '').lower() == 'ready'
+            if cond.get('status', '').lower() == 'true'
+        ])
+
     def _get_phase(self, co_api: _csh.CustomObjectsApi):
         try:
             return _csh.get_cluster_status(co_api, self.namespace, self.name)['status'].get('phase', 'n/a')
@@ -64,34 +74,24 @@ class _ClusterOps:
             raise
         # wait a bit, because the phase attribute seems to be delayed a bit
         # also, wait a bit longer, because if deletion was just requested (as is typical),
-        # it will take at least 5 s
-        logger.debug(f'cluster {self.name} deletion requested; waiting 5 s for it to vanish')
-        time.sleep(5)
+        # it will take at least 5 s (and way longer if the cluster is already running)
+        logger.debug(f'cluster {self.name} deletion requested; waiting 8 s for it to vanish')
+        time.sleep(8)
         while True:
             phase = self._get_phase(co_api)
             if phase is None:
                 break
             if phase.lower() != 'deleting':
                 raise RuntimeError(f'cluster {self.name} in phase {phase}; expected: Deleting')
-            logger.debug(f'cluster {self.name} still deleting; waiting 4 s for it to vanish')
-            time.sleep(4)
+            logger.debug(f'cluster {self.name} still deleting; waiting 30 s for it to vanish')
+            time.sleep(30)
 
     def get_kubeconfig(self, core_api: _csh.CoreV1Api):
         return _csh.get_secret_data(core_api, self.namespace, self.secret_name)
 
-    def wait_for_machines(self, co_api: _csh.CustomObjectsApi):
-        logger.debug(f'checking if cluster {self.name} is ready')
-        while True:
-            # filter machines by cluster name
-            items = [
-                (item['metadata']['name'], item['status'].get('phase', 'n/a'))
-                for item in _csh.get_machines(co_api, self.namespace)
-                if item['spec']['clusterName'] == self.name
-            ]
-            in_progress = [item[0] for item in items if item[1].lower() != 'running']
-            if items and not in_progress:
-                break
-            logger.debug(f'waiting 30 s for machines to become ready: {in_progress or "none yet"}')
+    def wait_for_cluster_ready(self, co_api: _csh.CustomObjectsApi):
+        while not self._get_condition_ready(co_api):
+            logger.debug(f'waiting 30 s for cluster {self.name} to become ready')
             time.sleep(30)
         logger.debug(f'cluster {self.name} appears to be ready')
 
@@ -190,7 +190,7 @@ class PluginClusterStacks(KubernetesClusterPlugin):
             self._write_cluster_yaml(cluster_yaml)
             cops = _ClusterOps(self.namespace, self.config['name'])
             cops.create(co_api, cluster_dict)
-            cops.wait_for_machines(co_api)
+            cops.wait_for_cluster_ready(co_api)
             self._write_kubeconfig(cops.get_kubeconfig(core_api))
 
     def delete_cluster(self):

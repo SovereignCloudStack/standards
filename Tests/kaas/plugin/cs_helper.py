@@ -33,13 +33,6 @@ def get_clusterstackreleases(api_instance: CustomObjectsApi, namespace):
     )['items']
 
 
-def get_machines(api_instance: CustomObjectsApi, namespace):
-    """mimic `kubectl get machines`"""
-    return api_instance.list_namespaced_custom_object(
-        'cluster.x-k8s.io', 'v1beta1', namespace, 'machines',
-    )['items']
-
-
 def get_secret_data(api_instance: CoreV1Api, namespace, secret):
     """mimic `kubectl get secrets NAME -o=jsonpath='{.data.value}' | base64 -d  > kubeconfig.yaml`"""
     res = api_instance.read_namespaced_secret(secret, namespace)
