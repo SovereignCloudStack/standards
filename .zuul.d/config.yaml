@@ -5,7 +5,8 @@
     merge-mode: "squash-merge"
     periodic-daily:
       jobs:
-        - scs-check-all
+        - scs-check-iaas
+        - scs-check-kaas
     periodic-hourly:
       jobs:
         - scs-check-scs2-main
@@ -30,16 +31,31 @@
     nodeset: pod-fedora-40
     vars:
       preset: default
+      iaas: true
+      kaas: false
+      do_provision: false
+      do_cleanup: true
     pre-run:
      - playbooks/pre.yaml
      - playbooks/pre_cloud.yaml
     run: playbooks/compliance_check.yaml
+    post-run:
+     - playbooks/post_cloud.yaml
 - job:
     name: scs-check-scs2-main
     parent: scs-check-scs2
     branches: main
 - job:
-    name: scs-check-all
+    name: scs-check-iaas
     parent: scs-check-scs2-main
     vars:
-      preset: all
+      preset: iaas
+- job:
+    name: scs-check-kaas
+    parent: scs-check-scs2-main
+    vars:
+      preset: kaas
+      iaas: false
+      kaas: true
+      do_provision: true
+      do_cleanup: false

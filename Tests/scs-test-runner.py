@@ -65,12 +65,6 @@ class Config:
         mapping.update(self.subjects.get(subject, {}).get('mapping', {}))
         return mapping
 
-    def get_kubernetes_setup(self, subject):
-        default_kubernetes_setup = self.subjects.get('_', {}).get('kubernetes_setup', {})
-        kubernetes_setup = dict(default_kubernetes_setup)
-        kubernetes_setup.update(self.subjects.get(subject, {}).get('kubernetes_setup', {}))
-        return kubernetes_setup
-
     def abspath(self, path):
         return os.path.join(self.cwd, path)
 
@@ -85,36 +79,14 @@ class Config:
         return {'args': args}
 
     def build_provision_command(self, subject):
-        kubernetes_setup = self.get_kubernetes_setup(subject)
-        subject_root = self.abspath(self.get_subject_mapping(subject).get('subject_root') or '.')
-        ensure_dir(subject_root)
-        return {
-            'args': [
-                sys.executable, self.run_plugin_py,
-                'create',
-                kubernetes_setup['kube_plugin'],
-                self.abspath(kubernetes_setup['kube_plugin_config']),
-                self.abspath(kubernetes_setup['clusterspec']),
-                kubernetes_setup['clusterspec_cluster'],
-            ],
-            'cwd': subject_root,
-        }
+        return {'args': [
+            sys.executable, self.run_plugin_py, '--debug', 'create', subject,
+        ]}
 
     def build_unprovision_command(self, subject):
-        kubernetes_setup = self.get_kubernetes_setup(subject)
-        subject_root = self.abspath(self.get_subject_mapping(subject).get('subject_root') or '.')
-        ensure_dir(subject_root)
-        return {
-            'args': [
-                sys.executable, self.run_plugin_py,
-                'delete',
-                kubernetes_setup['kube_plugin'],
-                self.abspath(kubernetes_setup['kube_plugin_config']),
-                self.abspath(kubernetes_setup['clusterspec']),
-                kubernetes_setup['clusterspec_cluster'],
-            ],
-            'cwd': subject_root,
-        }
+        return {'args': [
+            sys.executable, self.run_plugin_py, '--debug', 'delete', subject,
+        ]}
 
     def build_cleanup_command(self, subject):
         # TODO figure out when to supply --debug here (but keep separated from our --debug)
