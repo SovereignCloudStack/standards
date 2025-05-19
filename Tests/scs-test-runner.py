@@ -79,14 +79,22 @@ class Config:
         return {'args': args}
 
     def build_provision_command(self, subject):
-        return {'args': [
-            sys.executable, self.run_plugin_py, '--debug', 'create', subject,
-        ]}
+        # This command will create the file `$subject/kubeconfig.yaml` relative to the current working dir.
+        # The check script OTOH will expect `$subject/kubeconfig.yaml` relative to the location of the spec
+        # file (scs-compatible-kaas.yaml). We reconcile these two realms by (tacitly) requiring that the
+        # spec file be located in the same directory as this script (known as self.cwd).
+        # This 'solution' leaves room for improvement (we could model the execution environment explicitly),
+        # but for now, let's not overengineer.
+        return {
+            'args': [sys.executable, self.run_plugin_py, '--debug', 'create', subject],
+            'cwd': self.cwd,
+        }
 
     def build_unprovision_command(self, subject):
-        return {'args': [
-            sys.executable, self.run_plugin_py, '--debug', 'delete', subject,
-        ]}
+        return {
+            'args': [sys.executable, self.run_plugin_py, '--debug', 'delete', subject],
+            'cwd': self.cwd,
+        }
 
     def build_cleanup_command(self, subject):
         # TODO figure out when to supply --debug here (but keep separated from our --debug)
