@@ -25,7 +25,7 @@
 
     - name: Install Sonobuoy
       ansible.builtin.shell:
-        curl -L {{ sonobuoy_tar_gz_url | quote }} | tar xz sonobuoy
+        curl -L {{ sonobuoy_tar_gz_url | trim | quote }} | tar xz sonobuoy
       args:
         chdir: "~/.local/bin/"
         creates: sonobuoy
