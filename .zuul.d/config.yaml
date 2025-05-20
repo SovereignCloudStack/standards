@@ -35,6 +35,8 @@
       kaas: false
       do_provision: false
       do_cleanup: true
+      sonobuoy_tar_gz_url: >
+        https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.57.3/sonobuoy_0.57.3_linux_amd64.tar.gz
     pre-run:
      - playbooks/pre.yaml
      - playbooks/pre_cloud.yaml

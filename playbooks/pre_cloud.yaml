@@ -25,7 +25,7 @@
 
     - name: Install Sonobuoy
       ansible.builtin.shell:
-        curl -L https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.57.3/sonobuoy_0.57.3_linux_amd64.tar.gz | tar xz sonobuoy
+        curl -L {{ sonobuoy_tar_gz_url | quote }} | tar xz sonobuoy
       args:
         chdir: "~/.local/bin/"
         creates: sonobuoy
