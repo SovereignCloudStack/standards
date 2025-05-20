@@ -108,12 +108,17 @@ def altern_test_rules(connection: openstack.connection.Connection):
 def test_rules(connection: openstack.connection.Connection):
     try:
         rules = list(connection.network.default_security_group_rules())
-    except ResourceNotFound:
+    except (ResourceNotFound, AttributeError) as exc:
+        # older versions of OpenStack don't have the endpoint and give ResourceNotFound
+        if isinstance(exc, ResourceNotFound) and 'default-security-group-rules' not in str(exc):
+            raise
+        # why we see the AttributeError in some environments is a mystery
+        if isinstance(exc, AttributeError) and 'default_security_group_rules' not in str(exc):
+            raise
         logger.info(
             "API call failed. OpenStack components might not be up to date. "
             "Falling back to old-style test method. "
         )
-        logger.debug("traceback", exc_info=True)
         altern_test_rules(connection)
     else:
         check_default_rules(rules)
@@ -142,7 +147,7 @@ def main():
         "--debug", action="store_true", help="Enable debug logging",
     )
     args = parser.parse_args()
-    openstack.enable_logging(debug=args.debug)
+    openstack.enable_logging(debug=False)  # never leak sensitive data (enable this locally)
     logging.basicConfig(
         format="%(levelname)s: %(message)s",
         level=logging.DEBUG if args.debug else logging.INFO,
