@@ -2,6 +2,7 @@ from collections import Counter
 import json
 import logging
 import os
+import os.path
 import shlex
 import shutil
 import subprocess
@@ -9,6 +10,16 @@ import subprocess
 from junitparser import JUnitXml
 
 logger = logging.getLogger(__name__)
+
+
+def _find_sonobuoy():
+    """find sonobuoy in PATH, but also in a fixed location at ~/.local/bin to simplify use with Ansible"""
+    result = shutil.which('sonobuoy')
+    if result:
+        return result
+    result = os.path.join(os.path.expanduser('~'), '.local', 'bin', 'sonobuoy')
+    if os.path.exists(result):
+        return result
 
 
 class SonobuoyHandler:
@@ -34,7 +45,7 @@ class SonobuoyHandler:
         self.kubeconfig_path = kubeconfig
         self.working_directory = os.getcwd()
         self.result_dir_name = result_dir_name
-        self.sonobuoy = shutil.which('sonobuoy')
+        self.sonobuoy = _find_sonobuoy()
         logger.debug(f"working from {self.working_directory}")
         logger.debug(f"placing results at {self.result_dir_name}")
         logger.debug(f"sonobuoy executable at {self.sonobuoy}")
