@@ -19,7 +19,7 @@
 
     - name: Create local binary dir
       ansible.builtin.file:
-        path: "~/.local/bin"
+        path: "{{ ansible_user_dir}}/.local/bin"
         state: directory
         recurse: true
 
@@ -27,7 +27,7 @@
       ansible.builtin.shell:
         curl -L {{ sonobuoy_tar_gz_url | trim | quote }} | tar xz sonobuoy
       args:
-        chdir: "~/.local/bin/"
+        chdir: "{{ ansible_user_dir}}/.local/bin/"
         creates: sonobuoy
       when: kaas | bool
 
