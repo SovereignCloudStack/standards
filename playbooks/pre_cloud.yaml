@@ -17,6 +17,20 @@
         requirements: "Tests/kaas/requirements.txt"
       when: kaas | bool
 
+    - name: Create local binary dir
+      ansible.builtin.file:
+        path: "~/.local/bin"
+        state: directory
+        recurse: true
+
+    - name: Install Sonobuoy
+      ansible.builtin.shell:
+        curl -L https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.57.3/sonobuoy_0.57.3_linux_amd64.tar.gz | tar xz sonobuoy
+      args:
+        chdir: "~/.local/bin/"
+        creates: sonobuoy
+      when: kaas | bool
+
     - name: Create cloud config dir
       ansible.builtin.file:
         path: "~/.config/openstack"
