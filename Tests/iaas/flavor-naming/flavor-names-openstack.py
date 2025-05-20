@@ -140,7 +140,7 @@ def main(argv):
         # Warn for strange sizes (want integer numbers, half allowed for < 10GiB)
         if flvram >= 10 and flvram != int(flvram) or flvram * 2 != int(flvram * 2):
             print(f"WARNING: Flavor {flv.name} uses discouraged uneven size "
-                  f"of memory {flvram:%.1f} GiB", file=sys.stderr)
+                  f"of memory {flvram:.1f} GiB", file=sys.stderr)
         if flvram < cpuram.ram:
             print(f"ERROR: Flavor {flv.name} has only {flvram:.1f} GiB RAM, "
                   f"should have >= {cpuram.ram:.1f} GiB", file=sys.stderr)
