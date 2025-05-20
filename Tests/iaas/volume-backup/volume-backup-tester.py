@@ -30,7 +30,7 @@ DEFAULT_PREFIX = "scs-test-"
 
 
 def check_resources(
-    get_func: typing.Callable[[], [openstack.resource.Resource]],
+    get_func: typing.Callable[[], list[openstack.resource.Resource]],
     prefix: str,
 ) -> None:
     remaining = [b for b in get_func() if b.name.startswith(prefix)]
@@ -85,7 +85,7 @@ def wait_for_resource(
 
 
 def wait_for_resources(
-    get_func: typing.Callable[[], [openstack.resource.Resource]],
+    get_func: typing.Callable[[], list[openstack.resource.Resource]],
     prefix: str,
 ):
     retry(partial(check_resources, get_func, prefix))
