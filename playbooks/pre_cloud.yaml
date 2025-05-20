@@ -33,7 +33,7 @@
 
     - name: Create cloud config dir
       ansible.builtin.file:
-        path: "~/.config/openstack"
+        path: "{{ ansible_user_dir }}/.config/openstack"
         state: directory
         recurse: true
         mode: "0700"
@@ -41,19 +41,19 @@
     - name: Create cloud config file
       ansible.builtin.template:
         src: "clouds.yaml.j2"
-        dest: "~/.config/openstack/clouds.yaml"
+        dest: "{{ ansible_user_dir }}/.config/openstack/clouds.yaml"
         mode: "0600"
       no_log: true
 
     - name: Create cluster config dir
       ansible.builtin.copy:
         src: ".config"
-        dest: "~/"
+        dest: "{{ ansible_user_dir }}/"
 
     - name: Create cluster config file
       ansible.builtin.template:
         src: "clusters.yaml.j2"
-        dest: "~/.config/scs/clusters.yaml"
+        dest: "{{ ansible_user_dir }}/.config/scs/clusters.yaml"
         mode: "0600"
       no_log: true
 
