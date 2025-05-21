@@ -11,13 +11,21 @@ botocore==1.38.20
     #   boto3
     #   s3transfer
 certifi==2025.4.26
-    # via requests
+    # via
+    #   -c ../requirements.txt
+    #   requests
 cffi==1.17.1
-    # via cryptography
+    # via
+    #   -c ../requirements.txt
+    #   cryptography
 charset-normalizer==3.4.2
-    # via requests
-cryptography==45.0.2
-    # via openstacksdk
+    # via
+    #   -c ../requirements.txt
+    #   requests
+cryptography==44.0.3
+    # via
+    #   -c ../requirements.txt
+    #   openstacksdk
 decorator==5.2.1
     # via
     #   dogpile-cache
@@ -25,7 +33,9 @@ decorator==5.2.1
 dogpile-cache==1.4.0
     # via openstacksdk
 idna==3.10
-    # via requests
+    # via
+    #   -c ../requirements.txt
+    #   requests
 iso8601==2.1.0
     # via
     #   keystoneauth1
@@ -58,29 +68,41 @@ platformdirs==4.3.8
 psutil==7.0.0
     # via openstacksdk
 pycparser==2.22
-    # via cffi
+    # via
+    #   -c ../requirements.txt
+    #   cffi
 python-dateutil==2.9.0.post0
-    # via botocore
+    # via
+    #   -c ../requirements.txt
+    #   botocore
 pyyaml==6.0.2
-    # via openstacksdk
+    # via
+    #   -c ../requirements.txt
+    #   openstacksdk
 requests==2.32.3
-    # via keystoneauth1
+    # via
+    #   -c ../requirements.txt
+    #   keystoneauth1
 requestsexceptions==1.4.0
     # via openstacksdk
 s3transfer==0.12.0
     # via boto3
 six==1.17.0
-    # via python-dateutil
+    # via
+    #   -c ../requirements.txt
+    #   python-dateutil
 stevedore==5.4.1
     # via
     #   dogpile-cache
     #   keystoneauth1
 typing-extensions==4.13.2
     # via
+    #   -c ../requirements.txt
     #   keystoneauth1
     #   openstacksdk
 urllib3==2.4.0
     # via
+    #   -c ../requirements.txt
     #   botocore
     #   requests
 
