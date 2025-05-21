@@ -50,11 +50,19 @@
 - job:
     name: scs-check-iaas
     parent: scs-check-scs2-main
+    # timeout:
+    # a) leave room for long-running tests (mostly when some cloud is unreachable)
+    # b) keep in mind that this job covers ALL test subjects (at most 4 in parallel)
+    timeout: 3600
     vars:
       preset: iaas
 - job:
     name: scs-check-kaas
     parent: scs-check-scs2-main
+    # timeout:
+    # a) these tests take a lot of time, I'm afraid, particularly Sonobuoy
+    # b) keep in mind that this job covers ALL test subjects (at most 4 in parallel)
+    timeout: 7200
     vars:
       preset: kaas
       iaas: false
