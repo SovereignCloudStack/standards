@@ -325,9 +325,9 @@ the whole YAML file may be pruned of outdated content as follows:
   If one such entry is deleted, all (chronologically) preceding entries should be deleted as well.
 - It is permissible to perform "garbage collection", i.e., to delete any
 
-   - version no longer referenced by any timeline entry,
-   - module no longer referenced by any version,
-   - code path (e.g., command-line switches) no longer utilized by any check descriptor.
+  - version no longer referenced by any timeline entry,
+  - module no longer referenced by any version,
+  - code path (e.g., command-line switches) no longer utilized by any check descriptor.
 
 Naturally, if the desire arises to purview the pruned content again,
 it can be retrieved from the git history of the file in question by viewing its `git log`.
