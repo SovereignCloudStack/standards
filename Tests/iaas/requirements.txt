@@ -4,9 +4,9 @@
 #
 #    pip-compile requirements.in
 #
-boto3==1.38.17
+boto3==1.38.20
     # via -r requirements.in
-botocore==1.38.17
+botocore==1.38.20
     # via
     #   boto3
     #   s3transfer
@@ -16,7 +16,7 @@ cffi==1.17.1
     # via cryptography
 charset-normalizer==3.4.2
     # via requests
-cryptography==44.0.3
+cryptography==45.0.2
     # via openstacksdk
 decorator==5.2.1
     # via

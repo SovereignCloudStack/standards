@@ -21,7 +21,7 @@ certifi==2025.4.26
     #   requests
 charset-normalizer==3.4.2
     # via requests
-durationpy==0.9
+durationpy==0.10
     # via kubernetes
 frozenlist==1.6.0
     # via
@@ -43,7 +43,7 @@ kubernetes-asyncio==32.3.2
     # via -r requirements.in
 markupsafe==3.0.2
     # via jinja2
-multidict==6.4.3
+multidict==6.4.4
     # via
     #   aiohttp
     #   yarl

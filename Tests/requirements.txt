@@ -20,7 +20,7 @@ cffi==1.17.1
     # via cryptography
 charset-normalizer==3.4.2
     # via requests
-click==8.2.0
+click==8.2.1
     # via -r requirements.in
 cryptography==44.0.3
     # via sslyze
@@ -32,7 +32,7 @@ idna==3.10
     # via
     #   requests
     #   yarl
-multidict==6.4.3
+multidict==6.4.4
     # via
     #   aiohttp
     #   yarl
