@@ -1,3 +1,6 @@
+# -- informal edit log --
+# whenever old content is removed as per scs-0003-v1, add a line of the form
+# - YYYY-MM-DD pruned old content; affected versions: vN, ...
 name: SCS-compatible KaaS
 uuid: 1fffebe6-fd4b-44d3-a36c-fc58b4bb0180
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-kaas.yaml

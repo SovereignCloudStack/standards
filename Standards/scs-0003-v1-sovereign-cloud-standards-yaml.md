@@ -318,6 +318,23 @@ Each pull request is to be voted upon in the corresponding team meeting. The vot
 on the pull request only, i.e., it may not affect any other pull request or issue, and it
 must be announced 14 days in advance via the corresponding mailing list.
 
+We permit one exception to the preceding rules: for the sake of maintainability of the codebase,
+the whole YAML file may be pruned of outdated content as follows:
+
+- It is permissible to delete timeline entries that have not been valid for at least 6 months.
+  If one such entry is deleted, all (chronologically) preceding entries should be deleted as well.
+- It is permissible to perform "garbage collection", i.e., to delete any
+
+  - version no longer referenced by any timeline entry,
+  - module no longer referenced by any version,
+  - code path (e.g., command-line switches) no longer utilized by any check descriptor.
+
+Naturally, if the desire arises to purview the pruned content again,
+it can be retrieved from the git history of the file in question by viewing its `git log`.
+It is recommended to also add a comment about the editorial change to the top of the file so
+that this change also appears with `git annotate` (which might otherwise not be the case if
+lines are merely deleted and none added or changed).
+
 ## Design Considerations
 
 ### File format
