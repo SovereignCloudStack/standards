@@ -54,7 +54,8 @@ class SonobuoyHandler:
     def _invoke_sonobuoy(self, *args, **kwargs):
         inv_args = (self.sonobuoy, "--kubeconfig", self.kubeconfig_path) + args
         logger.debug(f'invoking {" ".join(inv_args)}')
-        return subprocess.run(args=inv_args, capture_output=True, check=True, **kwargs)
+        # we had capture_output=True, but I don't see why -- let the caller decide
+        return subprocess.run(args=inv_args, check=True, **kwargs)
 
     def _sonobuoy_run(self):
         self._invoke_sonobuoy("run", "--wait", *self.args)
@@ -63,7 +64,7 @@ class SonobuoyHandler:
         self._invoke_sonobuoy("delete", "--wait")
 
     def _sonobuoy_status_result(self):
-        process = self._invoke_sonobuoy("status", "--json")
+        process = self._invoke_sonobuoy("status", "--json", capture_output=True)
         json_data = json.loads(process.stdout)
         counter = Counter()
         for entry in json_data["plugins"]:
