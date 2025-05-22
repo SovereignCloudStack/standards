@@ -8,8 +8,6 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-import yaml
-
 
 logger = logging.getLogger(__name__)
 
