@@ -46,9 +46,6 @@ def main(argv):
     fnmck = flavor_names.CompatLayer()
     cloud = None
     verbose = False
-    v3mode = False
-    accept_old_mand = False
-    scsMandFile = fnmck.mandFlavorFile
 
     try:
         cloud = os.environ["OS_CLOUD"]
@@ -67,16 +64,17 @@ def main(argv):
         elif opt[0] == "-c" or opt[0] == "--os-cloud":
             cloud = opt[1]
         elif opt[0] == "-C" or opt[0] == "--mand":
-            scsMandFile = opt[1]
+            if opt[1].split('/')[-1] != 'scs-0100-v3-flavors.yaml':
+                print(f'ignoring obsolete argument: {opt[0]}', file=sys.stderr)
         elif opt[0] == "-3" or opt[0] == "--v3":
             # fnmck.disallow_old = True
-            v3mode = True
+            print(f'ignoring obsolete argument: {opt[0]}', file=sys.stderr)
         elif opt[0] == "-2" or opt[0] == "--v2plus":
             fnmck.disallow_old = True
         elif opt[0] == "-1" or opt[0] == "--v1prefer":
-            fnmck.prefer_old = True
+            print(f'ignoring obsolete argument: {opt[0]}', file=sys.stderr)
         elif opt[0] == "-o" or opt[0] == "--accept-old-mandatory":
-            accept_old_mand = True
+            print(f'ignoring obsolete argument: {opt[0]}', file=sys.stderr)
         elif opt[0] == "-v" or opt[0] == "--verbose":
             verbose = True
         elif opt[0] == "-q" or opt[0] == "--quiet":
@@ -87,8 +85,6 @@ def main(argv):
         print(f"CRITICAL: Extra arguments {str(args)}", file=sys.stderr)
         usage(1)
 
-    scsMandatory, scsRecommended = fnmck.readflavors(scsMandFile, v3mode)
-
     if not cloud:
         print("CRITICAL: You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
         sys.exit(1)
@@ -96,8 +92,6 @@ def main(argv):
     flavors = conn.compute.flavors()
 
     # Lists of flavors: mandatory, good-SCS, bad-SCS, non-SCS, with-warnings
-    MSCSFlv = []
-    RSCSFlv = []
     SCSFlv = []
     wrongFlv = []
     nonSCSFlv = []
@@ -171,77 +165,35 @@ def main(argv):
             wrongFlv.append(flv.name)
             errors += 1
         else:
-            if flv.name in scsMandatory:
-                scsMandatory.remove(flv.name)
-                MSCSFlv.append(flv.name)
-            elif flv.name in scsRecommended:
-                scsRecommended.remove(flv.name)
-                RSCSFlv.append(flv.name)
-            elif accept_old_mand and fnmck.old_to_new(flv.name) in scsMandatory:
-                scsMandatory.remove(fnmck.old_to_new(flv.name))
-                MSCSFlv.append(flv.name)   # fnmck.old_to_new(flv.name)
-            elif accept_old_mand and fnmck.old_to_new(flv.name) in scsRecommended:
-                scsRecommended.remove(fnmck.old_to_new(flv.name))
-                RSCSFlv.append(flv.name)   # fnmck.old_to_new(flv.name)
-            else:
-                SCSFlv.append(flv.name)
+            SCSFlv.append(flv.name)
             if warn:
                 warnFlv.append(flv.name)
     # This makes the output more readable
-    MSCSFlv.sort()
-    RSCSFlv.sort()
     SCSFlv.sort()
     nonSCSFlv.sort()
     wrongFlv.sort()
     warnFlv.sort()
-    # We have counted errors on the fly, add missing flavors to the final result
-    for fn in scsMandatory:
-        errors += 1
-        print(f"ERROR: Missing mandatory flavor: {fn}", file=sys.stderr)
     # Produce dicts for YAML reporting
     flvSCSList = {
-        "MandatoryFlavorsPresent": MSCSFlv,
-        "MandatoryFlavorsMissing": scsMandatory,
-    }
-    if v3mode:
-        flvSCSList.update({
-            "RecommendedFlavorsPresent": RSCSFlv,
-            "RecommendedFlavorsMissing": scsRecommended,
-        })
-    flvSCSList.update({
-        "OptionalFlavorsValid": SCSFlv,
-        "OptionalFlavorsWrong": wrongFlv,
+        "SCSFlavorsValid": SCSFlv,
+        "SCSFlavorsWrong": wrongFlv,
         "FlavorsWithWarnings": warnFlv,
-    })
+    }
     flvOthList = {
         "OtherFlavors": nonSCSFlv
     }
     flvSCSRep = {
-        "TotalAmount": len(MSCSFlv) + len(SCSFlv) + len(wrongFlv),
-    }
-    # skip the following if no mandatory flavors are given (useful for v3.2 onward)
-    if len(MSCSFlv) + len(scsMandatory):
-        flvSCSRep.update({
-            "MandatoryFlavorsPresent": len(MSCSFlv),
-            "MandatoryFlavorsMissing": len(scsMandatory),
-        })
-    # skip the following if no recommended flavors are given (useful for v1, v2, and v3.2 onward)
-    if len(RSCSFlv) + len(scsRecommended):
-        flvSCSRep.update({
-            "RecommendedFlavorsPresent": len(RSCSFlv),
-            "RecommendedFlavorsMissing": len(scsRecommended),
-        })
-    flvSCSRep.update({
-        "FlavorsValid": len(SCSFlv) + len(MSCSFlv) + len(RSCSFlv),
+        "TotalAmount": len(SCSFlv) + len(wrongFlv),
+        "FlavorsValid": len(SCSFlv),
         "FlavorsWrong": len(wrongFlv),
         "FlavorsWithWarnings": len(warnFlv),
-    })
+    }
     flvOthRep = {
         "TotalAmount": len(nonSCSFlv),
     }
     totSummary = {
         "Errors": errors,
-        "Warnings": len(warnFlv)+len(scsRecommended),
+        "Warnings": len(warnFlv),
     }
     Report = {cloud: {"TotalSummary": totSummary}}
     if not fnmck.quiet:
