@@ -1,56 +1,16 @@
 # -- informal edit log --
 # whenever old content is removed as per scs-0003-v1, add a line of the form
 # - YYYY-MM-DD pruned old content; affected versions: vN, ...
+# - 2025-05-22 pruned old content; affected versions: v1, v2, v3-orig, v5
 name: SCS-compatible IaaS
 uuid: 50393e6f-2ae1-4c5c-a62c-3b75f2abef3f
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml
 variables:
   - os_cloud
 modules:
-  - id: opc-v2020.11
-    name: OpenStack Powered Compute v2020.11
-    url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2020.11.json
   - id: opc-v2022.11
     name: OpenStack Powered Compute v2022.11
     url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
-  - id: scs-0100-v1
-    name: Flavor naming v1
-    url: https://docs.scs.community/standards/scs-0100-v1-flavor-naming
-    run:
-      - executable: ./iaas/flavor-naming/flavor-names-openstack.py
-        args: -c {os_cloud} --v1prefer
-    testcases:
-      - id: flavor-name-check
-        tags: [mandatory]
-        description: >
-          Must fulfill all requirements of
-          <https://docs.scs.community/standards/scs-0100-v1-flavor-naming>
-  - id: scs-0100-v2
-    name: Flavor naming v2
-    url: https://docs.scs.community/standards/scs-0100-v2-flavor-naming
-    run:
-      - executable: ./iaas/flavor-naming/flavor-names-openstack.py
-        args: -c {os_cloud}
-    testcases:
-      - id: flavor-name-check
-        tags: [mandatory]
-        description: >
-          Must fulfill all requirements of
-          <https://docs.scs.community/standards/scs-0100-v2-flavor-naming>
-  - id: scs-0100-v3.0
-    name: Flavor naming v3.0
-    url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
-    run:
-      - executable: ./iaas/flavor-naming/flavor-names-openstack.py
-        args: --v3 -c {os_cloud}
-        # Note: "--v3 --v2plus" would outlaw the v1 flavor names. Don't do this yet.
-    testcases:
-      - id: flavor-name-check
-        tags: [mandatory]
-        description: >
-          Must fulfill all requirements of
-          <https://docs.scs.community/standards/scs-0100-v3-flavor-naming> -- plus the list of mandatory
-          and recommended flavors found in <https://docs.scs.community/standards/scs-0100-v2-flavor-naming#standard-scs-flavors>
   - id: scs-0100-v3.1
     name: Flavor naming v3.1
     url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
@@ -246,52 +206,6 @@ timeline:
       v5.1: effective
       v4: effective
       v3: deprecated
-  - date: 2024-11-21
-    versions:
-      v5: effective
-      v4: effective
-      v3: deprecated
-  - date: 2024-11-08
-    versions:
-      v5: draft
-      v4: effective
-      v3: deprecated
-  - date: 2024-08-23
-    versions:
-      v5: draft
-      v4: effective
-      v3: deprecated
-      v3-orig: deprecated
-  - date: 2024-07-31
-    versions:
-      v4: effective
-  - date: 2024-04-30
-    versions:
-      v4: effective
-      v3: warn
-  - date: 2024-02-28
-    versions:
-      v4: effective
-      v3: effective
-  - date: 2023-11-30
-    versions:
-      v3: effective
-  - date: 2023-10-31
-    versions:
-      v3: effective
-      v2: effective
-  - date: 2023-06-15
-    versions:
-      v3: effective
-      v2: effective
-      v1: effective
-  - date: 2023-03-23
-    versions:
-      v1: effective
-      v2: effective
-  - date: 2021-01-01
-    versions:
-      v1: effective
 versions:
   - version: v5.1  # copy of v5, but with include "scs-0123-v1", which had simply been forgotten
     stabilized_at: 2024-12-19
@@ -310,26 +224,6 @@ versions:
       - scs-0117-v1
       - scs-0121-v1
       - scs-0123-v1
-      - scs-0302-v1
-    targets:
-      main: mandatory
-      preview: domain-manager/availability-zones/service-apis-docs
-  - version: v5
-    stabilized_at: 2024-11-14
-    include:
-      - opc-v2022.11
-      - scs-0100-v3.1
-      - scs-0101-v1
-      - scs-0102-v1
-      - scs-0103-v1
-      - ref: scs-0104-v1
-        parameters:
-          image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images-v5.yaml
-      - scs-0114-v1
-      - scs-0115-v1
-      - scs-0116-v1
-      - scs-0117-v1
-      - scs-0121-v1
       - scs-0302-v1
     targets:
       main: mandatory
@@ -355,30 +249,6 @@ versions:
     include:
       - opc-v2022.11
       - scs-0100-v3.1
-      - scs-0102-v1
-    targets:
-      main: mandatory
-  - version: v3-orig
-    stabilized_at: 2023-06-15
-    include:
-      - opc-v2022.11
-      - scs-0100-v3.0
-      - scs-0102-v1
-    targets:
-      main: mandatory
-  - version: v2
-    stabilized_at: 2023-03-23
-    include:
-      - opc-v2022.11
-      - scs-0100-v2
-      - scs-0102-v1
-    targets:
-      main: mandatory
-  - version: v1
-    stabilized_at: 2021-01-01
-    include:
-      - opc-v2020.11
-      - scs-0100-v1
       - scs-0102-v1
     targets:
       main: mandatory
