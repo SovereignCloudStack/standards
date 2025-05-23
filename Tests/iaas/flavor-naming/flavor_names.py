@@ -8,8 +8,6 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-import yaml
-
 
 logger = logging.getLogger(__name__)
 
@@ -757,9 +755,7 @@ class CompatLayer:
         self.debug = False
         self.quiet = False
         self.disallow_old = False
-        self.prefer_old = False
         self.v3_flv = False
-        self.mandFlavorFile = str(Path(HERE.parent, "SCS-Spec.MandatoryFlavors.yaml"))
         bindir = os.path.basename(sys.argv[0])
         self.searchpath = (bindir, ) if bindir else os.environ['PATH'].split(':')
 
@@ -783,8 +779,8 @@ class CompatLayer:
                 is_old = True
             if not is_old:
                 raise
-        if not self.quiet and flavorname is not None and self.prefer_old != is_old:
-            print(f"WARNING: flavor name not v{2 - self.prefer_old}: {namestr}")
+        if not self.quiet and flavorname is not None and is_old:
+            print(f"WARNING: flavor name not v2: {namestr}")
         return flavorname
 
     def outname(self, flavorname):
@@ -795,33 +791,6 @@ class CompatLayer:
 
     def new_to_old(self, nm):
         return SyntaxV1.from_v2(nm)
-
-    def findflvfile(self, fnm):
-        """Search for flavor file and return found path"""
-        if os.path.isfile(fnm):
-            return fnm
-        raise RuntimeError(f"Flavor yaml file not found: {fnm}")
-
-    def readflavors(self, fnm, v3mode):
-        """Read mandatory and recommended flavors from passed YAML file"""
-        fnm = self.findflvfile(fnm)
-        if self.debug:
-            print(f"DEBUG: Reading flavors from {fnm}")
-        with open(fnm, "r", encoding="UTF-8)") as fobj:
-            yamldict = yaml.safe_load(fobj)
-        # Translate to old names in-place
-        if self.prefer_old:
-            for name_type in yamldict["SCS-Spec"].values():
-                for i, name in enumerate(name_type):
-                    name_type[i] = self.new_to_old(name)
-        mand = yamldict["SCS-Spec"]["MandatoryFlavors"]
-        recd = yamldict["SCS-Spec"]["RecommendedFlavors"]
-        if v3mode:
-            mand.extend(yamldict["SCS-Spec"].get("MandatoryFlavorsV3", ()))
-            recd.extend(yamldict["SCS-Spec"].get("RecommendedFlavorsV3", ()))
-            return mand, recd
-        else:
-            return [*mand, *recd], []
 
 
 if __name__ == "__main__":
