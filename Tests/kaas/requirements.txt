@@ -48,8 +48,6 @@ idna==3.10
     #   yarl
 jinja2==3.1.6
     # via -r requirements.in
-junitparser==3.2.0
-    # via -r requirements.in
 kubernetes==32.0.1
     # via -r requirements.in
 kubernetes-asyncio==32.3.2
