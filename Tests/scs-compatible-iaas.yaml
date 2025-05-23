@@ -2,33 +2,238 @@
 # whenever old content is removed as per scs-0003-v1, add a line of the form
 # - YYYY-MM-DD pruned old content; affected versions: vN, ...
 # - 2025-05-22 pruned old content; affected versions: v1, v2, v3-orig, v5
-name: SCS-compatible IaaS
-uuid: 50393e6f-2ae1-4c5c-a62c-3b75f2abef3f
-url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml
-variables:
-  - os_cloud
-modules:
-  - id: opc-v2022.11
-    name: OpenStack Powered Compute v2022.11
-    url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
-  - id: scs-standards
-    run:
-      - executable: ./iaas/run_scs.py
-        args: -c {os_cloud} -t {testcases_file}
-    testcases:
-      - include: testcases/scs-0100.yaml
-      - include: testcases/scs-0101.yaml
-      - include: testcases/scs-0102.yaml
-      - include: testcases/scs-0103.yaml
-      - include: testcases/scs-0104.yaml
-      - include: testcases/scs-0114.yaml
-      - include: testcases/scs-0115.yaml
-      - include: testcases/scs-0116.yaml
-      - include: testcases/scs-0117.yaml
-      - include: testcases/scs-0121.yaml
-      - include: testcases/scs-0123.yaml
-      - include: testcases/scs-0302.yaml
-timeline:
+
+
+# #### TESTCASES ####
+- id: testcase/flavor-name-syntax-check-v2-3
+  tags: [scs-0100-v3.1]
+  description: >
+    Flavor names comply with syntax described in
+    <https://docs.scs.community/standards/scs-0100-v3-flavor-naming> (identical with v2)
+- id: testcase/flavor-name-semantics-check
+  tags: [scs-0100-v3.1]
+  description: >
+    Flavor names tell the truth according to
+    <https://docs.scs.community/standards/scs-0100-v3-flavor-naming> (subsuming v1 and v2)
+- id: testcase/entropy-check-flavor-properties
+  tags: [scs-0101-v1-rec]
+  description: >
+    Must have all flavor properties recommended in
+    <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings>
+- id: testcase/entropy-check-image-properties
+  tags: [scs-0101-v1-rec]
+  description: >
+    Must have all image properties recommended in
+    <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings>
+- id: testcase/entropy-check-rngd
+  tags: [scs-0101-v1]
+  description: >
+    Images of the test sample must have the service `rngd`; see
+    <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
+- id: testcase/entropy-check-entropy-avail
+  tags: [scs-0101-v1]
+  description: >
+    A test instance must have the correct `entropy_avail`; see
+    <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
+- id: testcase/entropy-check-fips-test
+  tags: [scs-0101-v1]
+  description: >
+    A test instance must pass the "FIPS test"; see
+    <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
+- id: testcase/image-metadata-check
+  tags: [scs-0102-v1]
+  description: >
+    Must fulfill all requirements of <https://docs.scs.community/standards/scs-0102-v1-image-metadata>
+# required flavors as per scs-0103-v1
+- id: testcase/check-flavor-scs-1v-4
+  tags: [scs-0103-v1]
+- id: testcase/check-flavor-scs-2v-8
+  tags: [scs-0103-v1]
+- id: testcase/check-flavor-scs-4v-16
+  tags: [scs-0103-v1]
+- id: testcase/check-flavor-scs-8v-32
+  tags: [scs-0103-v1]
+- id: testcase/check-flavor-scs-1v-2
+  tags: [scs-0103-v1]
+- id: testcase/check-flavor-scs-2v-4
+  tags: [scs-0103-v1]
+- id: testcase/check-flavor-scs-4v-8
+  tags: [scs-0103-v1]
+- id: testcase/check-flavor-scs-8v-16
+  tags: [scs-0103-v1]
+- id: testcase/check-flavor-scs-16v-32
+  tags: [scs-0103-v1]
+- id: testcase/check-flavor-scs-1v-8
+  tags: [scs-0103-v1]
+- id: testcase/check-flavor-scs-2v-16
+  tags: [scs-0103-v1]
+- id: testcase/check-flavor-scs-4v-32
+  tags: [scs-0103-v1]
+- id: testcase/check-flavor-scs-1l-1
+  tags: [scs-0103-v1]
+- id: testcase/check-flavor-scs-2v-4-20s
+  tags: [scs-0103-v1]
+- id: testcase/check-flavor-scs-4v-16-100s
+  tags: [scs-0103-v1]
+# recommended flavors as per scs-0103-v1
+- id: testcase/check-flavor-scs-1v-4-10
+  tags: [scs-0103-v1-rec]
+- id: testcase/check-flavor-scs-2v-8-20
+  tags: [scs-0103-v1-rec]
+- id: testcase/check-flavor-scs-4v-16-50
+  tags: [scs-0103-v1-rec]
+- id: testcase/check-flavor-scs-8v-32-100
+  tags: [scs-0103-v1-rec]
+- id: testcase/check-flavor-scs-1v-2-5
+  tags: [scs-0103-v1-rec]
+- id: testcase/check-flavor-scs-2v-4-10
+  tags: [scs-0103-v1-rec]
+- id: testcase/check-flavor-scs-4v-8-20
+  tags: [scs-0103-v1-rec]
+- id: testcase/check-flavor-scs-8v-16-50
+  tags: [scs-0103-v1-rec]
+- id: testcase/check-flavor-scs-16v-32-100
+  tags: [scs-0103-v1-rec]
+- id: testcase/check-flavor-scs-1v-8-20
+  tags: [scs-0103-v1-rec]
+- id: testcase/check-flavor-scs-2v-16-50
+  tags: [scs-0103-v1-rec]
+- id: testcase/check-flavor-scs-4v-32-100
+  tags: [scs-0103-v1-rec]
+- id: testcase/check-flavor-scs-1l-1-5
+  tags: [scs-0103-v1-rec]
+# # image sources
+# ## capi
+- id: testcase/check-image-source-capi-2
+  tags: [scs-0104-v1-2]
+- id: testcase/check-image-source-capi-1
+  tags: [scs-0104-v1-1]
+# ## Ubuntu
+- id: testcase/check-image-source-ubuntu-24.04
+  tags: [scs-0104-v1-2]
+- id: testcase/check-image-source-ubuntu-22.04
+  tags: [scs-0104-v1-1, scs-0104-v1-2]
+- id: testcase/check-image-source-ubuntu-20.04
+  tags: [scs-0104-v1-1, scs-0104-v1-2]
+# ## Debian
+- id: testcase/check-image-source-debian-12
+  tags: [scs-0104-v1-1, scs-0104-v1-2]
+- id: testcase/check-image-source-debian-11
+  tags: [scs-0104-v1-1, scs-0104-v1-2]
+- id: testcase/check-image-source-debian-10
+  tags: [scs-0104-v1-1, scs-0104-v1-2]
+# # image presence
+# ## capi
+- id: testcase/check-image-capi-2
+  tags: [scs-0104-v1-2]
+- id: testcase/check-image-capi-1
+  tags: [scs-0104-v1-1]
+# ## Ubuntu
+- id: testcase/check-image-ubuntu-24.04
+  tags: [scs-0104-v1-2]
+- id: testcase/check-image-ubuntu-22.04
+  tags: [scs-0104-v1-1]
+# ## Debian
+- id: testcase/check-image-debian-12
+  tags: [scs-0104-v1-2]
+# # volume types
+- id: testcase/volume-type-encrypted
+  tags: [scs-0114-v1-rec]
+  description: >
+    An encrypted volume type can be discovered.
+- id: testcase/volume-type-replicated
+  tags: [scs-0114-v1-rec]
+  description: >
+    A replicated volume type can be discovered.
+# # default security groups
+# do monolithic test for the default security groups because it's hard to decompose, and frankly, I don't
+# see the correspondence between the test script and the standards requirements and recommendations
+# (the latter probably simply aren't checked?)
+- id: testcase/security-groups-default-rules-check
+  tags: [scs-0115-v1]
+  description: >
+    Must fulfill all requirements of <https://docs.scs.community/standards/scs-0115-v1-default-rules-for-security-groups>
+# # key manager
+- id: testcase/key-manager-presence-check
+  tags: [scs-0116-v1-rec]
+  description: >
+    Key manager service is discoverable.
+- id: testcase/key-manager-permissions-check
+  tags: [scs-0116-v1]
+  description: >
+    Key manager is usable with member role.
+# # volume backup
+- id: testcase/volume-backup-check
+  tags: [scs-0117-v1]
+  description: >
+    Volume backup works.
+# # availability zones
+- id: testcase/availability-zones-check
+  tags: [scs-0121-v1,manual]
+  description: >
+    Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard>
+# # service APIs
+- id: testcase/service-apis-check
+  tags: [scs-0123-v1]
+  description: >
+    All required services (besides block-storage) are discoverable; as listed in <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services>.
+- id: testcase/storage-apis-check
+  tags: [scs-0123-v1]
+  description: >
+    The block-storage API is discoverable; as listed in <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services>.
+- id: testcase/swift-s3-check
+  tags: [scs-0123-v1]
+  description: >
+    The object-storage API is compatible with S3; as described in <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services>.
+  type: swift-s3-check
+- id: testcase/service-apis-docs-check
+  tags: [scs-0123-v1,manual]
+  description: >
+    Note: manual check! Must fulfill documentation requirements of <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services>.
+- id: testcase/domain-manager-check
+  tags: [scs-0302-v1,manual]
+  description: >
+    Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0302-v1-domain-manager-role>
+
+# #### TARGETS ####
+- id: target/scs-compatible-iaas-main-v5.1
+  selectors:
+  - scs-0100-v3.1
+  - scs-0101-v1
+  - scs-0102-v1
+  - scs-0103-v1
+  - scs-0104-v1-2
+  - scs-0114-v1
+  - scs-0115-v1
+  - scs-0116-v1
+  - scs-0117-v1
+  - scs-0121-v1 !manual
+  - scs-0123-v1 !manual
+  - scs-0302-v1 !manual
+- id: target/scs-compatible-iaas-preview-v5.1
+  selectors:
+  - scs-0121-v1 manual
+  - scs-0123-v1 manual
+  - scs-0302-v1 manual
+- id: target/scs-compatible-iaas-main-v4
+  selectors:
+  - scs-0100-v3.1
+  - scs-0101-v1
+  - scs-0102-v1
+  - scs-0103-v1
+  - scs-0104-v1-1
+- id: target/scs-compatible-iaas-main-v3
+  selectors:
+  - scs-0100-v3.1
+  - scs-0102-v1
+
+
+# #### SCOPE ####
+- id: scope/scs-compatible-iaas
+  name: SCS-compatible IaaS
+  uuid: 50393e6f-2ae1-4c5c-a62c-3b75f2abef3f
+  url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml
+  timeline:
   - date: 2025-02-01
     versions:
       v5.1: effective
@@ -39,51 +244,20 @@ timeline:
       v5.1: effective
       v4: effective
       v3: deprecated
-versions:
+  versions:
   - version: v5.1  # copy of v5, but with include "scs-0123-v1", which had simply been forgotten
     stabilized_at: 2024-12-19
-    include:
-      - opc-v2022.11
-      - scs-standards
     targets:
-      main: >
-        scs-0100-v3.1,
-        scs-0101-v1,
-        scs-0102-v1,
-        scs-0103-v1,
-        scs-0104-v1-2,
-        scs-0114-v1,
-        scs-0115-v1,
-        scs-0116-v1,
-        scs-0117-v1,
-        scs-0121-v1 !manual,
-        scs-0123-v1 !manual,
-        scs-0302-v1 !manual
-      preview: >
-        scs-0121-v1 manual,
-        scs-0123-v1 manual,
-        scs-0302-v1 manual
+      main: target/scs-compatible-iaas-main-v5.1
+      preview: target/scs-compatible-iaas-preview-v5.1
   - version: v4
     stabilized_at: 2024-02-28
-    include:
-      - opc-v2022.11
-      - scs-standards
     targets:
-      main: >
-        scs-0100-v3.1,
-        scs-0101-v1,
-        scs-0102-v1,
-        scs-0103-v1,
-        scs-0104-v1-1
+      main: target/scs-compatible-iaas-main-v4
   - version: v3
     # comment: >
     #   This is what our documentation wrongly stated as being v3 when we introduced v4.
     #   What was originally v3 (and what we actually continued to test) can be found as v3-orig.
     stabilized_at: 2024-02-28
-    include:
-      - opc-v2022.11
-      - scs-standards
     targets:
-      main: >
-        scs-0100-v3.1,
-        scs-0102-v1
+      main: target/scs-compatible-iaas-main-v3
