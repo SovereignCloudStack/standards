@@ -62,7 +62,7 @@
     # timeout:
     # a) these tests take a lot of time, I'm afraid, particularly Sonobuoy
     # b) keep in mind that this job covers ALL test subjects (at most 4 in parallel)
-    timeout: 18000  # 5 hrs -- 2.5 hrs was not enough
+    timeout: 21600  # 6 hrs -- 5 hrs was almost sufficient (reports came through sometimes)
     vars:
       preset: kaas
       iaas: false
