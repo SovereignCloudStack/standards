@@ -12,6 +12,8 @@ clusters:
         kubeconfig: syself-kubeconfig.yaml
       vars:
         cs_name: hetzner-apalla-1-32
+        num_control_nodes: 3
+        num_worker_nodes: 3
       secrets:
         token: "{{ clouds_conf.syself_token }}"
   syself-1.31:
@@ -26,6 +28,8 @@ clusters:
         kubeconfig: syself-kubeconfig.yaml
       vars:
         cs_name: hetzner-apalla-1-31
+        num_control_nodes: 3
+        num_worker_nodes: 3
       secrets:
         token: "{{ clouds_conf.syself_token }}"
   syself-1.30:
@@ -40,6 +44,8 @@ clusters:
         kubeconfig: syself-kubeconfig.yaml
       vars:
         cs_name: hetzner-apalla-1-30
+        num_control_nodes: 3
+        num_worker_nodes: 3
       secrets:
         token: "{{ clouds_conf.syself_token }}"
   # dev clusters using kind
