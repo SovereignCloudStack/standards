@@ -157,6 +157,10 @@ class PluginClusterStacks(KubernetesClusterPlugin):
         return {'cs_class_name': cs_class_name, 'cs_version': cs_version}
 
     def _auto_vars(self, auto_vars_kind, co_api: _csh.CustomObjectsApi):
+        # set default values regardless of auto_vars_kind
+        self.vars.setdefault('num_control_nodes', 3)
+        self.vars.setdefault('num_worker_nodes', 3)
+        # now on to specifics
         if not auto_vars_kind:
             return
         if auto_vars_kind == 'syself':
