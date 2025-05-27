@@ -4,7 +4,7 @@
 # - 2025-05-22 pruned old content; affected versions: v1, v2, v3-orig, v5
 
 
-# testcases are very technical
+# HYPOTHESIS: testcases are very technical
 # a testcase could occur in multiple standards (not just multiple versions of one standard)
 # could be recommended in one standard, required in another
 # worst case: all standards pairwise connected via a shared testcase (can be a different one each time)
@@ -15,6 +15,42 @@
 # - run those testcases and record their results
 # - then evaluate each standard version: rq PASS/FAIL rc PASS/FAIL
 # - then evaluate each target: rq PASS/FAIL rc PASS/FAIL
+#
+# NB: in this case it makes no sense to name testcases after the standards, the way I just
+# did, e.g., testcase/scs-0104-image-debian-12
+#
+# Of course, we could use a dedicated concept to bridge items in documents with testcases.
+# We might say: the testcase is the content (what to test) whereas the 'test item' is the form (and location).
+# Then we have a mapping:
+#
+#   item/scs-0104-v2-image-debian-12:
+#     testcase: testcase/glance-image-debian-12
+#     status: recommended
+#   item/scs-0104-v2-image-ubuntu-24.04:
+#     testcase: testcase/glance-image-ubuntu-24.04
+#     status: required
+#
+# In essence, each item corresponds to an entry in the mapping that we have currently:
+#
+#   testcases:
+#     testcase/glance-image-debian-12: recommended
+#     testcase/glance-image-ubuntu-24.04: required
+#
+# The difference is that the item adds a name. The question is: what is the benefit of this name?
+#
+# On second thought, how likely is it that two standards share a testcase?
+# The only example I could come up with is the following:
+# - scs-0101-v1 says that every public image SHOULD have property `hw_rng_model`
+# - scs-0102-v1 says that every public image SHOULD have property `hw_rng_model`
+# In both cases we don't even have a dedicated testcase, but rather
+# - testcase/scs-0101-image-properties, which tests other properties as well
+# - testcase/scs-0102-image-metadata, which is still monolithic and tests everything all at once
+# I think it could be worthwhile to decompose the monolith, but I would rather remove the former
+# testcase from the testsuite scs-0101-v1 and add a remark to the testsuite scs-0102-v1 saying
+# that if the testcase is to be removed from there as well that one should instead consider
+# moving it to scs-0101-v1.
+#
+# So, maybe the HYPOTHESIS does not carry that much weight.
 
 
 # #### (TESTCASE) CATEGORIES + corresponding TESTCASES ####
@@ -191,6 +227,57 @@
   category: category/scs-0103
   tags: [scs-0103-v1-rec]
 
+
+
+- id: category/scs-0104
+  name: Standard images
+  url: https://docs.scs.community/standards/iaas/scs-0104
+- id: testcase/scs-0104-source-capi
+  category: category/scs-0104
+  description: CAPI images adhere to canonical image source
+  tags:
+  - scs-0104-v1.1/required
+  - scs-0104-v1.2/required
+- id: testcase/scs-0104-source-ubuntu
+  category: category/scs-0104
+  description: Ubuntu images adhere to canonical image source
+  tags:
+  - scs-0104-v1.1/required
+  - scs-0104-v1.2/required
+- id: testcase/scs-0104-source-debian
+  category: category/scs-0104
+  description: Debian images adhere to canonical image source
+  tags:
+  - scs-0104-v1.1/required
+  - scs-0104-v1.2/required
+- id: testcase/scs-0104-image-capi-2
+  category: category/scs-0104
+  description: CAPI image is present (naming scheme v2)
+  tags:
+  - scs-0104-v1.2/recommended
+- id: testcase/scs-0104-image-capi-1
+  category: category/scs-0104
+  description: CAPI image is present (naming scheme v1)
+  tags:
+  - scs-0104-v1.1/recommended
+- id: testcase/scs-0104-image-ubuntu-24.04
+  category: category/scs-0104
+  description: Ubuntu 24.04 image is present (by name)
+  tags:
+  - scs-0104-v1.2/required
+- id: testcase/scs-0104-image-ubuntu-22.04
+  category: category/scs-0104
+  description: Ubuntu 22.04 image is present (by name)
+  tags:
+  - scs-0104-v1.1/required
+- id: testcase/scs-0104-image-debian-12
+  category: category/scs-0104
+  description: Debian 12 image is present (by name)
+  tags:
+  - scs-0104-v1.2/recommended
+
+
+
 - id: testcase/scs-0104-source-capi
   description: CAPI images adhere to canonical image source
 - id: testcase/scs-0104-source-ubuntu
@@ -202,35 +289,88 @@
 - id: testcase/scs-0104-image-capi-1
   description: CAPI image is present (naming scheme v1)
 - id: testcase/scs-0104-image-ubuntu-24.04
-  description: Ubuntu 24.04 image is present
+  description: Ubuntu 24.04 image is present (by name)
 - id: testcase/scs-0104-image-ubuntu-22.04
-  description: Ubuntu 22.04 image is present
+  description: Ubuntu 22.04 image is present (by name)
 - id: testcase/scs-0104-image-debian-12
-  description: Debian 12 image is present
+  description: Debian 12 image is present (by name)
 
 
-- id: category/scs-0104
-  name: Standard images
+- id: module/scs-0104-v1.1
+  url: https://docs.scs.community/standards/scs-0104-v1-standard-images
+  targets:
+    required:
+    - testcase/scs-0104-image-ubuntu-22.04
+    - testcase/scs-0104-source-capi
+    - testcase/scs-0104-source-ubuntu
+    - testcase/scs-0104-source-debian
+    recommended:
+    - testcase/scs-0104-image-capi-1
+- id: module/scs-0104-v1.2
+  url: https://docs.scs.community/standards/scs-0104-v1-standard-images
+  targets:
+    required:
+    - testcase/scs-0104-image-ubuntu-24.04
+    - testcase/scs-0104-source-capi
+    - testcase/scs-0104-source-ubuntu
+    - testcase/scs-0104-source-debian
+    recommended:
+    - testcase/scs-0104-image-capi-2
+    - testcase/scs-0104-image-debian-12
+
+- id: module/scs-compatible-iaas-v5.1-preview
+  targets:
+    preview:
+    - testcase/scs-0116-docs
+    - testcase/scs-0121-docs
+    - testcase/scs-0302-docs
+
+
+- id: standard/scs-0104
   url: https://docs.scs.community/standards/iaas/scs-0104
-- id: standard/scs-0104-v1
-  category: category/scs-0104
-  required:
-  - testcase/scs-0104-source-capi
-  - testcase/scs-0104-source-ubuntu
-  - testcase/scs-0104-source-debian
-  - testcase/scs-0104-image-ubuntu-22.04
-  recommended:
-  - testcase/scs-0104-image-capi-1
-- id: standarsd/scs-0104-v2
-  category: category/scs-0104
-  required:
-  - testcase/scs-0104-source-capi
-  - testcase/scs-0104-source-ubuntu
-  - testcase/scs-0104-source-debian
-  - testcase/scs-0104-image-ubuntu-24.04
-  recommended:
-  - testcase/scs-0104-image-capi-2
-  - testcase/scs-0104-image-debian-12
+  versions:
+    v1:
+      url: https://docs.scs.community/standards/scs-0104-v1-standard-images
+    v2:
+      url: https://docs.scs.community/standards/scs-0104-v1-standard-images
+  items:
+  - testcase: testcase/scs-0104-source-capi
+    description: CAPI images adhere to canonical image source
+    status:
+      v1: required
+      v2: required
+  - testcase: testcase/scs-0104-source-ubuntu
+    description: Ubuntu images adhere to canonical image source
+    status:
+      v1: required
+      v2: required
+  - testcase: testcase/scs-0104-source-debian
+    description: Debian images adhere to canonical image source
+    status:
+      v1: required
+      v2: required
+  - testcase: testcase/scs-0104-image-capi-2
+    description: CAPI image is present (naming scheme v2)
+    status:
+      v2: recommended
+  - testcase: testcase/scs-0104-image-capi-1
+    description: CAPI image is present (naming scheme v1)
+    status:
+      v1: recommended
+  - testcase: testcase/scs-0104-image-ubuntu-24.04
+    description: Ubuntu 24.04 image is present (by name)
+    status:
+      v2: required
+  - testcase: testcase/scs-0104-image-ubuntu-22.04
+    description: Ubuntu 22.04 image is present (by name)
+    status:
+      v1: required
+  - testcase: testcase/scs-0104-image-debian-12
+    description: Debian 12 image is present (by name)
+    status:
+      v2: recommended
+
+
 
 - id: category/scs-0114
   name: Volume Types
@@ -356,7 +496,7 @@
   - scs-0101-v1
   - scs-0102-v1
   - scs-0103-v1
-  - scs-0104-v1-2
+  - scs-0104-v1.2/required
   - scs-0114-v1
   - scs-0115-v1
   - scs-0116-v1 !manual
@@ -401,9 +541,9 @@
   versions:
   - version: v5.1
     stabilized_at: 2024-12-19
-    targets:
-      main: target/scs-compatible-iaas-main-v5.1
-      preview: target/scs-compatible-iaas-preview-v5.1
+    include:
+    - module/scs-0104-v1.2
+    - module/scs-compatible-iaas-v5.1-preview
   - version: v4
     stabilized_at: 2024-02-28
     targets:

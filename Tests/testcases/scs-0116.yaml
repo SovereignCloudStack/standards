@@ -8,5 +8,5 @@ testcases:
     - key-manager
 - id: key-manager-permissions-check
   tags: [scs-0116-v1]
-  description: Key manager is usable with member role.
+  description: Key manager (if present) is usable with member role.
   type: check-key-manager
