@@ -139,144 +139,96 @@
   description: >
     Must fulfill all requirements of <https://docs.scs.community/standards/scs-0102-v1-image-metadata>
 
-- id: category/scs-0103
-  name: Standard flavors
-  url: https://docs.scs.community/standards/iaas/scs-0103
 - id: testcase/scs-0103-flavor-1v-4
-  category: category/scs-0103
-  tags: [scs-0103-v1]
+  description: check presence of flavor SCS-1v-4
 - id: testcase/scs-0103-flavor-2v-8
-  category: category/scs-0103
-  tags: [scs-0103-v1]
+  description: check presence of flavor SCS-2v-8
 - id: testcase/scs-0103-flavor-4v-16
-  category: category/scs-0103
-  tags: [scs-0103-v1]
+  description: check presence of flavor SCS-4v-16
 - id: testcase/scs-0103-flavor-8v-32
-  category: category/scs-0103
-  tags: [scs-0103-v1]
+  description: check presence of flavor SCS-8v-32
 - id: testcase/scs-0103-flavor-1v-2
-  category: category/scs-0103
-  tags: [scs-0103-v1]
+  description: check presence of flavor SCS-1v-2
 - id: testcase/scs-0103-flavor-2v-4
-  category: category/scs-0103
-  tags: [scs-0103-v1]
+  description: check presence of flavor SCS-2v-4
 - id: testcase/scs-0103-flavor-4v-8
-  category: category/scs-0103
-  tags: [scs-0103-v1]
+  description: check presence of flavor SCS-4v-8
 - id: testcase/scs-0103-flavor-8v-16
-  category: category/scs-0103
-  tags: [scs-0103-v1]
+  description: check presence of flavor SCS-8v-16
 - id: testcase/scs-0103-flavor-16v-32
-  category: category/scs-0103
-  tags: [scs-0103-v1]
+  description: check presence of flavor SCS-16v-32
 - id: testcase/scs-0103-flavor-1v-8
-  category: category/scs-0103
-  tags: [scs-0103-v1]
+  description: check presence of flavor SCS-1v-8
 - id: testcase/scs-0103-flavor-2v-16
-  category: category/scs-0103
-  tags: [scs-0103-v1]
+  description: check presence of flavor SCS-2v-16
 - id: testcase/scs-0103-flavor-4v-32
-  category: category/scs-0103
-  tags: [scs-0103-v1]
+  description: check presence of flavor SCS-4v-32
 - id: testcase/scs-0103-flavor-1l-1
-  category: category/scs-0103
-  tags: [scs-0103-v1]
+  description: check presence of flavor SCS-1l-1
 - id: testcase/scs-0103-flavor-2v-4-20s
-  category: category/scs-0103
-  tags: [scs-0103-v1]
+  description: check presence of flavor SCS-2v-4-20s
 - id: testcase/scs-0103-flavor-4v-16-100s
-  category: category/scs-0103
-  tags: [scs-0103-v1]
+  description: check presence of flavor SCS-4v-16-100s
 - id: testcase/scs-0103-flavor-1v-4-10
-  category: category/scs-0103
-  tags: [scs-0103-v1-rec]
+  description: check presence of flavor SCS-1v-4-10
 - id: testcase/scs-0103-flavor-2v-8-20
-  category: category/scs-0103
-  tags: [scs-0103-v1-rec]
+  description: check presence of flavor SCS-2v-8-20
 - id: testcase/scs-0103-flavor-4v-16-50
-  category: category/scs-0103
-  tags: [scs-0103-v1-rec]
+  description: check presence of flavor SCS-4v-16-50
 - id: testcase/scs-0103-flavor-8v-32-100
-  category: category/scs-0103
-  tags: [scs-0103-v1-rec]
+  description: check presence of flavor SCS-8v-32-100
 - id: testcase/scs-0103-flavor-1v-2-5
-  category: category/scs-0103
-  tags: [scs-0103-v1-rec]
+  description: check presence of flavor SCS-1v-2-5
 - id: testcase/scs-0103-flavor-2v-4-10
-  category: category/scs-0103
-  tags: [scs-0103-v1-rec]
+  description: check presence of flavor SCS-2v-4-10
 - id: testcase/scs-0103-flavor-4v-8-20
-  category: category/scs-0103
-  tags: [scs-0103-v1-rec]
+  description: check presence of flavor SCS-4v-8-20
 - id: testcase/scs-0103-flavor-8v-16-50
-  category: category/scs-0103
-  tags: [scs-0103-v1-rec]
+  description: check presence of flavor SCS-8v-16-50
 - id: testcase/scs-0103-flavor-16v-32-100
-  category: category/scs-0103
-  tags: [scs-0103-v1-rec]
+  description: check presence of flavor SCS-16v-32-100
 - id: testcase/scs-0103-flavor-1v-8-20
-  category: category/scs-0103
-  tags: [scs-0103-v1-rec]
+  description: check presence of flavor SCS-1v-8-20
 - id: testcase/scs-0103-flavor-2v-16-50
-  category: category/scs-0103
-  tags: [scs-0103-v1-rec]
+  description: check presence of flavor SCS-2v-16-50
 - id: testcase/scs-0103-flavor-4v-32-100
-  category: category/scs-0103
-  tags: [scs-0103-v1-rec]
+  description: check presence of flavor SCS-4v-32-100
 - id: testcase/scs-0103-flavor-1l-1-5
-  category: category/scs-0103
-  tags: [scs-0103-v1-rec]
+  description: check presence of flavor SCS-1l-1-5
 
-
-
-- id: category/scs-0104
-  name: Standard images
-  url: https://docs.scs.community/standards/iaas/scs-0104
-- id: testcase/scs-0104-source-capi
-  category: category/scs-0104
-  description: CAPI images adhere to canonical image source
-  tags:
-  - scs-0104-v1.1/required
-  - scs-0104-v1.2/required
-- id: testcase/scs-0104-source-ubuntu
-  category: category/scs-0104
-  description: Ubuntu images adhere to canonical image source
-  tags:
-  - scs-0104-v1.1/required
-  - scs-0104-v1.2/required
-- id: testcase/scs-0104-source-debian
-  category: category/scs-0104
-  description: Debian images adhere to canonical image source
-  tags:
-  - scs-0104-v1.1/required
-  - scs-0104-v1.2/required
-- id: testcase/scs-0104-image-capi-2
-  category: category/scs-0104
-  description: CAPI image is present (naming scheme v2)
-  tags:
-  - scs-0104-v1.2/recommended
-- id: testcase/scs-0104-image-capi-1
-  category: category/scs-0104
-  description: CAPI image is present (naming scheme v1)
-  tags:
-  - scs-0104-v1.1/recommended
-- id: testcase/scs-0104-image-ubuntu-24.04
-  category: category/scs-0104
-  description: Ubuntu 24.04 image is present (by name)
-  tags:
-  - scs-0104-v1.2/required
-- id: testcase/scs-0104-image-ubuntu-22.04
-  category: category/scs-0104
-  description: Ubuntu 22.04 image is present (by name)
-  tags:
-  - scs-0104-v1.1/required
-- id: testcase/scs-0104-image-debian-12
-  category: category/scs-0104
-  description: Debian 12 image is present (by name)
-  tags:
-  - scs-0104-v1.2/recommended
-
-
+- id: module/scs-0103-v1
+  url: https://docs.scs.community/standards/scs-0103-v1-standard-flavors
+  targets:
+    required:
+    - testcase/scs-0103-flavor-1v-4
+    - testcase/scs-0103-flavor-2v-8
+    - testcase/scs-0103-flavor-4v-16
+    - testcase/scs-0103-flavor-8v-32
+    - testcase/scs-0103-flavor-1v-2
+    - testcase/scs-0103-flavor-2v-4
+    - testcase/scs-0103-flavor-4v-8
+    - testcase/scs-0103-flavor-8v-16
+    - testcase/scs-0103-flavor-16v-32
+    - testcase/scs-0103-flavor-1v-8
+    - testcase/scs-0103-flavor-2v-16
+    - testcase/scs-0103-flavor-4v-32
+    - testcase/scs-0103-flavor-1l-1
+    - testcase/scs-0103-flavor-2v-4-20s
+    - testcase/scs-0103-flavor-4v-16-100s
+    recommended:
+    - testcase/scs-0103-flavor-1v-4-10
+    - testcase/scs-0103-flavor-2v-8-20
+    - testcase/scs-0103-flavor-4v-16-50
+    - testcase/scs-0103-flavor-8v-32-100
+    - testcase/scs-0103-flavor-1v-2-5
+    - testcase/scs-0103-flavor-2v-4-10
+    - testcase/scs-0103-flavor-4v-8-20
+    - testcase/scs-0103-flavor-8v-16-50
+    - testcase/scs-0103-flavor-16v-32-100
+    - testcase/scs-0103-flavor-1v-8-20
+    - testcase/scs-0103-flavor-2v-16-50
+    - testcase/scs-0103-flavor-4v-32-100
+    - testcase/scs-0103-flavor-1l-1-5
 
 - id: testcase/scs-0104-source-capi
   description: CAPI images adhere to canonical image source
@@ -324,52 +276,6 @@
     - testcase/scs-0116-docs
     - testcase/scs-0121-docs
     - testcase/scs-0302-docs
-
-
-- id: standard/scs-0104
-  url: https://docs.scs.community/standards/iaas/scs-0104
-  versions:
-    v1:
-      url: https://docs.scs.community/standards/scs-0104-v1-standard-images
-    v2:
-      url: https://docs.scs.community/standards/scs-0104-v1-standard-images
-  items:
-  - testcase: testcase/scs-0104-source-capi
-    description: CAPI images adhere to canonical image source
-    status:
-      v1: required
-      v2: required
-  - testcase: testcase/scs-0104-source-ubuntu
-    description: Ubuntu images adhere to canonical image source
-    status:
-      v1: required
-      v2: required
-  - testcase: testcase/scs-0104-source-debian
-    description: Debian images adhere to canonical image source
-    status:
-      v1: required
-      v2: required
-  - testcase: testcase/scs-0104-image-capi-2
-    description: CAPI image is present (naming scheme v2)
-    status:
-      v2: recommended
-  - testcase: testcase/scs-0104-image-capi-1
-    description: CAPI image is present (naming scheme v1)
-    status:
-      v1: recommended
-  - testcase: testcase/scs-0104-image-ubuntu-24.04
-    description: Ubuntu 24.04 image is present (by name)
-    status:
-      v2: required
-  - testcase: testcase/scs-0104-image-ubuntu-22.04
-    description: Ubuntu 22.04 image is present (by name)
-    status:
-      v1: required
-  - testcase: testcase/scs-0104-image-debian-12
-    description: Debian 12 image is present (by name)
-    status:
-      v2: recommended
-
 
 
 - id: category/scs-0114
