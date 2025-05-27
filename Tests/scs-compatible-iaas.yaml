@@ -3,141 +3,77 @@
 # - YYYY-MM-DD pruned old content; affected versions: vN, ...
 # - 2025-05-22 pruned old content; affected versions: v1, v2, v3-orig, v5
 
+- id: testcase/opc-v2022.11
+  description: Passes OpenStack-powered Compute v2022.11
 
-# HYPOTHESIS: testcases are very technical
-# a testcase could occur in multiple standards (not just multiple versions of one standard)
-# could be recommended in one standard, required in another
-# worst case: all standards pairwise connected via a shared testcase (can be a different one each time)
-# therefore
-# - do NOT try to make testcase-standard matrix!!!
-# - determine all standards that are referenced by targets
-# - determine all testcases that are referenced by standards
-# - run those testcases and record their results
-# - then evaluate each standard version: rq PASS/FAIL rc PASS/FAIL
-# - then evaluate each target: rq PASS/FAIL rc PASS/FAIL
-#
-# NB: in this case it makes no sense to name testcases after the standards, the way I just
-# did, e.g., testcase/scs-0104-image-debian-12
-#
-# Of course, we could use a dedicated concept to bridge items in documents with testcases.
-# We might say: the testcase is the content (what to test) whereas the 'test item' is the form (and location).
-# Then we have a mapping:
-#
-#   item/scs-0104-v2-image-debian-12:
-#     testcase: testcase/glance-image-debian-12
-#     status: recommended
-#   item/scs-0104-v2-image-ubuntu-24.04:
-#     testcase: testcase/glance-image-ubuntu-24.04
-#     status: required
-#
-# In essence, each item corresponds to an entry in the mapping that we have currently:
-#
-#   testcases:
-#     testcase/glance-image-debian-12: recommended
-#     testcase/glance-image-ubuntu-24.04: required
-#
-# The difference is that the item adds a name. The question is: what is the benefit of this name?
-#
-# On second thought, how likely is it that two standards share a testcase?
-# The only example I could come up with is the following:
-# - scs-0101-v1 says that every public image SHOULD have property `hw_rng_model`
-# - scs-0102-v1 says that every public image SHOULD have property `hw_rng_model`
-# In both cases we don't even have a dedicated testcase, but rather
-# - testcase/scs-0101-image-properties, which tests other properties as well
-# - testcase/scs-0102-image-metadata, which is still monolithic and tests everything all at once
-# I think it could be worthwhile to decompose the monolith, but I would rather remove the former
-# testcase from the testsuite scs-0101-v1 and add a remark to the testsuite scs-0102-v1 saying
-# that if the testcase is to be removed from there as well that one should instead consider
-# moving it to scs-0101-v1.
-#
-# So, maybe the HYPOTHESIS does not carry that much weight.
-
-
-# #### (TESTCASE) CATEGORIES + corresponding TESTCASES ####
-# each category loosely corresponds to a standard (at least for SCS standards)
-# you can do one category for each version of the standard, but these can't share testcases!
-# so this works well for OpenStack Powered Compute
-# apart from that, put all versions into one category
-
-- id: category/opc-v2022.11
-  name: OpenStack Powered Compute v2022.11
+- id: module/opc-v2022.11-1
+  name: OpenStack-powered Compute v2022.11
   url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
+  # we still haven't adapted the refstack test, so there's little chance of passing :(
+  # targets:
+  #   required:
+  #   - testcase/opc-v2022.11
 
-- id: category/scs-0100
-  name: Flavor naming
-  url: https://docs.scs.community/standards/iaas/scs-0100
+
 - id: testcase/scs-0100-syntax-check
-  category: category/scs-0100
-  tags: [scs-0100-v3.1]
-  description: >
-    Flavor names starting `SCS-` comply with syntax described in
-    <https://docs.scs.community/standards/scs-0100-v3-flavor-naming> (identical with v2)
+  description: Flavor names starting `SCS-` comply with syntax.
 - id: testcase/scs-0100-semantics-check
-  category: category/scs-0100
-  tags: [scs-0100-v3.1]
-  description: >
-    Syntactically correct SCS flavor names tell the truth according to
-    <https://docs.scs.community/standards/scs-0100-v3-flavor-naming> (subsuming v1 and v2)
-- id: target/scs-0100-v3.1
-  required:
-  - testcase/scs-0100-syntax-check
-  - testcase/scs-0100-semantics-check
+  description: Syntactically correct SCS flavor names represent the truth.
 
-- id: category/scs-0101
-  name: Entropy
-  url: https://docs.scs.community/standards/iaas/scs-0101
+- id: module/scs-0100-v3.1
+  name: Flavor naming v3.1
+  url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
+  targets:
+    required:
+    - testcase/scs-0100-syntax-check
+    - testcase/scs-0100-semantics-check
+
+
 - id: testcase/scs-0101-flavor-properties
-  category: category/scs-0101
-  tags: [scs-0101-v1-rec]
   description: >
     Must have all flavor properties recommended in
     <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings>
 - id: testcase/scs-0101-image-properties
-  category: category/scs-0101
-  tags: [scs-0101-v1-rec]
   description: >
     Must have all image properties recommended in
     <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings>
 - id: testcase/scs-0101-rngd
-  category: category/scs-0101
-  tags: [scs-0101-v1]
   description: >
     Images of the test sample must have the service `rngd`; see
     <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
 - id: testcase/scs-0101-entropy-avail
-  category: category/scs-0101
-  tags: [scs-0101-v1]
   description: >
     A test instance must have the correct `entropy_avail`; see
     <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
 - id: testcase/scs-0101-fips-test
-  category: category/scs-0101
-  tags: [scs-0101-v1]
   description: >
     A test instance must pass the "FIPS test"; see
     <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
-  status:
-    v1: required
-    v2: required
+
+- id: module/scs-0101-v1
+  name: Entropy v1
+  url: https://docs.scs.community/standards/scs-0101-v1-entropy
+  targets:
+    required:
+    - testcase/scs-0101-entropy-avail
+    - testcase/scs-0101-fips-test
+    recommended:
+    - testcase/scs-0101-flavor-properties
+    - testcase/scs-0101-image-properties
+    - testcase/scs-0101-rngd
 
 
-- id: target/scs-0101-v1
-  required:
-  - testcase/scs-0101-entropy-avail
-  - testcase/scs-0101-fips-test
-  recommended:
-  - testcase/scs-0101-flavor-properties
-  - testcase/scs-0101-image-properties
-  - testcase/scs-0101-rngd
-
-- id: category/scs-0102
-  name: Image metadata
-  url: https://docs.scs.community/standards/iaas/scs-0102
+# very big TODO: still a monolith -- decompose!
 - id: testcase/scs-0102-image-metadata
-  category: category/scs-0102
-  tags: [scs-0102-v1]
   description: >
     Must fulfill all requirements of <https://docs.scs.community/standards/scs-0102-v1-image-metadata>
+
+- id: module/scs-0102-v1
+  url: https://docs.scs.community/standards/scs-0102-v1-image-metadata
+  targets:
+    required:
+    - testcase/scs-0102-image-metadata
+
 
 - id: testcase/scs-0103-flavor-1v-4
   description: check presence of flavor SCS-1v-4
@@ -230,6 +166,7 @@
     - testcase/scs-0103-flavor-4v-32-100
     - testcase/scs-0103-flavor-1l-1-5
 
+
 - id: testcase/scs-0104-source-capi
   description: CAPI images adhere to canonical image source
 - id: testcase/scs-0104-source-ubuntu
@@ -247,8 +184,7 @@
 - id: testcase/scs-0104-image-debian-12
   description: Debian 12 image is present (by name)
 
-
-- id: module/scs-0104-v1.1
+- id: module/scs-0104-v1-1
   url: https://docs.scs.community/standards/scs-0104-v1-standard-images
   targets:
     required:
@@ -258,7 +194,7 @@
     - testcase/scs-0104-source-debian
     recommended:
     - testcase/scs-0104-image-capi-1
-- id: module/scs-0104-v1.2
+- id: module/scs-0104-v1-2
   url: https://docs.scs.community/standards/scs-0104-v1-standard-images
   targets:
     required:
@@ -270,162 +206,130 @@
     - testcase/scs-0104-image-capi-2
     - testcase/scs-0104-image-debian-12
 
-- id: module/scs-compatible-iaas-v5.1-preview
-  targets:
-    preview:
-    - testcase/scs-0116-docs
-    - testcase/scs-0121-docs
-    - testcase/scs-0302-docs
 
-
-- id: category/scs-0114
-  name: Volume Types
-  url: https://docs.scs.community/standards/iaas/scs-0114
 - id: testcase/scs-0114-encrypted
-  category: category/scs-0114
-  tags: [scs-0114-v1-rec]
-  description: >
-    An encrypted volume type can be discovered.
+  description: An encrypted volume type can be discovered.
 - id: testcase/scs-0114-replicated
-  category: category/scs-0114
-  tags: [scs-0114-v1-rec]
-  description: >
-    A replicated volume type can be discovered.
+  description: A replicated volume type can be discovered.
 
-- id: category/scs-0115
-  name: Default rules for security groups
-  url: https://docs.scs.community/standards/iaas/scs-0115
+- id: module/scs-0114-v1
+  name: Volume Types
+  url: https://docs.scs.community/standards/scs-0114-v1-volume-type-standard
+  targets:
+    recommended:
+    - testcase/scs-0114-encrypted
+    - testcase/scs-0114-replicated
+
+
 # do monolithic test for the default security groups because it's hard to decompose, and frankly, I don't
 # see the correspondence between the test script and the standards requirements and recommendations
 # (the latter probably simply aren't checked?)
 - id: testcase/scs-0115-default-rules
-  category: category/scs-0115
-  tags: [scs-0115-v1]
   description: >
     Must fulfill all requirements of <https://docs.scs.community/standards/scs-0115-v1-default-rules-for-security-groups>
 
-- id: category/scs-0116
-  name: Key manager
-  url: https://docs.scs.community/standards/iaas/scs-0116
+- id: module/scs-0115-v1
+  name: Default rules for security groups
+  url: https://docs.scs.community/standards/scs-0115-v1-default-rules-for-security-groups
+  targets:
+    required:
+    - testcase/scs-0115-default-rules
+
+
 - id: testcase/scs-0116-presence
-  category: category/scs-0116
-  tags: [scs-0116-v1-rec]
-  description: >
-    Key manager service is discoverable.
+  description: Key manager service is discoverable.
 - id: testcase/scs-0116-permissions
-  category: category/scs-0116
-  tags: [scs-0116-v1]
+  description: Key manager (if present) is usable with member role.
+- id: testcase/scs-0116-v1-docs
   description: >
-    Key manager is usable with member role.
-- id: testcase/scs-0116-docs
-  category: category/scs-0116
-  tags: [scs-0116-v1,manual]
-  description: >
-    Note: manual check! Must fulfill documentation requirements of <https://docs.scs.community/standards/scs-0116-v1-key-manager-standard>.
+    Note: manual check! Must fulfill documentation requirements of
+    <https://docs.scs.community/standards/scs-0116-v1-key-manager-standard>.
 
-- id: category/scs-0117
+- id: module/scs-0116-v1-1
+  name: Key manager
+  url: https://docs.scs.community/standards/scs-0116-v1-key-manager-standard
+  targets:
+    required:
+    - testcase/scs-0116-permissions
+    # actually required by the standard, but use preview for the time being:
+    preview:
+    - testcase/scs-0116-v1-docs
+    recommended:
+    - testcase/scs-0116-presence
+
+
+- id: testcase/scs-0117-test-backup
+  description: Check that volume backup works.
+
+- id: module/scs-0117-v1
   name: Volume backup
-  url: https://docs.scs.community/standards/iaas/scs-0117
-- id: testcase/scs-0117-test
-  category: category/scs-0117
-  tags: [scs-0117-v1]
-  description: >
-    Volume backup works.
+  url: https://docs.scs.community/standards/scs-0117-v1-volume-backup-service
+  targets:
+    required:
+    - testcase/scs-0117-test-backup
 
-- id: category/scs-0121
+
+- id: testcase/scs-0121-v1-docs
+  description: >
+    Note: manual check! Must fulfill all requirements of
+    <https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard>
+
+- id: module/scs-0121-v1-1
   name: Availability Zones
-  url: https://docs.scs.community/standards/iaas/scs-0121
-- id: testcase/scs-0121-docs
-  category: category/scs-0121
-  tags: [scs-0121-v1,manual]
-  description: >
-    Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard>
+  url: https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard
+  targets:
+    # actually required by the standard, but use preview for the time being:
+    preview:
+    - testcase/scs-0121-v1-docs
 
-- id: category/scs-0123
-  name: Mandatory and Supported IaaS Services
-  url: https://docs.scs.community/standards/iaas/scs-0123
-- id: testcase/scs-0123-service-apis
-  category: category/scs-0123
-  tags: [scs-0123-v1]
-  description: >
-    All required services (besides block-storage) are discoverable; as listed in <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services>.
+
+- id: testcase/scs-0123-service-compute
+  description: Compute service is discoverable.
+- id: testcase/scs-0123-service-identity
+  description: Identity service is discoverable.
+- id: testcase/scs-0123-service-image
+  description: Image service is discoverable.
+- id: testcase/scs-0123-service-network
+  description: Network service is discoverable.
+- id: testcase/scs-0123-service-load-balancer
+  description: Load-balancer service is discoverable.
+- id: testcase/scs-0123-service-placement
+  description: Placement service is discoverable.
+- id: testcase/scs-0123-service-object-store
+  description: Object-store service is discoverable.
 - id: testcase/scs-0123-storage-apis
-  category: category/scs-0123
-  tags: [scs-0123-v1]
-  description: >
-    The block-storage API is discoverable; as listed in <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services>.
+  description: The block-storage API is discoverable as `volume`, `volumev3`, or `block-storage`.
 - id: testcase/scs-0123-swift-s3
-  category: category/scs-0123
-  tags: [scs-0123-v1]
-  description: >
-    The object-storage API is compatible with S3; as described in <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services>.
+  description: The object-storage API is compatible with S3.
 
-- id: category/scs-0302
+- id: module/scs-0123-v1
+  name: Mandatory and Supported IaaS Services
+  url: https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services
+  targets:
+    required:
+    - testcase/scs-0123-service-compute
+    - testcase/scs-0123-service-identity
+    - testcase/scs-0123-service-image
+    - testcase/scs-0123-service-network
+    - testcase/scs-0123-service-load-balancer
+    - testcase/scs-0123-service-placement
+    - testcase/scs-0123-service-object-store
+    - testcase/scs-0123-storage-apis
+    - testcase/scs-0123-swift-s3
+
+
+- id: testcase/scs-0302-v1-docs
+  description: >
+    Note: manual check! Must fulfill all requirements of
+    <https://docs.scs.community/standards/scs-0302-v1-domain-manager-role>
+
+- id: module/scs-0302-v1-1
   name: Domain Manager Role
-  url: https://docs.scs.community/standards/iam/scs-0302
-- id: testcase/scs-0302-docs
-  category: category/scs-0302
-  tags: [scs-0302-v1,manual]
-  description: >
-    Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0302-v1-domain-manager-role>
-
-
-# #### TARGETS ####
-# WARNING! The following is a TRAP:
-# we want to enable a visualization like the following
-#                   v5.1          v6
-# category 1
-# - testcase 1.1    required      required
-# - testcase 1.2    recommended   required
-# - testcase 1.3    --            recommended
-# etc.
-#
-# these categories alone would be too rigid though: if we have many testcase, it may be desireable to
-# highlight certain parts in a way that is orthogonal to categories.
-#
-# therefore we use two concepts:
-# - categories for sorting the testcase just like above, and
-# - targets for certain aspects of interest (such as security) that don't cover all testcases
-#
-# the former would be defined with the testcases
-# the latter would be more or less like the targets we currently have
-#
-# and then we still need to specify for each version: which testcases are required/recommended
-# we can still use targets for that:
-# - any testcase in `main` is required (it could be hidden from the list of targets if categories are used)
-# - any testcase not in main, but in another target is `recommended`
-# - if there is a target `recommended` we could hide that from the official list of targets same as `main`
-
-- id: target/scs-compatible-iaas-main-v5.1
-  selectors:
-  - scs-0100-v3.1
-  - scs-0101-v1
-  - scs-0102-v1
-  - scs-0103-v1
-  - scs-0104-v1.2/required
-  - scs-0114-v1
-  - scs-0115-v1
-  - scs-0116-v1 !manual
-  - scs-0117-v1
-  - scs-0121-v1 !manual
-  - scs-0123-v1
-  - scs-0302-v1 !manual
-- id: target/scs-compatible-iaas-preview-v5.1
-  selectors:
-  - scs-0116-v1 manual
-  - scs-0121-v1 manual
-  - scs-0302-v1 manual
-- id: target/scs-compatible-iaas-main-v4
-  selectors:
-  - scs-0100-v3.1
-  - scs-0101-v1
-  - scs-0102-v1
-  - scs-0103-v1
-  - scs-0104-v1-1
-- id: target/scs-compatible-iaas-main-v3
-  selectors:
-  - scs-0100-v3.1
-  - scs-0102-v1
+  url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role
+  targets:
+    # actually required by the standard, but use preview for the time being:
+    preview:
+    - testcase/scs-0302-v1-docs
 
 
 # #### SCOPE ####
@@ -448,13 +352,28 @@
   - version: v5.1
     stabilized_at: 2024-12-19
     include:
-    - module/scs-0104-v1.2
-    - module/scs-compatible-iaas-v5.1-preview
+    - module/scs-0100-v3.1
+    - module/scs-0101-v1
+    - module/scs-0102-v1
+    - module/scs-0103-v1
+    - module/scs-0104-v1-2
+    - module/scs-0114-v1
+    - module/scs-0115-v1
+    - module/scs-0116-v1-1
+    - module/scs-0117-v1
+    - module/scs-0121-v1-1
+    - module/scs-0123-v1
+    - module/scs-0302-v1-1
   - version: v4
     stabilized_at: 2024-02-28
-    targets:
-      main: target/scs-compatible-iaas-main-v4
+    include:
+    - module/scs-0100-v3.1
+    - module/scs-0101-v1
+    - module/scs-0102-v1
+    - module/scs-0103-v1
+    - module/scs-0104-v1-1
   - version: v3
     stabilized_at: 2024-02-28
-    targets:
-      main: target/scs-compatible-iaas-main-v3
+    include:
+    - module/scs-0100-v3.1
+    - moudle/scs-0102-v1
