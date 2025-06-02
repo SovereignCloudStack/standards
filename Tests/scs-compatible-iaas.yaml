@@ -308,6 +308,10 @@
 
 - id: testcase/scs-0117-test-backup
   description: Check that volume backup works.
+- id: testcase/scs-0117-v1-docs
+  description: >
+    Note: manual check! Must fulfill documentation requirements of
+    <https://docs.scs.community/standards/scs-0117-v1-volume-backup-service>.
 
 - id: module/scs-0117-v1
   name: Volume backup
@@ -315,6 +319,7 @@
   targets:
     required:
     - testcase/scs-0117-test-backup
+    - testcase/scs-0117-v1-docs
 
 
 - id: testcase/scs-0121-v1-docs
