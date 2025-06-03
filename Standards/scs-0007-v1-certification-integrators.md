@@ -21,8 +21,8 @@ The certification is done either by the Forum SCS-Standards or a attestation bod
 
 ### Certificates
 
-_SCKI_ → SCS Certified Kubernetes Integrator: SCS KaaS (Kubernetes as a Service) implementation partner
-_SCII_ → SCS Certified Infrastrucure Integrator: SCS IaaS (Infrastructure as a Service) implementation partner
+* Certified SCS KaaS Integrator: SCS KaaS (Kubernetes as a Service) implementation partner
+* Certified SCS IaaS Integrator: SCS IaaS (Infrastructure as a Service) implementation partner
 
 Criteria for certification, proof of experience in setting up, operating and supporting SCS-compliant environments.
 
