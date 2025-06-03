@@ -43,4 +43,3 @@ So CSPs MUST watch out for announcements like in the OSSAs and OSSNs and when th
 Afterwards CSPs MUST provide a notice to the OSBA, that they are not or not any more affected by the vulnerability.
 This can be done through either telling, what patches were integrated or showing configuration that renders the attack impossible.
 It could also be provided a list of services, when the affected service is not used in that deployment.
-
