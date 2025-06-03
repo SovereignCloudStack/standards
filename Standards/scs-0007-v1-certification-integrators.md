@@ -26,17 +26,17 @@ _SCII_ → SCS Certified Infrastrucure Integrator: SCS IaaS (Infrastructure as a
 
 Criteria for certification, proof of experience in setting up, operating and supporting SCS-compliant environments.
 
-The organization to be certified must be verifiable
+The organization to be certified needs to fullfill one of these requirements:
 
-- have successfully brought at least two SCS-compliant environments of a third party (customer) into production in the last 12 months 
-
-or 
-
-- actively manage at least two such environments of third parties (customers) at the time the certificate is issued 
+a) have successfully brought at least two SCS-compliant environments of a third party (customer) into production in the last 12 months. The two environments must fullfill at least the _Certified SCS-compatible IaaS_ or _Certified SCS-compatible KaaS_ scope.
 
 or 
 
-- have been operating an SCS-compliant public cloud with at least two regions or at least three availability zones for more than one year.
+b) actively manage at least two such environments of third parties (customers) at the time the certificate is issued 
+
+or 
+
+c) have been operating an SCS-compliant public cloud with at least two regions or at least three availability zones for more than one year.
 
 ### Additional favorable criteria for certification
 
