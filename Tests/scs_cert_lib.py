@@ -120,10 +120,11 @@ def add_period(dt: datetime, period: str) -> datetime:
     https://docs.scs.community/standards/scs-0004-v1-achieving-certification#regulations
     """
     # compute the moment of expiry (so we are valid before that point, but not on that point)
-    if period is None or period == 'day':  # day is default, so use it if period is None
+    if period == 'day':
         dt += timedelta(days=2)
         return datetime(dt.year, dt.month, dt.day)  # omit time so as to arrive at midnight
-    if period == 'week':
+    # week is default, so use it if period is None
+    if period is None or period == 'week':
         dt += timedelta(days=14 - dt.weekday())
         return datetime(dt.year, dt.month, dt.day)  # omit time so as to arrive at midnight
     if period == 'month':
@@ -140,6 +141,9 @@ def add_period(dt: datetime, period: str) -> datetime:
         if dt.month >= 4:
             return datetime(dt.year, 10, 1)
         return datetime(dt.year, 7, 1)
+    if period == 'infinite':
+        # admittedly HACKY, but this case is better handled by caller
+        return datetime(dt.year + 1000, 1, 1)
 
 
 def parse_selector(selector_str: str) -> list[list[str]]:
