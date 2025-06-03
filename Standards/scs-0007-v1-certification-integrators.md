@@ -1,10 +1,10 @@
 ﻿---
-title: SCS - Certification of integrators
+title: Certification of integrators
 type: Procedural
 status: Draft
 track: Global
 description: |
-   SCS-0007 defines how SCS certified integrators for IaaS as well as KaaS are certified.
+   SCS-0007 defines the process and rules on how SCS certified integrators are certified.
 ---
 
 ## Introduction
