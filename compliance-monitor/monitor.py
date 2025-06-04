@@ -514,7 +514,7 @@ def convert_result_rows_to_dict2(
             continue
         # drop value if too old
         lifetime = testcase.get('lifetime')  # leave None if not present; to be handled by add_period
-        if lifetime != 'infinite' and now >= add_period(checked_at, lifetime):
+        if now >= add_period(checked_at, lifetime):
             continue
         tc_result = dict(result=result, checked_at=checked_at)
         if include_report:
