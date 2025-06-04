@@ -785,7 +785,7 @@ async def get_healthz(request: Request):
     return Response()  # empty response with status 200
 
 
-def pick_filter(results, subject, scope):
+def pick_filter(results, scope, subject):
     """Jinja filter to pick scope results from `results` for given `subject` and `scope`"""
     return results.get(subject, {}).get(scope, {})
 
