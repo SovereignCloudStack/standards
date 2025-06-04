@@ -9,7 +9,7 @@ description: |
 
 ## Introduction
 
-The purpose of this document is to describe a concept for how implementation partners can obtain SCS certification. In essence, this certificate is intended to express that an organization has sufficient technical knowledge and experience to provide technical support to companies using SCS. 
+The purpose of this document is to describe a concept for how implementation partners can obtain SCS certification. In essence, this certificate is intended to express that an organization has sufficient technical knowledge and experience to provide technical support to companies using SCS.
 For this purpose, two essential criteria are defined that must be fulfilled. In addition, there are a few other criteria that can be taken into account in favor of certification.
 
 ## Motivation
@@ -30,11 +30,11 @@ The organization to be certified needs to satisfie one of the following requirem
 
 a) have successfully brought at least two SCS-compliant environments of a third party (customer) into production in the last 12 months. The two environments must fullfill at least the _Certified SCS-compatible IaaS_ or _Certified SCS-compatible KaaS_ scope.
 
-or 
+or
 
 b) actively manage at least two such environments of third parties (customers) at the time the certificate is issued. These environments must have been managed at least for a year at the time of attestation.
 
-or 
+or
 
 c) have been operating a _Certified SCS-compatible IaaS_ public cloud with at least two regions or at least three availability zones for more than one year.
 
@@ -49,6 +49,6 @@ The implementation partners should work towards ensuring that the cloud environm
 
 ### Attestation
 
-The audit for the certification of an implementation partner is carried out by a person appointed by the Forum SCS-Standards. The person will assess and, if necessary, obtain evidence from the organization to be certified as to whether and to what extent the criteria have been met. 
+The audit for the certification of an implementation partner is carried out by a person appointed by the Forum SCS-Standards. The person will assess and, if necessary, obtain evidence from the organization to be certified as to whether and to what extent the criteria have been met.
 
 If one of the above criteria is not met, the forum can be requested to certify the candidate nevertheless. This must be decided by unanimous vote in the forum, two third of all eligble votes must be present. Abstentions are not counted as votes against.
