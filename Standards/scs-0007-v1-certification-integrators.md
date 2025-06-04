@@ -38,7 +38,6 @@ or
 
 c) have been operating a _Certified SCS-compatible IaaS_ public cloud with at least two regions or at least three availability zones for more than one year.
 
-
 ### Additional favorable criteria for certification
 
 SCS is an open source community project with the goal of enabling digital sovereignty. As such, the commitment and support of this mission should be recognized and promoted beyond technical competence. To this end, the following aspects can be taken into account for certification or compensate for any criteria that are not fully met (see above):
