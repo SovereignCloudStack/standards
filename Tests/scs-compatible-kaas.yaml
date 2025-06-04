@@ -20,6 +20,7 @@ modules:
     testcases:
       - id: cncf-k8s-conformance
         tags: [mandatory]
+        lifetime: infinite
         description: >
           Must fulfill all requirements of [CNCF Kubernetes conformance](https://github.com/cncf/k8s-conformance/tree/master)
   - id: scs-0210-v2

@@ -256,7 +256,7 @@ TBD
 | Key               | Type            | Description                                                                                                       | Example           |
 | ----------------- | --------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------- |
 | `id`              | String          | Identifier for this test case (immutable and unique within this module)                                           | `image-md-check`  |
-| `lifetime`        | String          | One of: `day` (_default_), `week`, `month`, `quarter`; the test result is valid until the end of the next period  | `week`            |
+| `lifetime`        | String          | One of: `day`, `week` (_default_), `month`, `quarter`, `infinite`; the test result is valid until the end of the next period  | `day` |
 | `tags`            | List of strings | A tag is a keyword that will be used to select this test case using a selector expression                         | `[mandatory]`     |
 | `description`     | String          | Short description of the test case                                                                                |                   |
 
