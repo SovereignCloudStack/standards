@@ -785,13 +785,34 @@ async def get_healthz(request: Request):
     return Response()  # empty response with status 200
 
 
-def pick_filter(results, scope, subject):
+def pick_filter(results, scope, *subjects):
     """Jinja filter to pick scope results from `results` for given `subject` and `scope`"""
-    return results.get(subject, {}).get(scope, {})
+    # simple case (backwards compatible): precisely one subject
+    if len(subjects) == 1:
+        return results.get(subjects[0], {}).get(scope, {})
+    # generalized case: multiple subjects
+    # in this case, drop None
+    rs = [results.get(subject, {}).get(scope, {}) for subject in subjects]
+    return [r for r in rs if r is not None]
+
+
+STATUS_ORDERING = {
+    'effective': 10,
+    'warn': 5,
+    'deprecated': 1,
+}
 
 
 def summary_filter(scope_results):
     """Jinja filter to construct summary from `scope_results`"""
+    if not isinstance(scope_results, dict):
+        # new generalized case: "aggregate" results for multiple subjects
+        # simplified computation: just select the worst subject to represent the group
+        scope_results = min(
+            scope_results,
+            default={},
+            key=lambda sr: STATUS_ORDERING.get(sr.get('best_passed'), -1),
+        )
     passed_str = scope_results.get('passed_str', '') or '–'
     best_passed = scope_results.get('best_passed')
     # avoid simple 🟢🔴 (hard to distinguish for color-blind folks)
