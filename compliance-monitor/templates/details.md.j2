@@ -2,7 +2,7 @@
 {# omit h1 title here because we can only have one of those,
    and the html wrapper template will add one anyway -#}
 {% for scopeuuid, scope_result in subject_result.items() -%}
-## {{ scope_result.name }}
+## {{ subject }}: {{ scope_result.name }}
 
 - [spec overview]({{ scope_url(scopeuuid) }})
 

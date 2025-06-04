@@ -41,7 +41,7 @@ from sql import (
     db_find_account, db_update_account, db_update_publickey, db_filter_publickeys, db_get_reports,
     db_get_keys, db_insert_report, db_get_recent_results2, db_patch_approval2, db_get_report,
     db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys, db_clear_delegates,
-    db_find_subjects, db_insert_result2, db_get_relevant_results2, db_add_delegate,
+    db_find_subjects, db_insert_result2, db_get_relevant_results2, db_add_delegate, db_get_group,
 )
 
 
@@ -79,6 +79,7 @@ class Settings:
         self.yaml_path = os.path.abspath("../Tests")
 
 
+GROUP_PREFIX = 'group-'
 ROLES = {'read_any': 1, 'append_any': 2, 'admin': 4, 'approve': 8}
 # number of days that expired results will be considered in lieu of more recent, but unapproved ones
 GRACE_PERIOD_DAYS = 7
@@ -226,7 +227,8 @@ def import_bootstrap(bootstrap_path, conn):
     with conn.cursor() as cur:
         for account in accounts:
             roles = sum(ROLES[r] for r in account.get('roles', ()))
-            accountid = db_update_account(cur, {'subject': account['subject'], 'roles': roles})
+            acc_record = {'subject': account['subject'], 'roles': roles, 'group': account.get('group')}
+            accountid = db_update_account(cur, acc_record)
             db_clear_delegates(cur, accountid)
             for delegate in account.get('delegates', ()):
                 db_add_delegate(cur, accountid, delegate)
@@ -637,6 +639,13 @@ async def get_report_view_full(
     )
 
 
+def _resolve_group(cur, subject, prefix=GROUP_PREFIX):
+    group = subject.removeprefix(prefix)
+    if subject != group:
+        return group, db_get_group(cur, group)
+    return None, [subject]
+
+
 @app.get("/{view_type}/detail/{subject}/{scopeuuid}")
 async def get_detail(
     request: Request,
@@ -646,14 +655,18 @@ async def get_detail(
     scopeuuid: str,
 ):
     with conn.cursor() as cur:
-        rows2 = db_get_relevant_results2(cur, subject, scopeuuid, approved_only=True)
+        group, subjects = _resolve_group(cur, subject)
+        rows2 = []
+        for subj in subjects:
+            rows2.extend(db_get_relevant_results2(cur, subj, scopeuuid, approved_only=True))
     results2 = convert_result_rows_to_dict2(
         rows2, get_scopes(), include_report=True, grace_period_days=GRACE_PERIOD_DAYS,
         subjects=(subject, ), scopes=(scopeuuid, ),
     )
+    title = f'Details for group {group}' if group else f'Details for subject {subject}'
     return render_view(
         VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url,
-        title=f'{subject} compliance',
+        title=title,
     )
 
 
@@ -666,13 +679,17 @@ async def get_detail_full(
     scopeuuid: str,
 ):
     with conn.cursor() as cur:
-        rows2 = db_get_relevant_results2(cur, subject, scopeuuid, approved_only=False)
+        group, subjects = _resolve_group(cur, subject)
+        rows2 = []
+        for subject in subjects:
+            rows2.extend(db_get_relevant_results2(cur, subject, scopeuuid, approved_only=False))
     results2 = convert_result_rows_to_dict2(
         rows2, get_scopes(), include_report=True, subjects=(subject, ), scopes=(scopeuuid, ),
     )
+    title = f'Details for group {group}' if group else f'Details for subject {subject}'
     return render_view(
         VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url,
-        title=f'{subject} compliance (incl. unverified results)',
+        title=f'{title} (incl. unverified results)',
     )
 
 
