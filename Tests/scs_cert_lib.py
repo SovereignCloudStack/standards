@@ -141,9 +141,13 @@ def add_period(dt: datetime, period: str) -> datetime:
         if dt.month >= 4:
             return datetime(dt.year, 10, 1)
         return datetime(dt.year, 7, 1)
-    if period == 'infinite':
-        # admittedly HACKY, but this case is better handled by caller
-        return datetime(dt.year + 1000, 1, 1)
+    if period == 'year':
+        if dt.month == 11:
+            return datetime(dt.year + 2, 1, 1)
+        if dt.month == 12:
+            return datetime(dt.year + 2, 2, 1)
+        return datetime(dt.year + 1, dt.month + 2, 1)
+    raise RuntimeError(f'unknown period: {period}')
 
 
 def parse_selector(selector_str: str) -> list[list[str]]:
