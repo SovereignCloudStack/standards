@@ -26,7 +26,7 @@ The certification is done either by the Forum SCS-Standards or a attestation bod
 
 Criteria for certification, proof of experience in setting up, operating and supporting SCS-compliant environments.
 
-The organization to be certified needs to satisfie one of the following requirements
+The organization to be certified needs to satisfy one of the following requirements
 
 a) have successfully brought at least two SCS-compliant environments of a third party (customer) into production in the last 12 months. The two environments must fullfill at least the _Certified SCS-compatible IaaS_ or _Certified SCS-compatible KaaS_ scope.
 
