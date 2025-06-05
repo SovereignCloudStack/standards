@@ -199,8 +199,8 @@ def db_upgrade_schema(conn: connection, cur: cursor):
         if current is None:
             # this is an empty db, but it also used to be the case with v1
             # I (mbuechse) made sure manually that the value v1 is set on running installations
-            db_ensure_schema_v3(cur)
-            db_set_schema_version(cur, 'v3')
+            db_ensure_schema_v4(cur)
+            db_set_schema_version(cur, 'v4')
             conn.commit()
         elif current == 'v1':
             db_ensure_schema_v2(cur)
