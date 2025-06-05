@@ -1,8 +1,16 @@
+{% if results | length > 1 %}
+Jump to
+
+{% for subject in results -%}
+- [{{subject}}](#{{subject}})
+{% endfor %}
+{% endif %}
 {% for subject, subject_result in results.items() -%}
 {# omit h1 title here because we can only have one of those,
    and the html wrapper template will add one anyway -#}
 {% for scopeuuid, scope_result in subject_result.items() -%}
-## {{ scope_result.name }}
+<a name="{{ subject }}"></a>
+## {{ subject }}: {{ scope_result.name }}
 
 - [spec overview]({{ scope_url(scopeuuid) }})
 
