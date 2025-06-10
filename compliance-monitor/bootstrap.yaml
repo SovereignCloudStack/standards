@@ -31,15 +31,19 @@ accounts:
         public_key_type: "ssh-ed25519"
         public_key_name: "primary"
   - subject: pco-prod1
+    group: pco-prod
     delegates:
       - zuul_ci
   - subject: pco-prod2
+    group: pco-prod
     delegates:
       - zuul_ci
   - subject: pco-prod3
+    group: pco-prod
     delegates:
       - zuul_ci
   - subject: pco-prod4
+    group: pco-prod
     delegates:
       - zuul_ci
   - subject: poc-wgcloud
@@ -56,9 +60,11 @@ accounts:
     delegates:
       - zuul_ci
   - subject: syseleven-dus2
+    group: syseleven
     delegates:
       - zuul_ci
   - subject: syseleven-ham1
+    group: syseleven
     delegates:
       - zuul_ci
   - subject: wavestack

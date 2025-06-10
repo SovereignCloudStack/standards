@@ -16,12 +16,12 @@ spec:
     class: '{{ cs_class_name }}'
     version: '{{ cs_version }}'
     controlPlane:
-      replicas: 3
+      replicas: {{ num_control_nodes }}
     workers:
       machineDeployments:
         - class: workeramd64hcloud
           name: md-0
-          replicas: 1
+          replicas: {{ num_worker_nodes }}
           failureDomain: nbg1
           variables:
             overrides:

@@ -73,6 +73,12 @@ def run_check_tool(executable, args, env=None, cwd=None):
     if executable.startswith("file://"):
         executable = executable[7:]
     exe = [os.path.abspath(os.path.join(cwd or ".", executable)), *shlex.split(args)]
+    # use the same interpreter for Python in order to inherit virtual env
+    # necessary in cases where the interpreter is used from a virtual env that has not been activated
+    # (I think this case should be supported if possible with little effort)
+    if exe and exe[0].endswith('.py'):
+        # logger.debug(f'using interpreter {sys.executable}')
+        exe.insert(0, sys.executable)
     return subprocess.run(
         exe, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         encoding='UTF-8', check=False, env=env, cwd=cwd,

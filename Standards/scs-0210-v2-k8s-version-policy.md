@@ -19,7 +19,7 @@ support period. The remaining 2 months are the end-of-life support period for th
 - dependency issues (including base image updates)
 - critical core component issues
 
-More information can be found under [Kubernetes Support Period].
+More information can be found under [Kubernetes Support Period][k8s-support-period].
 
 The [Kubernetes release cycle][k8s-release-cycle] is set around 4 months, which
 usually results in about **3 minor** releases per year.
