@@ -125,7 +125,7 @@ modules:
         args: -c {os_cloud} -d
     testcases:
       - id: volume-types-check
-        tags: [mandatory]
+        tags: [volume-types-check]
         description: >
           Must fulfill all requirements of <https://docs.scs.community/standards/scs-0114-v1-volume-type-standard>
   - id: scs-0115-v1
