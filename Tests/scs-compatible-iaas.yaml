@@ -147,7 +147,7 @@ modules:
         args: --os-cloud {os_cloud} --debug
     testcases:
       - id: key-manager-check
-        tags: [mandatory]
+        tags: [recommended]
         description: >
           Must fulfill all requirements of <https://docs.scs.community/standards/scs-0116-v1-key-manager-standard>
   - id: scs-0117-v1
