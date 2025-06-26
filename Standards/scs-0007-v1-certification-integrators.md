@@ -16,7 +16,7 @@ For this purpose, two essential criteria are defined that must be fulfilled. In 
 
 ## Regulations
 
-The certificates are awarded for the period for one year.
+The certificates are awarded for the period of one year.
 The certification is done either by the Forum SCS-Standards or an attestation body nominated by the Forum SCS-Standards.
 
 ### Certificates
