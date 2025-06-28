@@ -1,0 +1,27 @@
+expose:
+  type: ingress
+  tls:
+    enabled: false
+  ingress:
+    hosts:
+      core: core.harbor.domain
+      notary: notary.harbor.domain
+
+persistence:
+  persistentVolumeClaim:
+    registry:
+      storageClass: ""
+      accessMode: ReadWriteOnce
+      size: 5Gi
+    jobservice:
+      storageClass: ""
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    chartmuseum:
+      storageClass: ""
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    trivy:
+      storageClass: ""
+      accessMode: ReadWriteOnce
+      size: 5Gi
