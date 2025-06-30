@@ -196,6 +196,11 @@ modules:
         description: >
           Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0302-v1-domain-manager-role>
 timeline:
+  - date: 2025-07-01
+    versions:
+      v5.1: effective
+      v4: deprecated
+      v3: deprecated
   - date: 2025-02-01
     versions:
       v5.1: effective
