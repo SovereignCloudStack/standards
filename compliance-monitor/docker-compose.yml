@@ -20,6 +20,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./acme:/acme
+    restart: always
+
   web:
     build: .
     ports:
@@ -45,6 +47,8 @@ services:
       - traefik.http.routers.websecure.tls.certresolver=myresolver
     secrets:
       - db_password
+    restart: always
+
   postgres:
     image: postgres
     volumes:
@@ -58,6 +62,7 @@ services:
     labels:
       # do not publish this service publicly
       - "traefik.http.routers.postgres.entrypoints=traefik"
+    restart: always
 
 secrets:
    db_password:
