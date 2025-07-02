@@ -50,7 +50,7 @@ services:
     restart: always
 
   postgres:
-    image: postgres
+    image: postgres:16
     volumes:
       - $HOME/data:/var/lib/postgresql/data
     environment:
