@@ -7,7 +7,7 @@ import shlex
 import shutil
 import subprocess
 
-from junitparser import JUnitXml
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +17,15 @@ def _find_sonobuoy():
     result = shutil.which('sonobuoy')
     if result:
         return result
+    logger.debug('sonobuoy not in PATH, trying $HOME/.local/bin')
     result = os.path.join(os.path.expanduser('~'), '.local', 'bin', 'sonobuoy')
     if os.path.exists(result):
         return result
+    logger.debug('sonobuoy executable not found; expect errors')
+
+
+def _fmt_result(counter):
+    return ', '.join(f"{counter.get(key, 0)} {key}" for key in ('passed', 'failed', 'skipped'))
 
 
 class SonobuoyHandler:
@@ -54,7 +60,8 @@ class SonobuoyHandler:
     def _invoke_sonobuoy(self, *args, **kwargs):
         inv_args = (self.sonobuoy, "--kubeconfig", self.kubeconfig_path) + args
         logger.debug(f'invoking {" ".join(inv_args)}')
-        return subprocess.run(args=inv_args, capture_output=True, check=True, **kwargs)
+        # we had capture_output=True, but I don't see why -- let the caller decide
+        return subprocess.run(args=inv_args, check=True, **kwargs)
 
     def _sonobuoy_run(self):
         self._invoke_sonobuoy("run", "--wait", *self.args)
@@ -63,19 +70,18 @@ class SonobuoyHandler:
         self._invoke_sonobuoy("delete", "--wait")
 
     def _sonobuoy_status_result(self):
-        process = self._invoke_sonobuoy("status", "--json")
+        process = self._invoke_sonobuoy("status", "--json", capture_output=True)
         json_data = json.loads(process.stdout)
         counter = Counter()
         for entry in json_data["plugins"]:
-            logger.debug(f"plugin:{entry['plugin']}:{entry['result-status']}")
-            for result, count in entry["result-counts"].items():
-                counter[result] += count
+            logger.debug(f"plugin {entry['plugin']}: {_fmt_result(entry['result-counts'])}")
+            for key, value in entry["result-counts"].items():
+                counter[key] += value
         return counter
 
     def _eval_result(self, counter):
         """evaluate test results and return return code"""
-        result_str = ', '.join(f"{counter[key]} {key}" for key in ('passed', 'failed', 'skipped'))
-        result_message = f"sonobuoy reports {result_str}"
+        result_message = f"sonobuoy reports {_fmt_result(counter)}"
         if counter['failed']:
             logger.error(result_message)
             return 3
@@ -89,37 +95,33 @@ class SonobuoyHandler:
         if not self.sonobuoy:
             raise RuntimeError("sonobuoy executable not found; is it in PATH?")
 
-    def _sonobuoy_retrieve_result(self):
+    def _sonobuoy_retrieve_result(self, plugin='e2e'):
         """
-        This method invokes sonobuoy to store the results in a subdirectory of
-        the working directory. The Junit results file contained in it is then
-        analyzed in order to interpret the relevant information it containes
+        Invoke sonobuoy to retrieve results and to store them in a subdirectory of
+        the working directory. Analyze the results yaml file for given `plugin` and
+        log each failure as ERROR. Return summary dict like `_sonobuoy_status_result`.
         """
         logger.debug(f"retrieving results to {self.result_dir_name}")
         result_dir = os.path.join(self.working_directory, self.result_dir_name)
-        if os.path.exists(result_dir):
-            raise Exception("result directory already existing")
-        os.mkdir(result_dir)
+        os.makedirs(result_dir, exist_ok=True)
 
-        # XXX use self._invoke_sonobuoy
-        os.system(
-            # ~ f"sonobuoy retrieve {result_dir} -x --filename='{result_dir}' --kubeconfig='{self.kubeconfig_path}'"
-            f"sonobuoy retrieve {result_dir} --kubeconfig='{self.kubeconfig_path}'"
-        )
-        logger.debug(
-            f"parsing JUnit result from {result_dir + '/plugins/e2e/results/global/junit_01.xml'} "
-        )
-        xml = JUnitXml.fromfile(result_dir + "/plugins/e2e/results/global/junit_01.xml")
+        self._invoke_sonobuoy("retrieve", "-x", result_dir)
+        yaml_path = os.path.join(result_dir, 'plugins', plugin, 'sonobuoy_results.yaml')
+        logger.debug(f"parsing results from {yaml_path}")
+        with open(yaml_path, "r") as fileobj:
+            result_obj = yaml.load(fileobj.read(), yaml.SafeLoader)
         counter = Counter()
-        for suite in xml:
-            for case in suite:
-                if case.is_passed is True:  # XXX why `is True`???
-                    counter['passed'] += 1
-                elif case.is_skipped is True:
-                    counter['skipped'] += 1
-                else:
-                    counter['failed'] += 1
-                    logger.error(f"{case.name}")
+        for item1 in result_obj.get('items', ()):
+            # file ...
+            for item2 in item1.get('items', ()):
+                # suite ...
+                for item in item2.get('items', ()):
+                    # testcase ... or so
+                    status = item.get('status', 'skipped')
+                    counter[status] += 1
+                    if status == 'failed':
+                        logger.error(f"FAILED: {item['name']}")  # <-- this is why this method exists!
+        logger.info(f"{plugin} results: {_fmt_result(counter)}")
         return counter
 
     def run(self):
@@ -132,11 +134,12 @@ class SonobuoyHandler:
             self._sonobuoy_run()
             return_code = self._eval_result(self._sonobuoy_status_result())
             print(self.check_name + ": " + ("PASS", "FAIL")[min(1, return_code)])
+            try:
+                self._sonobuoy_retrieve_result()
+            except Exception:
+                # swallow exception for the time being
+                logger.debug('problem retrieving results', exc_info=True)
             return return_code
-
-            # ERROR: currently disabled due to: "error retrieving results: unexpected EOF"
-            #  might be related to following bug: https://github.com/vmware-tanzu/sonobuoy/issues/1633
-            # self._sonobuoy_retrieve_result(self)
         except BaseException:
             logger.exception("something went wrong")
             return 112

@@ -184,7 +184,14 @@ where the group which has to form the consensus depends on the `track` of the do
 - KaaS: The team working on Kubernetes-as-a-service topics
 - Ops: The team working on operations topics
 - IAM: The team working on identity and access management topics
-- Global: The entire SCS community
+- Global: The SCS community, as defined in SCS-0005, as well as the Forum SCS-Standards
+
+Any pull request affecting a document in the Global track MUST NOT be merged
+unless approved by a representative of the _Forum SCS-Standards_.
+
+In case there is little or no activity in some team, the SIG Standardization/Certification
+can take decisions on behalf of such a team. The SIG will seek alignment with the Project
+Board for decisions with large impact to ensure we have the wanted broad alignment.
 
 Supplements may be kept in Draft state, because they are not authoritative.
 

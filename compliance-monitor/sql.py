@@ -3,9 +3,9 @@ from psycopg2.extensions import cursor, connection
 
 # list schema versions in ascending order
 SCHEMA_VERSION_KEY = 'version'
-SCHEMA_VERSIONS = ['v1', 'v2', 'v3']
+SCHEMA_VERSIONS = ['v1', 'v2', 'v3', 'v4']
 # use ... (Ellipsis) here to indicate that no default value exists (will lead to error if no value is given)
-ACCOUNT_DEFAULTS = {'subject': ..., 'api_key': ..., 'roles': ...}
+ACCOUNT_DEFAULTS = {'subject': ..., 'api_key': ..., 'roles': ..., 'group': None}
 PUBLIC_KEY_DEFAULTS = {'public_key': ..., 'public_key_type': ..., 'public_key_name': ...}
 
 
@@ -135,6 +135,14 @@ def db_ensure_schema_v3(cur: cursor):
     ''')
 
 
+def db_ensure_schema_v4(cur: cursor):
+    # start from v3, do small alteration
+    db_ensure_schema_v2(cur)
+    cur.execute('''
+    ALTER TABLE account ADD COLUMN IF NOT EXISTS "group" text;
+    ''')
+
+
 def db_upgrade_data_v1_v2(cur):
     # we are going to drop table result, but use delete anyway to have the transaction safety
     cur.execute('''
@@ -191,8 +199,8 @@ def db_upgrade_schema(conn: connection, cur: cursor):
         if current is None:
             # this is an empty db, but it also used to be the case with v1
             # I (mbuechse) made sure manually that the value v1 is set on running installations
-            db_ensure_schema_v3(cur)
-            db_set_schema_version(cur, 'v3')
+            db_ensure_schema_v4(cur)
+            db_set_schema_version(cur, 'v4')
             conn.commit()
         elif current == 'v1':
             db_ensure_schema_v2(cur)
@@ -206,6 +214,10 @@ def db_upgrade_schema(conn: connection, cur: cursor):
         elif current == 'v2':
             db_ensure_schema_v3(cur)
             db_set_schema_version(cur, 'v3')
+            conn.commit()
+        elif current == 'v3':
+            db_ensure_schema_v4(cur)
+            db_set_schema_version(cur, 'v4')
             conn.commit()
 
 
@@ -229,11 +241,12 @@ def db_ensure_schema(conn: connection):
 def db_update_account(cur: cursor, record: dict):
     sanitized = sanitize_record(record, ACCOUNT_DEFAULTS)
     cur.execute('''
-    INSERT INTO account (subject, roles)
-    VALUES (%(subject)s, %(roles)s)
+    INSERT INTO account (subject, roles, "group")
+    VALUES (%(subject)s, %(roles)s, %(group)s)
     ON CONFLICT (subject)
     DO UPDATE
-    SET roles = EXCLUDED.roles
+    SET roles = EXCLUDED.roles,
+    "group" = EXCLUDED."group"
     RETURNING accountid;''', sanitized)
     accountid, = cur.fetchone()
     return accountid
@@ -259,6 +272,11 @@ def db_find_subjects(cur: cursor, delegate):
     JOIN account a ON a.accountid = delegation.accountid
     JOIN account b ON b.accountid = delegation.delegateid
     WHERE b.subject = %s;''', (delegate, ))
+    return [row[0] for row in cur.fetchall()]
+
+
+def db_get_group(cur: cursor, group):
+    cur.execute('''SELECT subject FROM account WHERE "group" = %s;''', (group, ))
     return [row[0] for row in cur.fetchall()]
 
 
