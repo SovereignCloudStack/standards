@@ -8,12 +8,14 @@ supplements:
 ---
 
 ## Introduction
+
 The standard scs-0007 documents what requirements integration partners must
 fulfill to be eligible for certifiying SCS Integrators.
 This document contains hints how these requirements may be evaluated by the
 auditor of Forum SCS-Standards and how to deal with exceptions.
 
 ### Voting on exceptions
+
 According to scs-0007, when someone requests approval for an attestation for an
 integrator that does not meet all requirements, this can be waived with a
 qualified vote in the Forum SCS-Standards. To avoid conflict of interests and
