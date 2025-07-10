@@ -94,7 +94,7 @@ Every person who is a member of the GitHub organization "Sovereign Cloud Stack" 
 ### Electoral management
 
 The voting process is governed by the _Forum SCS-Standards_.
-Voting is done using the [Condorcet Internet Voting Service](https://civs.cs.cornell.edu). This is the same system as is [being used by the OpenInfra foundation](https://wiki.openstack.org/wiki/Election_Officiating_Guidelines#Running_the_election_itself).
+Voting is done using the [Condorcet Internet Voting Service](https://civs1.civs.us/). This is the same system as is [being used by the OpenInfra foundation](https://wiki.openstack.org/wiki/Election_Officiating_Guidelines#Running_the_election_itself).
 
 ### Voting period
 
