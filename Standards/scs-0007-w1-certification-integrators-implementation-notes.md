@@ -2,7 +2,7 @@
 title: "Implementation hints for achieving Certified SCS Integrator"
 type: Supplement
 track: Global
-status: Draft
+status: Stable
 supplements:
   - scs-0007-v1-certification-integrators.md
 ---
