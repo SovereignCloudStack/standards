@@ -65,6 +65,39 @@ The following property is recommended:
 
 - `hypervisor_type`
 
+The values for `architecture` and `os_distro` and `hypervisor_type` (the latter only if specified) values
+must follow the [OpenStack specifications](https://docs.openstack.org/glance/2025.1/admin/useful-image-properties.html).
+The `os_version` string should be numeric if the distribution uses numbers, the pair `os_distro` `os_version` should
+for example be `ubuntu` `24.04` for Ubuntu Noble Numbat 24.04[.x] LTS.
+
+To allow the distinction between general purpose images (which should come from upstream with at most some
+targeted adjustments as required by the cloud such as e.g. drviers) and images that are purpose-built, we
+recommend an additional field:
+
+- `os_purpose`
+
+The following values are allowed
+
+| `os_purpose` value | Intention                                                 |
+|--------------------|-----------------------------------------------------------|
+| `generic`          | A general purpose image, (mostly) vanilla from upstream   |
+| `capinode`         | Node image built for cluster-API                          |
+| `gpu`              | Image with GPU drivers e.g. for HPC or AI                 |
+| `network`          | Image for a network appliance (router, loadbalancer, ...) |
+| `appliance`        | Other appliances (single-purpose solutions)               |
+| `custom`           | None of the above                                         |
+
+Note that no other values are currently allowed and `custom` (or `appliance`) should be used in case
+of doubt. Talk to the SCS standardization bodies if you'd like to see this list extended which is
+likely the case if you fall back to `custom`.
+
+The usage of standardized `os_distro`, `os_version` and `os_purpose` help cloud users to create
+automation that works across clouds without requiring image names to be standardized. Only
+one visible public image with `os_purpose` = `generic` and the same settings for `os_distro`
+and `os_version` should be active on any given cloud.
+The link to the OpenStack specs and the recommended `os_purpose` was added in 7/2025 to this
+standard; a new version of the standard that requires `os_purpose` will be created later.
+
 The following further properties are recommended (if the features are supported):
 
 - `hw_rng_model`
@@ -72,7 +105,8 @@ The following further properties are recommended (if the features are supported)
 - `hw_watchdog_action`, `hw_mem_encryption`, `hw_pmu`, `hw_video_ram`, `hw_vif_multiqueue_enabled`
 
 The `trait:XXX=required` property can be used to indicate that certain virtual hardware
-features `XXX` are required.
+features `XXX` are required which may be advertised in matching
+[flavor extra specs](https://docs.openstack.org/nova/latest/user/flavors.html#extra-specs).
 
 ## Image handling
 
