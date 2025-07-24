@@ -93,10 +93,10 @@ Note that no other values are currently allowed and `custom` (or `appliance`) sh
 of doubt. Talk to the SCS standardization bodies if you'd like to see this list extended which is
 likely the case if you fall back to `custom`.
 
-The usage of standardized `os_distro`, `os_version` and `os_purpose` help cloud users to create
+The usage of standardized `os_distro`, `os_version`, `architecture`, and `os_purpose` help cloud users to create
 automation that works across clouds without requiring image names to be standardized. Only
-one visible public image with `os_purpose` = `generic` and the same settings for `os_distro`
-and `os_version` should be active on any given cloud.
+one visible public image with `os_purpose` = `generic` and the same settings for `os_distro`,
+`os_version` and `architecture` should be active on any given cloud.
 The link to the OpenStack specs and the recommended `os_purpose` was added in 7/2025 to this
 standard; a new version of the standard that requires `os_purpose` will be created later.
 
