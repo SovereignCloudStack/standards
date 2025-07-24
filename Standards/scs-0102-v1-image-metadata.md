@@ -81,6 +81,7 @@ The following values are allowed
 | `os_purpose` value | Intention                                                 |
 |--------------------|-----------------------------------------------------------|
 | `generic`          | A general purpose image, (mostly) vanilla from upstream   |
+| `minimal`          | A much more barebones general purpose image               |
 | `capinode`         | Node image built for cluster-API                          |
 | `gpu`              | Image with GPU drivers e.g. for HPC or AI                 |
 | `network`          | Image for a network appliance (router, loadbalancer, ...) |
