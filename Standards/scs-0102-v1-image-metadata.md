@@ -6,7 +6,8 @@ status: Stable
 track: IaaS
 replaces: Image-Metadata-Spec.md
 description: |
-  The SCS-0102 Image Metadata Standard outlines how to categorize and manage metadata for cloud-based operating
+  This is version 1.1 of the SCS-0102 Image Metadata Standard.
+  It outlines how to categorize and manage metadata for cloud-based operating
   system images to ensure usability and clarity. The standard encompasses naming conventions, technical requirements,
   image handling protocols including updating and origin, and licensing/support details. These guidelines ensure
   that users can understand, access, and utilize OS images effectively, with clear information on features, updates,
@@ -279,4 +280,13 @@ A boolean property that is not present is considered to be `false`.
 
 The script `image-md-check.py` retrieves the
 image list from a configured cloud and checks each image for the
-completeness and consistency of mandatory properties.
+completeness and consistency of mandatory properties. See the
+[Corresponding Implemetation and Testing Notes](https://docs.scs.community/standards/scs-0102-w1-image-metadata-implementation-testing)
+
+### Version history
+
+* Version 1.0 has existed without notable changes since June 2021.
+* Version 1.1 was created in preparation for a new major version 2.0 and has the following additional recommendations:
+    - Reference OpenStack image spec for standard values of `os_distro`, `architecture` and `hypervisor_type`.
+    - Recommendation on `os_version` to be a version number (if such a value exists).
+    - Recommended field `os_purpose`.
