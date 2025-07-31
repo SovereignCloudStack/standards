@@ -93,13 +93,13 @@ number, and each supplement uses the same document number as the main document i
 
 The second digit in `XXXX` describes the track where the document belongs:
 
-| Track | Number |
-| --- | --- |
-| Global | 0 |
-| IaaS | 1 |
-| KaaS | 2 |
-| IAM | 3 |
-| Ops | 4 |
+| Track  | Number |
+| ------ | ------ |
+| Global | 0      |
+| IaaS   | 1      |
+| KaaS   | 2      |
+| IAM    | 3      |
+| Ops    | 4      |
 
 In addition to the number, each document has the following metadata,
 embedded in the markdown header.
@@ -110,7 +110,7 @@ embedded in the markdown header.
 | `status`        | REQUIRED                                                                   | one of `Draft`, `Stable`, `Deprecated`, or `Rejected`                                 |
 | `track`         | REQUIRED                                                                   | one of `Global`, `IaaS`, `KaaS`, `IAM`, `Ops`                                         |
 | `supplements`   | REQUIRED precisely when `type` is `Supplement`                             | list of documents that are extended by this document (e.g., multiple major versions)  |
-| `deprecated_at`  | REQUIRED if `status` is `Deprecated`                                       | ISO formatted date indicating the date after which the deprecation is in effect       |
+| `deprecated_at` | REQUIRED if `status` is `Deprecated`                                       | ISO formatted date indicating the date after which the deprecation is in effect       |
 | `stabilized_at` | REQUIRED if `status` was ever `Stable`                                     | ISO formatted date indicating the date after which the document was considered stable |
 | `rejected_at`   | REQUIRED if `status` is `Rejected`                                         | ISO formatted date indicating the date on which the document was rejected             |
 | `replaced_by`   | RECOMMENDED if `status` is `Deprecated` or `Rejected`, FORBIDDEN otherwise | List of documents which replace this document.                                        |
@@ -285,6 +285,8 @@ Changes to the documents are gated through pull requests.
 
 Once the document is deemed ready for production use,
 its `status` is changed to `Stable`.
+Additionally, the field `stabilized_at` MUST be added and set to a date after which the document is
+to be considered stable.
 
 If the document in question is a `Standard`
 (and if applicable),
