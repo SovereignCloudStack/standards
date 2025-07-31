@@ -77,26 +77,26 @@ recommend an additional field:
 
 - `os_purpose`
 
-The following values are allowed
+  The following values are allowed
 
-| `os_purpose` value | Intention                                                 |
-|--------------------|-----------------------------------------------------------|
-| `generic`          | A general purpose image, (mostly) vanilla from upstream   |
-| `minimal`          | A much more barebones general purpose image               |
-| `capinode`         | Node image built for cluster-API                          |
-| `gpu`              | Image with GPU drivers e.g. for HPC or AI                 |
-| `custom`           | None of the above                                         |
+  | `os_purpose` value | Intention                                                 |
+  |--------------------|-----------------------------------------------------------|
+  | `generic`          | A general purpose image, (mostly) vanilla from upstream   |
+  | `minimal`          | A much more barebones general purpose image               |
+  | `capinode`         | Node image built for cluster-API                          |
+  | `gpu`              | Image with GPU drivers e.g. for HPC or AI                 |
+  | `custom`           | None of the above                                         |
 
-Note that no other values are currently allowed and `custom` should be used in case
-of doubt. Talk to the SCS standardization bodies if you'd like to see this list extended which is
-likely the case if you fall back to `custom`.
+  Note that no other values are currently allowed and `custom` should be used in case
+  of doubt. Talk to the SCS standardization bodies if you'd like to see this list extended which is
+  likely the case if you fall back to `custom`.
 
-The usage of standardized `os_distro`, `os_version`, `architecture`, and `os_purpose` help cloud users to create
-automation that works across clouds without requiring image names to be standardized. Only
-one visible public image with `os_purpose` = `generic` and the same settings for `os_distro`,
-`os_version` and `architecture` should be active on any given cloud.
-The link to the OpenStack specs and the recommended `os_purpose` was added to version 1.1 of
-this standard; a new version 2 of the standard that requires `os_purpose` will be created later.
+  The usage of standardized `os_distro`, `os_version`, `architecture`, and `os_purpose` help cloud users to create
+  automation that works across clouds without requiring image names to be standardized. Only
+  one visible public image with `os_purpose` = `generic` and the same settings for `os_distro`,
+  `os_version` and `architecture` should be active on any given cloud.
+  The link to the OpenStack specs and the recommended `os_purpose` was added to version 1.1 of
+  this standard; a new version 2 of the standard that requires `os_purpose` will be created later.
 
 The following further properties are recommended (if the features are supported):
 
