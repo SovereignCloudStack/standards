@@ -92,9 +92,12 @@ recommend an additional field:
   likely the case if you fall back to `custom`.
 
   The usage of standardized `os_distro`, `os_version`, `architecture`, and `os_purpose` help cloud users to create
-  automation that works across clouds without requiring image names to be standardized. Only
-  one visible public image with `os_purpose` = `generic` and the same settings for `os_distro`,
-  `os_version` and `architecture` should be active on any given cloud.
+  automation that works across clouds without requiring image names to be standardized.
+
+  _Uniqueness requirement_: whenever there are two images that have `os_hidden=False`, `visibility=public`,
+  and that coincide in all three fields `os_distro`, `os_version`, and `architecture`, then only one of them may
+  have `os_purpose=generic`. In other words, users who search visible public images for a generic OS
+  of a certain distro, version, and architecture will not get more than one result.
   The link to the OpenStack specs and the recommended `os_purpose` was added to version 1.1 of
   this standard; a new version 2 of the standard that requires `os_purpose` will be created later.
 
