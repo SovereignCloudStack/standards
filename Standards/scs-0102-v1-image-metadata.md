@@ -72,7 +72,7 @@ The `os_version` string should be numeric if the distribution uses numbers, the 
 for example be `ubuntu` `24.04` for Ubuntu Noble Numbat 24.04[.x] LTS.
 
 To allow the distinction between general purpose images (which should come from upstream with at most some
-targeted adjustments as required by the cloud such as e.g. drviers) and images that are purpose-built, we
+targeted adjustments as required by the cloud such as e.g. drivers) and images that are purpose-built, we
 recommend an additional field:
 
 - `os_purpose`
@@ -282,7 +282,7 @@ A boolean property that is not present is considered to be `false`.
 The script `image-md-check.py` retrieves the
 image list from a configured cloud and checks each image for the
 completeness and consistency of mandatory properties. See the
-[Corresponding Implemetation and Testing Notes](https://docs.scs.community/standards/scs-0102-w1-image-metadata-implementation-testing)
+[Corresponding Implementation and Testing Notes](https://docs.scs.community/standards/scs-0102-w1-image-metadata-implementation-testing)
 
 ### Version history
 
