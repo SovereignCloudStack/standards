@@ -72,7 +72,7 @@ The `os_version` string should be numeric if the distribution uses numbers, the 
 for example be `ubuntu` `24.04` for Ubuntu Noble Numbat 24.04[.x] LTS.
 
 To allow the distinction between general purpose images (which should come from upstream with at most some
-targeted adjustments as required by the cloud such as e.g. drviers) and images that are purpose-built, we
+targeted adjustments as required by the cloud such as e.g. drivers) and images that are purpose-built, we
 recommend an additional field:
 
 - `os_purpose`
