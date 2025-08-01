@@ -285,6 +285,8 @@ Changes to the documents are gated through pull requests.
 
 Once the document is deemed ready for production use,
 its `status` is changed to `Stable`.
+Additionally, the field `stabilized_at` MUST be added and set to a date after which the document is
+to be considered stable.
 
 If the document in question is a `Standard`
 (and if applicable),
