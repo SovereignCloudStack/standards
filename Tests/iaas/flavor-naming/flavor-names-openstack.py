@@ -135,7 +135,7 @@ class Container:
     >>>> container = Container()
     >>>> container.add_function('pi', lambda _: 22/7)
     >>>> container.add_function('pi_squared', lambda c: c.pi * c.pi)
-    >>>> assert c.pi_squared == 22/7 * 22/7
+    >>>> assert container.pi_squared == 22/7 * 22/7
     """
     def __init__(self):
         self._values = {}
