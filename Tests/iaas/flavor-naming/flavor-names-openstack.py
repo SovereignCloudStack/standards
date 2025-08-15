@@ -33,14 +33,7 @@ def usage(rcode=1):
     "help output"
     print("Usage: flavor-names-openstack.py [options]", file=sys.stderr)
     print("Options: [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)", file=sys.stderr)
-    print(" [-C/--mand mand.yaml] overrides the list of mandatory flavor names", file=sys.stderr)
-    print(" [-1/--v1prefer] prefer v1 flavor names (but still tolerates v2", file=sys.stderr)
-    print(" [-o/--accept-old-mandatory] prefer v2 flavor names, but v1 ones can fulfill mand list", file=sys.stderr)
-    print(" [-2/--v2plus] only accepts v2 flavor names, old ones result in errors", file=sys.stderr)
-    print(" [-3/--v3] differentiate b/w mand and recommended flavors", file=sys.stderr)
-    print(" [-v/--verbose] [-q/--quiet] control verbosity of output", file=sys.stderr)
     print("This tool retrieves the list of flavors from the OpenStack cloud OS_CLOUD", file=sys.stderr)
-    print(" and checks for the presence of the mandatory SCS flavors (read from mand.yaml)", file=sys.stderr)
     print(" and reports inconsistencies, errors etc. It returns 0 on success.", file=sys.stderr)
     sys.exit(rcode)
 
