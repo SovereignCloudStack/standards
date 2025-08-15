@@ -16,13 +16,17 @@ provided by openstack, such as the number of vCPUs and memory.
 SPDX-License-Identifier: CC-BY-SA 4.0
 """
 
+import logging
 import os
 import sys
+import typing
 import getopt
-import yaml
 import openstack
 
 import flavor_names
+
+
+logger = logging.getLogger(__name__)
 
 
 def usage(rcode=1):
@@ -41,11 +45,160 @@ def usage(rcode=1):
     sys.exit(rcode)
 
 
+TESTCASES = ('scs-0100-syntax-check', 'scs-0100-semantics-check', 'flavor-name-check')
+STRATEGY = flavor_names.ParsingStrategy(
+    vstr='v3',
+    parsers=(flavor_names.parser_v3, ),
+    tolerated_parsers=(flavor_names.parser_v2, flavor_names.parser_v1),
+)
+ACC_DISK = (0, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000)
+
+
+def compute_scs_flavors(flavors: typing.List[openstack.compute.v2.flavor.Flavor], parser=STRATEGY) -> list:
+    result = []
+    for flv in flavors:
+        if not flv.name or flv.name[:4] != 'SCS-':
+            continue  # not an SCS flavor; none of our business
+        try:
+            flavorname = parser(flv.name)
+        except ValueError as exc:
+            logger.info(f"error parsing {flv.name}: {exc}")
+            flavorname = None
+        result.append((flv, flavorname))
+    return result
+
+
+def compute_scs_0100_syntax_check(scs_flavors: list) -> bool:
+    problems = [flv.name for flv, flavorname in scs_flavors if not flavorname]
+    if problems:
+        logger.error(f"scs-100-syntax-check: flavor(s) failed: {', '.join(sorted(problems))}")
+    return not problems
+
+
+def compute_scs_0100_semantics_check(scs_flavors: list) -> bool:
+    problems = set()
+    for flv, flavorname in scs_flavors:
+        if not flavorname:
+            continue  # this case is handled by syntax check
+        cpuram = flavorname.cpuram
+        if flv.vcpus < cpuram.cpus:
+            logger.info(f"Flavor {flv.name} CPU overpromise: {flv.vcpus} < {cpuram.cpus}")
+            problems.add(flv.name)
+        elif flv.vcpus > cpuram.cpus:
+            logger.info(f"Flavor {flv.name} CPU underpromise: {flv.vcpus} > {cpuram.cpus}")
+        # RAM
+        flvram = int((flv.ram + 51) / 102.4) / 10
+        # Warn for strange sizes (want integer numbers, half allowed for < 10GiB)
+        if flvram >= 10 and flvram != int(flvram) or flvram * 2 != int(flvram * 2):
+            logger.info(f"Flavor {flv.name} uses discouraged uneven size of memory {flvram:.1f} GiB")
+        if flvram < cpuram.ram:
+            logger.info(f"Flavor {flv.name} RAM overpromise {flvram:.1f} < {cpuram.ram:.1f}")
+            problems.add(flv.name)
+        elif flvram > cpuram.ram:
+            logger.info(f"Flavor {flv.name} RAM underpromise {flvram:.1f} > {cpuram.ram:.1f}")
+        # Disk could have been omitted
+        disksize = flavorname.disk.disksize if flavorname.disk else 0
+        # We have a recommendation for disk size steps
+        if disksize not in ACC_DISK:
+            logger.info(f"Flavor {flv.name} non-standard disk size {disksize}, should have (5, 10, 20, 50, 100, 200, ...)")
+        if flv.disk < disksize:
+            logger.info(f"Flavor {flv.name} disk overpromise {flv.disk} < {disksize}")
+            problems.add(flv.name)
+        elif flv.disk > disksize:
+            logger.info(f"Flavor {flv.name} disk underpromise {flv.disk} > {disksize}")
+    if problems:
+        logger.error(f"scs-100-semantics-check: flavor(s) failed: {', '.join(sorted(problems))}")
+    return not problems
+
+
+def compute_flavor_name_check(syntax_check_result, semantics_check_result):
+    return syntax_check_result and semantics_check_result
+
+
+# TODO see comment in main function about moving to another module
+
+class Container:
+    """
+    This class does lazy evaluation and memoization. You register any potential value either
+    by giving the value directly, using `add_value`, or
+    by specifying how it is computed using `add_function`,
+    which expects a function that takes a container (so other values may be referred to).
+    In each case, you have to give the value a name.
+
+    The value will be available as a normal member variable under this name.
+    If given via a function, this function will only be evaluated when the value is accessed,
+    and the value will be memoized, so the function won't be called twice.
+    If the function raises an exception, then this will be memoized just as well.
+
+    For instance,
+
+    >>>> container = Container()
+    >>>> container.add_function('pi', lambda _: 22/7)
+    >>>> container.add_function('pi_squared', lambda c: c.pi * c.pi)
+    >>>> assert c.pi_squared == 22/7 * 22/7
+    """
+    def __init__(self):
+        self._values = {}
+        self._functions = {}
+
+    def __getattr__(self, key):
+        val = self._values.get(key)
+        if val is None:
+            try:
+                ret = self._functions[key](self)
+            except BaseException as e:
+                val = (True, e)
+            else:
+                val = (False, ret)
+            self._values[key] = val
+        error, ret = val
+        if error:
+            raise ret
+        return ret
+
+    def add_function(self, name, fn):
+        if name in self._functions:
+            raise RuntimeError(f"fn {name} already registered")
+        self._functions[name] = fn
+
+    def add_value(self, name, value):
+        if name in self._values:
+            raise RuntimeError(f"value {name} already registered")
+        self._values[name] = value
+
+
+# TODO see comment in main function about moving to another module
+
+def harness(name, *check_fns):
+    """Harness for evaluating testcase `name`.
+
+    Logs beginning of computation.
+    Calls each fn in `check_fns`.
+    Prints (to stdout) 'name: RESULT', where RESULT is one of
+
+    - 'ABORT' if an exception occurs during the function calls
+    - 'FAIL' if one of the functions has a falsy result
+    - 'PASS' otherwise
+    """
+    logger.debug(f'** {name}')
+    try:
+        result = all(check_fn() for check_fn in check_fns)
+    except BaseException:
+        logger.debug('exception during check', exc_info=True)
+        result = 'ABORT'
+    else:
+        result = ['FAIL', 'PASS'][min(1, result)]
+    # this is quite redundant
+    # logger.debug(f'** computation end for {name}')
+    print(f"{name}: {result}")
+
+
 def main(argv):
     """Entry point -- main loop going over flavors"""
-    fnmck = flavor_names.CompatLayer()
+    # configure logging, disable verbose library logging
+    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+    openstack.enable_logging(debug=False)
     cloud = None
-    verbose = False
 
     try:
         cloud = os.environ["OS_CLOUD"]
@@ -70,15 +223,15 @@ def main(argv):
             # fnmck.disallow_old = True
             print(f'ignoring obsolete argument: {opt[0]}', file=sys.stderr)
         elif opt[0] == "-2" or opt[0] == "--v2plus":
-            fnmck.disallow_old = True
+            print(f'ignoring obsolete argument: {opt[0]}', file=sys.stderr)
         elif opt[0] == "-1" or opt[0] == "--v1prefer":
             print(f'ignoring obsolete argument: {opt[0]}', file=sys.stderr)
         elif opt[0] == "-o" or opt[0] == "--accept-old-mandatory":
             print(f'ignoring obsolete argument: {opt[0]}', file=sys.stderr)
         elif opt[0] == "-v" or opt[0] == "--verbose":
-            verbose = True
+            print(f'ignoring obsolete argument: {opt[0]}', file=sys.stderr)
         elif opt[0] == "-q" or opt[0] == "--quiet":
-            fnmck.quiet = True
+            print(f'ignoring obsolete argument: {opt[0]}', file=sys.stderr)
         else:
             usage(2)
     if len(args) > 0:
@@ -88,123 +241,21 @@ def main(argv):
     if not cloud:
         print("CRITICAL: You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
         sys.exit(1)
-    conn = openstack.connect(cloud=cloud, timeout=32)
-    flavors = conn.compute.flavors()
 
-    # Lists of flavors: mandatory, good-SCS, bad-SCS, non-SCS, with-warnings
-    SCSFlv = []
-    wrongFlv = []
-    nonSCSFlv = []
-    warnFlv = []
-    errors = 0
-    for flv in flavors:
-        # Skip non-SCS flavors
-        if flv.name and flv.name[:4] != "SCS-":  # and flv.name[:4] != "SCSx"
-            nonSCSFlv.append(flv.name)
-            continue
-        try:
-            ret = fnmck.parsename(flv.name)
-            assert ret
-        # Parser error
-        except ValueError as exc:
-            errors += 1
-            wrongFlv.append(flv.name)
-            print(f"ERROR: Wrong flavor \"{flv.name}\": {exc}", file=sys.stderr)
-            continue
-        # We have a successfully parsed SCS- name now
-        # See if the OpenStack provided data fulfills what we
-        # expect from the flavor based on its name
-        err = 0
-        warn = 0
-        # Split list for readability
-        cpuram = ret.cpuram
-        # next qwould be hype, hwvirt, cpubrand, gpu, ib
-        # see flavor-name-check.py: parsename()
-        # vCPUS
-        if flv.vcpus < cpuram.cpus:
-            print(f"ERROR: Flavor {flv.name} has only {flv.vcpus} vCPUs, "
-                  f"should have >= {cpuram.cpus}", file=sys.stderr)
-            err += 1
-        elif flv.vcpus > cpuram.cpus:
-            print(f"WARNING: Flavor {flv.name} has {flv.vcpus} vCPUs, "
-                  f"only needs {cpuram.cpus}", file=sys.stderr)
-            warn += 1
-        # RAM
-        flvram = int((flv.ram + 51) / 102.4) / 10
-        # Warn for strange sizes (want integer numbers, half allowed for < 10GiB)
-        if flvram >= 10 and flvram != int(flvram) or flvram * 2 != int(flvram * 2):
-            print(f"WARNING: Flavor {flv.name} uses discouraged uneven size "
-                  f"of memory {flvram:.1f} GiB", file=sys.stderr)
-        if flvram < cpuram.ram:
-            print(f"ERROR: Flavor {flv.name} has only {flvram:.1f} GiB RAM, "
-                  f"should have >= {cpuram.ram:.1f} GiB", file=sys.stderr)
-            err += 1
-        elif flvram > cpuram.ram:
-            print(f"WARNING: Flavor {flv.name} has {flvram:.1f} GiB RAM, "
-                  f"only needs {cpuram.ram:.1f} GiB", file=sys.stderr)
-            warn += 1
-        # DISK
-        accdisk = (0, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000)
-        # Disk could have been omitted
-        disksize = ret.disk.disksize if ret.disk else 0
-        # We have a recommendation for disk size steps
-        if disksize not in accdisk:
-            print(f"WARNING: Flavor {flv.name} advertizes disk size {disksize}, "
-                  f"should have (5, 10, 20, 50, 100, 200, ...)", file=sys.stderr)
-            warn += 1
-        if flv.disk < disksize:
-            print(f"ERROR: Flavor {flv.name} has only {flv.disk} GB root disk, "
-                  f"should have >= {disksize} GB", file=sys.stderr)
-            err += 1
-        elif flv.disk > disksize:
-            print(f"WARNING: Flavor {flv.name} has {flv.disk} GB root disk, "
-                  f"only needs {disksize} GB", file=sys.stderr)
-            warn += 1
-        # Ev'thing checked, react to errors by putting the bad flavors in the bad bucket
-        if err:
-            wrongFlv.append(flv.name)
-            errors += 1
-        else:
-            SCSFlv.append(flv.name)
-            if warn:
-                warnFlv.append(flv.name)
-    # This makes the output more readable
-    SCSFlv.sort()
-    nonSCSFlv.sort()
-    wrongFlv.sort()
-    warnFlv.sort()
-    # Produce dicts for YAML reporting
-    flvSCSList = {
-        "SCSFlavorsValid": SCSFlv,
-        "SCSFlavorsWrong": wrongFlv,
-        "FlavorsWithWarnings": warnFlv,
-    }
-    flvOthList = {
-        "OtherFlavors": nonSCSFlv
-    }
-    flvSCSRep = {
-        "TotalAmount": len(SCSFlv) + len(wrongFlv),
-        "FlavorsValid": len(SCSFlv),
-        "FlavorsWrong": len(wrongFlv),
-        "FlavorsWithWarnings": len(warnFlv),
-    }
-    flvOthRep = {
-        "TotalAmount": len(nonSCSFlv),
-    }
-    totSummary = {
-        "Errors": errors,
-        "Warnings": len(warnFlv),
-    }
-    Report = {cloud: {"TotalSummary": totSummary}}
-    if not fnmck.quiet:
-        Report[cloud]["SCSFlavorSummary"] = flvSCSRep
-        Report[cloud]["OtherFlavorSummary"] = flvOthRep
-    if verbose:
-        Report[cloud]["SCSFlavorReport"] = flvSCSList
-        Report[cloud]["OtherFlavorReport"] = flvOthList
-    print(f"{yaml.dump(Report, default_flow_style=False)}")
-    print("flavor-name-check: " + ('PASS', 'FAIL')[min(1, errors)])
-    return errors
+    # TODO in the future, the remainder should be moved to a central module `scs_compatible_iaas.py`,
+    # which would import the test logic (i.e., the functions called compute_XYZ) from here.
+    # Then this module wouldn't need to know about containers, and the central module can handle
+    # information sharing as well as running precisely the requested set of testcases.
+    c = Container()
+    c.add_function('conn', lambda _: openstack.connect(cloud=cloud, timeout=32))
+    c.add_function('flavors', lambda c: list(c.conn.compute.flavors()))
+    c.add_function('scs_flavors', lambda c: compute_scs_flavors(c.flavors))
+    c.add_function('scs_0100_syntax_check', lambda c: compute_scs_0100_syntax_check(c.scs_flavors))
+    c.add_function('scs_0100_semantics_check', lambda c: compute_scs_0100_semantics_check(c.scs_flavors))
+    c.add_function('flavor_name_check', lambda c: compute_flavor_name_check(c.scs_0100_syntax_check, c.scs_0100_semantics_check))
+    for testcase in TESTCASES:
+        harness(testcase, lambda: getattr(c, testcase.replace('-', '_')))
+    return 0
 
 
 if __name__ == "__main__":
