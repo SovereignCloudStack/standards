@@ -16,16 +16,15 @@ provided by openstack, such as the number of vCPUs and memory.
 SPDX-License-Identifier: CC-BY-SA 4.0
 """
 
+import getopt
 import logging
 import os
 import sys
-import typing
-import getopt
 
 import openstack
 
 from flavor_names_check import \
-    compute_scs_flavors,  compute_scs_0100_syntax_check, compute_scs_0100_semantics_check, compute_flavor_name_check
+    compute_scs_flavors, compute_scs_0100_syntax_check, compute_scs_0100_semantics_check, compute_flavor_name_check
 
 
 logger = logging.getLogger(__name__)

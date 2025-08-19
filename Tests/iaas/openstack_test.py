@@ -7,16 +7,16 @@
 SPDX-License-Identifier: CC-BY-SA 4.0
 """
 
+import getopt
 import logging
 import os
 import sys
-import typing
-import getopt
+
 import openstack
 
 from scs_0100_flavor_naming.flavor_names_check import \
     TESTCASES as SCS_0100_TESTCASES, \
-    compute_scs_flavors,  compute_scs_0100_syntax_check, compute_scs_0100_semantics_check, compute_flavor_name_check
+    compute_scs_flavors, compute_scs_0100_syntax_check, compute_scs_0100_semantics_check, compute_flavor_name_check
 
 
 logger = logging.getLogger(__name__)
