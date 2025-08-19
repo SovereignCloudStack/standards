@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-from collections import Counter, defaultdict
 import logging
-import os
 import re
-import sys
 import time
+
+import openstack
 
 
 logger = logging.getLogger(__name__)
@@ -336,7 +335,7 @@ def _convert_to_collected(lines, marker=MARKER):
     # removing any "indent", stuff that looks like '[   70.439502] cloud-init[513]: '
     section = None
     indent = 0
-    collected = defaultdict(list)
+    collected = {}
     for line in lines:
         idx = line.find(marker)
         if idx != -1:
@@ -346,7 +345,7 @@ def _convert_to_collected(lines, marker=MARKER):
             indent = idx
             continue
         if section:
-            collected[section].append(line[indent:])
+            collected.setdefault(section, []).append(line[indent:])
     return collected
 
 
