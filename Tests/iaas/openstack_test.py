@@ -15,8 +15,11 @@ import sys
 import openstack
 
 from scs_0100_flavor_naming.flavor_names_check import \
-    TESTCASES as SCS_0100_TESTCASES, \
     compute_scs_flavors, compute_scs_0100_syntax_check, compute_scs_0100_semantics_check, compute_flavor_name_check
+from scs_0101_entropy.entropy_check import \
+    compute_scs_0101_image_property, compute_scs_0101_flavor_property, compute_canonical_image, \
+    compute_collected_vm_output, compute_scs_0101_entropy_avail, compute_scs_0101_rngd, \
+    compute_scs_0101_fips_test, compute_scs_0101_entropy_check
 
 
 logger = logging.getLogger(__name__)
@@ -31,20 +34,24 @@ def usage(rcode=1):
     sys.exit(rcode)
 
 
-TESTCASES = set(
-    SCS_0100_TESTCASES
-)
-
-
 def make_container(cloud):
     c = Container()
     # scs_0100_flavor_naming
     c.add_function('conn', lambda _: openstack.connect(cloud=cloud, timeout=32))
-    c.add_function('flavors', lambda c: list(c.conn.compute.flavors()))
+    c.add_function('flavors', lambda c: list(c.conn.list_flavors(get_extra=True)))
+    c.add_function('images', lambda c: [img for img in c.conn.list_images() if img.visibility in ('public', 'community')])
     c.add_function('scs_flavors', lambda c: compute_scs_flavors(c.flavors))
     c.add_function('scs_0100_syntax_check', lambda c: compute_scs_0100_syntax_check(c.scs_flavors))
     c.add_function('scs_0100_semantics_check', lambda c: compute_scs_0100_semantics_check(c.scs_flavors))
     c.add_function('flavor_name_check', lambda c: compute_flavor_name_check(c.scs_0100_syntax_check, c.scs_0100_semantics_check))
+    c.add_function('scs_0101_image_property', lambda c: compute_scs_0101_image_property(c.images))
+    c.add_function('scs_0101_flavor_property', lambda c: compute_scs_0101_flavor_property(c.flavors))
+    c.add_function('canonical_image', lambda c: compute_canonical_image(c.images))
+    c.add_function('collected_vm_output', lambda c: compute_collected_vm_output(c.conn, c.flavors, c.canonical_image))
+    c.add_function('scs_0101_entropy_avail', lambda c: compute_scs_0101_entropy_avail(c.collected_vm_output, c.canonical_image.name))
+    c.add_function('scs_0101_rngd', lambda c: compute_scs_0101_rngd(c.collected_vm_output, c.canonical_image.name))
+    c.add_function('scs_0101_fips_test', lambda c: compute_scs_0101_fips_test(c.collected_vm_output, c.canonical_image.name))
+    c.add_function('entropy_check', lambda c: compute_scs_0101_entropy_check(c.scs_0101_entropy_avail, c.scs_0101_fips_test))
     return c
 
 
@@ -146,9 +153,9 @@ def main(argv):
         else:
             usage(2)
 
-    testcases = [t for t in args if t in TESTCASES]
+    testcases = [t for t in args if t.endswith('check') or t.startswith('scs-')]
     if len(testcases) != len(args):
-        unknown = [a for a in args if a not in TESTCASES]
+        unknown = [a for a in args if a not in testcases]
         logger.warning(f"ignoring unknown testcases: {','.join(unknown)}")
 
     if not cloud:
