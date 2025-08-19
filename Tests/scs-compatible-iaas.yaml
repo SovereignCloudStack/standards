@@ -15,7 +15,7 @@ modules:
     name: Flavor naming v3.1
     url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
     run:
-      - executable: ./iaas/flavor-naming/flavor-names-openstack.py
+      - executable: ./iaas/scs_0100_flavor_naming/flavor-names-openstack.py
         args: -c {os_cloud} --mand=./iaas/scs-0100-v3-flavors.yaml
         # Note: --v2plus would outlaw the v1 flavor names. Don't do this yet.
     testcases:
