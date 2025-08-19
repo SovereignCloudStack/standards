@@ -1,28 +1,10 @@
 #!/usr/bin/env python3
-"""Entropy checker
-
-Check given cloud for conformance with SCS standard regarding
-entropy, to be found under /Standards/scs-0101-v1-entropy.md
-
-Return code is 0 precisely when it could be verified that the standard is satisfied.
-Otherwise the return code is the number of errors that occurred (up to 127 due to OS
-restrictions); for further information, see the log messages on various channels:
-    CRITICAL  for problems preventing the test to complete,
-    ERROR     for violations of requirements,
-    WARNING   for violations of recommendations,
-    DEBUG     for background information and problems that don't hinder the test.
-"""
 from collections import Counter, defaultdict
-import getopt
 import logging
 import os
 import re
 import sys
 import time
-import warnings
-
-import openstack
-import openstack.cloud
 
 
 logger = logging.getLogger(__name__)
@@ -77,20 +59,7 @@ SERVER_USERDATA = {
 }
 
 
-def print_usage(file=sys.stderr):
-    """Help output"""
-    print("""Usage: entropy-check.py [options]
-This tool checks the requested images and flavors according to the SCS Standard 0101 "Entropy".
-Options:
- [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)
- [-d/--debug] enables DEBUG logging channel
- [-i/--images IMAGE_LIST] sets images to be tested, separated by comma.
- [-V/--image-visibility VIS_LIST] filters images by visibility
-                                  (default: 'public,community'; use '*' to disable)
-""", end='', file=file)
-
-
-def check_image_attributes(images, attributes=IMAGE_ATTRIBUTES):
+def compute_scs_0101_image_property(images, attributes=IMAGE_ATTRIBUTES):
     candidates = [
         (image.name, [f"{key}={value}" for key, value in attributes.items() if image.get(key) != value])
         for image in images
@@ -98,11 +67,11 @@ def check_image_attributes(images, attributes=IMAGE_ATTRIBUTES):
     # drop those candidates that are fine
     offenders = [candidate for candidate in candidates if candidate[1]]
     for name, wrong in offenders:
-        logger.warning(f"Image '{name}' missing recommended attributes: {', '.join(wrong)}")
+        logger.info(f"Image '{name}' missing recommended attributes: {', '.join(wrong)}")
     return not offenders
 
 
-def check_flavor_attributes(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAVOR_OPTIONAL):
+def compute_scs_0101_flavor_property(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAVOR_OPTIONAL):
     offenses = 0
     for flavor in flavors:
         extra_specs = flavor['extra_specs']
@@ -116,14 +85,15 @@ def check_flavor_attributes(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAV
             # and if the recommended attributes are present, we assume that implementers have done their job already
             if miss_opt:
                 message += f"; additionally, missing optional attributes: {', '.join(miss_opt)}"
-            logger.warning(message)
+            logger.info(message)
     return not offenses
 
 
-def check_entropy_avail(lines, image_name):
+def compute_scs_0101_entropy_avail(collected_vm_output, image_name):
+    lines = collected_vm_output['entropy-avail']
     entropy_avail = lines[0].strip()
     if entropy_avail != "256":
-        logger.error(
+        logger.info(
             f"VM '{image_name}' didn't have a fixed amount of entropy available. "
             f"Expected 256, got {entropy_avail}."
         )
@@ -131,14 +101,16 @@ def check_entropy_avail(lines, image_name):
     return True
 
 
-def check_rngd(lines, image_name):
+def compute_scs_0101_rngd(collected_vm_output, image_name):
+    lines = collected_vm_output['rngd']
     if "could not be found" in '\n'.join(lines):
-        logger.warning(f"VM '{image_name}' doesn't provide the recommended service rngd")
+        logger.info(f"VM '{image_name}' doesn't provide the recommended service rngd")
         return False
     return True
 
 
-def check_fips_test(lines, image_name):
+def compute_scs_0101_fips_test(collected_vm_output, image_name):
+    lines = collected_vm_output['fips-test']
     try:
         fips_data = '\n'.join(lines)
         failure_re = re.search(r'failures:\s\d+', fips_data, flags=re.MULTILINE)
@@ -146,39 +118,41 @@ def check_fips_test(lines, image_name):
             fips_failures = failure_re.string[failure_re.regs[0][0]:failure_re.regs[0][1]].split(" ")[1]
             if int(fips_failures) <= 3:
                 return True  # strict test passed
-            logger.warning(
+            logger.info(
                 f"VM '{image_name}' didn't pass the strict FIPS 140-2 testing. "
                 f"Expected a maximum of 3 failures, got {fips_failures}."
             )
             if int(fips_failures) <= 5:
                 return True  # lenient test passed
-            logger.error(
+            logger.info(
                 f"VM '{image_name}' didn't pass the FIPS 140-2 testing. "
                 f"Expected a maximum of 5 failures, got {fips_failures}."
             )
         else:
-            logger.error(f"VM '{image_name}': failed to determine fips failures")
+            logger.info(f"VM '{image_name}': failed to determine fips failures")
             logger.debug(f"stderr following:\n{fips_data}")
     except BaseException:
         logger.critical(f"Couldn't check VM '{image_name}' requirements", exc_info=True)
     return False  # any unsuccessful path should end up here
 
 
-def check_virtio_rng(lines, image, flavor):
+# FIXME this is not actually being used AFAICT -- mbuechse
+def compute_scs_0101_virtio_rng(collected_vm_output, image_name):
+    lines = collected_vm_output['virtio-rng']
     try:
-        # Check the existence of the HRNG -- can actually be skipped if the flavor
-        # or the image doesn't have the corresponding attributes anyway!
-        if image.hw_rng_model != "virtio" or flavor.extra_specs.get("hw_rng:allowed") != "True":
-            logger.debug("Not looking for virtio-rng because required attributes are missing")
-            return False
         # `cat` can fail with return code 1 if special file does not exist
         hw_device = lines[0]
         if not hw_device.strip() or "No such device" in lines[1]:
-            logger.warning(f"VM '{image.name}' doesn't provide a hardware device.")
+            logger.info(f"VM '{image_name}' doesn't provide a hardware device.")
             return False
         return True
     except BaseException:
-        logger.critical(f"Couldn't check VM '{image.name}' recommends", exc_info=True)
+        logger.critical(f"Couldn't check VM '{image_name}' recommends", exc_info=True)
+
+
+def compute_scs_0101_entropy_check(scs_0101_entropy_avail_result, scs_0101_fips_test_result):
+    # note: this is about the mandatory things
+    return scs_0101_entropy_avail_result and scs_0101_fips_test_result
 
 
 class TestEnvironment:
@@ -263,7 +237,7 @@ class TestEnvironment:
         self.clean()
 
 
-def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
+def select_flavor_for_image(all_flavors, image):
     # Pick a flavor matching the image
     flavors = [flv for flv in all_flavors if flv.ram >= image.min_ram]
     # if at all possible, prefer a flavor that provides hw_rng:allowed!
@@ -273,13 +247,13 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
     elif flavors:
         logger.debug(f"Unable to pick flavor with hw_rng:allowed=true for image '{image.name}'")
     else:
-        logger.critical(f"No flavor could be found for the image '{image.name}'")
-        return
+        raise RuntimeError(f"No flavor could be found for the image '{image.name}'")
 
     # try to pick a frugal flavor
-    flavor = min(flavors, key=lambda flv: flv.vcpus + flv.ram / 3.0 + flv.disk / 10.0)
-    userdata = SERVER_USERDATA.get(image.os_distro, SERVER_USERDATA_GENERIC)
-    logger.debug(f"Using userdata:\n{userdata}")
+    return min(flavors, key=lambda flv: flv.vcpus + flv.ram / 3.0 + flv.disk / 10.0)
+
+
+def create_vm(conn, flavor, image, network, userdata=None, server_name=SERVER_NAME):
     volume_size = max(image.min_disk, 8)  # sometimes, the min_disk property is not set correctly
     # create a server with the image and the flavor as well as
     # the previously created keys and security group
@@ -287,10 +261,11 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
         f"Creating instance of image '{image.name}' using flavor '{flavor.name}' and "
         f"{volume_size} GiB ephemeral boot volume"
     )
+    logger.debug(f"Using userdata:\n{userdata}")
     # explicitly set auto_ip=False, we may still get a (totally unnecessary) floating IP assigned
-    server = env.conn.create_server(
+    server = conn.create_server(
         server_name, image=image, flavor=flavor, userdata=userdata, wait=True, timeout=500, auto_ip=False,
-        boot_from_volume=True, terminate_volume=True, volume_size=volume_size, network=env.network,
+        boot_from_volume=True, terminate_volume=True, volume_size=volume_size, network=network,
     )
     logger.debug(f"Server '{server_name}' ('{server.id}') has been created")
     # next, do an explicit get_server because, beginning with version 3.2.0, the openstacksdk no longer
@@ -298,7 +273,7 @@ def create_vm(env, all_flavors, image, server_name=SERVER_NAME):
     # I (mbuechse) consider this a bug in openstacksdk; it was introduced with
     # https://opendev.org/openstack/openstacksdk/commit/a8adbadf0c4cdf1539019177fb1be08e04d98e82
     # I also consider openstacksdk architecture with the Mixins etc. smelly to say the least
-    return env.conn.get_server(server.id)
+    return conn.get_server(server.id)
 
 
 def delete_vm(conn, server_name=SERVER_NAME):
@@ -307,15 +282,6 @@ def delete_vm(conn, server_name=SERVER_NAME):
         _ = conn.delete_server(server_name, delete_ips=True, timeout=300, wait=True)
     except openstack.cloud.OpenStackCloudException:
         logger.debug(f"The server '{server_name}' couldn't be deleted.", exc_info=True)
-
-
-class CountingHandler(logging.Handler):
-    def __init__(self, level=logging.NOTSET):
-        super().__init__(level=level)
-        self.bylevel = Counter()
-
-    def handle(self, record):
-        self.bylevel[record.levelno] += 1
 
 
 # the following functions are used to map any OpenStack Image to a pair of integers
@@ -328,6 +294,7 @@ DEBIAN_CODENAMES = {
     "buster": 10,
     "bullseye": 11,
     "bookworm": 12,
+    "trixie": 13,
 }
 
 
@@ -359,16 +326,12 @@ def _deduce_sort(img):
     return deducer(img.os_version.strip().lower())
 
 
-def select_deb_image(images):
+def compute_canonical_image(all_images):
     """From a list of OpenStack image objects, select a recent Debian derivative."""
-    return max(images, key=_deduce_sort, default=None)
+    return max(all_images, key=_deduce_sort, default=None)
 
 
-def print_result(check_id, passed):
-    print(check_id + ": " + ('FAIL', 'PASS')[bool(passed)])
-
-
-def evaluate_output(lines, image, flavor, marker=MARKER):
+def _convert_to_collected(lines, marker=MARKER):
     # parse lines from console output
     # removing any "indent", stuff that looks like '[   70.439502] cloud-init[513]: '
     section = None
@@ -384,130 +347,32 @@ def evaluate_output(lines, image, flavor, marker=MARKER):
             continue
         if section:
             collected[section].append(line[indent:])
-    # always check if we have something, because print_result won't do MISS, only PASS/FAIL
-    if collected['virtio-rng']:
-        # virtio-rng is not an official test case according to testing notes,
-        # but for some reason we check it nonetheless (call it informative)
-        check_virtio_rng(collected['virtio-rng'], image, flavor)
-    if collected['entropy-avail']:
-        print_result('entropy-check-entropy-avail', check_entropy_avail(collected['entropy-avail'], image.name))
-    if collected['rngd']:
-        print_result('entropy-check-rngd', check_rngd(collected['rngd'], image.name))
-    if collected['fips-test']:
-        print_result('entropy-check-fips-test', check_fips_test(collected['fips-test'], image.name))
+    return collected
 
 
-def main(argv):
-    # configure logging, disable verbose library logging
-    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
-    openstack.enable_logging(debug=False)
-    warnings.filterwarnings("ignore", "search_floating_ips")
-    # count the number of log records per level (used for summary and return code)
-    counting_handler = CountingHandler(level=logging.INFO)
-    logger.addHandler(counting_handler)
-
-    try:
-        opts, args = getopt.gnu_getopt(argv, "c:i:hdV:", ["os-cloud=", "images=", "help", "debug", "image-visibility="])
-    except getopt.GetoptError as exc:
-        logger.critical(f"{exc}")
-        print_usage()
-        return 1
-
-    cloud = os.environ.get("OS_CLOUD")
-    image_names = set()
-    image_visibility = set()
-    for opt in opts:
-        if opt[0] == "-h" or opt[0] == "--help":
-            print_usage()
-            return 0
-        if opt[0] == "-i" or opt[0] == "--images":
-            image_names.update([img.strip() for img in opt[1].split(',')])
-        if opt[0] == "-c" or opt[0] == "--os-cloud":
-            cloud = opt[1]
-        if opt[0] == "-d" or opt[0] == "--debug":
-            logging.getLogger().setLevel(logging.DEBUG)
-        if opt[0] == "-V" or opt[0] == "--image-visibility":
-            image_visibility.update([v.strip() for v in opt[1].split(',')])
-
-    if not cloud:
-        logger.critical("You need to have OS_CLOUD set or pass --os-cloud=CLOUD.")
-        return 1
-
-    if not image_visibility:
-        image_visibility.update(("public", "community"))
-
-    try:
-        logger.debug(f"Connecting to cloud '{cloud}'")
-        with openstack.connect(cloud=cloud, timeout=32) as conn:
-            all_images = conn.list_images()
-            all_flavors = conn.list_flavors(get_extra=True)
-
-            if '*' not in image_visibility:
-                logger.debug(f"Images: filter for visibility {', '.join(sorted(image_visibility))}")
-                all_images = [img for img in all_images if img.visibility in image_visibility]
-            all_image_names = [f"{img.name} ({img.visibility})" for img in all_images]
-            logger.debug(f"Images: {', '.join(all_image_names) or '(NONE)'}")
-
-            if not all_images:
-                logger.critical("Can't run this test without image")
-                return 1
-
-            if image_names:
-                # find images by the names given, BAIL out if some image is missing
-                images = sorted([img for img in all_images if img.name in image_names], key=lambda img: img.name)
-                names = [img.name for img in images]
-                logger.debug(f"Selected images: {', '.join(names)}")
-                missing_names = image_names - set(names)
-                if missing_names:
-                    logger.critical(f"Missing images: {', '.join(missing_names)}")
-                    return 1
-            else:
-                images = [select_deb_image(all_images) or all_images[0]]
-                logger.debug(f"Selected image: {images[0].name} ({images[0].id})")
-
-            logger.debug("Checking images and flavors for recommended attributes")
-            print_result('entropy-check-image-properties', check_image_attributes(all_images))
-            print_result('entropy-check-flavor-properties', check_flavor_attributes(all_flavors))
-
-            logger.debug("Checking dynamic instance properties")
-            # Check a VM for services and requirements
-            with TestEnvironment(conn) as env:
-                for image in images:
-                    try:
-                        # ugly: create the server inside the try-block because the call
-                        # can be interrupted via Ctrl-C, and then the instance will be
-                        # started without us knowing its id
-                        server = create_vm(env, all_flavors, image)
-                        remainder = TIMEOUT
-                        console = conn.compute.get_server_console_output(server)
-                        while remainder > 0:
-                            if "Failed to run module scripts-user" in console['output']:
-                                raise RuntimeError(f"Failed tests for {server.id}")
-                            if "_scs-test-end" in console['output']:
-                                break
-                            time.sleep(1.0)
-                            remainder -= 1
-                            console = conn.compute.get_server_console_output(server)
-                        # if the timeout was hit, maybe we won't find everything, but that's okay --
-                        # these testcases will count as missing, rightly so
-                        logger.debug(f'Finished waiting with timeout remainder: {remainder} s')
-                        evaluate_output(console['output'].splitlines(), image, server.flavor)
-                    finally:
-                        delete_vm(conn)
-    except BaseException as e:
-        logger.critical(f"{e!r}")
-        logger.debug("Exception info", exc_info=True)
-
-    c = counting_handler.bylevel
-    logger.debug(
-        "Total critical / error / warning: "
-        f"{c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.WARNING]}"
-    )
-    # include this one for backwards compatibility
-    if not c[logging.CRITICAL]:
-        print("entropy-check: " + ('PASS', 'FAIL')[min(1, c[logging.ERROR])])
-    return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
-
-
-if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+def compute_collected_vm_output(conn, all_flavors, image):
+    # Check a VM for services and requirements
+    logger.debug(f"Selected image: {image.name} ({image.id})")
+    flavor = select_flavor_for_image(all_flavors, image)
+    userdata = SERVER_USERDATA.get(image.os_distro, SERVER_USERDATA_GENERIC)
+    with TestEnvironment(conn) as env:
+        try:
+            # ugly: create the server inside the try-block because the call
+            # can be interrupted via Ctrl-C, and then the instance will be
+            # started without us knowing its id
+            server = create_vm(env.conn, flavor, image, env.network, userdata)
+            remainder = TIMEOUT
+            console = conn.compute.get_server_console_output(server)
+            while True:
+                if "_scs-test-end" in console['output']:
+                    break
+                if remainder <= 0:
+                    raise RuntimeError("timeout while waiting for VM to complete computation")
+                if "Failed to run module scripts-user" in console['output']:
+                    raise RuntimeError(f"Failed tests for {server.id}")
+                time.sleep(1.0)
+                remainder -= 1
+                console = conn.compute.get_server_console_output(server)
+            return _convert_to_collected(console['output'].splitlines())
+        finally:
+            delete_vm(conn)
