@@ -6,7 +6,7 @@ import typing
 
 import openstack
 
-import flavor_names
+from . import flavor_names
 
 
 logger = logging.getLogger(__name__)
