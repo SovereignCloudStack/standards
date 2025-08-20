@@ -25,12 +25,12 @@ from scs_0101_entropy.entropy_check import \
 logger = logging.getLogger(__name__)
 
 
-def usage(rcode=1):
+def usage(rcode=1, file=sys.stderr):
     """help output"""
-    print("Usage: openstack_test.py [options] testcase-id1 ... testcase-idN", file=sys.stderr)
-    print("Options: [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)", file=sys.stderr)
-    print("This tool retrieves the list of flavors from the OpenStack cloud OS_CLOUD", file=sys.stderr)
-    print(" and reports inconsistencies, errors etc. It returns 0 on success.", file=sys.stderr)
+    print("Usage: openstack_test.py [options] testcase-id1 ... testcase-idN", file=file)
+    print("Options: [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)", file=file)
+    print("Runs specified testcases against the OpenStack cloud OS_CLOUD", file=file)
+    print("and reports inconsistencies, errors etc. It returns 0 on success.", file=file)
     sys.exit(rcode)
 
 
@@ -130,7 +130,6 @@ def harness(name, *check_fns):
 
 
 def main(argv):
-    """Entry point -- main loop going over flavors"""
     # configure logging, disable verbose library logging
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
     openstack.enable_logging(debug=False)
@@ -153,7 +152,7 @@ def main(argv):
         else:
             usage(2)
 
-    testcases = [t for t in args if t.endswith('check') or t.startswith('scs-')]
+    testcases = [t for t in args if t.endswith('-check') or t.startswith('scs-')]
     if len(testcases) != len(args):
         unknown = [a for a in args if a not in testcases]
         logger.warning(f"ignoring unknown testcases: {','.join(unknown)}")
