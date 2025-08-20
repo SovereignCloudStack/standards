@@ -49,7 +49,7 @@ def compute_scs_0100_semantics_check(scs_flavors: list) -> bool:
             continue  # this case is handled by syntax check
         cpuram = flavorname.cpuram
         if flv.vcpus < cpuram.cpus:
-            logger.info(f"Flavor {flv.name} CPU overpromise: {flv.vcpus} < {cpuram.cpus}")
+            logger.error(f"Flavor {flv.name} CPU overpromise: {flv.vcpus} < {cpuram.cpus}")
             problems.add(flv.name)
         elif flv.vcpus > cpuram.cpus:
             logger.info(f"Flavor {flv.name} CPU underpromise: {flv.vcpus} > {cpuram.cpus}")
@@ -59,7 +59,7 @@ def compute_scs_0100_semantics_check(scs_flavors: list) -> bool:
         if flvram >= 10 and flvram != int(flvram) or flvram * 2 != int(flvram * 2):
             logger.info(f"Flavor {flv.name} uses discouraged uneven size of memory {flvram:.1f} GiB")
         if flvram < cpuram.ram:
-            logger.info(f"Flavor {flv.name} RAM overpromise {flvram:.1f} < {cpuram.ram:.1f}")
+            logger.error(f"Flavor {flv.name} RAM overpromise {flvram:.1f} < {cpuram.ram:.1f}")
             problems.add(flv.name)
         elif flvram > cpuram.ram:
             logger.info(f"Flavor {flv.name} RAM underpromise {flvram:.1f} > {cpuram.ram:.1f}")
@@ -69,7 +69,7 @@ def compute_scs_0100_semantics_check(scs_flavors: list) -> bool:
         if disksize not in ACC_DISK:
             logger.info(f"Flavor {flv.name} non-standard disk size {disksize}, should have (5, 10, 20, 50, 100, 200, ...)")
         if flv.disk < disksize:
-            logger.info(f"Flavor {flv.name} disk overpromise {flv.disk} < {disksize}")
+            logger.error(f"Flavor {flv.name} disk overpromise {flv.disk} < {disksize}")
             problems.add(flv.name)
         elif flv.disk > disksize:
             logger.info(f"Flavor {flv.name} disk underpromise {flv.disk} > {disksize}")

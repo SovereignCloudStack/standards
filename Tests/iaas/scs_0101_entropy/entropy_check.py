@@ -66,7 +66,7 @@ def compute_scs_0101_image_property(images, attributes=IMAGE_ATTRIBUTES):
     # drop those candidates that are fine
     offenders = [candidate for candidate in candidates if candidate[1]]
     for name, wrong in offenders:
-        logger.info(f"Image '{name}' missing recommended attributes: {', '.join(wrong)}")
+        logger.error(f"Image '{name}' missing recommended attributes: {', '.join(wrong)}")
     return not offenders
 
 
@@ -84,7 +84,7 @@ def compute_scs_0101_flavor_property(flavors, attributes=FLAVOR_ATTRIBUTES, opti
             # and if the recommended attributes are present, we assume that implementers have done their job already
             if miss_opt:
                 message += f"; additionally, missing optional attributes: {', '.join(miss_opt)}"
-            logger.info(message)
+            logger.error(message)
     return not offenses
 
 
@@ -92,7 +92,7 @@ def compute_scs_0101_entropy_avail(collected_vm_output, image_name):
     lines = collected_vm_output['entropy-avail']
     entropy_avail = lines[0].strip()
     if entropy_avail != "256":
-        logger.info(
+        logger.error(
             f"VM '{image_name}' didn't have a fixed amount of entropy available. "
             f"Expected 256, got {entropy_avail}."
         )
@@ -103,7 +103,7 @@ def compute_scs_0101_entropy_avail(collected_vm_output, image_name):
 def compute_scs_0101_rngd(collected_vm_output, image_name):
     lines = collected_vm_output['rngd']
     if "could not be found" in '\n'.join(lines):
-        logger.info(f"VM '{image_name}' doesn't provide the recommended service rngd")
+        logger.error(f"VM '{image_name}' doesn't provide the recommended service rngd")
         return False
     return True
 
@@ -123,12 +123,12 @@ def compute_scs_0101_fips_test(collected_vm_output, image_name):
             )
             if int(fips_failures) <= 5:
                 return True  # lenient test passed
-            logger.info(
+            logger.error(
                 f"VM '{image_name}' didn't pass the FIPS 140-2 testing. "
                 f"Expected a maximum of 5 failures, got {fips_failures}."
             )
         else:
-            logger.info(f"VM '{image_name}': failed to determine fips failures")
+            logger.error(f"VM '{image_name}': failed to determine fips failures")
             logger.debug(f"stderr following:\n{fips_data}")
     except BaseException:
         logger.critical(f"Couldn't check VM '{image_name}' requirements", exc_info=True)
@@ -142,7 +142,7 @@ def compute_scs_0101_virtio_rng(collected_vm_output, image_name):
         # `cat` can fail with return code 1 if special file does not exist
         hw_device = lines[0]
         if not hw_device.strip() or "No such device" in lines[1]:
-            logger.info(f"VM '{image_name}' doesn't provide a hardware device.")
+            logger.error(f"VM '{image_name}' doesn't provide a hardware device.")
             return False
         return True
     except BaseException:
