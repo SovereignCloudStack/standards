@@ -661,7 +661,7 @@ async def get_detail(
             rows2.extend(db_get_relevant_results2(cur, subj, scopeuuid, approved_only=True))
     results2 = convert_result_rows_to_dict2(
         rows2, get_scopes(), include_report=True, grace_period_days=GRACE_PERIOD_DAYS,
-        subjects=(subject, ), scopes=(scopeuuid, ),
+        subjects=subjects, scopes=(scopeuuid, ),
     )
     title = f'Details for group {group}' if group else f'Details for subject {subject}'
     return render_view(
@@ -681,10 +681,10 @@ async def get_detail_full(
     with conn.cursor() as cur:
         group, subjects = _resolve_group(cur, subject)
         rows2 = []
-        for subject in subjects:
-            rows2.extend(db_get_relevant_results2(cur, subject, scopeuuid, approved_only=False))
+        for subj in subjects:
+            rows2.extend(db_get_relevant_results2(cur, subj, scopeuuid, approved_only=False))
     results2 = convert_result_rows_to_dict2(
-        rows2, get_scopes(), include_report=True, subjects=(subject, ), scopes=(scopeuuid, ),
+        rows2, get_scopes(), include_report=True, subjects=subjects, scopes=(scopeuuid, ),
     )
     title = f'Details for group {group}' if group else f'Details for subject {subject}'
     return render_view(
