@@ -15,11 +15,20 @@ import sys
 import openstack
 
 from scs_0100_flavor_naming.flavor_names_check import \
-    compute_scs_flavors, compute_scs_0100_syntax_check, compute_scs_0100_semantics_check, compute_flavor_name_check
+    compute_scs_flavors, compute_scs_0100_syntax_check, compute_scs_0100_semantics_check
 from scs_0101_entropy.entropy_check import \
     compute_scs_0101_image_property, compute_scs_0101_flavor_property, compute_canonical_image, \
     compute_collected_vm_output, compute_scs_0101_entropy_avail, compute_scs_0101_rngd, \
-    compute_scs_0101_fips_test, compute_scs_0101_entropy_check
+    compute_scs_0101_fips_test
+from scs_0102_image_metadata.image_metadata import \
+    compute_scs_0102_prop_architecture, compute_scs_0102_prop_hash_algo, compute_scs_0102_prop_min_disk, \
+    compute_scs_0102_prop_min_ram, compute_scs_0102_prop_os_version, compute_scs_0102_prop_os_distro, \
+    compute_scs_0102_prop_hw_disk_bus, compute_scs_0102_prop_hypervisor_type, compute_scs_0102_prop_hw_rng_model, \
+    compute_scs_0102_prop_image_build_date, compute_scs_0102_prop_image_original_user, \
+    compute_scs_0102_prop_image_source, compute_scs_0102_prop_image_description, \
+    compute_scs_0102_prop_replace_frequency, compute_scs_0102_prop_provided_until, \
+    compute_scs_0102_prop_uuid_validity, compute_scs_0102_prop_hotfix_hours, \
+    compute_scs_0102_image_recency
 
 
 logger = logging.getLogger(__name__)
@@ -36,22 +45,54 @@ def usage(rcode=1, file=sys.stderr):
 
 def make_container(cloud):
     c = Container()
-    # scs_0100_flavor_naming
+    # basic support attributes shared by multiple testcases
     c.add_function('conn', lambda _: openstack.connect(cloud=cloud, timeout=32))
     c.add_function('flavors', lambda c: list(c.conn.list_flavors(get_extra=True)))
     c.add_function('images', lambda c: [img for img in c.conn.list_images() if img.visibility in ('public', 'community')])
+    # scs_0100_flavor_naming
     c.add_function('scs_flavors', lambda c: compute_scs_flavors(c.flavors))
     c.add_function('scs_0100_syntax_check', lambda c: compute_scs_0100_syntax_check(c.scs_flavors))
     c.add_function('scs_0100_semantics_check', lambda c: compute_scs_0100_semantics_check(c.scs_flavors))
-    c.add_function('flavor_name_check', lambda c: compute_flavor_name_check(c.scs_0100_syntax_check, c.scs_0100_semantics_check))
-    c.add_function('scs_0101_image_property', lambda c: compute_scs_0101_image_property(c.images))
-    c.add_function('scs_0101_flavor_property', lambda c: compute_scs_0101_flavor_property(c.flavors))
+    c.add_function('flavor_name_check', lambda c: all((
+        c.scs_0100_syntax_check, c.scs_0100_semantics_check,
+    )))
+    # scs_0101_entropy
     c.add_function('canonical_image', lambda c: compute_canonical_image(c.images))
     c.add_function('collected_vm_output', lambda c: compute_collected_vm_output(c.conn, c.flavors, c.canonical_image))
+    c.add_function('scs_0101_image_property', lambda c: compute_scs_0101_image_property(c.images))
+    c.add_function('scs_0101_flavor_property', lambda c: compute_scs_0101_flavor_property(c.flavors))
     c.add_function('scs_0101_entropy_avail', lambda c: compute_scs_0101_entropy_avail(c.collected_vm_output, c.canonical_image.name))
     c.add_function('scs_0101_rngd', lambda c: compute_scs_0101_rngd(c.collected_vm_output, c.canonical_image.name))
     c.add_function('scs_0101_fips_test', lambda c: compute_scs_0101_fips_test(c.collected_vm_output, c.canonical_image.name))
-    c.add_function('entropy_check', lambda c: compute_scs_0101_entropy_check(c.scs_0101_entropy_avail, c.scs_0101_fips_test))
+    c.add_function('entropy_check', lambda c: all((
+        c.scs_0101_entropy_avail, c.scs_0101_fips_test,
+    )))
+    # scs_0102_image_metadata
+    c.add_function('scs_0102_prop_architecture', lambda c: compute_scs_0102_prop_architecture(c.images))
+    c.add_function('scs_0102_prop_hash_algo', lambda c: compute_scs_0102_prop_hash_algo(c.images))
+    c.add_function('scs_0102_prop_min_disk', lambda c: compute_scs_0102_prop_min_disk(c.images))
+    c.add_function('scs_0102_prop_min_ram', lambda c: compute_scs_0102_prop_min_ram(c.images))
+    c.add_function('scs_0102_prop_os_version', lambda c: compute_scs_0102_prop_os_version(c.images))
+    c.add_function('scs_0102_prop_os_distro', lambda c: compute_scs_0102_prop_os_distro(c.images))
+    c.add_function('scs_0102_prop_hw_disk_bus', lambda c: compute_scs_0102_prop_hw_disk_bus(c.images))
+    c.add_function('scs_0102_prop_hypervisor_type', lambda c: compute_scs_0102_prop_hypervisor_type(c.images))
+    c.add_function('scs_0102_prop_hw_rng_model', lambda c: compute_scs_0102_prop_hw_rng_model(c.images))
+    c.add_function('scs_0102_prop_image_build_date', lambda c: compute_scs_0102_prop_image_build_date(c.images))
+    c.add_function('scs_0102_prop_image_original_user', lambda c: compute_scs_0102_prop_image_original_user(c.images))
+    c.add_function('scs_0102_prop_image_source', lambda c: compute_scs_0102_prop_image_source(c.images))
+    c.add_function('scs_0102_prop_image_description', lambda c: compute_scs_0102_prop_image_description(c.images))
+    c.add_function('scs_0102_prop_replace_frequency', lambda c: compute_scs_0102_prop_replace_frequency(c.images))
+    c.add_function('scs_0102_prop_provided_until', lambda c: compute_scs_0102_prop_provided_until(c.images))
+    c.add_function('scs_0102_prop_uuid_validity', lambda c: compute_scs_0102_prop_uuid_validity(c.images))
+    c.add_function('scs_0102_prop_hotfix_hours', lambda c: compute_scs_0102_prop_hotfix_hours(c.images))
+    c.add_function('scs_0102_image_recency', lambda c: compute_scs_0102_image_recency(c.images))
+    c.add_function('image_metadata_check', lambda c: all((
+        c.scs_0102_prop_architecture, c.scs_0102_prop_min_disk, c.scs_0102_prop_min_ram, c.scs_0102_prop_os_version,
+        c.scs_0102_prop_os_distro, c.scs_0102_prop_hw_disk_bus, c.scs_0102_prop_image_build_date,
+        c.scs_0102_prop_image_original_user, c.scs_0102_prop_image_source, c.scs_0102_prop_image_description,
+        c.scs_0102_prop_replace_frequency, c.scs_0102_prop_provided_until, c.scs_0102_prop_uuid_validity,
+        c.scs_0102_image_recency,
+    )))
     return c
 
 
@@ -82,6 +123,7 @@ class Container:
     def __getattr__(self, key):
         val = self._values.get(key)
         if val is None:
+            logger.debug(f'... {key}')
             try:
                 ret = self._functions[key](self)
             except BaseException as e:
