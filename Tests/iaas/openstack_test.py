@@ -15,7 +15,8 @@ import sys
 import openstack
 
 from scs_0100_flavor_naming.flavor_names_check import \
-    compute_scs_flavors, compute_scs_0100_syntax_check, compute_scs_0100_semantics_check
+    compute_scs_flavors, compute_scs_0100_syntax_check, compute_scs_0100_semantics_check, \
+    compute_flavor_spec
 from scs_0101_entropy.entropy_check import \
     compute_scs_0101_image_property, compute_scs_0101_flavor_property, compute_canonical_image, \
     compute_collected_vm_output, compute_scs_0101_entropy_avail, compute_scs_0101_rngd, \
@@ -29,6 +30,8 @@ from scs_0102_image_metadata.image_metadata import \
     compute_scs_0102_prop_replace_frequency, compute_scs_0102_prop_provided_until, \
     compute_scs_0102_prop_uuid_validity, compute_scs_0102_prop_hotfix_hours, \
     compute_scs_0102_image_recency
+from scs_0103_standard_flavors.standard_flavors import \
+    SCS_0103_CANONICAL_NAMES, compute_flavor_lookup, compute_scs_0103_flavor
 
 
 logger = logging.getLogger(__name__)
@@ -92,6 +95,22 @@ def make_container(cloud):
         c.scs_0102_prop_image_original_user, c.scs_0102_prop_image_source, c.scs_0102_prop_image_description,
         c.scs_0102_prop_replace_frequency, c.scs_0102_prop_provided_until, c.scs_0102_prop_uuid_validity,
         c.scs_0102_image_recency,
+    )))
+    # scs_0103_standard_flavors
+    c.add_function('flavor_lookup', lambda c: compute_flavor_lookup(c.flavors))
+    for canonical_name in SCS_0103_CANONICAL_NAMES:
+        nm = canonical_name.removeprefix('SCS-').lower().replace('-', '_')
+        # NOTE we need cn=canonical_name below because anon function only catches a variable's CELL, not its value
+        # i.e., if we use canonical_name inside it, we will only get its final value after the loop is done
+        c.add_function(
+            f'scs_0103_flavor_{nm}',
+            lambda c, cn=canonical_name: compute_scs_0103_flavor(c.flavor_lookup, compute_flavor_spec(cn))
+        )
+    c.add_function('standard_flavors_check', lambda c: all((
+        c.scs_0103_flavor_1v_4, c.scs_0103_flavor_2v_8, c.scs_0103_flavor_4v_16, c.scs_0103_flavor_8v_32,
+        c.scs_0103_flavor_1v_2, c.scs_0103_flavor_2v_4, c.scs_0103_flavor_4v_8, c.scs_0103_flavor_8v_16,
+        c.scs_0103_flavor_16v_32, c.scs_0103_flavor_1v_8, c.scs_0103_flavor_2v_16, c.scs_0103_flavor_4v_32,
+        c.scs_0103_flavor_1l_1, c.scs_0103_flavor_2v_4_20s, c.scs_0103_flavor_4v_16_100s,
     )))
     return c
 
