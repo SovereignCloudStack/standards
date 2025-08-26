@@ -76,7 +76,3 @@ def compute_scs_0100_semantics_check(scs_flavors: list) -> bool:
     if problems:
         logger.error(f"scs-100-semantics-check: flavor(s) failed: {', '.join(sorted(problems))}")
     return not problems
-
-
-def compute_flavor_name_check(syntax_check_result, semantics_check_result):
-    return syntax_check_result and semantics_check_result

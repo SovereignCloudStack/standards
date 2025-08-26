@@ -22,10 +22,7 @@ import openstack
 import openstack.cloud
 
 
-try:
-    from . import entropy_check
-except ImportError:
-    import entropy_check
+import entropy_check
 
 
 logger = logging.getLogger(__name__)

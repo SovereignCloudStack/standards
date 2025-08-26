@@ -149,11 +149,6 @@ def compute_scs_0101_virtio_rng(collected_vm_output, image_name):
         logger.critical(f"Couldn't check VM '{image_name}' recommends", exc_info=True)
 
 
-def compute_scs_0101_entropy_check(scs_0101_entropy_avail_result, scs_0101_fips_test_result):
-    # note: this is about the mandatory things
-    return scs_0101_entropy_avail_result and scs_0101_fips_test_result
-
-
 class TestEnvironment:
     def __init__(self, conn):
         self.conn = conn
