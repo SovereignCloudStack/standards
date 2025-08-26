@@ -84,8 +84,8 @@ modules:
     name: Standard flavors
     url: https://docs.scs.community/standards/scs-0103-v1-standard-flavors
     run:
-      - executable: ./iaas/standard-flavors/flavors-openstack.py
-        args: -c {os_cloud} -d ./iaas/scs-0103-v1-flavors.yaml
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} standard-flavors-check
     testcases:
       - id: standard-flavors-check
         tags: [mandatory]
