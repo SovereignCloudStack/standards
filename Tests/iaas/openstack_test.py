@@ -40,6 +40,8 @@ from scs_0115_security_groups.security_groups import \
     compute_scs_0115_default_rules
 from scs_0116_key_manager.key_manager import \
     compute_services_lookup, compute_scs_0116_presence, compute_scs_0116_permissions
+from scs_0117_volume_backup.volume_backup import \
+    compute_scs_0117_test_backup
 
 
 logger = logging.getLogger(__name__)
@@ -168,13 +170,18 @@ def make_container(cloud):
     # scs_0115_security_groups
     c.add_function('scs_0115_default_rules', lambda c: compute_scs_0115_default_rules(c.conn))
     c.add_function('security_groups_default_rules_check', lambda c: c.scs_0115_default_rules)
-    # scs_0115_key_manager
+    # scs_0116_key_manager
     c.add_function('services_lookup', lambda c: compute_services_lookup(c.conn))
     c.add_function('scs_0116_presence', lambda c: compute_scs_0116_presence(c.services_lookup))
     c.add_function('scs_0116_permissions', lambda c: compute_scs_0116_permissions(c.conn, c.services_lookup))
     c.add_function('key_manager_check', lambda c: all((
         # recommended only: c.scs_0116_presence,
         c.scs_0116_permissions,
+    )))
+    # scs_0117_volume_backup
+    c.add_function('scs_0117_test_backup', lambda c: compute_scs_0117_test_backup(c.conn))
+    c.add_function('volume_backup_check', lambda c: all((
+        c.scs_0117_test_backup,
     )))
     return c
 
