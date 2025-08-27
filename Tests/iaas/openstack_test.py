@@ -34,6 +34,8 @@ from scs_0103_standard_flavors.standard_flavors import \
     SCS_0103_CANONICAL_NAMES, compute_flavor_lookup, compute_scs_0103_flavor
 from scs_0104_standard_images.standard_images import \
     SCS_0104_IMAGE_SPECS, compute_scs_0104_source, compute_scs_0104_image
+from scs_0114_volume_types.volume_types import \
+    compute_volume_type_lookup, compute_scs_0114_syntax_check, compute_scs_0114_aspect_type
 
 
 logger = logging.getLogger(__name__)
@@ -147,6 +149,16 @@ def make_container(cloud):
         c.scs_0104_source_capi_1, c.scs_0104_source_capi_2,
         c.scs_0104_source_ubuntu_2404, c.scs_0104_source_ubuntu_2204, c.scs_0104_source_ubuntu_2004,
         c.scs_0104_source_debian_13, c.scs_0104_source_debian_12, c.scs_0104_source_debian_11, c.scs_0104_source_debian_10,
+    )))
+    # scs_0114_volume_types
+    c.add_function('volume_types', lambda c: c.conn.list_volume_types())
+    c.add_function('volume_type_lookup', lambda c: compute_volume_type_lookup(c.volume_types))
+    c.add_function('scs_0114_syntax_check', lambda c: compute_scs_0114_syntax_check(c.volume_type_lookup))
+    c.add_function('scs_0114_encrypted_type', lambda c: compute_scs_0114_aspect_type(c.volume_type_lookup, 'encrypted'))
+    c.add_function('scs_0114_replicated_type', lambda c: compute_scs_0114_aspect_type(c.volume_type_lookup, 'replicated'))
+    c.add_function('volume_types_check', lambda c: all((
+        c.scs_0114_syntax_check,
+        c.scs_0114_encrypted_type, c.scs_0114_replicated_type,
     )))
     return c
 
