@@ -36,6 +36,8 @@ from scs_0104_standard_images.standard_images import \
     SCS_0104_IMAGE_SPECS, compute_scs_0104_source, compute_scs_0104_image
 from scs_0114_volume_types.volume_types import \
     compute_volume_type_lookup, compute_scs_0114_syntax_check, compute_scs_0114_aspect_type
+from scs_0115_security_groups.security_groups import \
+    compute_scs_0115_default_rules
 
 
 logger = logging.getLogger(__name__)
@@ -160,6 +162,9 @@ def make_container(cloud):
         c.scs_0114_syntax_check,
         c.scs_0114_encrypted_type, c.scs_0114_replicated_type,
     )))
+    # scs_0115_security_groups
+    c.add_function('scs_0115_default_rules', lambda c: compute_scs_0115_default_rules(c.conn))
+    c.add_function('security_groups_default_rules_check', lambda c: c.scs_0115_default_rules)
     return c
 
 
