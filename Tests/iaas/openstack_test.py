@@ -38,6 +38,8 @@ from scs_0114_volume_types.volume_types import \
     compute_volume_type_lookup, compute_scs_0114_syntax_check, compute_scs_0114_aspect_type
 from scs_0115_security_groups.security_groups import \
     compute_scs_0115_default_rules
+from scs_0116_key_manager.key_manager import \
+    compute_services_lookup, compute_scs_0116_presence, compute_scs_0116_permissions
 
 
 logger = logging.getLogger(__name__)
@@ -160,11 +162,20 @@ def make_container(cloud):
     c.add_function('scs_0114_replicated_type', lambda c: compute_scs_0114_aspect_type(c.volume_type_lookup, 'replicated'))
     c.add_function('volume_types_check', lambda c: all((
         c.scs_0114_syntax_check,
+        # the following is recommended only, but we treat this whole monolithic testcase as recommended
         c.scs_0114_encrypted_type, c.scs_0114_replicated_type,
     )))
     # scs_0115_security_groups
     c.add_function('scs_0115_default_rules', lambda c: compute_scs_0115_default_rules(c.conn))
     c.add_function('security_groups_default_rules_check', lambda c: c.scs_0115_default_rules)
+    # scs_0115_key_manager
+    c.add_function('services_lookup', lambda c: compute_services_lookup(c.conn))
+    c.add_function('scs_0116_presence', lambda c: compute_scs_0116_presence(c.services_lookup))
+    c.add_function('scs_0116_permissions', lambda c: compute_scs_0116_permissions(c.conn, c.services_lookup))
+    c.add_function('key_manager_check', lambda c: all((
+        # recommended only: c.scs_0116_presence,
+        c.scs_0116_permissions,
+    )))
     return c
 
 
