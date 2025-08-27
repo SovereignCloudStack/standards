@@ -132,8 +132,8 @@ modules:
     name: Default rules for security groups
     url: https://docs.scs.community/standards/scs-0115-v1-default-rules-for-security-groups
     run:
-      - executable: ./iaas/security-groups/default-security-group-rules.py
-        args: --os-cloud {os_cloud} --debug
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} security-groups-default-rules-check
     testcases:
       - id: security-groups-default-rules-check
         tags: [mandatory]
