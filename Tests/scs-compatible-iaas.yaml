@@ -154,8 +154,8 @@ modules:
     name: Volume backup
     url: https://docs.scs.community/standards/scs-0117-v1-volume-backup-service
     run:
-      - executable: ./iaas/volume-backup/volume-backup-tester.py
-        args: --os-cloud {os_cloud} --debug
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} volume-backup-check
     testcases:
       - id: volume-backup-check
         tags: [mandatory]
