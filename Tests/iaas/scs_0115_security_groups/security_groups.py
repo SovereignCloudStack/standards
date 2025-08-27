@@ -1,10 +1,8 @@
-from collections import Counter
 import logging
-import os
-import sys
 
 import openstack
 from openstack.exceptions import ResourceNotFound
+
 
 logger = logging.getLogger(__name__)
 
