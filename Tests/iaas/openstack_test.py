@@ -32,6 +32,8 @@ from scs_0102_image_metadata.image_metadata import \
     compute_scs_0102_image_recency
 from scs_0103_standard_flavors.standard_flavors import \
     SCS_0103_CANONICAL_NAMES, compute_flavor_lookup, compute_scs_0103_flavor
+from scs_0104_standard_images.standard_images import \
+    SCS_0104_IMAGE_SPECS, compute_scs_0104_source, compute_scs_0104_image
 
 
 logger = logging.getLogger(__name__)
@@ -51,7 +53,8 @@ def make_container(cloud):
     # basic support attributes shared by multiple testcases
     c.add_function('conn', lambda _: openstack.connect(cloud=cloud, timeout=32))
     c.add_function('flavors', lambda c: list(c.conn.list_flavors(get_extra=True)))
-    c.add_function('images', lambda c: [img for img in c.conn.list_images() if img.visibility in ('public', 'community')])
+    c.add_function('images', lambda c: [img for img in c.conn.list_images(show_all=True) if img.visibility in ('public', 'community')])
+    c.add_function('image_lookup', lambda c: {img.name: img for img in c.images})
     # scs_0100_flavor_naming
     c.add_function('scs_flavors', lambda c: compute_scs_flavors(c.flavors))
     c.add_function('scs_0100_syntax_check', lambda c: compute_scs_0100_syntax_check(c.scs_flavors))
@@ -111,6 +114,39 @@ def make_container(cloud):
         c.scs_0103_flavor_1v_2, c.scs_0103_flavor_2v_4, c.scs_0103_flavor_4v_8, c.scs_0103_flavor_8v_16,
         c.scs_0103_flavor_16v_32, c.scs_0103_flavor_1v_8, c.scs_0103_flavor_2v_16, c.scs_0103_flavor_4v_32,
         c.scs_0103_flavor_1l_1, c.scs_0103_flavor_2v_4_20s, c.scs_0103_flavor_4v_16_100s,
+    )))
+    # scs_0104_standard_images
+    c.add_function('scs_0104_source_capi_1', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-1']))
+    c.add_function('scs_0104_source_capi_2', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-2']))
+    c.add_function('scs_0104_source_ubuntu_2404', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 24.04']))
+    c.add_function('scs_0104_source_ubuntu_2204', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 22.04']))
+    c.add_function('scs_0104_source_ubuntu_2004', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 20.04']))
+    c.add_function('scs_0104_source_debian_13', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 13']))
+    c.add_function('scs_0104_source_debian_12', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 12']))
+    c.add_function('scs_0104_source_debian_11', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 11']))
+    c.add_function('scs_0104_source_debian_10', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 10']))
+    c.add_function('scs_0104_image_capi_1', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-1']))
+    c.add_function('scs_0104_image_capi_2', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-2']))
+    c.add_function('scs_0104_image_ubuntu_2404', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 24.04']))
+    c.add_function('scs_0104_image_ubuntu_2204', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 22.04']))
+    c.add_function('scs_0104_image_ubuntu_2004', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 20.04']))
+    c.add_function('scs_0104_image_debian_13', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 13']))
+    c.add_function('scs_0104_image_debian_12', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 12']))
+    c.add_function('scs_0104_image_debian_11', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 11']))
+    c.add_function('scs_0104_image_debian_10', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 10']))
+    # NOTE the following variant is correct for SCS-compatible IaaS v4 only
+    c.add_function('standard_images_check_1', lambda c: all((
+        c.scs_0104_image_ubuntu_2204,
+        c.scs_0104_source_capi_1, c.scs_0104_source_capi_2,
+        c.scs_0104_source_ubuntu_2404, c.scs_0104_source_ubuntu_2204, c.scs_0104_source_ubuntu_2004,
+        c.scs_0104_source_debian_13, c.scs_0104_source_debian_12, c.scs_0104_source_debian_11, c.scs_0104_source_debian_10,
+    )))
+    # NOTE the following variant is correct for SCS-compatible IaaS v5.1 only
+    c.add_function('standard_images_check_2', lambda c: all((
+        c.scs_0104_image_ubuntu_2404,
+        c.scs_0104_source_capi_1, c.scs_0104_source_capi_2,
+        c.scs_0104_source_ubuntu_2404, c.scs_0104_source_ubuntu_2204, c.scs_0104_source_ubuntu_2004,
+        c.scs_0104_source_debian_13, c.scs_0104_source_debian_12, c.scs_0104_source_debian_11, c.scs_0104_source_debian_10,
     )))
     return c
 
@@ -213,7 +249,14 @@ def main(argv):
         else:
             usage(2)
 
-    testcases = [t for t in args if t.endswith('-check') or t.startswith('scs-')]
+    # NOTE For historic reasons, there is precisely one testcase id, namely standard-images-check,
+    # whose meaning depends on the version of the certificate scope in question. We are in the process
+    # of transitioning away from this anti-feature. For the time being, however, we use the following
+    # hack to support it: One testcase may be implemented in multiple variants, denoted by suffixing
+    # a number, as in standard-images-check/1, standard-images-check/2.
+    # NOTE Also, the historic testcases have terrible naming. We will transition towards names
+    # that encode the corresponding standard, such as scs-0104-image-ubuntu-2404.
+    testcases = [t for t in args if t.rsplit('/', 1)[0].endswith('-check') or t.startswith('scs-')]
     if len(testcases) != len(args):
         unknown = [a for a in args if a not in testcases]
         logger.warning(f"ignoring unknown testcases: {','.join(unknown)}")
@@ -224,7 +267,8 @@ def main(argv):
 
     c = make_container(cloud)
     for testcase in testcases:
-        harness(testcase, lambda: getattr(c, testcase.replace('-', '_')))
+        testcase_name = testcase.rsplit('/', 1)[0]  # see the note above
+        harness(testcase_name, lambda: getattr(c, testcase.replace('-', '_').replace('/', '_')))
     return 0
 
 

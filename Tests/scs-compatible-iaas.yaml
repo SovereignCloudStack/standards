@@ -91,14 +91,27 @@ modules:
         tags: [mandatory]
         description: >
           Must fulfill all requirements of <https://docs.scs.community/standards/scs-0103-v1-standard-flavors>
-  - id: scs-0104-v1
+  - id: scs-0104-v1-1
     name: Standard images
     url: https://docs.scs.community/standards/scs-0104-v1-standard-images
     parameters:
       image_spec: address (URL) of an image-spec (YAML) file
     run:
-      - executable: ./iaas/standard-images/images-openstack.py
-        args: -c {os_cloud} -d {image_spec}
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} standard-images-check/1
+    testcases:
+      - id: standard-images-check
+        tags: [mandatory]
+        description: >
+          Must fulfill all requirements of <https://docs.scs.community/standards/scs-0104-v1-standard-images>
+  - id: scs-0104-v1-2
+    name: Standard images
+    url: https://docs.scs.community/standards/scs-0104-v1-standard-images
+    parameters:
+      image_spec: address (URL) of an image-spec (YAML) file
+    run:
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} standard-images-check/2
     testcases:
       - id: standard-images-check
         tags: [mandatory]
@@ -207,7 +220,7 @@ versions:
       - scs-0101-v1
       - scs-0102-v1
       - scs-0103-v1
-      - ref: scs-0104-v1
+      - ref: scs-0104-v1-2
         parameters:
           image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images-v5.yaml
       - scs-0114-v1
@@ -228,7 +241,7 @@ versions:
       - scs-0101-v1
       - scs-0102-v1
       - scs-0103-v1
-      - ref: scs-0104-v1
+      - ref: scs-0104-v1-1
         parameters:
           image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images.yaml
     targets:
