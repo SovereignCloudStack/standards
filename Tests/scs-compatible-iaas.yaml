@@ -121,8 +121,8 @@ modules:
     name: Volume Types
     url: https://docs.scs.community/standards/scs-0114-v1-volume-type-standard
     run:
-      - executable: ./iaas/volume-types/volume-types-check.py
-        args: -c {os_cloud} -d
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} volume-types-check
     testcases:
       - id: volume-types-check
         tags: [volume-types-check]
