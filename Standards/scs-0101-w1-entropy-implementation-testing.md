@@ -60,8 +60,16 @@ as ensured by the image metadata standard.
 
 ### Implementation
 
-The script [`entropy-check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/entropy/entropy-check.py)
-connects to OpenStack and performs the checks described in this section.
+We implemented the following testcases that reflect the items in the above section
+on automated tests:
+
+- `scs_0101_image_property`,
+- `scs_0101_flavor_property`,
+- `scs_0101_entropy_avail`,
+- `scs_0101_rngd`,
+- `scs_0101_fips_test` (covers both the error and warning case).
+
+These testcases can be checked using [`openstack_test.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/openstack_test.py).
 
 ## Manual tests
 
