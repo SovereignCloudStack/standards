@@ -60,6 +60,11 @@ def _lookup_images(image_lookup, image_spec):
 
 
 def compute_scs_0104_source(image_lookup, image_spec):
+    """
+    This test ensures that every image matching `image_spec` has the correct `image_source`.
+
+    For an impression of what these specs look like, refer to `SCS_0104_IMAGE_SPECS`.
+    """
     matches = _lookup_images(image_lookup, image_spec)
     errors = 0
     for image in matches:
@@ -74,6 +79,11 @@ def compute_scs_0104_source(image_lookup, image_spec):
 
 
 def compute_scs_0104_image(image_lookup, image_spec):
+    """
+    This test ensures that a certain image is present, as specified by `image_spec`.
+
+    For an impression of what these specs look like, refer to `SCS_0104_IMAGE_SPECS`.
+    """
     matches = _lookup_images(image_lookup, image_spec)
     if not matches:
         logger.error(f"Missing image '{image_spec['name']}'")

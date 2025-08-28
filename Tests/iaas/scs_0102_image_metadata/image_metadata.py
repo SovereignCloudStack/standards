@@ -117,6 +117,7 @@ def _log_error(cause, offenders, channel=logging.ERROR):
 
 
 def compute_scs_0102_prop_architecture(images, architectures=ARCHITECTURES):
+    """This test ensures that each image has a proper value for the property `architecture`."""
     offenders = [img for img in images if img.architecture not in architectures]
     _log_error('property architecture not correct', offenders)
     return not offenders
@@ -124,12 +125,14 @@ def compute_scs_0102_prop_architecture(images, architectures=ARCHITECTURES):
 
 # NOTE I think this is a recommendation
 def compute_scs_0102_prop_hash_algo(images):
+    """This test ensures that each image has a proper value for the property `hash_algo`."""
     offenders = [img for img in images if img.hash_algo not in ('sha256', 'sha512')]
     _log_error('property hash_algo invalid', offenders)
     return not offenders
 
 
 def compute_scs_0102_prop_min_disk(images):
+    """This test ensures that each image has a proper value for the property `min_disk`."""
     offenders1 = [img for img in images if not img.min_disk]
     _log_error('property min_disk not set', offenders1)
     offenders2 = [img for img in images if img.min_disk and img.min_disk * GIB < img.size]
@@ -138,6 +141,7 @@ def compute_scs_0102_prop_min_disk(images):
 
 
 def compute_scs_0102_prop_min_ram(images):
+    """This test ensures that each image has a proper value for the property `min_ram`."""
     offenders1 = [img for img in images if not img.min_ram]
     _log_error('property min_ram not set', offenders1)
     # emit a warning im RAM really low
@@ -148,36 +152,46 @@ def compute_scs_0102_prop_min_ram(images):
 
 
 def compute_scs_0102_prop_os_version(images):
+    """This test ensures that each image has a proper value for the property `os_version`."""
+    # NOTE currently we are content when the property is not empty, but we could be more strict,
+    # because the standard was recently edited to refer to the OpenStack docs, which prescribe
+    # certain values for common operating systems.
     offenders = [img for img in images if not img.os_version]
     _log_error('property os_version not set', offenders)
     return not offenders
 
 
 def compute_scs_0102_prop_os_distro(images):
+    """This test ensures that each image has a proper value for the property `os_distro`."""
+    # NOTE see note in `compute_scs_0102_prop_os_version`
     offenders = [img for img in images if not img.os_distro]
     _log_error('property os_distro not set', offenders)
     return not offenders
 
 
 def compute_scs_0102_prop_hw_disk_bus(images, hw_disk_buses=HW_DISK_BUSES):
+    """This test ensures that each image has a proper value for the property `hw_disk_bus`."""
     offenders = [img for img in images if img.hw_disk_bus not in hw_disk_buses]
     _log_error('property hw_disk_bus not correct', offenders)
     return not offenders
 
 
 def compute_scs_0102_prop_hypervisor_type(images, hypervisor_types=HYPERVISOR_TYPES):
+    """This test ensures that each image has a proper value for the property `hypervisor_type`."""
     offenders = [img for img in images if img.hypervisor_type not in hypervisor_types]
     _log_error('property hypervisor_type not correct', offenders)
     return not offenders
 
 
 def compute_scs_0102_prop_hw_rng_model(images, hw_rng_models=HW_RNG_MODELS):
+    """This test ensures that each image has a proper value for the property `hw_rng_model`."""
     offenders = [img for img in images if img.hw_rng_model not in hw_rng_models]
     _log_error('property hw_rng_model not correct', offenders)
     return not offenders
 
 
 def compute_scs_0102_prop_image_build_date(images, now=time.time()):
+    """This test ensures that each image has a proper value for the property `image_build_date`."""
     errors = 0
     for img in images:
         rdate = parse_date(img.created_at, formats=STRICT_FORMATS)
@@ -201,12 +215,14 @@ def compute_scs_0102_prop_image_build_date(images, now=time.time()):
 
 
 def compute_scs_0102_prop_image_original_user(images):
+    """This test ensures that each image has a proper value for the property `image_original_user`."""
     offenders = [img for img in images if not img.properties.get('image_original_user')]
     _log_error('property image_original_user not set', offenders)
     return not offenders
 
 
 def compute_scs_0102_prop_image_source(images):
+    """This test ensures that each image has a proper value for the property `image_source`."""
     offenders = [
         img
         for img in images
@@ -218,24 +234,28 @@ def compute_scs_0102_prop_image_source(images):
 
 
 def compute_scs_0102_prop_image_description(images):
+    """This test ensures that each image has a proper value for the property `image_description`."""
     offenders = [img for img in images if not img.properties.get('image_description')]
     _log_error('property image_description not set', offenders)
     return not offenders
 
 
 def compute_scs_0102_prop_replace_frequency(images, replace_frequencies=FREQ_TO_SEC):
+    """This test ensures that each image has a proper value for the property `replace_frequency`."""
     offenders = [img for img in images if img.properties.get('replace_frequency') not in replace_frequencies]
     _log_error('property replace_frequency not correct', offenders)
     return not offenders
 
 
 def compute_scs_0102_prop_provided_until(images):
+    """This test ensures that each image has a proper value for the property `provided_until`."""
     offenders = [img for img in images if not img.properties.get('provided_until')]
     _log_error('property provided_until not set', offenders)
     return not offenders
 
 
 def compute_scs_0102_prop_uuid_validity(images):
+    """This test ensures that each image has a proper value for the property `uuid_validity`."""
     errors = 0
     for img in images:
         img_uuid_val = img.properties.get("uuid_validity")
@@ -252,6 +272,7 @@ def compute_scs_0102_prop_uuid_validity(images):
 
 
 def compute_scs_0102_prop_hotfix_hours(images):
+    """This test ensures that each image has a proper value for the property `hotfix_hours`."""
     errors = 0
     for img in images:
         hotfix_hours = img.properties.get("hotfix_hours", '')
@@ -273,6 +294,16 @@ def _find_replacement_image(by_name, img_name):
 
 
 def compute_scs_0102_image_recency(images):
+    """
+    This test ensures that each image is as recent as claimed by `replace_frequency`.
+
+    If an image is outdated, it is not deemed critical in the following two cases:
+
+    1. If the image is past its `provided_until` date, since no guarantees are given for these.
+    2. If a recent variant of the image is found.
+
+    However, a warning is issued if an outdated image is not hidden.
+    """
     by_name = {img.name: img for img in images}
     if len(by_name) != len(images):
         counter = Counter([img.name for img in images])

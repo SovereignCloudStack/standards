@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# vim: set ts=4 sw=4 et:
-
 import logging
 import typing
 
@@ -22,6 +19,12 @@ ACC_DISK = (0, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 500
 
 
 def compute_scs_flavors(flavors: typing.List[openstack.compute.v2.flavor.Flavor], parser=STRATEGY) -> list:
+    """
+    Precompute the Flavorname instance for each openstack flavor where applicable.
+
+    Returns a list of pairs of the form (flavor, flavorname_instance_or_none).
+    This information is (re)used for multiple testcases.
+    """
     result = []
     for flv in flavors:
         if not flv.name or flv.name[:4] != 'SCS-':
@@ -41,6 +44,7 @@ def compute_flavor_spec(canonical_name: str) -> dict:
 
 
 def compute_scs_0100_syntax_check(scs_flavors: list) -> bool:
+    """This test ensures that each SCS flavor is indeed named correctly."""
     problems = [flv.name for flv, flavorname in scs_flavors if not flavorname]
     if problems:
         logger.error(f"scs-100-syntax-check: flavor(s) failed: {', '.join(sorted(problems))}")
@@ -48,6 +52,13 @@ def compute_scs_0100_syntax_check(scs_flavors: list) -> bool:
 
 
 def compute_scs_0100_semantics_check(scs_flavors: list) -> bool:
+    """
+    This test ensures that each SCS flavor 'does what it says on the tin'.
+
+    In particular, no flavor name may overpromise anything.
+    NOTE that this test is incomplete; it only checks the most obvious properties.
+    See also <https://github.com/SovereignCloudStack/standards/issues/554>.
+    """
     problems = set()
     for flv, flavorname in scs_flavors:
         if not flavorname:

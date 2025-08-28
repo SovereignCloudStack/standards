@@ -53,6 +53,14 @@ def compute_flavor_lookup(flavors, name_key=NAME_KEY):
 
 
 def compute_scs_0103_flavor(flavor_lookup, flavor_spec):
+    """
+    This test ensures that the flavor given via `flavor_spec` is present.
+
+    The primary way to arrive at a flavor spec is to parse an SCS flavor name and
+    convert it to a dictionary. This can be done using the module `flavor_names.py`
+    in the `iaas/scs_0100_flavor_naming` directory. See `iaas/openstack_test.py`
+    for details.
+    """
     canonical_name = flavor_spec[NAME_KEY]
     flavor = flavor_lookup.get(canonical_name)
     if flavor is None:

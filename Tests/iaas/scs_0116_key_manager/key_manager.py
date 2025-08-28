@@ -7,15 +7,18 @@ import openstack
 logger = logging.getLogger(__name__)
 
 
-def fetch_roles(conn: openstack.connection.Connection) -> None:
-    """Checks whether the current user has at maximum privileges of the member role.
+def ensure_unprivileged(conn: openstack.connection.Connection) -> list:
+    """
+    Retrieves role names.
+    Raises exception if elevated privileges (admin, manager) are present.
+    Otherwise returns list of role names.
 
     :param conn: connection to an OpenStack cloud.
-    :returns: boolean, when role with most privileges is member
+    :returns: list of role names
     """
     role_names = set(conn.session.auth.get_access(conn.session).role_names)
     if role_names & {"admin", "manager"}:
-        return False
+        raise RuntimeError("user privileges too high: admin/manager roles detected")
     if "reader" in role_names:
         logger.info("User has reader role.")
     custom_roles = sorted(role_names - {"reader", "member"})
@@ -38,7 +41,8 @@ def compute_services_lookup(conn: openstack.connection.Connection) -> dict:
     return result
 
 
-def compute_scs_0116_presence(services_lookup):
+def compute_scs_0116_presence(services_lookup: dict) -> bool:
+    """This test checks that a service of type key-manager is present."""
     services = services_lookup.get("key-manager", ())
     if not services:
         logger.error("key-manager service not found")
@@ -80,13 +84,12 @@ def _delete_secret(conn: openstack.connection.Connection, secret: openstack.key_
     conn.key_manager.delete_secret(uuid)
 
 
-def compute_scs_0116_permissions(conn: openstack.connection.Connection, services_lookup) -> None:
+def compute_scs_0116_permissions(conn: openstack.connection.Connection, services_lookup) -> bool:
     """
-    After checking that the current user only has the member and maybe the
-    reader role, this method verifies that the user with a member role
-    has sufficient access to the Key Manager API functionality.
+    After checking that the current user is not privileged, this test verifies that the user has
+    sufficient access to the Key Manager API functionality by creating and deleting a secret.
     """
-    if "member" not in fetch_roles(conn):
+    if "member" not in ensure_unprivileged(conn):
         raise RuntimeError("Cannot test key-manager permissions. User has wrong roles")
     if not services_lookup.get("key-manager", ()):
         # this testcase only applies when a key manager is present

@@ -139,7 +139,6 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX) -> boo
     Returns False if there were any errors during cleanup which might leave
     resources behind. Otherwise returns True to indicate cleanup success.
     """
-
     logging.info(f"Performing cleanup for resources with the '{prefix}' prefix ...")
 
     cleanup_issues = 0  # count failed cleanup operations
@@ -204,6 +203,12 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX) -> boo
 
 
 def compute_scs_0117_test_backup(conn, prefix=DEFAULT_PREFIX):
+    """
+    This test verifies that a properly configured backup driver is present to the extent
+    that backup and restore operations succeed on the API level. It does not verify that
+    the restored volume is correct (for the sake  of simplicity, it only uses empty volumes
+    and does not look at data).
+    """
     if not cleanup(conn, prefix=prefix):
         raise RuntimeError("Initial cleanup failed")
     try:
