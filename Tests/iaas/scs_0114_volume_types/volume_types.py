@@ -67,6 +67,10 @@ def compute_volume_type_lookup(volume_types):
 
 
 def compute_scs_0114_syntax_check(volume_type_lookup):
+    """
+    This test ensures that, for every volume type description,
+    the aspect list, if present, is formatted according to the standard.
+    """
     errors = volume_type_lookup.get(ERRONEOUS, ())
     for line in errors:
         logger.error(line)
@@ -74,6 +78,9 @@ def compute_scs_0114_syntax_check(volume_type_lookup):
 
 
 def compute_scs_0114_aspect_type(volume_type_lookup, aspect):
+    """
+    This test ensures that a volume type with a certain `aspect` is present.
+    """
     applicable = volume_type_lookup[aspect]
     if not applicable:
         logger.error(f"no volume type having aspect {aspect}")

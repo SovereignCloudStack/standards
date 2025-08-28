@@ -59,6 +59,7 @@ SERVER_USERDATA = {
 
 
 def compute_scs_0101_image_property(images, attributes=IMAGE_ATTRIBUTES):
+    """This test ensures that each image has the relevant properties."""
     candidates = [
         (image.name, [f"{key}={value}" for key, value in attributes.items() if image.get(key) != value])
         for image in images
@@ -71,6 +72,7 @@ def compute_scs_0101_image_property(images, attributes=IMAGE_ATTRIBUTES):
 
 
 def compute_scs_0101_flavor_property(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAVOR_OPTIONAL):
+    """This test ensures that each flavor has the relevant extra_spec."""
     offenses = 0
     for flavor in flavors:
         extra_specs = flavor['extra_specs']
@@ -89,6 +91,7 @@ def compute_scs_0101_flavor_property(flavors, attributes=FLAVOR_ATTRIBUTES, opti
 
 
 def compute_scs_0101_entropy_avail(collected_vm_output, image_name):
+    """This test ensures that the `entropy_avail` value is correct for a test VM."""
     lines = collected_vm_output['entropy-avail']
     entropy_avail = lines[0].strip()
     if entropy_avail != "256":
@@ -101,6 +104,7 @@ def compute_scs_0101_entropy_avail(collected_vm_output, image_name):
 
 
 def compute_scs_0101_rngd(collected_vm_output, image_name):
+    """This test ensures that the `rngd` service is running on a test VM."""
     lines = collected_vm_output['rngd']
     if "could not be found" in '\n'.join(lines):
         logger.error(f"VM '{image_name}' doesn't provide the recommended service rngd")
@@ -109,6 +113,7 @@ def compute_scs_0101_rngd(collected_vm_output, image_name):
 
 
 def compute_scs_0101_fips_test(collected_vm_output, image_name):
+    """This test ensures that the 'fips test' via `rngtest` is passed on a test VM."""
     lines = collected_vm_output['fips-test']
     try:
         fips_data = '\n'.join(lines)
@@ -137,6 +142,7 @@ def compute_scs_0101_fips_test(collected_vm_output, image_name):
 
 # FIXME this is not actually being used AFAICT -- mbuechse
 def compute_scs_0101_virtio_rng(collected_vm_output, image_name):
+    """This test ensures that the virtualized rng device is value inside a test VM."""
     lines = collected_vm_output['virtio-rng']
     try:
         # `cat` can fail with return code 1 if special file does not exist
@@ -345,7 +351,7 @@ def _convert_to_collected(lines, marker=MARKER):
 
 
 def compute_collected_vm_output(conn, all_flavors, image):
-    # Check a VM for services and requirements
+    """Creates a test VM, collects and returns its output for later evaluation."""
     logger.debug(f"Selected image: {image.name} ({image.id})")
     flavor = select_flavor_for_image(all_flavors, image)
     userdata = SERVER_USERDATA.get(image.os_distro, SERVER_USERDATA_GENERIC)

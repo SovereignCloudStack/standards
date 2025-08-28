@@ -96,7 +96,12 @@ def altern_test_rules(connection: openstack.connection.Connection):
         delete_security_group(connection, sg_id)
 
 
-def compute_scs_0115_default_rules(conn: openstack.connection.Connection):
+def compute_scs_0115_default_rules(conn: openstack.connection.Connection) -> bool:
+    """
+    This test checks the absence of any ingress default security group rule
+    except for ingress rules from the same security group. Furthermore the
+    presence of default rules for egress traffic is checked.
+    """
     try:
         rules = list(conn.network.default_security_group_rules())
     except (ResourceNotFound, AttributeError) as exc:
