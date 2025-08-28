@@ -42,6 +42,8 @@ from scs_0116_key_manager.key_manager import \
     compute_services_lookup, compute_scs_0116_presence, compute_scs_0116_permissions
 from scs_0117_volume_backup.volume_backup import \
     compute_scs_0117_test_backup
+from scs_0123_mandatory_services.mandatory_services import \
+    compute_scs_0123_service_presence, compute_scs_0123_swift_s3
 
 
 logger = logging.getLogger(__name__)
@@ -182,6 +184,21 @@ def make_container(cloud):
     c.add_function('scs_0117_test_backup', lambda c: compute_scs_0117_test_backup(c.conn))
     c.add_function('volume_backup_check', lambda c: all((
         c.scs_0117_test_backup,
+    )))
+    # scs_0123_mandatory_services
+    c.add_function('scs_0123_service_compute', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'compute'))
+    c.add_function('scs_0123_service_identity', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'identity'))
+    c.add_function('scs_0123_service_image', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'image'))
+    c.add_function('scs_0123_service_network', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'network'))
+    c.add_function('scs_0123_service_load_balancer', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'load-balancer'))
+    c.add_function('scs_0123_service_placement', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'placement'))
+    c.add_function('scs_0123_service_object_store', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'object-store'))
+    c.add_function('scs_0123_storage_apis', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'volume', 'volumev3', 'block-storage'))
+    c.add_function('scs_0123_swift_s3', lambda c: compute_scs_0123_swift_s3(c.conn))
+    c.add_function('service_apis_check', lambda c: all((
+        c.scs_0123_service_compute, c.scs_0123_service_identity, c.scs_0123_service_image,
+        c.scs_0123_service_network, c.scs_0123_service_load_balancer, c.scs_0123_service_placement,
+        c.scs_0123_service_object_store, c.scs_0123_storage_apis, c.scs_0123_swift_s3,
     )))
     return c
 

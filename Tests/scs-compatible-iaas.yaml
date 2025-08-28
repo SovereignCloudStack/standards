@@ -173,8 +173,8 @@ modules:
     name: Mandatory and Supported IaaS Services
     url: https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services
     run:
-      - executable: ./iaas/mandatory-services/mandatory-iaas-services.py
-        args: --os-cloud {os_cloud} --debug
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} service-apis-check
     testcases:
       - id: service-apis-check
         tags: [mandatory]
