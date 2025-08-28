@@ -16,16 +16,35 @@ for these images.
 
 ## Automated tests
 
-### Images sample
+We implemented a host of testcases to reflect the requirements and recommendations of the standard. The following
+testcases ensure that fields have proper values:
 
-Some checks need to be performed on a live instance. All publicly available images on this instance
-will be checked for either only the mandatory properties or possibly also the recommended ones.
-Additionally, a user can also decide to test their private images, although this isn't a necessity.
+- `scs_0102_prop_architecture`,
+- `scs_0102_prop_hash_algo`,
+- `scs_0102_prop_min_disk`,
+- `scs_0102_prop_min_ram`,
+- `scs_0102_prop_os_version`,
+- `scs_0102_prop_os_distro`,
+- `scs_0102_prop_hw_disk_bus`,
+- `scs_0102_prop_hypervisor_type`,
+- `scs_0102_prop_hw_rng_model`,
+- `scs_0102_prop_image_build_date`,
+- `scs_0102_prop_image_original_user`,
+- `scs_0102_prop_image_source`,
+- `scs_0102_prop_image_description`,
+- `scs_0102_prop_replace_frequency`,
+- `scs_0102_prop_provided_until`,
+- `scs_0102_prop_uuid_validity`,
+- `scs_0102_prop_hotfix_hours`.
 
-### Implementation
+The property `patchlevel` is not tested because it is entirely optional.
 
-The script [`image-md-check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/image-metadata/image-md-check.py)
-connects to OpenStack and performs the checks described in this section.
+The following testcase ensures that each image is as recent as claimed by its `replace_frequency`:
+
+- `scs_0102_image_recency`
+
+The script [`openstack_test.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/openstack_test.py)
+can be used to check these testcases.
 
 ## Manual tests
 
