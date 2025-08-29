@@ -239,9 +239,3 @@ A boolean property that is not present is considered to be `false`.
   contact for issues with this image. Note that this field must only be set if the
   service provider does provide support for this image included in the image/flavor
   pricing (but it might be provided by a contracted 3rd party, e.g. the OS vendor).
-
-### Conformance Tests
-
-The script `image-md-check.py` retrieves the
-image list from a configured cloud and checks each image for the
-completeness and consistency of mandatory properties.

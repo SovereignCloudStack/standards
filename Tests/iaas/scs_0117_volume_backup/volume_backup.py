@@ -1,28 +1,10 @@
-#!/usr/bin/env python3
-"""Volume Backup API tester for Block Storage API
-
-This test script executes basic operations on the Block Storage API centered
-around volume backups. Its purpose is to verify that the Volume Backup API is
-available and working as expected using simple operations such as creating and
-restoring volume backups.
-
-It verifies that a properly configured backup driver is present to the extent
-that aforementioned operations succeed on the API level. It does not by any
-means verify that the backup and restore procedures actual handle the data
-correctly (it only uses empty volumes and does not look at data for the sake
-of simplicity).
-"""
-
-import argparse
 from functools import partial
-import getpass
 import logging
-import os
-import sys
 import time
 import typing
 
 import openstack
+
 
 # prefix to be included in the names of any Keystone resources created
 # used by the cleanup routine to identify resources that can be safely deleted
@@ -157,7 +139,6 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX) -> boo
     Returns False if there were any errors during cleanup which might leave
     resources behind. Otherwise returns True to indicate cleanup success.
     """
-
     logging.info(f"Performing cleanup for resources with the '{prefix}' prefix ...")
 
     cleanup_issues = 0  # count failed cleanup operations
@@ -221,75 +202,22 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX) -> boo
     return not cleanup_issues
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="SCS Volume Backup API Conformance Checker")
-    parser.add_argument(
-        "--os-cloud", type=str,
-        help="Name of the cloud from clouds.yaml, alternative "
-        "to the OS_CLOUD environment variable"
-    )
-    parser.add_argument(
-        "--ask",
-        help="Ask for password interactively instead of reading it from the "
-        "clouds.yaml",
-        action="store_true"
-    )
-    parser.add_argument(
-        "--debug", action="store_true",
-        help="Enable OpenStack SDK debug logging"
-    )
-    parser.add_argument(
-        "--prefix", type=str,
-        default=DEFAULT_PREFIX,
-        help=f"OpenStack resource name prefix for all resources to be created "
-        f"and/or cleaned up by this script within the configured domains "
-        f"(default: '{DEFAULT_PREFIX}')"
-    )
-    parser.add_argument(
-        "--cleanup-only", action="store_true",
-        help="Instead of executing tests, cleanup all resources "
-        "with the prefix specified via '--prefix' (or its default)"
-    )
-    args = parser.parse_args()
-    openstack.enable_logging(debug=False)
-    logging.basicConfig(
-        format="%(levelname)s: %(message)s",
-        level=logging.DEBUG if args.debug else logging.INFO,
-    )
-
-    # parse cloud name for lookup in clouds.yaml
-    cloud = args.os_cloud or os.environ.get("OS_CLOUD", None)
-    if not cloud:
-        raise Exception(
-            "You need to have the OS_CLOUD environment variable set to your "
-            "cloud name or pass it via --os-cloud"
-        )
-    password = getpass.getpass("Enter password: ") if args.ask else None
-
-    with openstack.connect(cloud, password=password) as conn:
-        if not cleanup(conn, prefix=args.prefix):
-            raise RuntimeError("Initial cleanup failed")
-        if args.cleanup_only:
-            logging.info("Cleanup-only run finished.")
-            return
-        try:
-            test_backup(conn, prefix=args.prefix)
-        except BaseException:
-            print('volume-backup-check: FAIL')
-            raise
-        else:
-            print('volume-backup-check: PASS')
-        finally:
-            cleanup(conn, prefix=args.prefix)
-
-
-if __name__ == "__main__":
+def compute_scs_0117_test_backup(conn, prefix=DEFAULT_PREFIX):
+    """
+    This test verifies that a properly configured backup driver is present to the extent
+    that backup and restore operations succeed on the API level. It does not verify that
+    the restored volume is correct (for the sake  of simplicity, it only uses empty volumes
+    and does not look at data).
+    """
+    if not cleanup(conn, prefix=prefix):
+        raise RuntimeError("Initial cleanup failed")
     try:
-        sys.exit(main())
-    except SystemExit:
-        raise
-    except BaseException as exc:
-        logging.debug("traceback", exc_info=True)
-        logging.critical(str(exc))
-        sys.exit(1)
+        test_backup(conn, prefix=prefix)
+    except BaseException:
+        logging.error('Backup test failed.')
+        logging.debug('exception details', exc_info=True)
+        return False
+    else:
+        return True
+    finally:
+        cleanup(conn, prefix=prefix)
