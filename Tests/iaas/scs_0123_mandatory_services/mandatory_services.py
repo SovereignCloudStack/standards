@@ -115,6 +115,11 @@ def s3_from_ostack(usable_credentials, conn, rgx=re.compile(r"^(https*://[^/]*)/
 
 
 def compute_scs_0123_swift_s3(conn: openstack.connection.Connection):
+    """
+    This test ensures that S3 can be used to access object storage using EC2 credentials from the identity API.
+    It will abort with an exception if no service of type object-storage is present. As of now, we deem
+    this behavior adequate.
+    """
     # we assume s3 is accessable via the service catalog, and Swift might exist too
     usable_credentials = []
     s3_buckets = []
