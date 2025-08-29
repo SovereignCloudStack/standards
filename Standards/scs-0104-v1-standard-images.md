@@ -128,18 +128,3 @@ next version. This standard makes no statement as to what is supposed to happen 
 corresponding images in a live cloud environment. It is recommended to keep the
 once-mandatory images in the live environment. As for new environments, it is up to the
 operator whether to provide any or all of these images, as stated above.
-
-## Conformance Tests
-
-The script `images-openstack.py` will read the lists of mandatory and recommended images
-from a yaml file provided as command-line argument, connect to an OpenStack installation,
-and check whether the images are present. Missing images will be reported on various
-logging channels: error for mandatory, info for recommended images. Additionally, images
-whose `image_source` does not conform with the specifications will be reported on the
-error channel. The return code will be non-zero if the test could not be performed or
-if any errors have been reported.
-
-## Operational tooling
-
-The [openstack-image-manager](https://github.com/osism/openstack-image-manager) is able to
-create all standard, mandatory SCS images for you given image definitions from a YAML file.
