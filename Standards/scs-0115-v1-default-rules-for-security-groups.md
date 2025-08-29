@@ -134,8 +134,3 @@ $ openstack default security group rule list
 The spec for introducing configurability for the default Security Groups Rules can be found [here](https://specs.openstack.org/openstack/neutron-specs/specs/2023.2/configurable-default-sg-rules.html).
 
 More about Security Groups as a resource in OpenStack can be found [here](https://docs.openstack.org/nova/latest/user/security-groups.html).
-
-## Conformance Tests
-
-The conformance tests should check for the absence of any ingress traffic rules except traffic from the same Security Group in the `openstack default security group rule list`.
-As having egress rules is allowed by this standard, but not forced and can be set in various ways, the tests should check for presence of any egress rules.

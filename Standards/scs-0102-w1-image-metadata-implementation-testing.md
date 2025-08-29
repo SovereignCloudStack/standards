@@ -19,29 +19,29 @@ for these images.
 We implemented a host of testcases to reflect the requirements and recommendations of the standard. The following
 testcases ensure that fields have proper values:
 
-- `scs_0102_prop_architecture`,
-- `scs_0102_prop_hash_algo`,
-- `scs_0102_prop_min_disk`,
-- `scs_0102_prop_min_ram`,
-- `scs_0102_prop_os_version`,
-- `scs_0102_prop_os_distro`,
-- `scs_0102_prop_hw_disk_bus`,
-- `scs_0102_prop_hypervisor_type`,
-- `scs_0102_prop_hw_rng_model`,
-- `scs_0102_prop_image_build_date`,
-- `scs_0102_prop_image_original_user`,
-- `scs_0102_prop_image_source`,
-- `scs_0102_prop_image_description`,
-- `scs_0102_prop_replace_frequency`,
-- `scs_0102_prop_provided_until`,
-- `scs_0102_prop_uuid_validity`,
-- `scs_0102_prop_hotfix_hours`.
+- `scs-0102-prop-architecture`,
+- `scs-0102-prop-hash_algo`,
+- `scs-0102-prop-min_disk`,
+- `scs-0102-prop-min_ram`,
+- `scs-0102-prop-os_version`,
+- `scs-0102-prop-os_distro`,
+- `scs-0102-prop-hw_disk_bus`,
+- `scs-0102-prop-hypervisor_type`,
+- `scs-0102-prop-hw_rng_model`,
+- `scs-0102-prop-image_build_date`,
+- `scs-0102-prop-image_original_user`,
+- `scs-0102-prop-image_source`,
+- `scs-0102-prop-image_description`,
+- `scs-0102-prop-replace_frequency`,
+- `scs-0102-prop-provided_until`,
+- `scs-0102-prop-uuid_validity`,
+- `scs-0102-prop-hotfix_hours`.
 
 The property `patchlevel` is not tested because it is entirely optional.
 
 The following testcase ensures that each image is as recent as claimed by its `replace_frequency`:
 
-- `scs_0102_image_recency`
+- `scs-0102-image-recency`
 
 The script [`openstack_test.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/openstack_test.py)
 can be used to check these testcases.

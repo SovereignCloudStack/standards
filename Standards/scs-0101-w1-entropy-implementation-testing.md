@@ -63,11 +63,11 @@ as ensured by the image metadata standard.
 We implemented the following testcases that reflect the items in the above section
 on automated tests:
 
-- `scs_0101_image_property`,
-- `scs_0101_flavor_property`,
-- `scs_0101_entropy_avail`,
-- `scs_0101_rngd`,
-- `scs_0101_fips_test` (covers both the error and warning case).
+- `scs-0101-image-property`,
+- `scs-0101-flavor-property`,
+- `scs-0101-entropy-avail`,
+- `scs-0101-rngd`,
+- `scs-0101-fips-test` (covers both the error and warning case).
 
 These testcases can be checked using [`openstack_test.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/openstack_test.py).
 

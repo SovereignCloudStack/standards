@@ -1,5 +1,5 @@
 ---
-title: "SCS Standard Images: Implementation Notes"
+title: "SCS Standard Images: Implementation and Testing Notes"
 type: Supplement
 track: IaaS
 status: Draft
@@ -69,9 +69,9 @@ anticipate this future development.
 
 There are two classes of testcases:
 
-- `scs_0104_source_X` with varying `X`:
+- `scs-0104-source-X` with varying `X`:
   these ensure that certain images have the correct `image_source`;
-- `scs_0104_image_X` with varying `X`:
+- `scs-0104-image-X` with varying `X`:
   these ensure that certain images can be found in the list of public images.
 
 The testcases can be run using the script
