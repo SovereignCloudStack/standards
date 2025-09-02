@@ -10,7 +10,7 @@ supplements:
 
 The standard will not preclude small deployments and edge deployments, that both will not meet the requirement for being divided into multiple Availability Zones.
 Thus multiple Availability Zones are not always present.
-Somtimes there can just be a single Availability Zone.
+Sometimes there can just be a single Availability Zone.
 Because of that, there will be no automated tests to search for AZs.
 
 ## Required Documentation
@@ -25,7 +25,7 @@ For each deployment, that uses more than a single Availability Zone, the CSP has
 5. The redundancy in core routers within each AZ MUST be documented.
 
 After the initial setup, these requirements typically do not change at all (like the fire zones) or are very unlikely to change (like redundant internet connection).
-Because of this, documentation needs to only be provided in the following cases:
+Because of this, documentation needs to be provided only in the following cases:
 
 1. When a new deployment with multiple AZs should be tested for compliance initially.
 2. When there are physical changes in a deployment which already provided the documentation: the changes need to be documented and provided as soon as possible.
