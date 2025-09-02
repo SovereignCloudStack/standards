@@ -1,7 +1,8 @@
 ﻿---
 title: Certification of integrators
 type: Procedural
-status: Draft
+status: Stable
+stabilized_at: 2025-08-01
 track: Global
 description: |
   SCS-0007 defines the process and rules on how SCS integrators are certified.
