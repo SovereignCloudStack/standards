@@ -28,7 +28,7 @@ After the initial setup, these requirements typically do not change at all (like
 Because of this, documentation needs to only be provided in the following cases:
 
 1. When a new deployment with multiple AZs should be tested for compliance initially.
-2. When there are physical changes in a deployment, which already provided the documentation: the changes needs to be documented and provided as soon as possible.
+2. When there are physical changes in a deployment which already provided the documentation: the changes need to be documented and provided as soon as possible.
 
 ### Alternative Documentation
 
