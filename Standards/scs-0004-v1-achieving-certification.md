@@ -22,17 +22,17 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
 
 1. Each certificate issued pertains to a given combination of subject (i.e., cloud environment), scope (such as _SCS-compatible IaaS_), and version of that scope. The certificate is only valid for that combination and for the time frame that ends when the scope expires, or for six months if the expiration date for the scope is not yet fixed.
 
-2. The operator MUST ensure that the official [SCS compliance test suite](https://github.com/SovereignCloudStack/standards/tree/main/Tests) (which does not require admin privileges) is run at regular intervals and the resulting reports transmitted to the [SCS compliance monitor](https://github.com/SovereignCloudStack/standards/tree/main/compliance-monitor).
+2. The operator MUST ensure that the official [SCS compliance test suite](https://github.com/SovereignCloudStack/standards/tree/main/Tests) (which does not require admin privileges) is run at regular intervals and that all tests pass. The operator MUST submit the resulting reports to the [SCS compliance monitor](https://github.com/SovereignCloudStack/standards/tree/main/compliance-monitor).
 
    For public clouds, the SCS certification assessment body can take on this task provided that suitable access to test subject is supplied.
 
    The test suite is partitioned according to resource usage; the required test intervals depend on this classification:
 
-    - _light_: at least nightly,
+    - _light_: at least daily,
     - _medium_: at least weekly,
     - _heavy_: at least monthly.
 
-3. If the desired certificate requires manual checks, then the operator MUST offer the SCS project suitable documentation. Manual checks MUST be repeated once every quarter. In addition, the SCS certification assessment body reserves the right to occasionally verify documentation on premises.
+3. If the desired certificate requires manual checks, then the operator MUST offer suitable documentation to the SCS certification assessment body. The operator MUST ensure that these checks are repeated once every quarter. In addition, the SCS certification assessment body reserves the right to occasionally verify documentation on premises.
 
 4. Details on the standards achieved, as well as the current state and the history of all test and check results of the past 18 months will be displayed on a public webpage (henceforth, _certificate status page_) owned by SCS.
 
@@ -44,7 +44,7 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
 
 7. If the certificate is to be revoked for any reason, it will be included in a publicly available Certificate Revocation List (CRL), maintained by the SCS certification assessment body. This fact will also be reflected in the certificate status page.
 
-8. If any of the automated tests or manual checks fail after the certificate has been issued, the certificate is not immediately revoked. Rather, the automated tests MUST pass 99.x % of the runs, and the operator SHALL be notified at the second failed attempt in a row at the latest. In case a manual check fails, it has to be repeated at a date to be negotiated with the SCS certification assessment body. It MAY NOT fail more than two times in a row.
+8. If any of the automated tests or manual checks fail after the certificate has been issued, the certificate is not immediately revoked. Rather, the operator SHALL be notified automatically. The operator MUST then fix the issue and ensure that the automated tests run successfully again as quickly as possible. In case a manual check fails, it has to be repeated at a date to be negotiated with the SCS certification assessment body.
 
 ## Design Considerations
 
