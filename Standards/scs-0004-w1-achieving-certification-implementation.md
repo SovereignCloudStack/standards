@@ -2,7 +2,6 @@
 title: "Implementation hints for achieving SCS-compatible certification"
 type: Supplement
 track: Global
-status: Draft
 supplements:
   - scs-0004-v1-achieving-certification.md
 ---
