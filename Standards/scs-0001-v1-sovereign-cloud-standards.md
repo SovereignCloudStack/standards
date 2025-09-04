@@ -194,8 +194,8 @@ can take decisions on behalf of such a team. The SIG will seek alignment with th
 Board for decisions with large impact to ensure we have the wanted broad alignment.
 
 From this perspective,
-Supplements are perpetually kept in `Draft` state, because they are not authoritative,
-and this state is not recorded in the document (i.e., no `status` field).
+Supplements are perpetually kept in phase Draft, because they are not authoritative,
+and this phase is not recorded in the document (i.e., no `status` field).
 
 ### Proposal phase
 
