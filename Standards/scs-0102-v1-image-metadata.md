@@ -83,8 +83,9 @@ recommend an additional field:
   |--------------------|-----------------------------------------------------------|
   | `generic`          | A general purpose image, (mostly) vanilla from upstream   |
   | `minimal`          | A much more barebones general purpose image               |
-  | `capinode`         | Node image built for cluster-API                          |
+  | `k8snode`          | Node image built for k8s with CRI and kubelet             |
   | `gpu`              | Image with GPU drivers e.g. for HPC or AI                 |
+  | `network`          | Network appliance (firewall, router, loadbalancer, ...)   |
   | `custom`           | None of the above                                         |
 
   Note that no other values are currently allowed and `custom` should be used in case
