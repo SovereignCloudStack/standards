@@ -120,7 +120,7 @@ def compute_scs_0123_swift_s3(conn: openstack.connection.Connection):
     It will abort with an exception if no service of type object-storage is present. As of now, we deem
     this behavior adequate.
     """
-    # we assume s3 is accessable via the service catalog, and Swift might exist too
+    # we assume s3 is accessible via the service catalog, and Swift might exist too
     usable_credentials = []
     s3_buckets = []
     # Get S3 endpoint (swift) and ec2 creds from OpenStack (keystone)
@@ -145,7 +145,7 @@ def compute_scs_0123_swift_s3(conn: openstack.connection.Connection):
         if s3_buckets == sw_containers:
             return True
         logger.error(
-            "S3 buckets and Swift cntainers differ:\n"
+            "S3 buckets and Swift containers differ:\n"
             f"S3: {s3_buckets}\n"
             f"SW: {sw_containers}"
         )
