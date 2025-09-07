@@ -99,6 +99,7 @@ recommend an additional field:
   and that coincide in all three fields `os_distro`, `os_version`, and `architecture`, then only one of them may
   have `os_purpose=generic`. In other words, users who search visible public images for a generic OS
   of a certain distro, version, and architecture will not get more than one result.
+
   Note: Expect this field to become mandatory in v2 of this standard sooner rather than later.
 
 The following further properties are recommended (if the features are supported):
