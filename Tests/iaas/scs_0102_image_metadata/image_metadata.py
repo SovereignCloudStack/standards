@@ -12,8 +12,7 @@ ARCHITECTURES = ("x86_64", "aarch64", "risc-v")
 HW_DISK_BUSES = ("virtio", "scsi", None)  # FIXME why None?
 HYPERVISOR_TYPES = ("qemu", "kvm", "xen", "hyper-v", "esxi", None)
 HW_RNG_MODELS = ("virtio", None)
-# Just for nice formatting of image naming hints -- otherwise we capitalize the 1st letter
-OS_LIST = ("CentOS", "AlmaLinux", "Windows Server", "RHEL", "SLES", "openSUSE")
+OS_PURPOSES = ("generic", "minimal", "k8snode", "gpu", "network", "custom")
 # Auxiliary mapping for `freq2secs` (note that values are rounded up a bit on purpose)
 FREQ_TO_SEC = {
     "never": 0,
@@ -29,15 +28,6 @@ DATE_FORMATS = STRICT_FORMATS + ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%
 MARKER_DATE_FORMATS = ("%Y-%m-%d", "%Y%m%d")
 OUTDATED_MARKERS = ("old", "prev")
 KIB, MIB, GIB = (1024 ** n for n in (1, 2, 3))
-
-
-def recommended_name(nm, os_list=OS_LIST):
-    """Return capitalized name"""
-    for osnm in os_list:
-        osln = len(osnm)
-        if nm[:osln].casefold() == osnm.casefold():
-            return osnm + nm[osln:]
-    return nm[0].upper() + nm[1:]
 
 
 def is_url(stg):
@@ -156,6 +146,7 @@ def compute_scs_0102_prop_os_version(images):
     # NOTE currently we are content when the property is not empty, but we could be more strict,
     # because the standard was recently edited to refer to the OpenStack docs, which prescribe
     # certain values for common operating systems.
+    # - os_version not matching regexp r'[0-9\.]*' (should be a numeric version no)
     offenders = [img for img in images if not img.os_version]
     _log_error('property os_version not set', offenders)
     return not offenders
@@ -164,8 +155,17 @@ def compute_scs_0102_prop_os_version(images):
 def compute_scs_0102_prop_os_distro(images):
     """This test ensures that each image has a proper value for the property `os_distro`."""
     # NOTE see note in `compute_scs_0102_prop_os_version`
+    # - os_distro not being all-lowercase (they all should be acc. to
+    #   https://docs.openstack.org/glance/2025.1/admin/useful-image-properties.html
     offenders = [img for img in images if not img.os_distro]
     _log_error('property os_distro not set', offenders)
+    return not offenders
+
+
+def compute_scs_0102_prop_os_purpose(images, os_purposes=OS_PURPOSES):
+    """This test ensures that each image has a proper value for the property `os_distro`."""
+    offenders = [img for img in images if img.properties.get('os_purpose') not in os_purposes]
+    _log_error('property os_purpose not set or not correct', offenders)
     return not offenders
 
 
