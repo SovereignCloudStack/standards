@@ -1,12 +1,10 @@
 # SCS flavor name tooling
 
-This directory contains three basic tools:
+This directory contains two basic tools:
 
 - `cli.py`, a command-line interface for syntax-checking flavor names, turning them into prose descriptions
   or yaml documents, and interactively constructing flavor names;
-- `flavor-form.py`, a CGI script for a web form that offers roughly the same features,
-- `flavor-names-openstack.py`, a script that connects to an OpenStack environment and checks the syntax
-  of all publicly available flavors.
+- `flavor-form.py`, a CGI script for a web form that offers roughly the same features.
 
 Besides, it contains the scripts `flavor-name-check.py` and `flavor-name-describe.py`, which have been
 superseded by `cli.py`, and it contains `flavor-form-server.py`, which is a most simple webserver that can
@@ -187,42 +185,4 @@ $ ./flavor-form-server.py
 The form is accessible at http://0.0.0.0:8000/cgi-bin/flavor-form.py
 ^C
 Keyboard interrupt received, exiting.
-```
-
-## flavor-names-openstack.py
-
-As with `cli.py`, we have a look at the built-in help:
-
-```console
-$ ./flavor-names-openstack.py -h
-Usage: flavor-names-openstack.py [options]
-Options: [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)
- [-C/--mand mand.yaml] overrides the list of mandatory flavor names
- [-1/--v1prefer] prefer v1 flavor names (but still tolerates v2
- [-o/--accept-old-mandatory] prefer v2 flavor names, but v1 ones can fulfill mand list
- [-2/--v2plus] only accepts v2 flavor names, old ones result in errors
- [-3/--v3] differentiate b/w mand and recommended flavors
- [-v/--verbose] [-q/--quiet] control verbosity of output
-This tool retrieves the list of flavors from the OpenStack cloud OS_CLOUD
- and checks for the presence of the mandatory SCS flavors (read from mand.yaml)
- and reports inconsistencies, errors etc. It returns 0 on success.
-```
-
-Example invocation:
-
-```console
-$ OS_CLOUD=wave1-compliance ./flavor-names-openstack.py
-wave1-compliance:
-  OtherFlavorSummary:
-    TotalAmount: 0
-  SCSFlavorSummary:
-    FlavorsWithWarnings: 0
-    MandatoryFlavorsMissing: 0
-    MandatoryFlavorsPresent: 26
-    OptionalFlavorsValid: 37
-    OptionalFlavorsWrong: 0
-    TotalAmount: 63
-  TotalSummary:
-    Errors: 0
-    Warnings: 0
 ```

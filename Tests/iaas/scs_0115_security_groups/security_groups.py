@@ -1,18 +1,8 @@
-#!/usr/bin/env python3
-"""Default Security Group Rules Checker
-
-This script tests the absence of any ingress default security group rule
-except for ingress rules from the same Security Group. Furthermore the
-presence of default rules for egress traffic is checked.
-"""
-import argparse
-from collections import Counter
 import logging
-import os
-import sys
 
 import openstack
 from openstack.exceptions import ResourceNotFound
+
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +62,7 @@ def check_default_rules(rules, short=False):
         "Unallowed Ingress Rules": ingress_rules,
         "Egress Rules": egress_rules,
     }))
+    return not ingress_rules and not missing
 
 
 def create_security_group(conn, sg_name: str = SG_NAME, description: str = DESCRIPTION):
@@ -100,14 +91,19 @@ def altern_test_rules(connection: openstack.connection.Connection):
     sg_id = create_security_group(connection)
     try:
         sg = connection.network.find_security_group(name_or_id=sg_id)
-        check_default_rules(sg.security_group_rules, short=True)
+        return check_default_rules(sg.security_group_rules, short=True)
     finally:
         delete_security_group(connection, sg_id)
 
 
-def test_rules(connection: openstack.connection.Connection):
+def compute_scs_0115_default_rules(conn: openstack.connection.Connection) -> bool:
+    """
+    This test checks the absence of any ingress default security group rule
+    except for ingress rules from the same security group. Furthermore the
+    presence of default rules for egress traffic is checked.
+    """
     try:
-        rules = list(connection.network.default_security_group_rules())
+        rules = list(conn.network.default_security_group_rules())
     except (ResourceNotFound, AttributeError) as exc:
         # older versions of OpenStack don't have the endpoint and give ResourceNotFound
         if isinstance(exc, ResourceNotFound) and 'default-security-group-rules' not in str(exc):
@@ -119,68 +115,6 @@ def test_rules(connection: openstack.connection.Connection):
             "API call failed. OpenStack components might not be up to date. "
             "Falling back to old-style test method. "
         )
-        altern_test_rules(connection)
+        return altern_test_rules(conn)
     else:
-        check_default_rules(rules)
-
-
-class CountingHandler(logging.Handler):
-    def __init__(self, level=logging.NOTSET):
-        super().__init__(level=level)
-        self.bylevel = Counter()
-
-    def handle(self, record):
-        self.bylevel[record.levelno] += 1
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        description="SCS Default Security Group Rules Checker",
-    )
-    parser.add_argument(
-        "--os-cloud",
-        type=str,
-        help="Name of the cloud from clouds.yaml, alternative "
-        "to the OS_CLOUD environment variable",
-    )
-    parser.add_argument(
-        "--debug", action="store_true", help="Enable debug logging",
-    )
-    args = parser.parse_args()
-    openstack.enable_logging(debug=False)  # never leak sensitive data (enable this locally)
-    logging.basicConfig(
-        format="%(levelname)s: %(message)s",
-        level=logging.DEBUG if args.debug else logging.INFO,
-    )
-
-    # count the number of log records per level (used for summary and return code)
-    counting_handler = CountingHandler(level=logging.INFO)
-    logger.addHandler(counting_handler)
-
-    # parse cloud name for lookup in clouds.yaml
-    cloud = args.os_cloud or os.environ.get("OS_CLOUD", None)
-    if not cloud:
-        raise ValueError(
-            "You need to have the OS_CLOUD environment variable set to your cloud "
-            "name or pass it via --os-cloud"
-        )
-
-    with openstack.connect(cloud) as conn:
-        test_rules(conn)
-
-    c = counting_handler.bylevel
-    logger.debug(f"Total critical / error / warning: {c[logging.CRITICAL]} / {c[logging.ERROR]} / {c[logging.WARNING]}")
-    if not c[logging.CRITICAL]:
-        print("security-groups-default-rules-check: " + ('PASS', 'FAIL')[min(1, c[logging.ERROR])])
-    return min(127, c[logging.CRITICAL] + c[logging.ERROR])  # cap at 127 due to OS restrictions
-
-
-if __name__ == "__main__":
-    try:
-        sys.exit(main())
-    except SystemExit:
-        raise
-    except BaseException as exc:
-        logging.debug("traceback", exc_info=True)
-        logging.critical(str(exc))
-        sys.exit(1)
+        return check_default_rules(rules)

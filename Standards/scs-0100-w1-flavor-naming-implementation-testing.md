@@ -167,9 +167,12 @@ None so far.
 
 ### Implementation
 
-The script [`flavor-names-openstack.py`](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming/flavor-names-openstack.py)
-talks to the OpenStack API of the cloud specified by the `OS_CLOUD` environment and queries properties and
-checks the names for standards compliance.
+We implemented two testcases, paralleling the two items in the "Errors" section above:
+
+- `scs-0100-syntax-check` ensures that any name starting with `SCS-` adheres to the standard;
+- `scs-0100-semantics-check` ensures that any such name is telling the truth as specified in the standard.
+
+These testcases can be checked using [`openstack_test.py`](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/openstack_test.py).
 
 ## Manual tests
 
