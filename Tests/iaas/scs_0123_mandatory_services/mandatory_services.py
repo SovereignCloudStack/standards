@@ -153,6 +153,12 @@ def compute_scs_0123_swift_s3(conn: openstack.connection.Connection):
     finally:
         # Cleanup created S3 bucket
         if TESTCONTNAME in s3_buckets:
-            s3.delete_bucket(Bucket=TESTCONTNAME)
+            # contrary to Boto docs at
+            # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/delete_bucket.html
+            # , the following fails with
+            # AttributeError: 's3.ServiceResource' object has no attribute 'delete_bucket'. Did you mean: 'create_bucket'?
+            # s3.delete_bucket(Bucket=TESTCONTNAME)
+            # workaround:
+            s3.Bucket(name=TESTCONTNAME).delete()
         # Clean up ec2 cred IF we created one
         remove_leftovers(usable_credentials, conn)
