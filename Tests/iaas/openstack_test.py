@@ -24,6 +24,7 @@ from scs_0101_entropy.entropy_check import \
 from scs_0102_image_metadata.image_metadata import \
     compute_scs_0102_prop_architecture, compute_scs_0102_prop_hash_algo, compute_scs_0102_prop_min_disk, \
     compute_scs_0102_prop_min_ram, compute_scs_0102_prop_os_version, compute_scs_0102_prop_os_distro, \
+    compute_scs_0102_prop_os_purpose, \
     compute_scs_0102_prop_hw_disk_bus, compute_scs_0102_prop_hypervisor_type, compute_scs_0102_prop_hw_rng_model, \
     compute_scs_0102_prop_image_build_date, compute_scs_0102_prop_image_original_user, \
     compute_scs_0102_prop_image_source, compute_scs_0102_prop_image_description, \
@@ -90,6 +91,7 @@ def make_container(cloud):
     c.add_function('scs_0102_prop_min_ram', lambda c: compute_scs_0102_prop_min_ram(c.images))
     c.add_function('scs_0102_prop_os_version', lambda c: compute_scs_0102_prop_os_version(c.images))
     c.add_function('scs_0102_prop_os_distro', lambda c: compute_scs_0102_prop_os_distro(c.images))
+    c.add_function('scs_0102_prop_os_purpose', lambda c: compute_scs_0102_prop_os_purpose(c.images))
     c.add_function('scs_0102_prop_hw_disk_bus', lambda c: compute_scs_0102_prop_hw_disk_bus(c.images))
     c.add_function('scs_0102_prop_hypervisor_type', lambda c: compute_scs_0102_prop_hypervisor_type(c.images))
     c.add_function('scs_0102_prop_hw_rng_model', lambda c: compute_scs_0102_prop_hw_rng_model(c.images))
