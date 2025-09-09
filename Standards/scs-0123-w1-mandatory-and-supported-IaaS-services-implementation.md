@@ -2,7 +2,6 @@
 title: "Mandatory and Supported IaaS Services: Implementation and Testing Notes"
 type: Supplement
 track: IaaS
-status: Draft
 supplements:
   - scs-0123-v1-mandatory-and-supported-IaaS-services.md
 ---

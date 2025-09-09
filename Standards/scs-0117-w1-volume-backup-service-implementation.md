@@ -2,7 +2,6 @@
 title: "Volume Backup Functionality: Implementation and Testing Notes"
 type: Supplement
 track: IaaS
-status: Draft
 supplements:
   - scs-0117-v1-volume-backup-service.md
 ---
