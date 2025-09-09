@@ -118,7 +118,6 @@ class Checker:
         if front is None:
             self.emit(f"in {fn}: is missing front matter altogether")
             return
-        # so far, only check primary documents, not supplemental ones
         if fn[9] == 'w':
             return self._check_front_matter_supplement(fn, front, filenames)
         if fn[9] != 'v':
