@@ -22,12 +22,12 @@ Every flavor whose name starts with `SCS-` must conform with the naming scheme l
 
 #### Syntax check
 
-The [test suite](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming)
+The [test suite](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/scs_0100_flavor_naming)
 comes with a handy
-[command-line utility](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming/cli.py)
+[command-line utility](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/scs_0100_flavor_naming/cli.py)
 that can be used to validate flavor names, to interactively construct a flavor name
 via a questionnaire, and to generate prose descriptions for given flavor names.
-See the [README](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming/README.md)
+See the [README](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/scs_0100_flavor_naming/README.md)
 for more details.
 
 The functionality of this script is also (partially) exposed via the web page
