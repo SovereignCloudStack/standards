@@ -227,7 +227,7 @@ def compute_scs_0102_prop_image_source(images):
         img
         for img in images
         if img.properties.get('image_source') != 'private'
-        if not is_url(img.properties.get('image_source'))
+        if not is_url(img.properties.get('image_source', ''))
     ]
     _log_error('property image_source INVALID (url or "private")', offenders)
     return not offenders
