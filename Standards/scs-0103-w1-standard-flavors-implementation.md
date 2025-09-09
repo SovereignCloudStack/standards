@@ -2,7 +2,6 @@
 title: "SCS Standard Flavors: Implementation and Testing Notes"
 type: Supplement
 track: IaaS
-status: Draft
 supplements:
   - scs-0103-v1-standard-flavors.md
 ---

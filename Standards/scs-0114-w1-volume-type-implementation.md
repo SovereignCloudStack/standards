@@ -2,7 +2,6 @@
 title: "SCS Volume Types: Testing Notes"
 type: Supplement
 track: IaaS
-status: Draft
 supplements:
   - scs-0114-v1-volume-type-standard.md
 ---

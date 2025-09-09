@@ -2,7 +2,6 @@
 title: "SCS Standard Images: Implementation and Testing Notes"
 type: Supplement
 track: IaaS
-status: Draft
 supplements:
   - scs-0104-v1-standard-images.md
 ---

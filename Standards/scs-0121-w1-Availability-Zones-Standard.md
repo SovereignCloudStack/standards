@@ -2,7 +2,6 @@
 title: "SCS Availability Zones: Implementation and Testing Notes"
 type: Supplement
 track: IaaS
-status: Draft
 supplements:
   - scs-0121-v1-Availability-Zones-Standard.md
 ---

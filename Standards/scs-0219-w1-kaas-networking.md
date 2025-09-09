@@ -2,7 +2,6 @@
 title: "KaaS Networking Standard: Implementation Notes"
 type: Supplement
 track: KaaS
-status: Draft
 supplements:
   - scs-0219-v1-kaas-networking.md
 ---

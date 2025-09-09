@@ -2,7 +2,6 @@
 title: "Provider Network Standard: Implementation Notes"
 type: Supplement
 track: IaaS
-status: Draft
 supplements:
   - scs-0126-v1-provider-networks.md
 ---

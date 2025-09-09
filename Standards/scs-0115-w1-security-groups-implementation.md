@@ -2,7 +2,6 @@
 title: "Default Rules for Security Groups: Implementation and Testing Notes"
 type: Supplement
 track: IaaS
-status: Draft
 supplements:
   - scs-0115-v1-default-rules-for-security-groups.md
 ---

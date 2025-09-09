@@ -2,7 +2,6 @@
 title: "SCS Standard for the security of IaaS service software: Implementation and Testing Notes"
 type: Supplement
 track: IaaS
-status: Draft
 supplements:
   - scs-0124-v1-security-of-iaas-service-software.md
 ---
