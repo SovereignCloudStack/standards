@@ -15,6 +15,8 @@ For this purpose, two essential criteria are defined that must be fulfilled. In 
 
 ## Motivation
 
+As an integrator, I want to obtain a certificate with the scope of _Certified SCS IaaS Integrator_ or _Certified of SCS KaaS Integrator_ in order to prove sufficient technical knowledge and experience to provide technical support for SCS.
+
 ## Regulations
 
 The certificates are awarded for the period of one year.
