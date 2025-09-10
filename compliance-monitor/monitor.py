@@ -587,7 +587,7 @@ def _redact_report(report):
         return
     for invdata in report['run']['invocations'].values():
         stdout = invdata.get('stdout', [])
-        redacted = [line for line in stdout if line[-4:] in ('PASS', 'FAIL')]
+        redacted = [line for line in stdout if line.rsplit(': ', 1)[-1] in ('PASS', 'ABORT', 'FAIL')]
         if len(redacted) != len(stdout):
             redacted.insert(0, '(the following has been redacted)')
             invdata['stdout'] = redacted

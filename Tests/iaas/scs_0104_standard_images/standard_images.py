@@ -10,12 +10,16 @@ logger = logging.getLogger(__name__)
 _specs = yaml.safe_load(r"""
 "ubuntu-capi-image-1":
   name_scheme: "ubuntu-capi-image v[0-9]\\.[0-9]+(\\.[0-9]+)?"
-  source: https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube
+  source:
+  - https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2404-kube
+  - https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube
 "ubuntu-capi-image-2":
   # this name_scheme uses `-` to separate base name "ubuntu-capi-image" from version
   # latest openstack-image-manager can be told to use `-` by setting `separator: "-"` on the image
   name_scheme: "ubuntu-capi-image-v[0-9]\\.[0-9]+(\\.[0-9]+)?"
-  source: https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube
+  source:
+  - https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2404-kube
+  - https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube
 "Ubuntu 24.04":
   source:
   - https://cloud-images.ubuntu.com/releases/noble/
