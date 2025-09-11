@@ -14,10 +14,7 @@ description: |
 
 ## Introduction
 
-This is v1.1 of the standard, which lifts the following restriction regarding the property `scs:name-vN`:
-this property may now be used on any flavor, rather than standard flavors only. In addition, the "vN" is
-now interpreted as "name variant N" instead of "version N of the naming standard". Note that this change
-indeed preserves compliance, i.e., compliance with v1.0 implies compliance with v1.1.
+Note that this is v1.2 of this standard. See the closing section for more details.
 
 ## Terminology
 
@@ -99,7 +96,7 @@ Note that this statement does not preclude the existence of additional flavors.
 | SCS-4V-32        |      4 | shared-core   |         32 |                 |            |
 | SCS-1L-1         |      1 | crowded-core  |          1 |                 |            |
 
-### Recommended
+### Recommended, part 1
 
 | Recommended name | vCPUs  | vCPU type     | RAM [GiB]  | Root disk [GB]  | Disk type  |
 | ---------------- | ------ | ------------- | ---------- | --------------- | ---------- |
@@ -116,6 +113,26 @@ Note that this statement does not preclude the existence of additional flavors.
 | SCS-2V-16-50     |      2 | shared-core   |         16 |              50 | (any)      |
 | SCS-4V-32-100    |      4 | shared-core   |         32 |             100 | (any)      |
 | SCS-1L-1-5       |      1 | crowded-core  |          1 |               5 | (any)      |
+
+### Recommended, part 2
+
+The following flavors were added with v1.1 of this standard. If a CSP wants to offer
+flavors with more RAM than the ones above, they should try to use these.
+
+| Recommended name | vCPUs  | vCPU type     | RAM [GiB]  | Root disk [GB]  | Disk type  |
+| ---------------- | ------ | ------------- | ---------- | --------------- | ---------- |
+| SCS-16V-64       |     16 | shared-core   |         64 |                 |            |
+| SCS-16V-64-100   |     16 | shared-core   |         64 |             100 | (any)      |
+| SCS-8V-64        |      8 | shared-core   |         64 |                 |            |
+| SCS-16V-128      |     16 | shared-core   |        128 |                 |            |
+| SCS-8V-64-100    |      8 | shared-core   |         64 |             100 | (any)      |
+| SCS-16V-128-100  |     16 | shared-core   |        128 |             100 | (any)      |
+| SCS-4V-64        |      4 | shared-core   |         64 |                 |            |
+| SCS-8V-128       |      8 | shared-core   |        128 |                 |            |
+| SCS-4V-64-100    |      4 | shared-core   |         64 |             100 | (any)      |
+| SCS-8V-128-100   |      8 | shared-core   |        128 |             100 | (any)      |
+| SCS-4V-128       |      4 | shared-core   |        128 |                 |            |
+| SCS-4V-128-100   |      4 | shared-core   |        128 |             100 | (any)      |
 
 ### Guarantees and properties
 
@@ -157,6 +174,13 @@ to create a bootable 12G cinder volume from image `IMGUUID` that gets tied to th
 instance life cycle.)
 
 ## Previous standard versions
+
+This is v1.2 of the standard, which adds recommended flavors with more RAM.
+
+Version 1.1 lifted a restriction regarding the property `scs:name-vN` as follows:
+this property may now be used on any flavor, rather than standard flavors only. In addition, the "vN" is
+now interpreted as "name variant N" instead of "version N of the naming standard". Note that this change
+indeed preserves compliance, i.e., compliance with v1.0 implies compliance with v1.1.
 
 The list of standard flavors used to be part of the flavor naming standard up until
 [version 3](scs-0100-v3-flavor-naming.md). The following changes have been made to
