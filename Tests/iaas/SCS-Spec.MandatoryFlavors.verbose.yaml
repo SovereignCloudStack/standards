@@ -109,6 +109,7 @@ recommended:
   ram: 4096
   disk: 10
   scs:cpu-type: shared-core
+  scs:disk0-type: network
   scs:name-v1: SCS-1V:4:10
   scs:name-v2: SCS-1V-4-10
 - name: SCS-2V-8-20
@@ -116,6 +117,7 @@ recommended:
   ram: 8192
   disk: 20
   scs:cpu-type: shared-core
+  scs:disk0-type: network
   scs:name-v1: SCS-2V:8:20
   scs:name-v2: SCS-2V-8-20
 - name: SCS-4V-16-50
@@ -123,6 +125,7 @@ recommended:
   ram: 16384
   disk: 50
   scs:cpu-type: shared-core
+  scs:disk0-type: network
   scs:name-v1: SCS-4V:16:50
   scs:name-v2: SCS-4V-16-50
 - name: SCS-8V-32-100
@@ -130,27 +133,15 @@ recommended:
   ram: 32768
   disk: 100
   scs:cpu-type: shared-core
+  scs:disk0-type: network
   scs:name-v1: SCS-8V:32:100
   scs:name-v2: SCS-8V-32-100
-- name: SCS-8V-64-100
-  cpus: 8
-  ram: 65536
-  disk: 100
-  scs:cpu-type: shared-core
-  scs:name-v1: SCS-8V:64:100
-  scs:name-v2: SCS-8V-64-100
-- name: SCS-8V-128-100
-  cpus: 8
-  ram: 131072
-  disk: 100
-  scs:cpu-type: shared-core
-  scs:name-v1: SCS-8V:128:100
-  scs:name-v2: SCS-8V-128-100
 - name: SCS-1V-2-5
   cpus: 1
   ram: 2048
   disk: 5
   scs:cpu-type: shared-core
+  scs:disk0-type: network
   scs:name-v1: SCS-1V:2:5
   scs:name-v2: SCS-1V-2-5
 - name: SCS-2V-4-10
@@ -158,6 +149,7 @@ recommended:
   ram: 4096
   disk: 10
   scs:cpu-type: shared-core
+  scs:disk0-type: network
   scs:name-v1: SCS-2V:4:10
   scs:name-v2: SCS-2V-4-10
 - name: SCS-4V-8-20
@@ -165,6 +157,7 @@ recommended:
   ram: 8192
   disk: 20
   scs:cpu-type: shared-core
+  scs:disk0-type: network
   scs:name-v1: SCS-4V:8:20
   scs:name-v2: SCS-4V-8-20
 - name: SCS-8V-16-50
@@ -172,6 +165,7 @@ recommended:
   ram: 16384
   disk: 50
   scs:cpu-type: shared-core
+  scs:disk0-type: network
   scs:name-v1: SCS-8V:16:50
   scs:name-v2: SCS-8V-16-50
 - name: SCS-16V-32-100
@@ -179,27 +173,15 @@ recommended:
   ram: 32768
   disk: 100
   scs:cpu-type: shared-core
+  scs:disk0-type: network
   scs:name-v1: SCS-16V:32:100
   scs:name-v2: SCS-16V-32-100
-- name: SCS-16V-64-100
-  cpus: 16
-  ram: 65536
-  disk: 100
-  scs:cpu-type: shared-core
-  scs:name-v1: SCS-16V:64:100
-  scs:name-v2: SCS-16V-64-100
-- name: SCS-16V-128-100
-  cpus: 16
-  ram: 131072
-  disk: 100
-  scs:cpu-type: shared-core
-  scs:name-v1: SCS-16V:128:100
-  scs:name-v2: SCS-16V-128-100
 - name: SCS-1V-8-20
   cpus: 1
   ram: 8192
   disk: 20
   scs:cpu-type: shared-core
+  scs:disk0-type: network
   scs:name-v1: SCS-1V:8:20
   scs:name-v2: SCS-1V-8-20
 - name: SCS-2V-16-50
@@ -207,6 +189,7 @@ recommended:
   ram: 16384
   disk: 50
   scs:cpu-type: shared-core
+  scs:disk0-type: network
   scs:name-v1: SCS-2V:16:50
   scs:name-v2: SCS-2V-16-50
 - name: SCS-4V-32-100
@@ -214,26 +197,99 @@ recommended:
   ram: 32768
   disk: 100
   scs:cpu-type: shared-core
+  scs:disk0-type: network
   scs:name-v1: SCS-4V:32:100
   scs:name-v2: SCS-4V-32-100
-- name: SCS-4V-64-100
-  cpus: 4
-  ram: 65536
-  disk: 100
-  scs:cpu-type: shared-core
-  scs:name-v1: SCS-4V:64:100
-  scs:name-v2: SCS-4V-64-100
-- name: SCS-4V-128-100
-  cpus: 4
-  ram: 131072
-  disk: 100
-  scs:cpu-type: shared-core
-  scs:name-v1: SCS-4V:128:100
-  scs:name-v2: SCS-4V-128-100
 - name: SCS-1L-1-5
   cpus: 1
   ram: 1024
   disk: 5
   scs:cpu-type: crowded-core
+  scs:disk0-type: network
   scs:name-v1: SCS-1L:1:5
   scs:name-v2: SCS-1L-1-5
+- name: SCS-16V-64
+  cpus: 16
+  ram: 65536
+  scs:cpu-type: shared-core
+  scs:name-v1: SCS-16V:64
+  scs:name-v2: SCS-16V-64
+- name: SCS-16V-64-100
+  cpus: 16
+  ram: 65536
+  disk: 100
+  scs:cpu-type: shared-core
+  scs:disk0-type: network
+  scs:name-v1: SCS-16V:64:100
+  scs:name-v2: SCS-16V-64-100
+- name: SCS-8V-64
+  cpus: 8
+  ram: 65536
+  scs:cpu-type: shared-core
+  scs:name-v1: SCS-8V:64
+  scs:name-v2: SCS-8V-64
+- name: SCS-16V-128
+  cpus: 16
+  ram: 131072
+  scs:cpu-type: shared-core
+  scs:name-v1: SCS-16V:128
+  scs:name-v2: SCS-16V-128
+- name: SCS-8V-64-100
+  cpus: 8
+  ram: 65536
+  disk: 100
+  scs:cpu-type: shared-core
+  scs:disk0-type: network
+  scs:name-v1: SCS-8V:64:100
+  scs:name-v2: SCS-8V-64-100
+- name: SCS-16V-128-100
+  cpus: 16
+  ram: 131072
+  disk: 100
+  scs:cpu-type: shared-core
+  scs:disk0-type: network
+  scs:name-v1: SCS-16V:128:100
+  scs:name-v2: SCS-16V-128-100
+- name: SCS-4V-64
+  cpus: 4
+  ram: 65536
+  scs:cpu-type: shared-core
+  scs:name-v1: SCS-4V:64
+  scs:name-v2: SCS-4V-64
+- name: SCS-8V-128
+  cpus: 8
+  ram: 131072
+  scs:cpu-type: shared-core
+  scs:name-v1: SCS-8V:128
+  scs:name-v2: SCS-8V-128
+- name: SCS-4V-64-100
+  cpus: 4
+  ram: 65536
+  disk: 100
+  scs:cpu-type: shared-core
+  scs:disk0-type: network
+  scs:name-v1: SCS-4V:64:100
+  scs:name-v2: SCS-4V-64-100
+- name: SCS-8V-128-100
+  cpus: 8
+  ram: 131072
+  disk: 100
+  scs:cpu-type: shared-core
+  scs:disk0-type: network
+  scs:name-v1: SCS-8V:128:100
+  scs:name-v2: SCS-8V-128-100
+- name: SCS-4V-128
+  cpus: 4
+  ram: 131072
+  scs:cpu-type: shared-core
+  scs:name-v1: SCS-4V:128
+  scs:name-v2: SCS-4V-128
+- name: SCS-4V-128-100
+  cpus: 4
+  ram: 131072
+  disk: 100
+  scs:cpu-type: shared-core
+  scs:disk0-type: network
+  scs:name-v1: SCS-4V:128:100
+  scs:name-v2: SCS-4V-128-100
+
