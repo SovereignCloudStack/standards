@@ -164,88 +164,88 @@ modules:
     testcases:
     - id: scs-0103-flavor-1v-4
       tags: [mandatory]
-      description: check presence of flavor SCS-1v-4
+      description: Check presence of flavor `SCS-1V-4`
     - id: scs-0103-flavor-2v-8
       tags: [mandatory]
-      description: check presence of flavor SCS-2v-8
+      description: Check presence of flavor `SCS-2V-8`
     - id: scs-0103-flavor-4v-16
       tags: [mandatory]
-      description: check presence of flavor SCS-4v-16
+      description: Check presence of flavor `SCS-4V-16`
     - id: scs-0103-flavor-8v-32
       tags: [mandatory]
-      description: check presence of flavor SCS-8v-32
+      description: Check presence of flavor `SCS-8V-32`
     - id: scs-0103-flavor-1v-2
       tags: [mandatory]
-      description: check presence of flavor SCS-1v-2
+      description: Check presence of flavor `SCS-1V-2`
     - id: scs-0103-flavor-2v-4
       tags: [mandatory]
-      description: check presence of flavor SCS-2v-4
+      description: Check presence of flavor `SCS-2V-4`
     - id: scs-0103-flavor-4v-8
       tags: [mandatory]
-      description: check presence of flavor SCS-4v-8
+      description: Check presence of flavor `SCS-4V-8`
     - id: scs-0103-flavor-8v-16
       tags: [mandatory]
-      description: check presence of flavor SCS-8v-16
+      description: Check presence of flavor `SCS-8V-16`
     - id: scs-0103-flavor-16v-32
       tags: [mandatory]
-      description: check presence of flavor SCS-16v-32
+      description: Check presence of flavor `SCS-16V-32`
     - id: scs-0103-flavor-1v-8
       tags: [mandatory]
-      description: check presence of flavor SCS-1v-8
+      description: Check presence of flavor `SCS-1V-8`
     - id: scs-0103-flavor-2v-16
       tags: [mandatory]
-      description: check presence of flavor SCS-2v-16
+      description: Check presence of flavor `SCS-2V-16`
     - id: scs-0103-flavor-4v-32
       tags: [mandatory]
-      description: check presence of flavor SCS-4v-32
+      description: Check presence of flavor `SCS-4V-32`
     - id: scs-0103-flavor-1l-1
       tags: [mandatory]
-      description: check presence of flavor SCS-1l-1
+      description: Check presence of flavor `SCS-1L-1`
     - id: scs-0103-flavor-2v-4-20s
       tags: [mandatory]
-      description: check presence of flavor SCS-2v-4-20s
+      description: Check presence of flavor `SCS-2V-4-20s`
     - id: scs-0103-flavor-4v-16-100s
       tags: [mandatory]
-      description: check presence of flavor SCS-4v-16-100s
+      description: Check presence of flavor `SCS-4V-16-100s`
     - id: scs-0103-flavor-1v-4-10
       tags: [recommended]
-      description: check presence of flavor SCS-1v-4-10
+      description: Check presence of flavor `SCS-1V-4-10`
     - id: scs-0103-flavor-2v-8-20
       tags: [recommended]
-      description: check presence of flavor SCS-2v-8-20
+      description: Check presence of flavor `SCS-2V-8-20`
     - id: scs-0103-flavor-4v-16-50
       tags: [recommended]
-      description: check presence of flavor SCS-4v-16-50
+      description: Check presence of flavor `SCS-4V-16-50`
     - id: scs-0103-flavor-8v-32-100
       tags: [recommended]
-      description: check presence of flavor SCS-8v-32-100
+      description: Check presence of flavor `SCS-8V-32-100`
     - id: scs-0103-flavor-1v-2-5
       tags: [recommended]
-      description: check presence of flavor SCS-1v-2-5
+      description: Check presence of flavor `SCS-1V-2-5`
     - id: scs-0103-flavor-2v-4-10
       tags: [recommended]
-      description: check presence of flavor SCS-2v-4-10
+      description: Check presence of flavor `SCS-2V-4-10`
     - id: scs-0103-flavor-4v-8-20
       tags: [recommended]
-      description: check presence of flavor SCS-4v-8-20
+      description: Check presence of flavor `SCS-4V-8-20`
     - id: scs-0103-flavor-8v-16-50
       tags: [recommended]
-      description: check presence of flavor SCS-8v-16-50
+      description: Check presence of flavor `SCS-8V-16-50`
     - id: scs-0103-flavor-16v-32-100
       tags: [recommended]
-      description: check presence of flavor SCS-16v-32-100
+      description: Check presence of flavor `SCS-16V-32-100`
     - id: scs-0103-flavor-1v-8-20
       tags: [recommended]
-      description: check presence of flavor SCS-1v-8-20
+      description: Check presence of flavor `SCS-1V-8-20`
     - id: scs-0103-flavor-2v-16-50
       tags: [recommended]
-      description: check presence of flavor SCS-2v-16-50
+      description: Check presence of flavor `SCS-2V-16-50`
     - id: scs-0103-flavor-4v-32-100
       tags: [recommended]
-      description: check presence of flavor SCS-4v-32-100
+      description: Check presence of flavor `SCS-4V-32-100`
     - id: scs-0103-flavor-1l-1-5
       tags: [recommended]
-      description: check presence of flavor SCS-1l-1-5
+      description: Check presence of flavor `SCS-1L-1-5`
     - id: standard-flavors-check
       tags: [legacy_mandatory]
       description: >
