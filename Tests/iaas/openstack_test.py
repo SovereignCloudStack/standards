@@ -14,9 +14,9 @@ import sys
 
 import openstack
 
+from scs_0100_flavor_naming.flavor_names import compute_flavor_spec
 from scs_0100_flavor_naming.flavor_names_check import \
-    compute_scs_flavors, compute_scs_0100_syntax_check, compute_scs_0100_semantics_check, \
-    compute_flavor_spec
+    compute_scs_flavors, compute_scs_0100_syntax_check, compute_scs_0100_semantics_check
 from scs_0101_entropy.entropy_check import \
     compute_scs_0101_image_property, compute_scs_0101_flavor_property, compute_canonical_image, \
     compute_collected_vm_output, compute_scs_0101_entropy_avail, compute_scs_0101_rngd, \
