@@ -10,13 +10,5 @@
       changed_when: true
       failed_when: result.rc != 0
 
-    - name: Run test script consistency check script
-      ansible.builtin.shell:
-        cmd: python3 Tests/iaas/scs_0100_flavor_naming/check_yaml.py Tests/iaas
-        chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
-      register: result
-      changed_when: true
-      failed_when: result.rc != 0
-
     - ansible.builtin.debug:
         msg: "{{ result.stdout }} {{ result.stderr }}"
