@@ -116,7 +116,7 @@ Note that this statement does not preclude the existence of additional flavors.
 
 ### Recommended, part 2
 
-The following flavors were added with v1.1 of this standard. If a CSP wants to offer
+The following flavors were added with v1.2 of this standard. If a CSP wants to offer
 flavors with more RAM than the ones above, they should try to use these.
 
 | Recommended name | vCPUs  | vCPU type     | RAM [GiB]  | Root disk [GB]  | Disk type  |
