@@ -473,7 +473,7 @@ modules:
 timeline:
   - date: 2025-09-09
     versions:
-      v6: draft
+      next: draft
       v5.1: effective
       v4: deprecated
       v3: deprecated
@@ -493,7 +493,7 @@ timeline:
       v4: effective
       v3: deprecated
 versions:
-  - version: v6
+  - version: next
     include:
       - opc-v2022.11
       - scs-0100-v3.1
