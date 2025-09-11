@@ -3,6 +3,11 @@ name: Build and publish scs-compliance-check Docker image
 'on':
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+  push:
+    branches:
+    - main
+    paths:
+      - 'Tests/**'
 
 env:
   REGISTRY: ghcr.io
