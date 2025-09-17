@@ -7,7 +7,7 @@ import openstack
 logger = logging.getLogger(__name__)
 
 
-def ensure_unprivileged(conn: openstack.connection.Connection) -> list:
+def ensure_unprivileged(conn: openstack.connection.Connection, quiet=False) -> list:
     """
     Retrieves role names.
     Raises exception if elevated privileges (admin, manager) are present.
@@ -19,6 +19,8 @@ def ensure_unprivileged(conn: openstack.connection.Connection) -> list:
     role_names = set(conn.session.auth.get_access(conn.session).role_names)
     if role_names & {"admin", "manager"}:
         raise RuntimeError("user privileges too high: admin/manager roles detected")
+    if quiet:
+        return role_names
     if "reader" in role_names:
         logger.info("User has reader role.")
     custom_roles = sorted(role_names - {"reader", "member"})
