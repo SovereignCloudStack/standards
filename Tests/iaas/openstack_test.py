@@ -291,7 +291,7 @@ def run_sanity_checks(container):
         raise
     if "member" not in ensure_unprivileged(conn, quiet=True):
         logger.critical("Please make sure that your OpenStack user has role member.")
-        raise RuntimeError("OpenStack user has elevated privileges.")
+        raise RuntimeError("OpenStack user is missing member role.")
 
 
 def main(argv):
