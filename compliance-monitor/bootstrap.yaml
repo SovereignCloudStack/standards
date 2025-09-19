@@ -19,6 +19,11 @@ accounts:
     delegates:
       - zuul_ci
   - subject: artcodix
+    group: artcodix
+    delegates:
+      - zuul_ci
+  - subject: artcodix-ro
+    group: artcodix
     delegates:
       - zuul_ci
   - subject: cc-rrze
