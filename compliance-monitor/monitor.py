@@ -733,7 +733,13 @@ async def get_scope(
 ):
     spec = get_scopes()[scopeuuid].spec
     versions = spec['versions']
-    relevant = sorted([name for name, version in versions.items() if version['_explicit_validity']])
+    # sort by name, and all drafts after all non-drafts
+    column_data = [
+        (version['_explicit_validity'].lower() == 'draft', name)
+        for name, version in versions.items()
+        if version['_explicit_validity']
+    ]
+    relevant = [name for _, name in sorted(column_data)]
     modules_chart = {}
     for name in relevant:
         for include in versions[name]['include']:
