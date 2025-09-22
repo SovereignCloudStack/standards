@@ -79,6 +79,28 @@
           o9slrGAyL7g3zdjNlUJA04U33SNCvaCxL8fac6JZ15vrqeW4g4AB4+rx7fYKAnOVg2FOL
           5jMOKsiGgfLvz1KZ9c6Q1ThfeCQzG9waWJnyCx2R2tEtyQ17hIW6Rzo1RzmQkUyvLN9TJ
           CLSZCUoR+2Ut+ZlpDi3vVushWWLXyjj8ojblTO/zqlbQ1A+7d/C+5x2mrh2T/0=
+      cnds_ro_ac_id: !encrypted/pkcs1-oaep
+        - l2IMEJwkw8xqgzKvCkPgGVzoBNiMrj/+oNfq3dvFyLU8f/AJ8XDMsmaeNBj/hSGY6O3ar
+          Qs8ckn6BUTD253Ft8izsvv7E535KN/o5IhN7f+juKri1jVus/XLkrx3t3exHL1piSy0y/
+          y5k1FGpEclmzyEdtaCorEOQraXRCLAOmyYba6aCt5YhPVJkOjv8Aupy7Y/tSHXdsFKgZt
+          fJItALWehZVbYtl4WHpmrPwV0uW8mKo/T41o2aJDJ3a2BRodqVvTNSZb9YNnLyBkxW+Kc
+          w1AAk9E2U+tinWxFAJQAE42JZIesv6F9SoJhl9ViYsENjNtwdpndrrF1j2BmmiqJ1kVwp
+          y4UHnheNUBsIXe2RUnRq2z0m0rQ/kyQQSTluUV0QGnb34a3GuMqPCsiAAbFRuL6Ax8zXu
+          UoQ+C6BCNXJJzyjbJC9CLILqHLqZUCkYimiBf4+GmoDEANNi5FUZgtwK0p9TJN/7KvLJ0
+          h+73PtoCnVrnsYcaEu+tJO3Jfm43tilTRixTtVbWL1F+dgnBCdh3dFHm3l16npEMxpyR9
+          2P6BKyeROBAwaBURc3UhtqZjwMc+YmYLGXRDjd/DKyLHJ0j27ONWCtQHbRzJZjxfvrMfC
+          dyowl8wOxpgd3EiUDDufncD7JmKBcyJRQOvTTGJz6T3cP8h9b65103faoyVRo0=
+      cnds_ro_ac_secret: !encrypted/pkcs1-oaep
+        - KvlXdw4RIkzHwaZPeeI+lhycJboSRBh7DJ/43Q0sNP9o1vkJG72pSv8w2HhycZU95SU6g
+          k0B5uMwIHpXiQnmjgA4f8lLMkI6ppA5FLL5F3LwsVIlfUI1x8aM8Zl+LyVHSZJ/0kP3l7
+          QTEJ6DDNVdI6xftCkKQiABUCMYwgbZsU3c3rJeF/RAuCUtrs/gRv+2F4/es7UWaafYvQa
+          gqx4nC7LGn+7q1UH4BIbwVQdjH8f7H1SSEkz4t1goNqgVMqqv24hNF/KMRRGfZ/Zv9zPt
+          B+uczjb4Jc6zwJL/zF+sZc1pIt9zn/RijJTYv0BX+ldfMiOflST/FlXcMZqULXHnyQLK/
+          iqaJcTfI7fv1OCUtpNc0n6dJhK8piU//1JQ3Yanov0QTdEo4OTRxirGxIobzJfFl+hf+8
+          D5b1ZKqkPhoTGP/vjl1XzvV2QuJ+ZX6P9GWKJr4r/9b2RuwywD71fUbXqmEva3/THY2Sg
+          gY6QHocYpATL46iLkv97QANNUxTdxL7hQjdl/tf3TAHjCclmxdWhBJdvCJN/1xCM6EgVp
+          NykBYxJ+kxSmkcFCSdUM8Td75bA/UzkPCdix1reJMdEAxTE9fC55XQ/liTLlGquQDnZty
+          VLDH7x3ZJcxZsvqKR6vNbYYzJvDPTBYpHrhD7kx3ubyO9KX+SzZ+Dfhe9M8T8U=
       poc_wgcloud_ac_id: !encrypted/pkcs1-oaep
         - dQIs3NJt1CpP1925+b9QjjwonqjmiuCl1ewxw160yIEHQ/qyQiwutJbsg4IYS9XKhKc2X
           GumOOpLY7+/uNRR5pZmEfOdlGnPoJvVhYtCqHBFy7xQ6NLHKFxCT8zHM9ppSl1Hjc2G2F
