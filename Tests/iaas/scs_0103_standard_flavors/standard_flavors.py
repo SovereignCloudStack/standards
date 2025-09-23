@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 
 NAME_KEY = "scs:name-v2"
-SCS_0103_CANONICAL_NAMES = (
+SCS_0103_V1_MANDATORY = (
     "SCS-1V-4",
     "SCS-2V-8",
     "SCS-4V-16",
@@ -21,6 +21,8 @@ SCS_0103_CANONICAL_NAMES = (
     "SCS-1L-1",
     "SCS-2V-4-20s",
     "SCS-4V-16-100s",
+)
+SCS_0103_V1_RECOMMENDED = (
     "SCS-1V-4-10",
     "SCS-2V-8-20",
     "SCS-4V-16-50",
@@ -34,7 +36,26 @@ SCS_0103_CANONICAL_NAMES = (
     "SCS-2V-16-50",
     "SCS-4V-32-100",
     "SCS-1L-1-5",
+) + (
+    # larger memory flavors, also recommended
+    # 1:4
+    "SCS-16V-64",
+    "SCS-16V-64-100",
+    # 1:8
+    "SCS-8V-64",
+    "SCS-16V-128",
+    "SCS-8V-64-100",
+    "SCS-16V-128-100",
+    # 1:16
+    "SCS-4V-64",
+    "SCS-8V-128",
+    "SCS-4V-64-100",
+    "SCS-8V-128-100",
+    # 1:32
+    "SCS-4V-128",
+    "SCS-4V-128-100",
 )
+SCS_0103_CANONICAL_NAMES = tuple(sorted(set(SCS_0103_V1_MANDATORY + SCS_0103_V1_RECOMMENDED)))
 
 
 def compute_flavor_lookup(flavors, name_key=NAME_KEY):
