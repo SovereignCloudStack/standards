@@ -7,7 +7,7 @@ track: IaaS
 description: |
   The SCS-0103 standard outlines mandatory and recommended specifications for flavors and properties in OpenStack
   environments to ensure uniformity across SCS clouds. Mandatory and recommended flavors are defined with specific
-  configurations of vCPUs, vCPU types, RAM, and root disk sizes, alongside extra specs like scs:name-vN, scs:cpu-type,
+  configurations of vCPUs, vCPU types, RAM, and root disk sizes, alongside extra_specs like scs:name-vN, scs:cpu-type,
   and scs:diskN-type to detail the flavor's specifications. This standard facilitates guaranteed availability and
   consistency of flavors, simplifying the deployment process for DevOps teams.
 ---
@@ -18,7 +18,7 @@ Note that this is v1.2 of this standard. See the closing section for more detail
 
 ## Terminology
 
-extra_specs
+extra\_specs:
   Additional properties on an OpenStack flavor, see
   [OpenStack Nova user documentation](https://docs.openstack.org/nova/2024.1/user/flavors.html#extra-specs)
   and
@@ -33,9 +33,9 @@ OpenStack providers thus typically offer a large selection of flavors.
 While flavors can be discovered (`openstack flavor list`), it is helpful for users (DevOps teams),
 to have a guaranteed set of flavors available on all SCS clouds, so these need not be discovered.
 
-## Properties (extra_specs)
+## Properties (extra\_specs)
 
-The following extra_specs are recognized, together with the respective semantics:
+The following extra\_specs are recognized, together with the respective semantics:
 
 - `scs:name-vN=NAME` (where `N` is a positive integer, and `NAME` is some string) means that
   `NAME` is a valid name for this flavor according to any major version of the [SCS standard on
@@ -53,14 +53,14 @@ The following extra_specs are recognized, together with the respective semantics
 
 Whenever ANY of these are present on ANY flavor, the corresponding semantics must be satisfied.
 
-The extra_spec `scs:name-vN` is to be interpreted as "name variant N". This name scheme is designed to be
+The extra\_spec `scs:name-vN` is to be interpreted as "name variant N". This name scheme is designed to be
 backwards compatible with v1.0 of this standard, where `scs:name-vN` is interpreted as
 "name according to naming standard vN". We abandon this former interpretation for two reasons:
 
 1. the naming standards admit multiple (even many) names for the same flavor, and we want to provide a means
    of advertising more than one of them (said standards recommend using two: a short one and a long one),
 2. the same flavor name may be valid according to multiple versions at the same time, which would lead to
-   a pollution of the extra_specs with redundant properties; for instance, the name
+   a pollution of the extra\_specs with redundant properties; for instance, the name
    `SCS-4V-16` is valid for both [scs-0100-v2](scs-0100-v2-flavor-naming.md) and
    [scs-0100-v3](scs-0100-v3-flavor-naming.md), and, since it does not use any extension, it will be valid
    for any future version that only changes the extensions, such as the GPU vendor and architecture.
@@ -68,7 +68,7 @@ backwards compatible with v1.0 of this standard, where `scs:name-vN` is interpre
 Note that it is not required to use consecutive numbers to number the name variants.
 This way, it becomes easier to remove a single variant (no "closing the gap" required).
 
-If extra_specs of the form `scs:name-vN` are used to specify SCS flavor names, it is RECOMMENDED to include
+If extra\_specs of the form `scs:name-vN` are used to specify SCS flavor names, it is RECOMMENDED to include
 names for the latest stable major version of the standard on flavor naming.
 
 ## Standard SCS flavors
