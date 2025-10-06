@@ -122,17 +122,17 @@ flavors with more RAM than the ones above, they should try to use these.
 | Recommended name | vCPUs  | vCPU type     | RAM [GiB]  | Root disk [GB]  | Disk type  |
 | ---------------- | ------ | ------------- | ---------- | --------------- | ---------- |
 | SCS-16V-64       |     16 | shared-core   |         64 |                 |            |
-| SCS-16V-64-100   |     16 | shared-core   |         64 |             100 | (any)      |
 | SCS-8V-64        |      8 | shared-core   |         64 |                 |            |
 | SCS-16V-128      |     16 | shared-core   |        128 |                 |            |
-| SCS-8V-64-100    |      8 | shared-core   |         64 |             100 | (any)      |
-| SCS-16V-128-100  |     16 | shared-core   |        128 |             100 | (any)      |
-| SCS-4V-64        |      4 | shared-core   |         64 |                 |            |
-| SCS-8V-128       |      8 | shared-core   |        128 |                 |            |
-| SCS-4V-64-100    |      4 | shared-core   |         64 |             100 | (any)      |
-| SCS-8V-128-100   |      8 | shared-core   |        128 |             100 | (any)      |
-| SCS-4V-128       |      4 | shared-core   |        128 |                 |            |
-| SCS-4V-128-100   |      4 | shared-core   |        128 |             100 | (any)      |
+
+Note that no flavors with disks have been added here; providers are of course welcome to
+also add variants with unspecified (e.g. `-200`) or ssd+ (e.g. `-200s`) disk types.
+Sticking to the 5, 10, 20, 50, 100, 200, 500, 1000 schedule for disk sizes is recommended
+in that case to avoid unnecessary fragmentation.
+
+Likewise, flavors with more vCPUs (e.g. `-32V`, `-64V`) may be added and we recommend
+sticking to powers of two and to keep the vCPU to GiB RAM ratios 1:2, 1:4 and 1:8,
+unless customers have very specific demands.
 
 ### Guarantees and properties
 
