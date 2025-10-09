@@ -7,21 +7,18 @@ track: IaaS
 description: |
   The SCS-0103 standard outlines mandatory and recommended specifications for flavors and properties in OpenStack
   environments to ensure uniformity across SCS clouds. Mandatory and recommended flavors are defined with specific
-  configurations of vCPUs, vCPU types, RAM, and root disk sizes, alongside extra specs like scs:name-vN, scs:cpu-type,
+  configurations of vCPUs, vCPU types, RAM, and root disk sizes, alongside extra_specs like scs:name-vN, scs:cpu-type,
   and scs:diskN-type to detail the flavor's specifications. This standard facilitates guaranteed availability and
   consistency of flavors, simplifying the deployment process for DevOps teams.
 ---
 
 ## Introduction
 
-This is v1.1 of the standard, which lifts the following restriction regarding the property `scs:name-vN`:
-this property may now be used on any flavor, rather than standard flavors only. In addition, the "vN" is
-now interpreted as "name variant N" instead of "version N of the naming standard". Note that this change
-indeed preserves compliance, i.e., compliance with v1.0 implies compliance with v1.1.
+Note that this is v1.2 of this standard. See the closing section for more details.
 
 ## Terminology
 
-extra_specs
+extra\_specs:
   Additional properties on an OpenStack flavor, see
   [OpenStack Nova user documentation](https://docs.openstack.org/nova/2024.1/user/flavors.html#extra-specs)
   and
@@ -36,9 +33,9 @@ OpenStack providers thus typically offer a large selection of flavors.
 While flavors can be discovered (`openstack flavor list`), it is helpful for users (DevOps teams),
 to have a guaranteed set of flavors available on all SCS clouds, so these need not be discovered.
 
-## Properties (extra_specs)
+## Properties (extra\_specs)
 
-The following extra_specs are recognized, together with the respective semantics:
+The following extra\_specs are recognized, together with the respective semantics:
 
 - `scs:name-vN=NAME` (where `N` is a positive integer, and `NAME` is some string) means that
   `NAME` is a valid name for this flavor according to any major version of the [SCS standard on
@@ -56,14 +53,14 @@ The following extra_specs are recognized, together with the respective semantics
 
 Whenever ANY of these are present on ANY flavor, the corresponding semantics must be satisfied.
 
-The extra_spec `scs:name-vN` is to be interpreted as "name variant N". This name scheme is designed to be
+The extra\_spec `scs:name-vN` is to be interpreted as "name variant N". This name scheme is designed to be
 backwards compatible with v1.0 of this standard, where `scs:name-vN` is interpreted as
 "name according to naming standard vN". We abandon this former interpretation for two reasons:
 
 1. the naming standards admit multiple (even many) names for the same flavor, and we want to provide a means
    of advertising more than one of them (said standards recommend using two: a short one and a long one),
 2. the same flavor name may be valid according to multiple versions at the same time, which would lead to
-   a pollution of the extra_specs with redundant properties; for instance, the name
+   a pollution of the extra\_specs with redundant properties; for instance, the name
    `SCS-4V-16` is valid for both [scs-0100-v2](scs-0100-v2-flavor-naming.md) and
    [scs-0100-v3](scs-0100-v3-flavor-naming.md), and, since it does not use any extension, it will be valid
    for any future version that only changes the extensions, such as the GPU vendor and architecture.
@@ -71,7 +68,7 @@ backwards compatible with v1.0 of this standard, where `scs:name-vN` is interpre
 Note that it is not required to use consecutive numbers to number the name variants.
 This way, it becomes easier to remove a single variant (no "closing the gap" required).
 
-If extra_specs of the form `scs:name-vN` are used to specify SCS flavor names, it is RECOMMENDED to include
+If extra\_specs of the form `scs:name-vN` are used to specify SCS flavor names, it is RECOMMENDED to include
 names for the latest stable major version of the standard on flavor naming.
 
 ## Standard SCS flavors
@@ -99,7 +96,7 @@ Note that this statement does not preclude the existence of additional flavors.
 | SCS-4V-32        |      4 | shared-core   |         32 |                 |            |
 | SCS-1L-1         |      1 | crowded-core  |          1 |                 |            |
 
-### Recommended
+### Recommended, part 1
 
 | Recommended name | vCPUs  | vCPU type     | RAM [GiB]  | Root disk [GB]  | Disk type  |
 | ---------------- | ------ | ------------- | ---------- | --------------- | ---------- |
@@ -116,6 +113,26 @@ Note that this statement does not preclude the existence of additional flavors.
 | SCS-2V-16-50     |      2 | shared-core   |         16 |              50 | (any)      |
 | SCS-4V-32-100    |      4 | shared-core   |         32 |             100 | (any)      |
 | SCS-1L-1-5       |      1 | crowded-core  |          1 |               5 | (any)      |
+
+### Recommended, part 2
+
+The following flavors were added with v1.2 of this standard. If a CSP wants to offer
+flavors with more RAM than the ones above, they should try to use these.
+
+| Recommended name | vCPUs  | vCPU type     | RAM [GiB]  | Root disk [GB]  | Disk type  |
+| ---------------- | ------ | ------------- | ---------- | --------------- | ---------- |
+| SCS-16V-64       |     16 | shared-core   |         64 |                 |            |
+| SCS-8V-64        |      8 | shared-core   |         64 |                 |            |
+| SCS-16V-128      |     16 | shared-core   |        128 |                 |            |
+
+Note that no flavors with disks have been added here; providers are of course welcome to
+also add variants with unspecified (e.g. `-200`) or ssd+ (e.g. `-200s`) disk types.
+Sticking to the 5, 10, 20, 50, 100, 200, 500, 1000 schedule for disk sizes is recommended
+in that case to avoid unnecessary fragmentation.
+
+Likewise, flavors with more vCPUs (e.g. `-32V`, `-64V`) may be added and we recommend
+sticking to powers of two and to keep the vCPU to GiB RAM ratios 1:2, 1:4 and 1:8,
+unless customers have very specific demands.
 
 ### Guarantees and properties
 
@@ -157,6 +174,13 @@ to create a bootable 12G cinder volume from image `IMGUUID` that gets tied to th
 instance life cycle.)
 
 ## Previous standard versions
+
+This is v1.2 of the standard, which adds recommended flavors with more RAM.
+
+Version 1.1 lifted a restriction regarding the property `scs:name-vN` as follows:
+this property may now be used on any flavor, rather than standard flavors only. In addition, the "vN" is
+now interpreted as "name variant N" instead of "version N of the naming standard". Note that this change
+indeed preserves compliance, i.e., compliance with v1.0 implies compliance with v1.1.
 
 The list of standard flavors used to be part of the flavor naming standard up until
 [version 3](scs-0100-v3-flavor-naming.md). The following changes have been made to

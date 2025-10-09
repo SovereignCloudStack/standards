@@ -38,11 +38,6 @@ def compute_scs_flavors(flavors: typing.List[openstack.compute.v2.flavor.Flavor]
     return result
 
 
-def compute_flavor_spec(canonical_name: str) -> dict:
-    # this is a helper for tying together scs_0100 and scs_0103
-    return flavor_names.flavorname_to_dict(flavor_names.parser_v3(canonical_name))
-
-
 def compute_scs_0100_syntax_check(scs_flavors: list) -> bool:
     """This test ensures that each SCS flavor is indeed named correctly."""
     problems = [flv.name for flv, flavorname in scs_flavors if not flavorname]
