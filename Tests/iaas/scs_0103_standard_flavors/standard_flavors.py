@@ -40,20 +40,9 @@ SCS_0103_V1_RECOMMENDED = (
     # larger memory flavors, also recommended
     # 1:4
     "SCS-16V-64",
-    "SCS-16V-64-100",
     # 1:8
     "SCS-8V-64",
     "SCS-16V-128",
-    "SCS-8V-64-100",
-    "SCS-16V-128-100",
-    # 1:16
-    "SCS-4V-64",
-    "SCS-8V-128",
-    "SCS-4V-64-100",
-    "SCS-8V-128-100",
-    # 1:32
-    "SCS-4V-128",
-    "SCS-4V-128-100",
 )
 SCS_0103_CANONICAL_NAMES = tuple(sorted(set(SCS_0103_V1_MANDATORY + SCS_0103_V1_RECOMMENDED)))
 
