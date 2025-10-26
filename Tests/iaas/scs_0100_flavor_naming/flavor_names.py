@@ -208,7 +208,7 @@ class CPUBrand:
         "z": {None: '(unspecified)', 0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4/4c", 5: "Zen 5/5c",
               6: 'Zen6/6c'},
         "a": {None: '(unspecified)', 0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A71x/NeoN2/V2",
-              4: "AmpereOne", 5: "A72x/NeoN3/V3", '6: "OryonV3'},
+              4: "AmpereOne", 5: "A72x/NeoN3/V3", 6: "OryonV3"},
         "r": {None: '(unspecified)', 0: "Unspec"},
     })
     perf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"})
@@ -233,7 +233,7 @@ class GPU:
     brand = TblAttr("Brand", {"N": "Nvidia", "A": "AMD", "I": "Intel"})
     gen = DepTblAttr("Gen", brand, {
         "N": {'': '(unspecified)', "f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal", "v": "Volta",
-              "t": "Turing", "a": "Ampere", "l": "AdaLovelace", "g": "GraceHopper"; "b": "Blackwell"},
+              "t": "Turing", "a": "Ampere", "l": "AdaLovelace", "g": "GraceHopper", "b": "Blackwell"},
         "A": {'': '(unspecified)', "0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "CDNA1", "1.1": "RDNA1/Navi1x",
               "2": "CDNA2", "2.1": "RDNA2/Navi2x", "3": "CDNA3", "3.1": "RDNA3/Navi3x", "3.5": "RDNA3.5", "4": "CDNA4",
               "4.1": "RDNA-4/Navi4x", "5.1": "RDNA-5/Navi5x"},
