@@ -40,7 +40,7 @@ from scs_0114_volume_types.volume_types import \
 from scs_0115_security_groups.security_groups import \
     compute_scs_0115_default_rules
 from scs_0116_key_manager.key_manager import \
-    compute_services_lookup, compute_scs_0116_presence, compute_scs_0116_permissions
+    ensure_unprivileged, compute_services_lookup, compute_scs_0116_presence, compute_scs_0116_permissions
 from scs_0117_volume_backup.volume_backup import \
     compute_scs_0117_test_backup
 from scs_0123_mandatory_services.mandatory_services import \
@@ -280,6 +280,20 @@ def harness(name, *check_fns):
     print(f"{name}: {result}")
 
 
+def run_sanity_checks(container):
+    # make sure that we can connect to the cloud and that the user doesn't have elevated privileges
+    # the former would lead to each testcase aborting with a marginally useful message;
+    # the latter would lead to scs_0116_permissions aborting, which we don't want to single out
+    try:
+        conn = container.conn
+    except openstack.exceptions.ConfigException:
+        logger.critical("Please make sure that ~/.config/openstack/clouds.yaml exists and is correct!")
+        raise
+    if "member" not in ensure_unprivileged(conn, quiet=True):
+        logger.critical("Please make sure that your OpenStack user has role member.")
+        raise RuntimeError("OpenStack user is missing member role.")
+
+
 def main(argv):
     # configure logging, disable verbose library logging
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
@@ -320,6 +334,7 @@ def main(argv):
         sys.exit(1)
 
     c = make_container(cloud)
+    run_sanity_checks(c)
     for testcase in testcases:
         testcase_name = testcase.rsplit('/', 1)[0]  # see the note above
         harness(testcase_name, lambda: getattr(c, testcase.replace('-', '_').replace('/', '_')))
