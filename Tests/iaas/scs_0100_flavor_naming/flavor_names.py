@@ -180,7 +180,8 @@ class Hype:
     """Class repesenting Hypervisor"""
     type = "Hypervisor"
     component_name = "hype"
-    hype = TblAttr(".Hypervisor", {"kvm": "KVM", "xen": "Xen", "hyv": "Hyper-V", "vmw": "VMware", "bms": "Bare Metal System"})
+    hype = TblAttr(".Hypervisor", {"kvm": "KVM (w/ qemu)", "chy": "Cloud Hypervisor", "xen": "Xen", "hyv": "Hyper-V",
+                                   "vmw": "VMware", "bms": "Bare Metal System"})
 
     def shorten(self):
         return None
@@ -204,9 +205,10 @@ class CPUBrand:
     cpugen = DepTblAttr("#.CPU Gen", cpuvendor, {
         "i": {None: '(unspecified)', 0: "Unspec/Pre-Skylake", 1: "Skylake", 2: "Cascade Lake", 3: "Ice Lake", 4: "Sapphire Rapids",
               5: 'Sierra Forest (E)', 6: 'Granite Rapids (P)'},
-        "z": {None: '(unspecified)', 0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4/4c", 5: "Zen 5/5c"},
+        "z": {None: '(unspecified)', 0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4/4c", 5: "Zen 5/5c",
+              6: 'Zen6/6c'},
         "a": {None: '(unspecified)', 0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A71x/NeoN2/V2",
-              4: "AmpereOne", 5: "A72x/NeoN3/V3"},
+              4: "AmpereOne", 5: "A72x/NeoN3/V3", '6: "OryonV3'},
         "r": {None: '(unspecified)', 0: "Unspec"},
     })
     perf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"})
@@ -230,12 +232,13 @@ class GPU:
     gputype = TblAttr("Type", {"g": "vGPU", "G": "Pass-Through GPU"})
     brand = TblAttr("Brand", {"N": "Nvidia", "A": "AMD", "I": "Intel"})
     gen = DepTblAttr("Gen", brand, {
-        "N": {'': '(unspecified)', "f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal",
-              "v": "Volta", "t": "Turing", "a": "Ampere", "l": "AdaLovelace", "g": "GraceHopper"},
-        "A": {'': '(unspecified)', "0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "RDNA1/Navi1x", "2": "C/RDNA2/Navi2x",
-              "3": "C/RDNA3/Navi3x", "3.5": "C/RDNA3.5", "4": "C/RDNA4"},
+        "N": {'': '(unspecified)', "f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal", "v": "Volta",
+              "t": "Turing", "a": "Ampere", "l": "AdaLovelace", "g": "GraceHopper"; "b": "Blackwell"},
+        "A": {'': '(unspecified)', "0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "CDNA1", "1.1": "RDNA1/Navi1x",
+              "2": "CDNA2", "2.1": "RDNA2/Navi2x", "3": "CDNA3", "3.1": "RDNA3/Navi3x", "3.5": "RDNA3.5", "4": "CDNA4",
+              "4.1": "RDNA-4/Navi4x", "5.1": "RDNA-5/Navi5x"},
         "I": {'': '(unspecified)', "0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1/DG1", "2": "Xe2/Gen12.2",
-              "3": "Arc/Gen12.7/DG2"},
+              "3": "Arc/Gen12.7/DG2", "4": "BattleImage/Gen20.0"},
     })
     cu = OptIntAttr("#.N:SMs/A:CUs/I:EUs")
     perf = TblAttr("Frequency", {"": "Std Freq", "h": "High Freq", "hh": "Very High Freq"})
