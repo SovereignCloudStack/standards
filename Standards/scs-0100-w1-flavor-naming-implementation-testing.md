@@ -138,7 +138,7 @@ Cores and 64 Stream Processors per CU.
 Note that we previously assumed more similarity of consumer RDNA-x with
 server CDNA-x that actually is the case; the RDNA-x cards now use `x.1`
 (since v3.3 as of Oct 2025) to be able to differentiate them. We will
-tolerate potential rate cases of old installations calling RDNA-x as
+tolerate potential rare cases of old installations calling RDNA-x as
 generation `x` for the time being.
 
 #### intel Xe (`I`)
