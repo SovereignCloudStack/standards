@@ -375,7 +375,7 @@ conjunction with a vendor. At present, these values are possible:
 | 3          | Ice Lake          | Zen-3 (Milan)  | A71x/NeoN2/V2(ARMv9) | TBD        |
 | 4          | Sapphire Rapids   | Zen-4 (Genoa)  | AmpereOne (ARMv8.6)  | TBD        |
 | 5          | Sierra Forest(E)  | Zen-5 (Turin)  | A72x/NeoN3/V3(Av9.2) | TBD        |
-| 6          | Granite Rapids(P) | Zen-6 (Morpheus) | OryonV3 (ARMv9.2)  | TBD        |
+| 6          | Granite Rapids(P) | Zen-6 (Venice)   |                            | TBD       |
 
 It is recommended to leave out the `0` when specifying the old generation; this will
 help the parser tool, which assumes 0 for an unspecified value and does leave it
