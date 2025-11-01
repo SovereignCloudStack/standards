@@ -367,7 +367,7 @@ The options for arch are as follows:
 The generation is vendor specific and can be left out, but it can only be specified in
 conjunction with a vendor. At present, these values are possible:
 
-| Generation | i (Intel x86-64)  | z (AMD x86-64) |  a (AArch64)         | r (RISC-V) |
+| Generation | i (Intel x86-64)  | z (AMD x86-64) | a (AArch64)          | r (RISC-V) |
 | ---------- | ----------------- | -------------- | -------------------- | ---------- |
 | 0          | pre Skylake       | pre Zen        | pre Cortex A76       | TBD        |
 | 1          | Skylake           | Zen-1 (Naples) | A76/NeoN1 class      | TBD        |
@@ -375,7 +375,7 @@ conjunction with a vendor. At present, these values are possible:
 | 3          | Ice Lake          | Zen-3 (Milan)  | A71x/NeoN2/V2(ARMv9) | TBD        |
 | 4          | Sapphire Rapids   | Zen-4 (Genoa)  | AmpereOne (ARMv8.6)  | TBD        |
 | 5          | Sierra Forest(E)  | Zen-5 (Turin)  | A72x/NeoN3/V3(Av9.2) | TBD        |
-| 6          | Granite Rapids(P) | Zen-6 (Venice)   |                            | TBD       |
+| 6          | Granite Rapids(P) | Zen-6 (Venice) |                      | TBD        |
 
 It is recommended to leave out the `0` when specifying the old generation; this will
 help the parser tool, which assumes 0 for an unspecified value and does leave it

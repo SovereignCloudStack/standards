@@ -208,7 +208,7 @@ class CPUBrand:
         "z": {None: '(unspecified)', 0: "Unspec/Pre-Zen", 1: "Zen 1", 2: "Zen 2", 3: "Zen 3", 4: "Zen 4/4c", 5: "Zen 5/5c",
               6: 'Zen6/6c'},
         "a": {None: '(unspecified)', 0: "Unspec/Pre-A76", 1: "A76/NeoN1", 2: "A78/X1/NeoV1", 3: "A71x/NeoN2/V2",
-              4: "AmpereOne", 5: "A72x/NeoN3/V3", 6: "OryonV3"},
+              4: "AmpereOne", 5: "A72x/NeoN3/V3"},
         "r": {None: '(unspecified)', 0: "Unspec"},
     })
     perf = TblAttr("Performance", {"": "Std Perf", "h": "High Perf", "hh": "Very High Perf", "hhh": "Very Very High Perf"})
