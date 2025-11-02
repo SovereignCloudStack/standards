@@ -32,11 +32,14 @@ FLAVOR_OPTIONAL = ("hw_rng:rate_bytes", "hw_rng:rate_period")
 
 TIMEOUT = 5 * 60  # timeout in seconds after which we no longer wait for the VM to complete the run
 MARKER = '_scs-test-'
+# NOTE we mask serial-getty@ttyS0.service because the login prompt messes up the console output that we want to parse
 SERVER_USERDATA_GENERIC = """
 #cloud-config
 # apt-placeholder
 packages:
   - rng-tools5
+bootcmd:
+  - systemctl mask serial-getty@ttyS0.service
 runcmd:
   - echo '_scs-test-entropy-avail'; cat /proc/sys/kernel/random/entropy_avail
   - echo '_scs-test-fips-test'; cat /dev/random | rngtest -c 1000
@@ -54,7 +57,10 @@ SERVER_USERDATA = {
     'debian': SERVER_USERDATA_GENERIC.replace('# apt-placeholder', """apt:
   primary:
     - arches: [default]
-      uri: https://mirror.plusserver.com/debian/debian/"""),
+      uri: https://mirror.plusserver.com/debian/debian/
+  security:
+    - arches: [default]
+      uri: https://mirror.plusserver.com/debian/debian-security/"""),
 }
 
 
@@ -334,6 +340,8 @@ def compute_canonical_image(all_images):
 def _convert_to_collected(lines, marker=MARKER):
     # parse lines from console output
     # removing any "indent", stuff that looks like '[   70.439502] cloud-init[513]: '
+    # NOTE this logic can fail when something (such as a login prompt) messes up the console output
+    # therefore we disable the corresponding service (see cloud-init)
     section = None
     indent = 0
     collected = {}
