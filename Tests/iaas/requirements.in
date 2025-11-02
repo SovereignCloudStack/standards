@@ -1,0 +1,3 @@
+-c ../requirements.txt
+boto3
+openstacksdk

@@ -6,7 +6,8 @@ status: Stable
 track: IaaS
 replaces: Image-Metadata-Spec.md
 description: |
-  The SCS-0102 Image Metadata Standard outlines how to categorize and manage metadata for cloud-based operating
+  This is version 1.1 of the SCS-0102 Image Metadata Standard.
+  It outlines how to categorize and manage metadata for cloud-based operating
   system images to ensure usability and clarity. The standard encompasses naming conventions, technical requirements,
   image handling protocols including updating and origin, and licensing/support details. These guidelines ensure
   that users can understand, access, and utilize OS images effectively, with clear information on features, updates,
@@ -52,20 +53,64 @@ in the [OpenStack Image documentation](https://docs.openstack.org/glance/latest/
 
 The following properties are considered mandatory:
 
-- `architecture`, `hypervisor_type`
+- `architecture`
 - `min_disk` (in GiB), `min_ram` (in MiB)
 - `os_version`, `os_distro`
-- `hw_rng_model`, `hw_disk_bus` (`scsi` recommended, and then setting `hw_scsi_model` is also recommended)
+- `hw_disk_bus` (`scsi` recommended, and then setting `hw_scsi_model` is also recommended)
 
 **Note**: Disk sizes tend to be measured in GB = 10^9 and not GiB = 2^30 in the disk industry, but OpenStack uses GiB.
 
-The following properties are recommended (if the features are supported):
+The value given vor `min_ram` MUST be sufficient for the VM to boot and survive (for at least 10 s).
 
+The following property is recommended:
+
+- `hypervisor_type`
+
+The values for `architecture` and `os_distro` and `hypervisor_type` (the latter only if specified) values
+must follow the [OpenStack specifications](https://docs.openstack.org/glance/2025.1/admin/useful-image-properties.html).
+The `os_version` string should be numeric if the distribution uses numbers, the pair `os_distro` `os_version` should
+for example be `ubuntu` `24.04` for Ubuntu Noble Numbat 24.04[.x] LTS.
+
+To allow the distinction between general purpose images (which should come from upstream with at most some
+targeted adjustments as required by the cloud such as e.g. drivers) and images that are purpose-built, we
+recommend an additional field:
+
+- `os_purpose`
+
+  The following values are allowed
+
+  | `os_purpose` value | Intention                                                 |
+  |--------------------|-----------------------------------------------------------|
+  | `generic`          | A general purpose image, (mostly) vanilla from upstream   |
+  | `minimal`          | A much more barebones general purpose image               |
+  | `k8snode`          | Node image built for k8s with CRI and kubelet             |
+  | `gpu`              | Image with GPU drivers e.g. for HPC or AI                 |
+  | `network`          | Network appliance (firewall, router, loadbalancer, ...)   |
+  | `custom`           | None of the above                                         |
+
+  Note that no other values are currently allowed and `custom` should be used in case
+  of doubt. Talk to the SCS standardization bodies if you'd like to see this list extended which is
+  likely the case if you fall back to `custom`.
+
+  The usage of standardized `os_distro`, `os_version`, `architecture`, and `os_purpose` help cloud users to create
+  automation that works across clouds without requiring image names to be standardized.
+
+  _Uniqueness requirement_: whenever there are two images that have `os_hidden=False`, `visibility=public`,
+  and that coincide in all three fields `os_distro`, `os_version`, and `architecture`, then only one of them may
+  have `os_purpose=generic`. In other words, users who search visible public images for a generic OS
+  of a certain distro, version, and architecture will not get more than one result.
+
+  Note: Expect this field to become mandatory in v2 of this standard sooner rather than later.
+
+The following further properties are recommended (if the features are supported):
+
+- `hw_rng_model`
 - `os_secure_boot`, `hw_firmware_type`
 - `hw_watchdog_action`, `hw_mem_encryption`, `hw_pmu`, `hw_video_ram`, `hw_vif_multiqueue_enabled`
 
 The `trait:XXX=required` property can be used to indicate that certain virtual hardware
-features `XXX` are required.
+features `XXX` are required which may be advertised in matching
+[flavor extra specs](https://docs.openstack.org/nova/latest/user/flavors.html#extra-specs).
 
 ## Image handling
 
@@ -233,8 +278,10 @@ A boolean property that is not present is considered to be `false`.
   service provider does provide support for this image included in the image/flavor
   pricing (but it might be provided by a contracted 3rd party, e.g. the OS vendor).
 
-### Conformance Tests
+### Version history
 
-The script `image-md-check.py` retrieves the
-image list from a configured cloud and checks each image for the
-completeness and consistency of mandatory properties.
+- Version 1.0 has existed without notable changes since June 2021.
+- Version 1.1 was created in preparation for a new major version 2.0 and has the following additional recommendations:
+  - Reference OpenStack image spec for standard values of `os_distro`, `architecture` and `hypervisor_type`.
+  - Recommendation on `os_version` to be a version number (if such a value exists).
+  - Recommended field `os_purpose`.

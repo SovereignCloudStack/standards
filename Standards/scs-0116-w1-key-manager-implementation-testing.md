@@ -2,7 +2,6 @@
 title: "SCS Key Manager Standard: Implementation and Testing Notes"
 type: Supplement
 track: IaaS
-status: Draft
 supplements:
   - scs-0116-v1-key-manager-standard.md
 ---
@@ -41,13 +40,13 @@ This can be done with a small change in the policy.yaml file. The `creator` has 
 
 ## Automated Tests
 
-The check for the presence of a Key Manager is done with a test script, that checks the presence of a Key Manager service in the catalog endpoint of Openstack.
-This check can eventually be moved to the checks for the mandatory an supported service/API list, in case of a promotion of the Key Manager to the mandatory list.
+We implemented the following testcases, in accordance with the standard:
 
-### Implementation
+- `scs-0116-presence` ensures that a service of type "key-manager" occurs in the service catalog;
+- `scs-0116-permissions` ensures that a regular user has suitable access to the key-manager API.
 
-The script [`check-for-key-manager.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/key-manager/check-for-key-manager.py)
-connects to OpenStack and performs the checks described in this section.
+The testcases can be run using the script
+[`openstack_test.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/openstack_test.py).
 
 ## Manual Tests
 

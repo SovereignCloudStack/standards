@@ -1,3 +1,5 @@
+-c ../requirements.txt
 pytest-kind
 kubernetes
-junitparser
+kubernetes_asyncio
+jinja2

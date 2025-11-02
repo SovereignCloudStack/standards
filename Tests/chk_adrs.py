@@ -64,6 +64,7 @@ Arguments:
 class Checker:
     def __init__(self):
         self.errors = 0
+        self.stable = collections.defaultdict(set)
 
     def emit(self, s):
         print(f"ERROR: {s}", file=sys.stderr)
@@ -91,8 +92,25 @@ class Checker:
         duplicates = sorted([fn for fn in mds if counts[fn[:12]] > 1])
         if duplicates:
             self.emit(f"duplicates found: {', '.join(duplicates)}")
+        for key, fns in self.stable.items():
+            if len(fns) > 1:
+                self.emit(f"duplicate stable: {fns}")
 
-    def check_front_matter(self, fn, front):
+    def _check_front_matter_supplement(self, fn, front, filenames):
+        typ = front.get('type')
+        if typ != "Supplement":
+            self.emit(f"in {fn}: type must be Supplement, is {typ}")
+        if 'status' in front:
+            self.emit(f"in {fn}: Supplement shouldn't have status field")
+        supplements = front.get("supplements")
+        if not isinstance(supplements, list):
+            self.emit(f"in {fn}: field 'supplements' must be a list")
+        # NOTE could check that each entry refers to a file that exists
+        for fn2 in supplements:
+            if fn2 not in filenames:
+                self.emit("in {fn}: field 'supplements' refers to unknown {fn2}")
+
+    def check_front_matter(self, fn, front, filenames):
         """Check the dict `front` of front matter
 
         The argument `fn` is mainly for context in error messages, but also to distinguish document types.
@@ -100,7 +118,8 @@ class Checker:
         if front is None:
             self.emit(f"in {fn}: is missing front matter altogether")
             return
-        # so far, only check primary documents, not supplemental ones
+        if fn[9] == 'w':
+            return self._check_front_matter_supplement(fn, front, filenames)
         if fn[9] != 'v':
             print(f"skipping non-primary {fn}", file=sys.stderr)
             return
@@ -122,6 +141,8 @@ class Checker:
             self.emit(f"in {fn}: status is Stable or Deprecated, but stabilized_at date is missing")
         if status == "Rejected" and "rejected_at" not in front:
             self.emit(f"in {fn}: status is Rejected, but rejected_at date is missing")
+        if status == "Stable":
+            self.stable[fn[4:8]].add(fn)
 
 
 def _load_front_matter(path):
@@ -145,7 +166,7 @@ def main(argv):
     checker = Checker()
     for fn in mds:
         checker.check_name(fn)
-        checker.check_front_matter(fn, _load_front_matter(os.path.join(path, fn)))
+        checker.check_front_matter(fn, _load_front_matter(os.path.join(path, fn)), mds)
     checker.check_names(mds)
     return checker.errors
 

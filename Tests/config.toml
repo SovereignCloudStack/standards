@@ -8,22 +8,23 @@ scopes = [
     "scs-compatible-iaas",
 ]
 subjects = [
-    "gx-scs",
+    "scs2",
 ]
 
 
-[presets.all]
+[presets.iaas]
 scopes = [
     "scs-compatible-iaas",
 ]
 subjects = [
-    "gx-scs",
+    "scs2",
     "artcodix",
+    "artcodix-ro",
+    # currently not reachable from outside: "cc-rrze",
     "pco-prod1",
     "pco-prod2",
     "pco-prod3",
     "pco-prod4",
-    "poc-kdo",
     "poc-wgcloud",
     "regio-a",
     "scaleup-occ2",
@@ -34,14 +35,26 @@ subjects = [
 workers = 4
 
 
+[presets.kaas]
+scopes = [
+    "scs-compatible-kaas",
+]
+subjects = [
+    "syself-1.32",
+    "syself-1.31",
+    "syself-1.30",
+]
+workers = 4
+
+
 [presets.kaas-dev]
 scopes = [
     "scs-compatible-kaas",
 ]
 subjects = [
-    "kind-current",
-    "kind-current-1",
-    "kind-current-2",
+    "kind-1.32",
+    "kind-1.31",
+    "kind-1.30",
 ]
 workers = 1  # better restrict this with clusters running on local machine
 
@@ -58,27 +71,7 @@ spec = "./scs-compatible-kaas.yaml"
 # (this is the only mapping declaration that supports using Python string interpolation)
 [subjects._.mapping]
 os_cloud = "{subject}"
+# NOTE: this subject_root cannot be deviated from when using scs-test-runner.py
 subject_root = "{subject}"
-
-
-[subjects._.kubernetes_setup]
-clusterspec         = "kaas/clusterspec.yaml"
-
-
-[subjects.kind-current.kubernetes_setup]
-kube_plugin         = "kind"
-kube_plugin_config  = "kaas/kind_config.yaml"
-clusterspec_cluster = "current-k8s-release"
-
-
-[subjects.kind-current-1.kubernetes_setup]
-kube_plugin         = "kind"
-kube_plugin_config  = "kaas/kind_config.yaml"
-clusterspec_cluster = "current-k8s-release-1"
-
-
-[subjects.kind-current-2.kubernetes_setup]
-kube_plugin         = "kind"
-kube_plugin_config  = "kaas/kind_config.yaml"
-clusterspec_cluster = "current-k8s-release-2"
-
+# NOTE: this kubeconfig cannot be deviated from when using scs-test-runner.py
+kubeconfig = "{subject}/kubeconfig.yaml"

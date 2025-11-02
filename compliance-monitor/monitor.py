@@ -41,7 +41,7 @@ from sql import (
     db_find_account, db_update_account, db_update_publickey, db_filter_publickeys, db_get_reports,
     db_get_keys, db_insert_report, db_get_recent_results2, db_patch_approval2, db_get_report,
     db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys, db_clear_delegates,
-    db_find_subjects, db_insert_result2, db_get_relevant_results2, db_add_delegate,
+    db_find_subjects, db_insert_result2, db_get_relevant_results2, db_add_delegate, db_get_group,
 )
 
 
@@ -62,7 +62,11 @@ except ImportError:
 class Settings:
     def __init__(self):
         self.db_host = os.getenv("SCM_DB_HOST", "localhost")
+        self.db_port = os.getenv("SCM_DB_PORT", 5432)
         self.db_user = os.getenv("SCM_DB_USER", "postgres")
+        # use default value of None for security reasons (won't be matched)
+        self.hc_user = os.getenv("SCM_HC_USER", None)
+        self.hc_password = os.getenv("SCM_HC_PASSWORD", None)
         password_file_path = os.getenv("SCM_DB_PASSWORD_FILE", None)
         if password_file_path:
             with open(os.path.abspath(password_file_path), "r") as fileobj:
@@ -75,6 +79,7 @@ class Settings:
         self.yaml_path = os.path.abspath("../Tests")
 
 
+GROUP_PREFIX = 'group-'
 ROLES = {'read_any': 1, 'append_any': 2, 'admin': 4, 'approve': 8}
 # number of days that expired results will be considered in lieu of more recent, but unapproved ones
 GRACE_PERIOD_DAYS = 7
@@ -122,6 +127,7 @@ REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_REPORT, VIEW_DETAIL, VIEW_TA
 # do I hate these globals, but I don't see another way with these frameworks
 app = FastAPI()
 security = HTTPBasic(realm="Compliance monitor", auto_error=True)  # use False for optional login
+optional_security = HTTPBasic(realm="Compliance monitor", auto_error=False)
 settings = Settings()
 # see https://passlib.readthedocs.io/en/stable/narr/quickstart.html
 cryptctx = CryptContext(
@@ -144,7 +150,8 @@ class TimestampEncoder(json.JSONEncoder):
 
 
 def mk_conn(settings=settings):
-    return psycopg2.connect(host=settings.db_host, user=settings.db_user, password=settings.db_password)
+    return psycopg2.connect(host=settings.db_host, user=settings.db_user,
+                            password=settings.db_password, port=settings.db_port)
 
 
 def get_conn(settings=settings):
@@ -220,7 +227,8 @@ def import_bootstrap(bootstrap_path, conn):
     with conn.cursor() as cur:
         for account in accounts:
             roles = sum(ROLES[r] for r in account.get('roles', ()))
-            accountid = db_update_account(cur, {'subject': account['subject'], 'roles': roles})
+            acc_record = {'subject': account['subject'], 'roles': roles, 'group': account.get('group')}
+            accountid = db_update_account(cur, acc_record)
             db_clear_delegates(cur, accountid)
             for delegate in account.get('delegates', ()):
                 db_add_delegate(cur, accountid, delegate)
@@ -507,8 +515,8 @@ def convert_result_rows_to_dict2(
                 missing.add((scope_uuid, version, testcase_id))
             continue
         # drop value if too old
-        expires_at = add_period(checked_at, testcase.get('lifetime'))
-        if now >= expires_at:
+        lifetime = testcase.get('lifetime')  # leave None if not present; to be handled by add_period
+        if now >= add_period(checked_at, lifetime):
             continue
         tc_result = dict(result=result, checked_at=checked_at)
         if include_report:
@@ -550,7 +558,8 @@ async def get_status(
 def _build_report_url(base_url, report, *args, **kwargs):
     if kwargs.get('download'):
         return f"{base_url}reports/{report}"
-    url = f"{base_url}page/report/{report}"
+    report_page = 'report_full' if kwargs.get('full') else 'report'
+    url = f"{base_url}page/{report_page}/{report}"
     if len(args) == 2:  # version, testcase_id --> add corresponding fragment specifier
         url += f"#{args[0]}_{args[1]}"
     return url
@@ -564,7 +573,7 @@ def render_view(view, view_type, detail_page='detail', base_url='/', title=None,
     def scope_url(uuid): return f"{base_url}page/scope/{uuid}"  # noqa: E306,E704
     def detail_url(subject, scope): return f"{base_url}page/{detail_page}/{subject}/{scope}"  # noqa: E306,E704
     def report_url(report, *args, **kwargs): return _build_report_url(base_url, report, *args, **kwargs)  # noqa: E306,E704
-    fragment = templates_map[stage1].render(detail_url=detail_url, report_url=report_url, scope_url=scope_url, **kwargs)
+    fragment = templates_map[stage1].render(base_url=base_url, detail_url=detail_url, report_url=report_url, scope_url=scope_url, **kwargs)
     if view_type != ViewType.markdown and stage1.endswith('.md'):
         fragment = markdown(fragment, extensions=['extra'])
     if stage1 != stage2:
@@ -572,8 +581,46 @@ def render_view(view, view_type, detail_page='detail', base_url='/', title=None,
     return Response(content=fragment, media_type=media_type)
 
 
+def _redact_report(report):
+    """remove all lines from script output in `report` that are not directly linked to any testcase"""
+    if 'run' not in report or 'invocations' not in report['run']:
+        return
+    for invdata in report['run']['invocations'].values():
+        stdout = invdata.get('stdout', [])
+        redacted = [line for line in stdout if line.rsplit(': ', 1)[-1] in ('PASS', 'ABORT', 'FAIL')]
+        if len(redacted) != len(stdout):
+            redacted.insert(0, '(the following has been redacted)')
+            invdata['stdout'] = redacted
+            invdata['redacted'] = True
+        stderr = invdata.get('stderr', [])
+        redacted = [line for line in stderr if line[:6] in ('WARNIN', 'ERROR:')]
+        if len(redacted) != len(stderr):
+            redacted.insert(0, '(the following has been redacted)')
+            invdata['stderr'] = redacted
+            invdata['redacted'] = True
+
+
 @app.get("/{view_type}/report/{report_uuid}")
 async def get_report_view(
+    request: Request,
+    conn: Annotated[connection, Depends(get_conn)],
+    view_type: ViewType,
+    report_uuid: str,
+):
+    with conn.cursor() as cur:
+        specs = db_get_report(cur, report_uuid)
+    if not specs:
+        raise HTTPException(status_code=404)
+    spec = specs[0]
+    _redact_report(spec)
+    return render_view(
+        VIEW_REPORT, view_type, report=spec, base_url=settings.base_url,
+        title=f'Report {report_uuid} (redacted)',
+    )
+
+
+@app.get("/{view_type}/report_full/{report_uuid}")
+async def get_report_view_full(
     request: Request,
     account: Annotated[Optional[tuple[str, str]], Depends(auth)],
     conn: Annotated[connection, Depends(get_conn)],
@@ -586,7 +633,17 @@ async def get_report_view(
         raise HTTPException(status_code=404)
     spec = specs[0]
     check_role(account, spec['subject'], ROLES['read_any'])
-    return render_view(VIEW_REPORT, view_type, report=spec, base_url=settings.base_url, title=f'Report {report_uuid}')
+    return render_view(
+        VIEW_REPORT, view_type, report=spec, base_url=settings.base_url,
+        title=f'Report {report_uuid} (full)',
+    )
+
+
+def _resolve_group(cur, subject, prefix=GROUP_PREFIX):
+    group = subject.removeprefix(prefix)
+    if subject != group:
+        return group, db_get_group(cur, group)
+    return None, [subject]
 
 
 @app.get("/{view_type}/detail/{subject}/{scopeuuid}")
@@ -598,30 +655,42 @@ async def get_detail(
     scopeuuid: str,
 ):
     with conn.cursor() as cur:
-        rows2 = db_get_relevant_results2(cur, subject, scopeuuid, approved_only=True)
+        group, subjects = _resolve_group(cur, subject)
+        rows2 = []
+        for subj in subjects:
+            rows2.extend(db_get_relevant_results2(cur, subj, scopeuuid, approved_only=True))
     results2 = convert_result_rows_to_dict2(
-        rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS,
-        subjects=(subject, ), scopes=(scopeuuid, ),
+        rows2, get_scopes(), include_report=True, grace_period_days=GRACE_PERIOD_DAYS,
+        subjects=subjects, scopes=(scopeuuid, ),
     )
-    return render_view(VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url, title=f'{subject} compliance')
+    title = f'Details for group {group}' if group else f'Details for subject {subject}'
+    return render_view(
+        VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url,
+        title=title,
+    )
 
 
 @app.get("/{view_type}/detail_full/{subject}/{scopeuuid}")
 async def get_detail_full(
     request: Request,
-    account: Annotated[Optional[tuple[str, str]], Depends(auth)],
     conn: Annotated[connection, Depends(get_conn)],
     view_type: ViewType,
     subject: str,
     scopeuuid: str,
 ):
-    check_role(account, subject, ROLES['read_any'])
     with conn.cursor() as cur:
-        rows2 = db_get_relevant_results2(cur, subject, scopeuuid, approved_only=False)
+        group, subjects = _resolve_group(cur, subject)
+        rows2 = []
+        for subj in subjects:
+            rows2.extend(db_get_relevant_results2(cur, subj, scopeuuid, approved_only=False))
     results2 = convert_result_rows_to_dict2(
-        rows2, get_scopes(), include_report=True, subjects=(subject, ), scopes=(scopeuuid, ),
+        rows2, get_scopes(), include_report=True, subjects=subjects, scopes=(scopeuuid, ),
     )
-    return render_view(VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url, title=f'{subject} compliance')
+    title = f'Details for group {group}' if group else f'Details for subject {subject}'
+    return render_view(
+        VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url,
+        title=f'{title} (incl. unverified results)',
+    )
 
 
 @app.get("/{view_type}/table")
@@ -633,24 +702,24 @@ async def get_table(
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, approved_only=True)
     results2 = convert_result_rows_to_dict2(rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS)
-    return render_view(VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, title="SCS compliance overview")
+    return render_view(
+        VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, detail_page='detail',
+        title="SCS compliance overview",
+    )
 
 
 @app.get("/{view_type}/table_full")
 async def get_table_full(
     request: Request,
-    account: Annotated[Optional[tuple[str, str]], Depends(auth)],
     conn: Annotated[connection, Depends(get_conn)],
     view_type: ViewType,
 ):
-    check_role(account, None, ROLES['read_any'])
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, approved_only=False)
     results2 = convert_result_rows_to_dict2(rows2, get_scopes())
     return render_view(
-        VIEW_TABLE, view_type, results=results2,
-        detail_page='detail_full', base_url=settings.base_url,
-        title="SCS compliance overview",
+        VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, detail_page='detail_full',
+        title="SCS compliance overview (incl. unverified results)", unverified=True,
     )
 
 
@@ -717,13 +786,50 @@ async def post_results(
     conn.commit()
 
 
-def pick_filter(results, subject, scope):
+@app.get("/healthz")
+async def get_healthz(request: Request):
+    """return compliance monitor's health status"""
+    credentials = await optional_security(request)
+    authorized = credentials and \
+        credentials.username == settings.hc_user and credentials.password == settings.hc_password
+
+    try:
+        mk_conn(settings=settings)
+    except Exception as e:
+        detail = str(e) if authorized else 'internal server error'
+        return Response(status_code=500, content=detail, media_type='text/plain')
+
+    return Response()  # empty response with status 200
+
+
+def pick_filter(results, scope, *subjects):
     """Jinja filter to pick scope results from `results` for given `subject` and `scope`"""
-    return results.get(subject, {}).get(scope, {})
+    # simple case (backwards compatible): precisely one subject
+    if len(subjects) == 1:
+        return results.get(subjects[0], {}).get(scope, {})
+    # generalized case: multiple subjects
+    # in this case, drop None
+    rs = [results.get(subject, {}).get(scope, {}) for subject in subjects]
+    return [r for r in rs if r is not None]
+
+
+STATUS_ORDERING = {
+    'effective': 10,
+    'warn': 5,
+    'deprecated': 1,
+}
 
 
 def summary_filter(scope_results):
     """Jinja filter to construct summary from `scope_results`"""
+    if not isinstance(scope_results, dict):
+        # new generalized case: "aggregate" results for multiple subjects
+        # simplified computation: just select the worst subject to represent the group
+        scope_results = min(
+            scope_results,
+            default={},
+            key=lambda sr: STATUS_ORDERING.get(sr.get('best_passed'), -1),
+        )
     passed_str = scope_results.get('passed_str', '') or '–'
     best_passed = scope_results.get('best_passed')
     # avoid simple 🟢🔴 (hard to distinguish for color-blind folks)

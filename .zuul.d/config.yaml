@@ -5,13 +5,14 @@
     merge-mode: "squash-merge"
     periodic-daily:
       jobs:
-        - scs-check-all
+        - scs-check-iaas
+        - scs-check-kaas
     periodic-hourly:
       jobs:
-        - scs-check-gx-scs-main
+        - scs-check-scs2-main
     post:
       jobs:
-        - scs-check-gx-scs
+        - scs-check-scs2
     check:
       jobs:
         - scs-check-adr-syntax
@@ -22,7 +23,7 @@
     pre-run: playbooks/pre.yaml
     run: playbooks/adr_syntax.yaml
 - job:
-    name: scs-check-gx-scs
+    name: scs-check-scs2
     parent: base
     secrets:
      - name: clouds_conf
@@ -30,16 +31,41 @@
     nodeset: pod-fedora-40
     vars:
       preset: default
+      iaas: true
+      kaas: false
+      do_provision: false
+      do_cleanup: true
+      sonobuoy_tar_gz_url: >
+        https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.57.3/sonobuoy_0.57.3_linux_amd64.tar.gz
     pre-run:
      - playbooks/pre.yaml
      - playbooks/pre_cloud.yaml
     run: playbooks/compliance_check.yaml
+    post-run:
+     - playbooks/post_cloud.yaml
 - job:
-    name: scs-check-gx-scs-main
-    parent: scs-check-gx-scs
+    name: scs-check-scs2-main
+    parent: scs-check-scs2
     branches: main
 - job:
-    name: scs-check-all
-    parent: scs-check-gx-scs-main
+    name: scs-check-iaas
+    parent: scs-check-scs2-main
+    # timeout:
+    # a) leave room for long-running tests (mostly when some cloud is unreachable)
+    # b) keep in mind that this job covers ALL test subjects (at most 4 in parallel)
+    timeout: 3600
     vars:
-      preset: all
+      preset: iaas
+- job:
+    name: scs-check-kaas
+    parent: scs-check-scs2-main
+    # timeout:
+    # a) these tests take a lot of time, I'm afraid, particularly Sonobuoy
+    # b) keep in mind that this job covers ALL test subjects (at most 4 in parallel)
+    timeout: 21600  # 6 hrs -- 5 hrs was almost sufficient (reports came through sometimes)
+    vars:
+      preset: kaas
+      iaas: false
+      kaas: true
+      do_provision: true
+      do_cleanup: false

@@ -15,29 +15,40 @@ accounts:
         public_key_name: "zuul_ci_sign"
     roles:
       - append_any
-  - subject: gx-scs
+  - subject: scs2
     delegates:
       - zuul_ci
+  - subject: artcodix
+    group: artcodix
+    delegates:
+      - zuul_ci
+  - subject: artcodix-ro
+    group: artcodix
+    delegates:
+      - zuul_ci
+  - subject: cc-rrze
+    delegates:
+      - zuul_ci
+    api_keys:
+      - "$argon2id$v=19$m=65536,t=3,p=4$iLG29t7be88ZY6w1Rui91w$9UwkTMLBMxq/1QyeVfJcc95fhQtY1AC48Rex4S8ZSIU"
     keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIF8kQx6ur/WSSY9ThK/mwhrl/VsYnjRk44GSXBy3VfKI"
         public_key_type: "ssh-ed25519"
         public_key_name: "primary"
-  - subject: artcodix
-    delegates:
-      - zuul_ci
   - subject: pco-prod1
+    group: pco-prod
     delegates:
       - zuul_ci
   - subject: pco-prod2
+    group: pco-prod
     delegates:
       - zuul_ci
   - subject: pco-prod3
+    group: pco-prod
     delegates:
       - zuul_ci
   - subject: pco-prod4
-    delegates:
-      - zuul_ci
-  - subject: poc-kdo
+    group: pco-prod
     delegates:
       - zuul_ci
   - subject: poc-wgcloud
@@ -54,9 +65,11 @@ accounts:
     delegates:
       - zuul_ci
   - subject: syseleven-dus2
+    group: syseleven
     delegates:
       - zuul_ci
   - subject: syseleven-ham1
+    group: syseleven
     delegates:
       - zuul_ci
   - subject: wavestack
@@ -66,3 +79,19 @@ accounts:
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
         public_key_type: "ssh-ed25519"
         public_key_name: "primary"
+  - subject: aov-cloud
+    api_keys:
+      - "$argon2id$v=19$m=65536,t=3,p=4$MKaU8l5LCQGg1Pqfc26t1Q$fj9LIxzLiwAkXaPTMw5lE3QuSNnp7DAVhyquaPRQSyU"
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIKc+mn17GOsrPamm4zSoUffPz8uaaDIEWTQoY2HOBCnx"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "primary"
+  - subject: syself-1.32
+    delegates:
+      - zuul_ci
+  - subject: syself-1.31
+    delegates:
+      - zuul_ci
+  - subject: syself-1.30
+    delegates:
+      - zuul_ci

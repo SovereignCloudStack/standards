@@ -21,6 +21,12 @@ You can also request a YAML report using the option `-o OUTPUT.yaml`
 
 ### IaaS checks
 
+Install IaaS-specific requirements:
+
+```shell
+pip install -r iaas/requirements.txt
+```
+
 With a cloud environment configured in your `~/.config/openstack/clouds.yaml`
 and `secure.yaml`, then run
 
@@ -33,10 +39,16 @@ specified in `clouds.yaml`.
 
 ### KaaS checks
 
+Install KaaS-specific requirements:
+
+```shell
+pip install -r kaas/requirements.txt
+```
+
 Given a kubeconfig file `path/to/kubeconfig.yaml`, run
 
 ```shell
-./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml -s SUBJECT scs-compatible-kaas.yaml
+./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml -a subject_root=. -s SUBJECT scs-compatible-kaas.yaml
 ```
 
 Replace `SUBJECT` with an arbitrary, but meaningful subject name.
@@ -88,7 +100,7 @@ docker run -v ~/.config/openstack:/root/.config/openstack:ro scs-compliance-chec
 For KaaS:
 
 ```shell
-docker run -v /path/to/kubeconfig.yaml:/root/kubeconfig.yaml:ro scs-compliance-check -a kubeconfig=/root/kubeconfig.yaml -s SUBJECT scs-compatible-kaas.yaml
+docker run -v /path/to/kubeconfig.yaml:/root/kubeconfig.yaml:ro scs-compliance-check -a kubeconfig=/root/kubeconfig.yaml -a subject_root=. -s SUBJECT scs-compatible-kaas.yaml
 ```
 
 If you want to test against a cluster running on localhost (e.g., kind cluster), replace
@@ -133,13 +145,13 @@ We run the tests on a regular basis in our GitHub workflows.
 
 ### Maintaining the Python dependencies
 
-We list our main Python dependencies in `requirements.in`. Additionally, we list
-[unit tests](#unit-and-regression-tests) dependencies in `test-requirements.in`.
-The `*.in` files are fed to `pip-compile` to produce corresponding `*.txt` files
-that contain an exact, version-pinned listing of *all* dependencies, including
-transitive ones.
+We use **pip-compile** to pin and upgrade our dependencies in a controlled manner.
 
-`pip-compile` can be installed via `pip install pip-tools`.
+With `pip-compile`, you list your dependencies with as few version constraints as
+possible in a dedicated file, and then you have pip-compile generate the conventional
+`requirements.txt` with fully pinned dependencies.
+
+The tool `pip-compile` can be installed via `pip install pip-tools`.
 It needs to be run in two cases:
 
 1. You modified an `*.in` file: run `pip-compile <INFILE>`. For example:
@@ -154,6 +166,15 @@ It needs to be run in two cases:
    ```shell
    pip-compile --upgrade requirements.in
    ```
+
+We use a **layered approach** to allow for selective installation:
+
+- the most basic layer is `requirements.in`,
+- above that we have `iaas/requirements.in` and `kaas/requirements.in`, and
+- at the very top we have `test-requirements.in`.
+
+Whenever you change or recompile one of these layers,
+*all layers above that layer have to be recompiled as well*.
 
 Note: The Python version used for running `pip-compile` should be consistent. The currently
 used version is documented in the header of the `requirements.txt`. It should match the

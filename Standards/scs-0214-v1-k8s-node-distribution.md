@@ -1,8 +1,9 @@
 ---
 title: Kubernetes Node Distribution and Availability
 type: Standard
-status: Stable
+status: Deprecated
 stabilized_at: 2024-02-08
+deprecated_at: 2024-11-20
 track: KaaS
 ---
 

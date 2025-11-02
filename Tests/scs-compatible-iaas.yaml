@@ -1,60 +1,22 @@
+# -- informal edit log --
+# whenever old content is removed as per scs-0003-v1, add a line of the form
+# - YYYY-MM-DD pruned old content; affected versions: vN, ...
+# - 2025-05-22 pruned old content; affected versions: v1, v2, v3-orig, v5
 name: SCS-compatible IaaS
 uuid: 50393e6f-2ae1-4c5c-a62c-3b75f2abef3f
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml
 variables:
   - os_cloud
 modules:
-  - id: opc-v2020.11
-    name: OpenStack Powered Compute v2020.11
-    url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2020.11.json
   - id: opc-v2022.11
     name: OpenStack Powered Compute v2022.11
     url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
-  - id: scs-0100-v1
-    name: Flavor naming v1
-    url: https://docs.scs.community/standards/scs-0100-v1-flavor-naming
-    run:
-      - executable: ./iaas/flavor-naming/flavor-names-openstack.py
-        args: -c {os_cloud} --v1prefer
-    testcases:
-      - id: flavor-name-check
-        tags: [mandatory]
-        description: >
-          Must fulfill all requirements of
-          <https://docs.scs.community/standards/scs-0100-v1-flavor-naming>
-  - id: scs-0100-v2
-    name: Flavor naming v2
-    url: https://docs.scs.community/standards/scs-0100-v2-flavor-naming
-    run:
-      - executable: ./iaas/flavor-naming/flavor-names-openstack.py
-        args: -c {os_cloud}
-    testcases:
-      - id: flavor-name-check
-        tags: [mandatory]
-        description: >
-          Must fulfill all requirements of
-          <https://docs.scs.community/standards/scs-0100-v2-flavor-naming>
-  - id: scs-0100-v3.0
-    name: Flavor naming v3.0
-    url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
-    run:
-      - executable: ./iaas/flavor-naming/flavor-names-openstack.py
-        args: --v3 -c {os_cloud}
-        # Note: "--v3 --v2plus" would outlaw the v1 flavor names. Don't do this yet.
-    testcases:
-      - id: flavor-name-check
-        tags: [mandatory]
-        description: >
-          Must fulfill all requirements of
-          <https://docs.scs.community/standards/scs-0100-v3-flavor-naming> -- plus the list of mandatory
-          and recommended flavors found in <https://docs.scs.community/standards/scs-0100-v2-flavor-naming#standard-scs-flavors>
   - id: scs-0100-v3.1
     name: Flavor naming v3.1
     url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
     run:
-      - executable: ./iaas/flavor-naming/flavor-names-openstack.py
-        args: -c {os_cloud} --mand=./iaas/scs-0100-v3-flavors.yaml
-        # Note: --v2plus would outlaw the v1 flavor names. Don't do this yet.
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} flavor-name-check
     testcases:
       - id: flavor-name-check
         tags: [mandatory]
@@ -65,19 +27,9 @@ modules:
     name: Entropy v1
     url: https://docs.scs.community/standards/scs-0101-v1-entropy
     run:
-      - executable: ./iaas/entropy/entropy-check.py
-        args: -c {os_cloud} -d
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} entropy-check
     testcases:
-      - id: entropy-check-flavor-properties
-        tags: []  # don't use this testcase, but list it anyway because the script will output a result
-      - id: entropy-check-image-properties
-        tags: []  # don't use this testcase, but list it anyway because the script will output a result
-      - id: entropy-check-rngd
-        tags: []  # don't use this testcase, but list it anyway because the script will output a result
-      - id: entropy-check-entropy-avail
-        tags: []  # don't use this testcase, but list it anyway because the script will output a result
-      - id: entropy-check-fips-test
-        tags: []  # don't use this testcase, but list it anyway because the script will output a result
       - id: entropy-check
         tags: [mandatory]
         description: >
@@ -87,42 +39,40 @@ modules:
     name: Entropy v1
     url: https://docs.scs.community/standards/scs-0101-v1-entropy
     run:
-      - executable: ./iaas/entropy/entropy-check.py
-        args: -c {os_cloud} -d
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} scs-0101-flavor-property scs-0101-image-property scs-0101-rngd scs-0101-entropy-avail scs-0101-fips-test
     testcases:
-      - id: entropy-check-flavor-properties
+      - id: scs-0101-flavor-property
         tags: [recommended]
         description: >
           Must have all flavor properties recommended in
           <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings>
-      - id: entropy-check-image-properties
+      - id: scs-0101-image-property
         tags: [recommended]
         description: >
           Must have all image properties recommended in
           <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings>
-      - id: entropy-check-rngd
+      - id: scs-0101-rngd
         tags: [mandatory]
         description: >
           Images of the test sample must have the service `rngd`; see
           <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
-      - id: entropy-check-entropy-avail
+      - id: scs-0101-entropy-avail
         tags: [mandatory]
         description: >
           A test instance must have the correct `entropy_avail`; see
           <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
-      - id: entropy-check-fips-test
+      - id: scs-0101-fips-test
         tags: [mandatory]
         description: >
           A test instance must pass the "FIPS test"; see
           <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
-      - id: entropy-check
-        tags: []  # don't use this testcase, but list it anyway because the script will output a result
   - id: scs-0102-v1
     name: Image metadata v1
     url: https://docs.scs.community/standards/scs-0102-v1-image-metadata
     run:
-      - executable: ./iaas/image-metadata/image-md-check.py
-        args: -c {os_cloud} -v -s
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} image-metadata-check
         # skip check of mand/recc/sugg images, for these were never authoritative, and they have been
         # superseded by scs-0104-v1
     testcases:
@@ -134,21 +84,34 @@ modules:
     name: Standard flavors
     url: https://docs.scs.community/standards/scs-0103-v1-standard-flavors
     run:
-      - executable: ./iaas/standard-flavors/flavors-openstack.py
-        args: -c {os_cloud} -d ./iaas/scs-0103-v1-flavors.yaml
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} standard-flavors-check
     testcases:
       - id: standard-flavors-check
         tags: [mandatory]
         description: >
           Must fulfill all requirements of <https://docs.scs.community/standards/scs-0103-v1-standard-flavors>
-  - id: scs-0104-v1
+  - id: scs-0104-v1-1
     name: Standard images
     url: https://docs.scs.community/standards/scs-0104-v1-standard-images
     parameters:
       image_spec: address (URL) of an image-spec (YAML) file
     run:
-      - executable: ./iaas/standard-images/images-openstack.py
-        args: -c {os_cloud} -d {image_spec}
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} standard-images-check/1
+    testcases:
+      - id: standard-images-check
+        tags: [mandatory]
+        description: >
+          Must fulfill all requirements of <https://docs.scs.community/standards/scs-0104-v1-standard-images>
+  - id: scs-0104-v1-2
+    name: Standard images
+    url: https://docs.scs.community/standards/scs-0104-v1-standard-images
+    parameters:
+      image_spec: address (URL) of an image-spec (YAML) file
+    run:
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} standard-images-check/2
     testcases:
       - id: standard-images-check
         tags: [mandatory]
@@ -158,19 +121,19 @@ modules:
     name: Volume Types
     url: https://docs.scs.community/standards/scs-0114-v1-volume-type-standard
     run:
-      - executable: ./iaas/volume-types/volume-types-check.py
-        args: -c {os_cloud} -d
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} volume-types-check
     testcases:
       - id: volume-types-check
-        tags: [mandatory]
+        tags: [volume-types-check]
         description: >
           Must fulfill all requirements of <https://docs.scs.community/standards/scs-0114-v1-volume-type-standard>
   - id: scs-0115-v1
     name: Default rules for security groups
     url: https://docs.scs.community/standards/scs-0115-v1-default-rules-for-security-groups
     run:
-      - executable: ./iaas/security-groups/default-security-group-rules.py
-        args: --os-cloud {os_cloud} --debug
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} security-groups-default-rules-check
     testcases:
       - id: security-groups-default-rules-check
         tags: [mandatory]
@@ -180,8 +143,8 @@ modules:
     name: Key manager
     url: https://docs.scs.community/standards/scs-0116-v1-key-manager-standard
     run:
-      - executable: ./iaas/key-manager/check-for-key-manager.py
-        args: --os-cloud {os_cloud} --debug
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} key-manager-check
     testcases:
       - id: key-manager-check
         tags: [mandatory]
@@ -191,8 +154,8 @@ modules:
     name: Volume backup
     url: https://docs.scs.community/standards/scs-0117-v1-volume-backup-service
     run:
-      - executable: ./iaas/volume-backup/volume-backup-tester.py
-        args: --os-cloud {os_cloud} --debug
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} volume-backup-check
     testcases:
       - id: volume-backup-check
         tags: [mandatory]
@@ -210,8 +173,8 @@ modules:
     name: Mandatory and Supported IaaS Services
     url: https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services
     run:
-      - executable: ./iaas/mandatory-services/mandatory-iaas-services.py
-        args: --os-cloud {os_cloud} --debug
+      - executable: ./iaas/openstack_test.py
+        args: -c {os_cloud} service-apis-check
     testcases:
       - id: service-apis-check
         tags: [mandatory]
@@ -233,67 +196,31 @@ modules:
         description: >
           Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0302-v1-domain-manager-role>
 timeline:
-  - date: 2025-01-01
+  - date: 2025-07-01
     versions:
-      v5: effective
+      v5.1: effective
+      v4: deprecated
+      v3: deprecated
+  - date: 2025-02-01
+    versions:
+      v5.1: effective
       v4: warn
       v3: deprecated
-  - date: 2024-11-21
+  - date: 2024-12-19
     versions:
-      v5: effective
+      v5.1: effective
       v4: effective
       v3: deprecated
-  - date: 2024-11-08
-    versions:
-      v5: draft
-      v4: effective
-      v3: deprecated
-  - date: 2024-08-23
-    versions:
-      v5: draft
-      v4: effective
-      v3: deprecated
-      v3-orig: deprecated
-  - date: 2024-07-31
-    versions:
-      v4: effective
-  - date: 2024-04-30
-    versions:
-      v4: effective
-      v3: warn
-  - date: 2024-02-28
-    versions:
-      v4: effective
-      v3: effective
-  - date: 2023-11-30
-    versions:
-      v3: effective
-  - date: 2023-10-31
-    versions:
-      v3: effective
-      v2: effective
-  - date: 2023-06-15
-    versions:
-      v3: effective
-      v2: effective
-      v1: effective
-  - date: 2023-03-23
-    versions:
-      v1: effective
-      v2: effective
-  - date: 2021-01-01
-    versions:
-      v1: effective
 versions:
-  - version: v5
-    stabilized_at: 2024-11-14
+  - version: v5.1  # copy of v5, but with include "scs-0123-v1", which had simply been forgotten
+    stabilized_at: 2024-12-19
     include:
       - opc-v2022.11
       - scs-0100-v3.1
       - scs-0101-v1
       - scs-0102-v1
       - scs-0103-v1
-      - ref: scs-0104-v1
+      - ref: scs-0104-v1-2
         parameters:
           image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images-v5.yaml
       - scs-0114-v1
@@ -301,6 +228,7 @@ versions:
       - scs-0116-v1
       - scs-0117-v1
       - scs-0121-v1
+      - scs-0123-v1
       - scs-0302-v1
     targets:
       main: mandatory
@@ -313,7 +241,7 @@ versions:
       - scs-0101-v1
       - scs-0102-v1
       - scs-0103-v1
-      - ref: scs-0104-v1
+      - ref: scs-0104-v1-1
         parameters:
           image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images.yaml
     targets:
@@ -326,30 +254,6 @@ versions:
     include:
       - opc-v2022.11
       - scs-0100-v3.1
-      - scs-0102-v1
-    targets:
-      main: mandatory
-  - version: v3-orig
-    stabilized_at: 2023-06-15
-    include:
-      - opc-v2022.11
-      - scs-0100-v3.0
-      - scs-0102-v1
-    targets:
-      main: mandatory
-  - version: v2
-    stabilized_at: 2023-03-23
-    include:
-      - opc-v2022.11
-      - scs-0100-v2
-      - scs-0102-v1
-    targets:
-      main: mandatory
-  - version: v1
-    stabilized_at: 2021-01-01
-    include:
-      - opc-v2020.11
-      - scs-0100-v1
       - scs-0102-v1
     targets:
       main: mandatory

@@ -20,13 +20,19 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./acme:/acme
+    restart: always
+
   web:
     build: .
     ports:
       - "127.0.0.1:5000:8080"
     environment:
       - SCM_DB_HOST=postgres
+      - SCM_DB_PORT=5432
       - SCM_DB_PASSWORD_FILE=/run/secrets/db_password
+      # pass the following two from the shell or put them into .env
+      - SCM_HC_USER
+      - SCM_HC_PASSWORD
       - SCM_BASE_URL=https://compliance.sovereignit.cloud/
     volumes:
       - ../Tests:/Tests
@@ -41,8 +47,10 @@ services:
       - traefik.http.routers.websecure.tls.certresolver=myresolver
     secrets:
       - db_password
+    restart: always
+
   postgres:
-    image: postgres
+    image: postgres:16
     volumes:
       - $HOME/data:/var/lib/postgresql/data
     environment:
@@ -54,6 +62,7 @@ services:
     labels:
       # do not publish this service publicly
       - "traefik.http.routers.postgres.entrypoints=traefik"
+    restart: always
 
 secrets:
    db_password:

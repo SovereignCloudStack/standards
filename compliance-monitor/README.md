@@ -90,7 +90,7 @@ accounts:
       - read_any  # can read non-public details of compliance results for any subject
       - admin  # can cause reload of the bootstrap file, among other things
       - approve  # can approve non-pass results
-  - subject: gx-scs
+  - subject: scs2
     api_keys: []
     keys: []
 ```

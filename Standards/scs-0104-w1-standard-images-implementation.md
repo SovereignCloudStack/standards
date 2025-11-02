@@ -1,8 +1,7 @@
 ---
-title: "SCS Standard Images: Implementation Notes"
+title: "SCS Standard Images: Implementation and Testing Notes"
 type: Supplement
 track: IaaS
-status: Draft
 supplements:
   - scs-0104-v1-standard-images.md
 ---
@@ -59,3 +58,20 @@ Run the test script on your environment and check the error messages :)
 The [openstack-image-manager](https://github.com/osism/openstack-image-manager) is able to
 create all standard, mandatory SCS images for you given image definitions from a YAML file.
 Please see [its documentation](https://docs.scs.community/docs/iaas/components/image-manager/) for details.
+
+## Automated tests
+
+We implemented testcases reflecting the information given in the YAML file(s). Be advised that
+the approach with the YAML file has considerable drawbacks, and it will be abandoned in
+future versions of the standard in favor of a more classical approach. The testcases already
+anticipate this future development.
+
+There are two classes of testcases:
+
+- `scs-0104-source-X` with varying `X`:
+  these ensure that certain images have the correct `image_source`;
+- `scs-0104-image-X` with varying `X`:
+  these ensure that certain images can be found in the list of public images.
+
+The testcases can be run using the script
+[`openstack_test.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/openstack_test.py).

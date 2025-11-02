@@ -2,11 +2,38 @@
 - name: Prepare cloud config and ensure clean env
   hosts: all
   roles:
-    - role: bindep # https://zuul-ci.org/docs/zuul-jobs/latest/general-roles.html#role-bindep
+    - role: bindep  # https://zuul-ci.org/docs/zuul-jobs/latest/general-roles.html#role-bindep
+    - role: ensure-pip  # https://zuul-ci.org/docs/zuul-jobs/latest/python-roles.html#role-ensure-pip
   tasks:
+    - name: Install iaas dependencies
+      ansible.builtin.pip:
+        chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
+        requirements: "Tests/iaas/requirements.txt"
+      when: iaas | bool
+
+    - name: Install kaas dependencies
+      ansible.builtin.pip:
+        chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
+        requirements: "Tests/kaas/requirements.txt"
+      when: kaas | bool
+
+    - name: Create local binary dir
+      ansible.builtin.file:
+        path: "{{ ansible_user_dir}}/.local/bin"
+        state: directory
+        recurse: true
+
+    - name: Install Sonobuoy
+      ansible.builtin.shell:
+        curl -L {{ sonobuoy_tar_gz_url | trim | quote }} | tar xz sonobuoy
+      args:
+        chdir: "{{ ansible_user_dir}}/.local/bin/"
+        creates: sonobuoy
+      when: kaas | bool
+
     - name: Create cloud config dir
       ansible.builtin.file:
-        path: "~/.config/openstack"
+        path: "{{ ansible_user_dir }}/.config/openstack"
         state: directory
         recurse: true
         mode: "0700"
@@ -14,7 +41,19 @@
     - name: Create cloud config file
       ansible.builtin.template:
         src: "clouds.yaml.j2"
-        dest: "~/.config/openstack/clouds.yaml"
+        dest: "{{ ansible_user_dir }}/.config/openstack/clouds.yaml"
+        mode: "0600"
+      no_log: true
+
+    - name: Create cluster config dir
+      ansible.builtin.copy:
+        src: ".config"
+        dest: "{{ ansible_user_dir }}/"
+
+    - name: Create cluster config file
+      ansible.builtin.template:
+        src: "clusters.yaml.j2"
+        dest: "{{ ansible_user_dir }}/.config/scs/clusters.yaml"
         mode: "0600"
       no_log: true
 
@@ -45,3 +84,11 @@
         cmd: python3 Tests/scs-test-runner.py --config Tests/config.toml --debug cleanup --preset {{ preset }}
         chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
       changed_when: true
+      when: do_cleanup | bool
+
+    - name: Provision necessary clusters
+      ansible.builtin.command:
+        cmd: python3 Tests/scs-test-runner.py --config Tests/config.toml --debug provision --preset {{ preset }}
+        chdir: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}"
+      changed_when: true
+      when: do_provision | bool

@@ -32,7 +32,7 @@ class Config:
     def __init__(self):
         self.cwd = os.path.abspath(os.path.dirname(sys.argv[0]) or os.getcwd())
         self.scs_compliance_check = os.path.join(self.cwd, 'scs-compliance-check.py')
-        self.cleanup_py = os.path.join(self.cwd, 'cleanup.py')
+        self.cleanup_py = os.path.join(self.cwd, 'iaas', 'cleanup.py')
         self.run_plugin_py = os.path.join(self.cwd, 'kaas', 'plugin', 'run_plugin.py')
         self.ssh_keygen = shutil.which('ssh-keygen')
         self.curl = shutil.which('curl')
@@ -65,12 +65,6 @@ class Config:
         mapping.update(self.subjects.get(subject, {}).get('mapping', {}))
         return mapping
 
-    def get_kubernetes_setup(self, subject):
-        default_kubernetes_setup = self.subjects.get('_', {}).get('kubernetes_setup', {})
-        kubernetes_setup = dict(default_kubernetes_setup)
-        kubernetes_setup.update(self.subjects.get(subject, {}).get('kubernetes_setup', {}))
-        return kubernetes_setup
-
     def abspath(self, path):
         return os.path.join(self.cwd, path)
 
@@ -85,35 +79,21 @@ class Config:
         return {'args': args}
 
     def build_provision_command(self, subject):
-        kubernetes_setup = self.get_kubernetes_setup(subject)
-        subject_root = self.abspath(self.get_subject_mapping(subject).get('subject_root') or '.')
-        ensure_dir(subject_root)
+        # This command will create the file `$subject/kubeconfig.yaml` relative to the current working dir.
+        # The check script OTOH will expect `$subject/kubeconfig.yaml` relative to the location of the spec
+        # file (scs-compatible-kaas.yaml). We reconcile these two realms by (tacitly) requiring that the
+        # spec file be located in the same directory as this script (known as self.cwd).
+        # This 'solution' leaves room for improvement (we could model the execution environment explicitly),
+        # but for now, let's not overengineer.
         return {
-            'args': [
-                sys.executable, self.run_plugin_py,
-                'create',
-                kubernetes_setup['kube_plugin'],
-                self.abspath(kubernetes_setup['kube_plugin_config']),
-                self.abspath(kubernetes_setup['clusterspec']),
-                kubernetes_setup['clusterspec_cluster'],
-            ],
-            'cwd': subject_root,
+            'args': [sys.executable, self.run_plugin_py, '--debug', 'create', subject],
+            'cwd': self.cwd,
         }
 
     def build_unprovision_command(self, subject):
-        kubernetes_setup = self.get_kubernetes_setup(subject)
-        subject_root = self.abspath(self.get_subject_mapping(subject).get('subject_root') or '.')
-        ensure_dir(subject_root)
         return {
-            'args': [
-                sys.executable, self.run_plugin_py,
-                'delete',
-                kubernetes_setup['kube_plugin'],
-                self.abspath(kubernetes_setup['kube_plugin_config']),
-                self.abspath(kubernetes_setup['clusterspec']),
-                kubernetes_setup['clusterspec_cluster'],
-            ],
-            'cwd': subject_root,
+            'args': [sys.executable, self.run_plugin_py, '--debug', 'delete', subject],
+            'cwd': self.cwd,
         }
 
     def build_cleanup_command(self, subject):

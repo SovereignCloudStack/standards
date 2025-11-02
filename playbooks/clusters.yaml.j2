@@ -1,0 +1,72 @@
+---
+clusters:
+  syself-1.32:
+    kind: clusterstacks
+    config:
+      kubernetesVersion: '1.32'
+      name: 'syself-1-32'  # explicit name because dot in name not permissible
+      autoVars: syself  # determine cs_class_name and cs_version automatically using kubernetesVersion
+      templates:
+        cluster: syself-cluster.yaml
+        clusterstack: syself-clusterstack.yaml
+        kubeconfig: syself-kubeconfig.yaml
+      vars:
+        cs_name: hetzner-apalla-1-32
+        num_control_nodes: 3
+        num_worker_nodes: 3
+      secrets:
+        token: "{{ clouds_conf.syself_token }}"
+  syself-1.31:
+    kind: clusterstacks
+    config:
+      kubernetesVersion: '1.31'
+      name: 'syself-1-31'  # explicit name because dot in name not permissible
+      autoVars: syself  # determine cs_class_name and cs_version automatically using kubernetesVersion
+      templates:
+        cluster: syself-cluster.yaml
+        clusterstack: syself-clusterstack.yaml
+        kubeconfig: syself-kubeconfig.yaml
+      vars:
+        cs_name: hetzner-apalla-1-31
+        num_control_nodes: 3
+        num_worker_nodes: 3
+      secrets:
+        token: "{{ clouds_conf.syself_token }}"
+  syself-1.30:
+    kind: clusterstacks
+    config:
+      kubernetesVersion: '1.30'
+      name: 'syself-1-30'  # explicit name because dot in name not permissible
+      autoVars: syself  # determine cs_class_name and cs_version automatically using kubernetesVersion
+      templates:
+        cluster: syself-cluster.yaml
+        clusterstack: syself-clusterstack.yaml
+        kubeconfig: syself-kubeconfig.yaml
+      vars:
+        cs_name: hetzner-apalla-1-30
+        num_control_nodes: 3
+        num_worker_nodes: 3
+      secrets:
+        token: "{{ clouds_conf.syself_token }}"
+  # dev clusters using kind
+  # latest versions to be found under https://hub.docker.com/r/kindest/node/tags
+  kind-1.32:
+    kind: kind
+    config:
+      cluster: kind-cluster.yaml
+      image: 'kindest/node:v1.32.3'
+  kind-1.31:
+    kind: kind
+    config:
+      cluster: kind-cluster.yaml
+      image: 'kindest/node:v1.31.6'
+  kind-1.30:
+    kind: kind
+    config:
+      cluster: kind-cluster.yaml
+      image: 'kindest/node:v1.30.10'
+  kind-1.29:
+    kind: kind
+    config:
+      cluster: kind-cluster.yaml
+      image: 'kindest/node:v1.29.14'
