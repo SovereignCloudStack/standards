@@ -72,13 +72,13 @@ def compute_scs_0104_source(image_lookup, image_spec):
     matches = _lookup_images(image_lookup, image_spec)
     errors = 0
     for image in matches:
-        img_source = image.properties['image_source']
+        img_source = image.properties.get('image_source', '')
         sources = image_spec['source']
         if not isinstance(sources, (tuple, list)):
             sources = [sources]
         if not any(img_source.startswith(src) for src in sources):
             errors += 1
-            logger.error(f"Image '{image.name}' source mismatch: {img_source} matches none of these prefixes: {', '.join(sources)}")
+            logger.error(f"Image '{image.name}' source mismatch: '{img_source}' matches none of these prefixes: {', '.join(sources)}")
     return not errors
 
 
