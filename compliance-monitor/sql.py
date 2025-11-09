@@ -137,7 +137,7 @@ def db_ensure_schema_v3(cur: cursor):
 
 def db_ensure_schema_v4(cur: cursor):
     # start from v3, do small alteration
-    db_ensure_schema_v2(cur)
+    db_ensure_schema_v3(cur)
     cur.execute('''
     ALTER TABLE account ADD COLUMN IF NOT EXISTS "group" text;
     ''')
