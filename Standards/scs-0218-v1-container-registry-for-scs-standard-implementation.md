@@ -98,7 +98,7 @@ The following list contains these projects with a small assessment listed below 
     - The development process is open via GitHub issues and well described in the
       [contributing](https://github.com/dragonflyoss/Dragonfly2/blob/main/CONTRIBUTING.md) document
     - The design process is open via GitHub issues. The project's roadmap is available in
-      the project's [webpage](https://d7y.io/docs/next/) (select 'Roadmap' from menue).
+      the project's [webpage](https://d7y.io/docs/next/) (select 'Roadmap' from menu).
   - Maturity is on the CNCF [incubating](https://www.cncf.io/projects/dragonfly/) level
     CNCF incubating project is considered stable and used in production by users with
     the healthy pool of contributors
