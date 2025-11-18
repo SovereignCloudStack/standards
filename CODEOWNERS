@@ -4,5 +4,8 @@
 
 /Tests/                @mbuechse @depressiveRobot
 
-/Community-Governance/ @project-board
+# Members of the Project Board are the owners of the Community
+# Governance - see: 
+# https://docs.scs.community/community/governance/project-board
+/Community-Governance/ @fkr @matofeder @garloff @jschoone @berendt
 
