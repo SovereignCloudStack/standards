@@ -27,3 +27,8 @@ Testsuite and tools for SCS standards, see [Tests/README.md](https://github.com/
 ### Drafts
 
 Old Design-Docs folder with existing Architectural Decision Records (ADRs). This directory is currently in the process of being consolidated and cleaned up. See [cleanup step-1](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0002-v1-standards-docs-org.md#suggested-cleanup-step-1) and [open questions](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0002-v1-standards-docs-org.md#open-questions).
+
+## License
+
+The documents in this repository are licensed under CC-BY-SA-4.0 (Attribution-ShareAlike 4.0).
+The bundled software, scripts, test-cases are licensed under AGPLv3 (GNU AFFERO GENERAL PUBLIC LICENSE Version 3). The corresponding directories carry the LICENSE files accordingly.
