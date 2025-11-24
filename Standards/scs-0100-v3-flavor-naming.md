@@ -14,7 +14,7 @@ description: |
 
 ## Introduction
 
-This is the standard v3.2 for SCS Release 8.
+This is the standard v3.3 for SCS Release 10.
 Note that we intend to only extend it (so it's always backwards compatible),
 but try to avoid changing in incompatible ways.
 (See at the end for the v1 to v2 transition where we have not met that
@@ -192,7 +192,7 @@ latency (high IOPS) and bandwidth disk I/O. `n` storage is expected to survive
 single-disk and single-node failure.
 
 For specific requirements on the SSD and NVMe disks regarding IOPS and
-power-loss protection, refer to Decision Record [scs-0110-ssd-flavors](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0110-v1-ssd-flavors.md).
+power-loss protection, refer to Decision Record [scs-0110-ssd-flavors](https://docs.scs.community/standards/scs-0110-v1-ssd-flavors).
 
 If the disk size is left out, the cloud is expected to allocate a disk (network or local)
 that is large enough to fit the root file system (`min_disk` in image). This automatic
@@ -307,7 +307,8 @@ or Bare Metal Systems should indicate the Hypervisor according to the following 
 
 | hyp | Meaning           |
 | --- | ----------------- |
-| kvm | KVM               |
+| kvm | KVM (w/ qemu)     |
+| chy | Cloud Hypervisor  |
 | xen | Xen               |
 | vmw | VMware            |
 | hyv | Hyper-V           |
@@ -366,7 +367,7 @@ The options for arch are as follows:
 The generation is vendor specific and can be left out, but it can only be specified in
 conjunction with a vendor. At present, these values are possible:
 
-| Generation | i (Intel x86-64)  | z (AMD x86-64) |  a (AArch64)         | r (RISC-V) |
+| Generation | i (Intel x86-64)  | z (AMD x86-64) | a (AArch64)          | r (RISC-V) |
 | ---------- | ----------------- | -------------- | -------------------- | ---------- |
 | 0          | pre Skylake       | pre Zen        | pre Cortex A76       | TBD        |
 | 1          | Skylake           | Zen-1 (Naples) | A76/NeoN1 class      | TBD        |
@@ -374,7 +375,7 @@ conjunction with a vendor. At present, these values are possible:
 | 3          | Ice Lake          | Zen-3 (Milan)  | A71x/NeoN2/V2(ARMv9) | TBD        |
 | 4          | Sapphire Rapids   | Zen-4 (Genoa)  | AmpereOne (ARMv8.6)  | TBD        |
 | 5          | Sierra Forest(E)  | Zen-5 (Turin)  | A72x/NeoN3/V3(Av9.2) | TBD        |
-| 6          | Granite Rapids(P) |                |                      | TBD        |
+| 6          | Granite Rapids(P) | Zen-6 (Venice) |                      | TBD        |
 
 It is recommended to leave out the `0` when specifying the old generation; this will
 help the parser tool, which assumes 0 for an unspecified value and does leave it
@@ -386,7 +387,7 @@ out when generating the name for comparison. In other words: 0 has a meaning of
 We don't differentiate between Zen-4 (Genoa) and Zen-4c (Bergamo); L3 cache per
 Siena core is smaller on Bergamo and the frequency lower but the cores are otherwise
 identical. As we already have a qualifier `h` that allows to specify higher frequencies
-(which Genoa thus may use more and Bergamo not), we have enough distinction
+(which Genoa thus may use and Bergamo not), we have enough distinction
 capabilities. The same applies to Zen-5 (Turin) and Zen-5c (Turin Dense).
 For intel with the server E-cores (Crestmont), these received their own
 generation assignment, as the difference to the server P-cores (Redwood Cove)
@@ -437,9 +438,9 @@ Note that the vendor letter X is mandatory, generation and processing units are 
 | `A`      | AMD    | compute units (CUs)             |
 | `I`      | Intel  | execution units (EUs)           |
 
-For nVidia, the generation N can be f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=turing, a=Ampere, l=Ada Lovelace, g=Grace Hopper, ...,
-for AMD GCN-x=0.x, RDNA1=1, C/RDNA2=2, C/RDNA3=3, C/RDNA3.5=3.5, C/RDNA4=4, ...
-for Intel Gen9=0.9, Xe(12.1/DG1)=1, Xe(12.2)=2, Arc(12.7/DG2)=3 ...
+For nVidia, the generation N can be f=Fermi, k=Kepler, m=Maxwell, p=Pascal, v=Volta, t=turing, a=Ampere, l=Ada Lovelace, g=Grace Hopper, b=Blackwell, ...,
+for AMD GCN-x=0.x, CDNA-x=x, RDNA-x=x.1, RDNA-3.5=3.5, UDNA-x=x
+for Intel Gen9=0.9, Xe(12.1/DG1)=1, Xe(12.2)=2, Arc(12.7/DG2)=3, BattleImage(20.0)=4, ...
 (Note: This may need further work to properly reflect what's out there.)
 
 The optional `h` suffix to the compute unit count indicates high-frequency GPU compute units.

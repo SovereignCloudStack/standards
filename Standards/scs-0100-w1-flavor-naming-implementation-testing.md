@@ -135,6 +135,12 @@ Cores and 64 Stream Processors per CU.
 | Inst MI300X | 1216     | 19456       | 304 | 192G HBM3  | `GA3-304-192h` |
 | Inst MI325X | 1216     | 19456       | 304 | 288G HBM3  | `GA3-304-288h` |
 
+Note that we previously assumed more similarity of consumer RDNA-x with
+server CDNA-x that actually is the case; the RDNA-x cards now use `x.1`
+(since v3.3 as of Oct 2025) to be able to differentiate them. We will
+tolerate potential rare cases of old installations calling RDNA-x as
+generation `x` for the time being.
+
 #### intel Xe (`I`)
 
 ##### Xe-HPC (Ponte Vecchio) (`3`)
