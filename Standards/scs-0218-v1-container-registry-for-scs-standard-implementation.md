@@ -138,9 +138,10 @@ The following list contains these projects with a small assessment listed below 
     - The project has been used by many [companies](https://www.projectquay.io) that
       run Quay in their production environments
   - Lock-in risk assessment
-    - The project's owners/maintainers list is not publicly available and is stored in
-      the [downstream repository](https://github.com/quay/quay-docs#how-do-i-set-up).
-      Therefore, it is hard to distinguish the risk of project failure caused by low
+    - While the project's owners/maintainers list is not publicly available - the active
+      contributors can be seen [here](https://github.com/quay/quay/graphs/contributors).
+      The most active contributors in the recent past come from one company.
+      Therefore, it is hard to judge the risk of project failure caused by low
       diversity across the companies. This should be improved.
 
 - :x: [Keppel](https://github.com/sapcc/keppel)
