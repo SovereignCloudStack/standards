@@ -2,7 +2,6 @@
 title: "SCS Flavor Naming Standard: Implementation and Testing Notes"
 type: Supplement
 track: IaaS
-status: Draft
 supplements:
   - scs-0100-v1-flavor-naming.md
   - scs-0100-v2-flavor-naming.md
@@ -23,12 +22,12 @@ Every flavor whose name starts with `SCS-` must conform with the naming scheme l
 
 #### Syntax check
 
-The [test suite](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming)
+The [test suite](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/scs_0100_flavor_naming)
 comes with a handy
-[command-line utility](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming/cli.py)
+[command-line utility](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/scs_0100_flavor_naming/cli.py)
 that can be used to validate flavor names, to interactively construct a flavor name
 via a questionnaire, and to generate prose descriptions for given flavor names.
-See the [README](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming/README.md)
+See the [README](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/scs_0100_flavor_naming/README.md)
 for more details.
 
 The functionality of this script is also (partially) exposed via the web page
@@ -167,9 +166,12 @@ None so far.
 
 ### Implementation
 
-The script [`flavor-names-openstack.py`](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/flavor-naming/flavor-names-openstack.py)
-talks to the OpenStack API of the cloud specified by the `OS_CLOUD` environment and queries properties and
-checks the names for standards compliance.
+We implemented two testcases, paralleling the two items in the "Errors" section above:
+
+- `scs-0100-syntax-check` ensures that any name starting with `SCS-` adheres to the standard;
+- `scs-0100-semantics-check` ensures that any such name is telling the truth as specified in the standard.
+
+These testcases can be checked using [`openstack_test.py`](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/openstack_test.py).
 
 ## Manual tests
 

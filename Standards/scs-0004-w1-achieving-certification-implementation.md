@@ -2,7 +2,6 @@
 title: "Implementation hints for achieving SCS-compatible certification"
 type: Supplement
 track: Global
-status: Draft
 supplements:
   - scs-0004-v1-achieving-certification.md
 ---
@@ -20,12 +19,12 @@ that lets their applications run in a reliable way.
 The SCS certification process typically consists of a few simple steps:
 
 1. Running the SCS compliance test suite and adjusting the infrastructure until it passes.
-2. Any additional declarations (for non-testable aspects) are written and passed to the SCS certification body.
+2. Any additional declarations (for non-testable aspects) are written and passed to the SCS certification assessment body.
 3. The operator must be a member ("shaper" or "advisor" level) of the Forum SCS-Standards in the
    OSB Alliance (a non-profit) and pay the respective membership fees. Alternatively fees can
    be paid without becoming a member.
 4. The cloud can be listed on the SCS pages as *SCS-compatible* with a compatibility status that is
-   updated on a daily basis. SCS then tests the infrastructure on a daily basis.
+   updated regularly. The infrastructure is then tested on a regular basis.
 
 The precise rules that govern how certificates are issued or withdrawn are defined in the
 [SCS standard 0004](scs-0004-v1-achieving-certification.md).
@@ -59,8 +58,8 @@ criteria. In case of doubt, audits can be performed.
 The SCS brand belongs to the Open Source Business Alliance e.V. (OSBA), an non-profit organization and
 association for the Open Source Industry in Germany. After the completion of the funded SCS project
 in the OSBA on 2024-12-31, the OSBA sets up the Forum SCS-Standards
-which performs the work to evolve the SCS standards, develops the tests and perform the certification
-process and thus becomes the SCS certification body.
+which performs the work to evolve the SCS standards, develops the tests and performs the certification
+process and thus becomes the SCS certification assessment body.
 
 Members of the OSBA can become also member of the Forum SCS-Standards for an additional membership
 fee, providing the financial resources for the Forum SCS-Standards to do its work. Membership in the
@@ -75,7 +74,7 @@ can become officially certified.
 
 The SCS team will add the cloud to the [list of certified clouds](https://docs.scs.community/standards/certification/overview)
 on the SCS docs page. This can be used to prove to customers that the cloud is SCS compliant.
-Note that for public clouds, there will be a nightly job that tests the cloud for compliance, which will be
+Note that for public clouds, there will be a regular job that tests the cloud for compliance, which will be
 triggered by SCS infrastructure (zuul). For this, access to a tenant on the cloud needs
 to be provided free of charge. (This only requires very low quota, one VM is created for a minute
 in one of the tests.)
@@ -106,7 +105,7 @@ Once your cloud is listed in the
 [list of certified clouds](https://docs.scs.community/standards/certification/overview)
 which is fed by the
 [compliance manager](https://compliance.sovereignit.cloud/page/table), it
-will enjoy the nightly tests. These might fail for a number of reasons:
+will enjoy the regular tests. These might fail for a number of reasons:
 
 * There is a new version of the SCS standards in effect and you need to adjust things.
 * Your cloud was unreachable or otherwise had intermittent issues.
@@ -128,6 +127,6 @@ as it may be easier to focus on just the one failing aspect of your infrastructu
 
 Your cloud will show up as failing in the compliance manager after tests start
 failing; this is not the same as a revoked certification, though. For clouds that have been
-compliant before, it is highly recommended to work with the SCS certification body
+compliant before, it is highly recommended to work with the SCS certification assessment body
 upon such failures to determine a way back into compliance that avoids certification
 revocation.

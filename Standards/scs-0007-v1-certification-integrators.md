@@ -1,7 +1,8 @@
 ﻿---
 title: Certification of integrators
 type: Procedural
-status: Draft
+status: Stable
+stabilized_at: 2025-08-01
 track: Global
 description: |
   SCS-0007 defines the process and rules on how SCS integrators are certified.
@@ -13,6 +14,8 @@ The purpose of this document is to describe a concept for how implementation par
 For this purpose, two essential criteria are defined that must be fulfilled. In addition, there are a few other criteria that can be taken into account in favor of certification.
 
 ## Motivation
+
+As an integrator, I want to obtain a certificate with the scope of _Certified SCS IaaS Integrator_ or _Certified of SCS KaaS Integrator_ in order to prove sufficient technical knowledge and experience to provide technical support for SCS.
 
 ## Regulations
 

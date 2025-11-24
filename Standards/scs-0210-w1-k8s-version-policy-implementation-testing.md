@@ -2,7 +2,6 @@
 title: "SCS K8S Version Policy: Implementation and Testing Notes"
 type: Supplement
 track: KaaS
-status: Draft
 supplements:
   - scs-0210-v2-k8s-version-policy.md
 ---

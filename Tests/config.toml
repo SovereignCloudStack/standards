@@ -19,7 +19,9 @@ scopes = [
 subjects = [
     "scs2",
     "artcodix",
+    "artcodix-ro",
     # currently not reachable from outside: "cc-rrze",
+    "focis",
     "pco-prod1",
     "pco-prod2",
     "pco-prod3",

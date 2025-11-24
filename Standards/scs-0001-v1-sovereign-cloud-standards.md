@@ -107,7 +107,7 @@ embedded in the markdown header.
 | Field name      | Requirement                                                                | Description                                                                           |
 | --------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | `type`          | REQUIRED                                                                   | one of `Procedural`, `Standard`, `Decision Record`, or `Supplement`                   |
-| `status`        | REQUIRED                                                                   | one of `Draft`, `Stable`, `Deprecated`, or `Rejected`                                 |
+| `status`        | REQUIRED precisely when `type` is not `Supplement`                         | one of `Draft`, `Stable`, `Deprecated`, or `Rejected`                                 |
 | `track`         | REQUIRED                                                                   | one of `Global`, `IaaS`, `KaaS`, `IAM`, `Ops`                                         |
 | `supplements`   | REQUIRED precisely when `type` is `Supplement`                             | list of documents that are extended by this document (e.g., multiple major versions)  |
 | `deprecated_at`  | REQUIRED if `status` is `Deprecated`                                       | ISO formatted date indicating the date after which the deprecation is in effect       |
@@ -193,7 +193,9 @@ In case there is little or no activity in some team, the SIG Standardization/Cer
 can take decisions on behalf of such a team. The SIG will seek alignment with the Project
 Board for decisions with large impact to ensure we have the wanted broad alignment.
 
-Supplements may be kept in Draft state, because they are not authoritative.
+From this perspective,
+Supplements are perpetually kept in phase Draft, because they are not authoritative,
+and this phase is not recorded in the document (i.e., no `status` field).
 
 ### Proposal phase
 
@@ -223,8 +225,9 @@ for a Supplement of `scs-0100-v3-flavor-naming.md`,
 the file name might be `scs-0100-w1-flavor-naming-implementation-testing.md` (note the `w1`!).
 
 The metadata MUST indicate the intended `track` and `type` of the document,
-and the `status` MUST be set to `Draft`;
-for a Supplement, the `supplements` field MUST be set
+and the `status` MUST be set to `Draft`,
+except for a Supplement;
+where, instead, the `supplements` field MUST be set
 to a list of documents (usually containing one element).
 
 Upon acceptance by the group of people identified by the `track`,
@@ -285,6 +288,8 @@ Changes to the documents are gated through pull requests.
 
 Once the document is deemed ready for production use,
 its `status` is changed to `Stable`.
+Additionally, the field `stabilized_at` MUST be added and set to a date after which the document is
+to be considered stable.
 
 If the document in question is a `Standard`
 (and if applicable),

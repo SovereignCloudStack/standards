@@ -19,6 +19,11 @@ accounts:
     delegates:
       - zuul_ci
   - subject: artcodix
+    group: artcodix
+    delegates:
+      - zuul_ci
+  - subject: artcodix-ro
+    group: artcodix
     delegates:
       - zuul_ci
   - subject: cc-rrze
@@ -30,6 +35,9 @@ accounts:
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIF8kQx6ur/WSSY9ThK/mwhrl/VsYnjRk44GSXBy3VfKI"
         public_key_type: "ssh-ed25519"
         public_key_name: "primary"
+  - subject: focis
+    delegates:
+      - zuul_ci
   - subject: pco-prod1
     group: pco-prod
     delegates:
