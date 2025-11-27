@@ -321,7 +321,7 @@ Extensions need to be specified in the above-mentioned order.
 These are flavors expected to exist on standard SCS clouds (x86-64).
 
 We expect disk sizes to be 5, 10, 20, 50, 100, 200, 500, 1000GB, 2000GB.
-We expect a typical CPU:Mem[GiB] ratio of 1:4.
+We expect a typical CPU\:Mem[GiB] ratio of 1:4.
 
 | vCPU:RAM ratio | Mandatory Flavors          |
 | -------------- | -------------------------- |
