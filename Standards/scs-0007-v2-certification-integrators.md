@@ -35,7 +35,7 @@ Criteria for certification, proof of experience in setting up, operating and sup
 
 The implementation partner to be certified needs to satisfy one of the following requirements:
 
-a) Have successfully brought at least two SCS-compliant environments of a third party (customer) into production in the last 12 months. The two environments must fulfill at least the [_Certified SCS-compatible IaaS_](/standards/scs-compatible-iaas) or [_Certified SCS-compatible KaaS_](/standards/scs-compatible-kaas) scope.
+a) Have successfully brought at least two SCS-compliant environments of a third party (customer) into production in the last 12 months. The two environments must fulfill at least the [_Certified SCS-compatible IaaS_](https://docs.scs.community/standards/scs-compatible-iaas) or [_Certified SCS-compatible KaaS_](https://docs.scs.community/standards/scs-compatible-kaas) scope.
 
 or
 
@@ -43,13 +43,13 @@ b) Actively manages at least two such environments of third parties (customers) 
 
 or
 
-c) Have been operating a [_Certified SCS-compatible IaaS_](standards/global/scs-0004) public cloud with at least two regions or at least three availability zones for more than one year or put such a cloud into operation during the period as _Incubator_.
+c) Have been operating a [_Certified SCS-compatible IaaS_](https://docs.scs.community/standards/global/scs-0004) public cloud with at least two regions or at least three availability zones for more than one year or put such a cloud into operation during the period as _Incubator_.
 
 #### Incubator status
 
 SCS is an open source community project with the goal of enabling digital sovereignty. As such, the commitment and support of this mission should be recognized and promoted beyond technical competence. To this end, the following aspects can be taken into account to compensate for any criteria that are not fully met yet (see above) and may qualify for a certification with _Incubator_ status.
 
-The implementation partner should work towards ensuring that digital sovereignty is implemented in accordance with the SCS definition (Standards and [Mission Statement](/community/mission-statement)). This is expressed in a way that, in addition to the technology used to build environments (not necessarily only SCS environments), knowledge and experience in SCS standards compliance (SCS-compatible IaaS and KaaS) is also available and that environments built by this implementation partner have already been configured in accordance with the standards and are listed on the SCS compliance list.
+The implementation partner should work towards ensuring that digital sovereignty is implemented in accordance with the SCS definition (Standards and [Mission Statement](https://docs.scs.community/community/mission-statement)). This is expressed in a way that, in addition to the technology used to build environments (not necessarily only SCS environments), knowledge and experience in SCS standards compliance (SCS-compatible IaaS and KaaS) is also available and that environments built by this implementation partner have already been configured in accordance with the standards and are listed on the SCS compliance list.
 
 The goal of the _Incubator_ status is to meet the criteria for the SCS integrator certification after one year. For this reason, the status is granted only once for one year.
 
