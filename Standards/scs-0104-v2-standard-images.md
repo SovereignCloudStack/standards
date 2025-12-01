@@ -68,7 +68,7 @@ A generic OS image MAY be named in the form "distro version",
 without codename or build date; for instance,
 
 - `Ubuntu 24.04`,
-- `Debian 13`. 
+- `Debian 13`.
 
 Note: when a new LTS/stable version is released and the respective image added to the environment,
 the images of any previous versions may or may not be kept.
