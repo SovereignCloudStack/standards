@@ -40,7 +40,7 @@ For each image whose name matches the regular expression
 
     ubuntu-capi-image( |-)v[0-9]\.[0-9]+(\.[0-9]+)?
 
-the `image_source` MUST have the form
+the value of the property `image_source` MUST have the form
 
     https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/...
 
@@ -54,6 +54,9 @@ so long as they do not violate above regulations on image sources.
 
 ### Generic OS images
 
+Each row of the following table describes an image that MUST or SHOULD exist,
+depending on the value in the column 'status'.
+
 | status | os_distro | os_version | os_purpose |
 | --- | --- | --- | --- |
 | required | `ubuntu` | latest LTS, no later than April 30 | `generic` |
@@ -61,11 +64,19 @@ so long as they do not violate above regulations on image sources.
 | recommended | `debian` | latest stable, no later than one month after release | `generic` |
 | recommended | `debian` | previous stable | `generic` |
 
+A generic OS image MAY be named in the form "distro version",
+without codename or build date; for instance,
+
+- `Ubuntu 24.04`,
+- `Debian 13`. 
+
 Note: when a new LTS/stable version is released and the respective image added to the environment,
 the images of any previous versions may or may not be kept.
 
 ### Official SCS CAPI images
 
-| status | name scheme |
-| --- | --- |
-| recommended | `ubuntu-capi-image-v[0-9]\.[0-9]+(\.[0-9]+)?` |
+An image whose name matches the regular expression
+
+    ubuntu-capi-image-v[0-9]\.[0-9]+(\.[0-9]+)?
+
+SHOULD be present.
