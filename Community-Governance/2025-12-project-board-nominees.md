@@ -6,3 +6,5 @@ For the term 2025-12 - 2026-12 the following people are nominated / have nominat
 | ------------------- | -------------- | ----------------------------------- |
 | Garloff, Kurt       | @garloff       | <scs@garloff.de>                    |
 | Klare, Jan          | @jklare        | <klare@osism.tech>                  |
+| Schoone, Jan        | @jschoone      | <jan.schoone@uhurutec.com>          |
+| Pilka, Martin       | @mpilka        | <martin.pilka@dnation.cloud>        |
