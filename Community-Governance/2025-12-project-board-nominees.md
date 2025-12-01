@@ -10,3 +10,4 @@ For the term 2025-12 - 2026-12 the following people are nominated / have nominat
 | Pilka, Martin       | @mpilka        | <martin.pilka@dnation.cloud>        |
 | Schöchlin, Marc     | @scoopex       | <marc.schoechlin@uhurutec.com>      |
 | Bayr, Michael       | @michaelbayr   | <mb@artcodix.com>                   |
+| Berendt, Christian  | @berendt       | <berendt@osism.tech>                |
