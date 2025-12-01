@@ -246,6 +246,15 @@ modules:
     - id: scs-0103-flavor-1l-1-5
       tags: [recommended]
       description: Check presence of flavor `SCS-1L-1-5`
+    - id: scs-0103-flavor-16v-64
+      tags: [recommended]
+      description: Check presence of flavor `SCS-16V-64`
+    - id: scs-0103-flavor-8v-64
+      tags: [recommended]
+      description: Check presence of flavor `SCS-8V-64`
+    - id: scs-0103-flavor-16v-128
+      tags: [recommended]
+      description: Check presence of flavor `SCS-16V-128`
     - id: standard-flavors-check
       tags: [legacy_mandatory]
       description: >
