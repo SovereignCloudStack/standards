@@ -159,7 +159,7 @@ modules:
         scs-0103-flavor-1v-4-10 scs-0103-flavor-2v-8-20 scs-0103-flavor-4v-16-50 scs-0103-flavor-8v-32-100
         scs-0103-flavor-1v-2-5 scs-0103-flavor-2v-4-10 scs-0103-flavor-4v-8-20 scs-0103-flavor-8v-16-50
         scs-0103-flavor-16v-32-100 scs-0103-flavor-1v-8-20 scs-0103-flavor-2v-16-50 scs-0103-flavor-4v-32-100
-        scs-0103-flavor-1l-1-5
+        scs-0103-flavor-1l-1-5 scs-0103-flavor-16v-64 scs-0103-flavor-8v-64 scs-0103-flavor-16v-128
         standard-flavors-check
     testcases:
     - id: scs-0103-flavor-1v-4
