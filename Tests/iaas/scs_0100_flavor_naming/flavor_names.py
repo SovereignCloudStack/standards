@@ -677,6 +677,11 @@ def flavorname_to_dict(*flavornames: Flavorname, ctx='') -> dict:
     return result
 
 
+def compute_flavor_spec(canonical_name: str) -> dict:
+    # this is a helper for tying together scs_0100 and scs_0103
+    return flavorname_to_dict(parser_v3(canonical_name))
+
+
 def _collectattrs(alist, new):
     "collect list of attitbutes"
     if alist:
