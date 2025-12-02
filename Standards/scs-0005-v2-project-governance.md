@@ -5,7 +5,8 @@ status: Draft
 replaces: scs-0005-v1-project-governance.md
 track: Global
 description: |
-  SCS-0005 outlines the structure and governance of the SCS community by the SCS Project Board and how this is elected.
+  This is version 2 of the SCS-0005 and outlines the structure and governance of
+  the SCS community by the SCS Project Board and how this is elected.
 ---
 
 ## Introduction
@@ -148,3 +149,14 @@ be conducted, and all nominees will be elected into the _SCS Project Board_.
 Among the elected Project Board a spokesperson is nominated. The spokesperson is
 elected by a simple majority vote among the members of the project board. The
 spokesperson is elected for the whole term.
+
+## Version history
+
+- Version 1 existed without major changes since 16.01.2025
+- Version 2 extends the detail of the _SCS Project Board_ election by:
+  - adding a section to avoid conflict of interest and ensure organizational
+    diversity
+  - adding a section to define the election mechanism if members of the board
+    resign
+  - specifying how to proceed when four or fewer candidates are nominated for
+    the elections
