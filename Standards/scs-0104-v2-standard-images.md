@@ -27,7 +27,7 @@ Image upload via Glance MUST be allowed based on a fair-use policy.
 For an OS image with `os_purpose=generic`, the `image_source` SHOULD come from the original vendor.
 Specifically, the following forms are even REQUIRED:
 
-| os_distro | os_version | permissible `image_source` form(s) |
+| `os_distro` | `os_version` | permissible `image_source` form(s) |
 | --- | --- | ----|
 | debian | [N]N | `https://cloud.debian.org/images/cloud/{codename}/...` |
 |        |   | `https://cdimage.debian.org/cdimage/cloud/{codename}/...` |
@@ -40,9 +40,16 @@ For each image whose name matches the regular expression
 
     ubuntu-capi-image( |-)v[0-9]\.[0-9]+(\.[0-9]+)?
 
-the value of the property `image_source` MUST have the form
+the following property values MUST be set:
 
-    https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/...
+| property | value (pattern) |
+| --- | --- |
+| `image_source` | `https://nbg1.your-objectstorage.com/osism/openstack-k8s-capi-images/...` |
+| | (tolerable for compatibility): `https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/...` |
+| `os_purpose` | `k8snode` |
+| `image_description` | `https://github.com/osism/k8s-capi-images` |
+
+CSPs are free to register CAPI images with a different naming scheme from different source.
 
 ## Mandatory and recommended images
 
