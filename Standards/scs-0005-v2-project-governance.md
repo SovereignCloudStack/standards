@@ -140,6 +140,8 @@ The voting will be announced on the SCS-Members Mailinglist as well as on the [G
 
 Each eligible voter is asked to rank the candidates according to their priorities.
 The four favorite choices among all voters will be elected into the _SCS Project Board_.
+In case there are four or fewer nominees for the election, no formal vote will
+be conducted, and all nominees will be elected into the _SCS Project Board_.
 
 ## Roles in the _SCS Project Board_
 
