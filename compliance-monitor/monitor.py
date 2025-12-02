@@ -278,7 +278,7 @@ class PrecomputedScope:
             for version in spec['versions'].values()
         }
 
-    def evaluate(self, scope_results):
+    def evaluate(self, scope_results, include_drafts=False):
         """evaluate the results for this scope and return the canonical JSON output"""
         version_results = {
             vname: self.versions[vname].evaluate(scenario_results)
@@ -296,8 +296,8 @@ class PrecomputedScope:
             if any(version_results[vname]['result'] == 1 for vname in vnames):
                 best_passed = validity
                 break
-        # always include draft (but only at the end)
-        relevant.extend(by_validity['draft'])
+        if include_drafts:
+            relevant.extend(by_validity['draft'])
         passed = [vname for vname in relevant if version_results[vname]['result'] == 1]
         return {
             'name': self.name,
@@ -497,7 +497,7 @@ async def post_report(
 
 
 def convert_result_rows_to_dict2(
-    rows, scopes_lookup, grace_period_days=0, scopes=(), subjects=(), include_report=False,
+    rows, scopes_lookup, grace_period_days=0, scopes=(), subjects=(), include_report=False, include_drafts=False,
 ):
     """evaluate all versions occurring in query result `rows`, returning canonical JSON representation"""
     now = datetime.now()
@@ -530,7 +530,7 @@ def convert_result_rows_to_dict2(
             _ = preliminary[subject][scope]
     return {
         subject: {
-            scope_uuid: scopes_lookup[scope_uuid].evaluate(scope_result)
+            scope_uuid: scopes_lookup[scope_uuid].evaluate(scope_result, include_drafts=include_drafts)
             for scope_uuid, scope_result in subject_result.items()
         }
         for subject, subject_result in preliminary.items()
@@ -684,7 +684,8 @@ async def get_detail_full(
         for subj in subjects:
             rows2.extend(db_get_relevant_results2(cur, subj, scopeuuid, approved_only=False))
     results2 = convert_result_rows_to_dict2(
-        rows2, get_scopes(), include_report=True, subjects=subjects, scopes=(scopeuuid, ),
+        rows2, get_scopes(), include_report=True, include_drafts=True,
+        subjects=subjects, scopes=(scopeuuid, ),
     )
     title = f'Details for group {group}' if group else f'Details for subject {subject}'
     return render_view(
@@ -716,7 +717,7 @@ async def get_table_full(
 ):
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, approved_only=False)
-    results2 = convert_result_rows_to_dict2(rows2, get_scopes())
+    results2 = convert_result_rows_to_dict2(rows2, get_scopes(), include_drafts=True)
     return render_view(
         VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, detail_page='detail_full',
         title="SCS compliance overview (incl. unverified results)", unverified=True,
@@ -732,7 +733,13 @@ async def get_scope(
 ):
     spec = get_scopes()[scopeuuid].spec
     versions = spec['versions']
-    relevant = sorted([name for name, version in versions.items() if version['_explicit_validity']])
+    # sort by name, and all drafts after all non-drafts
+    column_data = [
+        (version['_explicit_validity'].lower() == 'draft', name)
+        for name, version in versions.items()
+        if version['_explicit_validity']
+    ]
+    relevant = [name for _, name in sorted(column_data)]
     modules_chart = {}
     for name in relevant:
         for include in versions[name]['include']:
