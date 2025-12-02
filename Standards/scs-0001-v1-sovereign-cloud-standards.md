@@ -93,13 +93,13 @@ number, and each supplement uses the same document number as the main document i
 
 The second digit in `XXXX` describes the track where the document belongs:
 
-| Track | Number |
-| --- | --- |
-| Global | 0 |
-| IaaS | 1 |
-| KaaS | 2 |
-| IAM | 3 |
-| Ops | 4 |
+| Track  | Number |
+| ------ | ------ |
+| Global | 0      |
+| IaaS   | 1      |
+| KaaS   | 2      |
+| IAM    | 3      |
+| Ops    | 4      |
 
 In addition to the number, each document has the following metadata,
 embedded in the markdown header.
@@ -110,7 +110,7 @@ embedded in the markdown header.
 | `status`        | REQUIRED precisely when `type` is not `Supplement`                         | one of `Draft`, `Stable`, `Deprecated`, or `Rejected`                                 |
 | `track`         | REQUIRED                                                                   | one of `Global`, `IaaS`, `KaaS`, `IAM`, `Ops`                                         |
 | `supplements`   | REQUIRED precisely when `type` is `Supplement`                             | list of documents that are extended by this document (e.g., multiple major versions)  |
-| `deprecated_at`  | REQUIRED if `status` is `Deprecated`                                       | ISO formatted date indicating the date after which the deprecation is in effect       |
+| `deprecated_at` | REQUIRED if `status` is `Deprecated`                                       | ISO formatted date indicating the date after which the deprecation is in effect       |
 | `stabilized_at` | REQUIRED if `status` was ever `Stable`                                     | ISO formatted date indicating the date after which the document was considered stable |
 | `rejected_at`   | REQUIRED if `status` is `Rejected`                                         | ISO formatted date indicating the date on which the document was rejected             |
 | `replaced_by`   | RECOMMENDED if `status` is `Deprecated` or `Rejected`, FORBIDDEN otherwise | List of documents which replace this document.                                        |
@@ -212,8 +212,9 @@ to get in touch with the SCS community.
 Community participants are encouraged to present their proposal to the SCS community early on.
 Note that the proposal draft's content does not need to be finished in any way at this stage.
 
-The pull request for the proposal MUST add exactly one SCS document,
-in the `Standards` folder.
+The pull request for the proposal MUST add exactly one SCS document
+of the type `Standard`, `Procedural` or `Decision Record`, in the `Standards` folder.
+It MAY add additional SCS documents of the type `Supplement`.
 In the proposal phase,
 the document number MUST be replaced with `xxxx` in the file name,
 except for a Supplement, which uses the document number of the document it refers to.
@@ -251,8 +252,9 @@ To propose major update to a Stable SCS document,
 a community participant creates a pull request on GitHub
 against the [standards repository in the SovereignCloudStack organisation][scs-standards-repo].
 
-The pull request MUST add exactly one SCS document,
-in the `Standards` folder.
+The pull request MUST add exactly one SCS document
+of the type `Standard`, `Procedural` or `Decision Record`, in the `Standards` folder.
+It MAY add additional SCS documents of the type `Supplement`.
 The document number MUST be the same as the document it is updating,
 and the major version number MUST be incremented by 1.
 The slugified title MAY be changed.
