@@ -253,7 +253,6 @@ against the [standards repository in the SovereignCloudStack organisation][scs-s
 
 The pull request MUST add at most one SCS document (supplements notwithstanding),
 in the `Standards` folder.
-It MAY add additional SCS documents of the type `Supplement`.
 The document number MUST be the same as the document it is updating,
 and the major version number MUST be incremented by 1.
 The slugified title MAY be changed.
