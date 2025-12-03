@@ -7,6 +7,7 @@ description: |
   The SCS-0104 standard establishes guidelines for virtual machine images in Sovereign Cloud Stack (SCS)
   environments, specifying mandatory as well as recommended images, ensuring interoperability and streamlined
   deployments. It mandates that image upload via Glance must be allowed, ensuring flexibility for users.
+replaces: scs-0104-v1-standard-images.md
 ---
 
 ## Introduction
