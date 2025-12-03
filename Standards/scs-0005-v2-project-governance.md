@@ -96,8 +96,8 @@ If two or more candidates from the same organization are among the top-ranked ch
 
 If an existing board member changes their organizational affiliation during their term, resulting in multiple board
 members from the same organization, one of the affected members must resign their seat. The affected members may mutually
-agree on who will resign. If no agreement can be reached within 30 days of the affiliation change, the SCS Project Board
-will decide by majority vote which member shall retain their seat. A replacement will be determined according to the most
+agree on who will resign. If no agreement can be reached within 30 days of the affiliation change, the member who received
+fewer votes in the most recent election will be required to resign. A replacement will be determined according to the most
 recent election results, selecting the next eligible candidate from a different organization.
 
 #### Resignation
@@ -108,8 +108,8 @@ Resignation can happen for several reasons, such as:
 - Elected member needs to resign due to conflict of interest (see above for organizational diversity rules).
 
 When a board member resigns, the next eligible candidate from the last election will automatically join the board,
-if (s)he accepts it and does not conflict with the organizational diversity rules. In case no more candidates exist,
-the board will continue to exist with one person less. As soon as the board loses another member that can not be backfilled,
+if they accept it and does not conflict with the organizational diversity rules. In case no more candidates exist,
+the board will continue to exist with one fewer member. If the number of elected board members falls below three,
 an extraordinary election will be scheduled for the rest of the term. Resigned members are encouraged to suggest
 new candidates. The search for candidates should at least allow for two weeks and the election announced at least
 three weeks in advance of happening and run for a week.
@@ -163,3 +163,5 @@ spokesperson is elected for the whole term.
     resign
   - specifying how to proceed when four or fewer candidates are nominated for
     the elections
+  - using objective criteria (election results) for affiliation conflict resolution
+  - defining a minimum quorum (3 elected members) for extraordinary elections
