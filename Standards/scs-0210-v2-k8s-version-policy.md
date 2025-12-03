@@ -4,6 +4,7 @@ type: Standard
 stabilized_at: 2024-02-08
 status: Stable
 track: KaaS
+replaces: scs-0210-v1-k8s-new-version-policy.md
 ---
 
 ## Introduction
