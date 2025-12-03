@@ -10,6 +10,7 @@ description: |
   image handling protocols including updating and origin, and licensing/support details. These guidelines ensure
   that users can understand, access, and utilize OS images effectively, with clear information on features, updates,
   and licensing provided through well-defined metadata properties.
+replaces: scs-0102-v1-image-metadata.md
 ---
 
 ## Motivation
