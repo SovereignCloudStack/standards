@@ -131,6 +131,13 @@ class Checker:
         ]
         if errors:
             self.emit(f"in {fn}: syntax errors with key(s) {', '.join(errors)}")
+        # special check for replaces field if major version > 1
+        if fn[9:12] not in ("vN-", "v1-"):
+            replaces = front.get("replaces")
+            if replaces is None:
+                self.emit(f"in {fn}: missing replaces field")
+            elif replaces not in filenames:
+                self.emit(f"in {fn}: original version {replaces} not found")
         # now do cross-field checks
         status = front.get("status")
         if "replaced_by" in front and status not in ("Deprecated", "Rejected"):
