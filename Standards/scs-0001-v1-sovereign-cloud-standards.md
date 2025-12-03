@@ -212,9 +212,8 @@ to get in touch with the SCS community.
 Community participants are encouraged to present their proposal to the SCS community early on.
 Note that the proposal draft's content does not need to be finished in any way at this stage.
 
-The pull request for the proposal MUST add exactly one SCS document
-of the type `Standard`, `Procedural` or `Decision Record`, in the `Standards` folder.
-It MAY add additional SCS documents of the type `Supplement`.
+The pull request for the proposal MUST add at most one SCS document (supplements notwithstanding),
+in the `Standards` folder.
 In the proposal phase,
 the document number MUST be replaced with `xxxx` in the file name,
 except for a Supplement, which uses the document number of the document it refers to.
@@ -252,8 +251,8 @@ To propose major update to a Stable SCS document,
 a community participant creates a pull request on GitHub
 against the [standards repository in the SovereignCloudStack organisation][scs-standards-repo].
 
-The pull request MUST add exactly one SCS document
-of the type `Standard`, `Procedural` or `Decision Record`, in the `Standards` folder.
+The pull request MUST add at most one SCS document (supplements notwithstanding),
+in the `Standards` folder.
 It MAY add additional SCS documents of the type `Supplement`.
 The document number MUST be the same as the document it is updating,
 and the major version number MUST be incremented by 1.
