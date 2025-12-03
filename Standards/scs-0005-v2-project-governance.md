@@ -102,7 +102,7 @@ recent election results, selecting the next eligible candidate from a different 
 
 #### Resignation
 
-Resignation can happen for several reasons:
+Resignation can happen for several reasons, such as:
 
 - Elected member may sustainably no longer be willing or able to serve on the project board.
 - Elected member needs to resign due to conflict of interest (see above for organizational diversity rules).
@@ -135,7 +135,10 @@ The voting will be open for a week.
 
 ### Announcement
 
-The voting will be announced on the SCS-Members Mailinglist as well as on the [General & Announcements](https://matrix.to/#/#scs-general:matrix.org). Enlisted voters will receive e-mails to the email address used in the SCS community's Identity Management system.
+The voting will be announced on the `scs-members` mailing list as well as on the
+[General & Announcements](https://matrix.to/#/#scs-general:matrix.org) Matrix channel.
+Enlisted voters will receive e-mails to the email address used in the SCS community's
+Identity Management system.
 
 ### Mechanisms
 
