@@ -149,7 +149,7 @@ In addition, the following properties must be set (in the `extra_specs`):
 
 ### Remarks
 
-We expect the most used vCPU:RAM[GiB] ratio to be 1:4.
+We expect the most used vCPU\:RAM[GiB] ratio to be 1:4.
 
 Note that all vCPUs of SCS standard flavors are oversubscribed — the smallest `1L-1`
 flavor allows for heavy oversubscription (note the `L`), and thus can be offered very
