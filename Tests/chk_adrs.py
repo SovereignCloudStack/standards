@@ -136,8 +136,13 @@ class Checker:
             replaces = front.get("replaces")
             if replaces is None:
                 self.emit(f"in {fn}: missing replaces field")
-            elif replaces not in filenames:
-                self.emit(f"in {fn}: original version {replaces} not found")
+            else:
+                if isinstance(replaces, str):
+                    print(f"WARNING: replaces field not a list in {fn}", file=sys.stderr)
+                    replaces = [replaces]
+                missing = [fn for fn in replaces if fn not in filenames]
+                if missing:
+                    self.emit(f"in {fn}: original version(s) {','.join(missing)} not found")
         # now do cross-field checks
         status = front.get("status")
         if "replaced_by" in front and status not in ("Deprecated", "Rejected"):
