@@ -12,7 +12,7 @@ replaces: scs-0104-v1-standard-images.md
 
 ## Introduction
 
-The [Sovereign Cloud Stack (SCS)](https://scs.community) provides standards for a range of cloud infrastructure types.
+The [Sovereign Cloud Stack (SCS)](https://sovereigncloudstack.org/) provides standards for a range of cloud infrastructure types.
 It strives for interoperable and sovereign cloud offerings which can be deployed and used by a wide range of organizations and individuals.
 
 To this end, SCS unifies the naming and sourcing of virtual machine images, and for certain images their presence is mandated or recommended.
