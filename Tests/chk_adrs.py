@@ -138,7 +138,7 @@ class Checker:
                 self.emit(f"in {fn}: missing replaces field")
             else:
                 if isinstance(replaces, str):
-                    print(f"WARNING: replaces field not a list in {fn}", file=sys.stderr)
+                    print(f"WARNING: in {fn}: replaces field not a list", file=sys.stderr)
                     replaces = [replaces]
                 missing = [fn for fn in replaces if fn not in filenames]
                 if missing:
