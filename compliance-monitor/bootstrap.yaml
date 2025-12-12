@@ -38,6 +38,12 @@ accounts:
   - subject: focis
     delegates:
       - zuul_ci
+    api_keys:
+      - "$argon2id$v=19$m=65536,t=3,p=4$R6gVYmxNaa21lrL2fi+FkA$QY+bpCNY0zbN14eVcH13SLjKjWIt9dg9EhtTMY3mA2g"
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIG1hEnjGi+wfdgGu7oRWnttdu+BRNGT+9lughGLk4M71"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "primary"
   - subject: pco-prod1
     group: pco-prod
     delegates:
