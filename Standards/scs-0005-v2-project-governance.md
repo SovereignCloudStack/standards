@@ -1,7 +1,8 @@
 ---
 title: Governance of the SCS community
 type: Procedural
-status: Draft
+status: Stable
+stabilized_at: 2025-12-16
 replaces: scs-0005-v1-project-governance.md
 track: Global
 description: |
