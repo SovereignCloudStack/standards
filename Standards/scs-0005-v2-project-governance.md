@@ -75,7 +75,7 @@ Actively contributing to one or several of the projects under the governance of 
 
 ### Term
 
-The _SCS Project Board_ is elected for the term of one year. Elections are done
+The _SCS Project Board_ is elected for the term of one calendar year. Elections are done
 within the last six weeks of the calendar year.
 
 ### Seats on the board
