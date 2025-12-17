@@ -224,7 +224,7 @@ so users can expect some level of parallelism and independence.
 These are flavors that must exist on standard SCS clouds (x86-64).
 
 We expect disk sizes to be 5, 10, 20, 50, 100, 200, 500, 1000GB, 2000GB.
-We expect a typical CPU:Mem[GiB] ratio of 1:4.
+We expect a typical CPU to Mem[GiB] ratio of 1 to 4.
 
 | vCPU:RAM ratio | Mandatory Flavors          |
 | -------------- | -------------------------- |
@@ -295,7 +295,7 @@ to suggest extensions that we can discuss and add to the official scheme.
 
 ## Validation
 
-There is a script in [`flavor_name_check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/flavor-naming/flavor-name-check.py)
+There is a script in [`flavor-name-check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/scs_0100_flavor_naming/flavor-name-check.py)
 which can be used to decode, validate and construct flavor names.
 This script must stay in sync with the specification text.
 

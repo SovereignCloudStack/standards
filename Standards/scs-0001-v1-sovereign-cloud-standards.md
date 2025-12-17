@@ -168,6 +168,7 @@ In addition, the following OPTIONAL sections should be considered:
 
 The lifecycle of an SCS document goes through the following phases:
 Draft, Stable, Deprecated, and Rejected.
+(Supplements mark a deviation; more on that below.)
 
 ```mermaid
 graph TD
@@ -212,7 +213,8 @@ to get in touch with the SCS community.
 Community participants are encouraged to present their proposal to the SCS community early on.
 Note that the proposal draft's content does not need to be finished in any way at this stage.
 
-The pull request for the proposal MUST add exactly one SCS document,
+The pull request for the proposal MUST add exactly one SCS document of any type,
+plus potentially any number of supplements to the former document (if applicable),
 in the `Standards` folder.
 In the proposal phase,
 the document number MUST be replaced with `xxxx` in the file name,
@@ -251,7 +253,8 @@ To propose major update to a Stable SCS document,
 a community participant creates a pull request on GitHub
 against the [standards repository in the SovereignCloudStack organisation][scs-standards-repo].
 
-The pull request MUST add exactly one SCS document,
+The pull request MUST add exactly one SCS document of any type,
+plus potentially any number of supplements to the former document (if applicable),
 in the `Standards` folder.
 The document number MUST be the same as the document it is updating,
 and the major version number MUST be incremented by 1.
