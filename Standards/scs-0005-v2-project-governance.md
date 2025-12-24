@@ -1,12 +1,13 @@
 ---
 title: Governance of the SCS community
 type: Procedural
-status: Deprecated
-stabilized_at: 2025-01-16
-deprecated_at: 2025-12-16
+status: Stable
+stabilized_at: 2025-12-16
+replaces: scs-0005-v1-project-governance.md
 track: Global
 description: |
-  SCS-0005 outlines the structure and governance of the SCS community by the SCS Project Board and how this is elected.
+  This is version 2 of the SCS-0005 and outlines the structure and governance of
+  the SCS community by the SCS Project Board and how this is elected.
 ---
 
 ## Introduction
@@ -74,13 +75,45 @@ Actively contributing to one or several of the projects under the governance of 
 
 ### Term
 
-The _SCS Project Board_ is elected for the term of one year. Elections are done
+The _SCS Project Board_ is elected for the term of one calendar year. Elections are done
 within the last six weeks of the calendar year.
 
 ### Seats on the board
 
 The _SCS Project Board_ contains five seats. One of these seats is filled by
 the delegate of the _Forum SCS-Standards_. The other four seats are voted upon.
+
+#### Conflict of Interest and Organizational Diversity
+
+To ensure balanced representation and avoid conflicts of interest, no more than one seat on the SCS Project
+Board elected by the community may be held by individuals affiliated with the same organization, company,
+or employer at any given time. This limitation applies only to the elected seats, not to the seat filled by
+the delegate of the Forum SCS-Standards.
+
+If two or more candidates from the same organization are among the top-ranked choices in an election:
+
+- Only the highest-ranked candidate from that organization will be elected.
+- The remaining seat(s) will be filled by the next highest-ranked candidate(s) from different organizations.
+
+If an existing board member changes their organizational affiliation during their term, resulting in multiple board
+members from the same organization, one of the affected members must resign their seat. The affected members may mutually
+agree on who will resign. If no agreement can be reached within 30 days of the affiliation change, the member who received
+fewer votes in the most recent election will be required to resign. A replacement will be determined according to the most
+recent election results, selecting the next eligible candidate from a different organization.
+
+#### Resignation
+
+Resignation can happen for several reasons, such as:
+
+- Elected member may sustainably no longer be willing or able to serve on the project board.
+- Elected member needs to resign due to conflict of interest (see above for organizational diversity rules).
+
+When a board member resigns, the next eligible candidate from the last election will automatically join the board,
+if they accept it and does not conflict with the organizational diversity rules. In case no more candidates exist,
+the board will continue to exist with one fewer member. If the number of elected board members falls below three,
+an extraordinary election will be scheduled for the rest of the term. Resigned members are encouraged to suggest
+new candidates. The search for candidates should at least allow for two weeks and the election announced at least
+three weeks in advance of happening and run for a week.
 
 ### Nominations
 
@@ -103,15 +136,33 @@ The voting will be open for a week.
 
 ### Announcement
 
-The voting will be announced on the SCS-Members Mailinglist as well as on the [General & Announcements](https://matrix.to/#/#scs-general:matrix.org). Enlisted voters will receive e-mails to the email address used in the SCS community's Identity Management system.
+The voting will be announced on the `scs-members` mailing list as well as on the
+[General & Announcements](https://matrix.to/#/#scs-general:matrix.org) Matrix channel.
+Enlisted voters will receive e-mails to the email address used in the SCS community's
+Identity Management system.
 
 ### Mechanisms
 
 Each eligible voter is asked to rank the candidates according to their priorities.
 The four favorite choices among all voters will be elected into the _SCS Project Board_.
+In case there are four or fewer nominees for the election, no formal vote will
+be conducted, and all nominees will be elected into the _SCS Project Board_.
 
 ## Roles in the _SCS Project Board_
 
 Among the elected Project Board a spokesperson is nominated. The spokesperson is
 elected by a simple majority vote among the members of the project board. The
 spokesperson is elected for the whole term.
+
+## Version history
+
+- Version 1 existed without major changes since 16.01.2025
+- Version 2 extends the detail of the _SCS Project Board_ election by:
+  - adding a section to avoid conflict of interest and ensure organizational
+    diversity
+  - adding a section to define the election mechanism if members of the board
+    resign
+  - specifying how to proceed when four or fewer candidates are nominated for
+    the elections
+  - using objective criteria (election results) for affiliation conflict resolution
+  - defining a minimum quorum (3 elected members) for extraordinary elections
