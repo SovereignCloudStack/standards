@@ -25,7 +25,7 @@ Image upload via Glance MUST be allowed based on a fair-use policy.
 
 ### Generic OS images
 
-For an OS image with `os_purpose=generic`, the `image_source` SHOULD come from the original vendor.
+For an OS image with `os_purpose=generic`, the `image_source` SHOULD come from the original vendor. This allows the user to download and inspect the image.
 Specifically, the following forms are even REQUIRED:
 
 | `os_distro` | `os_version` | permissible `image_source` form(s) |
