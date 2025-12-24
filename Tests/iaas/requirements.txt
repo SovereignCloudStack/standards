@@ -100,7 +100,7 @@ typing-extensions==4.13.2
     #   -c iaas/../requirements.txt
     #   keystoneauth1
     #   openstacksdk
-urllib3==2.4.0
+urllib3==2.6.0
     # via
     #   -c iaas/../requirements.txt
     #   botocore
