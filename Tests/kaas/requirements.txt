@@ -105,7 +105,7 @@ six==1.17.0
     #   kubernetes
     #   kubernetes-asyncio
     #   python-dateutil
-urllib3==2.4.0
+urllib3==2.6.0
     # via
     #   -c kaas/../requirements.txt
     #   kubernetes
