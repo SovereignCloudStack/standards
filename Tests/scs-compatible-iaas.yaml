@@ -483,7 +483,7 @@ timeline:
 versions:
   - version: next
     include:
-      - opc-v2022.11
+      - tempest
       - scs-0100-v3.1
       - scs-0101-v1
       - scs-0102-v1
@@ -501,7 +501,7 @@ versions:
   - version: v5.1  # copy of v5, but with include "scs-0123-v1", which had simply been forgotten
     stabilized_at: 2024-12-19
     include:
-      - opc-v2022.11
+      - tempest
       - scs-0100-v3.1
       - scs-0101-v1
       - scs-0102-v1
@@ -519,7 +519,7 @@ versions:
   - version: v4
     stabilized_at: 2024-02-28
     include:
-      - opc-v2022.11
+      - tempest
       - scs-0100-v3.1
       - scs-0101-v1
       - scs-0102-v1
@@ -533,6 +533,6 @@ versions:
     #   What was originally v3 (and what we actually continued to test) can be found as v3-orig.
     stabilized_at: 2024-02-28
     include:
-      - opc-v2022.11
+      - tempest
       - scs-0100-v3.1
       - scs-0102-v1
