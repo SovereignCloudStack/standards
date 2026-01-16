@@ -14,12 +14,12 @@ The official Tempest documentation is located on <https://docs.openstack.org/tem
 
 The current Tempest releases and their supported OpenStack releases and python versions can be found on <https://docs.openstack.org/tempest/latest/supported_version.html>.
 
-## Test cases
+## OpenStack Powered Compute test cases
 
 As SCS conformance tests are expected to be executable without admin privileges (see §2 of
-[Regulations for achieving SCS-compatible certification](https://docs.scs.community/standards/scs-0004-v1-achieving-certification#regulations)), the following list of non-admin tests is expected to be run successfully as a minimum to achieve _[SCS-compatible IaaS](https://docs.scs.community/standards/scs-compatible-iaas)_ compliance.
+[Regulations for achieving SCS-compatible certification](https://docs.scs.community/standards/scs-0004-v1-achieving-certification#regulations)), passing the following subset of OpenStack Powered Compute tests is sufficient to achieve _[SCS-compatible IaaS](https://docs.scs.community/standards/scs-compatible-iaas)_ compliance.
 
-- [List of Tempest non-admin tests](./tempest-tests-non-admin.lst)
+- [List of OpenStack Powered Compute non-admin tests](./tempest-tests-non-admin.lst)
 
 ## How to run Tempest against your cluster
 
