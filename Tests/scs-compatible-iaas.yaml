@@ -286,8 +286,8 @@ scripts:
       Manual check: Must fulfill all requirements of scs-0302-v1.
     url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role#conformance-tests
 modules:
-  - id: tempest
-    name: Tempest Testing Project
+  - id: opc-v2022.11
+    name: OpenStack Powered Compute test cases
     url: https://docs.scs.community/docs/iaas/guides/testing-guide/tempest
   - id: scs-0100-v3.1
     name: Flavor naming v3.1
@@ -483,7 +483,7 @@ timeline:
 versions:
   - version: next
     include:
-      - tempest
+      - opc-v2022.11
       - scs-0100-v3.1
       - scs-0101-v1
       - scs-0102-v1
@@ -501,7 +501,7 @@ versions:
   - version: v5.1  # copy of v5, but with include "scs-0123-v1", which had simply been forgotten
     stabilized_at: 2024-12-19
     include:
-      - tempest
+      - opc-v2022.11
       - scs-0100-v3.1
       - scs-0101-v1
       - scs-0102-v1
@@ -519,7 +519,7 @@ versions:
   - version: v4
     stabilized_at: 2024-02-28
     include:
-      - tempest
+      - opc-v2022.11
       - scs-0100-v3.1
       - scs-0101-v1
       - scs-0102-v1
@@ -533,6 +533,6 @@ versions:
     #   What was originally v3 (and what we actually continued to test) can be found as v3-orig.
     stabilized_at: 2024-02-28
     include:
-      - tempest
+      - opc-v2022.11
       - scs-0100-v3.1
       - scs-0102-v1
