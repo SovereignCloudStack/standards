@@ -286,9 +286,9 @@ scripts:
       Manual check: Must fulfill all requirements of scs-0302-v1.
     url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role#conformance-tests
 modules:
-  - id: opc-v2022.11
-    name: OpenStack Powered Compute v2022.11
-    url: https://opendev.org/openinfra/interop/src/branch/master/guidelines/2022.11.json
+  - id: tempest
+    name: Tempest Testing Project
+    url: https://docs.scs.community/docs/iaas/guides/testing-guide/tempest
   - id: scs-0100-v3.1
     name: Flavor naming v3.1
     url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
