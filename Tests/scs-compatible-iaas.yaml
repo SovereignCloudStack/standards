@@ -9,7 +9,7 @@ variables:
   - os_cloud
 modules:
   - id: opc-v2022.11
-    name: End-to-end test (formerly OpenStack Powered Compute test cases)
+    name: End-to-end test (formerly OpenStack Powered Compute)
     url: https://docs.scs.community/standards/scs-0128-v1-e2e-test
   - id: scs-0100-v3.1
     name: Flavor naming v3.1
