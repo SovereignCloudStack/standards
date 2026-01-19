@@ -287,8 +287,8 @@ scripts:
     url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role#conformance-tests
 modules:
   - id: opc-v2022.11
-    name: OpenStack Powered Compute test cases
-    url: https://docs.scs.community/docs/iaas/guides/testing-guide/tempest
+    name: End-to-end test (formerly OpenStack Powered Compute test cases)
+    url: https://docs.scs.community/standards/scs-0128-v1-e2e-test
   - id: scs-0100-v3.1
     name: Flavor naming v3.1
     url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
