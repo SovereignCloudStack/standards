@@ -542,7 +542,7 @@ versions:
       - scs-0123-v1
       - scs-0302-v1
     targets:
-      main: legacy_mandatory
+      main: mandatory
       preview: domain-manager/availability-zones/key-manager-docs
   - version: v4
     stabilized_at: 2024-02-28
@@ -556,7 +556,7 @@ versions:
         parameters:
           image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images.yaml
     targets:
-      main: legacy_mandatory
+      main: mandatory
   - version: v3
     # comment: >
     #   This is what our documentation wrongly stated as being v3 when we introduced v4.
@@ -567,4 +567,4 @@ versions:
       - scs-0100-v3.1
       - scs-0102-v1
     targets:
-      main: legacy_mandatory
+      main: mandatory
