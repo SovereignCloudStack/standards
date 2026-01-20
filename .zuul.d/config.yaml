@@ -54,6 +54,7 @@
     # a) leave room for long-running tests (mostly when some cloud is unreachable)
     # b) keep in mind that this job covers ALL test subjects (at most 4 in parallel)
     timeout: 3600
+    attempts: 2  # usually, retries are not too promising; better to save resources
     vars:
       preset: iaas
 - job:
@@ -63,6 +64,7 @@
     # a) these tests take a lot of time, I'm afraid, particularly Sonobuoy
     # b) keep in mind that this job covers ALL test subjects (at most 4 in parallel)
     timeout: 21600  # 6 hrs -- 5 hrs was almost sufficient (reports came through sometimes)
+    attempts: 1  # this job is heavy, and retries aren't very promising
     vars:
       preset: kaas
       iaas: false
