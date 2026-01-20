@@ -126,6 +126,9 @@ def compute_scs_0123_swift_s3(conn: openstack.connection.Connection):
     # Get S3 endpoint (swift) and ec2 creds from OpenStack (keystone)
     try:
         usable_credentials = remove_leftovers(get_usable_credentials(conn), conn)
+        # we could use any credential from the list usable_credentials, but let's not do that,
+        # because they could be stale
+        del usable_credentials[:]
         s3_creds = s3_from_ostack(ensure_ec2_credentials(usable_credentials, conn), conn)
 
         # This is to be used for local debugging purposes ONLY
