@@ -27,4 +27,4 @@ work as expected.
 The end-to-end testing is performed using [Tempest](https://docs.openstack.org/tempest/latest/index.html).
 
 The required tests are listed in
-[Tests/iaas/scs_0128_e2e_tests/tempest-tests-non-admin.lst](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/scs_0128_e2e_tests/tempest-tests-non-admin.lst).
+[Tests/iaas/scs_0128_e2e_tests/tempest-tests-non-admin.lst](https://raw.githubusercontent.com/SovereignCloudStack/standards/refs/heads/main/Tests/iaas/scs_0128_e2e_tests/tempest-tests-non-admin.lst).
