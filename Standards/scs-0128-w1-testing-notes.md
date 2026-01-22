@@ -3,7 +3,7 @@ title: "SCS end-to-end testing: Notes"
 type: Supplement
 track: IaaS
 supplements:
-  - scs-0128-v1-e2e-test.md
+  - scs-0128-v1-e2e-tests.md
 ---
 
 ## Tempest introduction
