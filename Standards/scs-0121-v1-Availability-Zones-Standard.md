@@ -72,7 +72,7 @@ Additionally Availability Zones are available for Compute, Storage and Network s
 They behave differently for each of these resources and also when working across resource-based Availability Zones, e.g. attaching a volume from one AZ to a virtual machine in another AZ.
 For each of these IaaS resource classes, it should be defined, under which circumstances Availability Zones should be used.
 
-[^1]: [Taxonomy of Failsafe Levels in SCS (TODO: change link as soon as taxonomy is merged)](https://github.com/SovereignCloudStack/standards/pull/579)
+[^1]: [Taxonomy of Failsafe Levels in SCS](https://docs.scs.community/standards/scs-0118-v1-taxonomy-of-failsafe-levels)
 
 ### Scope of the Availability Zone Standard
 
