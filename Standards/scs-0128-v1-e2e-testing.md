@@ -1,10 +1,10 @@
 ---
-title: SCS end-to-end tests
+title: SCS end-to-end testing
 type: Standard
 status: Draft
 track: IaaS
 description: |
-  SCS-0128 describes standardized end-to-end tests. It was created to succeed
+  SCS-0128 describes standardized end-to-end testing. It was created to succeed
   the retired "OpenStack-powered Compute".
 ---
 
@@ -27,4 +27,4 @@ work as expected.
 The end-to-end testing is performed using [Tempest](https://docs.openstack.org/tempest/latest/index.html).
 
 The required tests are listed in
-[Tests/iaas/scs_0128_e2e_tests/tempest-tests-non-admin.lst](https://raw.githubusercontent.com/SovereignCloudStack/standards/refs/heads/main/Tests/iaas/scs_0128_e2e_tests/tempest-tests-non-admin.lst).
+[Tests/iaas/scs_0128_e2e_testing/tempest-tests-non-admin.lst](https://raw.githubusercontent.com/SovereignCloudStack/standards/refs/heads/main/Tests/iaas/scs_0128_e2e_testing/tempest-tests-non-admin.lst).
