@@ -38,12 +38,12 @@ clouds:
       application_credential_id: "{{ clouds_conf.cc_rrze_ac_id }}"
       application_credential_secret: "{{ clouds_conf.cc_rrze_ac_secret }}"
   focis:
-    region_name: "default"
+    region_name: "dd8a"
     interface: "public"
     identity_api_version: 3
     auth_type: "v3applicationcredential"
     auth:
-      auth_url: https://keystone.dd8.cloudandheat.com:443/v3/
+      auth_url: https://identity.dd8a.cloudandheat.com:443/v3/
       application_credential_id: "{{ clouds_conf.focis_ac_id }}"
       application_credential_secret: "{{ clouds_conf.focis_ac_secret }}"
   pco-prod1:
