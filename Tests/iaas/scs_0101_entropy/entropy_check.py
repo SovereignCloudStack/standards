@@ -73,7 +73,7 @@ def compute_scs_0101_image_property(images, attributes=IMAGE_ATTRIBUTES):
     # drop those candidates that are fine
     offenders = [candidate for candidate in candidates if candidate[1]]
     for name, wrong in offenders:
-        logger.error(f"Image '{name}' missing recommended attributes: {', '.join(wrong)}")
+        logger.error(f"Image '{name}' missing attributes: {', '.join(wrong)}")
     return not offenders
 
 
@@ -86,10 +86,10 @@ def compute_scs_0101_flavor_property(flavors, attributes=FLAVOR_ATTRIBUTES, opti
         miss_opt = [key for key in optional if extra_specs.get(key) is None]
         if wrong:
             offenses += 1
-            message = f"Flavor '{flavor.name}' missing recommended attributes: {', '.join(wrong)}"
-            # only report missing optional attributes if recommended are missing as well
+            message = f"Flavor '{flavor.name}' missing attributes: {', '.join(wrong)}"
+            # only report missing optional attributes if main ones are missing as well
             # reasoning here is that these optional attributes are merely a hint for implementers
-            # and if the recommended attributes are present, we assume that implementers have done their job already
+            # and if the main ones are present, we assume that implementers have done their job already
             if miss_opt:
                 message += f"; additionally, missing optional attributes: {', '.join(miss_opt)}"
             logger.error(message)
@@ -113,7 +113,7 @@ def compute_scs_0101_rngd(collected_vm_output, image_name):
     """This test ensures that the `rngd` service is running on a test VM."""
     lines = collected_vm_output['rngd']
     if "could not be found" in '\n'.join(lines):
-        logger.error(f"VM '{image_name}' doesn't provide the recommended service rngd")
+        logger.error(f"VM '{image_name}' doesn't provide service rngd")
         return False
     return True
 
@@ -158,7 +158,7 @@ def compute_scs_0101_virtio_rng(collected_vm_output, image_name):
             return False
         return True
     except BaseException:
-        logger.critical(f"Couldn't check VM '{image_name}' recommends", exc_info=True)
+        logger.critical(f"Couldn't check VM '{image_name}' properties", exc_info=True)
 
 
 class TestEnvironment:
