@@ -7,7 +7,7 @@
 
 ## Results
 
-{% for version, version_results in report.versions.items() %}{% if version_results %}
+{# % if report.versions %}{% for version, version_results in report.versions.items() %}{% if version_results %}
 ### {{ version }}
 
 | test case | result | invocation |
@@ -15,7 +15,8 @@
 {% for testcase_id, result_data in version_results.items() -%}
 | {{ testcase_id }} {: #{{ version + '_' + testcase_id }} } | {{ result_data.result | verdict_check }} | [{{ result_data.invocation }}](#{{ result_data.invocation }}) |
 {% endfor %}
-{% endif %}{% endfor %}
+{% endif %}
+{% endfor %}{% endif % #}
 
 ## Run
 
@@ -45,6 +46,7 @@
 - results
 {%- for resultid, result in invdata.results.items() %}
     - {{ resultid }}: {{ result | verdict_check }}
+      {: #{{ resultid }} }
 {%- endfor %}
 
 {% if invdata.stdout -%}

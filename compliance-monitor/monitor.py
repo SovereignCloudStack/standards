@@ -49,14 +49,14 @@ logger = logging.getLogger(__name__)
 
 
 try:
-    from scs_cert_lib import load_spec, annotate_validity, compile_suite, add_period
+    from scs_cert_lib import load_spec, annotate_validity, add_period, evaluate
 except ImportError:
     # the following course of action is not unproblematic because the Tests directory will be
     # mounted to the Docker instance, hence it's hard to tell what version we are gonna get;
     # however, unlike the reloading of the config, the import only happens once, and at that point
     # in time, both monitor.py and scs_cert_lib.py should come from the same git checkout
     import sys; sys.path.insert(0, os.path.abspath('../Tests'))  # noqa: E702
-    from scs_cert_lib import load_spec, annotate_validity, compile_suite, add_period
+    from scs_cert_lib import load_spec, annotate_validity, add_period, evaluate
 
 
 class Settings:
@@ -241,27 +241,24 @@ def import_bootstrap(bootstrap_path, conn):
 
 class PrecomputedVersion:
     """Precompute all `TestSuite` instances necessary to evaluate the results of some version"""
-    def __init__(self, version):
+    def __init__(self, version, testcases):
         self.name = version['version']
-        self.suite = compile_suite(self.name, version['include'])
         self.validity = version['validity']
         self.listed = bool(version['_explicit_validity'])
-        self.targets = {
-            tname: self.suite.select(tname, target_spec)
-            for tname, target_spec in version['targets'].items()
-        }
+        self.targets = version['targets']
+        self.testcases = testcases  # TODO remove (see evaluate)
 
-    def evaluate(self, scenario_results):
+    def evaluate(self, scope_results):
         """evaluate the results for this version and return the canonical JSON output"""
         target_results = {}
-        for tname, suite in self.targets.items():
+        for tname, tc_ids in self.targets.items():
             target_results[tname] = {
-                'testcases': [testcase['id'] for testcase in suite.testcases],
-                'result': suite.evaluate(scenario_results),
+                'testcases': tc_ids,
+                'result': evaluate(scope_results, tc_ids),
             }
         return {
-            'testcases': {tc['id']: tc for tc in self.suite.testcases},
-            'results': scenario_results,
+            'testcases': self.testcases,  # FIXME move towards scope eval dict
+            'results': scope_results,  # FIXME move towards scope eval dict
             'result': target_results['main']['result'],
             'targets': target_results,
             'validity': self.validity,
@@ -273,20 +270,21 @@ class PrecomputedScope:
     def __init__(self, spec):
         self.name = spec['name']
         self.spec = spec
+        self.testcases = {tc_id: item[1] for tc_id, item in spec['testcases'].items()}
         self.versions = {
-            version['version']: PrecomputedVersion(version)
+            version['version']: PrecomputedVersion(version, self.testcases)
             for version in spec['versions'].values()
         }
 
     def evaluate(self, scope_results, include_drafts=False):
         """evaluate the results for this scope and return the canonical JSON output"""
         version_results = {
-            vname: self.versions[vname].evaluate(scenario_results)
-            for vname, scenario_results in scope_results.items()
+            vname: version.evaluate(scope_results)
+            for vname, version in self.versions.items()
         }
         by_validity = defaultdict(list)
-        for vname in scope_results:
-            by_validity[self.versions[vname].validity].append(vname)
+        for vname, version in self.versions.items():
+            by_validity[version.validity].append(vname)
         # go through worsening validity values until a passing version is found
         relevant = []
         best_passed = None
@@ -324,11 +322,8 @@ class PrecomputedScope:
         just one id (instead of a triple) to testcase.
         """
         scope_uuid = self.spec['uuid']
-        for vname, precomputed_version in self.versions.items():
-            listed = precomputed_version.listed
-            for testcase in precomputed_version.suite.testcases:
-                # put False if listed is False, else put testcase
-                target_dict[(scope_uuid, vname, testcase['id'])] = listed and testcase
+        for tc_id, testcase in self.testcases.items():
+            target_dict[(scope_uuid, '*', tc_id)] = testcase
 
 
 def import_cert_yaml(yaml_path, target_dict):
@@ -488,6 +483,12 @@ async def post_report(
                 reportid = db_insert_report(cur, uuid, checked_at, subject, json_text)
             except UniqueViolation:
                 raise HTTPException(status_code=409, detail="Conflict: report already present")
+            if 'versions' not in document:
+                document['versions'] = {'*': {
+                    tc_id: {'result': result, 'invocation': inv_id}
+                    for inv_id, invocation in document['run']['invocations'].items()
+                    for tc_id, result in invocation['results'].items()
+                }}
             for version, vdata in document['versions'].items():
                 for check, rdata in vdata.items():
                     result = rdata['result']
@@ -504,7 +505,7 @@ def convert_result_rows_to_dict2(
     if grace_period_days:
         now -= timedelta(days=grace_period_days)
     # collect result per subject/scope/version
-    preliminary = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))  # subject -> scope -> version
+    preliminary = defaultdict(lambda: defaultdict(dict))  # subject -> scope
     missing = set()
     for subject, scope_uuid, version, testcase_id, result, checked_at, report_uuid in rows:
         testcase = scopes_lookup.get((scope_uuid, version, testcase_id))
@@ -521,7 +522,7 @@ def convert_result_rows_to_dict2(
         tc_result = dict(result=result, checked_at=checked_at)
         if include_report:
             tc_result.update(report=report_uuid)
-        preliminary[subject][scope_uuid][version][testcase_id] = tc_result
+        preliminary[subject][scope_uuid][testcase_id] = tc_result
     if missing:
         logger.warning('missing objects: ' + ', '.join(repr(x) for x in missing))
     # make sure the requested subjects and scopes are present (facilitates writing jinja2 templates)
@@ -561,7 +562,7 @@ def _build_report_url(base_url, report, *args, **kwargs):
     report_page = 'report_full' if kwargs.get('full') else 'report'
     url = f"{base_url}page/{report_page}/{report}"
     if len(args) == 2:  # version, testcase_id --> add corresponding fragment specifier
-        url += f"#{args[0]}_{args[1]}"
+        url += f"#{args[1]}"  # version no longer relevant
     return url
 
 

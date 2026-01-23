@@ -6,20 +6,19 @@
 # (c) Matthias Büchse <matthias.buechse@cloudandheat.com>
 # SPDX-License-Identifier: Apache-2.0
 
-from collections import Counter, defaultdict
+from collections import defaultdict
 from datetime import datetime, date, timedelta
 import logging
-import re
 
 
 logger = logging.getLogger(__name__)
 
 # valid keywords for various parts of the spec, to be checked using `check_keywords`
 KEYWORDS = {
-    'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables', 'modules', 'timeline'),
+    'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables', 'scripts', 'modules', 'timeline'),
+    'scripts': ('executable', 'env', 'args', 'section', 'testcases'),
     'versions': ('version', 'include', 'targets', 'stabilized_at'),
-    'modules': ('id', 'run', 'testcases', 'url', 'name', 'parameters'),
-    'run': ('executable', 'env', 'args', 'section'),
+    'modules': ('id', 'targets', 'url', 'name', 'parameters'),
     'testcases': ('lifetime', 'id', 'description', 'tags'),
     'include': ('ref', 'parameters'),
 }
@@ -58,6 +57,13 @@ def _resolve_spec(spec: dict):
     # - modules, referenced by id
     # - versions, referenced by name (unfortunately, the field is called "version")
     # step 1. build lookups
+    testcase_lookup = {}  # {testcase['id']: testcase for testcase in spec['testcases']}
+    for script in spec.get('scripts', ()):
+        for testcase in script.get('testcases', ()):
+            id_ = testcase['id']
+            if id_ in testcase_lookup:
+                raise RuntimeError(f"duplicate testcase {id_}")
+            testcase_lookup[id_] = (script, testcase)
     module_lookup = {module['id']: module for module in spec['modules']}
     version_lookup = {version['version']: version for version in spec['versions']}
     # step 2. check for duplicates:
@@ -68,6 +74,8 @@ def _resolve_spec(spec: dict):
     # step 3. replace fields 'modules' and 'versions' by respective lookups
     spec['modules'] = module_lookup
     spec['versions'] = version_lookup
+    # step 3a. add testcase lookup
+    spec['testcases'] = testcase_lookup
     # step 4. resolve references
     # step 4a. resolve references to modules in includes
     # in this step, we also normalize the include form
@@ -77,6 +85,11 @@ def _resolve_spec(spec: dict):
             {'module': module_lookup[inc['ref']], 'parameters': inc.get('parameters', {})}
             for inc in version['include']
         ]
+        targets = defaultdict(set)
+        for inc in version['include']:
+            for target, tc_ids in inc['module'].get('targets', {}).items():
+                targets[target].update(tc_ids)
+        version['targets'] = {target: sorted(tc_ids) for target, tc_ids in targets.items()}
     # step 4b. resolve references to versions in timeline
     # on second thought, let's not go there: it's a canonical extension map, and it should remain that way.
     # however, we still have to look for name errors
@@ -148,106 +161,26 @@ def add_period(dt: datetime, period: str) -> datetime:
     raise RuntimeError(f'unknown period: {period}')
 
 
-def parse_selector(selector_str: str) -> list[list[str]]:
-    # a selector is a list of terms,
-    # a term is a list of atoms,
-    # an atom is a string that optionally starts with "!"
-    return [term_str.strip().split('/') for term_str in selector_str.split()]
+def eval_buckets(results, testcase_ids) -> dict:
+    """
+    returns buckets of test cases by means of a mapping
+
+    None: list of missing testcases
+    -1: list of failed testcases
+    0: list of aborted testcases
+    1: list of passed testcases
+    """
+    by_value = defaultdict(list)
+    for testcase_id in testcase_ids:
+        value = results.get(testcase_id, {}).get('result')
+        by_value[value].append(testcase_id)
+    return by_value
 
 
-def test_atom(atom: str, tags: list[str]):
-    if atom.startswith("!"):
-        return atom[1:] not in tags
-    return atom in tags
-
-
-def test_selector(selector: list[list[str]], tags: list[str]):
-    return all(any(test_atom(atom, tags) for atom in term) for term in selector)
-
-
-def test_selectors(selectors: list[list[list[str]]], tags: list[str]):
-    return any(test_selector(selector, tags) for selector in selectors)
-
-
-class TestSuite:
-    def __init__(self, name):
-        self.name = name
-        self.checks = []
-        self.testcases = []
-        self.ids = Counter()
-        self.partial = False
-
-    def check_sanity(self):
-        # sanity check: ids must be unique
-        duplicates = [key for key, value in self.ids.items() if value > 1]
-        if duplicates:
-            logger.warning(f"duplicate ids in {self.name}: {', '.join(duplicates)}")
-
-    def include_checks(self, module, parameters, sections=None):
-        missing_params = set(module.get('parameters', ())) - set(parameters)
-        if missing_params:
-            logger.warning(f"module {module['id']}: missing parameters {', '.join(missing_params)}")
-            return
-        self.checks.extend(
-            {**check, 'parameters': parameters}
-            for check in module.get('run', ())
-            if sections is None or check.get('section') in sections
-        )
-
-    def include_testcases(self, testcases):
-        self.testcases.extend(testcases)
-        self.ids.update(testcase["id"] for testcase in testcases)
-
-    def select(self, name, selectors):
-        suite = TestSuite(name)
-        if isinstance(selectors, str):
-            # convenience: allow callers to supply serialized form (they don't care, rightly so)
-            selectors = [parse_selector(sel_str) for sel_str in selectors.split(',')]
-        suite.include_testcases([tc for tc in self.testcases if test_selectors(selectors, tc['tags'])])
-        return suite
-
-    def eval_buckets(self, results) -> dict:
-        """
-        returns buckets of test cases by means of a mapping
-
-        None: list of missing testcases
-        -1: list of failed testcases
-        0: list of aborted testcases
-        1: list of passed testcases
-        """
-        by_value = defaultdict(list)
-        for testcase in self.testcases:
-            value = results.get(testcase['id'], {}).get('result')
-            by_value[value].append(testcase)
-        return by_value
-
-    def evaluate(self, results) -> int:
-        """returns overall result"""
-        return min([
-            # here, we treat None (MISSING) as 0 (ABORT)
-            results.get(testcase['id'], {}).get('result') or 0
-            for testcase in self.testcases
-        ], default=0)
-
-
-def compile_suite(basename: str, include: list, sections: tuple = (), tests: re.Pattern = None) -> TestSuite:
-    suite = TestSuite(basename)
-    if sections:
-        suite.name += f" [sections: {', '.join(sections)}]"
-        suite.partial = True
-    if tests:
-        suite.name += f" [tests: '{tests.pattern}']"
-        suite.partial = True
-    for inc in include:
-        module = inc['module']
-        # basic sanity
-        testcases = module.get('testcases', ())
-        checks = module.get('run', ())
-        if not testcases or not checks:
-            logger.info(f"module {module['id']} missing checks or test cases")
-        # always include all testcases (necessary for assessing partial results)
-        suite.include_testcases(testcases)
-        # only add checks if they contain desired testcases
-        if not tests or any(tests.match(ch['id']) for ch in testcases):
-            suite.include_checks(module, inc['parameters'], sections=sections)
-    return suite
+def evaluate(results, testcase_ids) -> int:
+    """returns overall result"""
+    return min([
+        # here, we treat None (MISSING) as 0 (ABORT)
+        results.get(testcase_id, {}).get('result') or 0
+        for testcase_id in testcase_ids
+    ], default=0)

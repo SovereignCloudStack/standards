@@ -31,7 +31,7 @@ from itertools import chain
 import logging
 import yaml
 
-from scs_cert_lib import load_spec, annotate_validity, compile_suite, TestSuite, TESTCASE_VERDICTS
+from scs_cert_lib import load_spec, annotate_validity, eval_buckets, TESTCASE_VERDICTS
 
 
 logger = logging.getLogger(__name__)
@@ -206,9 +206,9 @@ class CheckRunner:
         self.verbosity = verbosity
         self.spamminess = 0
 
-    def run(self, check):
-        parameters = check.get('parameters')
-        assignment = {**self.assignment, **parameters} if parameters else self.assignment
+    def run(self, check, testcases=()):
+        parameters = check.get('parameters', {})
+        assignment = {'testcases': ' '.join(testcases), **self.assignment, **parameters}
         args = check.get('args', '').format(**assignment)
         env = {key: value.format(**assignment) for key, value in check.get('env', {}).items()}
         env_str = " ".join(f"{key}={value}" for key, value in env.items())
@@ -268,21 +268,10 @@ class ResultBuilder:
         return final
 
 
-def run_suite(suite: TestSuite, runner: CheckRunner):
-    """run all checks of `suite` using `runner`, returning results dict via `ResultBuilder`"""
-    suite.check_sanity()
-    builder = ResultBuilder(suite.name)
-    for check in suite.checks:
-        invocation = runner.run(check)
-        for id_, value in invocation["results"].items():
-            builder.record(id_, result=value, invocation=invocation['id'])
-    return builder.finalize(permissible_ids=suite.ids)
-
-
-def print_report(subject: str, suite: TestSuite, targets: dict, results: dict, verbose=False):
-    print(f"{subject} {suite.name}:")
-    for tname, target_spec in targets.items():
-        by_value = suite.select(tname, target_spec).eval_buckets(results)
+def print_report(subject: str, title: str, testcase_lookup: dict, targets: dict, results: dict, partial=False, verbose=False):
+    print(f"{subject} {title}:")
+    for tname, tc_ids in targets.items():
+        by_value = eval_buckets(results, tc_ids)
         missing, failed, aborted, passed = by_value[None], by_value[-1], by_value[0], by_value[1]
         verdict = 'FAIL' if failed or aborted else 'TENTATIVE pass' if missing else 'PASS'
         summary_parts = [f"{len(passed)} passed"]
@@ -298,20 +287,23 @@ def print_report(subject: str, suite: TestSuite, targets: dict, results: dict, v
         if verbose:
             reportcateg.append((passed, 'PASSED'))
         for offenders, category in reportcateg:
-            if category == 'MISSING' and suite.partial:
+            if category == 'MISSING' and partial:
                 continue  # do not report each missing testcase if a filter was used
             if not offenders:
                 continue
             print(f"  - {category}:")
-            for testcase in offenders:
-                print(f"    - {testcase['id']}:")
+            for tc_id in offenders:
+                print(f"    - {tc_id}:")
+                _, testcase = testcase_lookup[tc_id]
                 if 'description' in testcase:  # used to be `verbose and ...`, but users need the URL!
                     print(f"      > {testcase['description'].strip()}")
 
 
-def create_report(argv, config, spec, versions, invocations):
+def create_report(argv, config, spec, results, invocations):
     return {
         # these fields are essential:
+        # results are no longer specific to version!
+        # omit the field `version` because it's just redundant; simply parse invocations (see below)
         "spec": {
             "uuid": spec['uuid'],
             "name": spec['name'],
@@ -320,7 +312,6 @@ def create_report(argv, config, spec, versions, invocations):
         "checked_at": datetime.datetime.now(),
         "reference_date": config.checkdate,
         "subject": config.subject,
-        "versions": versions,
         # this field is mostly for debugging:
         "run": {
             "uuid": str(uuid.uuid4()),
@@ -359,28 +350,52 @@ def main(argv):
         raise RuntimeError(f"No valid version found for {config.checkdate}")
     check_cwd = os.path.dirname(config.arg0) or os.getcwd()
     runner = CheckRunner(check_cwd, config.assignment, verbosity=config.verbose and 2 or not config.quiet)
-    version_report = {}
-    # collect report data as tuples (version, suite, results) before printing them
-    report_data = []
+    title, partial = spec['name'], False
+    if config.sections:
+        title += f" [sections: {', '.join(config.sections)}]"
+        partial = True
+    if config.tests:
+        title += f" [tests: '{config.tests.pattern}']"
+        partial = True
+    # collect all testcases we need
+    all_testcases = set()
     for version in versions:
-        vname = version['version']
-        suite = compile_suite(
-            f"{spec['name']} {vname} ({version['validity']})",
-            version['include'],
-            config.sections,
-            config.tests,
-        )
-        report_data.append((version, suite, run_suite(suite, runner)))
+        for target, testcase_ids in version['targets'].items():
+            all_testcases.update(testcase_ids)
+    # collect scripts to be run
+    testcase_lookup = spec['testcases']
+    script_info = {}
+    for tc_id in all_testcases:
+        script, testcase = testcase_lookup[tc_id]
+        if 'executable' not in script:
+            continue  # manual check
+        if config.sections and script.get('section') not in config.sections:
+            continue
+        if config.tests and not config.tests.match(tc_id):
+            continue
+        item = script_info.get(id(script))
+        if item is None:
+            _, testcases = script_info[id(script)] = (script, [])
+        else:
+            _, testcases = item
+        testcases.append(tc_id)
+    # run scripts
+    builder = ResultBuilder('(dummy)')
+    for item in script_info.values():
+        script, testcases = item
+        invocation = runner.run(script, testcases=sorted(testcases))
+        for id_, value in invocation["results"].items():
+            builder.record(id_, result=value, invocation=invocation['id'])
+    results = builder.finalize(permissible_ids=all_testcases)
     # now report: to console if requested, and likewise for yaml output
     if not config.quiet:
         # print a horizontal line if we had any script output
         if runner.spamminess:
             print("********" * 10)  # 80 characters
-        for version, suite, results in report_data:
-            print_report(config.subject, suite, version['targets'], results, config.verbose)
+        for version in versions:
+            print_report(config.subject, f"{title} {version['version']}", testcase_lookup, version['targets'], results, partial, config.verbose)
     if config.output:
-        version_report = {version['version']: results for version, _, results in report_data}
-        report = create_report(argv, config, spec, version_report, runner.get_invocations())
+        report = create_report(argv, config, spec, results, runner.get_invocations())
         with open(config.output, 'w', encoding='UTF-8') as fileobj:
             yaml.safe_dump(report, fileobj, default_flow_style=False, sort_keys=False, explicit_start=True)
     return min(127, runner.num_abort + (0 if config.critical_only else runner.num_error))
