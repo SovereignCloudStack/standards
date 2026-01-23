@@ -86,22 +86,23 @@ While instructive, this view is still a bit simplified. Let's get more precise n
    A statement about the subject that can be evaluated unambiguously to be either satisfied or not. The result is either `PASS` or `FAIL`, or—if the test could not be performed—`DNF` (did not finish).
    A test case can be as simple as "the subject conforms to standard X", but a standard can also be decomposed into multiple test cases, which can then be reported on (also to the customers) individually.
    This latter option has the advantage that we can show explicitly if the subject complies with optional parts of the standard.
-3. _Check_:
-   A script that determines and reports the results of certain test cases. The report is printed to stdout, and each test case is reported as a single line of the form `testcase-id: [PASS/FAIL]`. The result `DNF` is not reported. Lines of other forms are permissible and will be ignored.
-   We also occasionally extend the concept of _check_ to manual audits.
-4. _Module_:
-   A collection of test cases and corresponding checks, together with additional meta information such as the result lifetime, description, and a list of tags for a test case.
-   Ultimately, we aim to specify one module for each version of each standard: the module translates the standard into something measurable and, ideally, executable to be used for certification.
-5. _Selector (expression)_:
-   An expression used to select test cases by referring to the tags that must (or must not) be present.
-6. _Target_:
-   A named collection of test cases specified using selector expressions.
+3. _Script_:
+   A script that determines and reports the results of certain test cases,
+   which are specified with the script, together with additional meta information such as the result lifetime, and a description for each test case.
+   The report is printed to stdout, and each test case is reported as a single line of the form `testcase-id: [PASS/FAIL/ABORT]`.
+   Lines of other forms are permissible and will be ignored.
+   We also occasionally extend the concept of _script_ to manual audits.
+4. _Target_:
+   A named collection of test cases.
    Ultimately, the certification of a subject always depends on a designated "main" target; all its test cases must be passed for the certificate to be awarded.
    Further targets can be used to report on optional aspects of the certificate, such as particularly good security and encryption measures.
-7. _(Certificate-scope) version_:
-   A collection of modules and a collection of targets, one of them being "main".
+5. _Module_:
+   A collection of targets.
+   Ultimately, we aim to specify one module for each version of each standard: the module translates the standard into something measurable and, ideally, executable to be used for certification.
+6. _(Certificate-scope) version_:
+   A collection of modules. Like a module, the version has targets, but they are implicitly given by taking the union of the targets of all its modules.
    Note that a collection of modules can again be construed as a (larger) module. We opt to use one module per standard version, as mentioned above, in order to make commonalities between certificate-scope versions explicit.
-8. _Certificate scope_:
+7. _Certificate scope_:
    A list of certificate-scope versions.
 
 Having introduced these concepts, we can now get even more precise by defining the actual specification in YAML format.
@@ -120,6 +121,7 @@ The certification YAML _MUST_ contain the following keys:
 | `uuid`     | String        | Universally unique identifier                        | `d912d0a5-826a-4b01-bafd-b48f65f76f43`                                                          |
 | `name`     | String        | Full name of this certificate scope                  | `SCS-open KaaS`                                                                                 |
 | `url`      | String        | Valid URL to the latest raw version of this document | `https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-open-kaas.yaml` |
+| `scripts`  | Array of maps | List of script descriptors (described below)         | (see below)                                                                                     |
 | `modules`  | Array of maps | List of module descriptors (described below)         | (see below)                                                                                     |
 | `timeline` | Array of maps | List of timeline entries (described below)           | (see below)                                                                                     |
 | `versions` | Array of maps | List of version descriptors (described below)        | (see below)                                                                                     |
@@ -154,7 +156,6 @@ then a certificate of that prerequisite scope has to be presented before the cer
 | --------------- | ------------- | ------------------------------------------------------------------------------- | ------------------ |
 | `version`       | String        | required: version of the particular list of standards                           | `v3`               |
 | `include`       | Array         | required: list of module ids or include descriptors (see below)                 | `[scs-0100-v3]`    |
-| `targets`       | Map of maps   | required: this maps target names to selector expressions (explained below)      | `main: mandatory`  |
 | `stabilized_at` | Date          | ISO formatted date indicating the date after this version is considered stable. | `2022-11-09`       |
 
 The ids of the test cases of all the modules specified via `include` MUST be pairwise different.
@@ -172,38 +173,6 @@ Each include may be specified by means of a module id (i.e., a string) or by an 
 
 When the referenced module uses parameters, then these parameters must be assigned values here.
 
-#### Selector expressions
-
-In order to define what a selector expression is, we need to define tags, atoms and terms first.
-
-A _tag_ is a string that does not contain any space, comma, forward slash, or exclamation mark.
-
-Examples: `iaas`, `mandatory`, `recommended`, `encryption`.
-
-An _atom_ is a string that is either (i) a tag or (ii) an exclamation mark followed by tag.
-A list of tags _satisfies_ the atom if
-
-- the atom is of form (i) and the tag is contained in the list, or
-- the atom is of form (ii) and the tag is not contained in the list.
-
-Examples: `mandatory`, `!mandatory`.
-
-A _term_ is a string that is a non-empty list of atoms joined by slashes.
-A list of tags _satisfies_ the term if it satisfies at least one of the atoms.
-
-Examples: `mandatory`, `mandatory/recommended`, `!mandatory/encryption`.
-
-A _selector (expression)_ is a string that is a non-empty list of terms joined by space.
-A list of tags _satisfies_ the selector if it satisfies all the terms.
-
-Examples: `mandatory`, `iaas mandatory`, `iaas !mandatory/encryption`.
-
-In the map `targets` above, it is possible to specify a list of selectors that are joined by comma.
-(Note that this is still a string, not a YAML list.)
-A list of tags satisfies this list of selectors if it satisfies at least one of the selectors.
-
-Examples: `mandatory iaas, recommended kaas` (NOT: `[mandatory iaas, recommended kaas]`)
-
 ### Module descriptor
 
 | Key                      | Type   | Description                                                                 | Example                                                           |
@@ -212,8 +181,7 @@ Examples: `mandatory iaas, recommended kaas` (NOT: `[mandatory iaas, recommended
 | `name`                   | String | name of this module                                                         | `Flavor naming v3`                                                |
 | `url`                    | String | Valid URL to relevant documentation (usually a standard document)           | `https://docs.scs.community/standards/scs-0100-v3-flavor-naming`  |
 | `parameters`             | List   | List of parameters that the checks in this module might use                 | `[image_spec]`                                                    |
-| `run`                    | Array  | List of all checks that should be run; each entry being a check descriptor  | (see below)                                                       |
-| `testcases`              | Array  | List of all test cases; each entry being a test-case descriptor             | (see below)                                                       |
+| `targets`                | Map of lists   | required: this maps target names to lists of testcases      | `main: [tc1, tc2]`  |
 
 The parameters specified here will be added to the variable assignment for all check tools that belong to this module, so they will be substituted in the same way.
 The values to these parameters must be provided in the include descriptor as explained above.
@@ -223,13 +191,14 @@ Using parameters offers two advantages:
 - they may show up in the automatically generated documentation, whereas the check tools themselves probably won't.
 - multiple versions of a standard can be represented using the same module, if everything that changes between versions can be captured by the parameters.
 
-### Check descriptor
+### Script descriptor
 
-The following fields are valid for every check descriptor:
+The following fields are valid for every script descriptor:
 
 | Key               | Type   | Description                                                                                    | Example    |
 | ----------------- | ------ | ---------------------------------------------------------------------------------------------- | ---------- |
 | `section`         | String | _Optional_ what section to associate this check with (sections can be checked in isolation)    | `weekly`   |
+| `testcases`       | Array  | List of all test cases; each entry being a test-case descriptor                                | (see below)  |
 
 Additional fields are valid depending on whether the check is automated or manual.
 
@@ -257,13 +226,10 @@ TBD
 | ----------------- | --------------- | ------------------------------------------------------------------------------------------------- | ----------------- |
 | `id`              | String          | Identifier for this test case (immutable and unique within this module)                           | `image-md-check`  |
 | `lifetime`        | String          | One of: `day`, `week` (_default_), `month`, `quarter`, `year`                                     | `day`             |
-| `tags`            | List of strings | A tag is a keyword that will be used to select this test case using a selector expression         | `[mandatory]`     |
 | `description`     | String          | Short description of the test case                                                                |                   |
 
 A test result is valid until the end of the next period, except when lifetime is `year`: then the result is
 valid until the end of the following month plus one year.
-
-A tag MUST NOT contain any of these characters: space, comma, exclamation mark, forward slash.
 
 The `id` of a test case MUST NOT be changed.
 Exceptions MAY be made if the test case is not referenced by any stable version.

@@ -7,6 +7,195 @@ uuid: 50393e6f-2ae1-4c5c-a62c-3b75f2abef3f
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml
 variables:
   - os_cloud
+scripts:
+- executable: ./iaas/openstack_test.py
+  args: -c {os_cloud} {testcases}
+  testcases:
+  - id: scs-0100-syntax-check
+    description: Flavor names starting `SCS-` comply with syntax.
+  - id: scs-0100-semantics-check
+    description: Syntactically correct SCS flavor names represent the truth.
+  - id: scs-0101-flavor-property
+    description: Must have all flavor properties recommended in <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings>
+  - id: scs-0101-image-property
+    description: Must have all image properties recommended in <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings>
+  - id: scs-0101-rngd
+    description: Images of the test sample must have the service `rngd`; see <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
+  - id: scs-0101-entropy-avail
+    description: A test instance must have the correct `entropy_avail`; see <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
+  - id: scs-0101-fips-test
+    description: A test instance must pass the "FIPS test"; see <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
+  - id: scs-0102-prop-architecture
+    description: Each image has a meaningful value for `architecture`.
+  - id: scs-0102-prop-hash_algo
+    description: Each image has a meaningful value for `hash_algo`.
+  - id: scs-0102-prop-min_disk
+    description: Each image has a meaningful value for `min_disk`.
+  - id: scs-0102-prop-min_ram
+    description: Each image has a meaningful value for `min_ram`.
+  - id: scs-0102-prop-os_version
+    description: Each image has a meaningful value for `os_version`.
+  - id: scs-0102-prop-os_distro
+    description: Each image has a meaningful value for `os_distro`.
+  - id: scs-0102-prop-os_purpose
+    description: Each image has a meaningful value for `os_purpose`.
+  - id: scs-0102-prop-hw_disk_bus
+    description: Each image has a meaningful value for `hw_disk_bus`.
+  - id: scs-0102-prop-hypervisor_type
+    description: Each image has a meaningful value for `hypervisor_type`.
+  - id: scs-0102-prop-hw_rng_model
+    description: Each image has a meaningful value for `hw_rng_model`.
+  - id: scs-0102-prop-image_build_date
+    description: Each image has a meaningful value for `image_build_date`.
+  - id: scs-0102-prop-image_original_user
+    description: Each image has a meaningful value for `image_original_user`.
+  - id: scs-0102-prop-image_source
+    description: Each image has a meaningful value for `image_source`.
+  - id: scs-0102-prop-image_description
+    description: Each image has a meaningful value for `image_description`.
+  - id: scs-0102-prop-replace_frequency
+    description: Each image has a meaningful value for `replace_frequency`.
+  - id: scs-0102-prop-provided_until
+    description: Each image has a meaningful value for `provided_until`.
+  - id: scs-0102-prop-uuid_validity
+    description: Each image has a meaningful value for `uuid_validity`.
+  - id: scs-0102-prop-hotfix_hours
+    description: Each image has a meaningful value for `hotfix_hours`.
+  - id: scs-0102-image-recency
+    description: Each image is as recent as properties (if set) suggest.
+  - id: scs-0103-flavor-1v-4
+    description: Check presence of flavor `SCS-1V-4`
+  - id: scs-0103-flavor-2v-8
+    description: Check presence of flavor `SCS-2V-8`
+  - id: scs-0103-flavor-4v-16
+    description: Check presence of flavor `SCS-4V-16`
+  - id: scs-0103-flavor-8v-32
+    description: Check presence of flavor `SCS-8V-32`
+  - id: scs-0103-flavor-1v-2
+    description: Check presence of flavor `SCS-1V-2`
+  - id: scs-0103-flavor-2v-4
+    description: Check presence of flavor `SCS-2V-4`
+  - id: scs-0103-flavor-4v-8
+    description: Check presence of flavor `SCS-4V-8`
+  - id: scs-0103-flavor-8v-16
+    description: Check presence of flavor `SCS-8V-16`
+  - id: scs-0103-flavor-16v-32
+    description: Check presence of flavor `SCS-16V-32`
+  - id: scs-0103-flavor-1v-8
+    description: Check presence of flavor `SCS-1V-8`
+  - id: scs-0103-flavor-2v-16
+    description: Check presence of flavor `SCS-2V-16`
+  - id: scs-0103-flavor-4v-32
+    description: Check presence of flavor `SCS-4V-32`
+  - id: scs-0103-flavor-1l-1
+    description: Check presence of flavor `SCS-1L-1`
+  - id: scs-0103-flavor-2v-4-20s
+    description: Check presence of flavor `SCS-2V-4-20s`
+  - id: scs-0103-flavor-4v-16-100s
+    description: Check presence of flavor `SCS-4V-16-100s`
+  - id: scs-0103-flavor-1v-4-10
+    description: Check presence of flavor `SCS-1V-4-10`
+  - id: scs-0103-flavor-2v-8-20
+    description: Check presence of flavor `SCS-2V-8-20`
+  - id: scs-0103-flavor-4v-16-50
+    description: Check presence of flavor `SCS-4V-16-50`
+  - id: scs-0103-flavor-8v-32-100
+    description: Check presence of flavor `SCS-8V-32-100`
+  - id: scs-0103-flavor-1v-2-5
+    description: Check presence of flavor `SCS-1V-2-5`
+  - id: scs-0103-flavor-2v-4-10
+    description: Check presence of flavor `SCS-2V-4-10`
+  - id: scs-0103-flavor-4v-8-20
+    description: Check presence of flavor `SCS-4V-8-20`
+  - id: scs-0103-flavor-8v-16-50
+    description: Check presence of flavor `SCS-8V-16-50`
+  - id: scs-0103-flavor-16v-32-100
+    description: Check presence of flavor `SCS-16V-32-100`
+  - id: scs-0103-flavor-1v-8-20
+    description: Check presence of flavor `SCS-1V-8-20`
+  - id: scs-0103-flavor-2v-16-50
+    description: Check presence of flavor `SCS-2V-16-50`
+  - id: scs-0103-flavor-4v-32-100
+    description: Check presence of flavor `SCS-4V-32-100`
+  - id: scs-0103-flavor-1l-1-5
+    description: Check presence of flavor `SCS-1L-1-5`
+  - id: scs-0103-flavor-16v-64
+    description: Check presence of flavor `SCS-16V-64`
+  - id: scs-0103-flavor-8v-64
+    description: Check presence of flavor `SCS-8V-64`
+  - id: scs-0103-flavor-16v-128
+    description: Check presence of flavor `SCS-16V-128`
+  - id: scs-0104-source-capi-1
+    description: CAPI images adhere to canonical image source
+  - id: scs-0104-source-capi-2
+    description: CAPI images adhere to canonical image source
+  - id: scs-0104-source-ubuntu-2404
+    description: Ubuntu 24.04 images adhere to canonical image source
+  - id: scs-0104-source-ubuntu-2204
+    description: Ubuntu 22.04 images adhere to canonical image source
+  - id: scs-0104-source-ubuntu-2004
+    description: Ubuntu 20.04 images adhere to canonical image source
+  - id: scs-0104-source-debian-13
+    description: Debian 13 images adhere to canonical image source
+  - id: scs-0104-source-debian-12
+    description: Debian 12 images adhere to canonical image source
+  - id: scs-0104-source-debian-11
+    description: Debian 11 images adhere to canonical image source
+  - id: scs-0104-image-capi-2
+    description: CAPI image is present (naming scheme v2)
+  - id: scs-0104-image-capi-1
+    description: CAPI image is present (naming scheme v1)
+  - id: scs-0104-image-ubuntu-2404
+    description: Ubuntu 24.04 image is present (by name)
+  - id: scs-0104-image-ubuntu-2204
+    description: Ubuntu 22.04 image is present (by name)
+  - id: scs-0104-image-debian-13
+    description: Debian 13 image is present (by name)
+  - id: scs-0104-image-debian-12
+    description: Debian 12 image is present (by name)
+  - id: scs-0114-encrypted-type
+    description: An encrypted volume type can be discovered.
+  - id: scs-0114-replicated-type
+    description: A replicated volume type can be discovered.
+  # do monolithic test for the default security groups because it's hard to decompose, and frankly, I don't
+  # see the correspondence between the test script and the standards requirements and recommendations
+  # (the latter probably simply aren't checked?)
+  - id: scs-0115-default-rules
+    description: Must fulfill all requirements of <https://docs.scs.community/standards/scs-0115-v1-default-rules-for-security-groups>
+  - id: scs-0116-presence
+    description: Key manager service is discoverable.
+  - id: scs-0116-permissions
+    description: Key manager (if present) is usable with member role.
+  - id: scs-0117-test-backup
+    description: Check that volume backup works.
+  - id: scs-0123-service-compute
+    description: Compute service is discoverable.
+  - id: scs-0123-service-identity
+    description: Identity service is discoverable.
+  - id: scs-0123-service-image
+    description: Image service is discoverable.
+  - id: scs-0123-service-network
+    description: Network service is discoverable.
+  - id: scs-0123-service-load-balancer
+    description: Load-balancer service is discoverable.
+  - id: scs-0123-service-placement
+    description: Placement service is discoverable.
+  - id: scs-0123-service-object-store
+    description: Object-store service is discoverable.
+  - id: scs-0123-storage-apis
+    description: The block-storage API is discoverable as `volume`, `volumev3`, or `block-storage`.
+  - id: scs-0123-swift-s3
+    description: The object-storage API is compatible with S3.
+- testcases:
+  - id: key-manager-docs-check
+    description: >
+      Note: manual check! Must fulfill documentation requirements of <https://docs.scs.community/standards/scs-0116-v1-key-manager-standard>.
+  - id: availability-zones-check
+    description: >
+      Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard>
+  - id: domain-manager-check
+    description: >
+      Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0302-v1-domain-manager-role>
 modules:
   - id: opc-v2022.11
     name: OpenStack Powered Compute v2022.11
@@ -14,521 +203,172 @@ modules:
   - id: scs-0100-v3.1
     name: Flavor naming v3.1
     url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
-    run:
-      - executable: ./iaas/openstack_test.py
-        args: -c {os_cloud} scs-0100-syntax-check scs-0100-semantics-check flavor-name-check
-    testcases:
-      - id: scs-0100-syntax-check
-        tags: [mandatory]
-        description: Flavor names starting `SCS-` comply with syntax.
-      - id: scs-0100-semantics-check
-        tags: [mandatory]
-        description: Syntactically correct SCS flavor names represent the truth.
-      - id: flavor-name-check
-        tags: [legacy_mandatory]
-        description: >
-          Must fulfill all requirements of
-          <https://docs.scs.community/standards/scs-0100-v3-flavor-naming>
+    targets:
+      main:
+      - scs-0100-syntax-check
+      - scs-0100-semantics-check
   - id: scs-0101-v1
     name: Entropy v1
     url: https://docs.scs.community/standards/scs-0101-v1-entropy
-    run:
-      - executable: ./iaas/openstack_test.py
-        args: >
-          -c {os_cloud}
-          scs-0101-flavor-property scs-0101-image-property scs-0101-rngd scs-0101-entropy-avail scs-0101-fips-test
-          entropy-check
-    testcases:
-      - id: scs-0101-flavor-property
-        tags: [recommended]
-        description: >
-          Must have all flavor properties recommended in
-          <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings>
-      - id: scs-0101-image-property
-        tags: [recommended]
-        description: >
-          Must have all image properties recommended in
-          <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#warnings>
-      - id: scs-0101-rngd
-        tags: [mandatory]
-        description: >
-          Images of the test sample must have the service `rngd`; see
-          <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
-      - id: scs-0101-entropy-avail
-        tags: [mandatory]
-        description: >
-          A test instance must have the correct `entropy_avail`; see
-          <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
-      - id: scs-0101-fips-test
-        tags: [mandatory]
-        description: >
-          A test instance must pass the "FIPS test"; see
-          <https://docs.scs.community/standards/scs-0101-w1-entropy-implementation-testing#errors>
-      - id: entropy-check
-        tags: [legacy_mandatory]
-        description: >
-          Must fulfill all requirements of
-          <https://docs.scs.community/standards/scs-0101-v1-entropy>
+    targets:
+      main:
+      - scs-0101-rngd
+      - scs-0101-entropy-avail
+      - scs-0101-fips-test
+      recommended:
+      - scs-0101-flavor-property
+      - scs-0101-image-property
   - id: scs-0102-v1
     name: Image metadata v1
     url: https://docs.scs.community/standards/scs-0102-v1-image-metadata
-    run:
-    - executable: ./iaas/openstack_test.py
-      args: >
-        -c {os_cloud}
-        scs-0102-prop-architecture scs-0102-prop-min_disk scs-0102-prop-min_ram
-        scs-0102-prop-os_version scs-0102-prop-os_distro scs-0102-prop-os_purpose scs-0102-prop-hw_disk_bus
-        scs-0102-prop-hypervisor_type scs-0102-prop-hw_rng_model scs-0102-prop-image_build_date
-        scs-0102-prop-image_original_user scs-0102-prop-image_source scs-0102-prop-image_description
-        scs-0102-prop-replace_frequency scs-0102-prop-provided_until scs-0102-prop-uuid_validity
-        scs-0102-prop-hotfix_hours scs-0102-image-recency scs-0102-prop-hash_algo
-        image-metadata-check
-    testcases:
-    - id: scs-0102-prop-architecture
-      tags: [mandatory]
-      description: Each image has a meaningful value for `architecture`.
-    - id: scs-0102-prop-hash_algo
-      tags: [recommended]
-      description: Each image has a meaningful value for `hash_algo`.
-    - id: scs-0102-prop-min_disk
-      tags: [mandatory]
-      description: Each image has a meaningful value for `min_disk`.
-    - id: scs-0102-prop-min_ram
-      tags: [mandatory]
-      description: Each image has a meaningful value for `min_ram`.
-    - id: scs-0102-prop-os_version
-      tags: [mandatory]
-      description: Each image has a meaningful value for `os_version`.
-    - id: scs-0102-prop-os_distro
-      tags: [mandatory]
-      description: Each image has a meaningful value for `os_distro`.
-    - id: scs-0102-prop-os_purpose
-      tags: [recommended]
-      description: Each image has a meaningful value for `os_purpose`.
-    - id: scs-0102-prop-hw_disk_bus
-      tags: [mandatory]
-      description: Each image has a meaningful value for `hw_disk_bus`.
-    - id: scs-0102-prop-hypervisor_type
-      tags: [recommended]
-      description: Each image has a meaningful value for `hypervisor_type`.
-    - id: scs-0102-prop-hw_rng_model
-      tags: [recommended]
-      description: Each image has a meaningful value for `hw_rng_model`.
-    - id: scs-0102-prop-image_build_date
-      tags: [mandatory]
-      description: Each image has a meaningful value for `image_build_date`.
-    - id: scs-0102-prop-image_original_user
-      tags: [mandatory]
-      description: Each image has a meaningful value for `image_original_user`.
-    - id: scs-0102-prop-image_source
-      tags: [mandatory]
-      description: Each image has a meaningful value for `image_source`.
-    - id: scs-0102-prop-image_description
-      tags: [mandatory]
-      description: Each image has a meaningful value for `image_description`.
-    - id: scs-0102-prop-replace_frequency
-      tags: [mandatory]
-      description: Each image has a meaningful value for `replace_frequency`.
-    - id: scs-0102-prop-provided_until
-      tags: [mandatory]
-      description: Each image has a meaningful value for `provided_until`.
-    - id: scs-0102-prop-uuid_validity
-      tags: [mandatory]
-      description: Each image has a meaningful value for `uuid_validity`.
-    - id: scs-0102-prop-hotfix_hours
-      tags: [recommended]
-      description: Each image has a meaningful value for `hotfix_hours`.
-    - id: scs-0102-image-recency
-      tags: [mandatory]
-      description: Each image is as recent as properties (if set) suggest.
-    - id: image-metadata-check
-      tags: [legacy_mandatory]
-      description: >
-        Must fulfill all requirements of <https://docs.scs.community/standards/scs-0102-v1-image-metadata>
+    targets:
+      main:
+      - scs-0102-prop-architecture
+      - scs-0102-prop-min_disk
+      - scs-0102-prop-min_ram
+      - scs-0102-prop-os_version
+      - scs-0102-prop-os_distro
+      - scs-0102-prop-hw_disk_bus
+      - scs-0102-prop-image_build_date
+      - scs-0102-prop-image_original_user
+      - scs-0102-prop-image_source
+      - scs-0102-prop-image_description
+      - scs-0102-prop-replace_frequency
+      - scs-0102-prop-provided_until
+      - scs-0102-prop-uuid_validity
+      - scs-0102-image-recency
+      recommended:
+      - scs-0102-prop-hash_algo
+      - scs-0102-prop-os_purpose
+      - scs-0102-prop-hypervisor_type
+      - scs-0102-prop-hw_rng_model
+      - scs-0102-prop-hotfix_hours
   - id: scs-0103-v1
     name: Standard flavors
     url: https://docs.scs.community/standards/scs-0103-v1-standard-flavors
-    run:
-    - executable: ./iaas/openstack_test.py
-      args: >
-        -c {os_cloud}
-        scs-0103-flavor-1v-4 scs-0103-flavor-2v-8 scs-0103-flavor-4v-16 scs-0103-flavor-8v-32
-        scs-0103-flavor-1v-2 scs-0103-flavor-2v-4 scs-0103-flavor-4v-8 scs-0103-flavor-8v-16 scs-0103-flavor-16v-32
-        scs-0103-flavor-1v-8 scs-0103-flavor-2v-16 scs-0103-flavor-4v-32 scs-0103-flavor-1l-1
-        scs-0103-flavor-2v-4-20s scs-0103-flavor-4v-16-100s
-        scs-0103-flavor-1v-4-10 scs-0103-flavor-2v-8-20 scs-0103-flavor-4v-16-50 scs-0103-flavor-8v-32-100
-        scs-0103-flavor-1v-2-5 scs-0103-flavor-2v-4-10 scs-0103-flavor-4v-8-20 scs-0103-flavor-8v-16-50
-        scs-0103-flavor-16v-32-100 scs-0103-flavor-1v-8-20 scs-0103-flavor-2v-16-50 scs-0103-flavor-4v-32-100
-        scs-0103-flavor-1l-1-5 scs-0103-flavor-16v-64 scs-0103-flavor-8v-64 scs-0103-flavor-16v-128
-        standard-flavors-check
-    testcases:
-    - id: scs-0103-flavor-1v-4
-      tags: [mandatory]
-      description: Check presence of flavor `SCS-1V-4`
-    - id: scs-0103-flavor-2v-8
-      tags: [mandatory]
-      description: Check presence of flavor `SCS-2V-8`
-    - id: scs-0103-flavor-4v-16
-      tags: [mandatory]
-      description: Check presence of flavor `SCS-4V-16`
-    - id: scs-0103-flavor-8v-32
-      tags: [mandatory]
-      description: Check presence of flavor `SCS-8V-32`
-    - id: scs-0103-flavor-1v-2
-      tags: [mandatory]
-      description: Check presence of flavor `SCS-1V-2`
-    - id: scs-0103-flavor-2v-4
-      tags: [mandatory]
-      description: Check presence of flavor `SCS-2V-4`
-    - id: scs-0103-flavor-4v-8
-      tags: [mandatory]
-      description: Check presence of flavor `SCS-4V-8`
-    - id: scs-0103-flavor-8v-16
-      tags: [mandatory]
-      description: Check presence of flavor `SCS-8V-16`
-    - id: scs-0103-flavor-16v-32
-      tags: [mandatory]
-      description: Check presence of flavor `SCS-16V-32`
-    - id: scs-0103-flavor-1v-8
-      tags: [mandatory]
-      description: Check presence of flavor `SCS-1V-8`
-    - id: scs-0103-flavor-2v-16
-      tags: [mandatory]
-      description: Check presence of flavor `SCS-2V-16`
-    - id: scs-0103-flavor-4v-32
-      tags: [mandatory]
-      description: Check presence of flavor `SCS-4V-32`
-    - id: scs-0103-flavor-1l-1
-      tags: [mandatory]
-      description: Check presence of flavor `SCS-1L-1`
-    - id: scs-0103-flavor-2v-4-20s
-      tags: [mandatory]
-      description: Check presence of flavor `SCS-2V-4-20s`
-    - id: scs-0103-flavor-4v-16-100s
-      tags: [mandatory]
-      description: Check presence of flavor `SCS-4V-16-100s`
-    - id: scs-0103-flavor-1v-4-10
-      tags: [recommended]
-      description: Check presence of flavor `SCS-1V-4-10`
-    - id: scs-0103-flavor-2v-8-20
-      tags: [recommended]
-      description: Check presence of flavor `SCS-2V-8-20`
-    - id: scs-0103-flavor-4v-16-50
-      tags: [recommended]
-      description: Check presence of flavor `SCS-4V-16-50`
-    - id: scs-0103-flavor-8v-32-100
-      tags: [recommended]
-      description: Check presence of flavor `SCS-8V-32-100`
-    - id: scs-0103-flavor-1v-2-5
-      tags: [recommended]
-      description: Check presence of flavor `SCS-1V-2-5`
-    - id: scs-0103-flavor-2v-4-10
-      tags: [recommended]
-      description: Check presence of flavor `SCS-2V-4-10`
-    - id: scs-0103-flavor-4v-8-20
-      tags: [recommended]
-      description: Check presence of flavor `SCS-4V-8-20`
-    - id: scs-0103-flavor-8v-16-50
-      tags: [recommended]
-      description: Check presence of flavor `SCS-8V-16-50`
-    - id: scs-0103-flavor-16v-32-100
-      tags: [recommended]
-      description: Check presence of flavor `SCS-16V-32-100`
-    - id: scs-0103-flavor-1v-8-20
-      tags: [recommended]
-      description: Check presence of flavor `SCS-1V-8-20`
-    - id: scs-0103-flavor-2v-16-50
-      tags: [recommended]
-      description: Check presence of flavor `SCS-2V-16-50`
-    - id: scs-0103-flavor-4v-32-100
-      tags: [recommended]
-      description: Check presence of flavor `SCS-4V-32-100`
-    - id: scs-0103-flavor-1l-1-5
-      tags: [recommended]
-      description: Check presence of flavor `SCS-1L-1-5`
-    - id: scs-0103-flavor-16v-64
-      tags: [recommended]
-      description: Check presence of flavor `SCS-16V-64`
-    - id: scs-0103-flavor-8v-64
-      tags: [recommended]
-      description: Check presence of flavor `SCS-8V-64`
-    - id: scs-0103-flavor-16v-128
-      tags: [recommended]
-      description: Check presence of flavor `SCS-16V-128`
-    - id: standard-flavors-check
-      tags: [legacy_mandatory]
-      description: >
-        Must fulfill all requirements of <https://docs.scs.community/standards/scs-0103-v1-standard-flavors>
+    targets:
+      main:
+      - scs-0103-flavor-1v-4
+      - scs-0103-flavor-2v-8
+      - scs-0103-flavor-4v-16
+      - scs-0103-flavor-8v-32
+      - scs-0103-flavor-1v-2
+      - scs-0103-flavor-2v-4
+      - scs-0103-flavor-4v-8
+      - scs-0103-flavor-8v-16
+      - scs-0103-flavor-16v-32
+      - scs-0103-flavor-1v-8
+      - scs-0103-flavor-2v-16
+      - scs-0103-flavor-4v-32
+      - scs-0103-flavor-1l-1
+      - scs-0103-flavor-2v-4-20s
+      - scs-0103-flavor-4v-16-100s
+      recommended:
+      - scs-0103-flavor-1v-4-10
+      - scs-0103-flavor-2v-8-20
+      - scs-0103-flavor-4v-16-50
+      - scs-0103-flavor-8v-32-100
+      - scs-0103-flavor-1v-2-5
+      - scs-0103-flavor-2v-4-10
+      - scs-0103-flavor-4v-8-20
+      - scs-0103-flavor-8v-16-50
+      - scs-0103-flavor-16v-32-100
+      - scs-0103-flavor-1v-8-20
+      - scs-0103-flavor-2v-16-50
+      - scs-0103-flavor-4v-32-100
+      - scs-0103-flavor-1l-1-5
+      - scs-0103-flavor-16v-64
+      - scs-0103-flavor-8v-64
+      - scs-0103-flavor-16v-128
   - id: scs-0104-v1-1
     name: Standard images
     url: https://docs.scs.community/standards/scs-0104-v1-standard-images
     parameters:
       image_spec: address (URL) of an image-spec (YAML) file
-    run:
-    - executable: ./iaas/openstack_test.py
-      args: >
-        -c {os_cloud}
-        scs-0104-source-capi-1 scs-0104-source-capi-2
-        scs-0104-source-ubuntu-2404 scs-0104-source-ubuntu-2204 scs-0104-source-ubuntu-2004
-        scs-0104-source-debian-13 scs-0104-source-debian-12 scs-0104-source-debian-11
-        scs-0104-image-capi-2 scs-0104-image-capi-1
-        scs-0104-image-ubuntu-2404 scs-0104-image-ubuntu-2204
-        scs-0104-image-debian-13 scs-0104-image-debian-12
-        standard-images-check/1
-    testcases:
-    - id: scs-0104-source-capi-1
-      tags: [mandatory]
-      description: CAPI images adhere to canonical image source
-    - id: scs-0104-source-capi-2
-      tags: [mandatory]
-      description: CAPI images adhere to canonical image source
-    - id: scs-0104-source-ubuntu-2404
-      tags: [mandatory]
-      description: Ubuntu 24.04 images adhere to canonical image source
-    - id: scs-0104-source-ubuntu-2204
-      tags: [mandatory]
-      description: Ubuntu 22.04 images adhere to canonical image source
-    - id: scs-0104-source-ubuntu-2004
-      tags: [mandatory]
-      description: Ubuntu 20.04 images adhere to canonical image source
-    - id: scs-0104-source-debian-13
-      tags: [mandatory]
-      description: Debian 13 images adhere to canonical image source
-    - id: scs-0104-source-debian-12
-      tags: [mandatory]
-      description: Debian 12 images adhere to canonical image source
-    - id: scs-0104-source-debian-11
-      tags: [mandatory]
-      description: Debian 11 images adhere to canonical image source
-    - id: scs-0104-image-capi-2
-      tags: []
-      description: CAPI image is present (naming scheme v2)
-    - id: scs-0104-image-capi-1
-      tags: [recommended]
-      description: CAPI image is present (naming scheme v1)
-    - id: scs-0104-image-ubuntu-2404
-      tags: []
-      description: Ubuntu 24.04 image is present (by name)
-    - id: scs-0104-image-ubuntu-2204
-      tags: [mandatory]
-      description: Ubuntu 22.04 image is present (by name)
-    - id: scs-0104-image-debian-13
-      tags: []
-      description: Debian 13 image is present (by name)
-    - id: scs-0104-image-debian-12
-      tags: []
-      description: Debian 12 image is present (by name)
-    - id: standard-images-check
-      tags: [legacy_mandatory]
-      description: >
-        Must fulfill all requirements of <https://docs.scs.community/standards/scs-0104-v1-standard-images>
+    targets:
+      main:
+      - scs-0104-source-capi-1
+      - scs-0104-source-ubuntu-2204
+      - scs-0104-source-ubuntu-2004
+      - scs-0104-source-debian-12
+      - scs-0104-source-debian-11
+      - scs-0104-image-ubuntu-2204
+      recommended:
+      - scs-0104-image-capi-1
   - id: scs-0104-v1-2
     name: Standard images
     url: https://docs.scs.community/standards/scs-0104-v1-standard-images
     parameters:
       image_spec: address (URL) of an image-spec (YAML) file
-    run:
-    - executable: ./iaas/openstack_test.py
-      args: >
-        -c {os_cloud}
-        scs-0104-source-capi-1 scs-0104-source-capi-2
-        scs-0104-source-ubuntu-2404 scs-0104-source-ubuntu-2204 scs-0104-source-ubuntu-2004
-        scs-0104-source-debian-13 scs-0104-source-debian-12 scs-0104-source-debian-11
-        scs-0104-image-capi-2 scs-0104-image-capi-1
-        scs-0104-image-ubuntu-2404 scs-0104-image-ubuntu-2204
-        scs-0104-image-debian-13 scs-0104-image-debian-12
-        standard-images-check/2
-    testcases:
-    - id: scs-0104-source-capi-1
-      tags: [mandatory]
-      description: CAPI images adhere to canonical image source
-    - id: scs-0104-source-capi-2
-      tags: [mandatory]
-      description: CAPI images adhere to canonical image source
-    - id: scs-0104-source-ubuntu-2404
-      tags: [mandatory]
-      description: Ubuntu 24.04 images adhere to canonical image source
-    - id: scs-0104-source-ubuntu-2204
-      tags: [mandatory]
-      description: Ubuntu 22.04 images adhere to canonical image source
-    - id: scs-0104-source-ubuntu-2004
-      tags: [mandatory]
-      description: Ubuntu 20.04 images adhere to canonical image source
-    - id: scs-0104-source-debian-13
-      tags: [mandatory]
-      description: Debian 13 images adhere to canonical image source
-    - id: scs-0104-source-debian-12
-      tags: [mandatory]
-      description: Debian 12 images adhere to canonical image source
-    - id: scs-0104-source-debian-11
-      tags: [mandatory]
-      description: Debian 11 images adhere to canonical image source
-    - id: scs-0104-image-capi-2
-      tags: [recommended]
-      description: CAPI image is present (naming scheme v2)
-    - id: scs-0104-image-capi-1
-      tags: []
-      description: CAPI image is present (naming scheme v1)
-    - id: scs-0104-image-ubuntu-2404
-      tags: [mandatory]
-      description: Ubuntu 24.04 image is present (by name)
-    - id: scs-0104-image-ubuntu-2204
-      tags: []
-      description: Ubuntu 22.04 image is present (by name)
-    - id: scs-0104-image-debian-13
-      tags: []
-      description: Debian 13 image is present (by name)
-    - id: scs-0104-image-debian-12
-      tags: [recommended]
-      description: Debian 12 image is present (by name)
-    - id: standard-images-check
-      tags: [legacy_mandatory]
-      description: >
-        Must fulfill all requirements of <https://docs.scs.community/standards/scs-0104-v1-standard-images>
+    targets:
+      main:
+      - scs-0104-source-capi-1
+      - scs-0104-source-capi-2
+      - scs-0104-source-ubuntu-2404
+      - scs-0104-source-ubuntu-2204
+      - scs-0104-source-ubuntu-2004
+      - scs-0104-source-debian-13
+      - scs-0104-source-debian-12
+      - scs-0104-source-debian-11
+      - scs-0104-image-ubuntu-2404
+      recommended:
+      - scs-0104-image-capi-2
+      - scs-0104-image-debian-12
   - id: scs-0114-v1
     name: Volume Types
     url: https://docs.scs.community/standards/scs-0114-v1-volume-type-standard
-    run:
-    - executable: ./iaas/openstack_test.py
-      args: >
-        -c {os_cloud}
-        scs-0114-encrypted-type scs-0114-replicated-type
-        volume-types-check
-    testcases:
-    - id: scs-0114-encrypted-type
-      tags: [recommended]
-      description: An encrypted volume type can be discovered.
-    - id: scs-0114-replicated-type
-      tags: [recommended]
-      description: A replicated volume type can be discovered.
-    - id: volume-types-check
-      tags: [recommended]
-      description: >
-        Must fulfill all requirements of <https://docs.scs.community/standards/scs-0114-v1-volume-type-standard>
+    targets:
+      recommended:
+      - scs-0114-encrypted-type
+      - scs-0114-replicated-type
   - id: scs-0115-v1
     name: Default rules for security groups
     url: https://docs.scs.community/standards/scs-0115-v1-default-rules-for-security-groups
-    run:
-    - executable: ./iaas/openstack_test.py
-      args: >
-        -c {os_cloud}
-        scs-0115-default-rules
-        security-groups-default-rules-check
-    testcases:
-    # do monolithic test for the default security groups because it's hard to decompose, and frankly, I don't
-    # see the correspondence between the test script and the standards requirements and recommendations
-    # (the latter probably simply aren't checked?)
-    - id: scs-0115-default-rules
-      tags: [mandatory]
-      description: >
-        Must fulfill all requirements of <https://docs.scs.community/standards/scs-0115-v1-default-rules-for-security-groups>
-    - id: security-groups-default-rules-check
-      tags: [legacy_mandatory]
-      description: >
-        Must fulfill all requirements of <https://docs.scs.community/standards/scs-0115-v1-default-rules-for-security-groups>
+    targets:
+      main:
+      - scs-0115-default-rules
   - id: scs-0116-v1
     name: Key manager
     url: https://docs.scs.community/standards/scs-0116-v1-key-manager-standard
-    run:
-    - executable: ./iaas/openstack_test.py
-      args: >
-        -c {os_cloud}
-        scs-0116-presence scs-0116-permissions
-        key-manager-check
-    testcases:
-    - id: scs-0116-presence
-      tags: [recommended]
-      description: Key manager service is discoverable.
-    - id: scs-0116-permissions
-      tags: [mandatory]
-      description: Key manager (if present) is usable with member role.
-    - id: key-manager-check
-      tags: [legacy_mandatory]
-      description: >
-        Must fulfill all requirements of <https://docs.scs.community/standards/scs-0116-v1-key-manager-standard>
-    - id: key-manager-docs-check
-      tags: [key-manager-docs]
-      description: >
-        Note: manual check! Must fulfill documentation requirements of <https://docs.scs.community/standards/scs-0116-v1-key-manager-standard>.
+    targets:
+      main:
+      - scs-0116-permissions
+      recommended:
+      - scs-0116-presence
+      preview:
+      - key-manager-docs-check
   - id: scs-0117-v1
     name: Volume backup
     url: https://docs.scs.community/standards/scs-0117-v1-volume-backup-service
-    run:
-    - executable: ./iaas/openstack_test.py
-      args: >
-        -c {os_cloud}
-        scs-0117-test-backup
-        volume-backup-check
-    testcases:
-    - id: scs-0117-test-backup
-      tags: [mandatory]
-      description: Check that volume backup works.
-    - id: volume-backup-check
-      tags: [legacy_mandatory]
-      description: >
-        Must fulfill all requirements of <https://docs.scs.community/standards/scs-0117-v1-volume-backup-service>
+    targets:
+      main:
+      - scs-0117-test-backup
   - id: scs-0121-v1
     name: Availability Zones
     url: https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard
-    testcases:
-      - id: availability-zones-check
-        tags: [availability-zones]
-        description: >
-          Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard>
+    targets:
+      preview:
+      - availability-zones-check
   - id: scs-0123-v1
     name: Mandatory and Supported IaaS Services
     url: https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services
-    run:
-    - executable: ./iaas/openstack_test.py
-      args: >
-        -c {os_cloud}
-        scs-0123-service-compute scs-0123-service-identity scs-0123-service-image scs-0123-service-network
-        scs-0123-service-load-balancer scs-0123-service-placement scs-0123-service-object-store
-        scs-0123-storage-apis scs-0123-swift-s3
-        service-apis-check
-    testcases:
-    - id: scs-0123-service-compute
-      tags: [mandatory]
-      description: Compute service is discoverable.
-    - id: scs-0123-service-identity
-      tags: [mandatory]
-      description: Identity service is discoverable.
-    - id: scs-0123-service-image
-      tags: [mandatory]
-      description: Image service is discoverable.
-    - id: scs-0123-service-network
-      tags: [mandatory]
-      description: Network service is discoverable.
-    - id: scs-0123-service-load-balancer
-      tags: [mandatory]
-      description: Load-balancer service is discoverable.
-    - id: scs-0123-service-placement
-      tags: [mandatory]
-      description: Placement service is discoverable.
-    - id: scs-0123-service-object-store
-      tags: [mandatory]
-      description: Object-store service is discoverable.
-    - id: scs-0123-storage-apis
-      tags: [mandatory]
-      description: The block-storage API is discoverable as `volume`, `volumev3`, or `block-storage`.
-    - id: scs-0123-swift-s3
-      tags: [mandatory]
-      description: The object-storage API is compatible with S3.
-    - id: service-apis-check
-      tags: [legacy_mandatory]
-      description: >
-        Must fulfill all requirements of <https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services> (except for documentation requirements, which are tested manually with service-apis-docs-check).
+    targets:
+      main:
+      - scs-0123-service-compute
+      - scs-0123-service-identity
+      - scs-0123-service-image
+      - scs-0123-service-network
+      - scs-0123-service-load-balancer
+      - scs-0123-service-placement
+      - scs-0123-service-object-store
+      - scs-0123-storage-apis
+      - scs-0123-swift-s3
   - id: scs-0302-v1
     name: Domain Manager Role
     url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role
-    # run:
-    #   - executable: ./iam/domain-manager/domain-manager-check.py
-    #     args: --os-cloud {os_cloud} --debug --domain-config ...
-    testcases:
-      - id: domain-manager-check
-        tags: [domain-manager]
-        description: >
-          Note: manual check! Must fulfill all requirements of <https://docs.scs.community/standards/scs-0302-v1-domain-manager-role>
+    targets:
+      preview:
+      - domain-manager-check
 timeline:
   - date: 2025-09-09
     versions:
@@ -569,10 +409,6 @@ versions:
       - scs-0121-v1
       - scs-0123-v1
       - scs-0302-v1
-    targets:
-      main: mandatory
-      recommended: recommended
-      preview: domain-manager/availability-zones/key-manager-docs
   - version: v5.1  # copy of v5, but with include "scs-0123-v1", which had simply been forgotten
     stabilized_at: 2024-12-19
     include:
@@ -591,9 +427,6 @@ versions:
       - scs-0121-v1
       - scs-0123-v1
       - scs-0302-v1
-    targets:
-      main: mandatory
-      preview: domain-manager/availability-zones/key-manager-docs
   - version: v4
     stabilized_at: 2024-02-28
     include:
@@ -605,8 +438,6 @@ versions:
       - ref: scs-0104-v1-1
         parameters:
           image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images.yaml
-    targets:
-      main: mandatory
   - version: v3
     # comment: >
     #   This is what our documentation wrongly stated as being v3 when we introduced v4.
@@ -616,5 +447,3 @@ versions:
       - opc-v2022.11
       - scs-0100-v3.1
       - scs-0102-v1
-    targets:
-      main: mandatory
