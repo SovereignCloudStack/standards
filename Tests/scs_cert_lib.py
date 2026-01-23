@@ -57,13 +57,15 @@ def _resolve_spec(spec: dict):
     # - modules, referenced by id
     # - versions, referenced by name (unfortunately, the field is called "version")
     # step 1. build lookups
-    testcase_lookup = {}  # {testcase['id']: testcase for testcase in spec['testcases']}
+    testcase_lookup = {}
+    tc_script_lookup = {}
     for script in spec.get('scripts', ()):
         for testcase in script.get('testcases', ()):
             id_ = testcase['id']
             if id_ in testcase_lookup:
                 raise RuntimeError(f"duplicate testcase {id_}")
-            testcase_lookup[id_] = (script, testcase)
+            testcase_lookup[id_] = testcase
+            tc_script_lookup[id_] = script
     module_lookup = {module['id']: module for module in spec['modules']}
     version_lookup = {version['version']: version for version in spec['versions']}
     # step 2. check for duplicates:
@@ -76,6 +78,7 @@ def _resolve_spec(spec: dict):
     spec['versions'] = version_lookup
     # step 3a. add testcase lookup
     spec['testcases'] = testcase_lookup
+    spec['tc_scripts'] = tc_script_lookup
     # step 4. resolve references
     # step 4a. resolve references to modules in includes
     # in this step, we also normalize the include form
@@ -172,7 +175,9 @@ def eval_buckets(results, testcase_ids) -> dict:
     """
     by_value = defaultdict(list)
     for testcase_id in testcase_ids:
-        value = results.get(testcase_id, {}).get('result')
+        value = results.get(testcase_id, {})
+        if isinstance(value, dict):
+            value = value.get('result')
         by_value[value].append(testcase_id)
     return by_value
 

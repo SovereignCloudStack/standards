@@ -4,34 +4,10 @@
 - subject: {{ report.subject }}
 - scope: [{{ report.spec.name }}]({{ scope_url(report.spec.uuid) }})
 - checked at: {{ report.checked_at }}
-
-## Results
-
-{# % if report.versions %}{% for version, version_results in report.versions.items() %}{% if version_results %}
-### {{ version }}
-
-| test case | result | invocation |
-|---|---|---|
-{% for testcase_id, result_data in version_results.items() -%}
-| {{ testcase_id }} {: #{{ version + '_' + testcase_id }} } | {{ result_data.result | verdict_check }} | [{{ result_data.invocation }}](#{{ result_data.invocation }}) |
-{% endfor %}
-{% endif %}
-{% endfor %}{% endif % #}
-
-## Run
-
-### Variable assignment
-
-| key | value |
-|---|---|
-{% for key, value in report.run.assignment.items() -%}
-| `{{ key }}` | `{{ value }}` |
-{% endfor %}
-
-### Check tool invocations
+- variable assignment: {% set comma = joiner(", ") %}{% for key, value in report.run.assignment.items() -%}{{comma()}}`{{ key }}`=`{{ value }}`{% endfor %}
 
 {% for invid, invdata in report.run.invocations.items() %}
-#### Invocation {{invid}} {: #{{ invid }} }
+## Invocation {{invid}} {: #{{ invid }} }
 
 - cmd: `{{ invdata.cmd }}`
 - rc: {{ invdata.rc }}

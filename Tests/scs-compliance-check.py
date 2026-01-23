@@ -5,7 +5,7 @@
 #
 # (c) Eduard Itrich <eduard@itrich.net>
 # (c) Kurt Garloff <kurt@garloff.de>
-# (c) Matthias Büchse <matthias.buechse@cloudandheat.com>
+# (c) Matthias Büchse <matthias.buechse@alasca.cloud>
 # SPDX-License-Identifier: Apache-2.0
 
 """Main SCS compliance checker
@@ -26,7 +26,6 @@ import shlex
 import getopt
 import datetime
 import subprocess
-from collections import defaultdict
 from itertools import chain
 import logging
 import yaml
@@ -153,10 +152,6 @@ def select_valid(versions: list) -> list:
     return [version for version in versions if version['_explicit_validity']]
 
 
-def suppress(*args, **kwargs):
-    return
-
-
 def invoke_check_tool(exe, args, env, cwd):
     """run check tool and return invokation dict to use in the report"""
     try:
@@ -182,7 +177,7 @@ def invoke_check_tool(exe, args, env, cwd):
     return invokation
 
 
-def compute_results(stdout):
+def compute_results(stdout, permissible_ids=()):
     """pick out test results from stdout lines"""
     result = {}
     for line in stdout:
@@ -192,7 +187,11 @@ def compute_results(stdout):
         value = TESTCASE_VERDICTS.get(parts[1].strip().upper())
         if value is None:
             continue
-        result[parts[0].strip()] = value
+        testcase_id = parts[0].strip()
+        if permissible_ids and testcase_id not in permissible_ids:
+            logger.warning(f"ignoring invalid result id: {testcase_id}")
+            continue
+        result[testcase_id] = value
     return result
 
 
@@ -200,7 +199,6 @@ class CheckRunner:
     def __init__(self, cwd, assignment, verbosity=0):
         self.cwd = cwd
         self.assignment = assignment
-        self.memo = {}
         self.num_abort = 0
         self.num_error = 0
         self.verbosity = verbosity
@@ -212,60 +210,29 @@ class CheckRunner:
         args = check.get('args', '').format(**assignment)
         env = {key: value.format(**assignment) for key, value in check.get('env', {}).items()}
         env_str = " ".join(f"{key}={value}" for key, value in env.items())
-        memo_key = f"{env_str} {check['executable']} {args}".strip()
-        logger.debug(f"running {memo_key!r}...")
-        invocation = self.memo.get(memo_key)
-        if invocation is None:
-            check_env = {**os.environ, **env}
-            invocation = invoke_check_tool(check["executable"], args, check_env, self.cwd)
-            invocation = {
-                'id': str(uuid.uuid4()),
-                'cmd': memo_key,
-                'result': 0,  # keep this for backwards compatibility
-                'results': compute_results(invocation['stdout']),
-                **invocation
-            }
-            if self.verbosity > 1 and invocation["stdout"]:
-                print("\n".join(invocation["stdout"]))
-                self.spamminess += 1
-            # the following check used to be "> 0", but this is quite verbose...
-            if invocation['rc'] or self.verbosity > 1 and invocation["stderr"]:
-                print("\n".join(invocation["stderr"]))
-                self.spamminess += 1
-            self.memo[memo_key] = invocation
+        cmd = f"{env_str} {check['executable']} {args}".strip()
+        logger.debug(f"running {cmd!r}...")
+        check_env = {**os.environ, **env}
+        invocation = invoke_check_tool(check["executable"], args, check_env, self.cwd)
+        invocation = {
+            'id': str(uuid.uuid4()),
+            'cmd': cmd,
+            'results': compute_results(invocation['stdout'], permissible_ids=testcases),
+            **invocation
+        }
+        if self.verbosity > 1 and invocation["stdout"]:
+            print("\n".join(invocation["stdout"]))
+            self.spamminess += 1
+        # the following check used to be "> 0", but this is quite verbose...
+        if invocation['rc'] or self.verbosity > 1 and invocation["stderr"]:
+            print("\n".join(invocation["stderr"]))
+            self.spamminess += 1
         logger.debug(f".. rc {invocation['rc']}, {invocation['critical']} critical, {invocation['error']} error")
         self.num_abort += invocation["critical"]
         self.num_error += invocation["error"]
         # count failed testcases because they need not be reported redundantly on the error channel
         self.num_error + len([value for value in invocation['results'].values() if value < 0])
         return invocation
-
-    def get_invocations(self):
-        return {invocation['id']: invocation for invocation in self.memo.values()}
-
-
-class ResultBuilder:
-    def __init__(self, name):
-        self.name = name
-        self._raw = defaultdict(list)
-
-    def record(self, id_, **kwargs):
-        self._raw[id_].append(kwargs)
-
-    def finalize(self, permissible_ids=None):
-        final = {}
-        for id_, ls in self._raw.items():
-            if permissible_ids is not None and id_ not in permissible_ids:
-                logger.warning(f"ignoring invalid result id: {id_}")
-                continue
-            # just in case: sort by value (worst first)
-            ls.sort(key=lambda item: item['result'])
-            winner, runnerups = ls[0], ls[1:]
-            if runnerups:
-                logger.warning(f"multiple result values for {id_}")
-                winner = {**winner, 'runnerups': runnerups}
-            final[id_] = winner
-        return final
 
 
 def print_report(subject: str, title: str, testcase_lookup: dict, targets: dict, results: dict, partial=False, verbose=False):
@@ -294,12 +261,12 @@ def print_report(subject: str, title: str, testcase_lookup: dict, targets: dict,
             print(f"  - {category}:")
             for tc_id in offenders:
                 print(f"    - {tc_id}:")
-                _, testcase = testcase_lookup[tc_id]
+                testcase = testcase_lookup[tc_id]
                 if 'description' in testcase:  # used to be `verbose and ...`, but users need the URL!
                     print(f"      > {testcase['description'].strip()}")
 
 
-def create_report(argv, config, spec, results, invocations):
+def create_report(argv, config, spec, invocations):
     return {
         # these fields are essential:
         # results are no longer specific to version!
@@ -320,7 +287,7 @@ def create_report(argv, config, spec, results, invocations):
             "sections": config.sections,
             "forced_version": config.version or None,
             "forced_tests": None if config.tests is None else config.tests.pattern,
-            "invocations": invocations,
+            "invocations": {invocation['id']: invocation for invocation in invocations},
         },
     }
 
@@ -358,15 +325,16 @@ def main(argv):
         title += f" [tests: '{config.tests.pattern}']"
         partial = True
     # collect all testcases we need
-    all_testcases = set()
+    all_testcase_ids = set()
     for version in versions:
-        for target, testcase_ids in version['targets'].items():
-            all_testcases.update(testcase_ids)
+        for testcase_ids in version['targets'].values():
+            all_testcase_ids.update(testcase_ids)
     # collect scripts to be run
     testcase_lookup = spec['testcases']
+    tc_script_lookup = spec['tc_scripts']
     script_info = {}
-    for tc_id in all_testcases:
-        script, testcase = testcase_lookup[tc_id]
+    for tc_id in all_testcase_ids:
+        script = tc_script_lookup[tc_id]
         if 'executable' not in script:
             continue  # manual check
         if config.sections and script.get('section') not in config.sections:
@@ -375,18 +343,18 @@ def main(argv):
             continue
         item = script_info.get(id(script))
         if item is None:
-            _, testcases = script_info[id(script)] = (script, [])
+            _, testcase_ids = script_info[id(script)] = (script, [])
         else:
-            _, testcases = item
-        testcases.append(tc_id)
+            _, testcase_ids = item
+        testcase_ids.append(tc_id)
     # run scripts
-    builder = ResultBuilder('(dummy)')
-    for item in script_info.values():
-        script, testcases = item
-        invocation = runner.run(script, testcases=sorted(testcases))
-        for id_, value in invocation["results"].items():
-            builder.record(id_, result=value, invocation=invocation['id'])
-    results = builder.finalize(permissible_ids=all_testcases)
+    invocations = [
+        runner.run(script, testcases=sorted(testcases))
+        for script, testcases in script_info.values()
+    ]
+    results = {}
+    for invocation in invocations:
+        results.update(invocation['results'])
     # now report: to console if requested, and likewise for yaml output
     if not config.quiet:
         # print a horizontal line if we had any script output
@@ -395,7 +363,7 @@ def main(argv):
         for version in versions:
             print_report(config.subject, f"{title} {version['version']}", testcase_lookup, version['targets'], results, partial, config.verbose)
     if config.output:
-        report = create_report(argv, config, spec, results, runner.get_invocations())
+        report = create_report(argv, config, spec, invocations)
         with open(config.output, 'w', encoding='UTF-8') as fileobj:
             yaml.safe_dump(report, fileobj, default_flow_style=False, sort_keys=False, explicit_start=True)
     return min(127, runner.num_abort + (0 if config.critical_only else runner.num_error))

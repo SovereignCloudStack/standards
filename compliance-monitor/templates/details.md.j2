@@ -28,8 +28,8 @@ No recent test results available.
 | testcase id | result | description |
 |---|---|---|
 {% for testcase_id in target_result.testcases -%}
-{% set testcase = version_result.testcases[testcase_id] -%}
-{% set res = version_result.results[testcase_id] if testcase_id in version_result.results else dict(result=0) -%}
+{% set testcase = scope_result.testcases[testcase_id] -%}
+{% set res = scope_result.results[testcase_id] if testcase_id in scope_result.results else dict(result=0) -%}
 | {% if res.result != 1 %}⚠️ {% endif %}{{ testcase.id }} |
 {#- #} {% if res.report -%}
 [{{ res.result | verdict_check }}]({{ report_url(res.report, version, testcase_id) }})

@@ -244,9 +244,7 @@ class PrecomputedVersion:
     def __init__(self, version, testcases):
         self.name = version['version']
         self.validity = version['validity']
-        self.listed = bool(version['_explicit_validity'])
         self.targets = version['targets']
-        self.testcases = testcases  # TODO remove (see evaluate)
 
     def evaluate(self, scope_results):
         """evaluate the results for this version and return the canonical JSON output"""
@@ -257,8 +255,6 @@ class PrecomputedVersion:
                 'result': evaluate(scope_results, tc_ids),
             }
         return {
-            'testcases': self.testcases,  # FIXME move towards scope eval dict
-            'results': scope_results,  # FIXME move towards scope eval dict
             'result': target_results['main']['result'],
             'targets': target_results,
             'validity': self.validity,
@@ -270,7 +266,7 @@ class PrecomputedScope:
     def __init__(self, spec):
         self.name = spec['name']
         self.spec = spec
-        self.testcases = {tc_id: item[1] for tc_id, item in spec['testcases'].items()}
+        self.testcases = spec['testcases']
         self.versions = {
             version['version']: PrecomputedVersion(version, self.testcases)
             for version in spec['versions'].values()
@@ -299,6 +295,8 @@ class PrecomputedScope:
         passed = [vname for vname in relevant if version_results[vname]['result'] == 1]
         return {
             'name': self.name,
+            'testcases': self.testcases,
+            'results': scope_results,
             'versions': version_results,
             'relevant': relevant,
             'passed': passed,
@@ -312,18 +310,18 @@ class PrecomputedScope:
     def update_lookup(self, target_dict):
         """Create entries in a lookup mapping for each testcase that occurs in this scope.
 
-        This mapping from triples (scope uuid, version name, testcase id) to testcase facilitates
+        This mapping from pairs (scope uuid, testcase id) to testcase facilitates
         evaluating result sets from database queries a great deal, because then just one lookup operation
         tells us whether a result row can be associated with any known testcase, and if so, whether the
         result is still valid (looking at the testcase's lifetime).
 
-        In the future, the mapping could even be simplified by deriving a unique id from each triple that
+        In the future, the mapping could even be simplified by deriving a unique id from each pair that
         could then be stored (redundantly) in a dedicated database column, and the mapping could be from
-        just one id (instead of a triple) to testcase.
+        just one id (instead of a pair) to testcase.
         """
         scope_uuid = self.spec['uuid']
         for tc_id, testcase in self.testcases.items():
-            target_dict[(scope_uuid, '*', tc_id)] = testcase
+            target_dict[(scope_uuid, tc_id)] = testcase
 
 
 def import_cert_yaml(yaml_path, target_dict):
@@ -484,6 +482,10 @@ async def post_report(
             except UniqueViolation:
                 raise HTTPException(status_code=409, detail="Conflict: report already present")
             if 'versions' not in document:
+                # If this key is missing, this means we have a newer-style report that doesn't redundantly list
+                # results per version. One reason for this change is that the meaning of a testcase identifier
+                # no longer depends on the scope version, and we can quite simply read off the results from the
+                # invocations. -- Use the dummy version '*' as long as the db schema still expects a version.
                 document['versions'] = {'*': {
                     tc_id: {'result': result, 'invocation': inv_id}
                     for inv_id, invocation in document['run']['invocations'].items()
@@ -507,13 +509,13 @@ def convert_result_rows_to_dict2(
     # collect result per subject/scope/version
     preliminary = defaultdict(lambda: defaultdict(dict))  # subject -> scope
     missing = set()
-    for subject, scope_uuid, version, testcase_id, result, checked_at, report_uuid in rows:
-        testcase = scopes_lookup.get((scope_uuid, version, testcase_id))
+    for subject, scope_uuid, _, testcase_id, result, checked_at, report_uuid in rows:
+        testcase = scopes_lookup.get((scope_uuid, testcase_id))
         if not testcase:
             # it can be False (testcase is known but version too old) or None (testcase not known)
             # only report the latter case
             if testcase is None:
-                missing.add((scope_uuid, version, testcase_id))
+                missing.add((scope_uuid, testcase_id))
             continue
         # drop value if too old
         lifetime = testcase.get('lifetime')  # leave None if not present; to be handled by add_period
