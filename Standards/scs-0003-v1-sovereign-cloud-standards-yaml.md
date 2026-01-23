@@ -181,7 +181,7 @@ When the referenced module uses parameters, then these parameters must be assign
 | `name`                   | String | name of this module                                                         | `Flavor naming v3`                                                |
 | `url`                    | String | Valid URL to relevant documentation (usually a standard document)           | `https://docs.scs.community/standards/scs-0100-v3-flavor-naming`  |
 | `parameters`             | List   | List of parameters that the checks in this module might use                 | `[image_spec]`                                                    |
-| `targets`                | Map of maps   | required: this maps target names to lists of testcases      | `main: [tc1, tc2]`  |
+| `targets`                | Map of lists   | required: this maps target names to lists of testcases      | `main: [tc1, tc2]`  |
 
 The parameters specified here will be added to the variable assignment for all check tools that belong to this module, so they will be substituted in the same way.
 The values to these parameters must be provided in the include descriptor as explained above.
@@ -198,7 +198,7 @@ The following fields are valid for every script descriptor:
 | Key               | Type   | Description                                                                                    | Example    |
 | ----------------- | ------ | ---------------------------------------------------------------------------------------------- | ---------- |
 | `section`         | String | _Optional_ what section to associate this check with (sections can be checked in isolation)    | `weekly`   |
-| `testcases`       | Array  | List of all test cases; each entry being a test-case descriptor             | (see below)  |
+| `testcases`       | Array  | List of all test cases; each entry being a test-case descriptor                                | (see below)  |
 
 Additional fields are valid depending on whether the check is automated or manual.
 
