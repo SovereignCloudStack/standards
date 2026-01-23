@@ -138,7 +138,7 @@ env = Environment()  # populate this on startup (final section of this file)
 templates_map = {
     k: None for k in REQUIRED_TEMPLATES
 }
-_scopes = {}  # map scope uuid to `PrecomputedScope` instance
+_scopes = {}  # map scope uuid to scope spec dict from YAML file
 
 
 class TimestampEncoder(json.JSONEncoder):
@@ -239,89 +239,75 @@ def import_bootstrap(bootstrap_path, conn):
         conn.commit()
 
 
-class PrecomputedVersion:
-    """Precompute all `TestSuite` instances necessary to evaluate the results of some version"""
-    def __init__(self, version, testcases):
-        self.name = version['version']
-        self.validity = version['validity']
-        self.targets = version['targets']
-
-    def evaluate(self, scope_results):
-        """evaluate the results for this version and return the canonical JSON output"""
-        target_results = {}
-        for tname, tc_ids in self.targets.items():
-            target_results[tname] = {
-                'testcases': tc_ids,
-                'result': evaluate(scope_results, tc_ids),
-            }
-        return {
-            'result': target_results['main']['result'],
-            'targets': target_results,
-            'validity': self.validity,
+def _evaluate_version(version, scope_results):
+    """evaluate the results for `version` and return the canonical JSON output"""
+    target_results = {
+        tname: {
+            'testcases': tc_ids,
+            'result': evaluate(scope_results, tc_ids),
         }
+        for tname, tc_ids in version['targets'].items()
+    }
+    return {
+        'result': target_results['main']['result'],
+        'targets': target_results,
+        'validity': version['validity'],
+    }
 
 
-class PrecomputedScope:
-    """Precompute all `TestSuite` instances necessary to evaluate the results of some scope"""
-    def __init__(self, spec):
-        self.name = spec['name']
-        self.spec = spec
-        self.testcases = spec['testcases']
-        self.versions = {
-            version['version']: PrecomputedVersion(version, self.testcases)
-            for version in spec['versions'].values()
-        }
+def _evaluate_scope(spec, scope_results, include_drafts=False):
+    """evaluate the results for `scope` and return the canonical JSON output"""
+    testcases = spec['testcases']
+    versions = spec['versions']
+    version_results = {
+        vname: _evaluate_version(version, scope_results)
+        for vname, version in versions.items()
+    }
+    by_validity = defaultdict(list)
+    for vname, version in versions.items():
+        by_validity[version['validity']].append(vname)
+    # go through worsening validity values until a passing version is found
+    relevant = []
+    best_passed = None
+    for validity in ('effective', 'warn', 'deprecated'):
+        vnames = by_validity[validity]
+        relevant.extend(vnames)
+        if any(version_results[vname]['result'] == 1 for vname in vnames):
+            best_passed = validity
+            break
+    if include_drafts:
+        relevant.extend(by_validity['draft'])
+    passed = [vname for vname in relevant if version_results[vname]['result'] == 1]
+    return {
+        'name': spec['name'],
+        'testcases': testcases,
+        'results': scope_results,
+        'versions': version_results,
+        'relevant': relevant,
+        'passed': passed,
+        'passed_str': ', '.join([
+            vname + ASTERISK_LOOKUP[versions[vname]['validity']]
+            for vname in passed
+        ]),
+        'best_passed': best_passed,
+    }
 
-    def evaluate(self, scope_results, include_drafts=False):
-        """evaluate the results for this scope and return the canonical JSON output"""
-        version_results = {
-            vname: version.evaluate(scope_results)
-            for vname, version in self.versions.items()
-        }
-        by_validity = defaultdict(list)
-        for vname, version in self.versions.items():
-            by_validity[version.validity].append(vname)
-        # go through worsening validity values until a passing version is found
-        relevant = []
-        best_passed = None
-        for validity in ('effective', 'warn', 'deprecated'):
-            vnames = by_validity[validity]
-            relevant.extend(vnames)
-            if any(version_results[vname]['result'] == 1 for vname in vnames):
-                best_passed = validity
-                break
-        if include_drafts:
-            relevant.extend(by_validity['draft'])
-        passed = [vname for vname in relevant if version_results[vname]['result'] == 1]
-        return {
-            'name': self.name,
-            'testcases': self.testcases,
-            'results': scope_results,
-            'versions': version_results,
-            'relevant': relevant,
-            'passed': passed,
-            'passed_str': ', '.join([
-                vname + ASTERISK_LOOKUP[self.versions[vname].validity]
-                for vname in passed
-            ]),
-            'best_passed': best_passed,
-        }
 
-    def update_lookup(self, target_dict):
-        """Create entries in a lookup mapping for each testcase that occurs in this scope.
+def _update_lookup(spec, target_dict):
+    """Create entries in a lookup mapping for each testcase that occurs in this scope.
 
-        This mapping from pairs (scope uuid, testcase id) to testcase facilitates
-        evaluating result sets from database queries a great deal, because then just one lookup operation
-        tells us whether a result row can be associated with any known testcase, and if so, whether the
-        result is still valid (looking at the testcase's lifetime).
+    This mapping from pairs (scope uuid, testcase id) to testcase facilitates
+    evaluating result sets from database queries a great deal, because then just one lookup operation
+    tells us whether a result row can be associated with any known testcase, and if so, whether the
+    result is still valid (looking at the testcase's lifetime).
 
-        In the future, the mapping could even be simplified by deriving a unique id from each pair that
-        could then be stored (redundantly) in a dedicated database column, and the mapping could be from
-        just one id (instead of a pair) to testcase.
-        """
-        scope_uuid = self.spec['uuid']
-        for tc_id, testcase in self.testcases.items():
-            target_dict[(scope_uuid, tc_id)] = testcase
+    In the future, the mapping could even be simplified by deriving a unique id from each pair that
+    could then be stored (redundantly) in a dedicated database column, and the mapping could be from
+    just one id (instead of a pair) to testcase.
+    """
+    scope_uuid = spec['uuid']
+    for tc_id, testcase in spec['testcases'].items():
+        target_dict[(scope_uuid, tc_id)] = testcase
 
 
 def import_cert_yaml(yaml_path, target_dict):
@@ -329,8 +315,8 @@ def import_cert_yaml(yaml_path, target_dict):
     with open(yaml_path, "r") as fileobj:
         spec = load_spec(yaml.load(fileobj.read()))
     annotate_validity(spec['timeline'], spec['versions'], date.today())
-    target_dict[spec['uuid']] = precomputed_scope = PrecomputedScope(spec)
-    precomputed_scope.update_lookup(target_dict)
+    target_dict[spec['uuid']] = spec
+    _update_lookup(spec, target_dict)
 
 
 def import_cert_yaml_dir(yaml_path, target_dict):
@@ -537,7 +523,7 @@ def convert_result_rows_to_dict2(
             _ = preliminary[subject][scope]
     return {
         subject: {
-            scope_uuid: scopes_lookup[scope_uuid].evaluate(scope_result, include_drafts=include_drafts)
+            scope_uuid: _evaluate_scope(scopes_lookup[scope_uuid], scope_result, include_drafts=include_drafts)
             for scope_uuid, scope_result in subject_result.items()
         }
         for subject, subject_result in preliminary.items()

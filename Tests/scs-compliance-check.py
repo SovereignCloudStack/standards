@@ -235,8 +235,7 @@ class CheckRunner:
         return invocation
 
 
-def print_report(subject: str, title: str, testcase_lookup: dict, targets: dict, results: dict, partial=False, verbose=False):
-    print(f"{subject} {title}:")
+def print_report(testcase_lookup: dict, targets: dict, results: dict, partial=False, verbose=False):
     for tname, tc_ids in targets.items():
         by_value = eval_buckets(results, tc_ids)
         missing, failed, aborted, passed = by_value[None], by_value[-1], by_value[0], by_value[1]
@@ -361,7 +360,8 @@ def main(argv):
         if runner.spamminess:
             print("********" * 10)  # 80 characters
         for version in versions:
-            print_report(config.subject, f"{title} {version['version']}", testcase_lookup, version['targets'], results, partial, config.verbose)
+            print(f"{config.subject} {title} {version['version']}:")
+            print_report(testcase_lookup, version['targets'], results, partial, config.verbose)
     if config.output:
         report = create_report(argv, config, spec, invocations)
         with open(config.output, 'w', encoding='UTF-8') as fileobj:
