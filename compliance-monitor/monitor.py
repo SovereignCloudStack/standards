@@ -521,7 +521,11 @@ def convert_result_rows_to_dict2(
         lifetime = testcase.get('lifetime')  # leave None if not present; to be handled by add_period
         if now >= add_period(checked_at, lifetime):
             continue
-        tc_result = dict(result=result, checked_at=checked_at)
+        # don't use outdated value (FIXME only necessary as long as version column still in db!)
+        tc_result = preliminary[subject][scope_uuid].get(testcase_id, {})
+        if tc_result.get('checked_at', checked_at) > checked_at:
+            continue
+        tc_result.update(result=result, checked_at=checked_at)
         if include_report:
             tc_result.update(report=report_uuid)
         preliminary[subject][scope_uuid][testcase_id] = tc_result
