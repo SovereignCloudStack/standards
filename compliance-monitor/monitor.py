@@ -49,14 +49,14 @@ logger = logging.getLogger(__name__)
 
 
 try:
-    from scs_cert_lib import load_spec, annotate_validity, add_period, evaluate
+    from scs_cert_lib import load_spec, annotate_validity, add_period, eval_buckets, evaluate
 except ImportError:
     # the following course of action is not unproblematic because the Tests directory will be
     # mounted to the Docker instance, hence it's hard to tell what version we are gonna get;
     # however, unlike the reloading of the config, the import only happens once, and at that point
     # in time, both monitor.py and scs_cert_lib.py should come from the same git checkout
     import sys; sys.path.insert(0, os.path.abspath('../Tests'))  # noqa: E702
-    from scs_cert_lib import load_spec, annotate_validity, add_period, evaluate
+    from scs_cert_lib import load_spec, annotate_validity, add_period, eval_buckets, evaluate
 
 
 class Settings:
@@ -251,6 +251,7 @@ def _evaluate_version(version, scope_results):
     return {
         'result': target_results['main']['result'],
         'targets': target_results,
+        'tc_target': version['tc_target'],
         'validity': version['validity'],
     }
 
@@ -282,6 +283,11 @@ def _evaluate_scope(spec, scope_results, include_drafts=False):
         'name': spec['name'],
         'testcases': testcases,
         'results': scope_results,
+        'buckets': {
+            # sort testcase that occur any main target on top of those that don't
+            res: sorted(tc_ids, key=lambda tc_id: (not testcases[tc_id]['attn'], tc_id))
+            for res, tc_ids in eval_buckets(scope_results, testcases).items()
+        },
         'versions': version_results,
         'relevant': relevant,
         'passed': passed,
@@ -724,7 +730,7 @@ async def get_scope(
     view_type: ViewType,
     scopeuuid: str,
 ):
-    spec = get_scopes()[scopeuuid].spec
+    spec = get_scopes()[scopeuuid]
     versions = spec['versions']
     # sort by name, and all drafts after all non-drafts
     column_data = [

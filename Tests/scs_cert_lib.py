@@ -64,6 +64,7 @@ def _resolve_spec(spec: dict):
             id_ = testcase['id']
             if id_ in testcase_lookup:
                 raise RuntimeError(f"duplicate testcase {id_}")
+            testcase['attn'] = 0  # count: how many versions list this in target 'main'?
             testcase_lookup[id_] = testcase
             tc_script_lookup[id_] = script
     module_lookup = {module['id']: module for module in spec['modules']}
@@ -92,7 +93,14 @@ def _resolve_spec(spec: dict):
         for inc in version['include']:
             for target, tc_ids in inc['module'].get('targets', {}).items():
                 targets[target].update(tc_ids)
+        tc_target = {}
+        for target, tc_ids in targets.items():
+            for tc_id in tc_ids:
+                tc_target[tc_id] = target
+        for tc_id in targets.get('main', ()):
+            testcase_lookup[tc_id]['attn'] += 1
         version['targets'] = {target: sorted(tc_ids) for target, tc_ids in targets.items()}
+        version['tc_target'] = tc_target
     # step 4b. resolve references to versions in timeline
     # on second thought, let's not go there: it's a canonical extension map, and it should remain that way.
     # however, we still have to look for name errors
