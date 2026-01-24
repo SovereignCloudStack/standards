@@ -1,8 +1,17 @@
+Testcase occurrences inside scope versions are marked
+bold "**X**" for required testcases (target _main_) and
+plain "x" for recommended testcases (with the specific target in the tooltip).
+
+Version numbers are suffixed by a symbol depending on state:
+\* for _draft_, † for _warn_ (soon to be deprecated), and †† for _deprecated_.
+
 {% if results | length > 1 %}
 Jump to
 
-{% for subject in results -%}
-- [{{subject}}](#{{subject}})
+{# assume that there is just one scope for each subject (the same one) -#}
+{% set _sr = results.values() | first %}{% set scopeuuid = _sr.keys() | first -%}
+{% for subject, subject_result in results.items() -%}
+- [{{subject}}](#{{subject}}) {{ subject_result[scopeuuid] | summary }}
 {% endfor %}
 {% endif %}
 {% for subject, subject_result in results.items() -%}
@@ -18,30 +27,34 @@ Jump to
 
 No recent test results available.
 
-{% endif -%}
-{% for version in scope_result.relevant -%}
-{%- set version_result = scope_result.versions[version] -%}
-### {{ version }} ({{ version_result.validity }}): {{ version_result.result | verdict }}
-{% for target, target_result in version_result.targets.items() -%}
-#### Target {{ target }}: {{ target_result.result | verdict }}
+{% else %}
 
-| testcase id | result | description |
-|---|---|---|
-{% for testcase_id in target_result.testcases -%}
-{% set testcase = scope_result.testcases[testcase_id] -%}
+{% for cat, res in (('FAILED', -1), ('Aborted', 0), ('Missing', None), ('Passed', 1)) -%}
+{% set bucket = scope_result.buckets[res] -%}
+{% if bucket -%}
+### {{cat}} testcases
+
+{% if res == -1 %}Note: recommended testcases (marked lower-case x) do not count into the
+overall result of a version.{% endif %}
+
+| testcase id |{% for version in scope_result.relevant %} {{ version }}{{ scope_result.versions[version].validity | validity_symbol }} |{% endfor %} description |
+|---|{% for version in scope_result.relevant %}---|{% endfor %}---|
+{% for testcase_id in bucket -%}
 {% set res = scope_result.results[testcase_id] if testcase_id in scope_result.results else dict(result=0) -%}
-| {% if res.result != 1 %}⚠️ {% endif %}{{ testcase.id }} |
-{#- #} {% if res.report -%}
-[{{ res.result | verdict_check }}]({{ report_url(res.report, version, testcase_id) }})
+{#- #}  {% if res.report -%}
+[{{ testcase_id }}]({{ report_url(res.report, version, testcase_id) }})
 {%- else -%}
-{{ res.result | verdict_check }}
+{{ testcase_id }}
 {%- endif -%}
 {% if res.report %} { title="{{ res.report }} ({{ res.checked_at }})" }{% endif %} {# -#}
-| {{ testcase.description | trim }} |
-{% endfor %}
-{% endfor -%}
-{% endfor -%}
-{% endfor -%}
-{% endfor -%}
+{% for version in scope_result.relevant %}| {%
+set tgt = scope_result.versions[version].tc_target[testcase_id]
+%}{% if tgt == 'main' %}**X** { title="main" }{% elif tgt %}x { title="{{ tgt }}" }{% endif %} {% endfor -%}
+| {{ scope_result.testcases[testcase_id].description | trim }} |
+{% endfor %}{# testcase #}
+{% endif %}{# bucket nonempty -#}
+{% endfor %}{# categories #}
 
-{#{results}#}
+{% endif %}{# results available -#}
+{% endfor %}{# scope -#}
+{% endfor %}{# subject -#}
