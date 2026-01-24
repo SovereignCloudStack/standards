@@ -1,8 +1,10 @@
 {% if results | length > 1 %}
 Jump to
 
-{% for subject in results -%}
-- [{{subject}}](#{{subject}})
+{# assume that there is just one scope for each subject (the same one) -#}
+{% set _sr = results.values() | first %}{% set scopeuuid = _sr.keys() | first -%}
+{% for subject, subject_result in results.items() -%}
+- [{{subject}}](#{{subject}}) {{ subject_result[scopeuuid] | summary }}
 {% endfor %}
 {% endif %}
 {% for subject, subject_result in results.items() -%}
