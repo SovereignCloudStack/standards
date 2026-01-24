@@ -883,6 +883,7 @@ if __name__ == "__main__":
         verdict=verdict_filter,
         verdict_check=verdict_check_filter,
         markdown=markdown,
+        validity_symbol=ASTERISK_LOOKUP.get,
     )
     reload_static_config(do_ensure_schema=True)
     signal.signal(signal.SIGHUP, reload_static_config)

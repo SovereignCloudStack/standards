@@ -1,6 +1,9 @@
-Note: testcase occurrences inside scope versions are marked
+Testcase occurrences inside scope versions are marked
 bold "**X**" for required testcases (target _main_) and
 plain "x" for recommended testcases (with the specific target in the tooltip).
+
+Version numbers are suffixed by a symbol depending on state:
+\* for _draft_, † for _warn_ (soon to be deprecated), and †† for _deprecated_.
 
 {% if results | length > 1 %}
 Jump to
@@ -31,7 +34,10 @@ No recent test results available.
 {% if bucket -%}
 ### {{cat}} testcases
 
-| testcase id |{% for version in scope_result.relevant %} {{ version }} |{% endfor %} description |
+{% if res == -1 %}Note: recommended testcases (marked lower-case x) do not count into the
+overall result of a version.{% endif %}
+
+| testcase id |{% for version in scope_result.relevant %} {{ version }}{{ scope_result.versions[version].validity | validity_symbol }} |{% endfor %} description |
 |---|{% for version in scope_result.relevant %}---|{% endfor %}---|
 {% for testcase_id in bucket -%}
 {% set res = scope_result.results[testcase_id] if testcase_id in scope_result.results else dict(result=0) -%}
