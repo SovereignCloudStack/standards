@@ -156,7 +156,7 @@ def cleanup(conn: openstack.connection.Connection, prefix=DEFAULT_PREFIX) -> boo
             logging.info(f"↳ deleting volume backup '{backup.id}' ...")
             conn.block_storage.delete_backup(backup.id, ignore_missing=False)
         except Exception as e:
-            if isinstance(e, openstack.exceptions.ResourceNotFound):
+            if isinstance(e, (openstack.exceptions.ResourceNotFound, openstack.exceptions.NotFoundException)):
                 # if the resource has vanished on its own in the meantime ignore it
                 # however, ResourceNotFound will also be thrown if the service 'cinder-backup' is missing
                 if 'cinder-backup' in str(e):
@@ -209,15 +209,19 @@ def compute_scs_0117_test_backup(conn, prefix=DEFAULT_PREFIX):
     the restored volume is correct (for the sake  of simplicity, it only uses empty volumes
     and does not look at data).
     """
-    if not cleanup(conn, prefix=prefix):
-        raise RuntimeError("Initial cleanup failed")
     try:
-        test_backup(conn, prefix=prefix)
-    except BaseException:
+        if not cleanup(conn, prefix=prefix):
+            # what we're usually seeing here is either a problem with cinder-backup or with volumes
+            # -- either way, consider this a FAIL, not an ABORT (these things have to work!)
+            logging.error("Initial cleanup failed")
+            return False
+        try:
+            test_backup(conn, prefix=prefix)
+        finally:
+            cleanup(conn, prefix=prefix)
+    except BaseException as e:
         logging.error('Backup test failed.')
         logging.debug('exception details', exc_info=True)
         return False
     else:
         return True
-    finally:
-        cleanup(conn, prefix=prefix)
