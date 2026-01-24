@@ -219,7 +219,7 @@ def compute_scs_0117_test_backup(conn, prefix=DEFAULT_PREFIX):
             test_backup(conn, prefix=prefix)
         finally:
             cleanup(conn, prefix=prefix)
-    except BaseException as e:
+    except BaseException:
         logging.error('Backup test failed.')
         logging.debug('exception details', exc_info=True)
         return False
