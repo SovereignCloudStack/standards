@@ -349,7 +349,6 @@ def _convert_to_collected(lines, marker=MARKER):
     # HOWEVER, concurrent processes can easily disturb this pattern, so we use a
     # unique prefix on each line ourselves.
     section = None
-    indent = 0
     collected = {}
     for line in lines:
         idx = line.find(marker)
