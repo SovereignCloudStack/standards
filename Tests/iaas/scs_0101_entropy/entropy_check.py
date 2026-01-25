@@ -33,6 +33,8 @@ FLAVOR_OPTIONAL = ("hw_rng:rate_bytes", "hw_rng:rate_period")
 TIMEOUT = 5 * 60  # timeout in seconds after which we no longer wait for the VM to complete the run
 MARKER = '_scs-test-'
 # NOTE we mask serial-getty@ttyS0.service because the login prompt messes up the console output that we want to parse
+# NOTE we use awk to prefix each relevant line so we can find it easily later
+# NOTE we use >- to indicate that the following line is a string (that may contain colons), and newlines should be stripped
 SERVER_USERDATA_GENERIC = """
 #cloud-config
 # apt-placeholder
@@ -41,10 +43,14 @@ packages:
 bootcmd:
   - systemctl mask serial-getty@ttyS0.service
 runcmd:
-  - echo '_scs-test-entropy-avail'; cat /proc/sys/kernel/random/entropy_avail
-  - echo '_scs-test-fips-test'; cat /dev/random | rngtest -c 1000
-  - echo '_scs-test-rngd'; sudo systemctl status rngd
-  - echo '_scs-test-virtio-rng'; cat /sys/devices/virtual/misc/hw_random/rng_available; sudo /bin/sh -c 'od -vAn -N2 -tu2 < /dev/hwrng'
+  - >-
+    cat /proc/sys/kernel/random/entropy_avail | awk '$0="_scs-test-entropy-avail: "$0'
+  - >-
+    cat /dev/random | rngtest -c 1000 2>&1 | awk '$0="_scs-test-fips-test: "$0'
+  - >-
+    sudo systemctl status rngd 2>&1 | awk '$0="_scs-test-rngd: "$0'
+  - >-
+    cat /sys/devices/virtual/misc/hw_random/rng_available 2>&1 | awk '$0="_scs-test-virtio-rng: "$0'; sudo /bin/sh -c 'od -vAn -N2 -tu2 < /dev/hwrng' 2>&1 | awk '$0="_scs-test-virtio-rng: "$0'
   - echo '_scs-test-end'
 final_message: "_scs-test-end"
 """.strip()
@@ -338,23 +344,21 @@ def compute_canonical_image(all_images):
 
 
 def _convert_to_collected(lines, marker=MARKER):
-    # parse lines from console output
-    # removing any "indent", stuff that looks like '[   70.439502] cloud-init[513]: '
-    # NOTE this logic can fail when something (such as a login prompt) messes up the console output
-    # therefore we disable the corresponding service (see cloud-init)
+    """parse `lines` from console output"""
+    # Each line usually starts with something like '[   70.439502] cloud-init[513]: ';
+    # HOWEVER, concurrent processes can easily disturb this pattern, so we use a
+    # unique prefix on each line ourselves.
     section = None
     indent = 0
     collected = {}
     for line in lines:
         idx = line.find(marker)
-        if idx != -1:
-            section = line[idx + len(marker):].strip()
-            if section == 'end':
-                section = None
-            indent = idx
+        if idx == -1:
             continue
-        if section:
-            collected.setdefault(section, []).append(line[indent:])
+        section, *payload = line[idx + len(marker):].split(':', 1)
+        if not payload:
+            continue
+        collected.setdefault(section, []).append(payload[0].strip())
     return collected
 
 
