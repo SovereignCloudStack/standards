@@ -279,6 +279,11 @@ def _evaluate_scope(spec, scope_results, include_drafts=False):
     if include_drafts:
         relevant.extend(by_validity['draft'])
     passed = [vname for vname in relevant if version_results[vname]['result'] == 1]
+    # only list testcases that occur in any relevant version
+    relevant_testcases = set()
+    for vname in relevant:
+        for tc_ids in versions[vname]['targets'].values():
+            relevant_testcases.update(tc_ids)
     return {
         'name': spec['name'],
         'testcases': testcases,
@@ -286,7 +291,7 @@ def _evaluate_scope(spec, scope_results, include_drafts=False):
         'buckets': {
             # sort testcase that occur any main target on top of those that don't
             res: sorted(tc_ids, key=lambda tc_id: (not testcases[tc_id]['attn'], tc_id))
-            for res, tc_ids in eval_buckets(scope_results, testcases).items()
+            for res, tc_ids in eval_buckets(scope_results, relevant_testcases).items()
         },
         'versions': version_results,
         'relevant': relevant,
