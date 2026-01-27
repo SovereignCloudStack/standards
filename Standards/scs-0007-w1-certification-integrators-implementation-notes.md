@@ -1,36 +1,25 @@
 ---
-title: "Implementation hints for achieving Certified SCS Integrator"
+title: "Implementation hints for achieving SCS Integrator certification"
 type: Supplement
 track: Global
 supplements:
-  - scs-0007-v1-certification-integrators.md
+  - scs-0007-v2-certification-integrators.md
 ---
 
 ## Introduction
 
 The standard scs-0007 documents what requirements integration partners must fulfill to be eligible
 for being certified as SCS Integrators.
-This document contains hints how these requirements may be evaluated by the Forum SCS-Standards
-auditor and how exceptions will be handled.
+This document describes the process and associated checks used to validate an applicant's suitability based on plausibility checks and the evidence submitted.
 
-### Voting on exceptions
+## Certification process procedure
 
-When someone requests approval for a certified SCS integrator that does not meet all requirements,
-this can be waived with a qualified vote in the Forum SCS-Standards.
-To avoid conflict of interests and social pressure clouding this exception, we envision the
-following process:
+To apply for a certification as an SCS Integrator, an application request must be sent to the attestation body. In the application request, the applicant specifies the certification level for which it is applying. The relevant SCS-compliant environments must also be specified as references therein, which should be used to calculate the necessary score according to the scoring system.
 
-- The beneficiary party (the integrator in whose favor the exception is requested) should be
-  invited to a meeting to explain why they believe that they qualify as a certified SCS
-  integrator despite not meeting the normal qualification criteria.
-- The forum members may ask the beneficiary clarifying questions that should be answered.
-- To ensure an open discussion, the beneficiary should be excluded from the discussions about
-  the matter. The same applies if the beneficiary party is a member of the Forum
-  SCS-Standards. In that case, the expulsion should not be counted against the required quorum
-  to avoid forum members from having a disadvantage. If the excluded party is a voting member,
-  they will automatically abstain from the vote.
-- Any parties that have significant conflicts of interests are expected to make these
-  conflicts transparent and cast abstention votes.
+If the listed references are joint environments (e.g. two or more implementation partners have jointly set up an SCS environment or manage them together), it must be sufficiently demonstrated what the applicant's own share in the setup and operation of the environment is.
 
-By the time of re-certification, all exceptions from a previous certification should have been
-eliminated.
+As specified in standard scs-0007, the listed references must also be compatible with standard scs-0004, which means they must qualify as [_Certified SCS-compatible IaaS_](https://docs.scs.community/standards/scs-compatible-iaas) or [_Certified SCS-compatible KaaS_](https://docs.scs.community/standards/scs-compatible-kaas). However, they do not necessarily have to be certified according to SCS-0004. It is sufficient to demonstrate that the respective environment meets the corresponding scope in its current version. Proof is provided by running the official [SCS compliance test suite](https://github.com/SovereignCloudStack/standards/tree/main/Tests), whereby all tests must pass. The test suite can be run either by the applicant or the attestation body. Ideally, the test results should be submitted directly together with the application request.
+
+In the next step, the attestation body conducts an examination based on the application request and the accompanying evidence provided. The attestation body gets in contact with the applicant in order to resolve any remaining discrepancies and open issues together.
+
+If there are no outstanding issues and all requirements have been sufficiently met with the relevant evidence, the respective certificate according to the score achieved will be issued.
