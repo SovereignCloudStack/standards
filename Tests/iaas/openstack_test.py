@@ -232,7 +232,8 @@ class Container:
     def __getattr__(self, key):
         val = self._values.get(key)
         if val is None:
-            logger.debug(f'... {key}')
+            # this is too verbose
+            # logger.debug(f'... {key}')
             try:
                 ret = self._functions[key](self)
             except BaseException as e:
@@ -256,6 +257,27 @@ class Container:
         self._values[name] = value
 
 
+def _eval_result(result, messages):
+    """evaluates `result` from calling a check function
+
+    returns 0 if check function succeeded, otherwise 1;
+    appends to list `messages` if the result contains messages
+    """
+    # either a pair (success, messages)
+    if isinstance(result, tuple):
+        success, msgs = result
+        messages.extend(messages)
+        return not success
+    # or just a list of messages
+    if isinstance(result, list):
+        if result:
+            messages.extend(result)
+            return 1
+        return 0
+    # or just a scalar (no messages)
+    return not result
+
+
 def harness(name, *check_fns):
     """Harness for evaluating testcase `name`.
 
@@ -268,15 +290,21 @@ def harness(name, *check_fns):
     - 'PASS' otherwise
     """
     logger.debug(f'** {name}')
+    messages = []
     try:
-        result = all(check_fn() for check_fn in check_fns)
+        results = [check_fn() for check_fn in check_fns]
     except BaseException:
         logger.debug('exception during check', exc_info=True)
         result = 'ABORT'
     else:
-        result = ['FAIL', 'PASS'][min(1, result)]
+        fails = 0
+        for r in results:
+            fails += _eval_result(r, messages)
+        result = ['FAIL', 'PASS'][fails == 0]
     # this is quite redundant
     # logger.debug(f'** computation end for {name}')
+    for msg in messages:
+        print(f"{name}: {msg}")
     print(f"{name}: {result}")
 
 
