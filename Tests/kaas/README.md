@@ -1,6 +1,12 @@
 # Test suite for SCS-compatible KaaS
 
+## Usage
+
+See [README "KaaS Checks"](../README.md#kaas-checks)
+
 ## Development environment
+
+This part is about improving the KaaS tests, not for running the conformance tests.
 
 ### requirements
 
