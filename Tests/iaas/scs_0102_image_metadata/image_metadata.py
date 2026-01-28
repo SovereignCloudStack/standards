@@ -101,9 +101,11 @@ def is_outdated(img, now=time.time()):
 
 def _log_error(cause, offenders, channel=logging.ERROR):
     if not offenders:
-        return
+        return []
     names = [img.name for img in offenders]
-    logger.log(channel, f"{cause} for image(s): {', '.join(names)}")
+    message = f"{cause} for image(s): {', '.join(names)}"
+    logger.log(channel, message)
+    return [message]
 
 
 def compute_scs_0102_prop_architecture(images, architectures=ARCHITECTURES):
@@ -165,8 +167,7 @@ def compute_scs_0102_prop_os_distro(images):
 def compute_scs_0102_prop_os_purpose(images, os_purposes=OS_PURPOSES):
     """This test ensures that each image has a proper value for the property `os_distro`."""
     offenders = [img for img in images if img.properties.get('os_purpose') not in os_purposes]
-    _log_error('property os_purpose not set or not correct', offenders)
-    return not offenders
+    return _log_error('property os_purpose not set or not correct', offenders)
 
 
 def compute_scs_0102_prop_hw_disk_bus(images, hw_disk_buses=HW_DISK_BUSES):
