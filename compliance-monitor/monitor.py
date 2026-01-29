@@ -864,6 +864,11 @@ def verdict_check_filter(value):
     return {1: '✔', -1: '✘'}.get(value, '⚠')
 
 
+def short_isodate_filter(value):
+    """Jinja filter to turn a datetime obj into a short isodate str"""
+    return str(value)[:10]
+
+
 def reload_static_config(*args, do_ensure_schema=False):
     # allow arbitrary arguments so it can readily be used as signal handler
     logger.info("loading static config")
@@ -889,6 +894,7 @@ if __name__ == "__main__":
         verdict_check=verdict_check_filter,
         markdown=markdown,
         validity_symbol=ASTERISK_LOOKUP.get,
+        short_isodate=short_isodate_filter,
     )
     reload_static_config(do_ensure_schema=True)
     signal.signal(signal.SIGHUP, reload_static_config)

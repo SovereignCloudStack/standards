@@ -40,13 +40,11 @@ This can be done with a small change in the policy.yaml file. The `creator` has 
 
 ## Automated Tests
 
-We implemented the following testcases, in accordance with the standard:
+We [implemented](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/openstack_test.py)
+the following testcases, in accordance with the standard:
 
 - `scs-0116-presence` ensures that a service of type "key-manager" occurs in the service catalog;
 - `scs-0116-permissions` ensures that a regular user has suitable access to the key-manager API.
-
-The testcases can be run using the script
-[`openstack_test.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/openstack_test.py).
 
 ## Manual Tests
 

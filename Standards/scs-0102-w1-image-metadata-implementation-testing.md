@@ -15,8 +15,10 @@ for these images.
 
 ## Automated tests
 
-We implemented a host of testcases to reflect the requirements and recommendations of the standard. The following
-testcases ensure that fields have proper values:
+We [implemented](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/openstack_test.py)
+a host of testcases to reflect the requirements and recommendations of the standard.
+
+The following testcases ensure that fields have proper values:
 
 - `scs-0102-prop-architecture`,
 - `scs-0102-prop-hash_algo`,
@@ -41,9 +43,6 @@ The property `patchlevel` is not tested because it is entirely optional.
 The following testcase ensures that each image is as recent as claimed by its `replace_frequency`:
 
 - `scs-0102-image-recency`
-
-The script [`openstack_test.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/openstack_test.py)
-can be used to check these testcases.
 
 ## Manual tests
 

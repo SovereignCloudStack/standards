@@ -29,28 +29,27 @@ No recent test results available.
 
 {% else %}
 
-{% for cat, res in (('FAILED', -1), ('Aborted', 0), ('Missing', None), ('Passed', 1)) -%}
-{% set bucket = scope_result.buckets[res] -%}
+{% for cat, val in (('FAILED', -1), ('Aborted', 0), ('Missing', None), ('Passed', 1)) -%}
+{% set bucket = scope_result.buckets[val] -%}
 {% if bucket -%}
 ### {{cat}} testcases
 
-{% if res == -1 %}Note: recommended testcases (marked lower-case x) do not count into the
+{% if val == -1 %}Note: recommended testcases (marked lower-case x) do not count into the
 overall result of a version.{% endif %}
 
-| testcase id |{% for version in scope_result.relevant %} {{ version }}{{ scope_result.versions[version].validity | validity_symbol }} |{% endfor %} description |
-|---|{% for version in scope_result.relevant %}---|{% endfor %}---|
+| testcase id |{% if val is not none %} reported on |{% endif %}{% for version in scope_result.relevant %} {{ version }}{{ scope_result.versions[version].validity | validity_symbol }} |{% endfor %} description |
+|---|{% if val is not none %}---|{% endif %}{% for version in scope_result.relevant %}---|{% endfor %}---|
 {% for testcase_id in bucket -%}
+{% set testcase = scope_result.testcases[testcase_id] -%}
 {% set res = scope_result.results[testcase_id] if testcase_id in scope_result.results else dict(result=0) -%}
-{#- #}  {% if res.report -%}
-[{{ testcase_id }}]({{ report_url(res.report, version, testcase_id) }})
-{%- else -%}
-{{ testcase_id }}
-{%- endif -%}
-{% if res.report %} { title="{{ res.report }} ({{ res.checked_at }})" }{% endif %} {# -#}
+| [{{ testcase_id }}]({{ testcase.url }}) {# -#}
+{%- if val is not none -%}
+| {% if res.report %}[{{ res.checked_at | short_isodate }}]({{ report_url(res.report, version, testcase_id) }}) { title="{{ res.report }} {{ res.checked_at }}" }{% endif %} {# -#}
+{%- endif %}{# val is not none -#}
 {% for version in scope_result.relevant %}| {%
 set tgt = scope_result.versions[version].tc_target[testcase_id]
 %}{% if tgt == 'main' %}**X** { title="main" }{% elif tgt %}x { title="{{ tgt }}" }{% endif %} {% endfor -%}
-| {{ scope_result.testcases[testcase_id].description | trim }} |
+| {{ testcase.description | trim }} |
 {% endfor %}{# testcase #}
 {% endif %}{# bucket nonempty -#}
 {% endfor %}{# categories #}
