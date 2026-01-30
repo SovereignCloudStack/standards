@@ -205,6 +205,35 @@ def make_container(cloud):
     return c
 
 
+class _Filter:
+    _instance = None
+
+    def __init__(self):
+        self.components = []
+
+    def __call__(self, record):
+        if len(self.components) == 1 or len(self.components) == 2 and self.components[0].replace('-', '_') == self.components[1]:
+            record.msg = f'{self.components[0]}: {record.msg}'
+        elif self.components:
+            record.msg = f'[{self.components[-1]}] {record.msg}'
+        return True
+
+    @classmethod
+    def install(cls, logger):
+        if cls._instance:
+            return
+        cls._instance = cls()
+        logger.handlers[0].filters.append(cls._instance)
+
+    @classmethod
+    def push(cls, name):
+        cls._instance.components.append(name)
+
+    @classmethod
+    def pop(cls):
+        del cls._instance.components[-1]
+
+
 class Container:
     """
     This class does lazy evaluation and memoization. You register any potential value either
@@ -233,13 +262,16 @@ class Container:
         val = self._values.get(key)
         if val is None:
             # I thought this was too verbose, but it massively helps classifying log messages
-            logger.debug(f'... {key}')
+            # logger.debug(f'... {key}')
+            _Filter.push(key)
             try:
                 ret = self._functions[key](self)
             except BaseException as e:
                 val = (True, e)
             else:
                 val = (False, ret)
+            _Filter.pop()
+            # logger.debug(f'... /{key}')
             self._values[key] = val
         error, ret = val
         if error:
@@ -290,6 +322,8 @@ def harness(name, *check_fns):
     - 'PASS' otherwise
     """
     logger.debug(f'** {name}')
+    _Filter.push(name)
+    
     messages = []
     try:
         results = [check_fn() for check_fn in check_fns]
@@ -301,6 +335,8 @@ def harness(name, *check_fns):
         for r in results:
             fails += _eval_result(r, messages)
         result = ['FAIL', 'PASS'][fails == 0]
+    finally:
+        _Filter.pop()
     # this is quite redundant
     # logger.debug(f'** computation end for {name}')
     for msg in messages:
@@ -325,6 +361,7 @@ def run_sanity_checks(container):
 def main(argv):
     # configure logging, disable verbose library logging
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+    _Filter.install(logging.getLogger())
     openstack.enable_logging(debug=False)
     cloud = None
 
