@@ -124,12 +124,15 @@ def compute_scs_0102_prop_hash_algo(images):
 
 def compute_scs_0102_prop_min_disk(images):
     """This test ensures that each image has a proper value for the property `min_disk`."""
-    offenders1 = [img for img in images if not img.min_disk]
-    offenders2 = [img for img in images if img.min_disk and img.min_disk * GIB < img.size]
-    return (
-        _log_error('property min_disk not set', offenders1) +
-        _log_error('property min_disk smaller than size', offenders2)
+    msgs1 = _log_error(
+        'property min_disk not set',
+        [img for img in images if not img.min_disk],
     )
+    msgs2 = _log_error(
+        'property min_disk smaller than size',
+        [img for img in images if img.min_disk and img.min_disk * GIB < img.size],
+    )
+    return msgs1 + msgs2
 
 
 def compute_scs_0102_prop_min_ram(images):
@@ -187,27 +190,20 @@ def compute_scs_0102_prop_hw_rng_model(images, hw_rng_models=HW_RNG_MODELS):
 
 def compute_scs_0102_prop_image_build_date(images, now=time.time()):
     """This test ensures that each image has a proper value for the property `image_build_date`."""
-    offenders1 = []
-    offenders2 = []
-    offenders3 = []
+    problems = []
     for img in images:
         rdate = parse_date(img.created_at, formats=STRICT_FORMATS)
         bdate_str = img.properties.get('image_build_date', '')
         bdate = parse_date(bdate_str)
-        if not bdate:
-            logger.error(f'Image "{img.name}": image_build_date "{bdate_str}" INVALID')
-            offenders1.append(img)
+        if not bdate_str:
+            problems.append(f'image_build_date NOT SET for {img.name!r}')
+        elif not bdate:
+            problems.append(f'image_build_date INVALID for {img.name!r}: {bdate_str!r}')
         elif bdate > rdate:
-            logger.error(f'Image "{img.name}": image_build_date {bdate_str} AFTER registration date {img.created_at}')
-            offenders3.append(img)
+            problems.append(f'image_build_date AFTER registration for {img.name!r}: {bdate_str} > {img.created_at}')
         if (bdate or rdate) > now:
-            logger.error(f'Image "{img.name}" has build time in the future: {bdate}')
-            offenders3.append(img)
-    return (
-        _log_error('image_build_date INVALID', offenders1, channel=logging.DEBUG) +
-        _log_error('image_build_date AFTER registration date', offenders2, channel=logging.DEBUG) +
-        _log_error('image build time in the future', offenders3, channel=logging.DEBUG)
-    )
+            problems.append(f'image_build_date in the future for {img.name!r}: {bdate}')
+    return problems
 
 
 # FIXME this is completely optional
@@ -223,13 +219,17 @@ def compute_scs_0102_prop_image_original_user(images):
 
 def compute_scs_0102_prop_image_source(images):
     """This test ensures that each image has a proper value for the property `image_source`."""
-    offenders = [
-        img
-        for img in images
-        if img.properties.get('image_source') != 'private'
-        if not is_url(img.properties.get('image_source', ''))
-    ]
-    return _log_error('property image_source INVALID (url or "private")', offenders)
+    problems = []
+    for img in images:
+        src = img.properties.get('image_source')
+        if not src:
+            problems.append(f"image_source MISSING for {img.name}")
+            continue
+        if src == 'private':
+            continue
+        if not is_url(src):
+            problems.append(f'image_source INVALID (url or "private") for {img.name}')
+    return problems
 
 
 def compute_scs_0102_prop_image_description(images):
@@ -305,8 +305,7 @@ def compute_scs_0102_image_recency(images):
         counter = Counter([img.name for img in images])
         duplicates = [name for name, count in counter.items() if count > 1]
         logger.warning(f'duplicate names detected: {", ".join(duplicates)}')
-    offenders1 = []
-    offenders2 = []
+    problems = []
     for img in images:
         #  This is a bit tricky: We need to disregard images that have been rotated out
         #  - os_hidden = True is a safe sign for this
@@ -315,18 +314,15 @@ def compute_scs_0102_image_recency(images):
         if not outd:
             continue  # fine
         if outd == 3:
-            offenders1.append(img)
+            problems.append(f'property provided_until INVALID for {img.name!r}')
             continue  # hopeless
         # in case that outd in (1, 2) try to find a non-outdated version
         if outd == 2:
-            logger.warning(f'Image "{img.name}" seems outdated (acc. to its repl freq) but is not hidden or otherwise marked')
+            logger.warning(f'Image {img.name!r} seems outdated (acc. to its repl freq) but is not hidden or otherwise marked')
             # warnings += 1
         replacement = _find_replacement_image(by_name, img.name)
         if replacement is None:
-            offenders2.append(img)
+            problems.append(f'outdated image w/o replacement: {img.name!r}')
         else:
-            logger.info(f'Image "{replacement.name}" is a valid replacement for outdated "{img.name}"')
-    return (
-        _log_error('images w/o valid provided_until', offenders1, channel=logging.DEBUG) +
-        _log_error('outdated images w/o replacement', offenders2, channel=logging.DEBUG)
-    )
+            logger.info(f'Image {replacement.name!r} is a valid replacement for outdated {img.name!r}')
+    return problems
