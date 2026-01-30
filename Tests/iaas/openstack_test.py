@@ -70,9 +70,6 @@ def make_container(cloud):
     c.add_function('scs_flavors', lambda c: compute_scs_flavors(c.flavors))
     c.add_function('scs_0100_syntax_check', lambda c: compute_scs_0100_syntax_check(c.scs_flavors))
     c.add_function('scs_0100_semantics_check', lambda c: compute_scs_0100_semantics_check(c.scs_flavors))
-    c.add_function('flavor_name_check', lambda c: all((
-        c.scs_0100_syntax_check, c.scs_0100_semantics_check,
-    )))
     # scs_0101_entropy
     c.add_function('canonical_image', lambda c: compute_canonical_image(c.images))
     c.add_function('collected_vm_output', lambda c: compute_collected_vm_output(c.conn, c.flavors, c.canonical_image))
@@ -81,9 +78,6 @@ def make_container(cloud):
     c.add_function('scs_0101_entropy_avail', lambda c: compute_scs_0101_entropy_avail(c.collected_vm_output, c.canonical_image.name))
     c.add_function('scs_0101_rngd', lambda c: compute_scs_0101_rngd(c.collected_vm_output, c.canonical_image.name))
     c.add_function('scs_0101_fips_test', lambda c: compute_scs_0101_fips_test(c.collected_vm_output, c.canonical_image.name))
-    c.add_function('entropy_check', lambda c: all((
-        c.scs_0101_entropy_avail, c.scs_0101_fips_test,
-    )))
     # scs_0102_image_metadata
     c.add_function('scs_0102_prop_architecture', lambda c: compute_scs_0102_prop_architecture(c.images))
     c.add_function('scs_0102_prop_hash_algo', lambda c: compute_scs_0102_prop_hash_algo(c.images))
@@ -104,13 +98,6 @@ def make_container(cloud):
     c.add_function('scs_0102_prop_uuid_validity', lambda c: compute_scs_0102_prop_uuid_validity(c.images))
     c.add_function('scs_0102_prop_hotfix_hours', lambda c: compute_scs_0102_prop_hotfix_hours(c.images))
     c.add_function('scs_0102_image_recency', lambda c: compute_scs_0102_image_recency(c.images))
-    c.add_function('image_metadata_check', lambda c: all((
-        c.scs_0102_prop_architecture, c.scs_0102_prop_min_disk, c.scs_0102_prop_min_ram, c.scs_0102_prop_os_version,
-        c.scs_0102_prop_os_distro, c.scs_0102_prop_hw_disk_bus, c.scs_0102_prop_image_build_date,
-        c.scs_0102_prop_image_original_user, c.scs_0102_prop_image_source, c.scs_0102_prop_image_description,
-        c.scs_0102_prop_replace_frequency, c.scs_0102_prop_provided_until, c.scs_0102_prop_uuid_validity,
-        c.scs_0102_image_recency,
-    )))
     # scs_0103_standard_flavors
     c.add_function('flavor_lookup', lambda c: compute_flavor_lookup(c.flavors))
     for canonical_name in SCS_0103_CANONICAL_NAMES:
@@ -121,12 +108,6 @@ def make_container(cloud):
             f'scs_0103_flavor_{nm}',
             lambda c, cn=canonical_name: compute_scs_0103_flavor(c.flavor_lookup, compute_flavor_spec(cn))
         )
-    c.add_function('standard_flavors_check', lambda c: all((
-        c.scs_0103_flavor_1v_4, c.scs_0103_flavor_2v_8, c.scs_0103_flavor_4v_16, c.scs_0103_flavor_8v_32,
-        c.scs_0103_flavor_1v_2, c.scs_0103_flavor_2v_4, c.scs_0103_flavor_4v_8, c.scs_0103_flavor_8v_16,
-        c.scs_0103_flavor_16v_32, c.scs_0103_flavor_1v_8, c.scs_0103_flavor_2v_16, c.scs_0103_flavor_4v_32,
-        c.scs_0103_flavor_1l_1, c.scs_0103_flavor_2v_4_20s, c.scs_0103_flavor_4v_16_100s,
-    )))
     # scs_0104_standard_images
     c.add_function('scs_0104_source_capi_1', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-1']))
     c.add_function('scs_0104_source_capi_2', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-2']))
@@ -146,47 +127,20 @@ def make_container(cloud):
     c.add_function('scs_0104_image_debian_12', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 12']))
     c.add_function('scs_0104_image_debian_11', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 11']))
     c.add_function('scs_0104_image_debian_10', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 10']))
-    # NOTE the following variant is correct for SCS-compatible IaaS v4 only
-    c.add_function('standard_images_check_1', lambda c: all((
-        c.scs_0104_image_ubuntu_2204,
-        c.scs_0104_source_capi_1, c.scs_0104_source_capi_2,
-        c.scs_0104_source_ubuntu_2404, c.scs_0104_source_ubuntu_2204, c.scs_0104_source_ubuntu_2004,
-        c.scs_0104_source_debian_13, c.scs_0104_source_debian_12, c.scs_0104_source_debian_11, c.scs_0104_source_debian_10,
-    )))
-    # NOTE the following variant is correct for SCS-compatible IaaS v5.1 only
-    c.add_function('standard_images_check_2', lambda c: all((
-        c.scs_0104_image_ubuntu_2404,
-        c.scs_0104_source_capi_1, c.scs_0104_source_capi_2,
-        c.scs_0104_source_ubuntu_2404, c.scs_0104_source_ubuntu_2204, c.scs_0104_source_ubuntu_2004,
-        c.scs_0104_source_debian_13, c.scs_0104_source_debian_12, c.scs_0104_source_debian_11, c.scs_0104_source_debian_10,
-    )))
     # scs_0114_volume_types
     c.add_function('volume_types', lambda c: c.conn.list_volume_types())
     c.add_function('volume_type_lookup', lambda c: compute_volume_type_lookup(c.volume_types))
     c.add_function('scs_0114_syntax_check', lambda c: compute_scs_0114_syntax_check(c.volume_type_lookup))
     c.add_function('scs_0114_encrypted_type', lambda c: compute_scs_0114_aspect_type(c.volume_type_lookup, 'encrypted'))
     c.add_function('scs_0114_replicated_type', lambda c: compute_scs_0114_aspect_type(c.volume_type_lookup, 'replicated'))
-    c.add_function('volume_types_check', lambda c: all((
-        c.scs_0114_syntax_check,
-        # the following is recommended only, but we treat this whole monolithic testcase as recommended
-        c.scs_0114_encrypted_type, c.scs_0114_replicated_type,
-    )))
     # scs_0115_security_groups
     c.add_function('scs_0115_default_rules', lambda c: compute_scs_0115_default_rules(c.conn))
-    c.add_function('security_groups_default_rules_check', lambda c: c.scs_0115_default_rules)
     # scs_0116_key_manager
     c.add_function('services_lookup', lambda c: compute_services_lookup(c.conn))
     c.add_function('scs_0116_presence', lambda c: compute_scs_0116_presence(c.services_lookup))
     c.add_function('scs_0116_permissions', lambda c: compute_scs_0116_permissions(c.conn, c.services_lookup))
-    c.add_function('key_manager_check', lambda c: all((
-        # recommended only: c.scs_0116_presence,
-        c.scs_0116_permissions,
-    )))
     # scs_0117_volume_backup
     c.add_function('scs_0117_test_backup', lambda c: compute_scs_0117_test_backup(c.conn))
-    c.add_function('volume_backup_check', lambda c: all((
-        c.scs_0117_test_backup,
-    )))
     # scs_0123_mandatory_services
     c.add_function('scs_0123_service_compute', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'compute'))
     c.add_function('scs_0123_service_identity', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'identity'))
@@ -197,11 +151,6 @@ def make_container(cloud):
     c.add_function('scs_0123_service_object_store', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'object-store'))
     c.add_function('scs_0123_storage_apis', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'volume', 'volumev3', 'block-storage'))
     c.add_function('scs_0123_swift_s3', lambda c: compute_scs_0123_swift_s3(c.conn))
-    c.add_function('service_apis_check', lambda c: all((
-        c.scs_0123_service_compute, c.scs_0123_service_identity, c.scs_0123_service_image,
-        c.scs_0123_service_network, c.scs_0123_service_load_balancer, c.scs_0123_service_placement,
-        c.scs_0123_service_object_store, c.scs_0123_storage_apis, c.scs_0123_swift_s3,
-    )))
     return c
 
 
@@ -317,14 +266,7 @@ def main(argv):
         else:
             usage(2)
 
-    # NOTE For historic reasons, there is precisely one testcase id, namely standard-images-check,
-    # whose meaning depends on the version of the certificate scope in question. We are in the process
-    # of transitioning away from this anti-feature. For the time being, however, we use the following
-    # hack to support it: One testcase may be implemented in multiple variants, denoted by suffixing
-    # a number, as in standard-images-check/1, standard-images-check/2.
-    # NOTE Also, the historic testcases have terrible naming. We will transition towards names
-    # that encode the corresponding standard, such as scs-0104-image-ubuntu-2404.
-    testcases = [t for t in args if t.rsplit('/', 1)[0].endswith('-check') or t.startswith('scs-')]
+    testcases = [t for t in args if t.startswith('scs-')]
     if len(testcases) != len(args):
         unknown = [a for a in args if a not in testcases]
         logger.warning(f"ignoring unknown testcases: {','.join(unknown)}")
@@ -336,8 +278,7 @@ def main(argv):
     c = make_container(cloud)
     run_sanity_checks(c)
     for testcase in testcases:
-        testcase_name = testcase.rsplit('/', 1)[0]  # see the note above
-        harness(testcase_name, lambda: getattr(c, testcase.replace('-', '_').replace('/', '_')))
+        harness(testcase, lambda: getattr(c, testcase.replace('-', '_')))
     return 0
 
 
