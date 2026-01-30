@@ -323,7 +323,7 @@ def harness(name, *check_fns):
     """
     logger.debug(f'** {name}')
     _Filter.push(name)
-    
+
     messages = []
     try:
         results = [check_fn() for check_fn in check_fns]
