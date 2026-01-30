@@ -261,8 +261,10 @@ def print_report(testcase_lookup: dict, targets: dict, results: dict, partial=Fa
             for tc_id in offenders:
                 print(f"    - {tc_id}:")
                 testcase = testcase_lookup[tc_id]
-                if 'description' in testcase:  # used to be `verbose and ...`, but users need the URL!
-                    print(f"      > {testcase['description'].strip()}")
+                if 'description' in testcase:
+                    print(f"      > {testcase['description']}")
+                if 'url' in testcase:
+                    print(f"      > {testcase['url']}")
 
 
 def create_report(argv, config, spec, invocations):

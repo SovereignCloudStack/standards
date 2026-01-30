@@ -17,13 +17,11 @@ You can generate input for it using the tool
 
 ## Automated tests
 
-We implemented a set of testcases corresponding 1:1 to the standard flavors:
+We [implemented](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/openstack_test.py)
+a set of testcases corresponding 1:1 to the standard flavors:
 
 - `scs-0103-flavor-X` with varying `X`: ensures that flavor `SCS-X` is present and has the
   required `extra_specs`.
 
 _NOTE_: We still need to add testcases to ensure that the `extra_specs` of non-standard
 flavors are correct as well.
-
-The testcases can be run using the script
-[`openstack_test.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/openstack_test.py).

@@ -226,7 +226,8 @@ TBD
 | ----------------- | --------------- | ------------------------------------------------------------------------------------------------- | ----------------- |
 | `id`              | String          | Identifier for this test case (immutable and unique within this module)                           | `image-md-check`  |
 | `lifetime`        | String          | One of: `day`, `week` (_default_), `month`, `quarter`, `year`                                     | `day`             |
-| `description`     | String          | Short description of the test case                                                                |                   |
+| `description`     | String          | Short description of the test case (markdown allowed, but keep it short for CLI users)            |                   |
+| `url`             | String          | URL pointing to the relevant SCS documentation for the testcase                                   |                   |
 
 A test result is valid until the end of the next period, except when lifetime is `year`: then the result is
 valid until the end of the following month plus one year.
