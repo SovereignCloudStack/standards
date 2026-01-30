@@ -1,6 +1,6 @@
 Testcase occurrences inside scope versions are marked
-bold "**X**" for required testcases (target _main_) and
-plain "x" for recommended testcases (with the specific target in the tooltip).
+"X" for required testcases (target _main_) and
+"(x)" for recommended testcases (with the specific target in the tooltip).
 
 Version numbers are suffixed by a symbol depending on state:
 \* for _draft_, † for _warn_ (soon to be deprecated), and †† for _deprecated_.
@@ -34,7 +34,7 @@ No recent test results available.
 {% if bucket -%}
 ### {{cat}} testcases
 
-{% if val == -1 %}Note: recommended testcases (marked lower-case x) do not count into the
+{% if val == -1 %}Note: recommended testcases (marked "(x)") do not count into the
 overall result of a version.{% endif %}
 
 | testcase id |{% if val is not none %} reported on |{% endif %}{% for version in scope_result.relevant %} {{ version }}{{ scope_result.versions[version].validity | validity_symbol }} |{% endfor %} description |
@@ -48,7 +48,7 @@ overall result of a version.{% endif %}
 {%- endif %}{# val is not none -#}
 {% for version in scope_result.relevant %}| {%
 set tgt = scope_result.versions[version].tc_target[testcase_id]
-%}{% if tgt == 'main' %}**X** { title="main" }{% elif tgt %}x { title="{{ tgt }}" }{% endif %} {% endfor -%}
+%}{% if tgt == 'main' %}X { title="main" }{% elif tgt %}(x) { title="{{ tgt }}" }{% endif %} {% endfor -%}
 | {{ testcase.description | trim }} |
 {% endfor %}{# testcase #}
 {% endif %}{# bucket nonempty -#}
