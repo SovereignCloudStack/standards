@@ -70,16 +70,15 @@ def compute_scs_0104_source(image_lookup, image_spec):
     For an impression of what these specs look like, refer to `SCS_0104_IMAGE_SPECS`.
     """
     matches = _lookup_images(image_lookup, image_spec)
-    errors = 0
+    errors = []
     for image in matches:
         img_source = image.properties.get('image_source', '')
         sources = image_spec['source']
         if not isinstance(sources, (tuple, list)):
             sources = [sources]
         if not any(img_source.startswith(src) for src in sources):
-            errors += 1
-            logger.error(f"Image '{image.name}' source mismatch: '{img_source}' matches none of these prefixes: {', '.join(sources)}")
-    return not errors
+            errors.append(f"Image '{image.name}' source mismatch: '{img_source}' matches none of these prefixes: {', '.join(sources)}")
+    return errors
 
 
 def compute_scs_0104_image(image_lookup, image_spec):
@@ -89,7 +88,7 @@ def compute_scs_0104_image(image_lookup, image_spec):
     For an impression of what these specs look like, refer to `SCS_0104_IMAGE_SPECS`.
     """
     matches = _lookup_images(image_lookup, image_spec)
+    errors = []
     if not matches:
-        logger.error(f"Missing image '{image_spec['name']}'")
-        return False
-    return True
+        errors.append(f"Missing image '{image_spec['name']}'")
+    return errors

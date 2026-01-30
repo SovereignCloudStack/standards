@@ -38,12 +38,19 @@ def compute_scs_flavors(flavors: typing.List[openstack.compute.v2.flavor.Flavor]
     return result
 
 
+def _log_errors(cause, names):
+    """helper to construct result for testcase"""
+    if not names:
+        return []
+    message = f"{cause} with flavor(s): {', '.join(sorted(names))}"
+    logger.error(message)
+    return message
+
+
 def compute_scs_0100_syntax_check(scs_flavors: list) -> bool:
     """This test ensures that each SCS flavor is indeed named correctly."""
     problems = [flv.name for flv, flavorname in scs_flavors if not flavorname]
-    if problems:
-        logger.error(f"scs-100-syntax-check: flavor(s) failed: {', '.join(sorted(problems))}")
-    return not problems
+    return _log_errors('syntax problems', problems)
 
 
 def compute_scs_0100_semantics_check(scs_flavors: list) -> bool:

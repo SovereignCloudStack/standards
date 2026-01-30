@@ -232,8 +232,8 @@ class Container:
     def __getattr__(self, key):
         val = self._values.get(key)
         if val is None:
-            # this is too verbose
-            # logger.debug(f'... {key}')
+            # I thought this was too verbose, but it massively helps classifying log messages
+            logger.debug(f'... {key}')
             try:
                 ret = self._functions[key](self)
             except BaseException as e:
