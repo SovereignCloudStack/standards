@@ -9,7 +9,6 @@ from . import flavor_names
 logger = logging.getLogger(__name__)
 
 
-TESTCASES = ('scs-0100-syntax-check', 'scs-0100-semantics-check', 'flavor-name-check')
 STRATEGY = flavor_names.ParsingStrategy(
     vstr='v3',
     parsers=(flavor_names.parser_v3, ),
@@ -32,25 +31,14 @@ def compute_scs_flavors(flavors: typing.List[openstack.compute.v2.flavor.Flavor]
         try:
             flavorname = parser(flv.name)
         except ValueError as exc:
-            logger.info(f"error parsing {flv.name}: {exc}")
-            flavorname = None
+            flavorname = f"error parsing {flv.name}: {exc}"
         result.append((flv, flavorname))
     return result
 
 
-def _log_errors(cause, names):
-    """helper to construct result for testcase"""
-    if not names:
-        return []
-    message = f"{cause} with flavor(s): {', '.join(sorted(names))}"
-    logger.error(message)
-    return message
-
-
 def compute_scs_0100_syntax_check(scs_flavors: list) -> bool:
     """This test ensures that each SCS flavor is indeed named correctly."""
-    problems = [flv.name for flv, flavorname in scs_flavors if not flavorname]
-    return _log_errors('syntax problems', problems)
+    return [flavorname for _, flavorname in scs_flavors if isinstance(flavorname, str)]
 
 
 def compute_scs_0100_semantics_check(scs_flavors: list) -> bool:
@@ -61,36 +49,31 @@ def compute_scs_0100_semantics_check(scs_flavors: list) -> bool:
     NOTE that this test is incomplete; it only checks the most obvious properties.
     See also <https://github.com/SovereignCloudStack/standards/issues/554>.
     """
-    problems = set()
+    problems = []
     for flv, flavorname in scs_flavors:
-        if not flavorname:
+        if isinstance(flavorname, str):
             continue  # this case is handled by syntax check
         cpuram = flavorname.cpuram
         if flv.vcpus < cpuram.cpus:
-            logger.error(f"Flavor {flv.name} CPU overpromise: {flv.vcpus} < {cpuram.cpus}")
-            problems.add(flv.name)
+            problems.append(f"CPU overpromise for {flv.name!r}: {flv.vcpus} < {cpuram.cpus}")
         elif flv.vcpus > cpuram.cpus:
-            logger.info(f"Flavor {flv.name} CPU underpromise: {flv.vcpus} > {cpuram.cpus}")
+            logger.info(f"CPU underpromise for {flv.name!r}: {flv.vcpus} > {cpuram.cpus}")
         # RAM
         flvram = int((flv.ram + 51) / 102.4) / 10
         # Warn for strange sizes (want integer numbers, half allowed for < 10GiB)
         if flvram >= 10 and flvram != int(flvram) or flvram * 2 != int(flvram * 2):
-            logger.info(f"Flavor {flv.name} uses discouraged uneven size of memory {flvram:.1f} GiB")
+            logger.info(f"Discouraged uneven size of memory for {flv.name!r}: {flvram:.1f} GiB")
         if flvram < cpuram.ram:
-            logger.error(f"Flavor {flv.name} RAM overpromise {flvram:.1f} < {cpuram.ram:.1f}")
-            problems.add(flv.name)
+            problems.append(f"RAM overpromise for {flv.name!r}: {flvram:.1f} < {cpuram.ram:.1f}")
         elif flvram > cpuram.ram:
-            logger.info(f"Flavor {flv.name} RAM underpromise {flvram:.1f} > {cpuram.ram:.1f}")
+            logger.info(f"RAM underpromise for {flv.name!r}: {flvram:.1f} > {cpuram.ram:.1f}")
         # Disk could have been omitted
         disksize = flavorname.disk.disksize if flavorname.disk else 0
         # We have a recommendation for disk size steps
         if disksize not in ACC_DISK:
-            logger.info(f"Flavor {flv.name} non-standard disk size {disksize}, should have (5, 10, 20, 50, 100, 200, ...)")
+            logger.info(f"Non-standard disk size for {flv.name!r}: {disksize} not in (5, 10, 20, 50, 100, 200, ...)")
         if flv.disk < disksize:
-            logger.error(f"Flavor {flv.name} disk overpromise {flv.disk} < {disksize}")
-            problems.add(flv.name)
+            problems.append(f"Disk overpromise for {flv.name!r}: {flv.disk} < {disksize}")
         elif flv.disk > disksize:
-            logger.info(f"Flavor {flv.name} disk underpromise {flv.disk} > {disksize}")
-    if problems:
-        logger.error(f"scs-100-semantics-check: flavor(s) failed: {', '.join(sorted(problems))}")
-    return not problems
+            logger.info(f"Disk underpromise for {flv.name!r}: {flv.disk} > {disksize}")
+    return problems
