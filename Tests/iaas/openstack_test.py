@@ -213,9 +213,10 @@ class _Filter:
 
     def __call__(self, record):
         if len(self.components) == 1 or len(self.components) == 2 and self.components[0].replace('-', '_') == self.components[1]:
-            record.msg = f'{self.components[0]}: {record.msg}'
+            record.name = self.components[0]
         elif self.components:
-            record.msg = f'[{self.components[-1]}] {record.msg}'
+            record.name = f'{self.components[0]} [{self.components[-1]}]'
+        #     record.msg = f'[{self.components[-1]}] {record.msg}'
         return True
 
     @classmethod
@@ -321,8 +322,8 @@ def harness(name, *check_fns):
     - 'FAIL' if one of the functions has a falsy result
     - 'PASS' otherwise
     """
-    logger.debug(f'** {name}')
     _Filter.push(name)
+    logger.debug(f'** begin testcase')
 
     messages = []
     try:
@@ -360,7 +361,7 @@ def run_sanity_checks(container):
 
 def main(argv):
     # configure logging, disable verbose library logging
-    logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
+    logging.basicConfig(format='%(name)s: %(levelname)s: %(message)s', level=logging.DEBUG)
     _Filter.install(logging.getLogger())
     openstack.enable_logging(debug=False)
     cloud = None
