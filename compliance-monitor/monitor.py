@@ -49,14 +49,14 @@ logger = logging.getLogger(__name__)
 
 
 try:
-    from scs_cert_lib import load_spec, annotate_validity, compile_suite, add_period
+    from scs_cert_lib import load_spec, annotate_validity, add_period, eval_buckets, evaluate
 except ImportError:
     # the following course of action is not unproblematic because the Tests directory will be
     # mounted to the Docker instance, hence it's hard to tell what version we are gonna get;
     # however, unlike the reloading of the config, the import only happens once, and at that point
     # in time, both monitor.py and scs_cert_lib.py should come from the same git checkout
     import sys; sys.path.insert(0, os.path.abspath('../Tests'))  # noqa: E702
-    from scs_cert_lib import load_spec, annotate_validity, compile_suite, add_period
+    from scs_cert_lib import load_spec, annotate_validity, add_period, eval_buckets, evaluate
 
 
 class Settings:
@@ -138,7 +138,7 @@ env = Environment()  # populate this on startup (final section of this file)
 templates_map = {
     k: None for k in REQUIRED_TEMPLATES
 }
-_scopes = {}  # map scope uuid to `PrecomputedScope` instance
+_scopes = {}  # map scope uuid to scope spec dict from YAML file
 
 
 class TimestampEncoder(json.JSONEncoder):
@@ -239,96 +239,86 @@ def import_bootstrap(bootstrap_path, conn):
         conn.commit()
 
 
-class PrecomputedVersion:
-    """Precompute all `TestSuite` instances necessary to evaluate the results of some version"""
-    def __init__(self, version):
-        self.name = version['version']
-        self.suite = compile_suite(self.name, version['include'])
-        self.validity = version['validity']
-        self.listed = bool(version['_explicit_validity'])
-        self.targets = {
-            tname: self.suite.select(tname, target_spec)
-            for tname, target_spec in version['targets'].items()
+def _evaluate_version(version, scope_results):
+    """evaluate the results for `version` and return the canonical JSON output"""
+    target_results = {
+        tname: {
+            'testcases': tc_ids,
+            'result': evaluate(scope_results, tc_ids),
         }
-
-    def evaluate(self, scenario_results):
-        """evaluate the results for this version and return the canonical JSON output"""
-        target_results = {}
-        for tname, suite in self.targets.items():
-            target_results[tname] = {
-                'testcases': [testcase['id'] for testcase in suite.testcases],
-                'result': suite.evaluate(scenario_results),
-            }
-        return {
-            'testcases': {tc['id']: tc for tc in self.suite.testcases},
-            'results': scenario_results,
-            'result': target_results['main']['result'],
-            'targets': target_results,
-            'validity': self.validity,
-        }
+        for tname, tc_ids in version['targets'].items()
+    }
+    return {
+        'result': target_results['main']['result'],
+        'targets': target_results,
+        'tc_target': version['tc_target'],
+        'validity': version['validity'],
+    }
 
 
-class PrecomputedScope:
-    """Precompute all `TestSuite` instances necessary to evaluate the results of some scope"""
-    def __init__(self, spec):
-        self.name = spec['name']
-        self.spec = spec
-        self.versions = {
-            version['version']: PrecomputedVersion(version)
-            for version in spec['versions'].values()
-        }
-
-    def evaluate(self, scope_results):
-        """evaluate the results for this scope and return the canonical JSON output"""
-        version_results = {
-            vname: self.versions[vname].evaluate(scenario_results)
-            for vname, scenario_results in scope_results.items()
-        }
-        by_validity = defaultdict(list)
-        for vname in scope_results:
-            by_validity[self.versions[vname].validity].append(vname)
-        # go through worsening validity values until a passing version is found
-        relevant = []
-        best_passed = None
-        for validity in ('effective', 'warn', 'deprecated'):
-            vnames = by_validity[validity]
-            relevant.extend(vnames)
-            if any(version_results[vname]['result'] == 1 for vname in vnames):
-                best_passed = validity
-                break
-        # always include draft (but only at the end)
+def _evaluate_scope(spec, scope_results, include_drafts=False):
+    """evaluate the results for `scope` and return the canonical JSON output"""
+    testcases = spec['testcases']
+    versions = spec['versions']
+    version_results = {
+        vname: _evaluate_version(version, scope_results)
+        for vname, version in versions.items()
+    }
+    by_validity = defaultdict(list)
+    for vname, version in versions.items():
+        by_validity[version['validity']].append(vname)
+    # go through worsening validity values until a passing version is found
+    relevant = []
+    best_passed = None
+    for validity in ('effective', 'warn', 'deprecated'):
+        vnames = by_validity[validity]
+        relevant.extend(vnames)
+        if any(version_results[vname]['result'] == 1 for vname in vnames):
+            best_passed = validity
+            break
+    if include_drafts:
         relevant.extend(by_validity['draft'])
-        passed = [vname for vname in relevant if version_results[vname]['result'] == 1]
-        return {
-            'name': self.name,
-            'versions': version_results,
-            'relevant': relevant,
-            'passed': passed,
-            'passed_str': ', '.join([
-                vname + ASTERISK_LOOKUP[self.versions[vname].validity]
-                for vname in passed
-            ]),
-            'best_passed': best_passed,
-        }
+    passed = [vname for vname in relevant if version_results[vname]['result'] == 1]
+    # only list testcases that occur in any relevant version
+    relevant_testcases = set()
+    for vname in relevant:
+        for tc_ids in versions[vname]['targets'].values():
+            relevant_testcases.update(tc_ids)
+    return {
+        'name': spec['name'],
+        'testcases': testcases,
+        'results': scope_results,
+        'buckets': {
+            # sort testcase that occur any main target on top of those that don't
+            res: sorted(tc_ids, key=lambda tc_id: (not testcases[tc_id]['attn'], tc_id))
+            for res, tc_ids in eval_buckets(scope_results, relevant_testcases).items()
+        },
+        'versions': version_results,
+        'relevant': relevant,
+        'passed': passed,
+        'passed_str': ', '.join([
+            vname + ASTERISK_LOOKUP[versions[vname]['validity']]
+            for vname in passed
+        ]),
+        'best_passed': best_passed,
+    }
 
-    def update_lookup(self, target_dict):
-        """Create entries in a lookup mapping for each testcase that occurs in this scope.
 
-        This mapping from triples (scope uuid, version name, testcase id) to testcase facilitates
-        evaluating result sets from database queries a great deal, because then just one lookup operation
-        tells us whether a result row can be associated with any known testcase, and if so, whether the
-        result is still valid (looking at the testcase's lifetime).
+def _update_lookup(spec, target_dict):
+    """Create entries in a lookup mapping for each testcase that occurs in this scope.
 
-        In the future, the mapping could even be simplified by deriving a unique id from each triple that
-        could then be stored (redundantly) in a dedicated database column, and the mapping could be from
-        just one id (instead of a triple) to testcase.
-        """
-        scope_uuid = self.spec['uuid']
-        for vname, precomputed_version in self.versions.items():
-            listed = precomputed_version.listed
-            for testcase in precomputed_version.suite.testcases:
-                # put False if listed is False, else put testcase
-                target_dict[(scope_uuid, vname, testcase['id'])] = listed and testcase
+    This mapping from pairs (scope uuid, testcase id) to testcase facilitates
+    evaluating result sets from database queries a great deal, because then just one lookup operation
+    tells us whether a result row can be associated with any known testcase, and if so, whether the
+    result is still valid (looking at the testcase's lifetime).
+
+    In the future, the mapping could even be simplified by deriving a unique id from each pair that
+    could then be stored (redundantly) in a dedicated database column, and the mapping could be from
+    just one id (instead of a pair) to testcase.
+    """
+    scope_uuid = spec['uuid']
+    for tc_id, testcase in spec['testcases'].items():
+        target_dict[(scope_uuid, tc_id)] = testcase
 
 
 def import_cert_yaml(yaml_path, target_dict):
@@ -336,8 +326,8 @@ def import_cert_yaml(yaml_path, target_dict):
     with open(yaml_path, "r") as fileobj:
         spec = load_spec(yaml.load(fileobj.read()))
     annotate_validity(spec['timeline'], spec['versions'], date.today())
-    target_dict[spec['uuid']] = precomputed_scope = PrecomputedScope(spec)
-    precomputed_scope.update_lookup(target_dict)
+    target_dict[spec['uuid']] = spec
+    _update_lookup(spec, target_dict)
 
 
 def import_cert_yaml_dir(yaml_path, target_dict):
@@ -488,6 +478,16 @@ async def post_report(
                 reportid = db_insert_report(cur, uuid, checked_at, subject, json_text)
             except UniqueViolation:
                 raise HTTPException(status_code=409, detail="Conflict: report already present")
+            if 'versions' not in document:
+                # If this key is missing, this means we have a newer-style report that doesn't redundantly list
+                # results per version. One reason for this change is that the meaning of a testcase identifier
+                # no longer depends on the scope version, and we can quite simply read off the results from the
+                # invocations. -- Use the dummy version '*' as long as the db schema still expects a version.
+                document['versions'] = {'*': {
+                    tc_id: {'result': result, 'invocation': inv_id}
+                    for inv_id, invocation in document['run']['invocations'].items()
+                    for tc_id, result in invocation['results'].items()
+                }}
             for version, vdata in document['versions'].items():
                 for check, rdata in vdata.items():
                     result = rdata['result']
@@ -497,31 +497,35 @@ async def post_report(
 
 
 def convert_result_rows_to_dict2(
-    rows, scopes_lookup, grace_period_days=0, scopes=(), subjects=(), include_report=False,
+    rows, scopes_lookup, grace_period_days=0, scopes=(), subjects=(), include_report=False, include_drafts=False,
 ):
     """evaluate all versions occurring in query result `rows`, returning canonical JSON representation"""
     now = datetime.now()
     if grace_period_days:
         now -= timedelta(days=grace_period_days)
     # collect result per subject/scope/version
-    preliminary = defaultdict(lambda: defaultdict(lambda: defaultdict(dict)))  # subject -> scope -> version
+    preliminary = defaultdict(lambda: defaultdict(dict))  # subject -> scope
     missing = set()
-    for subject, scope_uuid, version, testcase_id, result, checked_at, report_uuid in rows:
-        testcase = scopes_lookup.get((scope_uuid, version, testcase_id))
+    for subject, scope_uuid, _, testcase_id, result, checked_at, report_uuid in rows:
+        testcase = scopes_lookup.get((scope_uuid, testcase_id))
         if not testcase:
             # it can be False (testcase is known but version too old) or None (testcase not known)
             # only report the latter case
             if testcase is None:
-                missing.add((scope_uuid, version, testcase_id))
+                missing.add((scope_uuid, testcase_id))
             continue
         # drop value if too old
         lifetime = testcase.get('lifetime')  # leave None if not present; to be handled by add_period
         if now >= add_period(checked_at, lifetime):
             continue
-        tc_result = dict(result=result, checked_at=checked_at)
+        # don't use outdated value (FIXME only necessary as long as version column still in db!)
+        tc_result = preliminary[subject][scope_uuid].get(testcase_id, {})
+        if tc_result.get('checked_at', checked_at) > checked_at:
+            continue
+        tc_result.update(result=result, checked_at=checked_at)
         if include_report:
             tc_result.update(report=report_uuid)
-        preliminary[subject][scope_uuid][version][testcase_id] = tc_result
+        preliminary[subject][scope_uuid][testcase_id] = tc_result
     if missing:
         logger.warning('missing objects: ' + ', '.join(repr(x) for x in missing))
     # make sure the requested subjects and scopes are present (facilitates writing jinja2 templates)
@@ -530,7 +534,7 @@ def convert_result_rows_to_dict2(
             _ = preliminary[subject][scope]
     return {
         subject: {
-            scope_uuid: scopes_lookup[scope_uuid].evaluate(scope_result)
+            scope_uuid: _evaluate_scope(scopes_lookup[scope_uuid], scope_result, include_drafts=include_drafts)
             for scope_uuid, scope_result in subject_result.items()
         }
         for subject, subject_result in preliminary.items()
@@ -561,7 +565,7 @@ def _build_report_url(base_url, report, *args, **kwargs):
     report_page = 'report_full' if kwargs.get('full') else 'report'
     url = f"{base_url}page/{report_page}/{report}"
     if len(args) == 2:  # version, testcase_id --> add corresponding fragment specifier
-        url += f"#{args[0]}_{args[1]}"
+        url += f"#{args[1]}"  # version no longer relevant
     return url
 
 
@@ -684,7 +688,8 @@ async def get_detail_full(
         for subj in subjects:
             rows2.extend(db_get_relevant_results2(cur, subj, scopeuuid, approved_only=False))
     results2 = convert_result_rows_to_dict2(
-        rows2, get_scopes(), include_report=True, subjects=subjects, scopes=(scopeuuid, ),
+        rows2, get_scopes(), include_report=True, include_drafts=True,
+        subjects=subjects, scopes=(scopeuuid, ),
     )
     title = f'Details for group {group}' if group else f'Details for subject {subject}'
     return render_view(
@@ -716,7 +721,7 @@ async def get_table_full(
 ):
     with conn.cursor() as cur:
         rows2 = db_get_relevant_results2(cur, approved_only=False)
-    results2 = convert_result_rows_to_dict2(rows2, get_scopes())
+    results2 = convert_result_rows_to_dict2(rows2, get_scopes(), include_drafts=True)
     return render_view(
         VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, detail_page='detail_full',
         title="SCS compliance overview (incl. unverified results)", unverified=True,
@@ -730,9 +735,15 @@ async def get_scope(
     view_type: ViewType,
     scopeuuid: str,
 ):
-    spec = get_scopes()[scopeuuid].spec
+    spec = get_scopes()[scopeuuid]
     versions = spec['versions']
-    relevant = sorted([name for name, version in versions.items() if version['_explicit_validity']])
+    # sort by name, and all drafts after all non-drafts
+    column_data = [
+        (version['_explicit_validity'].lower() == 'draft', name)
+        for name, version in versions.items()
+        if version['_explicit_validity']
+    ]
+    relevant = [name for _, name in sorted(column_data)]
     modules_chart = {}
     for name in relevant:
         for include in versions[name]['include']:
@@ -853,6 +864,11 @@ def verdict_check_filter(value):
     return {1: '✔', -1: '✘'}.get(value, '⚠')
 
 
+def short_isodate_filter(value):
+    """Jinja filter to turn a datetime obj into a short isodate str"""
+    return str(value)[:10]
+
+
 def reload_static_config(*args, do_ensure_schema=False):
     # allow arbitrary arguments so it can readily be used as signal handler
     logger.info("loading static config")
@@ -877,6 +893,8 @@ if __name__ == "__main__":
         verdict=verdict_filter,
         verdict_check=verdict_check_filter,
         markdown=markdown,
+        validity_symbol=ASTERISK_LOOKUP.get,
+        short_isodate=short_isodate_filter,
     )
     reload_static_config(do_ensure_schema=True)
     signal.signal(signal.SIGHUP, reload_static_config)

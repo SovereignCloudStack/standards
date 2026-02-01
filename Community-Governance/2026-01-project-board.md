@@ -1,6 +1,6 @@
 # Project Board Term 2026
 
-Spokesperson:
+Spokesperson: Kurt Garloff, @garloff
 
 | Name, Firstname         | Github Handle  | E-Mail                              | Remark                         |
 | ----------------------- | -------------- | ----------------------------------- |---------------------------------

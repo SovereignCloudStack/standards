@@ -22,19 +22,12 @@ Version numbers are suffixed by a symbol depending on state: * for _draft_, † 
 | [CNDS](https://cnds.io/) | Public cloud for customers (2 regions) | artcodix GmbH |
 {#- #} [{{ results | pick(iaas, 'artcodix', 'artcodix-ro') | summary }}]({{ detail_url('group-artcodix', iaas) }}) {# -#}
 | [HM](https://ohm.muc.cloud.cnds.io/) |
-{% if unverified -%}
-| FOCIS | FOCIS environment | Cloud&amp;Heat Technologies GmbH |
+| FOCIS | ALASCA community environment | Cloud&amp;Heat Technologies GmbH |
 {#- #} [{{ results | pick(iaas, 'focis') | summary }}]({{ detail_url('focis', iaas) }}) {# -#}
 | n/a |
-{% endif -%}
 | [pluscloud open](https://www.plusserver.com/en/products/pluscloud-open) | Public cloud for customers (4 regions)  | plusserver GmbH | {# #}
 {#- #}[{{ results | pick(iaas, 'pco-prod1', 'pco-prod2', 'pco-prod3', 'pco-prod4') | summary }}]({{ detail_url('group-pco-prod', iaas) }}) {# -#}
 | [HM1](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-pco) [HM2](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-prod2) [HM3](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-prod3) [HM4](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-prod4) |
-{% if unverified -%}
-| PoC WG-Cloud OSBA | Cloud PoC for FITKO | Cloud&amp;Heat Technologies GmbH |
-{#- #} [{{ results | pick(iaas, 'poc-wgcloud') | summary }}]({{ detail_url('poc-wgcloud', iaas) }}) {# -#}
-| [HM](https://health.poc-wgcloud.osba.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?var-mycloud=poc-wgcloud&orgId=1) |
-{% endif -%}
 | [REGIO.cloud](https://regio.digital) | Public cloud for customers | OSISM GmbH |
 {#- #} [{{ results | pick(iaas, 'regio-a') | summary }}]({{ detail_url('regio-a', iaas) }}) {# -#}
 | [HM](https://apimon.services.regio.digital/public-dashboards/17cf094a47404398a5b8e35a4a3968d4?orgId=1&refresh=5m) |
@@ -47,3 +40,8 @@ Version numbers are suffixed by a symbol depending on state: * for _draft_, † 
 | [Wavestack](https://www.noris.de/wavestack-cloud/) | Public cloud for customers | noris network AG/Wavecon GmbH |
 {#- #} [{{ results | pick(iaas, 'wavestack') | summary }}]({{ detail_url('wavestack', iaas) }}) {# -#}
 | [HM](https://health.wavestack1.sovereignit.cloud:3000/) |
+{% if unverified -%}
+| PoC WG-Cloud OSBA | Cloud PoC for FITKO | Cloud&amp;Heat Technologies GmbH |
+{#- #} [{{ results | pick(iaas, 'poc-wgcloud') | summary }}]({{ detail_url('poc-wgcloud', iaas) }}) {# -#}
+| [HM](https://health.poc-wgcloud.osba.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?var-mycloud=poc-wgcloud&orgId=1) |
+{% endif -%}

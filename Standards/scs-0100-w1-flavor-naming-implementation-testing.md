@@ -154,30 +154,12 @@ generation `x` for the time being.
 
 ## Automated tests
 
-### Errors
-
-The following items MUST be detected and reported as an error:
-
-- any syntax error in a name starting with `SCS-`,
-- any mismatch between any immediately discoverable property of a flavor (currently, CPU, RAM and disk size)
-  and the meaning of its name (which is usually a lower bound), such as the CPU generation or hypervisor.
-
-In addition, the following items MAY be reported as an error:
-
-- any mismatch between any non-immediately discoverable property of flavor and the meaning of its name.
-
-### Warnings
-
-None so far.
-
-### Implementation
-
-We implemented two testcases, paralleling the two items in the "Errors" section above:
+The following testcases [are implemented](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/openstack_test.py):
 
 - `scs-0100-syntax-check` ensures that any name starting with `SCS-` adheres to the standard;
-- `scs-0100-semantics-check` ensures that any such name is telling the truth as specified in the standard.
-
-These testcases can be checked using [`openstack_test.py`](https://github.com/SovereignCloudStack/standards/tree/main/Tests/iaas/openstack_test.py).
+- `scs-0100-semantics-check` ensures that any such name is telling the truth as specified in the standard;
+  specifically: any immediately discoverable property of a flavor (currently, CPU, RAM and disk size)
+  matches the meaning of its name (which is usually a lower bound), such as the CPU generation or hypervisor.
 
 ## Manual tests
 
