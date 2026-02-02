@@ -124,7 +124,9 @@ def make_component_form(spec, component):
         elif fdesc[0:2] == "##":
             # Float number => NUMBER
             print(f'\t  <label for="{fname}">{fdesc[2:]}:</label><br/>')
-            print(f'\t  <input type="number" name="{path}" id="{fname}" min=0 value="{value}" size=5/>')
+            # FIXME: This is a hack: we hardcode step=2 or 0.5 knowing that RAM is the only float
+            step = 2 if value >= 10 else 0.5
+            print(f'\t  <input type="number" name="{path}" id="{fname}" min=0 step={step} value="{value}" size=5/>')
         elif fdesc[0] == "#":
             # Float number => NUMBER
             if fdesc[1] == ".":
