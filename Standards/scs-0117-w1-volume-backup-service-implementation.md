@@ -8,16 +8,14 @@ supplements:
 
 ## Automated tests
 
-We implemented a single testcase,
+We [implemented](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/openstack_test.py)
+a single testcase,
 
 - `scs-0117-test-backup`,
 
 which verifies that a non-admin user can backup and restore volumes.
 
 To this end, the testcase uses the `/v3/{project_id}/backups` Block Storage API endpoint to create a volume and a backup of it and subsequently restores the backup on a new volume while verifying the success of each operation.
-
-The testcase can be run using the script
-[`openstack_test.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/openstack_test.py).
 
 ## Manual tests
 

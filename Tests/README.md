@@ -48,12 +48,17 @@ pip install -r kaas/requirements.txt
 Given a kubeconfig file `path/to/kubeconfig.yaml`, run
 
 ```shell
-./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml -a subject_root=. -s SUBJECT scs-compatible-kaas.yaml
+./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml -a subject_root=. -s SUBJECT -o report.yaml scs-compatible-kaas.yaml
 ```
 
-Replace `SUBJECT` with an arbitrary, but meaningful subject name.
-Also, please note that the check will always use the `current-context` of the kubeconfig and will
-fail if it isn't set.
+Replace `SUBJECT` with an arbitrary, but meaningful subject name. Also, please note that the check
+will always use the `current-context` of the kubeconfig and will fail if it isn't set.
+
+A report in YAML format will be created.
+
+Additionally, the directory `sono-results` will be generated. It contains a JUnit XML file:
+`plugins/e2e/results/global/junit_01.xml`. You can render it to HTML with a tool like junit2html.
+This might give you hints as to why a test failed.
 
 ## Usage information (help output)
 

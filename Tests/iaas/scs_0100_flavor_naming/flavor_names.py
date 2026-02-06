@@ -400,7 +400,7 @@ class SyntaxV2:
     prefix = "SCS-"
     cpuram = re.compile(r"([0-9]*)([LVTC])(i|)\-([0-9\.]*)(u|)(o|)")
     disk = re.compile(r"\-(?:([0-9]*)x|)([0-9]*)([nhsp]|)")
-    hype = re.compile(r"_(kvm|xen|vmw|hyv|bms)")
+    hype = re.compile(r"_(kvm|xen|vmw|hyv|bms|chy)")
     hwvirt = re.compile(r"_(hwv)")
     # cpubrand needs final lookahead assertion to exclude confusion with _ib extension
     cpubrand = re.compile(r"_([izar])([0-9]*)(h*)(?=$|_)")
