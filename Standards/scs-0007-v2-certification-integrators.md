@@ -49,7 +49,7 @@ The applicant SHOULD work towards ensuring that the cloud environments it sets u
 
 The applicant MUST achieve a total of at least FOUR points to become SCS Silver Integrator or at least TWO points to qualify as SCS Bronze Integrator according to the following scoring system:
 
-- two points for each SCS-compliant environment of a third party successfully brought into production by the applicant in the last 12 months, one point for 6 months;
+- two points for each SCS-compliant environment of a third party successfully brought into production by the applicant in the last 12 months;
 - two points for each SCS-compliant environment of a third party actively being managed by the applicant for the last 12 months, one point for 6 months;
 - two points for each SCS-compliant public-cloud environment with at least two regions or at least three availability zones being operated by the applicant for the last 12 months, one point for 6 months.
 
