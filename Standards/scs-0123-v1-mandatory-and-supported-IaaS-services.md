@@ -26,9 +26,10 @@ Any unsupported APIs will not be tested.
 
 ## Mandatory IaaS APIs
 
-The following IaaS APIs MUST be present in SCS-compliant IaaS deployments and could be implemented with the corresponding OpenStack services:
+The following IaaS APIs MUST be present in SCS-compliant IaaS deployments and could be implemented with the corresponding OpenStack services.
+The endpoints of services MUST be findable through the `catalog list` of the identity API[^1].
 
-| Mandatory API | corresponding OpenStack Service | description |
+| Mandatory API service type | corresponding OpenStack Service | description |
 |-----|-----|-----|
 | **block-storage** | Cinder | Block Storage service |
 | **compute** | Nova | Compute service |
@@ -36,35 +37,26 @@ The following IaaS APIs MUST be present in SCS-compliant IaaS deployments and co
 | **image** | Glance | Image service |
 | **load-balancer** | Octavia | Load-balancer service |
 | **network** | Neutron | Networking service |
-| **s3** | S3 API object storage | Object Storage service |
+| **s3**[^2] | N/A | s3 compatible Object Storage service |
 
-:::caution
-
-S3 API implementations may differ in certain offered features.
-CSPs must publicly describe the endpoints of their S3 solutions and which implementations they use in their deployment.
-Users should always research whether a needed feature is supported in the offered implementation.
-
-:::
-
-The endpoints of services MUST be findable through the `catalog list` of the identity API[^1].
-
-[^1]: [Integrate into the service catalog of Keystone](https://docs.openstack.org/keystone/latest/contributor/service-catalog.html)
+Aliases for these service types are only permitted where defined by the [OpenStack Service Type Authority](https://specs.openstack.org/openstack/service-types-authority/#aliases-optional).
+Catalog entries SHOULD use the canonical service type, not aliases.
 
 ## Supported IaaS APIs
 
-The following IaaS APIs MAY be present in SCS-compliant IaaS deployment, e.g. implemented thorugh the corresponding OpenStack services, and are considered in the SCS standards.
+The following IaaS APIs MAY be present in SCS-compliant IaaS deployment, e.g. implemented through the corresponding OpenStack services, and are considered in the SCS standards.
 
-| Supported API | corresponding OpenStack Service | description |
+| Supported API service type | corresponding OpenStack Service | description |
 |-----|-----|-----|
-| **bare-metal** | Ironic | Bare Metal provisioning service |
-| **billing** | CloudKitty | Rating/Billing service |
+| **baremetal** | Ironic | Bare Metal provisioning service |
+| **rating** | CloudKitty | Rating/Billing service |
 | **dns** | Designate | DNS service |
-| **ha** | Masakari | Instances High Availability service |
+| **instance-ha** | Masakari | Instances High Availability service |
 | **key-manager** | Barbican | Key Manager service |
 | **object-store** | Swift | Object Store with different possible backends |
 | **orchestration** | Heat | Orchestration service |
-| **shared-file-systems** | Manila | Shared File Systems service |
-| **time-series-database** | Gnocchi | Time Series Database service |
+| **shared-file-system** | Manila | Shared File Systems service |
+| **time-series-database**[^2] | Gnocchi | Time Series Database service |
 
 ## Unsupported IaaS APIs
 
@@ -78,5 +70,7 @@ The SCS standard offers no guarantees for compatibility or reliability of servic
 
 ## Conformance Tests
 
-The presence of the mandatory OpenStack APIs will be tested in [this test-script](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/mandatory-services/mandatory-iaas-services.py)
-The test will further check whether the object-store endpoint is compatible to s3.
+The presence of the mandatory APIs will be tested in [this test-script](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/scs_0123_mandatory-services/mandatory-iaas-services.py)
+
+[^1]: [Integrate into the service catalog of Keystone](https://docs.openstack.org/keystone/latest/contributor/service-catalog.html)
+[^2]: These service types have not been assigned by the OpenStack Service Type Authority
