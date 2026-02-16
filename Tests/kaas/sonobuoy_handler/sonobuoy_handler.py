@@ -1,6 +1,6 @@
 from collections import Counter
-import json
 import logging
+import re
 import os
 import os.path
 import shlex
@@ -25,7 +25,7 @@ def _find_sonobuoy():
 
 
 def _fmt_result(counter):
-    return ', '.join(f"{counter.get(key, 0)} {key}" for key in ('passed', 'failed', 'skipped'))
+    return ', '.join(f"{counter.get(key, 0)} {key}" for key in ('passed', 'failed', 'failed_ok', 'skipped'))
 
 
 class SonobuoyHandler:
@@ -42,6 +42,7 @@ class SonobuoyHandler:
         check_name="sonobuoy_handler",
         kubeconfig=None,
         result_dir_name="sonobuoy_results",
+        scs_sonobuoy_config_yaml="kaas/sonobuoy-config.yaml",
         args=(),
     ):
         self.check_name = check_name
@@ -55,6 +56,9 @@ class SonobuoyHandler:
         logger.debug(f"working from {self.working_directory}")
         logger.debug(f"placing results at {self.result_dir_name}")
         logger.debug(f"sonobuoy executable at {self.sonobuoy}")
+        if not os.path.exists(scs_sonobuoy_config_yaml):
+            raise RuntimeError(f"scs_sonobuoy_config_yaml {scs_sonobuoy_config_yaml} does not exist.")
+        self.scs_sonobuoy_config_yaml = scs_sonobuoy_config_yaml
         self.args = (arg0 for arg in args for arg0 in shlex.split(str(arg)))
 
     def _invoke_sonobuoy(self, *args, **kwargs):
@@ -68,16 +72,6 @@ class SonobuoyHandler:
 
     def _sonobuoy_delete(self):
         self._invoke_sonobuoy("delete", "--wait")
-
-    def _sonobuoy_status_result(self):
-        process = self._invoke_sonobuoy("status", "--json", capture_output=True)
-        json_data = json.loads(process.stdout)
-        counter = Counter()
-        for entry in json_data["plugins"]:
-            logger.debug(f"plugin {entry['plugin']}: {_fmt_result(entry['result-counts'])}")
-            for key, value in entry["result-counts"].items():
-                counter[key] += value
-        return counter
 
     def _eval_result(self, counter):
         """evaluate test results and return return code"""
@@ -99,7 +93,7 @@ class SonobuoyHandler:
         """
         Invoke sonobuoy to retrieve results and to store them in a subdirectory of
         the working directory. Analyze the results yaml file for given `plugin` and
-        log each failure as ERROR. Return summary dict like `_sonobuoy_status_result`.
+        log each failure as ERROR. Return summary dict.
         """
         logger.debug(f"retrieving results to {self.result_dir_name}")
         result_dir = os.path.join(self.working_directory, self.result_dir_name)
@@ -108,21 +102,9 @@ class SonobuoyHandler:
         self._invoke_sonobuoy("retrieve", "-x", result_dir)
         yaml_path = os.path.join(result_dir, 'plugins', plugin, 'sonobuoy_results.yaml')
         logger.debug(f"parsing results from {yaml_path}")
-        with open(yaml_path, "r") as fileobj:
-            result_obj = yaml.load(fileobj.read(), yaml.SafeLoader)
-        counter = Counter()
-        for item1 in result_obj.get('items', ()):
-            # file ...
-            for item2 in item1.get('items', ()):
-                # suite ...
-                for item in item2.get('items', ()):
-                    # testcase ... or so
-                    status = item.get('status', 'skipped')
-                    counter[status] += 1
-                    if status == 'failed':
-                        logger.error(f"FAILED: {item['name']}")  # <-- this is why this method exists!
-        logger.info(f"{plugin} results: {_fmt_result(counter)}")
-        return counter
+        ok_to_fail_regex_list = _load_ok_to_fail_regex_list(self.scs_sonobuoy_config_yaml)
+
+        return sonobuoy_parse_result(plugin, yaml_path, ok_to_fail_regex_list)
 
     def run(self):
         """
@@ -132,16 +114,91 @@ class SonobuoyHandler:
         self._preflight_check()
         try:
             self._sonobuoy_run()
-            return_code = self._eval_result(self._sonobuoy_status_result())
+            counter = self._sonobuoy_retrieve_result()
+            return_code = self._eval_result(counter)
             print(self.check_name + ": " + ("PASS", "FAIL")[min(1, return_code)])
-            try:
-                self._sonobuoy_retrieve_result()
-            except Exception:
-                # swallow exception for the time being
-                logger.debug('problem retrieving results', exc_info=True)
             return return_code
         except BaseException:
             logger.exception("something went wrong")
             return 112
         finally:
             self._sonobuoy_delete()
+
+
+def sonobuoy_parse_result(plugin, sonobuoy_results_yaml_path, ok_to_fail_regex_list):
+    with open(sonobuoy_results_yaml_path, "r") as fileobj:
+        result_obj = yaml.load(fileobj.read(), yaml.SafeLoader)
+
+    counter = Counter()
+    for item1 in result_obj.get("items", ()):
+        # file ...
+        for item2 in item1.get("items", ()):
+            # suite ...
+            for item in item2.get("items", ()):
+                # testcase ... or so
+                status = item.get("status", "skipped")
+                if status == "failed":
+                    if ok_to_fail(ok_to_fail_regex_list, item["name"]):
+                        status = "failed_ok"
+                    else:
+                        logger.error(f"FAILED: {item['name']}")
+                counter[status] += 1
+
+    logger.info(f"{plugin} results: {_fmt_result(counter)}")
+    return counter
+
+
+def _load_ok_to_fail_regex_list(scs_sonobuoy_config_yaml):
+    with open(scs_sonobuoy_config_yaml, "r") as fileobj:
+        config_obj = yaml.load(fileobj.read(), yaml.SafeLoader) or {}
+    if not isinstance(config_obj, dict):
+        raise ValueError(f"Invalid sonobuoy config format in {scs_sonobuoy_config_yaml}: top-level YAML object must be a mapping")
+    allowed_top_level_keys = {"okToFail"}
+    unknown_top_level_keys = set(config_obj) - allowed_top_level_keys
+    if unknown_top_level_keys:
+        raise ValueError(
+            f"Invalid sonobuoy config format in {scs_sonobuoy_config_yaml}: unknown top-level keys: {sorted(unknown_top_level_keys)}"
+        )
+    ok_to_fail_items = config_obj.get("okToFail", ())
+    if not isinstance(ok_to_fail_items, list):
+        raise ValueError(f"Invalid sonobuoy config format in {scs_sonobuoy_config_yaml}: okToFail must be a list")
+
+    ok_to_fail_regex_list = []
+    for idx, entry in enumerate(ok_to_fail_items):
+        if not isinstance(entry, dict):
+            raise ValueError(
+                f"Invalid sonobuoy config format in {scs_sonobuoy_config_yaml}: okToFail[{idx}] must be a mapping"
+            )
+        allowed_entry_keys = {"regex", "reason"}
+        unknown_entry_keys = set(entry) - allowed_entry_keys
+        if unknown_entry_keys:
+            raise ValueError(
+                f"Invalid sonobuoy config format in {scs_sonobuoy_config_yaml}: okToFail[{idx}] has unknown keys: {sorted(unknown_entry_keys)}"
+            )
+        regex = entry.get("regex")
+        if not isinstance(regex, str) or not regex.strip():
+            raise ValueError(
+                f"Invalid sonobuoy config format in {scs_sonobuoy_config_yaml}: okToFail[{idx}].regex must be a non-empty string"
+            )
+        reason = entry.get("reason")
+        if not isinstance(reason, str) or not reason.strip():
+            raise ValueError(
+                f"Invalid sonobuoy config format in {scs_sonobuoy_config_yaml}: okToFail[{idx}].reason must be a non-empty string"
+            )
+        ok_to_fail_regex_list.append((re.compile(regex), reason))
+    return ok_to_fail_regex_list
+
+
+def ok_to_fail(ok_to_fail_regex_list, test_name):
+    name = test_name
+    for regex, _ in ok_to_fail_regex_list:
+        if re.search(regex, name):
+            return True
+    return False
+
+
+def check_sonobuoy_result(scs_sonobuoy_config_yaml, result_yaml):
+    ok_to_fail_regex_list = _load_ok_to_fail_regex_list(scs_sonobuoy_config_yaml)
+    counter = sonobuoy_parse_result("", result_yaml, ok_to_fail_regex_list)
+    for key, value in counter.items():
+        print(f"{key}: {value}")

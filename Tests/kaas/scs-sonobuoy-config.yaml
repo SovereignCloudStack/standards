@@ -1,0 +1,26 @@
+okToFail:
+# InternalIP still used in tests. Having only an ExternalIP is considered valid by SCS:
+- regex: HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol
+  reason: "Fails when a cluster has no InternalIP (only ExternalIP): https://github.com/kubernetes/kubernetes/issues/136626"
+- regex: Services should be able to switch session affinity for NodePort service
+  reason: "Fails when a cluster has no InternalIP (only ExternalIP): https://github.com/kubernetes/kubernetes/issues/136626"
+- regex: Services should have session affinity work for NodePort service
+  reason: "Fails when a cluster has no InternalIP (only ExternalIP): https://github.com/kubernetes/kubernetes/issues/136626"
+- regex: validates that there exists conflict between pods with same hostPort and protocol but one using 0.0.0.0 hostIP
+  reason: "Fails when a cluster has no InternalIP (only ExternalIP): https://github.com/kubernetes/kubernetes/issues/136626"
+
+# Was flaky
+- regex: Netpol NetworkPolicy between server and client should allow ingress access from updated namespace
+  reason: Flaky test. Fix in v1.36 (https://github.com/kubernetes/kubernetes/pull/136715)
+
+# SCTP is optional
+- regex: Feature:SCTPConnectivity
+  reason: SCTPConnectivity is optional. Currently Cilium does not support it by default.
+
+ # Tests skipped by Cilium: https://github.com/cilium/cilium/blob/main/.github/workflows/k8s-kind-network-policies-e2e.yaml#L177-L185
+- regex: should.allow.egress.access.to.server.in.CIDR.block
+  reason: https://github.com/cilium/cilium/issues/9209
+- regex: should.ensure.an.IP.overlapping.both.IPBlock.CIDR.and.IPBlock.Except.is.allowed
+  reason: https://github.com/cilium/cilium/issues/9209
+- regex: should.enforce.except.clause.while.egress.access.to.server.in.CIDR.block
+  reason: https://github.com/cilium/cilium/issues/9209
