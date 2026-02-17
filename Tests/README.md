@@ -28,7 +28,7 @@ Install IaaS-specific requirements:
 pip install -r iaas/requirements.txt
 ```
 
-Make sure that you have Sonobuoy (diagnostic tool that makes it easier to understand the state of a K8s cluster) installed. 
+Make sure that you have Sonobuoy (diagnostic tool that makes it easier to understand the state of a K8s cluster) installed.
 You can find install instructions [here](https://sonobuoy.io/docs/main/).
 
 With a cloud environment configured in your `~/.config/openstack/clouds.yaml`
