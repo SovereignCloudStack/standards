@@ -269,6 +269,9 @@ scripts:
   - id: scs-0123-storage-apis
     description: The block-storage API is discoverable as `volume`, `volumev3`, or `block-storage`.
     url: https://docs.scs.community/standards/scs-0123-w1-mandatory-and-supported-IaaS-services-implementation#automated-tests
+  - id: scs-0123-service-s3
+    description: s3 service is discoverable.
+    url: https://docs.scs.community/standards/scs-0123-w1-mandatory-and-supported-IaaS-services-implementation#automated-tests
   - id: scs-0123-swift-s3
     description: The object-storage API is compatible with S3.
     url: https://docs.scs.community/standards/scs-0123-w1-mandatory-and-supported-IaaS-services-implementation#automated-tests
@@ -452,6 +455,18 @@ modules:
       - scs-0123-service-object-store
       - scs-0123-storage-apis
       - scs-0123-swift-s3
+  - id: scs-0123-v2
+    name: Mandatory and Supported IaaS Services
+    url: https://docs.scs.community/standards/scs-0123-v2-mandatory-and-supported-IaaS-services
+    targets:
+      main:
+      - scs-0123-service-compute
+      - scs-0123-service-identity
+      - scs-0123-service-image
+      - scs-0123-service-network
+      - scs-0123-service-load-balancer
+      - scs-0123-storage-apis
+      - scs-0123-service-s3
   - id: scs-0302-v1
     name: Domain Manager Role
     url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role
@@ -496,7 +511,7 @@ versions:
       - scs-0116-v1
       - scs-0117-v1
       - scs-0121-v1
-      - scs-0123-v1
+      - scs-0123-v2
       - scs-0302-v1
   - version: v5.1  # copy of v5, but with include "scs-0123-v1", which had simply been forgotten
     stabilized_at: 2024-12-19
