@@ -6,11 +6,12 @@ and executes the test executables referenced in there.
 
 ## Local execution (Linux, BSD, ...)
 
-On your Linux machine, please ensure you have installed the testsuite dependencies
-from `requirements.txt`. We recommended using Python >= 3.10 and to install the
+Please ensure you have installed the testsuite dependencies from `requirements.txt`
+on your machine. We recommended using Python >= 3.10 and to install the
 requirements into a virtualenv as follows:
 
 ```shell
+cd Tests
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
@@ -26,6 +27,9 @@ Install IaaS-specific requirements:
 ```shell
 pip install -r iaas/requirements.txt
 ```
+
+Make sure that you have Sonobuoy (diagnostic tool that makes it easier to understand the state of a K8s cluster) installed. 
+You can find install instructions [here](https://sonobuoy.io/docs/main/).
 
 With a cloud environment configured in your `~/.config/openstack/clouds.yaml`
 and `secure.yaml`, then run
