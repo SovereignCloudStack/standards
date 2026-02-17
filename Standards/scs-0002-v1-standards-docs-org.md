@@ -1,7 +1,7 @@
 ---
 title: Standards, Docs and Organisation
 type: Procedural
-status: Stable
+status: Deprecated
 stabilized_at: 2023-02-06
 track: Global
 ---
