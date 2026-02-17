@@ -8,3 +8,4 @@ Tests/kaas/results/
 Tests/kaas/kaas-sonobuoy-tests/results/
 *.tar.gz
 .direnv
+.vscode
