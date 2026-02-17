@@ -42,6 +42,7 @@ from sql import (
     db_get_keys, db_insert_report, db_get_recent_results2, db_patch_approval2, db_get_report,
     db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys, db_clear_delegates,
     db_find_subjects, db_insert_result2, db_get_relevant_results2, db_add_delegate, db_get_group,
+    db_get_relevant_compliance_results, db_insert_compliance_result,
 )
 
 
@@ -463,11 +464,12 @@ async def post_report(
     if not documents:
         raise HTTPException(status_code=200, detail="empty reports")
 
-    allowed_subjects = {auth_subject} | set(delegation_subjects)
-    for document in documents:
-        check_role(account, document['subject'], ROLES['append_any'])
-        if document['subject'] not in allowed_subjects:
-            raise HTTPException(status_code=401, detail="delegation problem?")
+    reported_subjects = {document['subject'] for document in documents}
+    for subj in reported_subjects:
+        check_role(account, subj, ROLES['append_any'])
+    extra_subjects = reported_subjects - {auth_subject} - set(delegation_subjects)
+    if extra_subjects:
+        raise HTTPException(status_code=401, detail="delegation problem?")
 
     with conn.cursor() as cur:
         for document, json_text in zip(documents, json_texts):
@@ -494,6 +496,32 @@ async def post_report(
                     approval = 1 == result  # pre-approve good result
                     db_insert_result2(cur, checked_at, subject, scopeuuid, version, check, result, approval, reportid)
     conn.commit()
+
+    checked_at = datetime.now()
+    for approved_only in (False, True):
+        with conn.cursor() as cur:
+            # fetch latest compliance results before new report
+            rows = db_get_relevant_compliance_results(cur, approved_only=approved_only)
+            results0 = defaultdict(lambda: defaultdict(dict))
+            for row in rows:
+                subj, scope_uuid, version, result, _, _ = row
+                if subj not in reported_subjects:
+                    continue
+                results0[subj][scope_uuid][version] = result
+            # compute latest compliance results after new report
+            rows2 = db_get_relevant_results2(cur, approved_only=approved_only)
+            results = convert_result_rows_to_dict2(rows2, get_scopes())
+            # update compliance table and report changes
+            for subj, subj_results in results.items():
+                if subj not in reported_subjects:
+                    continue
+                for scope_uuid, scope_results in subj_results.items():
+                    for version, version_results in scope_results['versions'].items():
+                        result = results0[subj][scope_uuid].get(version, 0)
+                        new_result = version_results['result']
+                        db_insert_compliance_result(cur, checked_at, subj, scope_uuid, version, new_result, approval)
+                        if new_result != result:
+                            print(f"{subj} {scope_uuid} {version}: {result} -> {new_result}")
 
 
 def convert_result_rows_to_dict2(

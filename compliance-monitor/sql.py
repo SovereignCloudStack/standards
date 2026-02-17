@@ -3,7 +3,7 @@ from psycopg2.extensions import cursor, connection
 
 # list schema versions in ascending order
 SCHEMA_VERSION_KEY = 'version'
-SCHEMA_VERSIONS = ['v1', 'v2', 'v3', 'v4']
+SCHEMA_VERSIONS = ['v1', 'v2', 'v3', 'v4', 'v5']
 # use ... (Ellipsis) here to indicate that no default value exists (will lead to error if no value is given)
 ACCOUNT_DEFAULTS = {'subject': ..., 'api_key': ..., 'roles': ..., 'group': None}
 PUBLIC_KEY_DEFAULTS = {'public_key': ..., 'public_key_type': ..., 'public_key_name': ...}
@@ -143,6 +143,23 @@ def db_ensure_schema_v4(cur: cursor):
     ''')
 
 
+def db_ensure_schema_v5(cur: cursor):
+    # v5 mainly extends v4
+    db_ensure_schema_v4(cur)
+    # introduce tables compliance that track compliance over time
+    cur.execute('''
+    CREATE TABLE IF NOT EXISTS compliance (
+        resultid SERIAL PRIMARY KEY,
+        checked_at timestamp NOT NULL,
+        subject text NOT NULL,
+        scopeuuid text NOT NULL,
+        version text NOT NULL,
+        result int,
+        approval boolean
+    );
+    ''')
+
+
 def db_upgrade_data_v1_v2(cur):
     # we are going to drop table result, but use delete anyway to have the transaction safety
     cur.execute('''
@@ -218,6 +235,10 @@ def db_upgrade_schema(conn: connection, cur: cursor):
         elif current == 'v3':
             db_ensure_schema_v4(cur)
             db_set_schema_version(cur, 'v4')
+            conn.commit()
+        elif current == 'v4':
+            db_ensure_schema_v5(cur)
+            db_set_schema_version(cur, 'v5')
             conn.commit()
 
 
@@ -424,3 +445,39 @@ def db_patch_approval2(cur: cursor, record):
     RETURNING resultid;''', record)
     resultid, = cur.fetchone()
     return resultid
+
+
+def db_insert_compliance_result(
+    cur: cursor, checked_at, subject, scopeuuid, version, result, approval
+):
+    # this is an exception in that we don't use a record parameter (it's just not as practical here)
+    cur.execute('''
+    INSERT INTO compliance (checked_at, subject, scopeuuid, version, result, approval)
+    VALUES (%s, %s, %s, %s, %s, %s)
+    RETURNING resultid;''', (checked_at, subject, scopeuuid, version, result, approval))
+    resultid, = cur.fetchone()
+    return resultid
+
+
+def db_get_relevant_compliance_results(
+    cur: cursor,
+    subject=None, scopeuuid=None, version=None, approved_only=True,
+):
+    """for each combination of scope/version/check, get the most recent test result that is still valid"""
+    # find the latest result per subject/scopeuuid/version/checkid for this subject
+    # DISTINCT ON is a Postgres-specific construct that comes in very handy here :)
+    cur.execute(sql.SQL('''
+    SELECT DISTINCT ON (subject, scopeuuid, version)
+    subject, scopeuuid, version, result, approval, checked_at
+    FROM compliance
+    {filter_condition}
+    ORDER BY subject, scopeuuid, version, checked_at DESC;
+    ''').format(
+        filter_condition=make_where_clause(
+            sql.SQL('approval') if approved_only else None,
+            None if scopeuuid is None else sql.SQL('scopeuuid = %(scopeuuid)s'),
+            None if version is None else sql.SQL('version = %(version)s'),
+            None if subject is None else sql.SQL('subject = %(subject)s'),
+        ),
+    ), {"subject": subject, "scopeuuid": scopeuuid, "version": version})
+    return cur.fetchall()
