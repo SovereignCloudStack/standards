@@ -1,8 +1,10 @@
 ---
 title: Standards, Docs and Organisation
 type: Procedural
-status: Stable
+status: Deprecated
 stabilized_at: 2023-02-06
+deprecated_at: 2026-02-17
+replaced_by: scs-0002-v2-standards-docs-org.md
 track: Global
 ---
 
