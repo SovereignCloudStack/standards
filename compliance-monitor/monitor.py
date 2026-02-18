@@ -42,7 +42,7 @@ from sql import (
     db_get_keys, db_insert_report, db_get_recent_results2, db_patch_approval2, db_get_report,
     db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys, db_clear_delegates,
     db_find_subjects, db_insert_result2, db_get_relevant_results2, db_add_delegate, db_get_group,
-    db_get_relevant_compliance_results, db_insert_compliance_result,
+    db_get_relevant_compliance_results, db_insert_compliance_result, db_insert_event,
 )
 
 
@@ -495,19 +495,19 @@ async def post_report(
                     result = rdata['result']
                     approval = 1 == result  # pre-approve good result
                     db_insert_result2(cur, checked_at, subject, scopeuuid, version, check, result, approval, reportid)
-    conn.commit()
 
-    checked_at = datetime.now()
-    for approved_only in (False, True):
-        with conn.cursor() as cur:
+        checked_at = datetime.now()
+        # add new compliance result if existing compliance result is not newer than `threshold`
+        threshold = checked_at - timedelta(hours=12)
+        for approved_only in (False, True):
             # fetch latest compliance results before new report
             rows = db_get_relevant_compliance_results(cur, approved_only=approved_only)
             results0 = defaultdict(lambda: defaultdict(dict))
             for row in rows:
-                subj, scope_uuid, version, result, _, _ = row
+                subj, scope_uuid, version, result, _, ch_at = row
                 if subj not in reported_subjects:
                     continue
-                results0[subj][scope_uuid][version] = result
+                results0[subj][scope_uuid][version] = (result, ch_at)
             # compute latest compliance results after new report
             rows2 = db_get_relevant_results2(cur, approved_only=approved_only)
             results = convert_result_rows_to_dict2(rows2, get_scopes())
@@ -517,11 +517,15 @@ async def post_report(
                     continue
                 for scope_uuid, scope_results in subj_results.items():
                     for version, version_results in scope_results['versions'].items():
-                        result = results0[subj][scope_uuid].get(version, 0)
+                        result, ch_at = results0[subj][scope_uuid].get(version, (0, threshold))
                         new_result = version_results['result']
-                        db_insert_compliance_result(cur, checked_at, subj, scope_uuid, version, new_result, approval)
+                        if new_result != result or ch_at <= threshold:
+                            print(ch_at, threshold)
+                            db_insert_compliance_result(cur, checked_at, subj, scope_uuid, version, new_result, approved_only)
                         if new_result != result:
+                            db_insert_event(cur, checked_at, subj, scope_uuid, version, result, new_result, approved_only)
                             print(f"{subj} {scope_uuid} {version}: {result} -> {new_result}")
+    conn.commit()
 
 
 def convert_result_rows_to_dict2(

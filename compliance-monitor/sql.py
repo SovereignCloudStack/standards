@@ -157,6 +157,16 @@ def db_ensure_schema_v5(cur: cursor):
         result int,
         approval boolean
     );
+    CREATE TABLE IF NOT EXISTS event (
+        eventid SERIAL PRIMARY KEY,
+        eventdate timestamp NOT NULL,
+        subject text NOT NULL,
+        scopeuuid text NOT NULL,
+        version text NOT NULL,
+        old_result int,
+        new_result int,
+        approval boolean
+    );
     ''')
 
 
@@ -481,3 +491,34 @@ def db_get_relevant_compliance_results(
         ),
     ), {"subject": subject, "scopeuuid": scopeuuid, "version": version})
     return cur.fetchall()
+
+
+def db_insert_event(
+    cur: cursor, eventdate, subject, scopeuuid, version, old_result, new_result, approval
+):
+    # this is an exception in that we don't use a record parameter (it's just not as practical here)
+    cur.execute('''
+    INSERT INTO event (eventdate, subject, scopeuuid, version, old_result, new_result, approval)
+    VALUES (%s, %s, %s, %s, %s, %s, %s)
+    RETURNING eventid;''', (eventdate, subject, scopeuuid, version, old_result, new_result, approval))
+    resultid, = cur.fetchone()
+    return resultid
+
+
+def db_get_recent_events(cur: cursor, approved, limit, skip, max_age_days=None):
+    """list recent events without grouping by scope/version/check"""
+    columns = ('date', 'subject', 'scopeuuid', 'version', 'old_result', 'new_result', 'approval')
+    cur.execute(sql.SQL('''
+    SELECT eventdate, subject, scopeuuid, version, old_result, new_result, approval
+    FROM event
+    {where_clause}
+    ORDER BY eventdate
+    LIMIT %(limit)s OFFSET %(skip)s;''').format(
+        where_clause=make_where_clause(
+            None if max_age_days is None else sql.SQL(
+                f"eventdate > NOW() - interval '{max_age_days:d} days'"
+            ),
+            None if approved is None else sql.SQL('approval = %(approved)s'),
+        ),
+    ), {"limit": limit, "skip": skip, "approved": approved})
+    return [{col: val for col, val in zip(columns, row)} for row in cur.fetchall()]
