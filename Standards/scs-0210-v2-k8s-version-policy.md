@@ -58,11 +58,10 @@ the provided Kubernetes versions should be kept up-to-date with new upstream rel
 
 - The latest minor version MUST be provided no later than 4 months after release.
 - The latest patch version MUST be provided no later than 2 weeks after release.
-- This time period MUST be even shorter for patches that fix critical or high CVEs.
-  A critical CVE is a CVE with a CVSS base score >= 9.0 and a high CVE with a CVSS
-  base score >= 7.0 according to the CVSS version used in the original CVE record (e.g., CVSSv3.1).
-  It is RECOMMENDED to provide a new patch version in a 3-day time period after their release, this
-  comes from the BSI C5 Common Criteria[^1].
+- This time period MUST be even shorter for patches that fix critical CVEs.
+  In this context, a critical CVE is a CVE with a CVSS base score >= 8 according
+  to the CVSS version used in the original CVE record (e.g., CVSSv3.1).
+  It is RECOMMENDED to provide a new patch version in a 2-day time period after their release.
 - New versions MUST be tested before being rolled out on productive infrastructure;
   at least the [CNCF E2E tests][cncf-conformance] should be passed beforehand.
 
@@ -74,8 +73,6 @@ official sources as described in [Kubernetes Support Period][k8s-support-period]
   date according to the [Kubernetes Releases page][k8s-releases].
 - It is RECOMMENDED to not support versions after this period in order to not encourage
   usage of out-of-date versions.
-
-[^1]: [C5 criteria catalog with timeframes for responses on page 70.](https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/CloudComputing/ComplianceControlsCatalogue/2020/C5_2020.pdf?__blob=publicationFile&v=3)
 
 ## Related Documents
 
