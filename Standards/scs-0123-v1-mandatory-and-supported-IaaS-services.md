@@ -68,9 +68,5 @@ The SCS standard offers no guarantees for compatibility or reliability of servic
 
 [The OpenStack Services](https://www.openstack.org/software/)
 
-## Conformance Tests
-
-The presence of the mandatory APIs will be tested in [this test-script](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/scs_0123_mandatory_services/mandatory_services.py)
-
 [^1]: [Integrate into the service catalog of Keystone](https://docs.openstack.org/keystone/latest/contributor/service-catalog.html)
 [^2]: These service types have not been assigned by the OpenStack Service Type Authority
