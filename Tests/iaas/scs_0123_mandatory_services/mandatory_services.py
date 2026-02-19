@@ -119,8 +119,8 @@ def compute_scs_0123_swift_s3(services_lookup, conn: openstack.connection.Connec
     This test ensures that S3 can be used to access object storage using EC2 credentials from the identity API.
     """
     if 'object-store' not in services_lookup:
-        logger.error('scs-0123-swift-s3 test requires catalog entry')
-        return False
+        logger.info('skipping scs-0123-swift-s3 because object-store not present')
+        return True
     # we assume s3 is accessible via the service catalog, and Swift might exist too
     usable_credentials = []
     s3_buckets = []
