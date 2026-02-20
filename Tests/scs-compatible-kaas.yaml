@@ -11,7 +11,7 @@ variables:
   - kubeconfig
 scripts:
 - executable: ./kaas/sonobuoy_handler/run_sonobuoy.py
-  args: run -k {kubeconfig} --scs-sonobuoy-config kaas/scs-sonobuoy-config.yaml -r {subject_root}/sono-results-e2e -c 'cncf-k8s-conformance'  -a '--mode=certified-conformance'
+  args: run -k {kubeconfig} --scs-sonobuoy-config kaas/scs-sonobuoy-config.yaml -r {subject_root}/sono-results-e2e -c 'cncf-k8s-conformance'  -a '--mode=certified-conformance {e2e-parallel}'
   #~ args: -k {kubeconfig} -r {subject_root}/sono-results -c 'cncf-k8s-conformance'  -a '--plugin-env e2e.E2E_DRYRUN=true'
   testcases:
   - id: cncf-k8s-conformance
@@ -31,7 +31,7 @@ scripts:
     description: Must fulfill all requirements of scs-0214-v2.
     url: https://docs.scs.community/standards/scs-0214-v2-k8s-node-distribution#decision
 - executable: ./kaas/sonobuoy_handler/run_sonobuoy.py
-  args: run -k {kubeconfig} --scs-sonobuoy-config kaas/scs-sonobuoy-config.yaml -r {subject_root}/sono-results-0219 -c 'kaas-networking-check' -a '--e2e-focus "NetworkPolicy"'
+  args: run -k {kubeconfig} --scs-sonobuoy-config kaas/scs-sonobuoy-config.yaml -r {subject_root}/sono-results-0219 -c 'kaas-networking-check' -a '--e2e-focus "NetworkPolicy" {e2e-parallel}'
   testcases:
   - id: kaas-networking-check
     description: Must fulfill all requirements of scs-0219-v1.

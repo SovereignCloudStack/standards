@@ -9,3 +9,5 @@ Tests/kaas/kaas-sonobuoy-tests/results/
 *.tar.gz
 .direnv
 .vscode
+Tests/sono-*
+report.yaml

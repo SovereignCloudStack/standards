@@ -49,10 +49,15 @@ Install KaaS-specific requirements:
 pip install -r kaas/requirements.txt
 ```
 
-Given a kubeconfig file `path/to/kubeconfig.yaml`, run
+Given a kubeconfig file `path/to/kubeconfig.yaml`, run all tests in parallel with:
 
 ```shell
-./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml -a subject_root=. -s SUBJECT -o report.yaml scs-compatible-kaas.yaml
+./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml \
+   -a subject_root=. \
+   -a e2e-parallel="--e2e-parallel=true" \
+   -s SUBJECT \
+   -o report.yaml \
+   scs-compatible-kaas.yaml
 ```
 
 Replace `SUBJECT` with an arbitrary, but meaningful subject name. Also, please note that the check
@@ -63,6 +68,10 @@ A report in YAML format will be created.
 Additionally, the directory `sono-results` will be generated. It contains a JUnit XML file:
 `plugins/e2e/results/global/junit_01.xml`. You can render it to HTML with a tool like junit2html.
 This might give you hints as to why a test failed.
+
+If you need to run tests without parallelization simply remove `-a e2e-parallel="--e2e-parallel=true"`
+or set it to `false`.
+Some additional information can be found [here](https://github.com/vmware-tanzu/sonobuoy/issues/1435).
 
 ## Usage information (help output)
 
@@ -183,7 +192,7 @@ We use a **layered approach** to allow for selective installation:
 - at the very top we have `test-requirements.in`.
 
 Whenever you change or recompile one of these layers,
-*all layers above that layer have to be recompiled as well*.
+_all layers above that layer have to be recompiled as well_.
 
 Note: The Python version used for running `pip-compile` should be consistent. The currently
 used version is documented in the header of the `requirements.txt`. It should match the
