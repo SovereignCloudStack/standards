@@ -78,5 +78,5 @@ The SCS standard offers no guarantees for compatibility or reliability of servic
 
 ## Conformance Tests
 
-The presence of the mandatory OpenStack APIs will be tested in [this test-script](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/mandatory-services/mandatory-iaas-services.py)
+The presence of the mandatory OpenStack APIs will be tested in [this test-script](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/scs_0123_mandatory_services/mandatory_services.py)
 The test will further check whether the object-store endpoint is compatible to s3.
