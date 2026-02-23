@@ -82,16 +82,6 @@ clouds:
       application_credential_id: "{{ clouds_conf.pco_prod4_ac_id }}"
       application_credential_secret: "{{ clouds_conf.pco_prod4_ac_secret }}"
     auth_type: "v3applicationcredential"
-  poc-wgcloud:
-    interface: public
-    identity_api_version: 3
-    auth_type: "v3applicationcredential"
-    #region_name: default
-    auth:
-      auth_url: https://identity.l1a.cloudandheat.com/v3
-      application_credential_id: "{{ clouds_conf.poc_wgcloud_ac_id }}"
-      application_credential_secret: "{{ clouds_conf.poc_wgcloud_ac_secret }}"
-      #project_id: 9adb8fc81ba345178654cee5cb7f1464
   regio-a:
     region_name: "RegionA"
     interface: "public"
