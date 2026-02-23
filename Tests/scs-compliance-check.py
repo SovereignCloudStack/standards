@@ -231,7 +231,7 @@ class CheckRunner:
         self.num_abort += invocation["critical"]
         self.num_error += invocation["error"]
         # count failed testcases because they need not be reported redundantly on the error channel
-        self.num_error + len([value for value in invocation['results'].values() if value < 0])
+        self.num_error += len([value for value in invocation['results'].values() if value < 0])
         return invocation
 
 
