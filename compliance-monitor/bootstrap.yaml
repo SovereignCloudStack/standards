@@ -60,9 +60,6 @@ accounts:
     group: pco-prod
     delegates:
       - zuul_ci
-  - subject: poc-wgcloud
-    delegates:
-      - zuul_ci
   - subject: regio-a
     delegates:
       - zuul_ci
