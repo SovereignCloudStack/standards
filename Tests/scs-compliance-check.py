@@ -90,7 +90,7 @@ class Config:
         self.verbose = False
         self.quiet = False
         self.subject = ""
-        self.assignment = {}
+        self.assignment = { "e2e-parallel" : "--e2e-parallel=true" }
         self.checkdate = datetime.date.today()
         self.version = None
         self.output = None
@@ -135,7 +135,7 @@ class Config:
                 self.critical_only = True
             elif opt[0] == "-a" or opt[0] == "--assign":
                 key, value = opt[1].split("=", 1)
-                if key in self.assignment:
+                if key in self.assignment and key != "e2e-parallel":
                     raise ValueError(f"Double assignment for {key!r}")
                 self.assignment[key] = value
             elif opt[0] == "-t" or opt[0] == "--tests":

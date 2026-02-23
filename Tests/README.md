@@ -49,12 +49,11 @@ Install KaaS-specific requirements:
 pip install -r kaas/requirements.txt
 ```
 
-Given a kubeconfig file `path/to/kubeconfig.yaml`, run all tests in parallel with:
+Given a kubeconfig file `path/to/kubeconfig.yaml`, run all tests (in parallel) with:
 
 ```shell
 ./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml \
    -a subject_root=. \
-   -a e2e-parallel="--e2e-parallel=true" \
    -s SUBJECT \
    -o report.yaml \
    scs-compatible-kaas.yaml
@@ -69,8 +68,7 @@ Additionally, the directory `sono-results` will be generated. It contains a JUni
 `plugins/e2e/results/global/junit_01.xml`. You can render it to HTML with a tool like junit2html.
 This might give you hints as to why a test failed.
 
-If you need to run tests without parallelization simply remove `-a e2e-parallel="--e2e-parallel=true"`
-or set it to `false`.
+If you need to run tests without parallelization simply add `-a e2e-parallel="--e2e-parallel=false"`.
 Some additional information can be found [here](https://github.com/vmware-tanzu/sonobuoy/issues/1435).
 
 ## Usage information (help output)
