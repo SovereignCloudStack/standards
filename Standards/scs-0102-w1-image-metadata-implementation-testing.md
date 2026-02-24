@@ -4,6 +4,7 @@ type: Supplement
 track: IaaS
 supplements:
   - scs-0102-v1-image-metadata.md
+  - scs-0102-v2-image-metadata.md
 ---
 
 
