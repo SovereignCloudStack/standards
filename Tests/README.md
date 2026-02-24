@@ -49,6 +49,8 @@ Install KaaS-specific requirements:
 pip install -r kaas/requirements.txt
 ```
 
+Additionally, Sonobuoy must be installed and in your PATH environment variable.
+
 Given a kubeconfig file `path/to/kubeconfig.yaml`, run
 
 ```shell
@@ -57,6 +59,10 @@ Given a kubeconfig file `path/to/kubeconfig.yaml`, run
 
 Replace `SUBJECT` with an arbitrary, but meaningful subject name. Also, please note that the check
 will always use the `current-context` of the kubeconfig and will fail if it isn't set.
+
+Note: Sonobuoy checks (such as CNCF k8s conformance) are known to run for multiple hours (during which
+you won't see feedback). If you want to save wall-time by running the sonobuoy checks in parallel,
+simply add `-a execution_mode=parallel` to the command-line.
 
 A report in YAML format will be created.
 

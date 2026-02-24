@@ -302,7 +302,8 @@ def main(argv):
         raise RuntimeError("You need pass --subject=SUBJECT.")
     with open(config.arg0, "r", encoding="UTF-8") as specfile:
         spec = load_spec(yaml.load(specfile, Loader=yaml.SafeLoader))
-    missing_vars = [v for v in spec.get("variables", ()) if v not in config.assignment]
+    assignment = {**spec['var_defaults'], **config.assignment}
+    missing_vars = [v for v in spec.get("variables", ()) if v not in assignment]
     if missing_vars:
         raise RuntimeError(f"Missing variable assignments (via -a) for: {', '.join(missing_vars)}")
     if "prerequisite" in spec:
@@ -317,7 +318,7 @@ def main(argv):
     if not versions:
         raise RuntimeError(f"No valid version found for {config.checkdate}")
     check_cwd = os.path.dirname(config.arg0) or os.getcwd()
-    runner = CheckRunner(check_cwd, config.assignment, verbosity=config.verbose and 2 or not config.quiet)
+    runner = CheckRunner(check_cwd, assignment, verbosity=config.verbose and 2 or not config.quiet)
     title, partial = spec['name'], False
     if config.sections:
         title += f" [sections: {', '.join(config.sections)}]"
