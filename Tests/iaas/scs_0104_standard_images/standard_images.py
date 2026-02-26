@@ -11,6 +11,7 @@ _specs = yaml.safe_load(r"""
 "ubuntu-capi-image-1":
   name_scheme: "ubuntu-capi-image v[0-9]\\.[0-9]+(\\.[0-9]+)?"
   source:
+  - https://nbg1.your-objectstorage.com/osism/openstack-k8s-capi-images/
   - https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2404-kube
   - https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube
 "ubuntu-capi-image-2":
@@ -18,6 +19,7 @@ _specs = yaml.safe_load(r"""
   # latest openstack-image-manager can be told to use `-` by setting `separator: "-"` on the image
   name_scheme: "ubuntu-capi-image-v[0-9]\\.[0-9]+(\\.[0-9]+)?"
   source:
+  - https://nbg1.your-objectstorage.com/osism/openstack-k8s-capi-images/
   - https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2404-kube
   - https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/ubuntu-2204-kube
 "Ubuntu 24.04":
