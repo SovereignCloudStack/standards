@@ -62,7 +62,7 @@ dev-setup: kind-init
 
 dev-build: container-init
 	@echo "[Building image...]"
-	DOCKER_BUILDKIT=1 docker build . -f ${DOCKERFILE} -t ${SONOBUOY_IMAGE}
+	DOCKER_BUILDKIT=1 docker build . -f ${DOCKERFILE} -t ${SONOBUOY_IMAGE} --load
 	kind load docker-image --name ${KIND_CLUSTER} ${SONOBUOY_IMAGE}
 
 
