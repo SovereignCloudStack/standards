@@ -162,7 +162,7 @@ The test suite connects to the OpenStack API using two sample domains and corres
 It verifies the compliance to the standard and the proper domain-scoping as defined by the Keystone policy.
 Please consult the associated [README.md](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iam/domain-manager/README.md) for detailed setup and testing instructions.
 The test suite, [`domain-manager-check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iam/domain-manager/domain-manager-check.py),
-needs to be run with admin credentials for the corresponding OpenStack environment.
+does not currently work with application credentials, authentication with username and password is required.
 
 ## Appendix
 
