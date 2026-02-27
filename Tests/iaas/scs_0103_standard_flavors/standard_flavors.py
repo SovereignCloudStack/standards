@@ -79,12 +79,13 @@ def compute_scs_0103_flavor(flavor_lookup, flavor_spec):
     # check that flavor matches flavor_spec
     # cpu, ram, and disk should match, and they should match precisely for discoverability
     # also check extra_specs (ours are prefixed with 'scs:')
+    # list of triples: (field, actual value, expected value)
     comparison = [
         ('vcpus', flavor.vcpus, flavor_spec['cpus']),
         ('ram', flavor.ram, 1024 * flavor_spec['ram']),
         ('disk', flavor.disk, flavor_spec.get('disk', 0)),
     ] + [
-        (key, value, flavor.extra_specs.get(key))
+        (key, flavor.extra_specs.get(key), value)
         for key, value in flavor_spec.items()
         if key.startswith("scs:")
     ]
