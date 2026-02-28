@@ -289,6 +289,40 @@ Be aware that Kubelets will only be limited by this admission controller, if the
 in the `system:nodes` group begin with a `system:node:<nodeName>` username. Administrators must therefore
 configure their Kubelets correctly, if the `NodeRestriction` controller should be fully functional.
 
+### Dynamic Admission Controllers
+
+Policy engines such as [Kubewarden](https://kubewarden.io) & [OPA
+Gatekeeper](https://www.openpolicyagent.org/ecosystem/entry/gatekeeper) use
+Kubernetes' [dynamic admission
+control](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/)
+feature. The Kubernetes API server exposes validating and mutating webhooks, to
+which these policy engines connect to. The API server waits for responses from
+these webhooks before processing resource requests. While policy engines
+provide powerful policy, compliance, and logging capabilities that extend
+Kubernetes, they also increase the attack surface of the cluster; if a policy
+engine is misconfigured or exploited, attackers could cause general denial of
+service (DoS), or exfiltrate data from the cluster.
+
+SIG security provides a [threat model for Kubernetes Admission
+Control](https://github.com/kubernetes/sig-security/blob/main/sig-security-docs/papers/admission-control/kubernetes-admission-control-threat-model.md).
+Policy Engines usually provide their mitigations to this threat model in their
+documentation. The majority of scenarios are mitigated by the Policy Engines
+themselves or by cluster operators when using NetworkPolicies and therefore are
+out of scope for this standard.
+
+However, for some threats, such as threat 8, _"attacker carries out a MITM
+attack on the webhook"_, and threat 9, _"attacker steals traffic from the webhook
+via spoofing"_, NetworkPolicies and policy engine configuration doesn't suffice.
+
+These threats involve intercepting traffic between the Kubernetes API server
+and the dynamic admission controller webhooks of the Policy Engine. To mitigate
+this, the Kubernetes API server MUST be configured with mutual TLS
+authentication for the Validating and Mutating Webhooks (see [Kubernetes
+docs](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#authenticate-apiservers))
+. The Policy Engine MUST be able to authenticate the API server and MUST be
+configured with mutual TLS authentication for the
+webhooks as well.
+
 ### Kubelet access control
 
 The Kubelet is the node agent that runs on each node. It registers with the API
