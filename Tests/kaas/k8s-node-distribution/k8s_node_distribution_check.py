@@ -149,7 +149,7 @@ def compare_labels(node_list, node_type="control"):
             try:
                 label_data[key].append(node[key])
             except KeyError:
-                raise LabelException(f"The label for {key.split('/')[1]}s doesn't seem to be set for all nodes.")
+                raise LabelException(f"The label for {key.split('/')[1]}s doesn't seem to be set for all {node_type} nodes.")
 
     for label in LABELS:
         if len(set(label_data[label])) <= 1:
@@ -165,7 +165,8 @@ def compare_labels(node_list, node_type="control"):
     #
     # if node_type == "control":
     #     raise DistributionException("The distribution of nodes described in the standard couldn't be detected.")
-    logger.warning("No node distribution could be detected for the worker nodes. "
+    if node_type == "worker":
+      logger.warning("No node distribution could be detected for the worker nodes. "
                    "This produces only a warning, since it is just a recommendation.")
 
 
