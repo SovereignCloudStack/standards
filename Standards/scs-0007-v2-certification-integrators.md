@@ -24,7 +24,7 @@ As an implementation partner, I want to become certified as SCS Integrator in or
 The certificates are awarded for a period of one year based on the predefined scoring system below.
 The certification is done either by the Forum SCS-Standards or an attestation body nominated by the forum.
 
-### Certificate levels
+### Certificate tiers
 
 Version 2 of this standard introduces a multilevel certification with Silver and Bronze levels. The levels are awarded according to a target score to be reached based on a predefined scoring system (see below).
 
