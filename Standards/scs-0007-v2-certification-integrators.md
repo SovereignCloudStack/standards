@@ -26,7 +26,7 @@ The certification is done either by the Forum SCS-Standards or an attestation bo
 
 ### Certificate tiers
 
-Version 2 of this standard introduces a multilevel certification with Silver and Bronze levels. The levels are awarded according to a target score to be reached based on a predefined scoring system (see below).
+Version 2 of this standard introduces tiers of certifications beginning with Silver and Bronze tiers. The Tiers are awarded according to a target score to be reached based on a predefined scoring system (see below).
 
 - Certified SCS IaaS Silver Integrator: SCS IaaS (Infrastructure as a Service) implementation partner
 - Certified SCS KaaS Silver Integrator: SCS KaaS (Kubernetes as a Service) implementation partner
