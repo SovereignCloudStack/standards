@@ -14,7 +14,7 @@ This document describes the process and associated checks used to validate an ap
 
 ## Certification process procedure
 
-To apply for a certification as an SCS Integrator, an application request must be sent to the attestation body. In the application request, the applicant specifies the certification level for which it is applying. The relevant SCS-compliant environments must also be specified as references therein, which should be used to calculate the necessary score according to the scoring system.
+To apply for a certification as an SCS Integrator, an application request must be sent to the attestation body. In the application request, the applicant specifies the certification tier for which it is applying. The relevant SCS-compliant environments must also be specified as references therein, which should be used to calculate the necessary score according to the scoring system.
 
 If the listed references are joint environments (e.g. two or more implementation partners have jointly set up an SCS environment or manage them together), it must be sufficiently demonstrated what the applicant's own share in the setup and operation of the environment is.
 

@@ -26,14 +26,14 @@ The certification is done either by the Forum SCS-Standards or an attestation bo
 
 ### Certificate tiers
 
-Version 2 of this standard introduces tiers of certifications beginning with Silver and Bronze tiers. The Tiers are awarded according to a target score to be reached based on a predefined scoring system (see below).
+Version 2 of this standard introduces tiers of certifications beginning with Silver and Bronze tiers. The tiers are awarded according to a target score to be reached based on a predefined scoring system (see below).
 
 - Certified SCS IaaS Integrator (Silver): SCS IaaS (Infrastructure as a Service) implementation partner
 - Certified SCS KaaS Integrator (Silver): SCS KaaS (Kubernetes as a Service) implementation partner
 - Certified SCS IaaS Integrator (Bronze): aspiring SCS IaaS (Infrastructure as a Service) implementation partner
 - Certified SCS KaaS Integrator (Bronze): aspiring SCS KaaS (Kubernetes as a Service) implementation partner
 
-As to remain backward compatibility with version 1 of this standard, the suffix for the "Silver" level MAY be omitted. The certificate level _Certified SCS IaaS Silver Integrator_ and _Certified SCS KaaS Silver Integrator_ therefore corresponds to the previously existing certificates _Certified SCS IaaS Integrator_ and _Certified SCS KaaS Integrator_ from version 1 of this standard. Certificates that have already been issued remain valid and will get the new name when issued once again.
+As to remain backward compatibility with version 1 of this standard, the suffix for the "Silver" tier MAY be omitted. The tier _Certified SCS IaaS Integrator (Silver)_ and _Certified SCS KaaS Integrator (Silver)_ therefore corresponds to the previously existing certificates _Certified SCS IaaS Integrator_ and _Certified SCS KaaS Integrator_ from version 1 of this standard. Certificates that have already been issued remain valid and will get updated when issued once again.
 
 ### General expectations
 
@@ -62,4 +62,4 @@ The audit for the certification of an applicant is carried out by the Forum SCS-
 ## Version history
 
 - Version 1 introduced the certification as SCS Integrator with the option to request for a voting on exceptions.
-- Version 2 introduces a multilevel certification with a predefined scoring system in order to avoid the previously ambiguous voting on exceptions.
+- Version 2 introduces tiers of certifications with a predefined scoring system in order to avoid the previously ambiguous voting on exceptions.
