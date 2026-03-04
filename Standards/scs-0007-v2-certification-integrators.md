@@ -51,7 +51,7 @@ The applicant MUST achieve a total of at least FOUR points to become SCS Silver 
 
 - two points for each SCS-compliant environment of a third party successfully brought into production by the applicant in the last 12 months;
 - two points for each SCS-compliant environment of a third party actively being managed by the applicant for the last 12 months, one point for 6 months;
-- two points for each SCS-compliant public-cloud environment with at least two regions or at least three availability zones being operated by the applicant for the last 12 months, one point for 6 months.
+- two points for each SCS-compliant IaaS public-cloud environment with at least two regions or at least three availability zones being operated by the applicant for the last 12 months, one point for 6 months.
 
 Here, an SCS-compliant environment is one that qualifies for [_Certified SCS-compatible IaaS_](https://docs.scs.community/standards/scs-compatible-iaas) or [_Certified SCS-compatible KaaS_](https://docs.scs.community/standards/scs-compatible-kaas), depending on the desired certification.
 
