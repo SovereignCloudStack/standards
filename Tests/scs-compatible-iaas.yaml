@@ -266,9 +266,6 @@ scripts:
   - id: scs-0123-service-placement
     description: Placement service is discoverable.
     url: https://docs.scs.community/standards/scs-0123-w1-mandatory-and-supported-IaaS-services-implementation#automated-tests
-  - id: scs-0123-service-object-store
-    description: Object-store service is discoverable.
-    url: https://docs.scs.community/standards/scs-0123-w1-mandatory-and-supported-IaaS-services-implementation#automated-tests
   - id: scs-0123-storage-apis
     description: The block-storage API is discoverable as `volume`, `volumev3`, or `block-storage`.
     url: https://docs.scs.community/standards/scs-0123-w1-mandatory-and-supported-IaaS-services-implementation#automated-tests
@@ -482,8 +479,6 @@ modules:
       - scs-0123-service-placement
       - scs-0123-storage-apis
       - scs-0123-swift-s3
-      recommended:
-      - scs-0123-service-object-store
   - id: scs-0302-v1
     name: Domain Manager Role
     url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role
