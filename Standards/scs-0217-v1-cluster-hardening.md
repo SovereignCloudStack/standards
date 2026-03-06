@@ -316,8 +316,9 @@ via spoofing"_, NetworkPolicies and policy engine configuration doesn't suffice.
 
 These threats involve intercepting traffic between the Kubernetes API server
 and the dynamic admission controller webhooks of the Policy Engine. To mitigate
-this, the Kubernetes API server MUST be configured with mutual TLS
-authentication for the Validating and Mutating Webhooks (see [Kubernetes
+this, if using a Dynamic Admission Controller such as a Policy Engine, the
+Kubernetes API server MUST be configured with mutual TLS authentication for the
+Validating and Mutating Webhooks (see [Kubernetes
 docs](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#authenticate-apiservers))
 . The Policy Engine MUST be able to authenticate the API server and MUST be
 configured with mutual TLS authentication for the
