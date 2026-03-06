@@ -148,7 +148,6 @@ def make_container(cloud):
     c.add_function('scs_0123_service_network', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'network'))
     c.add_function('scs_0123_service_load_balancer', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'load-balancer'))
     c.add_function('scs_0123_service_placement', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'placement'))
-    c.add_function('scs_0123_service_object_store', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'object-store'))
     c.add_function('scs_0123_storage_apis', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'volume', 'volumev3', 'block-storage'))
     c.add_function('scs_0123_swift_s3', lambda c: compute_scs_0123_swift_s3(c.services_lookup, c.conn))
     return c
