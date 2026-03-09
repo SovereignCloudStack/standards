@@ -24,6 +24,7 @@ Communicating with an external NTP server will also expose small bits of informa
 
 Ideally, the CSP would provide a means of time synchronization to servers, so that no outward NTP traffic is necessary.
 Doing so comes with two challenges:
+
 1. Providing an apropriate method of time synchronization. This could be NTP, PTP, hardware clock emulation or para-virtualization.
 2. Getting guest servers to actually use the provided time synchronization method. This may involve preconfigured images, DHCP, cloud metadata, or user interaction.
 
