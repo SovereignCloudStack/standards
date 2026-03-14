@@ -108,6 +108,17 @@ def _resolve_spec(spec: dict):
         for vname in entry['versions']:
             # trigger KeyError
             _ = version_lookup[vname]
+    # step 5. unify variables declaration (the list may contain strings as well as singleton dicts)
+    variables = []
+    defaults = {}
+    for var_decl in spec.get('variables', ()):
+        if isinstance(var_decl, dict):
+            defaults.update(var_decl)
+        if isinstance(var_decl, str):
+            variables.append(var_decl)
+    variables.extend(defaults)
+    spec['variables'] = variables
+    spec['var_defaults'] = defaults
 
 
 def load_spec(document: dict) -> dict:
