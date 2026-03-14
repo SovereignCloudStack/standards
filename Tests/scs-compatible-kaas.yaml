@@ -9,7 +9,7 @@ variables:
     # working directory for the subject under test
     # (note that we consider each kubernetes branch a test subject of its own)
   - kubeconfig
-  - execution_mode: serial  # alternatively: parallel
+  - execution_mode: parallel  # alternatively: serial
 scripts:
 - executable: ./kaas/sonobuoy_handler/run_sonobuoy.py
   args: run -k {kubeconfig} --scs-sonobuoy-config kaas/scs-sonobuoy-config.yaml -r {subject_root}/sono-results-e2e -c 'cncf-k8s-conformance'  -a '--mode=certified-conformance' --execution-mode {execution_mode}

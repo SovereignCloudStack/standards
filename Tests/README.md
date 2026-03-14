@@ -61,8 +61,8 @@ Replace `SUBJECT` with an arbitrary, but meaningful subject name. Also, please n
 will always use the `current-context` of the kubeconfig and will fail if it isn't set.
 
 Note: Sonobuoy checks (such as CNCF k8s conformance) are known to run for multiple hours (during which
-you won't see feedback). If you want to save wall-time by running the sonobuoy checks in parallel,
-simply add `-a execution_mode=parallel` to the command-line.
+you won't see feedback). In order to save wall-time, the sonobuoy checks will be run in parallel. You
+disable that by simply adding `-a execution_mode=serial` to the command-line.
 
 A report in YAML format will be created.
 
