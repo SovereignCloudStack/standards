@@ -73,9 +73,10 @@ require an additional field:
   The usage of standardized `os_distro`, `os_version`, `architecture`, and `os_purpose` help cloud users to create
   automation that works across clouds without requiring image names to be standardized.
 
-  _Uniqueness requirement_: whenever there are two images that have `os_hidden=False`, `visibility=public`,
-  and that coincide in all three fields `os_distro`, `os_version`, and `architecture`, then only one of them may
-  have `os_purpose=generic`. In other words, users who search visible public images for a generic OS
+  _Uniqueness requirement_: For every assignment of values for `os_distro`, `os_version`,
+  and `architecture`, there MUST be at most one public (`visibility=public`),
+  non-hidden (`os_hidden=False`) image with this assignment and `os_purpose=generic`.
+  In other words, users who search visible public images for a generic OS
   of a certain distro, version, and architecture will not get more than one result.
 
 The following property is recommended:
