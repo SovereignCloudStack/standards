@@ -337,6 +337,32 @@ modules:
       - scs-0102-prop-hypervisor_type
       - scs-0102-prop-hw_rng_model
       - scs-0102-prop-hotfix_hours
+  - id: scs-0102-v2
+    name: Image metadata v2
+    url: https://docs.scs.community/standards/scs-0102-v2-image-metadata
+    targets:
+      main:
+      - scs-0102-prop-architecture
+      - scs-0102-prop-min_disk
+      - scs-0102-prop-min_ram
+      - scs-0102-prop-os_version
+      - scs-0102-prop-os_distro
+      - scs-0102-prop-os_purpose
+      - scs-0102-prop-hw_disk_bus
+      - scs-0102-prop-image_build_date
+      - scs-0102-prop-image_original_user
+      - scs-0102-prop-image_source
+      - scs-0102-prop-image_description
+      - scs-0102-prop-replace_frequency
+      - scs-0102-prop-provided_until
+      - scs-0102-prop-uuid_validity
+      - scs-0102-image-recency
+      - scs-0102-os_purpose-uniqueness
+      recommended:
+      - scs-0102-prop-hash_algo
+      - scs-0102-prop-hypervisor_type
+      - scs-0102-prop-hw_rng_model
+      - scs-0102-prop-hotfix_hours
   - id: scs-0103-v1
     name: Standard flavors
     url: https://docs.scs.community/standards/scs-0103-v1-standard-flavors
@@ -491,7 +517,7 @@ versions:
       - opc-v2022.11
       - scs-0100-v3.1
       - scs-0101-v1
-      - scs-0102-v1
+      - scs-0102-v2  # instead of scs-0102-v1
       - scs-0103-v1
       - ref: scs-0104-v1-2
         parameters:
