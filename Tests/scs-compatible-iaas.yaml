@@ -89,6 +89,9 @@ scripts:
   - id: scs-0102-image-recency
     description: Each image is as recent as properties (if set) suggest.
     url: https://docs.scs.community/standards/scs-0102-w1-image-metadata-implementation-testing#automated-tests
+  - id: scs-0102-os_purpose-uniqueness
+    description: Generic OS images are uniquely identified via triple (architecture, os\_distro, os\_version).
+    url: https://docs.scs.community/standards/scs-0102-w1-image-metadata-implementation-testing#automated-tests
   - id: scs-0103-flavor-1v-4
     description: Check presence of flavor `SCS-1V-4`.
     url: https://docs.scs.community/standards/scs-0103-w1-standard-flavors-implementation#automated-tests
@@ -330,6 +333,7 @@ modules:
       recommended:
       - scs-0102-prop-hash_algo
       - scs-0102-prop-os_purpose
+      - scs-0102-os_purpose-uniqueness
       - scs-0102-prop-hypervisor_type
       - scs-0102-prop-hw_rng_model
       - scs-0102-prop-hotfix_hours

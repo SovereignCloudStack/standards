@@ -1,5 +1,5 @@
 import calendar
-from collections import Counter
+from collections import Counter, defaultdict
 import logging
 import sys
 import time
@@ -332,3 +332,28 @@ def compute_scs_0102_image_recency(images):
         else:
             logger.info(f'Image "{replacement.name}" is a valid replacement for outdated "{img.name}"')
     return not errors
+
+
+def compute_scs_0102_os_purpose_uniqueness(images):
+    """
+    This test ensures that, for each combination of architecture, os_distro and os_version,
+    there is a most one public image with os_purpose=generic.
+    """
+    # group images by (architecture, os_distro, os_version)
+    buckets = defaultdict(list)
+    for image in images:
+        if image.visibility != 'public' or image.is_hidden:
+            continue
+        if not image.os_distro or not image.os_version:
+            continue
+        if image.properties.get('os_purpose', '') != 'generic':
+            continue
+        key = (image.architecture or '', image.os_distro, image.os_version)
+        buckets[key].append(image)
+    num_faulty = 0
+    for key, bucket in buckets.items():
+        if len(bucket) < 2:
+            continue
+        num_faulty += 1
+        _log_error(f'os_purpose=generic not unique {key!r}', bucket)
+    return num_faulty == 0

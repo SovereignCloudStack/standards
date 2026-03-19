@@ -45,6 +45,11 @@ The following testcase ensures that each image is as recent as claimed by its `r
 
 - `scs-0102-image-recency`
 
+The following testcase ensures that generic OS images are uniquely identified via the triple
+(architecture, os\_distro, os\_version):
+
+- `scs-0102-os_purpose-uniqueness`
+
 ## Manual tests
 
 None.

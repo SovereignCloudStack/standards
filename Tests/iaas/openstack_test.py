@@ -30,7 +30,7 @@ from scs_0102_image_metadata.image_metadata import \
     compute_scs_0102_prop_image_source, compute_scs_0102_prop_image_description, \
     compute_scs_0102_prop_replace_frequency, compute_scs_0102_prop_provided_until, \
     compute_scs_0102_prop_uuid_validity, compute_scs_0102_prop_hotfix_hours, \
-    compute_scs_0102_image_recency
+    compute_scs_0102_image_recency, compute_scs_0102_os_purpose_uniqueness
 from scs_0103_standard_flavors.standard_flavors import \
     SCS_0103_CANONICAL_NAMES, compute_flavor_lookup, compute_scs_0103_flavor
 from scs_0104_standard_images.standard_images import \
@@ -98,6 +98,7 @@ def make_container(cloud):
     c.add_function('scs_0102_prop_uuid_validity', lambda c: compute_scs_0102_prop_uuid_validity(c.images))
     c.add_function('scs_0102_prop_hotfix_hours', lambda c: compute_scs_0102_prop_hotfix_hours(c.images))
     c.add_function('scs_0102_image_recency', lambda c: compute_scs_0102_image_recency(c.images))
+    c.add_function('scs_0102_os_purpose_uniqueness', lambda c: compute_scs_0102_os_purpose_uniqueness(c.images))
     # scs_0103_standard_flavors
     c.add_function('flavor_lookup', lambda c: compute_flavor_lookup(c.flavors))
     for canonical_name in SCS_0103_CANONICAL_NAMES:
