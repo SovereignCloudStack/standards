@@ -48,6 +48,8 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
 
 ## Design Considerations
 
+An _SCS-compatible KaaS_ (Kubernetes as a Service) MUST provide SCS-compatible Kubernetes clusters in a fully automated and reproducible way.
+
 ## Open Questions
 
 ## Related Documents
