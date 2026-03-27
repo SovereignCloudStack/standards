@@ -33,7 +33,7 @@ Version 2 of this standard introduces tiers of certifications beginning with Sil
 - Certified SCS IaaS Integrator (Bronze): aspiring SCS IaaS (Infrastructure as a Service) implementation partner
 - Certified SCS KaaS Integrator (Bronze): aspiring SCS KaaS (Kubernetes as a Service) implementation partner
 
-Please note, KaaS (Kubernetes as a Service) means that the environment MUST provide SCS-compliant Kubernetes clusters in a fully automated and reproducible way.
+Please note that KaaS (Kubernetes as a Service) refers to an automated environment. In this context, KaaS means that the environment MUST provide Kubernetes clusters in a fully automated and reproducible way.
 
 As to remain backward compatibility with version 1 of this standard, the suffix for the "Silver" tier MAY be omitted. The tier _Certified SCS IaaS Integrator (Silver)_ and _Certified SCS KaaS Integrator (Silver)_ therefore corresponds to the previously existing certificates _Certified SCS IaaS Integrator_ and _Certified SCS KaaS Integrator_ from version 1 of this standard. Certificates that have already been issued remain valid and will get updated when issued once again.
 
@@ -55,7 +55,7 @@ The applicant MUST achieve a total of at least FOUR points to become SCS Silver 
 - two points for each SCS-compliant environment of a third party actively being managed by the applicant for the last 12 months, one point for 6 months;
 - two points for each SCS-compliant IaaS public-cloud environment with at least two regions or at least three availability zones being operated by the applicant for the last 12 months, one point for 6 months.
 
-Here, an SCS-compliant environment is one that qualifies for [_Certified SCS-compatible IaaS_](https://docs.scs.community/standards/scs-compatible-iaas) or [_Certified SCS-compatible KaaS_](https://docs.scs.community/standards/scs-compatible-kaas), depending on the desired certification.
+Here, an SCS-compliant environment is one that qualifies for [_SCS-compatible IaaS_](https://docs.scs.community/standards/scs-compatible-iaas) or [_SCS-compatible KaaS_](https://docs.scs.community/standards/scs-compatible-kaas), depending on the desired certification.
 
 ### Attestation
 
