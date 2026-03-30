@@ -8,7 +8,7 @@ track: Global
 
 ## Introduction
 
-The Sovereign Cloud Stack (SCS) issues certificates with various scopes, among them _SCS-compatible IaaS_ (infrastructure as a service) and _SCS-compatible KaaS_ (Kubernetes as a service).
+The Sovereign Cloud Stack (SCS) issues certificates with various scopes, among them [_SCS-compatible IaaS_](https://docs.scs.community/standards/scs-compatible-iaas) (Infrastructure as a Service) and [_SCS-compatible KaaS_](https://docs.scs.community/standards/scs-compatible-kaas) (Kubernetes as a Service).
 
 This document details how a cloud service provider (henceforth also called operator) can attain such a certificate for one of their clouds.
 
@@ -47,6 +47,8 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
 8. If any of the automated tests or manual checks fail after the certificate has been issued, the certificate is not immediately revoked. Rather, the operator SHALL be notified automatically. The operator MUST then fix the issue and ensure that the automated tests run successfully again as quickly as possible. In case a manual check fails, it has to be repeated at a date to be negotiated with the SCS certification assessment body.
 
 ## Design Considerations
+
+Please note that KaaS (Kubernetes as a Service) refers to an automated environment. In this context, KaaS means that the environment MUST provide Kubernetes clusters in a fully automated and reproducible way.
 
 ## Open Questions
 
