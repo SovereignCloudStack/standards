@@ -65,4 +65,6 @@ The audit for the certification of an applicant is carried out by the Forum SCS-
 ## Version history
 
 - Version 1 introduced the certification as SCS Integrator with the option to request for a voting on exceptions.
-- Version 2 introduces tiers of certifications with a predefined scoring system in order to avoid the previously ambiguous voting on exceptions.
+- Version 2 introduces
+  - tiers of certifications with a predefined scoring system in order to avoid the previously ambiguous voting on exceptions, and
+  - scoring for KaaS public-cloud environments.
