@@ -1,8 +1,8 @@
 ﻿---
 title: Certification of integrators
 type: Procedural
-status: Draft
-#stabilized_at: YYYY-MM-DD # TODO when Stable
+status: Stable
+stabilized_at: 2026-04-02
 replaces:
   - scs-0007-v1-certification-integrators.md
 track: Global
