@@ -2,7 +2,7 @@
 title: Certification of integrators
 type: Procedural
 status: Stable
-stabilized_at: 2026-04-02
+stabilized_at: 2026-04-07
 replaces:
   - scs-0007-v1-certification-integrators.md
 track: Global

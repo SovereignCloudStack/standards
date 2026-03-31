@@ -3,7 +3,7 @@ title: Certification of integrators
 type: Procedural
 status: Deprecated
 stabilized_at: 2025-08-01
-deprecated_at: 2026-04-02
+deprecated_at: 2026-04-07
 replaced_by:
   - scs-0007-v2-certification-integrators.md
 track: Global
