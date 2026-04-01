@@ -194,7 +194,8 @@ def db_upgrade_schema(conn: connection, cur: cursor):
     # that way just in case we want to use another database at some point
     while True:
         current = db_get_schema_version(cur)
-        if current == SCHEMA_VERSIONS[-1]:
+        import sys; print(current, file=sys.stderr)
+        if current >= SCHEMA_VERSIONS[-1]:
             break
         if current is None:
             # this is an empty db, but it also used to be the case with v1
@@ -250,6 +251,15 @@ def db_update_account(cur: cursor, record: dict):
     RETURNING accountid;''', sanitized)
     accountid, = cur.fetchone()
     return accountid
+
+
+def db_filter_accounts(cur: cursor, predicate: callable):
+    cur.execute('SELECT accountid FROM account;')
+    removeids = [row[0] for row in cur.fetchall() if not predicate(*row)]
+    while removeids:
+        import sys; print(removeids[:10], file=sys.stderr)
+        cur.execute('DELETE FROM account WHERE accountid IN %s', (tuple(removeids[:10]), ))
+        del removeids[:10]
 
 
 def db_clear_delegates(cur: cursor, accountid):
