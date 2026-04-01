@@ -26,9 +26,9 @@ spec:
           variables:
             overrides:
               - name: workerMachineTypeHcloud
-                value: cpx31
+                value: cpx32
     variables:
       - name: region
         value: nbg1
       - name: controlPlaneMachineTypeHcloud
-        value: cpx31
+        value: cpx32
