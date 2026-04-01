@@ -28,12 +28,13 @@ def compute_scs_0123_service_presence(services_lookup, *names):
 
 def s3_conn(creds, conn):
     """Return an s3 client conn"""
+    insecure = conn.config.config.get("insecure")
+    verify = conn.config.config.get("verify")
     cacert = conn.config.config.get("cacert")
-    # TODO: Handle self-signed certs (from ca_cert in openstack config)
-    if cacert:
-        logger.warning(f"Trust all Certificates in S3, OpenStack uses {cacert}")
+    vrfy = False if (insecure is True or verify is False) else \
+        (cacert or (verify if isinstance(verify, str) else None))
     return boto3.resource(
-        's3', endpoint_url=creds["HOST"], verify=not cacert,
+        's3', endpoint_url=creds["HOST"], verify=vrfy,
         aws_access_key_id=creds["AK"], aws_secret_access_key=creds["SK"],
     )
 
