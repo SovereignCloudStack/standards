@@ -96,11 +96,11 @@ accounts:
     group: syself
     delegates:
       - zuul_ci
-  - subject: syself-1.31
+  - subject: syself-1.33
     group: syself
     delegates:
       - zuul_ci
-  - subject: syself-1.30
+  - subject: syself-1.34
     group: syself
     delegates:
       - zuul_ci
