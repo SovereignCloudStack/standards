@@ -5,6 +5,7 @@
 #
 # (c) Matthias Büchse <matthias.buechse@cloudandheat.com>
 # SPDX-License-Identifier: Apache-2.0
+from datetime import date
 import logging
 import os
 import os.path
@@ -68,12 +69,14 @@ class Config:
     def abspath(self, path):
         return os.path.join(self.cwd, path)
 
-    def build_check_command(self, scope, subject, output):
+    def build_check_command(self, scope, subject, sections, output):
         # TODO figure out when to supply --debug here (but keep separated from our --debug)
         args = [
             sys.executable, self.scs_compliance_check, self.abspath(self.scopes[scope]['spec']),
             '--debug', '-C', '-o', output, '-s', subject,
         ]
+        if sections:
+            args.extend(['--sections', sections])
         for key, value in self.get_subject_mapping(subject).items():
             args.extend(['-a', f'{key}={value}'])
         return {'args': args}
@@ -173,12 +176,13 @@ def _move_file(source_path, target_path):
 @cli.command()
 @click.option('--scope', 'scopes', type=str)
 @click.option('--subject', 'subjects', type=str)
+@click.option('--section', 'sections', type=str)
 @click.option('--preset', 'preset', type=str)
 @click.option('--num-workers', 'num_workers', type=int, default=5)
 @click.option('--monitor-url', 'monitor_url', type=str, default=MONITOR_URL)
 @click.option('-o', '--output', 'report_yaml', type=click.Path(exists=False), default=None)
 @click.pass_obj
-def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml):
+def run(cfg, scopes, subjects, sections, preset, num_workers, monitor_url, report_yaml):
     """
     run compliance tests and upload results to compliance monitor
     """
@@ -196,13 +200,23 @@ def run(cfg, scopes, subjects, preset, num_workers, monitor_url, report_yaml):
         subjects = [subject.strip() for subject in subjects.split(',')] if subjects else []
     if not scopes or not subjects:
         raise click.UsageError('both scope(s) and subject(s) must be non-empty')
+    if sections == '.auto':
+        today = date.today()
+        # https://docs.python.org/3/library/datetime.html#datetime.date.weekday
+        # Return the day of the week as an integer, where Monday is 0 and Sunday is 6.
+        weekday = today.weekday()
+        if weekday == 5:  # Saturday
+            sections = 'light,medium,heavy'
+        else:
+            sections = 'light,medium'
+        logger.info(f'auto-selected sections: {sections}')
     logger.debug(f'running tests for scope(s) {", ".join(scopes)} and subject(s) {", ".join(subjects)}')
     logger.debug(f'monitor url: {monitor_url}, num_workers: {num_workers}, output: {report_yaml}')
     with tempfile.TemporaryDirectory(dir=cfg.cwd) as tdirname:
         report_yaml_tmp = os.path.join(tdirname, 'report.yaml')
         jobs = [(scope, subject) for scope in scopes for subject in subjects]
         outputs = [os.path.join(tdirname, f'report-{idx}.yaml') for idx in range(len(jobs))]
-        commands = [cfg.build_check_command(job[0], job[1], output) for job, output in zip(jobs, outputs)]
+        commands = [cfg.build_check_command(job[0], job[1], sections, output) for job, output in zip(jobs, outputs)]
         _run_commands(commands, num_workers=num_workers)
         _concat_files(outputs, report_yaml_tmp)
         subprocess.run(**cfg.build_sign_command(report_yaml_tmp))
