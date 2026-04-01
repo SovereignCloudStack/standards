@@ -3,9 +3,11 @@ we could of course iterate over results etc., but hardcode the table (except the
 for the time being to have the highest degree of control
 -#}
 
-{% if unverified %}This table shows the most recent results, including unverified ones. Consumers are referred to the [verified table]({{base_url}}page/table). **Beware of false positives!**{% else %}This table shows the most recent **verified** results.{% endif %}
+{% if unverified %}These tables show the most recent results, including unverified ones. Consumers are referred to the [verified tables]({{base_url}}page/table). **Beware of false positives!**{% else %}These tables show the most recent **verified** results.{% endif %}
 
 Version numbers are suffixed by a symbol depending on state: * for _draft_, † for _warn_ (soon to be deprecated), and †† for _deprecated_.
+
+### SCS-compatible IaaS
 
 {% set iaas = '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f' -%}
 | Name  | Description  | Operator  | [SCS-compatible IaaS](https://docs.scs.community/standards/scs-compatible-iaas/)  | HealthMon  |
@@ -42,11 +44,13 @@ Version numbers are suffixed by a symbol depending on state: * for _draft_, † 
 | [HM](https://health.wavestack1.sovereignit.cloud:3000/) |
 {% if unverified -%}
 {# this section currently empty -#}
-{% endif -%}
+{% endif %}
 
-{% set kaas = '1fffebe6-fd4b-44d3-a36c-fc58b4bb0180' %}
+### SCS-compatible KaaS
+
+{% set kaas = '1fffebe6-fd4b-44d3-a36c-fc58b4bb0180' -%}
 | Name  | Description  | Operator  | [SCS-compatible KaaS](https://docs.scs.community/standards/scs-compatible-kaas/)  |
-|-------|--------------|-----------|----------------------|:----------:|
+|-------|--------------|-----------|----------------------|
 | [Syself](https://syself.com/) | KaaS offering based on ClusterStacks | Syself GmbH | {# #}
 {#- #} [{{ results | pick(kaas, 'syself-1.32', 'syself-1.33', 'syself-1.34') | summary }}]({{ detail_url('group-syself', kaas) }}) {# -#}
 |
