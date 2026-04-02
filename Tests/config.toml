@@ -40,7 +40,6 @@ scopes = [
     "scs-compatible-kaas",
 ]
 subjects = [
-    "syself-1.32",
     "syself-1.33",
     "syself-1.34",
 ]

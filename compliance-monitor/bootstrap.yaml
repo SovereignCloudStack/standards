@@ -93,7 +93,6 @@ accounts:
         public_key_type: "ssh-ed25519"
         public_key_name: "primary"
   - subject: syself-1.32
-    group: syself
     delegates:
       - zuul_ci
   - subject: syself-1.33
