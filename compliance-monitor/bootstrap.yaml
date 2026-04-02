@@ -92,9 +92,6 @@ accounts:
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIKc+mn17GOsrPamm4zSoUffPz8uaaDIEWTQoY2HOBCnx"
         public_key_type: "ssh-ed25519"
         public_key_name: "primary"
-  - subject: syself-1.32
-    delegates:
-      - zuul_ci
   - subject: syself-1.33
     group: syself
     delegates:
