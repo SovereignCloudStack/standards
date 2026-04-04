@@ -1,8 +1,8 @@
 ﻿---
 title: Certification of integrators
 type: Procedural
-status: Draft
-#stabilized_at: YYYY-MM-DD # TODO when Stable
+status: Stable
+stabilized_at: 2026-04-07
 replaces:
   - scs-0007-v1-certification-integrators.md
 track: Global
@@ -65,4 +65,6 @@ The audit for the certification of an applicant is carried out by the Forum SCS-
 ## Version history
 
 - Version 1 introduced the certification as SCS Integrator with the option to request for a voting on exceptions.
-- Version 2 introduces tiers of certifications with a predefined scoring system in order to avoid the previously ambiguous voting on exceptions.
+- Version 2 introduces
+  - tiers of certifications with a predefined scoring system in order to avoid the previously ambiguous voting on exceptions, and
+  - scoring for KaaS public-cloud environments.
