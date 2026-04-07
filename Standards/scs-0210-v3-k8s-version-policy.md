@@ -3,7 +3,7 @@ title: SCS K8S Version Policy
 type: Standard
 status: Draft
 track: KaaS
-replaces: scs-0210-v2-k8s-new-version-policy.md
+replaces: scs-0210-v2-k8s-version-policy.md
 ---
 
 ## Introduction
