@@ -16,10 +16,10 @@ logger = logging.getLogger(__name__)
 # valid keywords for various parts of the spec, to be checked using `check_keywords`
 KEYWORDS = {
     'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables', 'scripts', 'modules', 'timeline'),
-    'scripts': ('executable', 'env', 'args', 'section', 'testcases'),
+    'scripts': ('executable', 'env', 'args', 'testcases'),
     'versions': ('version', 'include', 'targets', 'stabilized_at'),
     'modules': ('id', 'targets', 'url', 'name', 'parameters'),
-    'testcases': ('lifetime', 'id', 'description', 'url'),
+    'testcases': ('lifetime', 'section', 'id', 'description', 'url'),
     'include': ('ref', 'parameters'),
 }
 # The canonical result values are -1, 0, and 1, for FAIL, ABORT, and PASS, respectively;

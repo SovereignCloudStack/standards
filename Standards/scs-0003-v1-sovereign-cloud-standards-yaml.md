@@ -197,7 +197,6 @@ The following fields are valid for every script descriptor:
 
 | Key               | Type   | Description                                                                                    | Example    |
 | ----------------- | ------ | ---------------------------------------------------------------------------------------------- | ---------- |
-| `section`         | String | _Optional_ what section to associate this check with (sections can be checked in isolation)    | `weekly`   |
 | `testcases`       | Array  | List of all test cases; each entry being a test-case descriptor                                | (see below)  |
 
 Additional fields are valid depending on whether the check is automated or manual.
@@ -226,6 +225,7 @@ TBD
 | ----------------- | --------------- | ------------------------------------------------------------------------------------------------- | ----------------- |
 | `id`              | String          | Identifier for this test case (immutable and unique within this module)                           | `image-md-check`  |
 | `lifetime`        | String          | One of: `day`, `week` (_default_), `month`, `quarter`, `year`                                     | `day`             |
+| `section`         | String          | _Optional_ what section to associate this testcase with (sections can be checked in isolation)    | `weekly`          |
 | `description`     | String          | Short description of the test case (markdown allowed, but keep it short for CLI users)            |                   |
 | `url`             | String          | URL pointing to the relevant SCS documentation for the testcase                                   |                   |
 

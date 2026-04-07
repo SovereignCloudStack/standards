@@ -42,6 +42,7 @@ from sql import (
     db_get_keys, db_insert_report, db_get_recent_results2, db_patch_approval2, db_get_report,
     db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys, db_clear_delegates,
     db_find_subjects, db_insert_result2, db_get_relevant_results2, db_add_delegate, db_get_group,
+    db_filter_accounts,
 )
 
 
@@ -225,10 +226,12 @@ def import_bootstrap(bootstrap_path, conn):
     if not accounts and not subjects:
         return
     with conn.cursor() as cur:
+        accountids = []
         for account in accounts:
             roles = sum(ROLES[r] for r in account.get('roles', ()))
             acc_record = {'subject': account['subject'], 'roles': roles, 'group': account.get('group')}
             accountid = db_update_account(cur, acc_record)
+            accountids.append(accountid)
             db_clear_delegates(cur, accountid)
             for delegate in account.get('delegates', ()):
                 db_add_delegate(cur, accountid, delegate)
@@ -236,6 +239,7 @@ def import_bootstrap(bootstrap_path, conn):
             db_filter_apikeys(cur, accountid, lambda keyid, *_: keyid in keyids)
             keyids = set(db_update_publickey(cur, accountid, key) for key in account.get("keys", ()))
             db_filter_publickeys(cur, accountid, lambda keyid, *_: keyid in keyids)
+        db_filter_accounts(cur, lambda accountid, *_: accountid in accountids)
         conn.commit()
 
 

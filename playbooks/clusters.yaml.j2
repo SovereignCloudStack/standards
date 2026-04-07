@@ -19,31 +19,31 @@ clusters:
   syself-1.31:
     kind: clusterstacks
     config:
-      kubernetesVersion: '1.31'
-      name: 'syself-1-31'  # explicit name because dot in name not permissible
+      kubernetesVersion: '1.33'
+      name: 'syself-1-33'  # explicit name because dot in name not permissible
       autoVars: syself  # determine cs_class_name and cs_version automatically using kubernetesVersion
       templates:
         cluster: syself-cluster.yaml
         clusterstack: syself-clusterstack.yaml
         kubeconfig: syself-kubeconfig.yaml
       vars:
-        cs_name: hetzner-apalla-1-31
+        cs_name: hetzner-apalla-1-33
         num_control_nodes: 3
         num_worker_nodes: 3
       secrets:
         token: "{{ clouds_conf.syself_token }}"
-  syself-1.30:
+  syself-1.34:
     kind: clusterstacks
     config:
-      kubernetesVersion: '1.30'
-      name: 'syself-1-30'  # explicit name because dot in name not permissible
+      kubernetesVersion: '1.34'
+      name: 'syself-1-34'  # explicit name because dot in name not permissible
       autoVars: syself  # determine cs_class_name and cs_version automatically using kubernetesVersion
       templates:
         cluster: syself-cluster.yaml
         clusterstack: syself-clusterstack.yaml
         kubeconfig: syself-kubeconfig.yaml
       vars:
-        cs_name: hetzner-apalla-1-30
+        cs_name: hetzner-apalla-1-34
         num_control_nodes: 3
         num_worker_nodes: 3
       secrets:

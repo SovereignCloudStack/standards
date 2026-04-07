@@ -339,7 +339,7 @@ def main(argv):
         script = tc_script_lookup[tc_id]
         if 'executable' not in script:
             continue  # manual check
-        if config.sections and script.get('section') not in config.sections:
+        if config.sections and testcase_lookup.get(tc_id, {}).get('section') not in config.sections:
             continue
         if config.tests and not config.tests.match(tc_id):
             continue

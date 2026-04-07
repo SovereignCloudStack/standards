@@ -33,6 +33,7 @@
       preset: default
       iaas: true
       kaas: false
+      section: ''
       do_provision: false
       do_cleanup: true
       sonobuoy_tar_gz_url: >
@@ -69,5 +70,6 @@
       preset: kaas
       iaas: false
       kaas: true
+      section: '.auto'  # only do 'heavy' tests on Saturdays
       do_provision: true
       do_cleanup: false
