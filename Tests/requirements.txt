@@ -22,7 +22,7 @@ charset-normalizer==3.4.6
     # via requests
 click==8.3.1
     # via -r requirements.in
-cryptography==46.0.6
+cryptography==46.0.7
     # via sslyze
 frozenlist==1.8.0
     # via
