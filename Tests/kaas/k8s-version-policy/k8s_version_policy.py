@@ -45,7 +45,7 @@ import yaml
 
 
 MINOR_VERSION_CADENCE = timedelta(days=120)
-PATCH_VERSION_CADENCE = timedelta(weeks=2)
+PATCH_VERSION_CADENCE = timedelta(days=31)
 CVE_VERSION_CADENCE = timedelta(days=2)
 CVE_SEVERITY = 8  # CRITICAL
 
