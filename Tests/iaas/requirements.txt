@@ -4,9 +4,9 @@
 #
 #    pip-compile requirements.in
 #
-boto3==1.42.80
+boto3==1.42.86
     # via -r requirements.in
-botocore==1.42.80
+botocore==1.42.86
     # via
     #   boto3
     #   s3transfer
@@ -18,11 +18,11 @@ cffi==2.0.0
     # via
     #   -c ../requirements.txt
     #   cryptography
-charset-normalizer==3.4.6
+charset-normalizer==3.4.7
     # via
     #   -c ../requirements.txt
     #   requests
-cryptography==46.0.6
+cryptography==46.0.7
     # via
     #   -c ../requirements.txt
     #   openstacksdk
@@ -62,7 +62,7 @@ pbr==7.0.3
     #   keystoneauth1
     #   openstacksdk
     #   os-service-types
-platformdirs==4.9.4
+platformdirs==4.9.6
     # via openstacksdk
 psutil==7.2.2
     # via openstacksdk
