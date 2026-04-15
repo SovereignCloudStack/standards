@@ -42,7 +42,7 @@ class SonobuoyHandler:
         check_name="sonobuoy_handler",
         kubeconfig=None,
         result_dir_name="sonobuoy_results",
-        scs_sonobuoy_config_yaml="kaas/sonobuoy-config.yaml",
+        scs_sonobuoy_config_yaml="kaas/scs-sonobuoy-config-v1.yaml",
         args=(),
     ):
         self.check_name = check_name
