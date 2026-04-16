@@ -45,7 +45,7 @@ K8S_VERSION = K8sVersion(1, 28, 5)
 EXPECTED_RECENCIES = {
     datetime(2024, 1, 17): True,
     datetime(2024, 1, 31): True,
-    datetime(2024, 2, 1): False,
+    datetime(2024, 2, 18): False,
 }
 
 
