@@ -59,7 +59,7 @@ the provided Kubernetes versions should be kept up-to-date with new upstream rel
 - The latest minor version MUST be provided no later than 4 months after release.
 - The latest patch version MUST be provided no later than 1 month after release.
 - This time period (for providing the latest patch version) MUST not be longer than
-  two weeks if the patch addresses critical CVEs and it is RECOMMEDED to be provided
+  2 weeks if the patch addresses critical CVEs and it is RECOMMENDED to be provided
   within 2 days of the release.
   In this context, a critical CVE is a CVE with a CVSS base score >= 8 according
   to the CVSS version used in the original CVE record (e.g., CVSSv3.1).
