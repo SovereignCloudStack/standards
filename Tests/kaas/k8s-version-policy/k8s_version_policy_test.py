@@ -65,8 +65,11 @@ def test_check_version_recency_with_cve(caplog, release_data):
         # 2 days after release of patch for affected_version
         dt.now.return_value = datetime(2024, 1, 20)
         assert check_k8s_version_recency(affected_version, release_data, fake_ranges)
-    assert len(caplog.records) == 1, "expected a log message"
-    assert caplog.records[0].levelname == "INFO"
+        # 2 weeks after the release
+        dt.now.return_value = datetime(2024, 2, 1)
+        assert not check_k8s_version_recency(affected_version, release_data, fake_ranges)
+    assert len(caplog.records) >= 1, "expected a log message"
+    assert caplog.records[0].levelname == "WARNING"
     assert "Consider updating from 1.28.5" in caplog.records[0].message
 
 
