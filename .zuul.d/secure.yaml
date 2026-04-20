@@ -112,7 +112,7 @@
           YbdI4KBz6CcfrNdtut9XlmNLT91emT9ayC+XDqBypksHXHcypuqoOHMQUdjSPtXDLsI//
           dsSRxDL+4TtWaVovPAxaLGsiVohsoCEdAxBmYxbkA2DNYdOMf6glu7O4wMtEIjaBdzdfP
           CKfkOiwdCjtq++Ofn/C+3zI+2H+58TosQdCXcYIGmyKw5WSN7/sCosWDUtcsq4=
-      cah-dd8a_ac_secret: !encrypted/pkcs1-oaep
+      cah_dd8a_ac_secret: !encrypted/pkcs1-oaep
         - E8fpHXVmMa7ptAndyV8fqgC6tmGL9qmtpI10q1Yh6Qo0iIt09HNl8aZLtupmavTqYJg+D
           7BI3ziTG4PNfc6MK0rvsQE/jGCf/XGW7yyfrmcvok+8mwD7foya5gEDLvbxFuIUopdTEt
           Wk+5qLHNv87fKtQVGoda1qZXQ2ZjEw3sLv5eENLEft+u3XZnPLMVJ3p9ZGK0mvBcIfAlk
