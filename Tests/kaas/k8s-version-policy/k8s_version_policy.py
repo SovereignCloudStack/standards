@@ -45,8 +45,9 @@ import yaml
 
 
 MINOR_VERSION_CADENCE = timedelta(days=120)
-PATCH_VERSION_CADENCE = timedelta(weeks=2)
-CVE_VERSION_CADENCE = timedelta(days=2)
+PATCH_VERSION_CADENCE = timedelta(days=31)
+CVE_VERSION_CADENCE = timedelta(weeks=2)
+CVE_VERSION_CADENCE_WARN = timedelta(days=2)
 CVE_SEVERITY = 8  # CRITICAL
 
 HERE = Path(__file__).parent
@@ -420,19 +421,19 @@ def check_k8s_version_recency(
             # whoops, the cluster should have been updated to this (or a higher version) already!
             return False
         ranges = [_range for _range in cve_affected_ranges if my_version in _range]
-        if ranges and release.age > CVE_VERSION_CADENCE:
-            # -- two FIXMEs:
-            # (a) if the release still has the CVE, then there is no use if we updated to it?
-            # (b) the standard says "time period MUST be even shorter ... it is RECOMMENDED that ...",
-            #     so what is it now, a requirement or a recommendation?
+        if ranges and release.age > CVE_VERSION_CADENCE_WARN:
+            # -- FIXME:
+            # if the release still has the CVE, then there is no use if we updated to it?
             # shouldn't we check for CVEs of my_version and then check whether the new one still has them?
             # -- so, this has to be reworked in a major way, but for the time being, just emit an INFO
             # (unfortunately, the cluster name is not available here)
-            logger.info(
+            logger.warning(
                 "Consider updating from %s to %s to avoid a CVE",
                 my_version,
                 release.version,
             )
+            if release.age > CVE_VERSION_CADENCE:
+                return False
     return True
 
 
