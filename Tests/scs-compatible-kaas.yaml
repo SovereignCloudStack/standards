@@ -40,7 +40,7 @@ scripts:
   - id: kaas-networking-check
     lifetime: month
     section: heavy
-    description: Must fulfill all requirements of scs-0219-v1.
+    description: Must pass all testcases of e2e focus 'NetworkPolicy'.
     url: https://docs.scs.community/standards/scs-0219-v1-kaas-networking#decision
 modules:
   - id: cncf-k8s-conformance
