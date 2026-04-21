@@ -94,7 +94,3 @@ CSPs SHOULD provide a network plugin that supports or is working on support for 
 CSPs SHOULD offer the option for a managed, `networking.k8s.io/v1`-compliant Ingress controller and a default `IngressClass` resource for this controller.
 
 CSPs MAY add default networking restrictions, using either `networking.k8s.io/v1`-compliant `NetworkPolicy` resources with a policy operator, or alternatively any cluster-wide network policy extensions provided by the CNI plugin.
-
-## Conformance Tests
-
-Required support for network policies will be tested using the upstream e2e tests via Sonobuoy.
