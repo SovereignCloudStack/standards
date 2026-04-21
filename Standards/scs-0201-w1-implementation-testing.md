@@ -8,7 +8,7 @@ supplements:
 
 ## Implementation notes
 
-The actual execution of the conformance tests is performed by the [SCS compliance check suite](https://github.com/SovereignCloudStack/standards/tree/main/Tests) using [Sonobuoy](https://sonobuoy.io). The rationale for this decision and further details regarding its implementation are documented in detail in [scs-0200-v1](https://docs.scs.community/standards/scs-0200-v1-using-sonobuoy-for-kaas-conformance-tests).
+The actual execution of the conformance tests is performed by the [SCS compliance check suite](https://github.com/SovereignCloudStack/standards/tree/main/Tests) using [Sonobuoy](https://sonobuoy.io).
 
 ## Automated tests
 
