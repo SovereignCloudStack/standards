@@ -40,8 +40,8 @@ scripts:
   - id: kaas-networking-check
     lifetime: month
     section: heavy
-    description: Must pass all testcases of e2e focus 'NetworkPolicy'.
-    url: https://docs.scs.community/standards/scs-0219-v1-kaas-networking#decision
+    description: Must pass all testcases of upstream CNCF Kubernetes e2e-suite focus 'NetworkPolicy'.
+    url: https://docs.scs.community/standards/scs-0219-w1-kaas-networking#automated-tests
 modules:
   - id: cncf-k8s-conformance
     name: CNCF Kubernetes conformance
