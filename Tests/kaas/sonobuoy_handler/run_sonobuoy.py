@@ -33,7 +33,7 @@ def sonobuoy_run(kubeconfig, result_dir_name, check_name, scs_sonobuoy_config_ya
 
 
 @cli.command("check-results")
-@click.option("--scs-sonobuoy-config", "scs_sonobuoy_config_yaml", type=click.Path(exists=True), default="kaas/scs-sonobuoy-config-v1.yaml", help="Configuration for Sonobuoy (yaml format)")
+@click.option("--scs-sonobuoy-config", "scs_sonobuoy_config_yaml", required=True, type=click.Path(exists=True), help="Configuration for Sonobuoy (YAML format)")
 @click.argument("sonobuoy_result_yaml", type=click.Path(exists=True))
 def check_results(scs_sonobuoy_config_yaml, sonobuoy_result_yaml):
     check_sonobuoy_result(scs_sonobuoy_config_yaml, sonobuoy_result_yaml)
