@@ -6,12 +6,14 @@ import click
 import yaml
 
 from plugin_clusterstacks import PluginClusterStacks
+from plugin_gardener import PluginGardener
 from plugin_kind import PluginKind
 from plugin_static import PluginStatic
 
 
 PLUGIN_LOOKUP = {
     "clusterstacks": PluginClusterStacks,
+    "gardener": PluginGardener,
     "kind": PluginKind,
     "static": PluginStatic,
 }
