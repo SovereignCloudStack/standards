@@ -98,7 +98,7 @@ class _ShootOps:
         return _gh.get_secret_data(core_api, self.namespace, self.secret_name)
 
     def wait_for_shoot_ready(self, co_api: _gh.CustomObjectsApi):
-        last_op = self._get_last_operation(co_api)        
+        last_op = self._get_last_operation(co_api)
         while last_op is not None and last_op.get('state') != 'Succeeded':
             state = last_op.get('state', 'Unknown')
             progress = last_op.get('progress', 0)
@@ -172,7 +172,7 @@ class PluginGardener(KubernetesClusterPlugin):
             sops = _ShootOps(self.namespace, self.config['name'])
             sops.create(co_api=co_api, shoot_dict=shoot_dict)
             sops.wait_for_shoot_ready(co_api)
-            self._write_kubeconfig(cops.get_kubeconfig(core_api))
+            self._write_kubeconfig(sops.get_kubeconfig(core_api))
 
     def delete_cluster(self):
         with ApiClient(self.client_config) as api_client:

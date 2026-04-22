@@ -65,6 +65,7 @@ def get_shoot_status(co_api: CustomObjectsApi, namespace: str, name: str):
         name=name,
     )
 
+
 # def get_secret_data(core_api: CoreV1Api, namespace: str, name: str):
 #     secret = core_api.read_namespaced_secret(name, namespace)
 #     return base64.b64decode(secret.data['kubeconfig'])
