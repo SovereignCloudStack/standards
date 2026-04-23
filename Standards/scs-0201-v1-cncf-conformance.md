@@ -11,7 +11,7 @@ description: |
 
 Interoperability, consistency, and traceability play a crucial role in the deployment and use of a Kubernetes environment. Testing ensures this conformance across different Kubernetes environments.
 
-The SCS project always intended to reuse existing standards whenever possible. For this reason, the upstream tooling of the [Certified Kubernetes Conformance Program](https://github.com/cncf/k8s-conformance) is used for conformance testing.
+The SCS project always intends to reuse existing standards whenever possible. For this reason, the upstream test suite of the [Certified Kubernetes Conformance Program](https://github.com/cncf/k8s-conformance) is used for conformance testing.
 
 ## Motivation
 
