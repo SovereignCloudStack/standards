@@ -11,7 +11,7 @@ supplements:
 We test _full support_ for network policies using the upstream e2e tests via Sonobuoy with `--e2e-focus NetworkPolicy`.
 
 All testcases of this set must be passed, with some well-founded exceptions (e.g., due to bugs), that are listed in
-[scs-sonobuoy-config.yaml](https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/kaas/scs-sonobuoy-config.yaml).
+[scs-sonobuoy-config-v1.yaml](https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/kaas/scs-sonobuoy-config-v1.yaml).
 This list will be adapted if and when new exceptions become necessary or old ones become obsolete. Since we only react
 to bugs and other well-founded circumstances, these exceptions are not deemed part of the normative text, and therefore
 these changes do not require proportionate changes in the standard document.

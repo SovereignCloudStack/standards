@@ -24,4 +24,4 @@ The conformance testing is performed as part of the [SCS compliance check suite]
 We allow exceptions from the Kubernetes e2e tests if it is reasonable, e.g. [bugs in certain tests](https://github.com/SovereignCloudStack/standards/blob/74a3197d37cbfae3f8f0ed45644e6611186639da/Tests/kaas/scs-sonobuoy-config.yaml#L12). Please note that exceptions may be added and/or removed in such reasonable cases and thereby allowing the standard to be updated without the need for a new version of it. If the reason for an exception goes away, so does the exception and it will therefore be removed.
 
 The exceptions are listed under the key `okToFail` in
-[Tests/kaas/scs-sonobuoy-config-v1.yaml](https://raw.githubusercontent.com/SovereignCloudStack/standards/refs/heads/main/Tests/kaas/scs-sonobuoy-config-v1.yaml).
+[Tests/kaas/scs-sonobuoy-config-v1.yaml](https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/kaas/scs-sonobuoy-config-v1.yaml).
