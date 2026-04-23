@@ -163,7 +163,6 @@ class PluginGardener(KubernetesClusterPlugin):
 
     def create_cluster(self):
         with ApiClient(self.client_config) as api_client:
-            core_api = _gh.CoreV1Api(api_client)
             co_api = _gh.CustomObjectsApi(api_client)
             shoot_yaml = self._render_template('shoot')
             shoot_dict = yaml.load(shoot_yaml, Loader=yaml.SafeLoader)

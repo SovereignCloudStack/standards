@@ -3,7 +3,7 @@ import base64
 import json
 import os
 
-from kubernetes.client import Configuration, CoreV1Api, CustomObjectsApi, ApiClient
+from kubernetes.client import Configuration, CustomObjectsApi, ApiClient
 
 
 GARDENER_GROUP = 'core.gardener.cloud'
