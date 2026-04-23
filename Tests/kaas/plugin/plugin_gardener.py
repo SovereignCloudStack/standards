@@ -21,7 +21,6 @@ class _ShootOps:
     def __init__(self, namespace: str, name: str):
         self.namespace = namespace
         self.name = name
-        self.secret_name = f'{name}.kubeconfig'
 
     def _get_last_operation(self, co_api: _gh.CustomObjectsApi):
         try:
@@ -94,8 +93,8 @@ class _ShootOps:
                 logger.info(f"Shoot {self.name} deletion succeeded, but object still exists. Waiting 30 s for it to vanish.")
             time.sleep(30)
 
-    def get_kubeconfig(self, core_api: _gh.CoreV1Api):
-        return _gh.get_secret_data(core_api, self.namespace, self.secret_name)
+    def get_kubeconfig(self, api_client: ApiClient):
+        return _gh.request_kubeconfig(api_client, self.namespace, self.name)
 
     def wait_for_shoot_ready(self, co_api: _gh.CustomObjectsApi):
         last_op = self._get_last_operation(co_api)
@@ -172,7 +171,7 @@ class PluginGardener(KubernetesClusterPlugin):
             sops = _ShootOps(self.namespace, self.config['name'])
             sops.create(co_api=co_api, shoot_dict=shoot_dict)
             sops.wait_for_shoot_ready(co_api)
-            self._write_kubeconfig(sops.get_kubeconfig(core_api))
+            self._write_kubeconfig(sops.get_kubeconfig(api_client))
 
     def delete_cluster(self):
         with ApiClient(self.client_config) as api_client:

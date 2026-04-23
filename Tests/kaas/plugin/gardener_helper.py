@@ -1,8 +1,9 @@
 """helper functions for Gardener plugin"""
 import base64
+import json
 import os
 
-from kubernetes.client import Configuration, CoreV1Api, CustomObjectsApi
+from kubernetes.client import Configuration, CoreV1Api, CustomObjectsApi, ApiClient
 
 
 GARDENER_GROUP = 'core.gardener.cloud'
@@ -68,10 +69,22 @@ def get_shoot_status(co_api: CustomObjectsApi, namespace: str, name: str):
     )
 
 
-# def get_secret_data(core_api: CoreV1Api, namespace: str, name: str):
-#     secret = core_api.read_namespaced_secret(name, namespace)
-#     return base64.b64decode(secret.data['kubeconfig'])
-def get_secret_data(api_instance: CoreV1Api, namespace, secret):
-    """mimic `kubectl get secrets NAME -o=jsonpath='{.data.value}' | base64 -d  > kubeconfig.yaml`"""
-    res = api_instance.read_namespaced_secret(secret, namespace)
-    return base64.standard_b64decode(res.data['value'].encode())
+def request_kubeconfig(api_client: ApiClient, namespace: str, name: str, expiration_seconds=8*3600):
+    # adapted from
+    # https://gardener.cloud/docs/gardener/shoot/shoot_access/#shoots-adminkubeconfig-subresource
+    kubeconfig_request = {
+        'apiVersion': 'authentication.gardener.cloud/v1alpha1',
+        'kind': 'AdminKubeconfigRequest',
+        'spec': {
+            'expirationSeconds': expiration_seconds,
+        }
+    }
+    response = api_client.call_api(
+        resource_path=f'/apis/core.gardener.cloud/v1beta1/namespaces/{namespace}/shoots/{name}/adminkubeconfig',
+        method='POST',
+        body=kubeconfig_request,
+        auth_settings=['BearerToken'],
+        _preload_content=False,
+        _return_http_data_only=True,
+    )
+    return base64.standard_b64decode(json.loads(response.data)["status"]["kubeconfig"])
