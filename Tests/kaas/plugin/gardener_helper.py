@@ -57,7 +57,9 @@ def annotate_shoot_confirm_deletion(co_api: CustomObjectsApi, namespace: str, na
 
 
 def get_shoot_status(co_api: CustomObjectsApi, namespace: str, name: str):
-    return co_api.get_namespaced_custom_object_status(
+    # Don't use get_namespace_custom_object_status because somehow we're not permitted to do so!
+    # The fn get_namespaced_custom_object will do the trick just as well, maybe less efficient?
+    return co_api.get_namespaced_custom_object(
         group=GARDENER_GROUP,
         version=GARDENER_VERSION,
         namespace=namespace,

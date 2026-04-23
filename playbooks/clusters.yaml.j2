@@ -3,6 +3,7 @@ clusters:
   noris-1.34:
     kind: gardener
     config:
+      name: 'noris-1-34'  # explicit name because dot in name not permissible
       templates:
         shoot: shoot.yaml
         kubeconfig: garden-kubeconfig.yaml
@@ -19,7 +20,7 @@ clusters:
         load_balancer_provider: "ovn"
         cloud_profile_name: "openstack"
         credentials_binding_name: "default-openstack-secret"
-        garden_namespace: "garden-g5lxqfthcn"
+        garden_namespace: "garden-nkhv1db5ym"
       secrets:
         garden_api_server: "{{ clouds_conf.noris_api_server }}"
         garden_ca_data: "{{ clouds_conf.noris_ca_data }}"
