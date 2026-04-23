@@ -1,10 +1,21 @@
 ---
-title: "KaaS Networking Standard: Implementation Notes"
+title: "KaaS Networking Standard: Implementation and Testing Notes"
 type: Supplement
 track: KaaS
 supplements:
   - scs-0219-v1-kaas-networking.md
 ---
+
+## Automated tests
+
+We test _full support_ for network policies using the upstream e2e tests via Sonobuoy with `--e2e-focus NetworkPolicy`.
+
+All testcases of this set must be passed, with some well-founded exceptions (e.g., due to bugs), that are listed in
+[scs-sonobuoy-config.yaml](https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/kaas/scs-sonobuoy-config.yaml).
+This list will be adapted if and when new exceptions become necessary or old ones become obsolete. Since we only react
+to bugs and other well-founded circumstances, these exceptions are not deemed part of the normative text, and therefore
+these changes do not require proportionate changes in the standard document.
+
 ## List of compliant CNI Plugins
 
 The Kubernetes Network Policy API working group maintains a [list of work-in-progress implementations](https://network-policy-api.sigs.k8s.io/implementations/) of the AdminNetworkPolicy and BaselineAdminNetworkPolicy resources.
