@@ -39,10 +39,10 @@ class SonobuoyHandler:
 
     def __init__(
         self,
+        scs_sonobuoy_config_yaml,
         check_name="sonobuoy_handler",
         kubeconfig=None,
         result_dir_name="sonobuoy_results",
-        scs_sonobuoy_config_yaml="kaas/sonobuoy-config.yaml",
         args=(),
     ):
         self.check_name = check_name
