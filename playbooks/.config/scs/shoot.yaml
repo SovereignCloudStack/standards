@@ -1,0 +1,55 @@
+kind: Shoot
+apiVersion: core.gardener.cloud/v1beta1
+metadata:
+  name: {{ name }}
+spec:
+  provider:
+    type: openstack
+    infrastructureConfig:
+      apiVersion: openstack.provider.extensions.gardener.cloud/v1alpha1
+      kind: InfrastructureConfig
+      networks:
+        workers: {{ worker_cidr }}
+      floatingPoolName: {{ floating_pool_name }}
+    controlPlaneConfig:
+      apiVersion: openstack.provider.extensions.gardener.cloud/v1alpha1
+      kind: ControlPlaneConfig
+      loadBalancerProvider: {{ load_balancer_provider }}
+    workers:
+      - name: worker-pool-1
+        minimum: {{ num_worker_nodes }}
+        maximum: {{ num_worker_nodes | int + 1 }}
+        maxSurge: 1
+        machine:
+          type: {{ machine_type }}
+          image:
+            name: {{ machine_image_name }}
+            version: {{ machine_image_version }}
+          architecture: amd64
+        zones:
+          - {{ zone }}
+        cri:
+          name: containerd
+  networking:
+    nodes: {{ worker_cidr }}
+    type: cilium
+  kubernetes:
+    version: {{ kubernetes_version }}
+  cloudProfile:
+    name: {{ cloud_profile_name }}
+    kind: CloudProfile
+  credentialsBindingName: {{ credentials_binding_name }}
+  purpose: evaluation
+  region: {{ region }}
+  addons:
+    kubernetesDashboard:
+      enabled: false
+    nginxIngress:
+      enabled: false
+  maintenance:
+    autoUpdate:
+      kubernetesVersion: true
+      machineImageVersion: true
+    timeWindow:
+      begin: "020000+0100"
+      end: "030000+0100"
