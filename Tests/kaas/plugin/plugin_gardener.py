@@ -98,14 +98,16 @@ class _ShootOps:
 
     def wait_for_shoot_ready(self, co_api: _gh.CustomObjectsApi):
         last_op = self._get_last_operation(co_api)
-        while last_op is not None and last_op.get('state') != 'Succeeded':
+        while last_op is not None and last_op.get('state') not in ('Succeeded', 'Failed'):
             state = last_op.get('state', 'Unknown')
             progress = last_op.get('progress', 0)
             logger.debug(f'waiting 30 s for shoot {self.name} to become ready (current state: {state}, progress: {progress}%)')
             time.sleep(30)
             last_op = self._get_last_operation(co_api)
         if last_op is None:
-            raise RuntimeError(f"Shoot {self.name} object disappeared")
+            raise RuntimeError(f"Shoot {self.name} object disappeared or in state Failed")
+        if last_op.get('state') != 'Succeeded':
+            raise RuntimeError(f"Shoot {self.name} object in unexpected state {last_op.get('state')}")
         logger.debug(f'shoot {self.name} appears to be ready')
 
 
