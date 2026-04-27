@@ -4,6 +4,8 @@ clusters:
     kind: gardener
     config:
       name: 'noris-1-33'  # explicit name because dot in name not permissible
+      kubernetesVersion: '1.33'
+      autoVars: noris  # determine vars.kubernetes_version automatically using kubernetesVersion
       templates:
         shoot: shoot.yaml
         kubeconfig: garden-kubeconfig.yaml
@@ -29,6 +31,8 @@ clusters:
     kind: gardener
     config:
       name: 'noris-1-34'  # explicit name because dot in name not permissible
+      kubernetesVersion: '1.34'
+      autoVars: noris  # determine vars.kubernetes_version automatically using kubernetesVersion
       templates:
         shoot: shoot.yaml
         kubeconfig: garden-kubeconfig.yaml

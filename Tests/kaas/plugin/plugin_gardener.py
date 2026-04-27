@@ -146,6 +146,38 @@ class PluginGardener(KubernetesClusterPlugin):
     def _render_template(self, key):
         return self.template_map[key].render(**self.vars, **self.secrets)
 
+    def _auto_vars_noris(self, api_instance: _gh.CustomObjectsApi):
+        logging.debug('using autoVars/noris')
+        cloud_profile = _gh.get_cloudprofile(api_instance, self.namespace, self.vars['cloud_profile_name'])
+        version_items = cloud_profile['spec']['kubernetes']['versions']
+        # filter by kubernetesVersion and classification==supported
+        version_prefix = f"{self.config['kubernetesVersion']}."
+        versions = [
+            item['version']
+            for item in version_items
+            if item['classification'] == 'supported'
+            if item['version'].startswith(version_prefix)
+        ]
+        logging.debug(f'matching k8s versions: {versions}')
+        if not versions:
+            raise RuntimeError(f'autoVars/noris failed: no versions found for v{version_prefix}x')
+        # select latest patch version (assume patch part is numeric)
+        selected_version = max(versions, key=lambda ver: int(ver.rsplit('.', 1)[-1]))
+        return {'kubernetes_version': selected_version}
+
+    def _auto_vars(self, auto_vars_kind, co_api: _gh.CustomObjectsApi):
+        # set default values regardless of auto_vars_kind
+        self.vars.setdefault('num_worker_nodes', 3)
+        # now on to specifics
+        if not auto_vars_kind:
+            return
+        if auto_vars_kind == 'noris':
+            auto_vars = self._auto_vars_noris(co_api)
+        else:
+            raise RuntimeError(f'unknown kind of autoVars: {auto_vars_kind}')
+        logger.debug(f'applying autoVars/{auto_vars_kind}: {auto_vars}')
+        self.vars.update(auto_vars)
+
     def _write_shoot_yaml(self, shoot_yaml):
         # write out shoot.yaml for purposes of documentation
         # we will however use the dict instead of calling the shell with `kubectl apply -f`
@@ -164,6 +196,7 @@ class PluginGardener(KubernetesClusterPlugin):
     def create_cluster(self):
         with ApiClient(self.client_config) as api_client:
             co_api = _gh.CustomObjectsApi(api_client)
+            self._auto_vars(self.config.get('autoVars'), co_api)
             shoot_yaml = self._render_template('shoot')
             shoot_dict = yaml.load(shoot_yaml, Loader=yaml.SafeLoader)
             self._write_shoot_yaml(shoot_yaml)

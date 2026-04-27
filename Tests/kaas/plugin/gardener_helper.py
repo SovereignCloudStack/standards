@@ -23,6 +23,13 @@ def setup_client_config(client_config: Configuration, kubeconfig, cwd='.'):
         ))
 
 
+def get_cloudprofile(api_instance: CustomObjectsApi, namespace, name):
+    """mimic `kubectl get cloudprofile`"""
+    return api_instance.get_cluster_custom_object(
+        GARDENER_GROUP, GARDENER_VERSION, 'cloudprofiles', name,
+    )
+
+
 def create_shoot(co_api: CustomObjectsApi, namespace: str, body: dict):
     return co_api.create_namespaced_custom_object(
         group=GARDENER_GROUP,
