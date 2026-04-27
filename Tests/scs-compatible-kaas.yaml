@@ -44,7 +44,8 @@ scripts:
     url: https://docs.scs.community/standards/scs-0219-w1-kaas-networking#automated-tests
 modules:
   - id: cncf-k8s-conformance
-    name: scs-0201-v1: CNCF Kubernetes conformance
+    name: >-
+      scs-0201-v1: CNCF Kubernetes conformance
     url: https://docs.scs.community/standards/scs-0201-v1-cncf-conformance
     targets:
       main:
