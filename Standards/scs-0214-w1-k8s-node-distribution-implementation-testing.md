@@ -27,4 +27,5 @@ The current implementation can be found in the script [`k8s_node_distribution_ch
 
 ## Manual tests
 
-None.
+Cloud-service providers must confirm that control plane nodes are indeed distributed over
+multiple physical machines.
