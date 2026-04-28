@@ -28,13 +28,16 @@ def compute_scs_0123_service_presence(services_lookup, *names):
 
 def s3_conn(creds, conn):
     """Return an s3 client conn"""
-    insecure = conn.config.config.get("insecure")
-    verify = conn.config.config.get("verify")
-    cacert = conn.config.config.get("cacert")
-    vrfy = False if (insecure is True or verify is False) else \
-        (cacert or (verify if isinstance(verify, str) else None))
+    cfg = conn.config.config
+    # Take insecure/verify/cacert parameter from clouds.yaml and pass it to boto3.resource.
+    # Deliberately do un-Pythonic `is True` and `is False` here because of type mayhem:
+    # for instance, handle verify=False differently from verify=None (or not set) or verify='some.ca'.
+    if cfg.get("insecure") is True or cfg.get("verify") is False:
+        verify = False
+    else:
+        verify = cfg.get("cacert") or cfg.get("verify")
     return boto3.resource(
-        's3', endpoint_url=creds["HOST"], verify=vrfy,
+        's3', endpoint_url=creds["HOST"], verify=verify,
         aws_access_key_id=creds["AK"], aws_secret_access_key=creds["SK"],
     )
 
