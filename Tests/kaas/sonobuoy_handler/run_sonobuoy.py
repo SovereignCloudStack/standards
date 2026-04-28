@@ -28,7 +28,7 @@ def sonobuoy_run(kubeconfig, result_dir_name, check_name, scs_sonobuoy_config_ya
         # This is merely a shortcut to simplify commandline in scs-compatible-kaas.yaml
         # For more on parallel execution, see https://github.com/vmware-tanzu/sonobuoy/issues/1435
         args += ('--e2e-parallel=true', )
-    sonobuoy_handler = SonobuoyHandler(check_name, kubeconfig, result_dir_name, scs_sonobuoy_config_yaml, args)
+    sonobuoy_handler = SonobuoyHandler(scs_sonobuoy_config_yaml, check_name, kubeconfig, result_dir_name, args)
     sys.exit(sonobuoy_handler.run())
 
 
