@@ -30,12 +30,15 @@ def s3_conn(creds, conn):
     """Return an s3 client conn"""
     cfg = conn.config.config
     # Take insecure/verify/cacert parameter from clouds.yaml and pass it to boto3.resource.
-    # Deliberately do un-Pythonic `is True` and `is False` here because of type mayhem:
-    # for instance, handle verify=False differently from verify=None (or not set) or verify='some.ca'.
-    if cfg.get("insecure") is True or cfg.get("verify") is False:
+    # If verify is True in clouds.yaml, fall back to cacert or None. In the latter case,
+    # the default boto3 behavior is applied (e.g., REQUESTS_CA_BUNDLE can still be used);
+    # but for that, verify must be `None` instead of boto3's default `True`.
+    # Note: cacert must be used to pass the certificate; don't use verify for that; cf.
+    # https://docs.openstack.org/openstacksdk/latest/user/config/configuration.html#ssl-settings
+    if cfg.get("insecure") or not cfg.get("verify", True):
         verify = False
     else:
-        verify = cfg.get("cacert") or cfg.get("verify")
+        verify = cfg.get("cacert")
     return boto3.resource(
         's3', endpoint_url=creds["HOST"], verify=verify,
         aws_access_key_id=creds["AK"], aws_secret_access_key=creds["SK"],
