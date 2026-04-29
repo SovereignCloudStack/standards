@@ -31,8 +31,8 @@ def s3_conn(creds, conn):
     cfg = conn.config.config
     # Take insecure/verify/cacert parameter from clouds.yaml and pass it to boto3.resource.
     # If verify is True in clouds.yaml, fall back to cacert or None. In the latter case,
-    # the default boto3 behavior is applied (e.g., REQUESTS_CA_BUNDLE can still be used);
-    # but for that, verify must be `None` instead of boto3's default `True`.
+    # the default boto3 behavior is applied (where REQUESTS_CA_BUNDLE can still be used,
+    # and otherwise, boto3 defaults to verify=True).
     # Note: cacert must be used to pass the certificate; don't use verify for that; cf.
     # https://docs.openstack.org/openstacksdk/latest/user/config/configuration.html#ssl-settings
     if cfg.get("insecure") or not cfg.get("verify", True):
