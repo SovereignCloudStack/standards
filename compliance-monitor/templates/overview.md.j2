@@ -9,8 +9,10 @@ Version numbers are suffixed by a symbol depending on state: * for _draft_, † 
 
 ### SCS-compatible IaaS
 
+This is a list of IaaS clouds that we test on a nightly basis against the certificate scope [SCS-compatible IaaS](https://docs.scs.community/standards/scs-compatible-iaas/).
+
 {% set iaas = '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f' -%}
-| Name  | Description  | Operator  | [SCS-compatible IaaS](https://docs.scs.community/standards/scs-compatible-iaas/)  | HealthMon  |
+| Name  | Description  | Operator  | SCS-compatible IaaS  | HealthMon  |
 |-------|--------------|-----------|----------------------|:----------:|
 | [scs2](https://docs.scs.community/community/cloud-resources/plusserver-gx-scs) | Dev/Test/Demo environment (2nd gen) provided for SCS & GAIA-X context | plusserver GmbH | 
 {#- #} [{{ results | pick(iaas, 'scs2') | summary }}]({{ detail_url('scs2', iaas) }}) {# -#}
@@ -18,14 +20,14 @@ Version numbers are suffixed by a symbol depending on state: * for _draft_, † 
 | [aov.cloud](https://www.aov.de/) | Community cloud for customers | aov IT.Services GmbH |
 {#- #} [{{ results | pick(iaas, 'aov-cloud') | summary }}]({{ detail_url('aov-cloud', iaas) }}) {# -#}
 | [HM](https://health.aov.cloud/) |
-| [CC@RRZE](https://www.rrze.fau.de/) | Private Compute Cloud (CC) for [FAU](https://www.fau.de/) | Regionales Rechenzentrum Erlangen | 
+| [CC@RRZE](https://cc.rrze.de/) | Community Compute Cloud (CC) for [FAU](https://www.fau.de/) and Bavaria | Erlangen National High Performance Computing Center (NHR@FAU) & Regionales Rechenzentrum Erlangen (RRZE) |
 {#- #} [{{ results | pick(iaas, 'cc-rrze') | summary }}]({{ detail_url('cc-rrze', iaas) }}) {# -#}
 | (soon) |
 | [CNDS](https://cnds.io/) | Public cloud for customers (2 regions) | artcodix GmbH |
 {#- #} [{{ results | pick(iaas, 'artcodix', 'artcodix-ro') | summary }}]({{ detail_url('group-artcodix', iaas) }}) {# -#}
 | [HM](https://ohm.muc.cloud.cnds.io/) |
-| FOCIS | ALASCA community environment for [FOCIS](https://alasca.cloud/focis/) | Cloud&amp;Heat Technologies GmbH |
-{#- #} [{{ results | pick(iaas, 'focis') | summary }}]({{ detail_url('focis', iaas) }}) {# -#}
+| [Cloud&amp;Heat IaaS](https://www.cloudandheat.com/en/products/cloud-services/infrastructure-as-a-service/) | Public cloud for customers (1 SCS region) | Cloud&amp;Heat Technologies GmbH |
+{#- #} [{{ results | pick(iaas, 'cah-dd8a') | summary }}]({{ detail_url('cah-dd8a', iaas) }}) {# -#}
 | n/a |
 | [pluscloud open](https://www.plusserver.com/en/products/pluscloud-open) | Public cloud for customers (4 regions)  | plusserver GmbH | {# #}
 {#- #}[{{ results | pick(iaas, 'pco-prod1', 'pco-prod2', 'pco-prod3', 'pco-prod4') | summary }}]({{ detail_url('group-pco-prod', iaas) }}) {# -#}
@@ -48,9 +50,14 @@ Version numbers are suffixed by a symbol depending on state: * for _draft_, † 
 
 ### SCS-compatible KaaS
 
+This is a list of KaaS clouds that we test on a nightly basis against the certificate scope [SCS-compatible KaaS](https://docs.scs.community/standards/scs-compatible-kaas/).
+
 {% set kaas = '1fffebe6-fd4b-44d3-a36c-fc58b4bb0180' -%}
-| Name  | Description  | Operator  | [SCS-compatible KaaS](https://docs.scs.community/standards/scs-compatible-kaas/)  |
+| Name  | Description  | Operator  | SCS-compatible KaaS  |
 |-------|--------------|-----------|----------------------|
+| [Noris](https://www.noris.de/) | KaaS offering based on Gardener | noris network AG | {# #}
+{#- #} [{{ results | pick(kaas, 'noris-1.33', 'noris-1.34') | summary }}]({{ detail_url('group-noris', kaas) }}) {# -#}
+|
 | [Syself](https://syself.com/) | KaaS offering based on ClusterStacks | Syself GmbH | {# #}
 {#- #} [{{ results | pick(kaas, 'syself-1.33', 'syself-1.34') | summary }}]({{ detail_url('group-syself', kaas) }}) {# -#}
 |

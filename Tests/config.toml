@@ -21,7 +21,7 @@ subjects = [
     "artcodix",
     "artcodix-ro",
     # currently not reachable from outside: "cc-rrze",
-    "focis",
+    "cah-dd8a",
     "pco-prod1",
     "pco-prod2",
     "pco-prod3",
@@ -40,6 +40,7 @@ scopes = [
     "scs-compatible-kaas",
 ]
 subjects = [
+    "noris-1.34",
     "syself-1.33",
     "syself-1.34",
 ]

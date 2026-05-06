@@ -1,5 +1,59 @@
 ---
 clusters:
+  noris-1.33:
+    kind: gardener
+    config:
+      name: 'noris-1-33'  # explicit name because dot in name not permissible
+      kubernetesVersion: '1.33'
+      autoVars: noris  # determine vars.kubernetes_version automatically using kubernetesVersion
+      templates:
+        shoot: shoot.yaml
+        kubeconfig: garden-kubeconfig.yaml
+      vars:
+        kubernetes_version: "1.33.10"
+        num_worker_nodes: 3
+        worker_cidr: "10.250.0.0/16"
+        machine_type: "SCS-1V-16-50"
+        machine_image_name: "flatcar"
+        machine_image_version: "4081.3.6"
+        region: "nsc-nbg"
+        zone: "nbg1"
+        floating_pool_name: "external"
+        load_balancer_provider: "ovn"
+        cloud_profile_name: "openstack"
+        credentials_binding_name: "default-openstack-secret"
+        garden_namespace: "garden-nkhv1db5ym"
+      secrets:
+        garden_api_server: "{{ clouds_conf.noris_api_server }}"
+        garden_ca_data: "{{ clouds_conf.noris_ca_data }}"
+        garden_token: "{{ clouds_conf.noris_token }}"
+  noris-1.34:
+    kind: gardener
+    config:
+      name: 'noris-1-34'  # explicit name because dot in name not permissible
+      kubernetesVersion: '1.34'
+      autoVars: noris  # determine vars.kubernetes_version automatically using kubernetesVersion
+      templates:
+        shoot: shoot.yaml
+        kubeconfig: garden-kubeconfig.yaml
+      vars:
+        kubernetes_version: "1.34.6"
+        num_worker_nodes: 3
+        worker_cidr: "10.250.0.0/16"
+        machine_type: "SCS-1V-16-50"
+        machine_image_name: "flatcar"
+        machine_image_version: "4081.3.6"
+        region: "nsc-nbg"
+        zone: "nbg1"
+        floating_pool_name: "external"
+        load_balancer_provider: "ovn"
+        cloud_profile_name: "openstack"
+        credentials_binding_name: "default-openstack-secret"
+        garden_namespace: "garden-nkhv1db5ym"
+      secrets:
+        garden_api_server: "{{ clouds_conf.noris_api_server }}"
+        garden_ca_data: "{{ clouds_conf.noris_ca_data }}"
+        garden_token: "{{ clouds_conf.noris_token }}"
   syself-1.32:
     kind: clusterstacks
     config:

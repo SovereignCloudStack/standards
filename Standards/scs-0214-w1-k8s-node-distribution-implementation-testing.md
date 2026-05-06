@@ -20,11 +20,12 @@ Node distribution metadata is provided through the usage of the labels
 ## Automated tests
 
 Currently, automated testing is not readily possible because we cannot access information about
-the underlying host of a node (as opposed to its region and zone). Therefore, the test will only output
-a tentative result.
+the underlying host of a node (as opposed to its region and zone). Besides, access to
+control-plane nodes is problematic outside of a kubeadm-based setup.
 
-The current implementation can be found in the script [`k8s_node_distribution_check.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/kaas/k8s-node-distribution/k8s_node_distribution_check.py).
+Therefore, no automated tests are performed at this time.
 
 ## Manual tests
 
-None.
+Cloud-service providers must confirm that control plane nodes are indeed distributed over
+multiple physical machines.

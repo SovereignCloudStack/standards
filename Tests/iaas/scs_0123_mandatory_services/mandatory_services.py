@@ -28,12 +28,19 @@ def compute_scs_0123_service_presence(services_lookup, *names):
 
 def s3_conn(creds, conn):
     """Return an s3 client conn"""
-    cacert = conn.config.config.get("cacert")
-    # TODO: Handle self-signed certs (from ca_cert in openstack config)
-    if cacert:
-        logger.warning(f"Trust all Certificates in S3, OpenStack uses {cacert}")
+    cfg = conn.config.config
+    # Take insecure/verify/cacert parameter from clouds.yaml and pass it to boto3.resource.
+    # If insecure is False/None and verify is True/None in clouds.yaml, fall back to cacert or None.
+    # In the latter case (None), the default boto3 behavior is applied (where config file or env
+    # variables can still be used, and otherwise, boto3 defaults to verify=True).
+    # Note: cacert must be used to pass the certificate; don't use verify for that; cf.
+    # https://docs.openstack.org/openstacksdk/latest/user/config/configuration.html#ssl-settings
+    if cfg.get("insecure") or not cfg.get("verify", True):
+        verify = False
+    else:
+        verify = cfg.get("cacert")
     return boto3.resource(
-        's3', endpoint_url=creds["HOST"], verify=not cacert,
+        's3', endpoint_url=creds["HOST"], verify=verify,
         aws_access_key_id=creds["AK"], aws_secret_access_key=creds["SK"],
     )
 

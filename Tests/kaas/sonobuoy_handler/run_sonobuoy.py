@@ -20,7 +20,7 @@ def cli():
 @click.option("-k", "--kubeconfig", "kubeconfig", required=True, type=click.Path(exists=True), help="path/to/kubeconfig_file.yaml",)
 @click.option("-r", "--result_dir_name", "result_dir_name", type=str, default="sonobuoy_results", help="directory name to store results at",)
 @click.option("-c", "--check", "check_name", type=str, default="sonobuoy_executor", help="this MUST be the same name as the id in 'scs-compatible-kaas.yaml'",)
-@click.option("--scs-sonobuoy-config", "scs_sonobuoy_config_yaml", type=click.Path(exists=True), default="kaas/sonobuoy-config.yaml", help="Configuration for Sonobuoy (yaml format)")
+@click.option("--scs-sonobuoy-config", "scs_sonobuoy_config_yaml", required=True, type=click.Path(exists=True), help="Configuration for Sonobuoy (YAML format)")
 @click.option('--execution-mode', 'mode', type=click.Choice(('serial', 'parallel')), default='serial')
 @click.option("-a", "--arg", "args", multiple=True)
 def sonobuoy_run(kubeconfig, result_dir_name, check_name, scs_sonobuoy_config_yaml, mode, args):
@@ -28,12 +28,12 @@ def sonobuoy_run(kubeconfig, result_dir_name, check_name, scs_sonobuoy_config_ya
         # This is merely a shortcut to simplify commandline in scs-compatible-kaas.yaml
         # For more on parallel execution, see https://github.com/vmware-tanzu/sonobuoy/issues/1435
         args += ('--e2e-parallel=true', )
-    sonobuoy_handler = SonobuoyHandler(check_name, kubeconfig, result_dir_name, scs_sonobuoy_config_yaml, args)
+    sonobuoy_handler = SonobuoyHandler(scs_sonobuoy_config_yaml, check_name, kubeconfig, result_dir_name, args)
     sys.exit(sonobuoy_handler.run())
 
 
 @cli.command("check-results")
-@click.option("--scs-sonobuoy-config", "scs_sonobuoy_config_yaml", type=click.Path(exists=True), default="kaas/scs-sonobuoy-config.yaml", help="Configuration for Sonobuoy (yaml format)")
+@click.option("--scs-sonobuoy-config", "scs_sonobuoy_config_yaml", required=True, type=click.Path(exists=True), help="Configuration for Sonobuoy (YAML format)")
 @click.argument("sonobuoy_result_yaml", type=click.Path(exists=True))
 def check_results(scs_sonobuoy_config_yaml, sonobuoy_result_yaml):
     check_sonobuoy_result(scs_sonobuoy_config_yaml, sonobuoy_result_yaml)

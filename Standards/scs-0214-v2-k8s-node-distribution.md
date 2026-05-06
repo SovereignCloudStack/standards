@@ -69,9 +69,7 @@ to provide a fault-tolerant and available Kubernetes cluster infrastructure.
 
 The control plane nodes MUST be distributed over multiple physical machines.
 Kubernetes provides [best-practices][k8s-zones] on this topic, which are also RECOMMENDED by SCS.
-
-At least one control plane instance MUST be run in each "failure zone" used for the cluster,
-more instances per "failure zone" are possible to provide fault-tolerance inside a zone.
+In particular, the control plane nodes SHOULD be distributed over multiple failure zones.
 
 Worker nodes are RECOMMENDED to be distributed over multiple zones. This policy makes
 it OPTIONAL to provide a worker node in each "failure zone", meaning that worker nodes
