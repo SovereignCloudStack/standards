@@ -1,0 +1,14 @@
+## 📜 Report history: {{ subject }} — {{ scope_name }}
+
+{% if history %}
+| Date | PASS | FAIL | ABORT | Report |
+|---|---|---|---|---|
+{% for entry in history -%}
+| {{ entry.checked_at | short_isodate }} | {{ entry.pass_count }} | {{ entry.fail_count }} | {{ entry.abort_count }} | [view]({{ report_url(entry.reportuuid) }}) |
+{% endfor %}
+{% if history | length == history_limit %}
+_Showing the most recent {{ history_limit }} reports. Older entries are not displayed._
+{% endif %}
+{% else %}
+No history available.
+{% endif %}

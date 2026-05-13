@@ -42,7 +42,7 @@ from sql import (
     db_get_keys, db_insert_report, db_get_recent_results2, db_patch_approval2, db_get_report,
     db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys, db_clear_delegates,
     db_find_subjects, db_insert_result2, db_get_relevant_results2, db_add_delegate, db_get_group,
-    db_filter_accounts,
+    db_filter_accounts, db_get_report_history,
 )
 
 
@@ -84,6 +84,7 @@ GROUP_PREFIX = 'group-'
 ROLES = {'read_any': 1, 'append_any': 2, 'admin': 4, 'approve': 8}
 # number of days that expired results will be considered in lieu of more recent, but unapproved ones
 GRACE_PERIOD_DAYS = 7
+HISTORY_LIMIT = 500
 # separator between signature and report data; use something like
 #     ssh-keygen \
 #       -Y sign -f ~/.ssh/id_ed25519 -n report myreport.yaml
@@ -122,7 +123,12 @@ VIEW_SCOPE = {
     ViewType.fragment: 'scope.md',
     ViewType.page: 'overview.html',
 }
-REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_REPORT, VIEW_DETAIL, VIEW_TABLE, VIEW_SCOPE) for fn in view.values()))
+VIEW_HISTORY = {
+    ViewType.markdown: 'history.md',
+    ViewType.fragment: 'history.md',
+    ViewType.page: 'overview.html',
+}
+REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_REPORT, VIEW_DETAIL, VIEW_TABLE, VIEW_SCOPE, VIEW_HISTORY) for fn in view.values()))
 
 
 # do I hate these globals, but I don't see another way with these frameworks
@@ -580,8 +586,9 @@ def render_view(view, view_type, detail_page='detail', base_url='/', title=None,
         stage1 = view[ViewType.fragment]
     def scope_url(uuid): return f"{base_url}page/scope/{uuid}"  # noqa: E306,E704
     def detail_url(subject, scope): return f"{base_url}page/{detail_page}/{subject}/{scope}"  # noqa: E306,E704
+    def history_url(subject, scope): return f"{base_url}page/history/{subject}/{scope}"  # noqa: E306,E704
     def report_url(report, *args, **kwargs): return _build_report_url(base_url, report, *args, **kwargs)  # noqa: E306,E704
-    fragment = templates_map[stage1].render(base_url=base_url, detail_url=detail_url, report_url=report_url, scope_url=scope_url, **kwargs)
+    fragment = templates_map[stage1].render(base_url=base_url, detail_url=detail_url, history_url=history_url, report_url=report_url, scope_url=scope_url, **kwargs)
     if view_type != ViewType.markdown and stage1.endswith('.md'):
         fragment = markdown(fragment, extensions=['extra'])
     if stage1 != stage2:
@@ -702,6 +709,24 @@ async def get_detail_full(
     )
 
 
+@app.get("/{view_type}/history/{subject}/{scopeuuid}")
+async def get_history(
+    request: Request,
+    conn: Annotated[connection, Depends(get_conn)],
+    view_type: ViewType,
+    subject: str,
+    scopeuuid: str,
+):
+    scopes = get_scopes()
+    scope_name = scopes[scopeuuid]['name'] if scopeuuid in scopes else scopeuuid
+    with conn.cursor() as cur:
+        history = db_get_report_history(cur, subject, scopeuuid, limit=HISTORY_LIMIT)
+    return render_view(
+        VIEW_HISTORY, view_type, history=history, subject=subject, scope_name=scope_name,
+        history_limit=HISTORY_LIMIT, base_url=settings.base_url, title=f'📜 Report history for {subject}',
+    )
+
+
 @app.get("/{view_type}/table")
 async def get_table(
     request: Request,
@@ -774,11 +799,16 @@ async def get_results(
     account: Annotated[tuple[str, str], Depends(auth)],
     conn: Annotated[connection, Depends(get_conn)],
     approved: Optional[bool] = None, limit: int = 10, skip: int = 0,
+    subject: Optional[str] = None, scopeuuid: Optional[str] = None,
 ):
-    """get recent results, potentially filtered by approval status"""
-    check_role(account, roles=ROLES['read_any'])
+    """get recent results, optionally filtered by subject, scope, and approval status"""
+    if subject is None:
+        check_role(account, roles=ROLES['read_any'])
+    else:
+        check_role(account, subject, ROLES['read_any'])
     with conn.cursor() as cur:
-        return db_get_recent_results2(cur, approved, limit, skip, max_age_days=GRACE_PERIOD_DAYS)
+        return db_get_recent_results2(cur, approved, limit, skip, max_age_days=GRACE_PERIOD_DAYS,
+                                      subject=subject, scopeuuid=scopeuuid)
 
 
 @app.post("/results")

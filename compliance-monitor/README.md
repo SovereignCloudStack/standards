@@ -154,6 +154,9 @@ The return value is a _list of objects_ like the following:
 
 Supports query parameters:
 
+- `subject=SUBJECT`: restrict results to this subject; if given, accounts without role `read_any`
+  may still access their own subject's results; if omitted, role `read_any` is required;
+- `scopeuuid=SCOPEUUID`: restrict results to this scope;
 - `approved=APPROVED`: return only results with approval status `APPROVED` (either 0 or 1);
   default: no such restriction is applied;
 - `limit=N`: return at most N items (default: 10);

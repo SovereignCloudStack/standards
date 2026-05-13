@@ -194,7 +194,7 @@ def db_upgrade_schema(conn: connection, cur: cursor):
     # that way just in case we want to use another database at some point
     while True:
         current = db_get_schema_version(cur)
-        if current >= SCHEMA_VERSIONS[-1]:  # bail if version is too new (but hope it's compatible)
+        if current is not None and current >= SCHEMA_VERSIONS[-1]:  # bail if version is too new (but hope it's compatible)
             break
         if current is None:
             # this is an empty db, but it also used to be the case with v1
@@ -398,7 +398,7 @@ def db_get_relevant_results2(
     return cur.fetchall()
 
 
-def db_get_recent_results2(cur: cursor, approved, limit, skip, max_age_days=None):
+def db_get_recent_results2(cur: cursor, approved, limit, skip, max_age_days=None, subject=None, scopeuuid=None):
     """list recent test results without grouping by scope/version/check"""
     columns = ('reportuuid', 'subject', 'checked_at', 'scopeuuid', 'version', 'check', 'result', 'approval')
     cur.execute(sql.SQL('''
@@ -414,8 +414,29 @@ def db_get_recent_results2(cur: cursor, approved, limit, skip, max_age_days=None
                 f"checked_at > NOW() - interval '{max_age_days:d} days'"
             ),
             None if approved is None else sql.SQL('approval = %(approved)s'),
+            None if subject is None else sql.SQL('result2.subject = %(subject)s'),
+            None if scopeuuid is None else sql.SQL('result2.scopeuuid = %(scopeuuid)s'),
         ),
-    ), {"limit": limit, "skip": skip, "approved": approved})
+    ), {"limit": limit, "skip": skip, "approved": approved, "subject": subject, "scopeuuid": scopeuuid})
+    return [{col: val for col, val in zip(columns, row)} for row in cur.fetchall()]
+
+
+def db_get_report_history(cur: cursor, subject, scopeuuid, limit=500):
+    """list all past reports for a subject/scope, newest first, with pass/fail/abort counts"""
+    cur.execute('''
+    SELECT report.reportuuid, report.checked_at,
+        COUNT(*) FILTER (WHERE result2.result = 1) AS pass_count,
+        COUNT(*) FILTER (WHERE result2.result = -1) AS fail_count,
+        COUNT(*) FILTER (WHERE result2.result = 0) AS abort_count
+    FROM report
+    JOIN result2 ON result2.reportid = report.reportid
+    WHERE report.subject = %(subject)s
+      AND result2.scopeuuid = %(scopeuuid)s
+    GROUP BY report.reportuuid, report.checked_at
+    ORDER BY report.checked_at DESC
+    LIMIT %(limit)s;
+    ''', {"subject": subject, "scopeuuid": scopeuuid, "limit": limit})
+    columns = ('reportuuid', 'checked_at', 'pass_count', 'fail_count', 'abort_count')
     return [{col: val for col, val in zip(columns, row)} for row in cur.fetchall()]
 
 

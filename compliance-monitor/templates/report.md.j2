@@ -3,6 +3,7 @@
 - uuid: [{{ report.run.uuid }}]({{ report_url(report.run.uuid, download=True) }})
 - subject: {{ report.subject }}
 - scope: [{{ report.spec.name }}]({{ scope_url(report.spec.uuid) }})
+- [📜 report history]({{ history_url(report.subject, report.spec.uuid) }})
 - checked at: {{ report.checked_at }}
 - variable assignment: {% set comma = joiner(", ") %}{% for key, value in report.run.assignment.items() -%}{{comma()}}`{{ key }}`=`{{ value }}`{% endfor %}
 
