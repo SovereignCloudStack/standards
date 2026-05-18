@@ -12,7 +12,7 @@ ARCHITECTURES = ("x86_64", "aarch64", "risc-v")
 HW_DISK_BUSES = ("virtio", "scsi", None)  # FIXME why None?
 HYPERVISOR_TYPES = ("qemu", "kvm", "xen", "hyper-v", "esxi", None)
 HW_RNG_MODELS = ("virtio", None)
-OS_PURPOSES = ("generic", "minimal", "k8snode", "gpu", "network", "custom")
+OS_PURPOSES = ("generic", "oldgeneric", "minimal", "k8snode", "gpu", "network", "custom")
 # Auxiliary mapping for `freq2secs` (note that values are rounded up a bit on purpose)
 FREQ_TO_SEC = {
     "never": 0,
