@@ -39,7 +39,7 @@ As to remain backward compatibility with version 1 of this standard, the suffix 
 
 ### General expectations
 
-The general expectation for certification is to provide proof of experience in setting up, operating and supporting SCS-compliant environments.
+The general expectation for certification is to provide proof of experience in setting up, operating and supporting SCS-compliant environments. This experience MUST remain in place for as long as the certification is valid.
 
 SCS is an open source community project with the goal of enabling digital sovereignty. As such, the commitment and support of this mission SHOULD be recognized and promoted beyond technical competence.
 
