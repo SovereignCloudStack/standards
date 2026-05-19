@@ -32,7 +32,7 @@ decorator==5.2.1
     #   openstacksdk
 dogpile-cache==1.5.0
     # via openstacksdk
-idna==3.11
+idna==3.15
     # via
     #   -c iaas/../requirements.txt
     #   requests
