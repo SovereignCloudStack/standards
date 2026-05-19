@@ -55,7 +55,7 @@ This is a list of KaaS clouds that we test on a nightly basis against the certif
 {% set kaas = '1fffebe6-fd4b-44d3-a36c-fc58b4bb0180' -%}
 | Name  | Description  | Operator  | SCS-compatible KaaS  |
 |-------|--------------|-----------|----------------------|
-| [Noris](https://www.noris.de/) | KaaS offering based on Gardener | noris network AG | {# #}
+| [noris](https://www.noris.de/) | KaaS offering based on Gardener | noris network AG | {# #}
 {#- #} [{{ results | pick(kaas, 'noris-1.33', 'noris-1.34') | summary }}]({{ detail_url('group-noris', kaas) }}) {# -#}
 |
 | [Syself](https://syself.com/) | KaaS offering based on ClusterStacks | Syself GmbH | {# #}
