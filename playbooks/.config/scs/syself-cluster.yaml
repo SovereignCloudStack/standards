@@ -1,4 +1,4 @@
-apiVersion: cluster.x-k8s.io/v1beta1
+apiVersion: cluster.x-k8s.io/v1beta2
 kind: Cluster
 metadata:
   name: '{{ name }}'
@@ -13,7 +13,8 @@ spec:
     # the following variables can be determined automatically using autoVars: syself
     # for this detection, we list all clusterstackrelease objects and select the latest one that fits the
     # requested kubernetesVersion
-    class: '{{ cs_class_name }}'
+    classRef:
+      name: '{{ cs_class_name }}'
     version: '{{ cs_version }}'
     controlPlane:
       replicas: {{ num_control_nodes }}
