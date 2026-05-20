@@ -4,7 +4,7 @@ type: Standard
 status: Stable
 track: IaaS
 description: |
-  This is version 2.1 of the SCS-0102 Image Metadata Standard.
+  This is version 2 of the SCS-0102 Image Metadata Standard.
   It outlines how to categorize and manage metadata for cloud-based operating
   system images to ensure usability and clarity. The standard encompasses naming conventions, technical requirements,
   image handling protocols including updating and origin, and licensing/support details. These guidelines ensure
