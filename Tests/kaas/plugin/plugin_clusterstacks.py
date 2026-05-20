@@ -15,6 +15,7 @@ logging.getLogger("kubernetes").setLevel(logging.INFO)
 
 
 TEMPLATE_KEYS = ('cluster', 'clusterstack', 'kubeconfig')
+TIMEOUTS = [30] * 30 + [0]  # wait at most 900 seconds (15 minutes); sentinel value at the end
 
 
 class _ClusterOps:
@@ -44,6 +45,7 @@ class _ClusterOps:
 
     def create(self, co_api: _csh.CustomObjectsApi, cluster_dict):
         # repeat this because it's possible that a cluster object exists that is in Deleting phase
+        timeouts = iter(TIMEOUTS)
         while True:
             logger.debug(f'creating cluster object for {self.name}')
             try:
@@ -60,8 +62,11 @@ class _ClusterOps:
                 logger.debug(f'cluster object for {self.name} already present in phase {phase}')
                 if phase.lower() in ('provisioned', 'provisioning'):
                     break
-                logger.debug(f'waiting 30 s for cluster {self.name} to vanish or become provisioned')
-                time.sleep(30)
+                timeout = next(timeouts)
+                if not timeout:
+                    raise RuntimeError(f"Timeout error while waiting on Cluster {self.name}")
+                logger.debug(f'waiting {timeout} s for cluster {self.name} to vanish or become provisioned')
+                time.sleep(timeout)
             else:
                 break
 
@@ -78,23 +83,34 @@ class _ClusterOps:
         # it will take at least 5 s (and way longer if the cluster is already running)
         logger.debug(f'cluster {self.name} deletion requested; waiting 8 s for it to vanish')
         time.sleep(8)
+        timeouts = iter(TIMEOUTS)
         while True:
             phase = self._get_phase(co_api)
             if phase is None:
+                logger.debug(f"Cluster {self.name} deleted.")
                 break
             if phase.lower() != 'deleting':
                 raise RuntimeError(f'cluster {self.name} in phase {phase}; expected: Deleting')
-            logger.debug(f'cluster {self.name} still deleting; waiting 30 s for it to vanish')
-            time.sleep(30)
+            timeout = next(timeouts)
+            if not timeout:
+                raise RuntimeError(f"Cluster {self.name} has not gone away in time")
+            logger.debug(f'cluster {self.name} still deleting; waiting {timeout} s for it to vanish')
+            time.sleep(timeout)
 
     def get_kubeconfig(self, core_api: _csh.CoreV1Api):
         return _csh.get_secret_data(core_api, self.namespace, self.secret_name)
 
     def wait_for_cluster_ready(self, co_api: _csh.CustomObjectsApi):
-        while not self._get_condition_ready(co_api):
-            logger.debug(f'waiting 30 s for cluster {self.name} to become ready')
-            time.sleep(30)
-        logger.debug(f'cluster {self.name} appears to be ready')
+        timeouts = iter(TIMEOUTS)
+        while True:
+            if self._get_condition_ready(co_api):
+                logger.debug(f'cluster {self.name} appears to be ready')
+                break
+            timeout = next(timeouts)
+            if not timeout:
+                raise RuntimeError(f"Cluster {self.name} has not become ready in time")
+            logger.debug(f'waiting {timeout} s for cluster {self.name} to become ready')
+            time.sleep(timeout)
 
 
 def load_templates(env, basepath, fn_map, keys=TEMPLATE_KEYS):
