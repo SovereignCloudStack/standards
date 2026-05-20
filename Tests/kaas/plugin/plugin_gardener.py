@@ -15,7 +15,7 @@ logging.getLogger("kubernetes").setLevel(logging.INFO)
 
 
 TEMPLATE_KEYS = ('shoot', 'kubeconfig')
-TIMEOUTS = [30] * 30 + [0]  # wait at most 900 seconds (15 minutes); sentinel value at the end
+TIMEOUTS = [30] * 40 + [0]  # wait at most 1200 seconds (20 minutes); sentinel value at the end
 
 
 class _ShootOps:
