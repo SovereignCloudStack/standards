@@ -6,80 +6,80 @@
 #
 aiohappyeyeballs==2.6.1
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   aiohttp
 aiohttp==3.13.5
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   kubernetes-asyncio
 aiosignal==1.4.0
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   aiohttp
 attrs==26.1.0
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   aiohttp
 certifi==2026.2.25
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   kubernetes
     #   kubernetes-asyncio
     #   requests
 charset-normalizer==3.4.7
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   requests
 durationpy==0.10
     # via kubernetes
 frozenlist==1.8.0
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   aiohttp
     #   aiosignal
 idna==3.11
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   requests
     #   yarl
 jinja2==3.1.6
-    # via -r requirements.in
+    # via -r kaas/requirements.in
 kubernetes==35.0.0
-    # via -r requirements.in
+    # via -r kaas/requirements.in
 kubernetes-asyncio==35.0.1
-    # via -r requirements.in
+    # via -r kaas/requirements.in
 markupsafe==3.0.3
     # via jinja2
 multidict==6.7.1
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   aiohttp
     #   yarl
 oauthlib==3.3.1
     # via requests-oauthlib
 propcache==0.4.1
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   aiohttp
     #   yarl
 pykube-ng==23.6.0
     # via pytest-kind
 pytest-kind==22.11.1
-    # via -r requirements.in
+    # via -r kaas/requirements.in
 python-dateutil==2.9.0.post0
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   kubernetes
     #   kubernetes-asyncio
 pyyaml==6.0.3
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   kubernetes
     #   kubernetes-asyncio
     #   pykube-ng
 requests==2.33.1
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   kubernetes
     #   pykube-ng
     #   requests-oauthlib
@@ -87,17 +87,17 @@ requests-oauthlib==2.0.0
     # via kubernetes
 six==1.17.0
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   kubernetes
     #   kubernetes-asyncio
     #   python-dateutil
 typing-extensions==4.15.0
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   aiosignal
-urllib3==2.6.3
+urllib3==2.7.0
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   kubernetes
     #   kubernetes-asyncio
     #   pykube-ng
@@ -106,5 +106,5 @@ websocket-client==1.9.0
     # via kubernetes
 yarl==1.23.0
     # via
-    #   -c ../requirements.txt
+    #   -c kaas/../requirements.txt
     #   aiohttp
