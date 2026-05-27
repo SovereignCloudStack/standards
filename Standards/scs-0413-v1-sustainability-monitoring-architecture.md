@@ -25,6 +25,12 @@ and describes the decisions taken to achieve it.
 
 **Operational emissions** - Produced during the so-called usage phase, through energy consumption for computing workloads, cooling and network operations.
 
+**GWP** — Global Warming Potential, kg CO2eq
+
+**ADP** — Abiotic Depletion Potential, kg Sb eq
+
+**CED** — Cumulative Energy Demand, MJ
+
 ## Architectural Overview
 
 Sustainability monitoring for SCS-compliant environments addresses the need
@@ -184,4 +190,6 @@ separate from calculation logic.
 
 
 ## Related Documents
-Related Documents, OPTIONAL
+
+- [SCS-0414-v1 — Sustainability Monitoring Data Formats](scs-0414-v1-sustainability-monitoring-data-formats.md)
+- [Leaf PoC](https://github.com/eco-digit/leaf) — Reference implementation developed under the ECO:DIGIT research project
