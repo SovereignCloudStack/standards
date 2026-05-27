@@ -553,7 +553,6 @@ async def get_status(
     subject: str = None, scopeuuid: str = None, version: str = None,
 ):
     check_role(account, subject, ROLES['read_any'])
-    # note: text/html will be the default, but let's start with json to get the logic right
     accept = request.headers['accept']
     if 'application/json' not in accept and '*/*' not in accept:
         # see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/406
