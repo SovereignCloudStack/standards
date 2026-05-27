@@ -48,10 +48,11 @@ This includes energy consumption metrics from compute servers, storage nodes,
 network equipment and management hardware,
 made available through a time-series database (TSDB).
 
-Data sources at this layer include node-level power and energy readings
-(via RAPL or Kepler for (vm, container and pod energy metrics), BMC/IPMI or Redfish exporters),
-VM-level energy attribution via hypervisor instrumentation,
+Data sources at this layer include node-level power and energy readings (via RAPL, BMC/IPMI or Redfish exporters),
+VM-, Container-, or Pod level energy attribution (via Kepler or hypervisor instrumentation),
 and tenant-to-resource mapping via hypervisor metadata.
+
+- Kepler itself can also get (and serve) its metrics from data obtained via RAPL/BMC/IPMI/Redfish.
 
 ### Calculation Layer
 
