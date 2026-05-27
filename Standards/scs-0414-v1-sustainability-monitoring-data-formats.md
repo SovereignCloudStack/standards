@@ -24,7 +24,7 @@ This standard defines what a compliant implementation MUST expose.
 - Device and provider labels are constrained by the infrastructure inventory 
 - Tenant labels are constrained to OpenStack project identifiers
 
-## Standard
+## Standard (Naming Convention)
 
 All metrics use the `sustainability_` prefix and follow the pattern:
 
@@ -33,11 +33,13 @@ sustainability_{subject}_{phase}_{category}
 sustainability_{subject}_energy_kwh
 ```
 
-Where `subject` is `device`, `provider` or `tenant`,
-`phase` is `embodied`, `operational` or `total`,
-and `category` is `gwp_kg`, `adp_kg_sb_eq`, `ced_mj` or `water_m3`.
+Where:
 
-All metrics MUST be exposed in Prometheus? Text format as gauges.
+  - `subject` SHOULD be presented as `device`, `provider` or `tenant`;
+  - `phase` SHOULD be presented as `embodied`, `operational` or `total`;
+  - `category` SHOULD be presented as `gwp_kg`, `adp_kg_sb_eq`, `ced_mj` or `water_m3`.
+
+All metrics MUST be exposed in Prometheus text format as gauges.
 
 ### Device Level
 
@@ -84,5 +86,6 @@ sustainability_tenant_total_water_m3{project_id, project_name}
 ```
 
 ## Related Documents
-- SCS-0413-v1
-- [Leaf PoC](https://github.com/eco-digit/leaf) — Reference implementation developed under the ECO:DIGIT research project
+
+- [Leaf Sustainability Monitoring Service](https://github.com/eco-digit/leaf) — Reference implementation developed under the ECO:DIGIT research project
+- [SCS-0413-v1 - Sustainability Monitoring Architecture](scs-0413-v1-sustainability-monitoring-architecture.md)

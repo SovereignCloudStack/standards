@@ -195,5 +195,5 @@ separate from calculation logic.
 
 ## Related Documents
 
-- [Leaf PoC](https://github.com/eco-digit/leaf) — Reference implementation developed under the ECO:DIGIT research project
+- [Leaf Sustainability Monitoring Service](https://github.com/eco-digit/leaf) — Reference implementation developed under the ECO:DIGIT research project
 - [SCS-0414-v1 — Sustainability Monitoring Data Formats](scs-0414-v1-sustainability-monitoring-data-formats.md)
