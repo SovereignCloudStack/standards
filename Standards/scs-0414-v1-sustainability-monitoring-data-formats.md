@@ -11,13 +11,6 @@ This standard defines the metric schema for sustainability monitoring in SCS-com
 A common format ensures results are comparable across environments
 and consumable by any reporting layer.
 
-## Terminology
-
-**GWP** — Global Warming Potential, kg CO2eq.
-**ADP** — Abiotic Depletion Potential, kg Sb eq.
-**CED** — Cumulative Energy Demand, MJ.
-**Embodied emissions** — Impact from manufacturing, transport and installation of hardware.
-**Operational emissions** — Impact from energy consumed during the usage phase.
 
 ## Motivation
 
@@ -91,9 +84,5 @@ sustainability_tenant_total_water_m3{project_id, project_name}
 ```
 
 ## Related Documents
-
 - SCS-0413-v1
-
-## Conformance Tests
-
-Open.
+- [Leaf PoC](https://github.com/eco-digit/leaf) — Reference implementation developed under the ECO:DIGIT research project
