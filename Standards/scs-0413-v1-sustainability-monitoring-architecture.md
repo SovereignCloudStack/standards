@@ -53,7 +53,7 @@ Data sources at this layer include node-level power and energy readings (via RAP
 VM-, Container-, or Pod level energy attribution (via [Kepler](https://sustainable-computing.io) or hypervisor instrumentation),
 and tenant-to-resource mapping via hypervisor metadata.
 
-> Kepler itself can also get (and serve) its metrics from data obtained via RAPL/BMC/IPMI/Redfish.
+Kepler itself can also get (and serve) its metrics from data obtained via RAPL/BMC/IPMI/Redfish.
 
 ### Calculation Layer
 
