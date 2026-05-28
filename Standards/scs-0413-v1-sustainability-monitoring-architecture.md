@@ -19,6 +19,7 @@ in SCS-compliant environments
 and describes the decisions taken to achieve it.
 
 ## Terminology
+
 **LCA** - Life Cycle Assessment is a comprehensive methodology used to evaluate the environmental impacts of products, services or systems through their life cycle. 
 
 **Embodied emissions**- Refer to the environmental impact that is associated with the actual production, transportation and installation of hardware.
@@ -48,10 +49,11 @@ This includes energy consumption metrics from compute servers, storage nodes,
 network equipment and management hardware,
 made available through a time-series database (TSDB).
 
-Data sources at this layer include node-level power and energy readings
-(via RAPL or [Kepler](https://sustainable-computing.io) for (vm, container and pod energy metrics), BMC/IPMI or Redfish exporters),
-VM-level energy attribution via hypervisor instrumentation,
+Data sources at this layer include node-level power and energy readings (via RAPL, BMC/IPMI or Redfish exporters),
+VM-, Container-, or Pod level energy attribution (via Kepler or hypervisor instrumentation),
 and tenant-to-resource mapping via hypervisor metadata.
+
+> Kepler itself can also get (and serve) its metrics from data obtained via RAPL/BMC/IPMI/Redfish.
 
 ### Calculation Layer
 
@@ -153,7 +155,9 @@ without modifying the implementation,
 and makes the model independently verifiable.
 
 ### Options Considered
+
 #### Kepler exporter
+
 We tested the Kepler exporter for providing vm specific energy measurements. At this moment this seems to be the best option on the market right now.
 
 #### Tested in PoC: Periodic background calculation with cached serving
@@ -163,6 +167,7 @@ writes results to a cache,
 and serves the last result on demand without triggering a new calculation.
 
 #### On-demand calculation
+
 The calculator runs each time results are requested.
 This keeps results fresh
 but couples serving latency to calculation time,
@@ -188,8 +193,7 @@ Calculation and serving are decoupled into two independent loops.
 Model parameters are held in configuration,
 separate from calculation logic.
 
-
 ## Related Documents
 
+- [Leaf Sustainability Monitoring Service](https://github.com/eco-digit/leaf) — Reference implementation developed under the ECO:DIGIT research project
 - [SCS-0414-v1 — Sustainability Monitoring Data Formats](scs-0414-v1-sustainability-monitoring-data-formats.md)
-- [Leaf PoC](https://github.com/eco-digit/leaf) — Reference implementation developed under the ECO:DIGIT research project
