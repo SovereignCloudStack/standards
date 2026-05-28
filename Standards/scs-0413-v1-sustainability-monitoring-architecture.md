@@ -49,7 +49,7 @@ network equipment and management hardware,
 made available through a time-series database (TSDB).
 
 Data sources at this layer include node-level power and energy readings
-(via RAPL or Kepler for (vm, container and pod energy metrics), BMC/IPMI or Redfish exporters),
+(via RAPL or [Kepler](https://sustainable-computing.io) for (vm, container and pod energy metrics), BMC/IPMI or Redfish exporters),
 VM-level energy attribution via hypervisor instrumentation,
 and tenant-to-resource mapping via hypervisor metadata.
 
