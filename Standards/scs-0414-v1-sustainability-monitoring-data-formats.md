@@ -27,7 +27,7 @@ This standard defines what a compliant implementation MUST expose.
 
 All metrics use the `sustainability_` prefix and follow the pattern:
 
-```json
+```text
 sustainability_{subject}_{phase}_{category}
 sustainability_{subject}_energy_kwh
 ```
@@ -42,7 +42,7 @@ All metrics MUST be exposed in Prometheus text format as gauges.
 
 ### Device Level
 
-```json
+```text
 sustainability_device_energy_kwh{datacenter, component, device}
 sustainability_device_embodied_gwp_kg{datacenter, component, device}
 sustainability_device_embodied_adp_kg_sb_eq{datacenter, component, device}
@@ -52,7 +52,7 @@ sustainability_device_embodied_water_m3{datacenter, component, device}
 
 ### Provider Level
 
-```json
+```text
 sustainability_provider_energy_kwh{datacenter, component}
 sustainability_provider_operational_gwp_kg{datacenter, component}
 sustainability_provider_operational_adp_kg_sb_eq{datacenter, component}
@@ -69,7 +69,7 @@ sustainability_provider_total_water_m3{datacenter, component}
 
 ### Tenant Level
 
-```json
+```text
 sustainability_tenant_energy_kwh{project_id, project_name}
 sustainability_tenant_operational_gwp_kg{project_id, project_name}
 sustainability_tenant_operational_adp_kg_sb_eq{project_id, project_name}
