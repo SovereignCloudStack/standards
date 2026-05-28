@@ -50,10 +50,10 @@ network equipment and management hardware,
 made available through a time-series database (TSDB).
 
 Data sources at this layer include node-level power and energy readings (via RAPL, BMC/IPMI or Redfish exporters),
-VM-, Container-, or Pod level energy attribution (via [Kepler](https://sustainable-computing.io) or hypervisor instrumentation),
+VM-, Container-, or Pod level energy attribution (via Kepler or hypervisor instrumentation),
 and tenant-to-resource mapping via hypervisor metadata.
 
-Kepler itself can also get (and serve) its metrics from data obtained via RAPL/BMC/IPMI/Redfish.
+> Kepler itself can also get (and serve) its metrics from data obtained via RAPL/BMC/IPMI/Redfish.
 
 ### Calculation Layer
 
