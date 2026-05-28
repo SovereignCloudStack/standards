@@ -89,4 +89,3 @@ sustainability_tenant_total_water_m3{project_id, project_name}
 
 - [Leaf Sustainability Monitoring Service](https://github.com/eco-digit/leaf) — Reference implementation developed under the ECO:DIGIT research project
 - [SCS-0413-v1 - Sustainability Monitoring Architecture](scs-0413-v1-sustainability-monitoring-architecture.md)
->>>>>>> add-osba-ecodigit-blueprints
