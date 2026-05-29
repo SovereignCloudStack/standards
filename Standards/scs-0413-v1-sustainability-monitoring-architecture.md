@@ -22,7 +22,7 @@ and describes the decisions taken to achieve it.
 
 **LCA** - Life Cycle Assessment is a comprehensive methodology used to evaluate the environmental impacts of products, services or systems through their life cycle.
 
-**Embodied emissions**- Refer to the environmental impact that is associated with the actual production, transportation and installation of hardware.
+**Embodied emissions** - Refer to the environmental impact that is associated with the actual production, transportation and installation of hardware.
 
 **Operational emissions** - Produced during the so-called usage phase, through energy consumption for computing workloads, cooling and network operations.
 
