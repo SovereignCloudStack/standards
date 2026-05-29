@@ -274,5 +274,4 @@ A boolean property that is not present is considered to be `false`.
   - Reference OpenStack image spec for standard values of `os_distro`, `architecture` and `hypervisor_type`.
   - Recommendation on `os_version` to be a version number (if such a value exists).
   - Recommended field `os_purpose`.
-- Version 2.0 makes the field `os_purpose` mandatory.
-- Version 2.1 added an `os_purpose` of `oldgeneric`.
+- Version 2.0 makes the field `os_purpose` mandatory and adds a new value `oldgeneric`.
