@@ -38,7 +38,7 @@ Sustainability monitoring for SCS-compliant environments addresses the need
 to measure, calculate and report the environmental impact of cloud infrastructure
 across two scopes:
 the **provider level** (total infrastructure footprint)
-and the **tenant level** (per-project/ per-vm attribution of that footprint).
+and the **tenant level** (per-project/per-VM attribution of that footprint).
 
 The architecture is composed of four logical layers.
 
