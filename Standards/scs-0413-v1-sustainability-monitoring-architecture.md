@@ -158,7 +158,7 @@ and makes the model independently verifiable.
 
 #### Kepler exporter
 
-We tested the Kepler exporter for providing vm specific energy measurements. At this moment this seems to be the best option on the market right now.
+We tested the Kepler exporter for providing VM-specific energy measurements. This seems to be the best option on the market right now.
 
 #### Tested in PoC: Periodic background calculation with cached serving
 
