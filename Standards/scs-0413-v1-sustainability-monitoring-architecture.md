@@ -28,7 +28,7 @@ and describes the decisions taken to achieve it.
 
 **GWP** — Global Warming Potential, kg CO2eq.
 
-**ADP** — Abiotic Depletion Potential, kg Sb eq
+**ADP** — Abiotic Depletion Potential, kg Sb eq.
 
 **CED** — Cumulative Energy Demand, MJ
 
