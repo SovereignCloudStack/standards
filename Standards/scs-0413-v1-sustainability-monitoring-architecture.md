@@ -26,7 +26,7 @@ and describes the decisions taken to achieve it.
 
 **Operational emissions** - Produced during the so-called usage phase, through energy consumption for computing workloads, cooling and network operations.
 
-**GWP** — Global Warming Potential, kg CO2eq
+**GWP** — Global Warming Potential, kg CO2eq.
 
 **ADP** — Abiotic Depletion Potential, kg Sb eq
 
