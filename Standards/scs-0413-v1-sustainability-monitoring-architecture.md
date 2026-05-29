@@ -30,7 +30,7 @@ and describes the decisions taken to achieve it.
 
 **ADP** — Abiotic Depletion Potential, kg Sb eq.
 
-**CED** — Cumulative Energy Demand, MJ
+**CED** — Cumulative Energy Demand, MJ.
 
 ## Architectural Overview
 
