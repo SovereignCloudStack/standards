@@ -41,6 +41,7 @@ scopes = [
 ]
 subjects = [
     "noris-1.34",
+    "scaleup-1.33",
     "scaleup-1.34",
     "syself-1.33",
     "syself-1.34",

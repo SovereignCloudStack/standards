@@ -56,6 +56,33 @@ clusters:
         garden_api_server: "{{ clouds_conf.noris_api_server }}"
         garden_ca_data: "{{ clouds_conf.noris_ca_data }}"
         garden_token: "{{ clouds_conf.noris_token }}"
+  scaleup-1.33:
+    kind: gardener
+    config:
+      name: 'scaleup-1-33'  # explicit name because dot in name not permissible
+      kubernetesVersion: '1.33'
+      autoVars: noris  # determine vars.kubernetes_version automatically using kubernetesVersion; noris works well for us
+      templates:
+        shoot: shoot.yaml
+        kubeconfig: garden-kubeconfig.yaml
+      vars:
+        num_worker_nodes: 3
+        worker_cidr: "10.250.0.0/16"
+        machine_type: "SCS-2V-4-40p"
+        machine_image_name: "gardenlinux"
+        machine_image_version: "1877.17.0"
+        networking_type: calico
+        region: "RegionOne"
+        zone: "az1"
+        floating_pool_name: "external"
+        load_balancer_provider: "ovn"
+        cloud_profile_name: "openstack"
+        credentials_binding_name: "c70012-14"
+        garden_namespace: "garden-c70012-14"
+      secrets:
+        garden_api_server: "{{ clouds_conf.scaleup_api_server }}"
+        garden_ca_data: "{{ clouds_conf.scaleup_ca_data }}"
+        garden_token: "{{ clouds_conf.scaleup_token }}"
   scaleup-1.34:
     kind: gardener
     config:
