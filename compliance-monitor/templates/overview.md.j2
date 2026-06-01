@@ -53,11 +53,9 @@ This is a list of IaaS clouds that we test on a nightly basis against the certif
 This is a list of KaaS clouds that we test on a nightly basis against the certificate scope [SCS-compatible KaaS](https://docs.scs.community/standards/scs-compatible-kaas/).
 
 {% set kaas = '1fffebe6-fd4b-44d3-a36c-fc58b4bb0180' -%}
-| Name  | Description  | Operator  | SCS-compatible KaaS  |
-|-------|--------------|-----------|----------------------|
-| [noris Sovereign Cloud (nSC)](https://www.noris.de/en/it-services/cloud-services/cloud-solutions-for-enterprise-companies/noris-sovereign-cloud/) | Public KaaS cloud based on Gardener (1 SCS configuration) | noris network AG | {# #}
-{#- #} [{{ results | pick(kaas, 'noris-1.33', 'noris-1.34') | summary }}]({{ detail_url('group-noris', kaas) }}) {# -#}
-|
-| [Syself Autopilot](https://syself.com/platform) | KaaS offering based on ClusterStacks | Syself GmbH | {# #}
-{#- #} [{{ results | pick(kaas, 'syself-1.33', 'syself-1.34') | summary }}]({{ detail_url('group-syself', kaas) }}) {# -#}
-|
+| Name  | Description  | Operator  | SCS-compatible KaaS  | Technology |
+|-------|--------------|-----------|----------------------|------------|
+| [noris Sovereign Cloud (nSC)](https://www.noris.de/en/it-services/cloud-services/cloud-solutions-for-enterprise-companies/noris-sovereign-cloud/) | Public KaaS cloud (1 SCS configuration) | noris network AG | {# #}
+{#- #} [{{ results | pick(kaas, 'noris-1.33', 'noris-1.34') | summary }}]({{ detail_url('group-noris', kaas) }}) {# -#} | Gardener |
+| [Syself Autopilot](https://syself.com/platform) | KaaS offering | Syself GmbH | {# #}
+{#- #} [{{ results | pick(kaas, 'syself-1.33', 'syself-1.34') | summary }}]({{ detail_url('group-syself', kaas) }}) {# -#} | ClusterStacks |
