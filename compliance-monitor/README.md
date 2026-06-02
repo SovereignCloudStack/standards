@@ -186,14 +186,11 @@ in case reports at some point contain multiple scopes).
 ### GET /status
 
 Returns the current status of all subjects in JSON format.
-The request needs to be authenticated via basic auth, either with the role `read_any` for all subjects,
-or for the requested subject.
 
 Query parameters:
 
 - `subject` (optional): restrict subject
 - `scopeuuid` (optional): restrict scope
-- `version` (optional): restrict version ([Currently bugged](https://github.com/SovereignCloudStack/standards/issues/1181))
 
 ### GET /metrics/{subject}
 
