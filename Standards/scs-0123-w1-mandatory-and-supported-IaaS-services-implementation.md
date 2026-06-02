@@ -16,6 +16,7 @@ the following testcases in accordance with the standard:
 - `scs-0123-storage-apis` ensures that a service of one of the following types can be found: "volume", "volumev3", "block-storage"
 
 ### Deprecated tests
-#### v1 only
-- `scs-0123-swift-s3` ensures that S3 can be used to access object storage using EC2 credentials from the identity API
 
+#### v1 only
+
+- `scs-0123-swift-s3` ensures that S3 can be used to access object storage using EC2 credentials from the identity API
