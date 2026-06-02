@@ -548,18 +548,15 @@ def convert_result_rows_to_dict2(
 @app.get("/status")
 async def get_status(
     request: Request,
-    account: Annotated[Optional[tuple[str, str]], Depends(auth)],
     conn: Annotated[connection, Depends(get_conn)],
-    subject: str = None, scopeuuid: str = None, version: str = None,
+    subject: str = None, scopeuuid: str = None,
 ):
-    check_role(account, subject, ROLES['read_any'])
-    # note: text/html will be the default, but let's start with json to get the logic right
     accept = request.headers['accept']
     if 'application/json' not in accept and '*/*' not in accept:
         # see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/406
         raise HTTPException(status_code=406, detail="client needs to accept application/json")
     with conn.cursor() as cur:
-        rows2 = db_get_relevant_results2(cur, subject, scopeuuid, version, approved_only=False)
+        rows2 = db_get_relevant_results2(cur, subject, scopeuuid, approved_only=False)
     return convert_result_rows_to_dict2(rows2, get_scopes(), include_report=True)
 
 
