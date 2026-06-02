@@ -30,7 +30,7 @@ class _ClusterOps:
         return bool([
             cond
             for cond in status.get('conditions', ())
-            if cond.get('type', '').lower() == 'ready'
+            if cond.get('type', '').lower() in ('ready', 'available')  # new Cluster API uses available
             if cond.get('status', '').lower() == 'true'
         ])
 
