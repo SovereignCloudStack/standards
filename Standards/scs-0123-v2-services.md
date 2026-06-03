@@ -36,7 +36,7 @@ The endpoints of services MUST be findable through the `catalog list` of the ide
 | **image** | Glance | Image service |
 | **load-balancer** | Octavia | Load-balancer service |
 | **network** | Neutron | Networking service |
-| **s3**[^2] | N/A | s3 compatible Object Storage service |
+| **object-store-s3**[^2] | N/A | s3 compatible Object Storage service |
 
 Aliases for these service types are only permitted where defined by the [OpenStack Service Type Authority](https://specs.openstack.org/openstack/service-types-authority/#aliases-optional).
 Catalog entries SHOULD use the canonical service type, not aliases.
