@@ -389,10 +389,7 @@ def check_role(account: Optional[tuple[str, str]], subject: str = None, roles: i
 
 @app.get("/")
 async def root():
-    # we might use the following redirect in the future:
-    # return RedirectResponse("/pages")
-    # but keep this silly message for the time being, so as not to expose the work in progress too much
-    return {"message": "Hello World"}
+    return RedirectResponse("/page/table")
 
 
 @app.get("/reports")
@@ -775,14 +772,6 @@ async def get_scope(
             row['columns'][name] = include
     rows = sorted(list(modules_chart.values()), key=lambda row: row['module']['id'])
     return render_view(VIEW_SCOPE, view_type, spec=spec, relevant=relevant, rows=rows, base_url=settings.base_url, title=spec['name'])
-
-
-@app.get("/pages")
-async def get_pages(
-    request: Request,
-    conn: Annotated[connection, Depends(get_conn)],
-):
-    return RedirectResponse("/page/table")
 
 
 @app.get("/results")
