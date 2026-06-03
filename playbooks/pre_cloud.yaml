@@ -50,6 +50,10 @@
         src: ".config"
         dest: "{{ ansible_user_dir }}/"
 
+    - name: Debug zuul encryption
+      ansible.builtin.debug:
+        msg: "{{ clouds_conf.scaleup_api_server }}"
+
     - name: Create cluster config file
       ansible.builtin.template:
         src: "clusters.yaml.j2"
