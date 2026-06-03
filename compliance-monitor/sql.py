@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from psycopg2 import sql
 from psycopg2.extensions import cursor, connection
 
@@ -287,6 +289,14 @@ def db_find_subjects(cur: cursor, delegate):
 def db_get_group(cur: cursor, group):
     cur.execute('''SELECT subject FROM account WHERE "group" = %s;''', (group, ))
     return [row[0] for row in cur.fetchall()]
+
+
+def db_get_groups(cur: cursor):
+    cur.execute('''SELECT subject, "group" FROM account WHERE "group" is not null and "group" != '';''')
+    groups = defaultdict(list)
+    for row in cur.fetchall():
+        groups[row[1]].append(row[0])
+    return groups
 
 
 def db_update_apikey(cur: cursor, accountid, apikey_hash):
