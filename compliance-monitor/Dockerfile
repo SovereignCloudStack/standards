@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:3.10
+FROM python:3.12
 RUN useradd -g users  -u 1001 -m -s /bin/bash runuser
 USER 1001
 WORKDIR /code

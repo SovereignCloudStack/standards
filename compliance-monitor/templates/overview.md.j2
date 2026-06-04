@@ -11,7 +11,7 @@ Version numbers are suffixed by a symbol depending on state: * for _draft_, † 
 
 This is a list of IaaS clouds that we test on a nightly basis against the certificate scope [SCS-compatible IaaS](https://docs.scs.community/standards/scs-compatible-iaas/).
 
-{% set iaas = '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f' -%}
+{% set iaas = 'scs-compatible-iaas' -%}
 | Name  | Description  | Operator  | SCS-compatible IaaS  | HealthMon  |
 |-------|--------------|-----------|----------------------|:----------:|
 | [scs2](https://docs.scs.community/community/cloud-resources/plusserver-gx-scs) | Dev/Test/Demo environment (2nd gen) provided for SCS & GAIA-X context | plusserver GmbH | 
@@ -24,13 +24,13 @@ This is a list of IaaS clouds that we test on a nightly basis against the certif
 {#- #} [{{ results | pick(iaas, 'cc-rrze') | summary }}]({{ detail_url('cc-rrze', iaas) }}) {# -#}
 | (soon) |
 | [CNDS](https://cnds.io/) | Public cloud for customers (2 regions) | artcodix GmbH |
-{#- #} [{{ results | pick(iaas, 'artcodix', 'artcodix-ro') | summary }}]({{ detail_url('group-artcodix', iaas) }}) {# -#}
+{#- #} [{{ results | pick(iaas, 'group-artcodix') | summary }}]({{ detail_url('group-artcodix', iaas) }}) {# -#}
 | [HM](https://ohm.muc.cloud.cnds.io/) |
 | [Cloud&amp;Heat IaaS](https://www.cloudandheat.com/en/products/cloud-services/infrastructure-as-a-service/) | Public cloud for customers (1 SCS region) | Cloud&amp;Heat Technologies GmbH |
 {#- #} [{{ results | pick(iaas, 'cah-dd8a') | summary }}]({{ detail_url('cah-dd8a', iaas) }}) {# -#}
 | n/a |
 | [pluscloud open](https://www.plusserver.com/en/products/pluscloud-open) | Public cloud for customers (4 regions)  | plusserver GmbH | {# #}
-{#- #}[{{ results | pick(iaas, 'pco-prod1', 'pco-prod2', 'pco-prod3', 'pco-prod4') | summary }}]({{ detail_url('group-pco-prod', iaas) }}) {# -#}
+{#- #}[{{ results | pick(iaas, 'group-pco-prod') | summary }}]({{ detail_url('group-pco-prod', iaas) }}) {# -#}
 | [HM1](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-pco) [HM2](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-prod2) [HM3](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-prod3) [HM4](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-prod4) |
 | [REGIO.cloud](https://regio.digital) | Public cloud for customers | OSISM GmbH |
 {#- #} [{{ results | pick(iaas, 'regio-a') | summary }}]({{ detail_url('regio-a', iaas) }}) {# -#}
@@ -39,7 +39,7 @@ This is a list of IaaS clouds that we test on a nightly basis against the certif
 {#- #} [{{ results | pick(iaas, 'scaleup-occ2') | summary }}]({{ detail_url('scaleup-occ2', iaas) }}) {# -#}
 | [HM](https://health.occ2.scaleup.sovereignit.cloud) |
 | [syseleven](https://www.syseleven.de/en/products-services/openstack-cloud/) | Public OpenStack Cloud (2 SCS regions) | SysEleven GmbH | {# #}
-{#- #} [{{ results | pick(iaas, 'syseleven-dus2', 'syseleven-ham1') | summary }}]({{ detail_url('group-syseleven', iaas) }}) {# -#}
+{#- #} [{{ results | pick(iaas, 'group-syseleven') | summary }}]({{ detail_url('group-syseleven', iaas) }}) {# -#}
 | (soon) |
 | [Wavestack](https://www.noris.de/wavestack-cloud/) | Public cloud for customers | noris network AG/Wavecon GmbH |
 {#- #} [{{ results | pick(iaas, 'wavestack') | summary }}]({{ detail_url('wavestack', iaas) }}) {# -#}
@@ -52,15 +52,12 @@ This is a list of IaaS clouds that we test on a nightly basis against the certif
 
 This is a list of KaaS clouds that we test on a nightly basis against the certificate scope [SCS-compatible KaaS](https://docs.scs.community/standards/scs-compatible-kaas/).
 
-{% set kaas = '1fffebe6-fd4b-44d3-a36c-fc58b4bb0180' -%}
+{% set kaas = 'scs-compatible-kaas' -%}
 | Name  | Description  | Operator  | SCS-compatible KaaS  |
 |-------|--------------|-----------|----------------------|
 | [noris Sovereign Cloud (nSC)](https://www.noris.de/en/it-services/cloud-services/cloud-solutions-for-enterprise-companies/noris-sovereign-cloud/) | Public KaaS cloud based on Gardener (1 SCS configuration) | noris network AG | {# #}
-{#- #} [{{ results | pick(kaas, 'noris-1.33', 'noris-1.34') | summary }}]({{ detail_url('group-noris', kaas) }}) {# -#}
-|
-| [ScaleUp Open Cloud](https://www.scaleuptech.com/cloud-hosting/managed-kubernetes/) | Public KaaS cloud based on Gardener (1 SCS configuration) | ScaleUp Technologies GmbH & Co. KG | {# #}
-{#- #} [{{ results | pick(kaas, 'scaleup-1.33', 'scaleup-1.34') | summary }}]({{ detail_url('group-scaleup', kaas) }}) {# -#}
+{#- #} [{{ results | pick(kaas, 'group-noris') | summary }}]({{ detail_url('group-noris', kaas) }}) {# -#}
 |
 | [Syself Autopilot](https://syself.com/platform) | KaaS offering based on ClusterStacks | Syself GmbH | {# #}
-{#- #} [{{ results | pick(kaas, 'syself-1.33', 'syself-1.34') | summary }}]({{ detail_url('group-syself', kaas) }}) {# -#}
+{#- #} [{{ results | pick(kaas, 'group-syself') | summary }}]({{ detail_url('group-syself', kaas) }}) {# -#}
 |

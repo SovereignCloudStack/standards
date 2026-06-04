@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   reverse-proxy:
     image: traefik:v2.11
@@ -30,10 +28,10 @@ services:
       - SCM_DB_HOST=postgres
       - SCM_DB_PORT=5432
       - SCM_DB_PASSWORD_FILE=/run/secrets/db_password
-      # pass the following two from the shell or put them into .env
+      # pass the following from the shell or put them into .env
       - SCM_HC_USER
       - SCM_HC_PASSWORD
-      - SCM_BASE_URL=https://compliance.sovereignit.cloud/
+      - SCM_BASE_URL
     volumes:
       - ../Tests:/Tests
       - ./bootstrap.yaml:/code/bootstrap.yaml
