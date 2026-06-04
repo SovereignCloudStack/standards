@@ -65,20 +65,18 @@ def compute_scs_0100_semantics_check(scs_flavors: list) -> bool:
         elif flv.vcpus > cpuram.cpus:
             logger.info(f"Flavor {flv.name} CPU underpromise: {flv.vcpus} > {cpuram.cpus}")
         # RAM
+        advram = cpuram.ram  # advertised RAM
         flvram = int((flv.ram + 51) / 102.4) / 10
         # Warn for strange sizes (want integer numbers, half allowed for < 10GiB)
-        if flvram >= 10 and flvram != int(flvram) or flvram * 2 != int(flvram * 2):
-            logger.info(f"Flavor {flv.name} uses discouraged uneven size of memory {flvram:.1f} GiB")
-        if flvram < cpuram.ram:
-            logger.error(f"Flavor {flv.name} RAM overpromise {flvram:.1f} < {cpuram.ram:.1f}")
+        if advram >= 10 and advram != int(advram) or advram * 2 != int(advram * 2):
+            logger.info(f"Flavor {flv.name} uses discouraged uneven size of memory {advram:.1f} GiB")
+        if flvram < advram:
+            logger.error(f"Flavor {flv.name} RAM overpromise {flvram:.1f} < {advram:.1f}")
             problems.add(flv.name)
-        elif flvram > cpuram.ram:
-            logger.info(f"Flavor {flv.name} RAM underpromise {flvram:.1f} > {cpuram.ram:.1f}")
+        elif flvram > advram:
+            logger.info(f"Flavor {flv.name} RAM underpromise {flvram:.1f} > {advram:.1f}")
         # Disk could have been omitted
         disksize = flavorname.disk.disksize if flavorname.disk else 0
-        # We have a recommendation for disk size steps
-        if disksize not in ACC_DISK:
-            logger.info(f"Flavor {flv.name} non-standard disk size {disksize}, should have (5, 10, 20, 50, 100, 200, ...)")
         if flv.disk < disksize:
             logger.error(f"Flavor {flv.name} disk overpromise {flv.disk} < {disksize}")
             problems.add(flv.name)
