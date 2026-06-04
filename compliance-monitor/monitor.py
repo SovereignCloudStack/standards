@@ -389,7 +389,7 @@ def check_role(account: Optional[tuple[str, str]], subject: str = None, roles: i
 
 @app.get("/")
 async def root():
-    return RedirectResponse("/page/table")
+    return RedirectResponse(f"{settings.base_url}page/table")
 
 
 @app.get("/reports")
