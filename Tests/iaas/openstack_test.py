@@ -18,8 +18,7 @@ from scs_0100_flavor_naming.flavor_names import compute_flavor_spec
 from scs_0100_flavor_naming.flavor_names_check import \
     compute_scs_flavors, compute_scs_0100_syntax_check, compute_scs_0100_semantics_check
 from scs_0101_entropy.entropy_check import \
-    compute_scs_0101_image_property, compute_scs_0101_flavor_property, compute_canonical_image, \
-    compute_collected_vm_output, compute_scs_0101_entropy_avail, compute_scs_0101_rngd, \
+    compute_canonical_image, compute_collected_vm_output, compute_scs_0101_entropy_avail, \
     compute_scs_0101_fips_test
 from scs_0102_image_metadata.image_metadata import \
     compute_scs_0102_prop_architecture, compute_scs_0102_prop_hash_algo, compute_scs_0102_prop_min_disk, \
@@ -73,10 +72,7 @@ def make_container(cloud):
     # scs_0101_entropy
     c.add_function('canonical_image', lambda c: compute_canonical_image(c.images))
     c.add_function('collected_vm_output', lambda c: compute_collected_vm_output(c.conn, c.flavors, c.canonical_image))
-    c.add_function('scs_0101_image_property', lambda c: compute_scs_0101_image_property(c.images))
-    c.add_function('scs_0101_flavor_property', lambda c: compute_scs_0101_flavor_property(c.flavors))
     c.add_function('scs_0101_entropy_avail', lambda c: compute_scs_0101_entropy_avail(c.collected_vm_output, c.canonical_image.name))
-    c.add_function('scs_0101_rngd', lambda c: compute_scs_0101_rngd(c.collected_vm_output, c.canonical_image.name))
     c.add_function('scs_0101_fips_test', lambda c: compute_scs_0101_fips_test(c.collected_vm_output, c.canonical_image.name))
     # scs_0102_image_metadata
     c.add_function('scs_0102_prop_architecture', lambda c: compute_scs_0102_prop_architecture(c.images))

@@ -31,12 +31,6 @@ checked, because of two reasons: (a) we already check the file `entropy_avail`
 (see subsection on Errors), and (b) users can always choose a recent image,
 as ensured by the image metadata standard.
 
-Three further testcases are available, but currently unused:
-
-- `scs-0101-image-property` ensures that each flavor has the extra spec `hw_rng:allowed=True`,
-- `scs-0101-flavor-property` ensures that each public image has the property `hw_rng_model: virtio`,
-- `scs-0101-rngd` ensures that the service `rngd` is present on a sample VM.
-
 ## Manual tests
 
 None.
