@@ -39,7 +39,7 @@ bus timings, or keyboard timings, to name a few.
 
 _More recent methods_ of generating entropy include measuring IRQ jitter
 (available in Linux since kernel 5.4 or, before that, via a daemon such as
-[HavegeD](http://www.issihosts.com/haveged/)) as well as dedicated CPU
+[HavegeD](https://github.com/jirka-h/haveged)) as well as dedicated CPU
 instructions (available in virtually all major CPUs: RDSEED or RDRAND
 on x86_64 and RNDR on arm64).
 
