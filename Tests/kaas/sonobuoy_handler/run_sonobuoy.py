@@ -21,13 +21,16 @@ def cli():
 @click.option("-r", "--result_dir_name", "result_dir_name", type=str, default="sonobuoy_results", help="directory name to store results at",)
 @click.option("-c", "--check", "check_name", type=str, default="sonobuoy_executor", help="this MUST be the same name as the id in 'scs-compatible-kaas.yaml'",)
 @click.option("--scs-sonobuoy-config", "scs_sonobuoy_config_yaml", required=True, type=click.Path(exists=True), help="Configuration for Sonobuoy (YAML format)")
-@click.option('--execution-mode', 'mode', type=click.Choice(('serial', 'parallel')), default='serial')
+@click.option('--execution-mode', 'mode', type=click.Choice(('serial', 'parallel', 'dry')), default='serial')
 @click.option("-a", "--arg", "args", multiple=True)
 def sonobuoy_run(kubeconfig, result_dir_name, check_name, scs_sonobuoy_config_yaml, mode, args):
     if mode == 'parallel':
         # This is merely a shortcut to simplify commandline in scs-compatible-kaas.yaml
         # For more on parallel execution, see https://github.com/vmware-tanzu/sonobuoy/issues/1435
         args += ('--e2e-parallel=true', )
+    elif mode == 'dry':
+        # mutually exclusive with parallel, it turns out!
+        args += ('--plugin-env e2e.E2E_DRYRUN=true', )
     sonobuoy_handler = SonobuoyHandler(scs_sonobuoy_config_yaml, check_name, kubeconfig, result_dir_name, args)
     sys.exit(sonobuoy_handler.run())
 
