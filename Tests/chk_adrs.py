@@ -43,7 +43,7 @@ def iso_date(value):
 FRONT_MATTER_KEYS = {
     "type": ("Procedural", "Standard", "Decision Record").__contains__,
     "status": ("Proposal", "Draft", "Stable", "Deprecated", "Rejected").__contains__,
-    "track": ("Global", "IaaS", "KaaS", "IAM", "Ops").__contains__,
+    "track": ("Global", "IaaS", "KaaS", "IAM", "Ops", "Scopes").__contains__,
     "deprecated_at": optional(iso_date),
     "stabilized_at": optional(iso_date),
     "rejected_at": optional(iso_date),
@@ -108,7 +108,7 @@ class Checker:
         # NOTE could check that each entry refers to a file that exists
         for fn2 in supplements:
             if fn2 not in filenames:
-                self.emit("in {fn}: field 'supplements' refers to unknown {fn2}")
+                self.emit(f"in {fn}: field 'supplements' refers to unknown {fn2}")
 
     def check_front_matter(self, fn, front, filenames):
         """Check the dict `front` of front matter

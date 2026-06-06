@@ -100,6 +100,7 @@ The second digit in `XXXX` describes the track where the document belongs:
 | KaaS | 2 |
 | IAM | 3 |
 | Ops | 4 |
+| Scopes | 5 |
 
 In addition to the number, each document has the following metadata,
 embedded in the markdown header.

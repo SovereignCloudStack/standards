@@ -1,7 +1,8 @@
 ---
 title: Sovereign Cloud Standards YAML
 type: Procedural
-status: Draft
+status: Deprecated
+deprecated_at: 2026-06-18
 track: Global
 description: |
   SCS-0003 outlines the standards and certification processes for interoperable and sovereign cloud offerings,
