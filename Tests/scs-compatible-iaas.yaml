@@ -481,6 +481,7 @@ modules:
       - scs-0123-service-load-balancer
       - scs-0123-service-placement
       - scs-0123-storage-apis
+      recommended:
       - scs-0123-swift-s3
   - id: scs-0123-v2
     name: Mandatory and Supported IaaS Services
