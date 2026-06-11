@@ -501,6 +501,10 @@ modules:
       preview:
       - domain-manager-check
 timeline:
+  - date: 2026-06-11
+    versions:
+      next: draft
+      v5.1: effective
   - date: 2025-09-09
     versions:
       next: draft
