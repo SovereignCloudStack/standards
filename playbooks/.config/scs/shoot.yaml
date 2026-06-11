@@ -32,7 +32,7 @@ spec:
           name: containerd
   networking:
     nodes: {{ worker_cidr }}
-    type: cilium
+    type: {{ networking_type }}
   kubernetes:
     version: {{ kubernetes_version }}
   cloudProfile:

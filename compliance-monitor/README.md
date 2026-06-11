@@ -183,23 +183,14 @@ The final field is the desired state; the other fields are used to determine the
 (within one report, version and check uniquely determine a result; the scope is given here as well
 in case reports at some point contain multiple scopes).
 
-### GET /status/{subject}
+### GET /status
 
-Returns the current status of the subject. Use the `Accept` header to select desired content type:
-
-- `text/html` (default): a snippet of HTML suitable for the end user;
-- `image/png`: a PNG image of a badge;
-- `application/json`: a short summary in JSON format.
+Returns the current status of all subjects in JSON format.
 
 Query parameters:
 
+- `subject` (optional): restrict subject
 - `scopeuuid` (optional): restrict scope
-- `version` (optional): restrict version
-- `privileged_view` (optional `0` or `1`, default `0`): request privileged view (see below)
-
-If the privileged view is requested, then this request needs to be authenticated (via basic auth),
-either for the same subject or for some account with role `read_any`. This view will immediately
-show any non-pass result, whereas otherwise, such a result needs to be verified manually.
 
 ### GET /metrics/{subject}
 

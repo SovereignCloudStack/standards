@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from psycopg2 import sql
 from psycopg2.extensions import cursor, connection
 
@@ -194,14 +196,13 @@ def db_upgrade_schema(conn: connection, cur: cursor):
     # that way just in case we want to use another database at some point
     while True:
         current = db_get_schema_version(cur)
-        if current >= SCHEMA_VERSIONS[-1]:  # bail if version is too new (but hope it's compatible)
-            break
         if current is None:
             # this is an empty db, but it also used to be the case with v1
             # I (mbuechse) made sure manually that the value v1 is set on running installations
             db_ensure_schema_v4(cur)
             db_set_schema_version(cur, 'v4')
             conn.commit()
+            break  # Nothing more to do, we bootstrapped with the latest schema version
         elif current == 'v1':
             db_ensure_schema_v2(cur)
             db_upgrade_data_v1_v2(cur)
@@ -219,6 +220,8 @@ def db_upgrade_schema(conn: connection, cur: cursor):
             db_ensure_schema_v4(cur)
             db_set_schema_version(cur, 'v4')
             conn.commit()
+        elif current >= SCHEMA_VERSIONS[-1]:  # bail if version is too new (but hope it's compatible)
+            break
 
 
 def db_ensure_schema(conn: connection):
@@ -286,6 +289,14 @@ def db_find_subjects(cur: cursor, delegate):
 def db_get_group(cur: cursor, group):
     cur.execute('''SELECT subject FROM account WHERE "group" = %s;''', (group, ))
     return [row[0] for row in cur.fetchall()]
+
+
+def db_get_groups(cur: cursor):
+    cur.execute('''SELECT subject, "group" FROM account WHERE "group" is not null and "group" != '';''')
+    groups = defaultdict(list)
+    for row in cur.fetchall():
+        groups[row[1]].append(row[0])
+    return groups
 
 
 def db_update_apikey(cur: cursor, accountid, apikey_hash):

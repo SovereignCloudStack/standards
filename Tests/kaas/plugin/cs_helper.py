@@ -41,7 +41,7 @@ def get_secret_data(api_instance: CoreV1Api, namespace, secret):
 
 def get_cluster_status(api_instance: CustomObjectsApi, namespace, name):
     return api_instance.get_namespaced_custom_object_status(
-        'cluster.x-k8s.io', 'v1beta1', namespace, 'clusters', name
+        'cluster.x-k8s.io', 'v1beta2', namespace, 'clusters', name
     )
 
 
@@ -49,5 +49,5 @@ def delete_cluster(api_instance: CustomObjectsApi, namespace, name):
     """mimic `kubectl delete cluster`"""
     # beware: do not fiddle with propagation policy here, as this may lead to severe problems
     return api_instance.delete_namespaced_custom_object(
-        'cluster.x-k8s.io', 'v1beta1', namespace, 'clusters', name,
+        'cluster.x-k8s.io', 'v1beta2', namespace, 'clusters', name,
     )

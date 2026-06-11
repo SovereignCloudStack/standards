@@ -28,7 +28,7 @@ from typing import Annotated, Optional
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from jinja2 import Environment
+from jinja2 import Environment, pass_context
 from markdown import markdown
 from passlib.context import CryptContext
 import psycopg2
@@ -42,7 +42,7 @@ from sql import (
     db_get_keys, db_insert_report, db_get_recent_results2, db_patch_approval2, db_get_report,
     db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys, db_clear_delegates,
     db_find_subjects, db_insert_result2, db_get_relevant_results2, db_add_delegate, db_get_group,
-    db_filter_accounts,
+    db_filter_accounts, db_get_groups,
 )
 
 
@@ -94,6 +94,10 @@ GRACE_PERIOD_DAYS = 7
 # to achieve this!
 SEP = "-----END SSH SIGNATURE-----\n&"
 ASTERISK_LOOKUP = {'effective': '', 'draft': '*', 'warn': '†', 'deprecated': '††'}
+SCOPE_ALIASES = {
+    'scs-compatible-iaas': '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f',
+    'scs-compatible-kaas': '1fffebe6-fd4b-44d3-a36c-fc58b4bb0180',
+}
 
 
 class ViewType(Enum):
@@ -385,10 +389,7 @@ def check_role(account: Optional[tuple[str, str]], subject: str = None, roles: i
 
 @app.get("/")
 async def root():
-    # we might use the following redirect in the future:
-    # return RedirectResponse("/pages")
-    # but keep this silly message for the time being, so as not to expose the work in progress too much
-    return {"message": "Hello World"}
+    return RedirectResponse(f"{settings.base_url}page/table")
 
 
 @app.get("/reports")
@@ -548,18 +549,15 @@ def convert_result_rows_to_dict2(
 @app.get("/status")
 async def get_status(
     request: Request,
-    account: Annotated[Optional[tuple[str, str]], Depends(auth)],
     conn: Annotated[connection, Depends(get_conn)],
-    subject: str = None, scopeuuid: str = None, version: str = None,
+    subject: str = None, scopeuuid: str = None,
 ):
-    check_role(account, subject, ROLES['read_any'])
-    # note: text/html will be the default, but let's start with json to get the logic right
     accept = request.headers['accept']
     if 'application/json' not in accept and '*/*' not in accept:
         # see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/406
         raise HTTPException(status_code=406, detail="client needs to accept application/json")
     with conn.cursor() as cur:
-        rows2 = db_get_relevant_results2(cur, subject, scopeuuid, version, approved_only=False)
+        rows2 = db_get_relevant_results2(cur, subject, scopeuuid, approved_only=False)
     return convert_result_rows_to_dict2(rows2, get_scopes(), include_report=True)
 
 
@@ -654,6 +652,17 @@ def _resolve_group(cur, subject, prefix=GROUP_PREFIX):
     return None, [subject]
 
 
+def _resolve_group_locally(groups, subject, prefix=GROUP_PREFIX):
+    group = subject.removeprefix(prefix)
+    if subject != group:
+        return group, list(groups[group])
+    return None, [subject]
+
+
+def _resolve_scope(scopeuuid):
+    return SCOPE_ALIASES.get(scopeuuid, scopeuuid)
+
+
 @app.get("/{view_type}/detail/{subject}/{scopeuuid}")
 async def get_detail(
     request: Request,
@@ -662,6 +671,7 @@ async def get_detail(
     subject: str,
     scopeuuid: str,
 ):
+    scopeuuid = _resolve_scope(scopeuuid)
     with conn.cursor() as cur:
         group, subjects = _resolve_group(cur, subject)
         rows2 = []
@@ -686,6 +696,7 @@ async def get_detail_full(
     subject: str,
     scopeuuid: str,
 ):
+    scopeuuid = _resolve_scope(scopeuuid)
     with conn.cursor() as cur:
         group, subjects = _resolve_group(cur, subject)
         rows2 = []
@@ -709,11 +720,12 @@ async def get_table(
     view_type: ViewType,
 ):
     with conn.cursor() as cur:
+        groups = db_get_groups(cur)
         rows2 = db_get_relevant_results2(cur, approved_only=True)
     results2 = convert_result_rows_to_dict2(rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS)
     return render_view(
         VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, detail_page='detail',
-        title="SCS compliance overview",
+        title="SCS compliance overview", groups=groups,
     )
 
 
@@ -724,11 +736,12 @@ async def get_table_full(
     view_type: ViewType,
 ):
     with conn.cursor() as cur:
+        groups = db_get_groups(cur)
         rows2 = db_get_relevant_results2(cur, approved_only=False)
     results2 = convert_result_rows_to_dict2(rows2, get_scopes(), include_drafts=True)
     return render_view(
         VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, detail_page='detail_full',
-        title="SCS compliance overview (incl. unverified results)", unverified=True,
+        title="SCS compliance overview (incl. unverified results)", unverified=True, groups=groups,
     )
 
 
@@ -739,6 +752,7 @@ async def get_scope(
     view_type: ViewType,
     scopeuuid: str,
 ):
+    scopeuuid = _resolve_scope(scopeuuid)
     spec = get_scopes()[scopeuuid]
     versions = spec['versions']
     # sort by name, and all drafts after all non-drafts
@@ -758,14 +772,6 @@ async def get_scope(
             row['columns'][name] = include
     rows = sorted(list(modules_chart.values()), key=lambda row: row['module']['id'])
     return render_view(VIEW_SCOPE, view_type, spec=spec, relevant=relevant, rows=rows, base_url=settings.base_url, title=spec['name'])
-
-
-@app.get("/pages")
-async def get_pages(
-    request: Request,
-    conn: Annotated[connection, Depends(get_conn)],
-):
-    return RedirectResponse("/page/table")
 
 
 @app.get("/results")
@@ -817,14 +823,18 @@ async def get_healthz(request: Request):
     return Response()  # empty response with status 200
 
 
-def pick_filter(results, scope, *subjects):
+@pass_context
+def pick_filter(ctx, results, scopeuuid, *subjects):
     """Jinja filter to pick scope results from `results` for given `subject` and `scope`"""
+    scopeuuid = _resolve_scope(scopeuuid)
     # simple case (backwards compatible): precisely one subject
     if len(subjects) == 1:
-        return results.get(subjects[0], {}).get(scope, {})
+        group, subjects = _resolve_group_locally(ctx['groups'], subjects[0])
+        if not group:
+            return results.get(subjects[0], {}).get(scopeuuid, {})
     # generalized case: multiple subjects
     # in this case, drop None
-    rs = [results.get(subject, {}).get(scope, {}) for subject in subjects]
+    rs = [results.get(subject, {}).get(scopeuuid, {}) for subject in subjects]
     return [r for r in rs if r is not None]
 
 

@@ -60,6 +60,7 @@ require an additional field:
   | `os_purpose` value | Intention                                                 |
   |--------------------|-----------------------------------------------------------|
   | `generic`          | A general purpose image, (mostly) vanilla from upstream   |
+  | `oldgeneric`       | A general purpose image, replaced by a newer one          |
   | `minimal`          | A much more barebones general purpose image               |
   | `k8snode`          | Node image built for k8s with CRI and kubelet             |
   | `gpu`              | Image with GPU drivers e.g. for HPC or AI                 |
@@ -70,8 +71,8 @@ require an additional field:
   of doubt. Talk to the SCS standardization bodies if you'd like to see this list extended which is
   likely the case if you fall back to `custom`.
 
-  The usage of standardized `os_distro`, `os_version`, `architecture`, and `os_purpose` help cloud users to create
-  automation that works across clouds without requiring image names to be standardized.
+  The usage of standardized `os_distro`, `os_version`, `architecture`, and `os_purpose` helps cloud users
+  to create automation that works across clouds without requiring image names to be standardized.
 
   _Uniqueness requirement_: For every assignment of values for `os_distro`, `os_version`,
   and `architecture`, there MUST be at most one public (`visibility=public`),
@@ -110,7 +111,9 @@ level).
 Technically, the thus updated image is a new image and will thus carry a new UUID.
 It is recommended that the old image gets renamed (e.g. build date or patch level attached)
 and hidden (`os_hidden=True`), but remains accessible via its (unchanged) UUID for some
-time.
+time. If an old image with `os_purpose` setting of `generic` is kept that way, we recommend
+to change `os_purpose` to `oldgeneric`. If it is not hidden, this is mandatory to meet
+the uniqueness requirement.
 
 The update handling by the provider is described via the properties `replace_frequency`,
 `uuid_validity`, `provided_until`, and `hotfix_hours`.
@@ -271,4 +274,4 @@ A boolean property that is not present is considered to be `false`.
   - Reference OpenStack image spec for standard values of `os_distro`, `architecture` and `hypervisor_type`.
   - Recommendation on `os_version` to be a version number (if such a value exists).
   - Recommended field `os_purpose`.
-- Version 2.0 (this one) makes the field `os_purpose` mandatory.
+- Version 2.0 makes the field `os_purpose` mandatory and adds a new value `oldgeneric`.

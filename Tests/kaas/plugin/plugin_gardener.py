@@ -15,6 +15,7 @@ logging.getLogger("kubernetes").setLevel(logging.INFO)
 
 
 TEMPLATE_KEYS = ('shoot', 'kubeconfig')
+TIMEOUTS = [30] * 40 + [0]  # wait at most 1200 seconds (20 minutes); sentinel value at the end
 
 
 class _ShootOps:
@@ -35,6 +36,7 @@ class _ShootOps:
         # Gardener shoot reconciliation is idempotent, so we can just try to create.
         # If it exists, we check its state.
         # repeat this because it's possible that a cluster object exists that is in state Delete
+        timeouts = iter(TIMEOUTS)
         while True:
             logger.debug(f"creating shoot object for {self.name}")
             try:
@@ -55,8 +57,11 @@ class _ShootOps:
                 if state == 'Failed':
                     raise RuntimeError(f"Shoot {self.name} is in Failed state. Please check the Gardener dashboard.")
 
-                logger.debug(f'waiting 30 s for shoot {self.name} to proceed')
-                time.sleep(30)
+                timeout = next(timeouts)
+                if not timeout:
+                    raise RuntimeError(f"Timeout error while waiting on shoot {self.name}")
+                logger.debug(f'waiting {timeout} s for shoot {self.name} to proceed')
+                time.sleep(timeout)
             else:
                 break
 
@@ -74,41 +79,52 @@ class _ShootOps:
 
         logger.debug(f"Shoot {self.name} deletion requested; waiting 8 s for it to start deleting")
         time.sleep(8)
+        timeouts = iter(TIMEOUTS)
         while True:
             last_op = self._get_last_operation(co_api)
             if last_op is None:
                 logger.info(f"Shoot {self.name} has been deleted.")
                 break
 
-            if last_op.get('type') != 'Delete':
-                raise RuntimeError(f"Shoot {self.name} in unexpected state during deletion: {last_op!r}")
-            state = last_op.get('state', 'Unknown')
-            if state not in ('Processing', 'Succeeded'):
-                raise RuntimeError(f"Shoot {self.name} in unexpected state during deletion: state={state}")
+            timeout = next(timeouts)
+            if not timeout:
+                raise RuntimeError(f"Shoot {self.name} has not gone away in time")
 
-            if state == 'Processing':
+            state = last_op.get('state', 'Unknown')
+            if last_op.get('type') != 'Delete':
+                logger.debug(f"Shoot {self.name} in unexpected state during deletion: {last_op!r}; waiting {timeout} s")
+            elif state == 'Processing':
                 progress = last_op.get('progress', 0)
-                logger.debug(f"Shoot {self.name} is being deleted (progress: {progress} %); waiting 30 s")
+                logger.debug(f"Shoot {self.name} is being deleted (progress: {progress} %); waiting {timeout} s")
             elif state == 'Succeeded':
-                logger.info(f"Shoot {self.name} deletion succeeded, but object still exists. Waiting 30 s for it to vanish.")
-            time.sleep(30)
+                logger.info(f"Shoot {self.name} deletion succeeded, but object still exists. Waiting {timeout} s for it to vanish.")
+            else:
+                raise RuntimeError(f"Shoot {self.name} in unexpected state during deletion: state={state}")
+            time.sleep(timeout)
 
     def get_kubeconfig(self, api_client: ApiClient):
         return _gh.request_kubeconfig(api_client, self.namespace, self.name)
 
     def wait_for_shoot_ready(self, co_api: _gh.CustomObjectsApi):
-        last_op = self._get_last_operation(co_api)
-        while last_op is not None and last_op.get('state') not in ('Succeeded', 'Failed'):
-            state = last_op.get('state', 'Unknown')
-            progress = last_op.get('progress', 0)
-            logger.debug(f'waiting 30 s for shoot {self.name} to become ready (current state: {state}, progress: {progress}%)')
-            time.sleep(30)
+        timeouts = iter(TIMEOUTS)
+        while True:
             last_op = self._get_last_operation(co_api)
-        if last_op is None:
-            raise RuntimeError(f"Shoot {self.name} object disappeared or in state Failed")
-        if last_op.get('state') != 'Succeeded':
-            raise RuntimeError(f"Shoot {self.name} object in unexpected state {last_op.get('state')}")
-        logger.debug(f'shoot {self.name} appears to be ready')
+            if last_op is None:
+                raise RuntimeError(f"Shoot {self.name} object disappeared")
+
+            state = last_op.get('state', 'Unknown')
+            if state == 'Succeeded':
+                logger.debug(f'shoot {self.name} appears to be ready')
+                return
+            if state not in ('Unknown', 'Processing'):
+                raise RuntimeError(f"Shoot {self.name} object in unexpected state {last_op.get('state')}")
+
+            timeout = next(timeouts)
+            if not timeout:
+                raise RuntimeError(f"Shoot {self.name} has not become ready in time")
+            progress = last_op.get('progress', 0)
+            logger.debug(f'waiting {timeout} s for shoot {self.name} to become ready (current state: {state}, progress: {progress}%)')
+            time.sleep(timeout)
 
 
 def load_templates(env, basepath, fn_map, keys=TEMPLATE_KEYS):
