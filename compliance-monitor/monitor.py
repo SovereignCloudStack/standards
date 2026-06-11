@@ -271,10 +271,11 @@ def _evaluate_scope(spec, scope_results, include_drafts=False):
     version_results = {
         vname: _evaluate_version(version, scope_results)
         for vname, version in versions.items()
+        if version['_explicit_validity']
     }
     by_validity = defaultdict(list)
     for vname, version in versions.items():
-        by_validity[version['validity']].append(vname)
+        by_validity[version['_explicit_validity']].append(vname)
     # go through worsening validity values until a passing version is found
     relevant = []
     best_passed = None
