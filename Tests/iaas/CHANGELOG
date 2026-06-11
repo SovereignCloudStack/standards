@@ -1,0 +1,7 @@
+# IaaS test changelog
+
+## 2026-06-11
+
+- Relaxed `scs-0123-swift-s3`:
+  no longer access S3 via EC2 credentials from Keystone;
+  rather, only check that the S3 API is present.
