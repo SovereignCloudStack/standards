@@ -29,7 +29,7 @@ The columns labeled _(rec)_ contain recommended testcases for the scope version 
 
 | testcase id | result |{% for version in scope_result.relevant %} {{ version }}{{ scope_result.versions[version].validity | validity_symbol }} | (rec) |{% endfor %} description |
 |---|---|{% for version in scope_result.relevant %}---|---|{% endfor %}---|
-{% for cat, sym0, val in (('FAILED', '🛑🟧', -1), ('MISSING', '❓', None), ('inconclusive', '❔', 0), ('passed', '✅', 1)) -%}
+{% for cat, sym0, val in (('FAIL', '🛑🟧', -1), ('MISSING', '❓', None), ('DNF', '❔', 0), ('pass', '✅', 1)) -%}
 {% set bucket = scope_result.buckets[val] -%}
 {% for testcase_id in bucket -%}
 {% set testcase = scope_result.testcases[testcase_id] -%}
