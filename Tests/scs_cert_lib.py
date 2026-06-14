@@ -59,7 +59,8 @@ def _resolve_spec(spec: dict):
     # step 1. build lookups
     testcase_lookup = {}
     tc_script_lookup = {}
-    for script in spec.get('scripts', ()):
+    for idx, script in enumerate(spec.get('scripts', ())):
+        script['_idx'] = idx
         for testcase in script.get('testcases', ()):
             id_ = testcase['id']
             if id_ in testcase_lookup:
