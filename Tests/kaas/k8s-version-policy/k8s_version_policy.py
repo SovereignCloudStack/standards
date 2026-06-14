@@ -66,7 +66,7 @@ logging_config = {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "k8s_version_policy",
-            "stream": "ext://sys.stdout"
+            "stream": "ext://sys.stderr"
         }
     },
     "root": {
