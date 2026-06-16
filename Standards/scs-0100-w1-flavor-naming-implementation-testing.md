@@ -124,7 +124,7 @@ These have MIG support and 128 Cuda Cores and 4 Tensor Cores per SM.
 [+] The precise numbers for the 1/7 MIG configurations are not known by the author of
 this document and need validation.
 
-##### Blackwell (`b`)
+##### Blackwell (`b`) and Blackwell Ultra (`u`)
 
 These have MIG support and 128 Cuda Cores and 4 Tensor Cores per SM.
 
@@ -134,12 +134,17 @@ These have MIG support and 128 Cuda Cores and 4 Tensor Cores per SM.
 | GB200      | 1/2      |  320     | 10240      |  80 |  96G HBM3e | `GNb-80-96h`   |
 | GB200      | 2/7      |   88+    |  5632+     |  44+|  45G HBM3e+| `GNb-44-45h`+  |
 | GB200      | 1/7      |   44+    |  2816+     |  22+|  23G HBM3e+| `GNb-22-23h`+  |
-| GB300      | 1/1      |  640     | 20480      | 160 | 288G HBM3e | `GNb-160-288h` |
-| GB300      | 1/2      |  320     | 10240      |  80 | 144G HBM3e | `GNb-80-144h`  |
+| GB300      | 1/1      |  640     | 20480      | 160 | 288G HBM3e | `GNu-160-288h` |
+| GB300      | 1/2      |  320     | 10240      |  80 | 144G HBM3e | `GNu-80-144h`  |
 | ... |
 
 [+] The precise numbers for the 1/7 MIG configurations are not known by the author of
 this document and need validation.
+
+Note that Blackwell Ultra tensor cores have significant enough changes vs. Blackwell that we
+gave the BW Ultra GPUs a new letter `u`. In particular, FP4 tensor performance is over 150%
+of std. Blackwell and has more Special Function Units (which helps attention) but has
+regressed INT8 performance.
 
 | Nvidia GPU            | Fraction | Tensor C | Cuda Cores | SMs | VRAM       | SCS GPU name   |
 |-----------------------|----------|----------|------------|-----|------------|----------------|
