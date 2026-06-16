@@ -22,7 +22,7 @@
     nodeset: pod-fedora-40
     pre-run:
      - playbooks/pre.yaml
-     - playbooks/pre_cloud.yaml
+     - playbooks/pre_cloud_debug.yaml
     run: playbooks/adr_syntax.yaml
     vars:
       iaas: true
