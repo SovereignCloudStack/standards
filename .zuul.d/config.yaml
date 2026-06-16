@@ -16,8 +16,11 @@
     check:
       jobs:
         - scs-check-adr-syntax
+    check_run:
+      jobs:
+        - scs-check-iaas
 - job:
-    name: scs-check-adr-syntax
+    name: scs-check-iaas
     parent: base
     nodeset: pod-fedora-40
     pre-run:
@@ -30,6 +33,13 @@
     secrets:
      - name: clouds_conf
        secret: SECRET_STANDARDS
+- job:
+    name: scs-check-adr-syntax
+    parent: base
+    nodeset: pod-fedora-40
+    pre-run:
+     - playbooks/pre.yaml
+    run: playbooks/adr_syntax.yaml
 - job:
     name: scs-check-scs2
     parent: base
