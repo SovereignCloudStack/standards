@@ -572,7 +572,7 @@ versions:
     include:
       - opc-v2022.11
       - scs-0100-v3.1
-      # - scs-0101-v1  remove this because it hasn't been an issue for quite a while
+      - scs-0101-v1
       - scs-0102-v2  # instead of scs-0102-v1
       - scs-0103-v1
       - ref: scs-0104-v1-2
