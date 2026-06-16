@@ -32,7 +32,7 @@ subjects = [
     "syseleven-ham1",
     "wavestack",
 ]
-workers = 4
+workers = 16
 
 
 [presets.kaas]
