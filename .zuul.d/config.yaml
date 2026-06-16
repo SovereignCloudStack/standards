@@ -24,6 +24,13 @@
      - playbooks/pre.yaml
      - playbooks/pre_cloud.yaml
     run: playbooks/adr_syntax.yaml
+    vars:
+      iaas: true
+      do_cleanup: true
+    secrets:
+     - name: clouds_conf
+       secret: SECRET_STANDARDS
+    nodeset: pod-fedora-40
 - job:
     name: scs-check-scs2
     parent: base
