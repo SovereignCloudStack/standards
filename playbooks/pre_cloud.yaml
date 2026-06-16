@@ -52,7 +52,7 @@
 
     - name: Debug zuul encryption
       ansible.builtin.debug:
-        msg: "{{ clouds_conf.scaleup_api_server }}"
+        msg: "{{ clouds_conf.noris_ca_data }}"
 
     - name: Create cluster config file
       ansible.builtin.template:
