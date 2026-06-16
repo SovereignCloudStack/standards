@@ -98,14 +98,14 @@ No MIG support, 128 Cuda Cores and 4 Tensor Cores per SM.
 | L40G       | 568      | 18176      | 142 | 48G GDDR6 | `GNl-142h-48`  |
 | L40S       | 568      | 18176      | 142 | 48G GDDR6 | `GNl-142hh-48` |
 
-| Nvidia GPU   | Tensor C | Cuda Cores | SMs | VRAM      | SCS name piece |
-|--------------|----------|------------|-----|-----------|----------------|
-| RTX2000  Ada |   88     |  2816      |  22 | 16G GDDR6 | `GNl-22-16`    |
-| RTX4000  Ada |  192     |  6144      |  48 | 20G GDDR6 | `GNl-48-20`    |
-| RTX4500  Ada |  240     |  7680      |  60 | 24G GDDR6 | `GNl-60-24`    |
-| RTX5000  Ada |  400     | 12800      | 100 | 32G GDDR6 | `GNl-100-32`   |
-| RTX5880  Ada |  440     | 14080      | 110 | 48G GDDR6 | `GNl-110-48`   |
-| RTX6000  Ada |  568     | 18176      | 142 | 48G GDDR6 | `GNl-142-48`   |
+| Nvidia GPU  | Tensor C | Cuda Cores | SMs | VRAM      | SCS name piece |
+|-------------|----------|------------|-----|-----------|----------------|
+| RTX2000 Ada |   88     |  2816      |  22 | 16G GDDR6 | `GNl-22-16`    |
+| RTX4000 Ada |  192     |  6144      |  48 | 20G GDDR6 | `GNl-48-20`    |
+| RTX4500 Ada |  240     |  7680      |  60 | 24G GDDR6 | `GNl-60-24`    |
+| RTX5000 Ada |  400     | 12800      | 100 | 32G GDDR6 | `GNl-100-32`   |
+| RTX5880 Ada |  440     | 14080      | 110 | 48G GDDR6 | `GNl-110-48`   |
+| RTX6000 Ada |  568     | 18176      | 142 | 48G GDDR6 | `GNl-142-48`   |
 
 ##### Grace Hopper (`g`)
 
@@ -157,7 +157,6 @@ regressed INT8 performance.
 | RTX Pro6000 Blackwell |  1/2     |  376     | 13032      |  94 |  48G GDDR7 | `GNb-94-48`    |
 | RTX Pro6000 Blackwell |  1/4     |  188     |  6516      |  47 |  24G GDDR7 | `GNb-47-24`    |
 
-
 #### AMD Radeon (`A`)
 
 ##### CDNA 2 (`2`)
@@ -193,7 +192,7 @@ Cores and 64 Stream Processors per CU.
 | Inst MI355X | 1024     | 16384       | 256 | 288G HBM3e | `GA4-256h-288h` |
 
 The Instinct MI355X has a higher watttage and thus slightly higher clocks
-than the MI350X but is otherwise identical -- we can thus use the `h` modifier
+than the MI350X but is otherwise identical - we can thus use the `h` modifier
 to identify the higher performance version.
 
 ##### Workstation RDNA 3 (`3.1`) and 4 (`4.1`)
@@ -236,11 +235,10 @@ One EU has one tensor core and 16 shading units.
 
 #### Consumer cards
 
-Note that we don't recommend using consumer cards. 
+Note that we don't recommend using consumer cards.
 That said, the schema allows to specify them and for example do PCI pass-through
-of Nvidia RTX4080S (`GNl-80-16`), RTX4090 (`GNl-128-24`), RTX5080S (`GNb-84-24`), 
+of Nvidia RTX4080S (`GNl-80-16`), RTX4090 (`GNl-128-24`), RTX5080S (`GNb-84-24`),
 RTX5090 (`GNb-170-32`), or AMD Radeon RX7900XTX (`GA3.1-96-24`).
-
 
 ## Automated tests
 
