@@ -15,7 +15,6 @@ STRATEGY = flavor_names.ParsingStrategy(
     parsers=(flavor_names.parser_v3, ),
     tolerated_parsers=(flavor_names.parser_v2, flavor_names.parser_v1),
 )
-ACC_DISK = (0, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000)
 
 
 def compute_scs_flavors(flavors: typing.List[openstack.compute.v2.flavor.Flavor], parser=STRATEGY) -> list:
