@@ -30,7 +30,6 @@
     secrets:
      - name: clouds_conf
        secret: SECRET_STANDARDS
-    nodeset: pod-fedora-40
 - job:
     name: scs-check-scs2
     parent: base
