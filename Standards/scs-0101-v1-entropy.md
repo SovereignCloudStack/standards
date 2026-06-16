@@ -15,6 +15,8 @@ description: |
 
 ## Introduction
 
+This is v1.1 of the standard. See section on version history for details.
+
 ### Entropy in information technology
 
 Entropy is a concept that is widely used in the scope of information
@@ -94,36 +96,15 @@ will be available in virtual instances.
 
 ## Entropy in SCS clouds
 
-### Flavors
-
-The following optional flavor extra_specs are relevant in case an
-external HRNG is to be used:
-
-```console
-hw_rng:allowed=True
-hw_rng:rate_bytes - The allowed amount of bytes for the the guest
-    to read from the host's entropy per period.
-hw_rng:rate_period - Sets the duration of a read period in seconds.
-```
-
-### Images
-
 It is recommended to use images having a kernel (patch level) version 5.18
 or up. This condition is already satisfied by every mandatory image defined
 in the [Image Metadata Standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0102-v1-image-metadata.md).
-
-An image may activate the attribute `hw_rng_model: virtio` so
-that an external HRNG can be used.
-
-The daemon `rngd` may be installed (usually from `rng-tools`
-or `rng-utils`).
-
-The user may choose to use the `virtio-rng` device via `rngd`.
-
-### Compute nodes
 
 Compute nodes must use CPUs that offer instructions for accessing
 entropy (such as RDSEED or RDRAND on x86_64 or RNDR on arm64), and
 these instructions may not be filtered by the hypervisor.
 
-Compute nodes may provide a HRNG via `rngd`.
+## Version history
+
+As of version 1.1, the method of injecting entropy into a VM using a
+virtualized HRNG together with `rngd` is no longer recommended.

@@ -304,7 +304,8 @@ modules:
       - scs-0100-syntax-check
       - scs-0100-semantics-check
   - id: scs-0101-v1
-    name: Entropy v1
+    # leap from v1 to v1.1 in place because it's a very minor relaxation; all essential testcases are kept
+    name: Entropy v1.1
     url: https://docs.scs.community/standards/scs-0101-v1-entropy
     targets:
       main:
