@@ -20,7 +20,9 @@
     name: scs-check-adr-syntax
     parent: base
     nodeset: pod-fedora-40
-    pre-run: playbooks/pre.yaml
+    pre-run:
+     - playbooks/pre.yaml
+     - playbooks/pre_cloud.yaml
     run: playbooks/adr_syntax.yaml
 - job:
     name: scs-check-scs2
