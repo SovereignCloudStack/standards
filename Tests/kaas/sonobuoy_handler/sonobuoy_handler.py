@@ -6,6 +6,7 @@ import os.path
 import shlex
 import shutil
 import subprocess
+import sys
 
 import yaml
 
@@ -65,7 +66,7 @@ class SonobuoyHandler:
         inv_args = (self.sonobuoy, "--kubeconfig", self.kubeconfig_path) + args
         logger.debug(f'invoking {" ".join(inv_args)}')
         # we had capture_output=True, but I don't see why -- let the caller decide
-        return subprocess.run(args=inv_args, check=True, **kwargs)
+        return subprocess.run(args=inv_args, check=True, stdout=sys.stderr, **kwargs)
 
     def _sonobuoy_run(self):
         self._invoke_sonobuoy("run", "--wait", *self.args)
@@ -113,13 +114,15 @@ class SonobuoyHandler:
         logger.info(f"running sonobuoy for testcase {self.check_name}")
         self._preflight_check()
         try:
+            self._sonobuoy_delete()  # remove leftovers from previous run, if any
             self._sonobuoy_run()
             counter = self._sonobuoy_retrieve_result()
             return_code = self._eval_result(counter)
             print(self.check_name + ": " + ("PASS", "FAIL")[min(1, return_code)])
             return return_code
         except BaseException:
-            logger.exception("something went wrong")
+            print(self.check_name + ": ABORT")
+            logger.debug("something went wrong", exc_info=True)
             return 112
         finally:
             self._sonobuoy_delete()
