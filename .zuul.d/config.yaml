@@ -6,7 +6,9 @@
     periodic-daily:
       jobs:
         - scs-check-iaas
-        - scs-check-kaas
+        - scs-check-kaas1
+        - scs-check-kaas2
+        - scs-check-kaas3
     periodic-hourly:
       jobs:
         - scs-check-scs2-main
