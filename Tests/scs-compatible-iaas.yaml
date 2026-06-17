@@ -311,6 +311,10 @@ modules:
       - scs-0101-rngd
       - scs-0101-entropy-avail
       - scs-0101-fips-test
+  - id: scs-0101-v1-rec
+    name: Entropy v1
+    url: https://docs.scs.community/standards/scs-0101-v1-entropy
+    targets:
       recommended:
       - scs-0101-flavor-property
       - scs-0101-image-property
@@ -333,6 +337,10 @@ modules:
       - scs-0102-prop-provided_until
       - scs-0102-prop-uuid_validity
       - scs-0102-image-recency
+  - id: scs-0102-v1-rec
+    name: Image metadata v1
+    url: https://docs.scs.community/standards/scs-0102-v1-image-metadata
+    targets:
       recommended:
       - scs-0102-prop-hash_algo
       - scs-0102-prop-os_purpose
@@ -361,6 +369,10 @@ modules:
       - scs-0102-prop-uuid_validity
       - scs-0102-image-recency
       - scs-0102-os_purpose-uniqueness
+  - id: scs-0102-v2-rec
+    name: Image metadata v2
+    url: https://docs.scs.community/standards/scs-0102-v2-image-metadata
+    targets:
       recommended:
       - scs-0102-prop-hash_algo
       - scs-0102-prop-hypervisor_type
@@ -386,6 +398,10 @@ modules:
       - scs-0103-flavor-1l-1
       - scs-0103-flavor-2v-4-20s
       - scs-0103-flavor-4v-16-100s
+  - id: scs-0103-v1-rec
+    name: Standard flavors
+    url: https://docs.scs.community/standards/scs-0103-v1-standard-flavors
+    targets:
       recommended:
       - scs-0103-flavor-1v-4-10
       - scs-0103-flavor-2v-8-20
@@ -416,6 +432,12 @@ modules:
       - scs-0104-source-debian-12
       - scs-0104-source-debian-11
       - scs-0104-image-ubuntu-2204
+  - id: scs-0104-v1-1-rec
+    name: Standard images
+    url: https://docs.scs.community/standards/scs-0104-v1-standard-images
+    parameters:
+      image_spec: address (URL) of an image-spec (YAML) file
+    targets:
       recommended:
       - scs-0104-image-capi-1
   - id: scs-0104-v1-2
@@ -434,6 +456,12 @@ modules:
       - scs-0104-source-debian-12
       - scs-0104-source-debian-11
       - scs-0104-image-ubuntu-2404
+  - id: scs-0104-v1-2-rec
+    name: Standard images
+    url: https://docs.scs.community/standards/scs-0104-v1-standard-images
+    parameters:
+      image_spec: address (URL) of an image-spec (YAML) file
+    targets:
       recommended:
       - scs-0104-image-capi-2
       - scs-0104-image-debian-12
@@ -443,6 +471,10 @@ modules:
     targets:
       main:
       - scs-0114-syntax-check
+  - id: scs-0114-v1-rec
+    name: Volume Types
+    url: https://docs.scs.community/standards/scs-0114-v1-volume-type-standard
+    targets:
       recommended:
       - scs-0114-encrypted-type
       - scs-0114-replicated-type
@@ -458,6 +490,10 @@ modules:
     targets:
       main:
       - scs-0116-permissions
+  - id: scs-0116-v1-rec
+    name: Key manager
+    url: https://docs.scs.community/standards/scs-0116-v1-key-manager-standard
+    targets:
       recommended:
       - scs-0116-presence
       preview:
@@ -469,6 +505,10 @@ modules:
       main:
       - scs-0117-test-backup
   - id: scs-0121-v1
+    name: Availability Zones
+    url: https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard
+    targets: {}
+  - id: scs-0121-v1-rec
     name: Availability Zones
     url: https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard
     targets:
@@ -500,6 +540,10 @@ modules:
       - scs-0123-storage-apis
       - scs-0123-service-s3
   - id: scs-0302-v1
+    name: Domain Manager Role
+    url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role
+    targets: {}
+  - id: scs-0302-v1-rec
     name: Domain Manager Role
     url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role
     targets:
