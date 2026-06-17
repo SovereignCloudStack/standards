@@ -122,7 +122,7 @@ class SonobuoyHandler:
             return return_code
         except BaseException:
             print(self.check_name + ": ABORT")
-            logger.debug("something went wrong", exc_info=True)
+            logger.critical("something went wrong", exc_info=True)
             return 112
         finally:
             self._sonobuoy_delete()
