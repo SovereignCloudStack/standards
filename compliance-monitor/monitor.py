@@ -833,6 +833,15 @@ def pick_filter(ctx, results, scopeuuid, *subjects):
     return [r for r in rs if r is not None]
 
 
+NIL = object()  # the version in question does not have a result
+# used to sort multiple versions according to the "goodness" of their result
+RESULT_SCORE = {
+    -1: 0,
+    None: 1,
+    NIL: 2,  # NIL and None are basically the same, but prefer None because it has more info
+    0: 3,
+    1: 4,
+}
 COLOR_MAP = {
     -1: '🛑',  # fail
     None: '🟧',  # missing
@@ -847,11 +856,10 @@ def summary_filter(scope_results):
     if not isinstance(scope_results, dict):
         # new generalized case: "aggregate" results for multiple subjects
         # simplified computation: just select the worst subject to represent the group
-        scope_results = [sr for sr in scope_results if sr.get('best_passed') is not None]
         scope_results = min(
             scope_results,
             default={},
-            key=lambda sr: -sr['best_passed'],
+            key=lambda sr: RESULT_SCORE[sr.get('result', NIL)],
         )
     if not scope_results:
         return '🛑 –'
