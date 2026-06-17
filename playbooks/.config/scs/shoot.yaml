@@ -41,11 +41,6 @@ spec:
   credentialsBindingName: {{ credentials_binding_name }}
   purpose: evaluation
   region: {{ region }}
-  addons:
-    kubernetesDashboard:
-      enabled: false
-    nginxIngress:
-      enabled: false
   maintenance:
     autoUpdate:
       kubernetesVersion: true

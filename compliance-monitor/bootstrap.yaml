@@ -100,6 +100,10 @@ accounts:
     group: noris
     delegates:
       - zuul_ci
+  - subject: noris-1.35
+    group: noris
+    delegates:
+      - zuul_ci
   - subject: scaleup-1.33
     group: scaleup
     delegates:
@@ -108,11 +112,19 @@ accounts:
     group: scaleup
     delegates:
       - zuul_ci
+  - subject: scaleup-1.35
+    group: scaleup
+    delegates:
+      - zuul_ci
   - subject: syself-1.33
     group: syself
     delegates:
       - zuul_ci
   - subject: syself-1.34
+    group: syself
+    delegates:
+      - zuul_ci
+  - subject: syself-1.35
     group: syself
     delegates:
       - zuul_ci

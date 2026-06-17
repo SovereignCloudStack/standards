@@ -40,11 +40,51 @@ scopes = [
     "scs-compatible-kaas",
 ]
 subjects = [
+    "noris-1.33",
     "noris-1.34",
+    "noris-1.35",
     "scaleup-1.33",
     "scaleup-1.34",
+    "scaleup-1.35",
     "syself-1.33",
     "syself-1.34",
+    "syself-1.35",
+]
+workers = 16
+
+
+[presets.kaas1]
+scopes = [
+    "scs-compatible-kaas",
+]
+subjects = [
+    "noris-1.33",
+    "scaleup-1.33",
+    "syself-1.33",
+]
+workers = 4
+
+
+[presets.kaas2]
+scopes = [
+    "scs-compatible-kaas",
+]
+subjects = [
+    "noris-1.34",
+    "scaleup-1.34",
+    "syself-1.34",
+]
+workers = 4
+
+
+[presets.kaas3]
+scopes = [
+    "scs-compatible-kaas",
+]
+subjects = [
+    "noris-1.35",
+    "scaleup-1.35",
+    "syself-1.35",
 ]
 workers = 4
 

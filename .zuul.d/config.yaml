@@ -6,7 +6,9 @@
     periodic-daily:
       jobs:
         - scs-check-iaas
-        - scs-check-kaas
+        - scs-check-kaas1
+        - scs-check-kaas2
+        - scs-check-kaas3
     periodic-hourly:
       jobs:
         - scs-check-scs2-main
@@ -59,7 +61,7 @@
     vars:
       preset: iaas
 - job:
-    name: scs-check-kaas
+    name: scs-check-kaas1
     parent: scs-check-scs2-main
     # timeout:
     # a) these tests take a lot of time, I'm afraid, particularly Sonobuoy
@@ -67,9 +69,19 @@
     timeout: 21600  # 6 hrs -- 5 hrs was almost sufficient (reports came through sometimes)
     attempts: 1  # this job is heavy, and retries aren't very promising
     vars:
-      preset: kaas
+      preset: kaas1
       iaas: false
       kaas: true
       section: '.auto'  # only do 'heavy' tests on Saturdays
       do_provision: true
       do_cleanup: false
+- job:
+    name: scs-check-kaas2
+    parent: scs-check-kaas1
+    vars:
+      preset: kaas2
+- job:
+    name: scs-check-kaas3
+    parent: scs-check-kaas1
+    vars:
+      preset: kaas3
