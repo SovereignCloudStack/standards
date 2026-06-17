@@ -837,7 +837,7 @@ COLOR_MAP = {
     -1: '🛑',  # fail
     None: '🟧',  # missing
     0: '✅*',  # inconclusive
-    1: '✅',  # pass    
+    1: '✅',  # pass
 }
 
 
