@@ -56,6 +56,33 @@ clusters:
         garden_api_server: "{{ clouds_conf.noris_api_server }}"
         garden_ca_data: "{{ clouds_conf.noris_ca_data }}"
         garden_token: "{{ clouds_conf.noris_token }}"
+  noris-1.35:
+    kind: gardener
+    config:
+      name: 'noris-1-35'  # explicit name because dot in name not permissible
+      kubernetesVersion: '1.35'
+      autoVars: noris  # determine vars.kubernetes_version automatically using kubernetesVersion
+      templates:
+        shoot: shoot.yaml
+        kubeconfig: garden-kubeconfig.yaml
+      vars:
+        num_worker_nodes: 3
+        worker_cidr: "10.250.0.0/16"
+        machine_type: "SCS-1V-16-50"
+        machine_image_name: "flatcar"
+        machine_image_version: "4081.3.6"
+        networking_type: cilium
+        region: "nsc-nbg"
+        zone: "nbg1"
+        floating_pool_name: "external"
+        load_balancer_provider: "ovn"
+        cloud_profile_name: "openstack"
+        credentials_binding_name: "default-openstack-secret"
+        garden_namespace: "garden-nkhv1db5ym"
+      secrets:
+        garden_api_server: "{{ clouds_conf.noris_api_server }}"
+        garden_ca_data: "{{ clouds_conf.noris_ca_data }}"
+        garden_token: "{{ clouds_conf.noris_token }}"
   scaleup-1.33:
     kind: gardener
     config:
@@ -110,18 +137,45 @@ clusters:
         garden_api_server: "{{ clouds_conf.scaleup_api_server }}"
         garden_ca_data: "{{ clouds_conf.scaleup_ca_data }}"
         garden_token: "{{ clouds_conf.scaleup_token }}"
-  syself-1.32:
+  scaleup-1.35:
+    kind: gardener
+    config:
+      name: 'scaleup-1-35'  # explicit name because dot in name not permissible
+      kubernetesVersion: '1.35'
+      autoVars: noris  # determine vars.kubernetes_version automatically using kubernetesVersion; noris works well for us
+      templates:
+        shoot: shoot.yaml
+        kubeconfig: garden-kubeconfig.yaml
+      vars:
+        num_worker_nodes: 3
+        worker_cidr: "10.250.0.0/16"
+        machine_type: "SCS-2V-4-40p"
+        machine_image_name: "gardenlinux"
+        machine_image_version: "1877.17.0"
+        networking_type: calico
+        region: "RegionOne"
+        zone: "az1"
+        floating_pool_name: "external"
+        load_balancer_provider: "ovn"
+        cloud_profile_name: "occ2"
+        credentials_binding_name: "c70012-14"
+        garden_namespace: "garden-c70012-14"
+      secrets:
+        garden_api_server: "{{ clouds_conf.scaleup_api_server }}"
+        garden_ca_data: "{{ clouds_conf.scaleup_ca_data }}"
+        garden_token: "{{ clouds_conf.scaleup_token }}"
+  syself-1.35:
     kind: clusterstacks
     config:
-      kubernetesVersion: '1.32'
-      name: 'syself-1-32'  # explicit name because dot in name not permissible
+      kubernetesVersion: '1.35'
+      name: 'syself-1-35'  # explicit name because dot in name not permissible
       autoVars: syself  # determine cs_class_name and cs_version automatically using kubernetesVersion
       templates:
         cluster: syself-cluster.yaml
         clusterstack: syself-clusterstack.yaml
         kubeconfig: syself-kubeconfig.yaml
       vars:
-        cs_name: hetzner-apalla-1-32
+        cs_name: hetzner-apalla-1-35
         num_control_nodes: 3
         num_worker_nodes: 3
       secrets:
