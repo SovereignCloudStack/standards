@@ -257,6 +257,7 @@ def _evaluate_version(version, scope_results):
         for tname, tc_ids in version['targets'].items()
     }
     return {
+        '_idx': version['_idx'],
         'result': target_results['main']['result'],
         'targets': target_results,
         'tc_target': version['tc_target'],
@@ -273,21 +274,22 @@ def _evaluate_scope(spec, scope_results, include_drafts=False):
         for vname, version in versions.items()
         if version['_explicit_validity']
     }
-    by_validity = defaultdict(list)
-    for vname, version in versions.items():
-        by_validity[version['_explicit_validity']].append(vname)
-    # go through worsening validity values until a passing version is found
+    winner = None  # first passed version that's not a draft
+    result = -1
+    passed = []
     relevant = []
-    best_passed = None
-    for validity in ('effective', 'warn', 'deprecated'):
-        vnames = by_validity[validity]
-        relevant.extend(vnames)
-        if any(version_results[vname]['result'] == 1 for vname in vnames):
-            best_passed = validity
-            break
-    if include_drafts:
-        relevant.extend(by_validity['draft'])
-    passed = [vname for vname in relevant if version_results[vname]['result'] == 1]
+    # assumption: versions are listed in spec in descending order recency
+    # first the drafts, then effective, then warn, then the rest
+    for vname, version_result in version_results.items():
+        if version_result['validity'] == 'draft' and not include_drafts:
+            continue
+        relevant.append(vname)
+        result = version_result['result']
+        if result != -1:
+            passed.append(vname)
+            if version_result['validity'] != 'draft':
+                winner = vname
+                break
     # only list testcases that occur in any relevant version
     relevant_testcases = set()
     for vname in relevant:
@@ -304,12 +306,14 @@ def _evaluate_scope(spec, scope_results, include_drafts=False):
         },
         'versions': version_results,
         'relevant': relevant,
+        'result': result,
         'passed': passed,
         'passed_str': ', '.join([
-            vname + ASTERISK_LOOKUP[versions[vname]['validity']]
+            vname + ASTERISK_LOOKUP[version_results[vname]['validity']]
             for vname in passed
         ]),
-        'best_passed': best_passed,
+        'best_passed': None if winner is None else version_results[winner]['_idx'],
+        'validity': 'deprecated' if winner is None else version_results[winner]['validity'],
     }
 
 
@@ -672,20 +676,25 @@ async def get_detail(
     subject: str,
     scopeuuid: str,
 ):
+    return _make_detail_view(conn, view_type, subject, scopeuuid)
+
+
+def _make_detail_view(conn, view_type, subject, scopeuuid, include_drafts=False):
     scopeuuid = _resolve_scope(scopeuuid)
     with conn.cursor() as cur:
         group, subjects = _resolve_group(cur, subject)
         rows2 = []
         for subj in subjects:
-            rows2.extend(db_get_relevant_results2(cur, subj, scopeuuid, approved_only=True))
+            rows2.extend(db_get_relevant_results2(cur, subj, scopeuuid))
     results2 = convert_result_rows_to_dict2(
-        rows2, get_scopes(), include_report=True, grace_period_days=GRACE_PERIOD_DAYS,
+        rows2, get_scopes(), include_report=True, include_drafts=include_drafts,
         subjects=subjects, scopes=(scopeuuid, ),
     )
     title = f'Details for group {group}' if group else f'Details for subject {subject}'
+    if include_drafts:
+        title += ' (incl. drafts)'
     return render_view(
-        VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url,
-        title=title,
+        VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url, title=title,
     )
 
 
@@ -697,21 +706,7 @@ async def get_detail_full(
     subject: str,
     scopeuuid: str,
 ):
-    scopeuuid = _resolve_scope(scopeuuid)
-    with conn.cursor() as cur:
-        group, subjects = _resolve_group(cur, subject)
-        rows2 = []
-        for subj in subjects:
-            rows2.extend(db_get_relevant_results2(cur, subj, scopeuuid, approved_only=False))
-    results2 = convert_result_rows_to_dict2(
-        rows2, get_scopes(), include_report=True, include_drafts=True,
-        subjects=subjects, scopes=(scopeuuid, ),
-    )
-    title = f'Details for group {group}' if group else f'Details for subject {subject}'
-    return render_view(
-        VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url,
-        title=f'{title} (incl. unverified results)',
-    )
+    return _make_detail_view(conn, view_type, subject, scopeuuid, include_drafts=True)
 
 
 @app.get("/{view_type}/table")
@@ -720,13 +715,20 @@ async def get_table(
     conn: Annotated[connection, Depends(get_conn)],
     view_type: ViewType,
 ):
+    return _make_table_view(conn, view_type, detail_page='detail')
+
+
+def _make_table_view(conn, view_type, detail_page, include_drafts=False):
     with conn.cursor() as cur:
         groups = db_get_groups(cur)
-        rows2 = db_get_relevant_results2(cur, approved_only=True)
-    results2 = convert_result_rows_to_dict2(rows2, get_scopes(), grace_period_days=GRACE_PERIOD_DAYS)
+        rows2 = db_get_relevant_results2(cur)
+    results2 = convert_result_rows_to_dict2(rows2, get_scopes(), include_drafts=include_drafts)
+    title = 'SCS compliance overview'
+    if include_drafts:
+        title += ' (incl. drafts)'
     return render_view(
-        VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, detail_page='detail',
-        title="SCS compliance overview", groups=groups,
+        VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, detail_page=detail_page,
+        title=title, groups=groups,
     )
 
 
@@ -736,14 +738,7 @@ async def get_table_full(
     conn: Annotated[connection, Depends(get_conn)],
     view_type: ViewType,
 ):
-    with conn.cursor() as cur:
-        groups = db_get_groups(cur)
-        rows2 = db_get_relevant_results2(cur, approved_only=False)
-    results2 = convert_result_rows_to_dict2(rows2, get_scopes(), include_drafts=True)
-    return render_view(
-        VIEW_TABLE, view_type, results=results2, base_url=settings.base_url, detail_page='detail_full',
-        title="SCS compliance overview (incl. unverified results)", unverified=True, groups=groups,
-    )
+    return _make_table_view(conn, view_type, detail_page='detail_full', include_drafts=True)
 
 
 @app.get("/{view_type}/scope/{scopeuuid}")
@@ -756,13 +751,12 @@ async def get_scope(
     scopeuuid = _resolve_scope(scopeuuid)
     spec = get_scopes()[scopeuuid]
     versions = spec['versions']
-    # sort by name, and all drafts after all non-drafts
-    column_data = [
-        (version['_explicit_validity'].lower() == 'draft', name)
+    # use same order as in details view
+    relevant = [
+        name
         for name, version in versions.items()
         if version['_explicit_validity']
     ]
-    relevant = [name for _, name in sorted(column_data)]
     modules_chart = {}
     for name in relevant:
         for include in versions[name]['include']:
@@ -839,38 +833,40 @@ def pick_filter(ctx, results, scopeuuid, *subjects):
     return [r for r in rs if r is not None]
 
 
-STATUS_ORDERING = {
-    'effective': 10,
-    'warn': 5,
-    'deprecated': 1,
+COLOR_MAP = {
+    -1: '🛑',  # fail
+    None: '🟧',  # missing
+    0: '✅*',  # inconclusive
+    1: '✅',  # pass    
 }
 
 
 def summary_filter(scope_results):
     """Jinja filter to construct summary from `scope_results`"""
+    # be prepared for empty dicts here because they are created to avoid KeyError in jinja2
     if not isinstance(scope_results, dict):
         # new generalized case: "aggregate" results for multiple subjects
         # simplified computation: just select the worst subject to represent the group
+        scope_results = [sr for sr in scope_results if sr.get('best_passed') is not None]
         scope_results = min(
             scope_results,
             default={},
-            key=lambda sr: STATUS_ORDERING.get(sr.get('best_passed'), -1),
+            key=lambda sr: -sr['best_passed'],
         )
-    passed_str = scope_results.get('passed_str', '') or '–'
-    best_passed = scope_results.get('best_passed')
-    # avoid simple 🟢🔴 (hard to distinguish for color-blind folks)
-    color = {
-        'effective': '✅',
-        'warn': '✅',  # forgo differentiation here in favor of simplicity (will be apparent in version list)
-        'deprecated': '🟧',
-    }.get(best_passed, '🛑')
+    if not scope_results:
+        return '🛑 –'
+    result = scope_results['result']
+    color = COLOR_MAP[result]
+    # if the result is not pass anyway, deduct points if the version is outdated
+    # (this case should happen very rarely because we usually don't consider those)
+    if result != -1:
+        validity = scope_results['validity']
+        if validity == 'warn':
+            color = '🟧'
+        elif validity == 'deprecated':
+            color = '🛑'
+    passed_str = scope_results['passed_str'] or '–'
     return f'{color} {passed_str}'
-
-
-def verdict_filter(value):
-    """Jinja filter to turn a canonical result value into a written verdict (PASS, MISS, or FAIL)"""
-    # be fault-tolerant here and turn every non-canonical value into a MISS
-    return {1: 'PASS', -1: 'FAIL'}.get(value, 'MISS')
 
 
 def verdict_check_filter(value):
@@ -905,7 +901,6 @@ if __name__ == "__main__":
     env.filters.update(
         pick=pick_filter,
         summary=summary_filter,
-        verdict=verdict_filter,
         verdict_check=verdict_check_filter,
         markdown=markdown,
         validity_symbol=ASTERISK_LOOKUP.get,

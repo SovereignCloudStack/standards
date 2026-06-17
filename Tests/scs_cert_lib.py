@@ -84,7 +84,8 @@ def _resolve_spec(spec: dict):
     # step 4. resolve references
     # step 4a. resolve references to modules in includes
     # in this step, we also normalize the include form
-    for version in spec['versions'].values():
+    for idx, version in enumerate(spec['versions'].values()):
+        version['_idx'] = idx
         version['include'] = [
             {'module': module_lookup[inc], 'parameters': {}} if isinstance(inc, str) else
             {'module': module_lookup[inc['ref']], 'parameters': inc.get('parameters', {})}
@@ -205,8 +206,8 @@ def eval_buckets(results, testcase_ids) -> dict:
 
 def evaluate(results, testcase_ids) -> int:
     """returns overall result"""
-    return min([
-        # here, we treat None (MISSING) as 0 (ABORT)
-        results.get(testcase_id, {}).get('result') or 0
-        for testcase_id in testcase_ids
-    ], default=0)
+    buckets = eval_buckets(results, testcase_ids)
+    for value in (-1, None, 0):
+        if buckets[value]:
+            return value
+    return 1
