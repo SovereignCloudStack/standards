@@ -73,10 +73,12 @@
       section: '.auto'  # only do 'heavy' tests on Saturdays
       do_provision: true
       do_cleanup: false
+- job:
     name: scs-check-kaas2
     parent: scs-check-kaas1
     vars:
       preset: kaas2
+- job:
     name: scs-check-kaas3
     parent: scs-check-kaas1
     vars:
