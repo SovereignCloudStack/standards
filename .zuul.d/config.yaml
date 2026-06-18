@@ -31,14 +31,12 @@
     pre-run: playbooks/pre.yaml
     run: playbooks/adr_syntax.yaml
 - job:
-    name: scs-check-scs2
+    name: scs-check-base
     parent: base
     secrets:
      - name: clouds_conf
        secret: SECRET_STANDARDS
     nodeset: pod-fedora-40
-    semaphores:
-      - semaphore-iaas
     vars:
       preset: default
       iaas: true
@@ -55,6 +53,11 @@
     post-run:
      - playbooks/post_cloud.yaml
 - job:
+    name: scs-check-scs2
+    parent: scs-check-base
+    semaphores:
+      - semaphore-iaas
+- job:
     name: scs-check-scs2-main
     parent: scs-check-scs2
     branches: main
@@ -70,8 +73,9 @@
       preset: iaas
 - job:
     name: scs-check-kaas1
-    parent: scs-check-scs2-main
-    semaphores: !override
+    parent: scs-check-base
+    branches: main
+    semaphores:
       - semaphore-kaas
     # timeout:
     # a) these tests take a lot of time, I'm afraid, particularly Sonobuoy
