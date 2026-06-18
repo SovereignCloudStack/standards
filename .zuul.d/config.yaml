@@ -18,6 +18,12 @@
     check:
       jobs:
         - scs-check-adr-syntax
+- semaphore:
+    name: semaphore-iaas
+    max: 1  # run at most one iaas job at the same time
+- semaphore:
+    name: semaphore-kaas
+    max: 1  # run at most one kaas job at the same time
 - job:
     name: scs-check-adr-syntax
     parent: base
@@ -31,6 +37,8 @@
      - name: clouds_conf
        secret: SECRET_STANDARDS
     nodeset: pod-fedora-40
+    semaphores:
+      - semaphore-iaas
     vars:
       preset: default
       iaas: true
@@ -63,6 +71,8 @@
 - job:
     name: scs-check-kaas1
     parent: scs-check-scs2-main
+    semaphores: !override
+      - semaphore-kaas
     # timeout:
     # a) these tests take a lot of time, I'm afraid, particularly Sonobuoy
     # b) keep in mind that this job covers ALL test subjects (at most 4 in parallel)
