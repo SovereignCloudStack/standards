@@ -18,6 +18,12 @@
     check:
       jobs:
         - scs-check-adr-syntax
+- semaphore:
+    name: semaphore-iaas
+    max: 1  # run at most one iaas job at the same time
+- semaphore:
+    name: semaphore-kaas
+    max: 1  # run at most one kaas job at the same time
 - job:
     name: scs-check-adr-syntax
     parent: base
@@ -25,7 +31,7 @@
     pre-run: playbooks/pre.yaml
     run: playbooks/adr_syntax.yaml
 - job:
-    name: scs-check-scs2
+    name: scs-check-base
     parent: base
     secrets:
      - name: clouds_conf
@@ -47,6 +53,11 @@
     post-run:
      - playbooks/post_cloud.yaml
 - job:
+    name: scs-check-scs2
+    parent: scs-check-base
+    semaphores:
+      - semaphore-iaas
+- job:
     name: scs-check-scs2-main
     parent: scs-check-scs2
     branches: main
@@ -62,7 +73,10 @@
       preset: iaas
 - job:
     name: scs-check-kaas1
-    parent: scs-check-scs2-main
+    parent: scs-check-base
+    branches: main
+    semaphores:
+      - semaphore-kaas
     # timeout:
     # a) these tests take a lot of time, I'm afraid, particularly Sonobuoy
     # b) keep in mind that this job covers ALL test subjects (at most 4 in parallel)
