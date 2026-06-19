@@ -179,7 +179,8 @@ class Container:
     def __getattr__(self, key):
         val = self._values.get(key)
         if val is None:
-            logger.debug(f'... {key}')
+            # uncomment for super serious debugging
+            # logger.log(f'... {key}')
             try:
                 ret = self._functions[key](self)
             except BaseException as e:
@@ -214,7 +215,7 @@ def harness(name, *check_fns):
     - 'FAIL' if one of the functions has a falsy result
     - 'PASS' otherwise
     """
-    logger.debug(f'** {name}')
+    logger.info(f'*** {name}')
     try:
         result = all(check_fn() for check_fn in check_fns)
     except BaseException:
