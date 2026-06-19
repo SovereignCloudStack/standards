@@ -11,7 +11,9 @@
     table th {font-weight:700;background-color:#00000008;}
     html {text-rendering:optimizelegibility;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";}
     li {margin:0.33em 0;}
-    pre.line {margin: 0;}
+    #log + ul {padding-left:0;}
+    #log + ul > li {margin:0;display:block;text-indent:1em hanging;}
+    #log + ul > li strong {background-color:yellow;}
 </style>
 {% if title %}<h1>{{title}}</h1>
 {% endif %}{{fragment}}</body>

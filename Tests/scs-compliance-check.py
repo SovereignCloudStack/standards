@@ -52,7 +52,7 @@ Options:
   -s/--subject SUBJECT: Name of the subject (cloud) under test, for the report
   -S/--sections SECTION_LIST: comma-separated list of sections to test (default: all sections)
   -t/--tests REGEX: regular expression to select individual testcases based on their ids
-  -o/--output REPORT_FILEPATH: Generate yaml report of compliance check in given filepath
+  -o/--output REPORT_FILEPATH: Generate yaml report in given filepath (implies -C)
   -C/--critical-only: Only return critical errors in return code
   -a/--assign KEY=VALUE: assign variable to be used for the run (as required by yaml file)
 
@@ -129,6 +129,7 @@ class Config:
                 self.subject = opt[1]
             elif opt[0] == "-o" or opt[0] == "--output":
                 self.output = opt[1]
+                self.critical_only = True
             elif opt[0] == "-S" or opt[0] == "--sections":
                 self.sections = [x.strip() for x in opt[1].split(",")]
             elif opt[0] == "-C" or opt[0] == "--critical-only":
@@ -235,61 +236,56 @@ class CheckRunner:
         return invocation
 
 
-def print_report(testcase_lookup: dict, targets: dict, results: dict, partial=False, verbose=False):
-    for tname, tc_ids in targets.items():
-        by_value = eval_buckets(results, tc_ids)
-        missing, failed, aborted, passed = by_value[None], by_value[-1], by_value[0], by_value[1]
-        verdict = 'FAIL' if failed or aborted else 'TENTATIVE pass' if missing else 'PASS'
-        summary_parts = [f"{len(passed)} passed"]
-        if failed:
-            summary_parts.append(f"{len(failed)} failed")
-        if aborted:
-            summary_parts.append(f"{len(aborted)} aborted")
-        if missing:
-            summary_parts.append(f"{len(missing)} missing")
-        verdict += f" ({', '.join(summary_parts)})"
-        print(f"- {tname}: {verdict}")
-        reportcateg = [(failed, 'FAILED'), (aborted, 'ABORTED'), (missing, 'MISSING')]
-        if verbose:
-            reportcateg.append((passed, 'PASSED'))
-        for offenders, category in reportcateg:
-            if category == 'MISSING' and partial:
-                continue  # do not report each missing testcase if a filter was used
-            if not offenders:
-                continue
-            print(f"  - {category}:")
-            for tc_id in offenders:
-                print(f"    - {tc_id}:")
-                testcase = testcase_lookup[tc_id]
-                if 'description' in testcase:
-                    print(f"      > {testcase['description']}")
-                if 'url' in testcase:
-                    print(f"      > {testcase['url']}")
+def print_report(testcase_lookup: dict, tc_ids: list, results: dict, partial=False, verbose=False):
+    by_value = eval_buckets(results, tc_ids)
+    missing, failed, aborted, passed = by_value[None], by_value[-1], by_value[0], by_value[1]
+    verdict = 'FAIL' if failed or aborted else 'TENTATIVE pass' if missing else 'PASS'
+    summary_parts = [f"{len(passed)} passed"]
+    if failed:
+        summary_parts.append(f"{len(failed)} failed")
+    if aborted:
+        summary_parts.append(f"{len(aborted)} aborted")
+    if missing:
+        summary_parts.append(f"{len(missing)} missing")
+    verdict += f" ({', '.join(summary_parts)})"
+    print(verdict)
+    reportcateg = [(failed, 'FAILED'), (aborted, 'ABORTED'), (missing, 'MISSING')]
+    if verbose:
+        reportcateg.append((passed, 'PASSED'))
+    for offenders, category in reportcateg:
+        if category == 'MISSING' and partial:
+            continue  # do not report each missing testcase if a filter was used
+        if not offenders:
+            continue
+        print(f"  - {category}:")
+        for tc_id in offenders:
+            print(f"    - {tc_id}")
+            testcase = testcase_lookup[tc_id]
+            if verbose and 'description' in testcase:
+                print(f"      > {testcase['description']}")
+            if verbose and 'url' in testcase:
+                print(f"      > {testcase['url']}")
 
 
-def create_report(argv, config, spec, invocations):
+def create_report(config, spec, invocations, results):
+    log = ['running: ' + shlex.join(sys.argv)]
+    for invocation in invocations:
+        log.append(f"$ {invocation['cmd']}")
+        log.extend(invocation['stderr'])
     return {
-        # these fields are essential:
-        # results are no longer specific to version!
-        # omit the field `version` because it's just redundant; simply parse invocations (see below)
-        "spec": {
-            "uuid": spec['uuid'],
-            "name": spec['name'],
-            "url": spec['url'],
-        },
+        "uuid": str(uuid.uuid4()),
+        "creator": "SCS test suite; version=0.1.0",  # TODO put actual version of test suite here
+        "scope": spec['uuid'],
         "checked_at": datetime.datetime.now(),
         "reference_date": config.checkdate,
         "subject": config.subject,
-        # this field is mostly for debugging:
-        "run": {
-            "uuid": str(uuid.uuid4()),
-            "argv": argv,
-            "assignment": config.assignment,
-            "sections": config.sections,
-            "forced_version": config.version or None,
-            "forced_tests": None if config.tests is None else config.tests.pattern,
-            "invocations": {invocation['id']: invocation for invocation in invocations},
+        "tests": {
+            testcase_id: {
+                "result": value,
+            }
+            for testcase_id, value in results.items()
         },
+        "log": log,
     }
 
 
@@ -329,8 +325,7 @@ def main(argv):
     # collect all testcases we need
     all_testcase_ids = set()
     for version in versions:
-        for testcase_ids in version['targets'].values():
-            all_testcase_ids.update(testcase_ids)
+        all_testcase_ids.update(version['testcase_ids'])
     # collect scripts to be run
     testcase_lookup = spec['testcases']
     tc_script_lookup = spec['tc_scripts']
@@ -354,16 +349,17 @@ def main(argv):
     results = {}
     for invocation in invocations:
         results.update(invocation['results'])
-    # now report: to console if requested, and likewise for yaml output
-    if not config.quiet:
+    # now report:
+    if config.verbose or not config.output:
         # print a horizontal line if we had any script output
         if runner.spamminess:
             print("********" * 10)  # 80 characters
+        print(f"{config.subject} {title}:")
         for version in versions:
-            print(f"{config.subject} {title} {version['version']}:")
-            print_report(testcase_lookup, version['targets'], results, partial, config.verbose)
+            print(f"- {version['version']}:", end=' ')
+            print_report(testcase_lookup, version['testcase_ids'], results, partial, config.verbose)
     if config.output:
-        report = create_report(argv, config, spec, invocations)
+        report = create_report(config, spec, invocations, results)
         with open(config.output, 'w', encoding='UTF-8') as fileobj:
             yaml.safe_dump(report, fileobj, default_flow_style=False, sort_keys=False, explicit_start=True)
     return min(127, runner.num_abort + (0 if config.critical_only else runner.num_error))
