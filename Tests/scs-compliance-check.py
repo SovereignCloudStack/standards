@@ -26,7 +26,6 @@ import shlex
 import getopt
 import datetime
 import subprocess
-from itertools import chain
 import logging
 import yaml
 
@@ -60,7 +59,7 @@ With -C, the return code will be nonzero precisely when the tests couldn't be ru
 """, file=file)
 
 
-def run_check_tool(executable, args, env=None, cwd=None):
+def run_check_tool(executable, args, cwd=None):
     """Run executable and return `CompletedProcess` instance"""
     if executable.startswith("http://") or executable.startswith("https://"):
         # TODO: When we start supporting this, consider security concerns
@@ -80,7 +79,7 @@ def run_check_tool(executable, args, env=None, cwd=None):
         exe.insert(0, sys.executable)
     return subprocess.run(
         exe, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        encoding='UTF-8', check=False, env=env, cwd=cwd,
+        encoding='UTF-8', check=False, cwd=cwd,
     )
 
 
@@ -153,34 +152,8 @@ def select_valid(versions: list) -> list:
     return [version for version in versions if version['_explicit_validity']]
 
 
-def invoke_check_tool(exe, args, env, cwd):
-    """run check tool and return invokation dict to use in the report"""
-    try:
-        compl = run_check_tool(exe, args, env, cwd)
-    except Exception as e:
-        invokation = {
-            "rc": 127,
-            "stdout": [],
-            "stderr": [f"CRITICAL: {e!s}"],
-        }
-    else:
-        invokation = {
-            "rc": compl.returncode,
-            "stdout": compl.stdout.splitlines(),
-            "stderr": compl.stderr.splitlines(),
-        }
-    for signal in ('info', 'warning', 'error', 'critical'):
-        invokation[signal] = len([
-            line
-            for line in chain(invokation["stderr"], invokation["stdout"])
-            if line.lower().startswith(signal)
-        ])
-    return invokation
-
-
-def compute_results(stdout, permissible_ids=()):
+def compute_results(stdout, results, permissible_ids=()):
     """pick out test results from stdout lines"""
-    result = {}
     for line in stdout:
         parts = line.rsplit(':', 1)
         if len(parts) != 2:
@@ -192,48 +165,40 @@ def compute_results(stdout, permissible_ids=()):
         if permissible_ids and testcase_id not in permissible_ids:
             logger.warning(f"ignoring invalid result id: {testcase_id}")
             continue
-        result[testcase_id] = value
-    return result
+        results[testcase_id] = value
 
 
 class CheckRunner:
-    def __init__(self, cwd, assignment, verbosity=0):
+    def __init__(self, cwd, assignment, results, log, verbose=False):
         self.cwd = cwd
         self.assignment = assignment
         self.num_abort = 0
-        self.num_error = 0
-        self.verbosity = verbosity
+        self.verbose = verbose
         self.spamminess = 0
+        self.results = results
+        self.log = log
 
-    def run(self, check, testcases=()):
-        parameters = check.get('parameters', {})
-        assignment = {'testcases': ' '.join(testcases), **self.assignment, **parameters}
+    def run(self, check, testcases):
+        assignment = {'testcases': ' '.join(testcases), **self.assignment}
         args = check.get('args', '').format(**assignment)
-        env = {key: value.format(**assignment) for key, value in check.get('env', {}).items()}
-        env_str = " ".join(f"{key}={value}" for key, value in env.items())
-        cmd = f"{env_str} {check['executable']} {args}".strip()
+        cmd = f"{check['executable']} {args}".strip()
         logger.debug(f"running {cmd!r}...")
-        check_env = {**os.environ, **env}
-        invocation = invoke_check_tool(check["executable"], args, check_env, self.cwd)
-        invocation = {
-            'id': str(uuid.uuid4()),
-            'cmd': cmd,
-            'results': compute_results(invocation['stdout'], permissible_ids=testcases),
-            **invocation
-        }
-        if self.verbosity > 1 and invocation["stdout"]:
-            print("\n".join(invocation["stdout"]))
+        self.log.append(f"$ {cmd}")
+        try:
+            compl = run_check_tool(check["executable"], args, self.cwd)
+        except Exception as e:
+            err_log = f"CRITICAL: {e!s}"
+            rc = 1
+        else:
+            compute_results(compl.stdout.splitlines(), self.results, permissible_ids=testcases)
+            err_log = compl.stderr.strip()
+            rc = compl.returncode
+        self.num_abort += rc
+        if rc or self.verbose and err_log:
+            print(err_log, file=sys.stderr)
             self.spamminess += 1
-        # the following check used to be "> 0", but this is quite verbose...
-        if invocation['rc'] or self.verbosity > 1 and invocation["stderr"]:
-            print("\n".join(invocation["stderr"]))
-            self.spamminess += 1
-        logger.debug(f".. rc {invocation['rc']}, {invocation['critical']} critical, {invocation['error']} error")
-        self.num_abort += invocation["critical"]
-        self.num_error += invocation["error"]
-        # count failed testcases because they need not be reported redundantly on the error channel
-        self.num_error += len([value for value in invocation['results'].values() if value < 0])
-        return invocation
+        logger.debug(f'.. rc {rc}')
+        self.log.extend(err_log.splitlines())
 
 
 def print_report(testcase_lookup: dict, tc_ids: list, results: dict, partial=False, verbose=False):
@@ -267,11 +232,7 @@ def print_report(testcase_lookup: dict, tc_ids: list, results: dict, partial=Fal
                 print(f"      > {testcase['url']}")
 
 
-def create_report(config, spec, invocations, results):
-    log = ['running: ' + shlex.join(sys.argv)]
-    for invocation in invocations:
-        log.append(f"$ {invocation['cmd']}")
-        log.extend(invocation['stderr'])
+def create_report(config, spec, log, results):
     return {
         "uuid": str(uuid.uuid4()),
         "creator": "SCS test suite; version=0.1.0",  # TODO put actual version of test suite here
@@ -294,6 +255,7 @@ def main(argv):
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
     config = Config()
     config.apply_argv(argv)
+    check_cwd = os.path.dirname(config.arg0) or os.getcwd()
     if not config.subject:
         raise RuntimeError("You need pass --subject=SUBJECT.")
     with open(config.arg0, "r", encoding="UTF-8") as specfile:
@@ -313,8 +275,6 @@ def main(argv):
             raise RuntimeError(f"Requested version '{config.version}' not found")
     if not versions:
         raise RuntimeError(f"No valid version found for {config.checkdate}")
-    check_cwd = os.path.dirname(config.arg0) or os.getcwd()
-    runner = CheckRunner(check_cwd, assignment, verbosity=config.verbose and 2 or not config.quiet)
     title, partial = spec['name'], False
     if config.sections:
         title += f" [sections: {', '.join(config.sections)}]"
@@ -341,14 +301,13 @@ def main(argv):
         idx = script['_idx']
         script_tc_ids[idx].append(tc_id)
     # run scripts
-    invocations = [
-        runner.run(script, testcases=sorted(tc_ids))
-        for script, tc_ids in zip(spec['scripts'], script_tc_ids)
-        if tc_ids
-    ]
+    log = ['running: ' + shlex.join(sys.argv)]
     results = {}
-    for invocation in invocations:
-        results.update(invocation['results'])
+    runner = CheckRunner(check_cwd, assignment, results, log, verbose=config.verbose)
+    for script, tc_ids in zip(spec['scripts'], script_tc_ids):
+        if not tc_ids:
+            continue
+        runner.run(script, sorted(tc_ids))
     # now report:
     if config.verbose or not config.output:
         # print a horizontal line if we had any script output
@@ -359,10 +318,11 @@ def main(argv):
             print(f"- {version['version']}:", end=' ')
             print_report(testcase_lookup, version['testcase_ids'], results, partial, config.verbose)
     if config.output:
-        report = create_report(config, spec, invocations, results)
+        report = create_report(config, spec, log, results)
         with open(config.output, 'w', encoding='UTF-8') as fileobj:
             yaml.safe_dump(report, fileobj, default_flow_style=False, sort_keys=False, explicit_start=True)
-    return min(127, runner.num_abort + (0 if config.critical_only else runner.num_error))
+    num_error = len([tc_id for tc_id, value in results.items() if value != 1])
+    return min(127, runner.num_abort + (0 if config.critical_only else num_error))
 
 
 if __name__ == "__main__":
