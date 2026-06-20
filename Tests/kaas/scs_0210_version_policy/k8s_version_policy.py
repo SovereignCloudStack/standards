@@ -5,25 +5,14 @@
 K8s Version Policy Checker (scs-v0210-v2)
 https://github.com/SovereignCloudStack/standards
 
-Return code is 0 precisely when it could be verified that the standard is satisfied.
-Otherwise the return code is the number of errors that occurred (up to 127 due to OS
-restrictions); for further information, see the log messages on various channels:
-    CRITICAL  for problems preventing the test to complete,
-    ERROR     for violations of requirements,
-    INFO      for violations of recommendations,
-    DEBUG     for background information and problems that don't hinder the test.
-
-This script only checks one given cluster, so it doesn't check whether multiple
-k8s branches are being offered.
-It is determined if the version on the cluster is still inside
-the recency window, which is determined by the standard to be 4 months
-for minor versions (for the stable cluster) and 1 week for patch versions.
-An exception are versions with critical CVEs, which should be replaced on
-a shorter notice.
+Run testcase version-policy-check and output result to stdout.
+Return code will be non-zero precisely when the testcase could not
+be run.
 
 (c) Hannes Baum <hannes.baum@cloudandheat.com>, 6/2023
 (c) Martin Morgenstern <martin.morgenstern@cloudandheat.com>, 2/2024
 (c) Matthias Büchse <matthias.buechse@cloudandheat.com>, 3/2024
+(c) Matthias Büchse <matthias.buechse@alasca.cloud>, 6/2026
 SPDX-License-Identifier: CC-BY-SA-4.0
 """
 
@@ -33,7 +22,6 @@ from pathlib import Path
 import contextlib
 import getopt
 import logging
-import logging.config
 import re
 import sys
 
