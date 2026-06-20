@@ -70,6 +70,10 @@ modules:
   - id: scs-0214-v2
     name: Kubernetes node distribution and availability
     url: https://docs.scs.community/standards/scs-0214-v2-k8s-node-distribution
+    targets: {}
+  - id: scs-0214-v2-manual
+    name: Kubernetes node distribution and availability
+    url: https://docs.scs.community/standards/scs-0214-v2-k8s-node-distribution
     targets:
       preview:
       - node-distribution-check
