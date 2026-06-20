@@ -26,7 +26,7 @@ scripts:
     section: heavy
     description: Must fulfill all requirements of scs-0201-v1 (CNCF Kubernetes conformance).
     url: https://docs.scs.community/standards/scs-0201-v1-cncf-conformance#regulations
-- executable: ./kaas/k8s-version-policy/k8s_version_policy.py
+- executable: ./kaas/scs_0210_version_policy/k8s_version_policy.py
   args: -k {kubeconfig}
   testcases:
   - id: version-policy-check
