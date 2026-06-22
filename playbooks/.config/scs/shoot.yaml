@@ -23,13 +23,19 @@ spec:
         machine:
           type: {{ machine_type }}
           image:
-            name: {{ machine_image_name }}
-            version: {{ machine_image_version }}
+            name: {{ machine_image_name }}{%
+if machine_image_version | default('') %}
+            version: {{ machine_image_version }}{%
+endif %}
           architecture: amd64
         zones:
           - {{ zone }}
         cri:
-          name: containerd
+          name: containerd{%
+if volume_size_gib | default(0) %}
+        volume:
+          size: {{ volume_size_gib }}Gi{%
+endif %}
   networking:
     nodes: {{ worker_cidr }}
     type: {{ networking_type }}
