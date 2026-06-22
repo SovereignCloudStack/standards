@@ -5,42 +5,29 @@
 K8s Version Policy Checker (scs-v0210-v2)
 https://github.com/SovereignCloudStack/standards
 
-Return code is 0 precisely when it could be verified that the standard is satisfied.
-Otherwise the return code is the number of errors that occurred (up to 127 due to OS
-restrictions); for further information, see the log messages on various channels:
-    CRITICAL  for problems preventing the test to complete,
-    ERROR     for violations of requirements,
-    INFO      for violations of recommendations,
-    DEBUG     for background information and problems that don't hinder the test.
-
-This script only checks one given cluster, so it doesn't check whether multiple
-k8s branches are being offered.
-It is determined if the version on the cluster is still inside
-the recency window, which is determined by the standard to be 4 months
-for minor versions (for the stable cluster) and 1 week for patch versions.
-An exception are versions with critical CVEs, which should be replaced on
-a shorter notice.
+Run testcase version-policy-check and output result to stdout.
+Return code will be non-zero precisely when the testcase could not
+be run.
 
 (c) Hannes Baum <hannes.baum@cloudandheat.com>, 6/2023
 (c) Martin Morgenstern <martin.morgenstern@cloudandheat.com>, 2/2024
 (c) Matthias Büchse <matthias.buechse@cloudandheat.com>, 3/2024
+(c) Matthias Büchse <matthias.buechse@alasca.cloud>, 6/2026
 SPDX-License-Identifier: CC-BY-SA-4.0
 """
 
-from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-import aiohttp
-import asyncio
 import contextlib
 import getopt
-import kubernetes_asyncio
 import logging
-import logging.config
 import re
-import requests
 import sys
+
+import aiohttp
+import asyncio
+import kubernetes_asyncio
 import yaml
 
 
@@ -51,39 +38,9 @@ CVE_VERSION_CADENCE_WARN = timedelta(days=2)
 CVE_SEVERITY = 8  # CRITICAL
 
 HERE = Path(__file__).parent
-EOLDATA_FILE = "k8s-eol-data.yml"
-
-logging_config = {
-    "level": "INFO",
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "k8s_version_policy": {
-            "format": "%(levelname)s: %(message)s"
-        }
-    },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "k8s_version_policy",
-            "stream": "ext://sys.stderr"
-        }
-    },
-    "root": {
-        "handlers": ["console"]
-    }
-}
+EOLDATA_PATH = Path(HERE, "k8s-eol-data.yml")
 
 logger = logging.getLogger(__name__)
-
-
-class CountingHandler(logging.Handler):
-    def __init__(self, level=logging.NOTSET):
-        super().__init__(level=level)
-        self.bylevel = Counter()
-
-    def handle(self, record):
-        self.bylevel[record.levelno] += 1
 
 
 class ConfigException(BaseException):
@@ -94,63 +51,48 @@ class HelpException(BaseException):
     """Exception raised if the help functionality is called"""
 
 
-class Config:
-    kubeconfig = None
-    context = None
-    logging = logging_config
-
-
 def print_usage():
     print("""
 K8s Version Policy Compliance Check
 
-Usage: k8s_version_policy.py [-h] -k|--kubeconfig PATH/TO/KUBECONFIG [--context CONTEXT]
+Usage: k8s_version_policy.py [-h] -k|--kubeconfig PATH/TO/KUBECONFIG
 
 This tool checks whether the given cluster conforms to the SCS k8s version policy. It checks one
 cluster only, so it doesn't check whether multiple k8s branches are offered. The return code
 will be 0 precisely when all attempted checks are passed; otherwise check log messages.
 
     -k/--kubeconfig PATH/TO/KUBECONFIG - Path to the kubeconfig of the server we want to check
-    -C/--context CONTEXT               - Optional: kubeconfig context to use
     -h                                 - Output help
 """)
 
 
-def parse_arguments(argv):
-    """Parse cli arguments from the script call"""
-    try:
-        opts, args = getopt.gnu_getopt(argv, "C:k:h", ["context=", "kubeconfig=", "help"])
-    except getopt.GetoptError:
-        raise ConfigException
+class Config:
+    def __init__(self, log_level=logging.INFO):
+        self.kubeconfig = None
+        self.log_level = log_level
 
-    config = Config()
-    for opt in opts:
-        if opt[0] == "-h" or opt[0] == "--help":
-            raise HelpException
-        if opt[0] == "-k" or opt[0] == "--kubeconfig":
-            config.kubeconfig = opt[1]
-        if opt[0] == "-C" or opt[0] == "--context":
-            config.context = opt[1]
-    return config
+    def apply_argv(self, argv):
+        """Parse cli arguments from the script call"""
+        try:
+            opts, args = getopt.gnu_getopt(argv, "k:h", ["kubeconfig=", "help"])
+        except getopt.GetoptError:
+            raise ConfigException
 
+        for opt in opts:
+            if opt[0] == "-h" or opt[0] == "--help":
+                raise HelpException
+            if opt[0] == "-k" or opt[0] == "--kubeconfig":
+                self.kubeconfig = opt[1]
 
-def setup_logging(config_log):
-    logging.config.dictConfig(config_log)
-    loggers = [
-        logging.getLogger(name)
-        for name in logging.root.manager.loggerDict
-        if not logging.getLogger(name).level
-    ]
-    for log in loggers:
-        log.setLevel(config_log['level'])
-
-
-def initialize_config(config):
-    """Initialize the configuration for the test script"""
-    setup_logging(config.logging)
-    if config.kubeconfig is None:
-        raise ConfigException("A kubeconfig needs to be set in order to test a k8s cluster version.")
-    return config
+    def setup(self):
+        """Initialize the configuration for the test script"""
+        logging.basicConfig(format='%(levelname)s: %(message)s', level=self.log_level)
+        for name in logging.root.manager.loggerDict:
+            logger = logging.getLogger(name)
+            if not logger.level:
+                logger.setLevel(self.log_level)
+        if self.kubeconfig is None:
+            raise ConfigException("A kubeconfig needs to be set in order to test a k8s cluster version.")
 
 
 @dataclass(frozen=True, eq=True, order=True)
@@ -222,17 +164,18 @@ class K8sRelease:
         return datetime.now() - self.released_at
 
 
-def fetch_k8s_releases_data() -> list[dict]:
+async def fetch_k8s_releases_data(session: aiohttp.ClientSession) -> list[dict]:
     github_headers = {
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28"
     }
 
     # Request the latest 100 releases (the next are not needed, since these versions are too old)
-    return requests.get(
+    response = await session.get(
         "https://api.github.com/repos/kubernetes/kubernetes/releases?per_page=100",
         headers=github_headers,
-    ).json()
+    )
+    return await response.json()
 
 
 def parse_github_release_data(release_data: dict) -> K8sRelease:
@@ -451,18 +394,8 @@ def read_supported_k8s_branches(eol_data_path: Path) -> dict[K8sBranch, K8sBranc
     return {info.branch: info for info in infos}
 
 
-async def main(argv):
-    try:
-        config = initialize_config(parse_arguments(argv))
-    except (OSError, ConfigException, HelpException) as e:
-        logger.critical("%s", e)
-        print_usage()
-        return 1
-
-    counting_handler = CountingHandler(level=logging.INFO)
-    logger.addHandler(counting_handler)
-
-    branch_infos = read_supported_k8s_branches(Path(HERE, EOLDATA_FILE))
+def determine_supported_branches(eoldata_path=EOLDATA_PATH):
+    branch_infos = read_supported_k8s_branches(eoldata_path)
     supported_branches = {
         branch
         for branch, branch_info
@@ -470,57 +403,69 @@ async def main(argv):
         if branch_info.is_supported()
     }
     if len(supported_branches) < 3:
-        logger.warning("The EOL data in %s isn't up-to-date.", EOLDATA_FILE)
+        logger.warning("The EOL data in %s isn't up-to-date.", eoldata_path.name)
     if len(supported_branches) < 2:
-        logger.critical("The EOL data in %s is outdated and we cannot reliably run this script.", EOLDATA_FILE)
-        return 1
+        raise RuntimeError(f"The EOL data in {eoldata_path.name} is critically outdated!")
+    return supported_branches
 
-    connector = aiohttp.TCPConnector(limit=5)
-    async with aiohttp.ClientSession(connector=connector) as session:
-        cve_affected_ranges = await collect_cve_versions(session)
-    releases_data = fetch_k8s_releases_data()
 
-    try:
-        context_desc = f"context '{config.context}'" if config.context else "default context"
-        logger.info("Checking cluster specified by %s in %s.", context_desc, config.kubeconfig)
-        cluster = await get_k8s_cluster_info(config.kubeconfig, config.context)
-        cluster_branch = cluster.version.branch
-
-        if cluster_branch not in supported_branches:
-            logger.error("The K8s cluster version %s of cluster '%s' is already EOL.", cluster.version, cluster.name)
-        elif check_k8s_version_recency(cluster.version, releases_data, cve_affected_ranges):
-            logger.info(
-                "The K8s cluster version %s of cluster '%s' is still in the recency time window.",
-                cluster.version,
-                cluster.name,
-            )
-        else:
+def compute_version_policy_check(supported_branches, cve_affected_ranges, releases_data, cluster):
+    if cluster.version.branch not in supported_branches:
+        logger.error("The K8s cluster version %s of cluster '%s' is already EOL.", cluster.version, cluster.name)
+        return False
+    if check_k8s_version_recency(cluster.version, releases_data, cve_affected_ranges):
+        logger.info(
+            "The K8s cluster version %s of cluster '%s' is still in the recency time window.",
+            cluster.version,
+            cluster.name,
+        )
+        return True
+    for affected_range in cve_affected_ranges:
+        if cluster.version in affected_range:
             logger.error(
-                "The K8s cluster version %s of cluster '%s' is outdated according to the standard.",
+                "The K8s cluster version %s of cluster '%s' is an outdated version with a possible CRITICAL CVE.",
                 cluster.version,
                 cluster.name,
             )
+    logger.error(
+        "The K8s cluster version %s of cluster '%s' is outdated according to the standard.",
+        cluster.version,
+        cluster.name,
+    )
+    return False
 
-        for affected_range in cve_affected_ranges:
-            if cluster.version in affected_range:
-                logger.error(
-                    "The K8s cluster version %s of cluster '%s' is an outdated version with a possible CRITICAL CVE.",
-                    cluster.version,
-                    cluster.name,
-                )
+
+async def main(argv):
+    config = Config()
+    try:
+        config.apply_argv(argv)
+        config.setup()
+    except HelpException:
+        print_usage()
+        return 0
     except BaseException as e:
         logger.critical("%s", e)
-        logger.debug("Exception info", exc_info=True)
         return 1
 
-    c = counting_handler.bylevel
-    logger.debug(
-        "Total error / warning: "
-        f"{c[logging.ERROR]} / {c[logging.WARNING]}"
-    )
-    if not c[logging.CRITICAL]:
-        print("version-policy-check: " + ('PASS', 'FAIL')[min(1, c[logging.ERROR])])
-    return min(127, c[logging.ERROR])  # cap at 127 due to OS restrictions
+    try:
+        supported_branches = determine_supported_branches()
+        connector = aiohttp.TCPConnector(limit=5)
+        logger.info("Checking cluster specified in %s.", config.kubeconfig)
+        async with aiohttp.ClientSession(connector=connector) as session:
+            cve_affected_ranges, releases_data, cluster = await asyncio.gather(
+                collect_cve_versions(session),
+                fetch_k8s_releases_data(session),
+                get_k8s_cluster_info(config.kubeconfig),
+            )
+        result = compute_version_policy_check(
+            supported_branches, cve_affected_ranges, releases_data, cluster)
+        print("version-policy-check: " + ('FAIL', 'PASS')[bool(result)])
+    except BaseException:
+        print("version-policy-check: ABORT")
+        logger.critical("Could not complete version-policy-check", exc_info=True)
+        return 1
+
+    return 0
 
 
 if __name__ == "__main__":
