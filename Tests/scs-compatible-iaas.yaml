@@ -496,6 +496,10 @@ modules:
     targets:
       recommended:
       - scs-0116-presence
+  - id: scs-0116-v1-manual
+    name: Key manager
+    url: https://docs.scs.community/standards/scs-0116-v1-key-manager-standard
+    targets:
       preview:
       - key-manager-docs-check
   - id: scs-0117-v1
@@ -508,7 +512,7 @@ modules:
     name: Availability Zones
     url: https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard
     targets: {}
-  - id: scs-0121-v1-rec
+  - id: scs-0121-v1-manual
     name: Availability Zones
     url: https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard
     targets:
@@ -543,7 +547,7 @@ modules:
     name: Domain Manager Role
     url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role
     targets: {}
-  - id: scs-0302-v1-rec
+  - id: scs-0302-v1-manual
     name: Domain Manager Role
     url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role
     targets:
