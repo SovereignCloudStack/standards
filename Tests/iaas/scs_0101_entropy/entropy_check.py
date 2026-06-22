@@ -127,28 +127,28 @@ def compute_scs_0101_rngd(collected_vm_output, image_name):
 def compute_scs_0101_fips_test(collected_vm_output, image_name):
     """This test ensures that the 'fips test' via `rngtest` is passed on a test VM."""
     lines = collected_vm_output['fips-test']
-    try:
-        fips_data = '\n'.join(lines)
-        failure_re = re.search(r'failures:\s\d+', fips_data, flags=re.MULTILINE)
-        if failure_re:
-            fips_failures = failure_re.string[failure_re.regs[0][0]:failure_re.regs[0][1]].split(" ")[1]
-            if int(fips_failures) <= 3:
-                return True  # strict test passed
-            logger.info(
-                f"VM '{image_name}' didn't pass the strict FIPS 140-2 testing. "
-                f"Expected a maximum of 3 failures, got {fips_failures}."
-            )
-            if int(fips_failures) <= 5:
-                return True  # lenient test passed
-            logger.error(
-                f"VM '{image_name}' didn't pass the FIPS 140-2 testing. "
-                f"Expected a maximum of 5 failures, got {fips_failures}."
-            )
-        else:
-            logger.error(f"VM '{image_name}': failed to determine fips failures")
-            logger.debug(f"stderr following:\n{fips_data}")
-    except BaseException:
-        logger.critical(f"Couldn't check VM '{image_name}' requirements", exc_info=True)
+    fips_data = '\n'.join(lines)
+    failure_re = re.search(r'failures:\s\d+', fips_data, flags=re.MULTILINE)
+    if not failure_re:
+        # It seems possible that 'failures: 0' is just omitted, and we could check for
+        # 'successes: 1000' to verify that, but I have observed this only once in many
+        # many runs over multiple years. I'm inclined to label this 'inconclusive'
+        # instead of making the code more complex and risking false certainty.
+        logger.debug(f"failed to determine fips failures; stderr following:\n{fips_data}")
+        raise RuntimeError(f"VM '{image_name}': failed to determine fips failures")
+    fips_failures = failure_re.string[failure_re.regs[0][0]:failure_re.regs[0][1]].split(" ")[1]
+    if int(fips_failures) <= 3:
+        return True  # strict test passed
+    logger.info(
+        f"VM '{image_name}' didn't pass the strict FIPS 140-2 testing. "
+        f"Expected a maximum of 3 failures, got {fips_failures}."
+    )
+    if int(fips_failures) <= 5:
+        return True  # lenient test passed
+    logger.error(
+        f"VM '{image_name}' didn't pass the FIPS 140-2 testing. "
+        f"Expected a maximum of 5 failures, got {fips_failures}."
+    )
     return False  # any unsuccessful path should end up here
 
 
