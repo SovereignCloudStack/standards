@@ -9,9 +9,11 @@
 from collections import defaultdict
 from datetime import datetime, date, timedelta
 import logging
+import uuid
 
 
 logger = logging.getLogger(__name__)
+__VERSION__ = "20260623"
 
 # valid keywords for various parts of the spec, to be checked using `check_keywords`
 KEYWORDS = {
@@ -220,3 +222,22 @@ def evaluate(results, testcase_ids) -> int:
         if buckets[value]:
             return value
     return 1
+
+
+def make_report(scopeuuid, subject, results, log, creator=None, checked_at=None):
+    if creator is None:
+        creator = f"SCS test suite; version={__VERSION__}"
+    return {
+        "uuid": str(uuid.uuid4()),
+        "creator": creator,
+        "scope": scopeuuid,
+        "checked_at": checked_at or datetime.now(),
+        "subject": subject,
+        "tests": {
+            testcase_id: {
+                "result": value,
+            }
+            for testcase_id, value in results.items()
+        },
+        "log": log,
+    }
