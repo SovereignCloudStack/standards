@@ -19,7 +19,6 @@ would split these tests out.)
 
 import os
 import os.path
-import uuid
 import re
 import sys
 import shlex
@@ -29,7 +28,8 @@ import subprocess
 import logging
 import yaml
 
-from scs_cert_lib import load_spec, annotate_validity, eval_buckets, TESTCASE_VERDICTS
+from scs_cert_lib import load_spec, annotate_validity, eval_buckets, TESTCASE_VERDICTS, \
+    make_report
 
 
 logger = logging.getLogger(__name__)
@@ -232,24 +232,6 @@ def print_report(testcase_lookup: dict, tc_ids: list, results: dict, partial=Fal
                 print(f"      > {testcase['url']}")
 
 
-def create_report(config, spec, log, results):
-    return {
-        "uuid": str(uuid.uuid4()),
-        "creator": "SCS test suite; version=0.1.0",  # TODO put actual version of test suite here
-        "scope": spec['uuid'],
-        "checked_at": datetime.datetime.now(),
-        "reference_date": config.checkdate,
-        "subject": config.subject,
-        "tests": {
-            testcase_id: {
-                "result": value,
-            }
-            for testcase_id, value in results.items()
-        },
-        "log": log,
-    }
-
-
 def main(argv):
     """Entry point for the checker"""
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
@@ -318,7 +300,7 @@ def main(argv):
             print(f"- {version['version']}:", end=' ')
             print_report(testcase_lookup, version['testcase_ids'], results, partial, config.verbose)
     if config.output:
-        report = create_report(config, spec, log, results)
+        report = make_report(spec['uuid'], config.subject, results, log)
         with open(config.output, 'w', encoding='UTF-8') as fileobj:
             yaml.safe_dump(report, fileobj, default_flow_style=False, sort_keys=False, explicit_start=True)
     num_error = len([tc_id for tc_id, value in results.items() if value != 1])
