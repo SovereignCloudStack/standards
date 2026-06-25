@@ -29,6 +29,9 @@ This is a list of IaaS clouds that we test on a nightly basis against the certif
 | [Cloud&amp;Heat IaaS](https://www.cloudandheat.com/en/products/cloud-services/infrastructure-as-a-service/) | Public cloud for customers (1 SCS region) | Cloud&amp;Heat Technologies GmbH |
 {#- #} [{{ results | pick(iaas, 'cah-dd8a') | summary }}]({{ detail_url('cah-dd8a', iaas) }}) {# -#}
 | n/a |
+| [noris Sovereign Cloud(nSC)](https://www.noris.de/en/it-services/cloud-services/cloud-solutions-for-enterprise-companies/noris-sovereign-cloud/) | public cloud for customers| noris network AG |
+{#- #} [{{ results | pick(iaas, 'nsc-iaas') | summary }}]({{ detail_url('nsc-iaas', iaas) }}) {# -#}
+| [HM](https://healthmon.infra.noris.cloud/d/9ltTEmlnk/openstack-health-monitor-noris-nsc-region-nbg?var-mycloud=nsc) |
 | [pluscloud open](https://www.plusserver.com/en/products/pluscloud-open) | Public cloud for customers (4 regions)  | plusserver GmbH | {# #}
 {#- #}[{{ results | pick(iaas, 'group-pco-prod') | summary }}]({{ detail_url('group-pco-prod', iaas) }}) {# -#}
 | [HM1](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-pco) [HM2](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-prod2) [HM3](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-prod3) [HM4](https://health.prod1.plusserver.sovereignit.cloud:3000/d/9ltTEmlnk/openstack-health-monitor2?orgId=1&var-mycloud=plus-prod4) |
