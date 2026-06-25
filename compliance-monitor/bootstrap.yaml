@@ -116,3 +116,10 @@ accounts:
     group: syself
     delegates:
       - zuul_ci
+  - subject: nsc-iaas
+    api_keys:
+      - "$argon2id$v=19$m=65536,t=3,p=4$19obo/Reaw1BiPHee28thQ$kpBhK8FQE0ymIP0OWdHGlW3TFLHByXGeTMFw4InQPVo"
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIK0BPr0w9xOKCHLOF8Sg2LwXgmnw8ZhNhuHH0+bXBkS+"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "primary"
