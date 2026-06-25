@@ -231,7 +231,7 @@ def harness(name, *check_fns):
     print(f"{name}: {result}")
 
 
-def run_sanity_checks(container):
+def run_preflight_checks(container):
     # make sure that we can connect to the cloud and that the user doesn't have elevated privileges
     # the former would lead to each testcase aborting with a marginally useful message;
     # the latter would lead to scs_0116_permissions aborting, which we don't want to single out
@@ -278,7 +278,13 @@ def main(argv):
         sys.exit(1)
 
     c = make_container(cloud)
-    run_sanity_checks(c)
+    try:
+        run_preflight_checks(c)
+    except Exception:
+        logger.critical("Pre-flight checks failed. Reporting all testcases as ABORT.")
+        for testcase in testcases:
+            print(f"{testcase}: ABORT")
+        raise
     for testcase in testcases:
         harness(testcase, lambda: getattr(c, testcase.replace('-', '_')))
     return 0

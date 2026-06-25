@@ -25,10 +25,8 @@ No recent test results available.
 
 {% else %}
 
-The columns labeled _(rec)_ contain recommended testcases for the scope version named in the preceding column header.
-
-| testcase id | result |{% for version in scope_result.relevant %} {{ version }}{{ scope_result.versions[version].validity | validity_symbol }} | (rec) |{% endfor %} description |
-|---|---|{% for version in scope_result.relevant %}---|---|{% endfor %}---|
+| testcase id | result |{% for version in scope_result.relevant %} {{ version }}{{ scope_result.versions[version].validity | validity_symbol }} |{% endfor %} description |
+|---|---|{% for version in scope_result.relevant %}---|{% endfor %}---|
 {% for cat, sym0, val in (('FAIL', '🛑🟧', -1), ('MISSING', '❓', None), ('DNF', '❔', 0), ('pass', '✅', 1)) -%}
 {% set bucket = scope_result.buckets[val] -%}
 {% for testcase_id in bucket -%}
@@ -43,7 +41,7 @@ The columns labeled _(rec)_ contain recommended testcases for the scope version 
 | {{sym}} {{cat}}{% if res.report %} ([{{ res.checked_at | short_isodate }}]({{ report_url(res.report, version, testcase_id) }})) { title="{{ res.report }} {{ res.checked_at }}" }{% endif %} {# -#}
 {% for version in scope_result.relevant %}| {%
 set tgt = scope_result.versions[version].tc_target[testcase_id]
-%}{% if tgt == 'main' %}X { title="main" }{% endif %} | {% if tgt and tgt != 'main' %}x { title="{{ tgt }}" }{% endif %} {% endfor -%}
+%}{% if tgt == 'main' %}X { title="main" }{% endif %} {% endfor -%}
 | {{ testcase.description | trim }} |
 {% endfor %}{# testcase -#}
 {% endfor %}{# categories #}
