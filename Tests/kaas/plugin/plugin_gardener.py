@@ -116,7 +116,7 @@ class _ShootOps:
             if state == 'Succeeded':
                 logger.debug(f'shoot {self.name} appears to be ready')
                 return
-            if state not in ('Unknown', 'Processing'):
+            if state not in ('Unknown', 'Processing', 'Pending'):
                 raise RuntimeError(f"Shoot {self.name} object in unexpected state {last_op.get('state')}")
 
             timeout = next(timeouts)
