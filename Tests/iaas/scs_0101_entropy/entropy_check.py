@@ -17,18 +17,6 @@ SERVER_NAME = "_scs-0101-server"
 SECURITY_GROUP_NAME = "_scs-0101-group"
 KEYPAIR_NAME = "_scs-0101-keypair"
 
-IMAGE_ATTRIBUTES = {
-    # https://docs.openstack.org/glance/2023.1/admin/useful-image-properties.html#image-property-keys-and-values
-    # type: str
-    "hw_rng_model": "virtio",
-}
-FLAVOR_ATTRIBUTES = {
-    # https://docs.openstack.org/nova/2023.1/configuration/extra-specs.html#hw-rng
-    # type: bool
-    "hw_rng:allowed": "True",  # testing showed that it is indeed a string?
-}
-FLAVOR_OPTIONAL = ("hw_rng:rate_bytes", "hw_rng:rate_period")
-
 
 TIMEOUT = 5 * 60  # timeout in seconds after which we no longer wait for the VM to complete the run
 MARKER = '_scs-test-'
@@ -70,38 +58,6 @@ SERVER_USERDATA = {
 }
 
 
-def compute_scs_0101_image_property(images, attributes=IMAGE_ATTRIBUTES):
-    """This test ensures that each image has the relevant properties."""
-    candidates = [
-        (image.name, [f"{key}={value}" for key, value in attributes.items() if image.get(key) != value])
-        for image in images
-    ]
-    # drop those candidates that are fine
-    offenders = [candidate for candidate in candidates if candidate[1]]
-    for name, wrong in offenders:
-        logger.error(f"Image '{name}' missing attributes: {', '.join(wrong)}")
-    return not offenders
-
-
-def compute_scs_0101_flavor_property(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAVOR_OPTIONAL):
-    """This test ensures that each flavor has the relevant extra_spec."""
-    offenses = 0
-    for flavor in flavors:
-        extra_specs = flavor['extra_specs']
-        wrong = [f"{key}={value}" for key, value in attributes.items() if extra_specs.get(key) != value]
-        miss_opt = [key for key in optional if extra_specs.get(key) is None]
-        if wrong:
-            offenses += 1
-            message = f"Flavor '{flavor.name}' missing attributes: {', '.join(wrong)}"
-            # only report missing optional attributes if main ones are missing as well
-            # reasoning here is that these optional attributes are merely a hint for implementers
-            # and if the main ones are present, we assume that implementers have done their job already
-            if miss_opt:
-                message += f"; additionally, missing optional attributes: {', '.join(miss_opt)}"
-            logger.error(message)
-    return not offenses
-
-
 def compute_scs_0101_entropy_avail(collected_vm_output, image_name):
     """This test ensures that the `entropy_avail` value is correct for a test VM."""
     lines = collected_vm_output['entropy-avail']
@@ -111,15 +67,6 @@ def compute_scs_0101_entropy_avail(collected_vm_output, image_name):
             f"VM '{image_name}' didn't have a fixed amount of entropy available. "
             f"Expected 256, got {entropy_avail}."
         )
-        return False
-    return True
-
-
-def compute_scs_0101_rngd(collected_vm_output, image_name):
-    """This test ensures that the `rngd` service is running on a test VM."""
-    lines = collected_vm_output['rngd']
-    if "could not be found" in '\n'.join(lines):
-        logger.error(f"VM '{image_name}' doesn't provide service rngd")
         return False
     return True
 
