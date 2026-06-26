@@ -1,8 +1,10 @@
 ---
 title: SCS Flavor Naming Strategy
+type: Decision Record
+status: Draft
+track: IaaS
 version: 2022-09-16-001
 authors: Kurt Garloff
-state: draft
 ---
 
 Standardizing the flavor naming has created some discussions in the SCS and the
