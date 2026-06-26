@@ -1,6 +1,9 @@
-# Procuring Open Source Projects
-
-OSS project health check
+---
+title: Open Source Software Health Check
+type: Decision Record
+status: Draft
+track: Global
+---
 
 ## Four Opens
 

@@ -59,12 +59,13 @@ def _resolve_spec(spec: dict):
     # step 1. build lookups
     testcase_lookup = {}
     tc_script_lookup = {}
-    for script in spec.get('scripts', ()):
+    for idx, script in enumerate(spec.get('scripts', ())):
+        script['_idx'] = idx
         for testcase in script.get('testcases', ()):
             id_ = testcase['id']
             if id_ in testcase_lookup:
                 raise RuntimeError(f"duplicate testcase {id_}")
-            testcase['attn'] = 0  # count: how many versions list this in target 'main'?
+            testcase['attn'] = 0  # count: how many stable versions list this in target 'main'?
             testcase_lookup[id_] = testcase
             tc_script_lookup[id_] = script
     module_lookup = {module['id']: module for module in spec['modules']}
@@ -83,7 +84,8 @@ def _resolve_spec(spec: dict):
     # step 4. resolve references
     # step 4a. resolve references to modules in includes
     # in this step, we also normalize the include form
-    for version in spec['versions'].values():
+    for idx, version in enumerate(spec['versions'].values()):
+        version['_idx'] = idx
         version['include'] = [
             {'module': module_lookup[inc], 'parameters': {}} if isinstance(inc, str) else
             {'module': module_lookup[inc['ref']], 'parameters': inc.get('parameters', {})}
@@ -97,8 +99,9 @@ def _resolve_spec(spec: dict):
         for target, tc_ids in targets.items():
             for tc_id in tc_ids:
                 tc_target[tc_id] = target
-        for tc_id in targets.get('main', ()):
-            testcase_lookup[tc_id]['attn'] += 1
+        if version.get('stabilized_at'):
+            for tc_id in targets.get('main', ()):
+                testcase_lookup[tc_id]['attn'] += 1
         version['targets'] = {target: sorted(tc_ids) for target, tc_ids in targets.items()}
         version['tc_target'] = tc_target
     # step 4b. resolve references to versions in timeline
@@ -203,8 +206,8 @@ def eval_buckets(results, testcase_ids) -> dict:
 
 def evaluate(results, testcase_ids) -> int:
     """returns overall result"""
-    return min([
-        # here, we treat None (MISSING) as 0 (ABORT)
-        results.get(testcase_id, {}).get('result') or 0
-        for testcase_id in testcase_ids
-    ], default=0)
+    buckets = eval_buckets(results, testcase_ids)
+    for value in (-1, None, 0):
+        if buckets[value]:
+            return value
+    return 1
