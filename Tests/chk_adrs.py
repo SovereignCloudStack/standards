@@ -149,8 +149,9 @@ class Checker:
             self.emit(f"in {fn}: replaced_by is set, but status does not match")
         if status == "Deprecated" and "deprecated_at" not in front:
             self.emit(f"in {fn}: status is Deprecated, but deprecated_at date is missing")
-        if status in ("Stable", "Deprecated") and "stabilized_at" not in front:
-            self.emit(f"in {fn}: status is Stable or Deprecated, but stabilized_at date is missing")
+        if status == "Stable" and "stabilized_at" not in front:
+            # status Deprecated is possible after Draft, so no stabilized_at necessary
+            self.emit(f"in {fn}: status is Stable, but stabilized_at date is missing")
         if status == "Rejected" and "rejected_at" not in front:
             self.emit(f"in {fn}: status is Rejected, but rejected_at date is missing")
         if status == "Stable":
