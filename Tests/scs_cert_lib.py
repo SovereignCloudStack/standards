@@ -19,7 +19,7 @@ __VERSION__ = "20260623"
 KEYWORDS = {
     'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables', 'scripts', 'groups', 'timeline'),
     'scripts': ('executable', 'env', 'args', 'testcases'),
-    'versions': ('version', 'test'),
+    'versions': ('version', 'test', 'attn'),
     'groups': ('id', 'url', 'name', 'include'),
     'testcases': ('lifetime', 'section', 'id', 'description', 'url'),
 }
@@ -110,9 +110,9 @@ def _resolve_spec(spec: dict):
         version['_idx'] = idx
         test = test_lookup[version['test']]
         testcases = collect_testcases(test)
-        if version.get('stabilized_at'):
-            for testcase in testcases:
-                testcase['attn'] += 1
+        attn = version.get('attn', 0)
+        for testcase in testcases:
+            testcase['attn'] += attn
         version['test'] = test
         version['testcase_ids'] = [testcase['id'] for testcase in testcases]
     # step 4b. resolve references to versions in timeline
