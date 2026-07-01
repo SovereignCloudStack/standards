@@ -3,6 +3,8 @@ title: Sovereign Cloud Standards Testing
 type: Procedural
 status: Draft
 track: Global
+replaces:
+- scs-0003-v1-sovereign-cloud-standards-yaml.md
 description: |
   SCS-0003 defines concepts central to testing SCS standards and regulates how results may
   be obtained and aggregated.
