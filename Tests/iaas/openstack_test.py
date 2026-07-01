@@ -55,6 +55,8 @@ def usage(rcode=1, file=sys.stderr):
     print("Options: [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)", file=file)
     print("Runs specified testcases against the OpenStack cloud OS_CLOUD", file=file)
     print("and reports inconsistencies, errors etc. It returns 0 on success.", file=file)
+    print("Instead of listing testcase-ids, you can supply a single dash (-)", file=file)
+    print("to have them read from stdin, one testcase-id per line.", file=file)
     sys.exit(rcode)
 
 
@@ -264,6 +266,9 @@ def main(argv):
             cloud = opt[1]
         else:
             usage(2)
+
+    if len(args) == 1 and args[0] == '-':
+        args = sys.stdin.read().splitlines()
 
     testcases = [t for t in args if t.startswith('scs-')]
     if len(testcases) != len(args):
