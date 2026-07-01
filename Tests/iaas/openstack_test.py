@@ -7,12 +7,14 @@
 SPDX-License-Identifier: CC-BY-SA 4.0
 """
 
+from datetime import datetime
 import getopt
 import logging
 import os
 import sys
 
 import openstack
+import yaml
 
 from scs_0100_flavor_naming.flavor_names import compute_flavor_spec
 from scs_0100_flavor_naming.flavor_names_check import \
@@ -206,28 +208,24 @@ class Container:
         self._values[name] = value
 
 
-def harness(name, *check_fns):
+def harness(name, results, *check_fns):
     """Harness for evaluating testcase `name`.
 
-    Logs beginning of computation.
+    Logs beginning and end of computation.
     Calls each fn in `check_fns`.
-    Prints (to stdout) 'name: RESULT', where RESULT is one of
-
-    - 'ABORT' if an exception occurs during the function calls
-    - 'FAIL' if one of the functions has a falsy result
-    - 'PASS' otherwise
+    Records result to `results`.
     """
     logger.info(f'*** {name}')
     try:
         result = all(check_fn() for check_fn in check_fns)
     except BaseException:
         logger.debug('exception during check', exc_info=True)
-        result = 'ABORT'
+        value = 0
     else:
-        result = ['FAIL', 'PASS'][min(1, result)]
-    # this is quite redundant
-    # logger.debug(f'** computation end for {name}')
-    print(f"{name}: {result}")
+        value = 1 if result else -1
+    result = ['FAIL', 'ABORT', 'PASS'][value + 1]
+    logger.info(f'+++ {name}: {result}')
+    results[name] = value
 
 
 def run_preflight_checks(container):
@@ -242,6 +240,15 @@ def run_preflight_checks(container):
     if "member" not in ensure_unprivileged(conn, quiet=True):
         logger.critical("Please make sure that your OpenStack user has role member.")
         raise RuntimeError("OpenStack user is missing member role.")
+
+
+class _LogHandler(logging.Handler):
+    def __init__(self, level=logging.NOTSET, log=None):
+        super().__init__(level=level)
+        self.log = [] if log is None else log
+
+    def handle(self, record):
+        self.log.append(f'{record.levelname}: {record.msg}')
 
 
 def main(argv):
@@ -287,8 +294,22 @@ def main(argv):
         for testcase in testcases:
             print(f"{testcase}: ABORT")
         raise
+
+    results = {}
+    log = []
+    logging.root.addHandler(_LogHandler(level=logging.DEBUG, log=log))
     for testcase in testcases:
-        harness(testcase, lambda: getattr(c, testcase.replace('-', '_')))
+        harness(testcase, results, lambda: getattr(c, testcase.replace('-', '_')))
+    report = {
+        'creator': 'openstack_test.py v0.1.0',
+        'checked_at': datetime.now(),
+        'tests': {
+            key: {'result': value}
+            for key, value in results.items()
+        },
+        'log': log,
+    }
+    yaml.safe_dump(report, sys.stdout, default_flow_style=False, sort_keys=False, explicit_start=True)
     return 0
 
 
