@@ -95,4 +95,5 @@ timeline:
       v1: draft
 versions:
   - version: v1
+    attn: 1
     test: scs-compatible-kaas-v1

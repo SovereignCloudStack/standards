@@ -552,4 +552,5 @@ versions:
   - version: next
     test: scs-compatible-iaas-next
   - version: v5.1  # copy of v5, but with include "scs-0123-v1", which had simply been forgotten
+    attn: 1
     test: scs-compatible-iaas-v5.1
