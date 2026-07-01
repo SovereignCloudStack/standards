@@ -63,15 +63,13 @@ A _score card_ is a data structure that contains the following information:
 
 A _test report_ is a data structure that contains the information of a score card, plus:
 
-- Creator: who created the report (name of person or version of test suite),
+- Creator: who created the report (name of person or version of the software),
 - Check date: when the test was performed,
 - Log: free-form text that details the test run.
 
-A _check script_ is a computer program that tests one or more testcases and reports the result per testcase.
+A _check script_ is a computer program that tests one or more testcases and produces a test report.
 
 The precise form of the data structures (score card, report), as well as the input-output formats of the check scripts is up to the implementation, but it must be well documented.
-
-A _test suite_ is a collection of interoperable check scripts, i.e., check scripts that use the same data structures and I/O formats.
 
 ## Regulation
 
