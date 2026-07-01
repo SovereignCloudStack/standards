@@ -386,7 +386,7 @@ def db_insert_result2(
 
 def db_get_relevant_results2(
     cur: cursor,
-    subject=None, scopeuuid=None, version=None, approved_only=True,
+    subject=None, scopeuuid=None, version=None, approved_only=False,
 ):
     """for each combination of scope/version/check, get the most recent test result that is still valid"""
     # find the latest result per subject/scopeuuid/version/checkid for this subject

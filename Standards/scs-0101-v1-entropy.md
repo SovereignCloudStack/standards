@@ -15,6 +15,8 @@ description: |
 
 ## Introduction
 
+This is v1.1 of the standard. See section on version history for details.
+
 ### Entropy in information technology
 
 Entropy is a concept that is widely used in the scope of information
@@ -39,7 +41,7 @@ bus timings, or keyboard timings, to name a few.
 
 _More recent methods_ of generating entropy include measuring IRQ jitter
 (available in Linux since kernel 5.4 or, before that, via a daemon such as
-[HavegeD](http://www.issihosts.com/haveged/)) as well as dedicated CPU
+[HavegeD](https://github.com/jirka-h/haveged)) as well as dedicated CPU
 instructions (available in virtually all major CPUs: RDSEED or RDRAND
 on x86_64 and RNDR on arm64).
 
@@ -94,39 +96,15 @@ will be available in virtual instances.
 
 ## Entropy in SCS clouds
 
-### Flavors
-
-It is recommended that all flavors have the following attribute:
-
-```console
-hw_rng:allowed=True
-```
-
-The following attributes are optional:
-
-```console
-hw_rng:rate_bytes - The allowed amount of bytes for the the guest
-    to read from the host's entropy per period.
-hw_rng:rate_period - Sets the duration of a read period in seconds.
-```
-
-### Images
-
 It is recommended to use images having a kernel (patch level) version 5.18
 or up. This condition is already satisfied by every mandatory image defined
 in the [Image Metadata Standard](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0102-v1-image-metadata.md).
-
-It is recommended that images activate the attribute `hw_rng_model: virtio`.
-
-The daemon `rngd` must be installed (usually from `rng-tools`
-or `rng-utils`).
-
-The user may choose to use the `virtio-rng` device via `rngd`.
-
-### Compute nodes
 
 Compute nodes must use CPUs that offer instructions for accessing
 entropy (such as RDSEED or RDRAND on x86_64 or RNDR on arm64), and
 these instructions may not be filtered by the hypervisor.
 
-Compute nodes may provide a HRNG via `rngd`.
+## Version history
+
+As of version 1.1, the method of injecting entropy into a VM using a
+virtualized HRNG together with `rngd` is no longer recommended.
