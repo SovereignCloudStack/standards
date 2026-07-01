@@ -12,7 +12,8 @@ description: |
 
 ## Introduction
 
-Standards 
+This standard defines concepts central to testing SCS standards and regulates how results may
+be obtained and aggregated.
 
 ## Concept definitions
 
