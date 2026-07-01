@@ -427,9 +427,29 @@ def _patch_report(report):
     log.append('arguments: ' + shlex.join(run['argv']))
     for invdata in run['invocations'].values():
         log.append('$ ' + invdata['cmd'])
-        log.extend(invdata['stderr'])
+        for line in invdata['stderr']:
+            if line.startswith('DEBUG: ** '):
+                testcase_id = line.split()[2]
+                line = f'INFO: *** {testcase_id}'
+            log.append(line)
         for tc_id, value in invdata['results'].items():
             tests[tc_id] = {'result': value}
+
+
+def _augment_report(report):
+    tests = report.get('tests', {})
+    log = []
+    for line in report.get('log', ()):
+        if line.startswith('INFO: *** '):
+            testcase_id = line.split()[2]
+            result = tests.get(testcase_id)
+            if result is not None:
+                result['_inlog'] = True
+                val = result.get('result', None)
+                verdict = {1: 'PASS', 0: 'DNF', -1: 'FAIL'}.get(val, 'N/A')
+                line = f'INFO: *** {testcase_id} ({verdict})'
+        log.append(line)
+    report['log'] = log
 
 
 @app.post("/reports")
@@ -590,7 +610,20 @@ def render_view(view, view_type, detail_page='detail', base_url='/', title=None,
 def _redact_report(report):
     """remove all lines from script output in `report` that are not directly linked to any testcase"""
     log = report['log']
-    redacted = [line for line in log if line.split(':', 1)[0] in ('WARNING', 'ERROR', 'CRITICAL')]
+    # don't do list comprehension here because it would restrict the logic
+    # (e.g. hard to replace a batch of lines by a different batch of lines)
+    redacted = []
+    for line in log:
+        parts = line.split(': ', 1)
+        if len(parts) != 2:
+            continue
+        # don't redact 'official' error messages
+        # this can still leak information and should be changed
+        if parts[0] in ('WARNING', 'ERROR', 'CRITICAL'):
+            redacted.append(line)
+        # don't redact the line that states what testcase is now being tested
+        elif parts[0] in ('INFO', ) and parts[1].startswith('***'):
+            redacted.append(line)
     report['log'] = redacted
     return len(log) != len(redacted)
 
@@ -618,6 +651,7 @@ async def get_report_view(
         raise HTTPException(status_code=404)
     report = reports[0]
     _patch_report(report)
+    _augment_report(report)
     redacted = _redact_report(report)
     return render_view(
         VIEW_REPORT, view_type, report=report, base_url=settings.base_url,
@@ -640,6 +674,7 @@ async def get_report_view_full(
         raise HTTPException(status_code=404)
     report = reports[0]
     _patch_report(report)
+    _augment_report(report)
     check_role(account, report['subject'], ROLES['read_any'])
     return render_view(
         VIEW_REPORT, view_type, report=report, base_url=settings.base_url,

@@ -11,20 +11,22 @@ else %}{% set uuid = report.uuid %}{% set scopeuuid = report.scope %}{% endif -%
 {% if report.tests -%}
 ## Tests
 {% for resultid, resultdata in report.tests.items() | sort %}
-- {{ resultid }}: {{ resultdata.result | verdict_check }}
-  {: #{{ resultid }} }
+- {{ resultid }}: {{ resultdata.result | verdict_check }}{% if not resultdata._inlog %}
+  {: #{{ resultid }} } {% endif %}
 {%- endfor -%}
 {% endif %}
 {% if report.log %}
 ## Log{%if redacted %} (redacted){%endif%} {: #log }
 
 {% for line in report.log %}
-- {% if line.split(':', 1)[0].lower() in ('warning', 'error', 'critical') %}**`{{line}}`**{%
+- {% if line.split(':', 1)[0].lower() in ('warning', 'error', 'critical') %}**_`{{line}}`_**{%
+  elif line.startswith('INFO: *** ') %}{% if 'PASS' in line %} `{{line}}` {% else %} **`{{line}}`** {% endif %} 
+  {: #{{line.split()[2]}} }{%
   else %}`{{line}}`{% endif %}
 {%- endfor %}
 
-{% if redacted %}
-» [show unredacted (requires login) 🔒]({{report_url(uuid, full=True)}}#{{ invid }})
 {% endif %}
 
+{% if redacted %}
+» [show unredacted (requires login) 🔒]({{report_url(uuid, full=True)}}#{{ invid }})
 {% endif %}
