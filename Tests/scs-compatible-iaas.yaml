@@ -1,10 +1,11 @@
 # -- informal edit log --
 # whenever old content is removed as per scs-0003-v1, add a line of the form
 # - YYYY-MM-DD pruned old content; affected versions: vN, ...
+# - 2026-06-19 pruned old content; affected versions: v3, v4
 # - 2025-05-22 pruned old content; affected versions: v1, v2, v3-orig, v5
 name: SCS-compatible IaaS
 uuid: 50393e6f-2ae1-4c5c-a62c-3b75f2abef3f
-url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml
+url: https://docs.scs.community/standards/scopes/scs-0501
 variables:
   - os_cloud
 scripts:
@@ -291,31 +292,29 @@ scripts:
     description: >-
       Manual check: Must fulfill all requirements of scs-0302-v1.
     url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role#conformance-tests
-modules:
+groups:
   - id: opc-v2022.11
     name: >-
       scs-0128-v1: SCS end-to-end testing (formerly OpenStack-powered Compute)
     url: https://docs.scs.community/standards/scs-0128-v1-e2e-testing
+    include: []
   - id: scs-0100-v3.1
     name: Flavor naming v3.1
     url: https://docs.scs.community/standards/scs-0100-v3-flavor-naming
-    targets:
-      main:
+    include:
       - scs-0100-syntax-check
       - scs-0100-semantics-check
   - id: scs-0101-v1
     # leap from v1 to v1.1 in place because it's a very minor relaxation; all essential testcases are kept
     name: Entropy v1.1
     url: https://docs.scs.community/standards/scs-0101-v1-entropy
-    targets:
-      main:
+    include:
       - scs-0101-entropy-avail
       - scs-0101-fips-test
   - id: scs-0102-v1
     name: Image metadata v1
     url: https://docs.scs.community/standards/scs-0102-v1-image-metadata
-    targets:
-      main:
+    include:
       - scs-0102-prop-architecture
       - scs-0102-prop-min_disk
       - scs-0102-prop-min_ram
@@ -333,8 +332,7 @@ modules:
   - id: scs-0102-v1-rec
     name: Image metadata v1
     url: https://docs.scs.community/standards/scs-0102-v1-image-metadata
-    targets:
-      recommended:
+    include:
       - scs-0102-prop-hash_algo
       - scs-0102-prop-os_purpose
       - scs-0102-os_purpose-uniqueness
@@ -344,8 +342,7 @@ modules:
   - id: scs-0102-v2
     name: Image metadata v2
     url: https://docs.scs.community/standards/scs-0102-v2-image-metadata
-    targets:
-      main:
+    include:
       - scs-0102-prop-architecture
       - scs-0102-prop-min_disk
       - scs-0102-prop-min_ram
@@ -365,8 +362,7 @@ modules:
   - id: scs-0102-v2-rec
     name: Image metadata v2
     url: https://docs.scs.community/standards/scs-0102-v2-image-metadata
-    targets:
-      recommended:
+    include:
       - scs-0102-prop-hash_algo
       - scs-0102-prop-hypervisor_type
       - scs-0102-prop-hw_rng_model
@@ -374,8 +370,7 @@ modules:
   - id: scs-0103-v1
     name: Standard flavors
     url: https://docs.scs.community/standards/scs-0103-v1-standard-flavors
-    targets:
-      main:
+    include:
       - scs-0103-flavor-1v-4
       - scs-0103-flavor-2v-8
       - scs-0103-flavor-4v-16
@@ -394,8 +389,7 @@ modules:
   - id: scs-0103-v1-rec
     name: Standard flavors
     url: https://docs.scs.community/standards/scs-0103-v1-standard-flavors
-    targets:
-      recommended:
+    include:
       - scs-0103-flavor-1v-4-10
       - scs-0103-flavor-2v-8-20
       - scs-0103-flavor-4v-16-50
@@ -412,34 +406,11 @@ modules:
       - scs-0103-flavor-16v-64
       - scs-0103-flavor-8v-64
       - scs-0103-flavor-16v-128
-  - id: scs-0104-v1-1
-    name: Standard images
-    url: https://docs.scs.community/standards/scs-0104-v1-standard-images
-    parameters:
-      image_spec: address (URL) of an image-spec (YAML) file
-    targets:
-      main:
-      - scs-0104-source-capi-1
-      - scs-0104-source-ubuntu-2204
-      - scs-0104-source-ubuntu-2004
-      - scs-0104-source-debian-12
-      - scs-0104-source-debian-11
-      - scs-0104-image-ubuntu-2204
-  - id: scs-0104-v1-1-rec
-    name: Standard images
-    url: https://docs.scs.community/standards/scs-0104-v1-standard-images
-    parameters:
-      image_spec: address (URL) of an image-spec (YAML) file
-    targets:
-      recommended:
-      - scs-0104-image-capi-1
   - id: scs-0104-v1-2
     name: Standard images
     url: https://docs.scs.community/standards/scs-0104-v1-standard-images
-    parameters:
-      image_spec: address (URL) of an image-spec (YAML) file
-    targets:
-      main:
+    # image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images-v5.yaml
+    include:
       - scs-0104-source-capi-1
       - scs-0104-source-capi-2
       - scs-0104-source-ubuntu-2404
@@ -452,70 +423,59 @@ modules:
   - id: scs-0104-v1-2-rec
     name: Standard images
     url: https://docs.scs.community/standards/scs-0104-v1-standard-images
-    parameters:
-      image_spec: address (URL) of an image-spec (YAML) file
-    targets:
-      recommended:
+    # image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images-v5.yaml
+    include:
       - scs-0104-image-capi-2
       - scs-0104-image-debian-12
   - id: scs-0114-v1
     name: Volume Types
     url: https://docs.scs.community/standards/scs-0114-v1-volume-type-standard
-    targets:
-      main:
+    include:
       - scs-0114-syntax-check
   - id: scs-0114-v1-rec
     name: Volume Types
     url: https://docs.scs.community/standards/scs-0114-v1-volume-type-standard
-    targets:
-      recommended:
+    include:
       - scs-0114-encrypted-type
       - scs-0114-replicated-type
   - id: scs-0115-v1
     name: Default rules for security groups
     url: https://docs.scs.community/standards/scs-0115-v1-default-rules-for-security-groups
-    targets:
-      main:
+    include:
       - scs-0115-default-rules
   - id: scs-0116-v1
     name: Key manager
     url: https://docs.scs.community/standards/scs-0116-v1-key-manager-standard
-    targets:
-      main:
+    include:
       - scs-0116-permissions
   - id: scs-0116-v1-rec
     name: Key manager
     url: https://docs.scs.community/standards/scs-0116-v1-key-manager-standard
-    targets:
-      recommended:
+    include:
       - scs-0116-presence
   - id: scs-0116-v1-manual
     name: Key manager
     url: https://docs.scs.community/standards/scs-0116-v1-key-manager-standard
-    targets:
-      preview:
+    include:
       - key-manager-docs-check
   - id: scs-0117-v1
     name: Volume backup
     url: https://docs.scs.community/standards/scs-0117-v1-volume-backup-service
-    targets:
-      main:
+    include:
       - scs-0117-test-backup
   - id: scs-0121-v1
     name: Availability Zones
     url: https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard
-    targets: {}
+    include: []
   - id: scs-0121-v1-manual
     name: Availability Zones
     url: https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard
-    targets:
-      preview:
+    include:
       - availability-zones-check
   - id: scs-0123-v1
     name: Mandatory and Supported IaaS Services
     url: https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services
-    targets:
-      main:
+    include:
       - scs-0123-service-compute
       - scs-0123-service-identity
       - scs-0123-service-image
@@ -527,8 +487,7 @@ modules:
   - id: scs-0123-v2
     name: Mandatory and Supported IaaS Services
     url: https://docs.scs.community/standards/scs-0123-v2-services
-    targets:
-      main:
+    include:
       - scs-0123-service-compute
       - scs-0123-service-identity
       - scs-0123-service-image
@@ -539,68 +498,39 @@ modules:
   - id: scs-0302-v1
     name: Domain Manager Role
     url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role
-    targets: {}
+    include: []
   - id: scs-0302-v1-manual
     name: Domain Manager Role
     url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role
-    targets:
-      preview:
+    include:
       - domain-manager-check
-timeline:
-  - date: 2026-06-11
-    versions:
-      next: draft
-      v5.1: effective
-  - date: 2025-09-09
-    versions:
-      next: draft
-      v5.1: effective
-      v4: deprecated
-      v3: deprecated
-  - date: 2025-07-01
-    versions:
-      v5.1: effective
-      v4: deprecated
-      v3: deprecated
-  - date: 2025-02-01
-    versions:
-      v5.1: effective
-      v4: warn
-      v3: deprecated
-  - date: 2024-12-19
-    versions:
-      v5.1: effective
-      v4: effective
-      v3: deprecated
-versions:
-  - version: next
+  - id: scs-compatible-iaas-next
+    name: SCS-compatible IaaS next
+    url: https://docs.scs.community/standards/scs-0501-v6-scs-compatible-iaas
     include:
       - opc-v2022.11
       - scs-0100-v3.1
       - scs-0101-v1
       - scs-0102-v2  # instead of scs-0102-v1
       - scs-0103-v1
-      - ref: scs-0104-v1-2
-        parameters:
-          image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images-v5.yaml
+      - scs-0104-v1-2
       - scs-0114-v1
       - scs-0115-v1
       - scs-0116-v1
       - scs-0117-v1
       - scs-0121-v1
-      - scs-0123-v2
+      - scs-0123-v2  # instead of scs-0123-v1
       - scs-0302-v1
-  - version: v5.1  # copy of v5, but with include "scs-0123-v1", which had simply been forgotten
-    stabilized_at: 2024-12-19
+  - id: scs-compatible-iaas-v5.1
+    name: SCS-compatible IaaS v5.1
+    url: https://docs.scs.community/standards/scs-0501-v5-scs-compatible-iaas
     include:
       - opc-v2022.11
       - scs-0100-v3.1
       - scs-0101-v1
       - scs-0102-v1
       - scs-0103-v1
-      - ref: scs-0104-v1-2
-        parameters:
-          image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images-v5.yaml
+      - scs-0104-v1-2
       - scs-0114-v1
       - scs-0115-v1
       - scs-0116-v1
@@ -608,23 +538,19 @@ versions:
       - scs-0121-v1
       - scs-0123-v1
       - scs-0302-v1
-  - version: v4
-    stabilized_at: 2024-02-28
-    include:
-      - opc-v2022.11
-      - scs-0100-v3.1
-      - scs-0101-v1
-      - scs-0102-v1
-      - scs-0103-v1
-      - ref: scs-0104-v1-1
-        parameters:
-          image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images.yaml
-  - version: v3
-    # comment: >
-    #   This is what our documentation wrongly stated as being v3 when we introduced v4.
-    #   What was originally v3 (and what we actually continued to test) can be found as v3-orig.
-    stabilized_at: 2024-02-28
-    include:
-      - opc-v2022.11
-      - scs-0100-v3.1
-      - scs-0102-v1
+timeline:
+  - date: 2026-06-11
+    versions:
+      next: draft
+      v5.1: effective
+  # pruned:
+  # v4 has been deprecated since 2025-07-01
+  # v4 has been 'warn' since 2025-02-01
+  # v5 has been effective since 2024-12-19
+  # v3 has been deprecated since 2024-12-19
+versions:
+  - version: next
+    test: scs-compatible-iaas-next
+  - version: v5.1  # copy of v5, but with include "scs-0123-v1", which had simply been forgotten
+    attn: 1
+    test: scs-compatible-iaas-v5.1
