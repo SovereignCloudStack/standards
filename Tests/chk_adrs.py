@@ -43,7 +43,7 @@ def iso_date(value):
 FRONT_MATTER_KEYS = {
     "type": ("Procedural", "Standard", "Decision Record").__contains__,
     "status": ("Proposal", "Draft", "Stable", "Deprecated", "Rejected").__contains__,
-    "track": ("Global", "IaaS", "KaaS", "IAM", "Ops").__contains__,
+    "track": ("Global", "IaaS", "KaaS", "IAM", "Ops", "Scopes").__contains__,
     "deprecated_at": optional(iso_date),
     "stabilized_at": optional(iso_date),
     "rejected_at": optional(iso_date),
@@ -108,7 +108,7 @@ class Checker:
         # NOTE could check that each entry refers to a file that exists
         for fn2 in supplements:
             if fn2 not in filenames:
-                self.emit("in {fn}: field 'supplements' refers to unknown {fn2}")
+                self.emit(f"in {fn}: field 'supplements' refers to unknown {fn2}")
 
     def check_front_matter(self, fn, front, filenames):
         """Check the dict `front` of front matter
@@ -149,8 +149,9 @@ class Checker:
             self.emit(f"in {fn}: replaced_by is set, but status does not match")
         if status == "Deprecated" and "deprecated_at" not in front:
             self.emit(f"in {fn}: status is Deprecated, but deprecated_at date is missing")
-        if status in ("Stable", "Deprecated") and "stabilized_at" not in front:
-            self.emit(f"in {fn}: status is Stable or Deprecated, but stabilized_at date is missing")
+        if status == "Stable" and "stabilized_at" not in front:
+            # status Deprecated is possible after Draft, so no stabilized_at necessary
+            self.emit(f"in {fn}: status is Stable, but stabilized_at date is missing")
         if status == "Rejected" and "rejected_at" not in front:
             self.emit(f"in {fn}: status is Rejected, but rejected_at date is missing")
         if status == "Stable":
