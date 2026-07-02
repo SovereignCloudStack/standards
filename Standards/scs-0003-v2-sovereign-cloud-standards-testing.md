@@ -55,21 +55,25 @@ The _result_ of a test is one of the following values:
 
 If multiple items apply, we always opt for the topmost one.
 
-A _score card_ is a data structure that contains the following information:
+A _test report_ is a data structure that contains the following information:
 
+- UUID,
 - Subject: the name of the test subject,
 - Scope: the scope of all the testcases referred to in this score card,
-- Test results: a mapping that maps testcase ids to results.
-
-A _test report_ is a data structure that contains the information of a score card, plus:
-
 - Creator: who created the report (name of person or version of the software),
 - Check date: when the test was performed,
+- Test results: a mapping that maps testcase ids to results.
 - Log: free-form text that details the test run.
 
 A _check script_ is a computer program that tests one or more testcases and produces a test report.
 
-The precise form of the data structures (score card, report), as well as the input-output formats of the check scripts is up to the implementation, but it must be well documented.
+A _score card_ is a data structure that contains the following information:
+
+- Subject: the name of the test subject,
+- Scope: the scope of all the testcases referred to in this score card,
+- Results: a mapping that maps testcase ids to results, where each result is additionally
+  equipped with validity timespan (beginning at the time of the check and expiring according to
+  the lifetime of the result).
 
 ## Regulation
 
