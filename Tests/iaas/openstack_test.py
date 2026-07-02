@@ -309,7 +309,9 @@ def main(argv):
         },
         'log': log,
     }
-    yaml.safe_dump(report, sys.stdout, default_flow_style=False, sort_keys=False, explicit_start=True)
+    # don't do explicit_start here because that can easily be done by the caller using "echo ---",
+    # and then the caller can even add fields such as uuid, subject, and scope
+    yaml.safe_dump(report, sys.stdout, default_flow_style=False, sort_keys=False, explicit_start=False)
     return 0
 
 
