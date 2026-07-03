@@ -36,9 +36,11 @@ This is a list of IaaS clouds that we test on a nightly basis against the certif
 | [ScaleUp Open Cloud](https://www.scaleuptech.com/cloud-hosting/) | Public cloud for customers | ScaleUp Technologies GmbH & Co. KG |
 {#- #} [{{ results | pick(iaas, 'scaleup-occ2') | summary }}]({{ detail_url('scaleup-occ2', iaas) }}) {# -#}
 | [HM](https://health.occ2.scaleup.sovereignit.cloud) |
+{% if False -%}
 | [syseleven](https://www.syseleven.de/en/products-services/openstack-cloud/) | Public OpenStack Cloud (2 SCS regions) | SysEleven GmbH | {# #}
 {#- #} [{{ results | pick(iaas, 'group-syseleven') | summary }}]({{ detail_url('group-syseleven', iaas) }}) {# -#}
 | (soon) |
+{% endif -%}
 | [Wavestack](https://www.noris.de/wavestack-cloud/) | Public cloud for customers | noris network AG/Wavecon GmbH |
 {#- #} [{{ results | pick(iaas, 'wavestack') | summary }}]({{ detail_url('wavestack', iaas) }}) {# -#}
 | [HM](https://health.wavestack1.sovereignit.cloud:3000/) |
