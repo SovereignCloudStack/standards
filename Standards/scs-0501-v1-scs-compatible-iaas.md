@@ -28,7 +28,3 @@ The following regulations apply for those certifications where regular testing i
 In general, automated tests (where applicable) shall be performed at least weekly.
 
 - Tests for OpenStack-powered Compute may be performed less frequently, but no fewer than once a year.
-
-## Version history
-
-- v2 amends v1 in the way outlined under 'subject matter'.
