@@ -13,15 +13,22 @@ import uuid
 import click
 import yaml
 
-from scs_cert_lib import load_spec, annotate_validity, add_period
+from scs_cert_lib import load_spec, annotate_validity, add_period, normalize_scope
 
 
+HERE = os.path.dirname(__file__)
 DEFAULT_SPECPATH = {
-    '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f': './scs-compatible-iaas.yaml',
-    '1fffebe6-fd4b-44d3-a36c-fc58b4bb0180': './scs-compatible-kaas.yaml',
+    '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f': os.path.join(HERE, 'scs-compatible-iaas.yaml'),
+    '1fffebe6-fd4b-44d3-a36c-fc58b4bb0180': os.path.join(HERE, 'scs-compatible-kaas.yaml'),
 }
 
 logger = logging.getLogger(__name__)
+
+
+def _load_spec(specpath):
+    specpath = DEFAULT_SPECPATH.get(normalize_scope(specpath), specpath)
+    with open(specpath, "r", encoding="UTF-8") as fileobj:
+        return load_spec(yaml.load(fileobj, Loader=yaml.SafeLoader))
 
 
 def select_valid(versions: list) -> list:
@@ -37,10 +44,9 @@ def cli():
 @click.option('--version', '-V', 'version', type=str, default=None)
 @click.option('--tests', '-t', 'tests', type=str, default=None)
 @click.option('--section', '-S', 'sections', type=str, multiple=True)
-@click.argument('specpath', type=click.Path(exists=True))
+@click.argument('specpath', type=str)
 def select(specpath, version, sections, tests):
-    with open(specpath, "r", encoding="UTF-8") as specfile:
-        spec = load_spec(yaml.load(specfile, Loader=yaml.SafeLoader))
+    spec = _load_spec(specpath)
     checkdate = datetime.date.today()
     annotate_validity(spec['timeline'], spec['versions'], checkdate)
     if version is None:
@@ -121,13 +127,12 @@ def score(specpath, subject, score_yaml, report_yaml):
         if not subject:
             subject = scorecard['subject']
         if not specpath:
-            specpath = DEFAULT_SPECPATH[scorecard['scope']]
+            specpath = scorecard['scope']
     elif not subject:
         raise click.UsageError('need to supply at least one of -s or -S')
     elif not specpath:
         raise click.UsageError('need to supply at least one of --spec or -S')
-    with open(specpath, "r", encoding="UTF-8") as specfile:
-        spec = load_spec(yaml.load(specfile, Loader=yaml.SafeLoader))
+    spec = _load_spec(specpath)
     scopeuuid = spec['uuid']
     snippet = yaml.load(sys.stdin.read(), Loader=yaml.SafeLoader)
     if not snippet:
@@ -161,8 +166,7 @@ def score(specpath, subject, score_yaml, report_yaml):
 @click.option('--spec', 'specpath', type=click.Path(exists=True))
 @click.argument('score_yaml', type=click.Path(exists=False))
 def init(specpath, subject, score_yaml):
-    with open(specpath, "r", encoding="UTF-8") as specfile:
-        spec = load_spec(yaml.load(specfile, Loader=yaml.SafeLoader))
+    spec = _load_spec(specpath)
     scorecard = {
         'subject': subject,
         'scope': spec['uuid'],

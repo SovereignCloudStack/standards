@@ -15,6 +15,12 @@ import uuid
 logger = logging.getLogger(__name__)
 __VERSION__ = "20260623"
 
+SCOPE_ALIASES = {
+    'sci': '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f',
+    'scs-compatible-iaas': '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f',
+    'sck': '1fffebe6-fd4b-44d3-a36c-fc58b4bb0180',
+    'scs-compatible-kaas': '1fffebe6-fd4b-44d3-a36c-fc58b4bb0180',
+}
 # valid keywords for various parts of the spec, to be checked using `check_keywords`
 KEYWORDS = {
     'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables', 'scripts', 'groups', 'timeline'),
@@ -241,3 +247,7 @@ def make_report(scopeuuid, subject, results, log, creator=None, checked_at=None)
         },
         "log": log,
     }
+
+
+def normalize_scope(ident):
+    return SCOPE_ALIASES.get(ident, ident)

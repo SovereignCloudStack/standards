@@ -51,14 +51,14 @@ logger = logging.getLogger(__name__)
 
 
 try:
-    from scs_cert_lib import load_spec, annotate_validity, add_period, eval_buckets, evaluate
+    from scs_cert_lib import load_spec, annotate_validity, add_period, eval_buckets, evaluate, normalize_scope
 except ImportError:
     # the following course of action is not unproblematic because the Tests directory will be
     # mounted to the Docker instance, hence it's hard to tell what version we are gonna get;
     # however, unlike the reloading of the config, the import only happens once, and at that point
     # in time, both monitor.py and scs_cert_lib.py should come from the same git checkout
     import sys; sys.path.insert(0, os.path.abspath('../Tests'))  # noqa: E702
-    from scs_cert_lib import load_spec, annotate_validity, add_period, eval_buckets, evaluate
+    from scs_cert_lib import load_spec, annotate_validity, add_period, eval_buckets, evaluate, normalize_scope
 
 
 class Settings:
@@ -634,7 +634,7 @@ def _scope_name(uuid):
 
 
 def _scope_url(uuid):
-    scope = get_scopes().get(_resolve_scope(uuid))
+    scope = get_scopes().get(normalize_scope(uuid))
     return scope['url'] if scope else '(n/a)'
 
 
@@ -696,10 +696,6 @@ def _resolve_group_locally(groups, subject, prefix=GROUP_PREFIX):
     return None, [subject]
 
 
-def _resolve_scope(scopeuuid):
-    return SCOPE_ALIASES.get(scopeuuid, scopeuuid)
-
-
 @app.get("/{view_type}/detail/{subject}/{scopeuuid}")
 async def get_detail(
     request: Request,
@@ -712,7 +708,7 @@ async def get_detail(
 
 
 def _make_detail_view(conn, view_type, subject, scopeuuid, include_drafts=False):
-    scopeuuid = _resolve_scope(scopeuuid)
+    scopeuuid = normalize_scope(scopeuuid)
     with conn.cursor() as cur:
         group, subjects = _resolve_group(cur, subject)
         rows2 = []
@@ -825,7 +821,7 @@ async def get_healthz(request: Request):
 @pass_context
 def pick_filter(ctx, results, scopeuuid, *subjects):
     """Jinja filter to pick scope results from `results` for given `subject` and `scope`"""
-    scopeuuid = _resolve_scope(scopeuuid)
+    scopeuuid = normalize_scope(scopeuuid)
     # simple case (backwards compatible): precisely one subject
     if len(subjects) == 1:
         group, subjects = _resolve_group_locally(ctx['groups'], subjects[0])
