@@ -79,6 +79,12 @@ def select(specpath, version, sections, tests):
 
 
 def _update_scorecard(scorecard, report, testcase_lookup):
+    subject = report['subject']
+    scopeuuid = report['scope']
+    if subject != scorecard.setdefault('subject', subject):
+        raise RuntimeError('subjects do not match')
+    if scopeuuid != scorecard.setdefault('scope', scopeuuid):
+        raise RuntimeError('scopes do not match')
     scores = scorecard.setdefault('tests', {})
     checked_at = report['checked_at']
     checked_at_str = str(checked_at)[:19]
@@ -150,12 +156,6 @@ def score(specpath, subject, score_yaml, report_yaml):
         report_yaml = f'report-{ts}-{subject}.yaml'
     _atomic_write(report_yaml, _dump(report))
     if score_yaml:
-        scorecard.setdefault('subject', subject)
-        scorecard.setdefault('scope', scopeuuid)
-        if subject != scorecard['subject']:
-            raise RuntimeError('subjects do not match')
-        if scopeuuid != scorecard['scope']:
-            raise RuntimeError('scopes do not match')
         _prune_scorecard(scorecard)
         _update_scorecard(scorecard, report, spec['testcases'])
         _atomic_write(score_yaml, _dump(scorecard))
