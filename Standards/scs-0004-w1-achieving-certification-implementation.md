@@ -21,7 +21,7 @@ The SCS certification process typically consists of a few simple steps:
 1. Running the SCS compliance test suite and adjusting the infrastructure until it passes.
 2. Any additional declarations (for non-testable aspects) are written and passed to the SCS certification assessment body.
 3. The operator must be a member ("shaper" or "advisor" level) of the Forum SCS-Standards in the
-   OSB Alliance (a non-profit) and pay the respective membership fees. Alternatively fees can
+   OSB Alliance (a non-profit) and pay the respective membership fees. Alternatively, fees can
    be paid without becoming a member.
 4. The cloud can be listed on the SCS pages as *SCS-compatible* with a compatibility status that is
    updated regularly. The infrastructure is then tested on a regular basis.
