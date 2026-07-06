@@ -47,6 +47,7 @@ from scs_0123_mandatory_services.mandatory_services import \
 
 
 logger = logging.getLogger(__name__)
+PREFLIGHT_ID = 'pre-flight-check'
 
 
 def usage(rcode=1, file=sys.stderr):
@@ -277,10 +278,11 @@ def main(argv):
     try:
         run_preflight_checks(c)
     except Exception:
-        logger.critical("Pre-flight checks failed. Reporting all testcases as ABORT.")
-        for testcase in testcases:
-            print(f"{testcase}: ABORT")
+        logger.critical("Pre-flight checks failed. Reporting pre-flight as ABORT.")
+        print(f'{PREFLIGHT_ID}: ABORT')
         raise
+    else:
+        print(f'{PREFLIGHT_ID}: PASS')
     for testcase in testcases:
         harness(testcase, lambda: getattr(c, testcase.replace('-', '_')))
     return 0
