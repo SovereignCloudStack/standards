@@ -171,8 +171,6 @@ If memory is oversubscribed, you must expose this with the `o` suffix.
 
 ### [OPTIONAL] Disk sizes and types
 
-Disk sizes (in GB) should use sizes 5, 10, 20, 50, 100, 200, 500, 1000.
-
 | Disk type | Meaning                              |
 | --------- | ------------------------------------ |
 | n         | Network shared storage (ceph/cinder) |
