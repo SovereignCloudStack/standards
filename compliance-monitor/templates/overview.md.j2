@@ -42,9 +42,6 @@ This is a list of IaaS clouds that we test on a nightly basis against the certif
 | [syseleven](https://www.syseleven.de/en/products-services/openstack-cloud/) | Public OpenStack Cloud (2 SCS regions) | SysEleven GmbH | {# #}
 {#- #} [{{ results | pick(iaas, 'group-syseleven') | summary }}]({{ detail_url('group-syseleven', iaas) }}) {# -#}
 | (soon) |
-| [Wavestack](https://www.noris.de/wavestack-cloud/) | Public cloud for customers | noris network AG/Wavecon GmbH |
-{#- #} [{{ results | pick(iaas, 'wavestack') | summary }}]({{ detail_url('wavestack', iaas) }}) {# -#}
-| [HM](https://health.wavestack1.sovereignit.cloud:3000/) |
 {% if unverified -%}
 {# this section currently empty -#}
 {% endif %}

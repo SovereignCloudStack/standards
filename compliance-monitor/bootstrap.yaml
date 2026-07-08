@@ -78,13 +78,6 @@ accounts:
     group: syseleven
     delegates:
       - zuul_ci
-  - subject: wavestack
-    delegates:
-      - zuul_ci
-    keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "primary"
   - subject: aov-cloud
     api_keys:
       - "$argon2id$v=19$m=65536,t=3,p=4$MKaU8l5LCQGg1Pqfc26t1Q$fj9LIxzLiwAkXaPTMw5lE3QuSNnp7DAVhyquaPRQSyU"
