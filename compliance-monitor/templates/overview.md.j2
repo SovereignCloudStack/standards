@@ -63,3 +63,13 @@ These environments are not officially certified. Operators voluntarily list them
 | [syseleven](https://www.syseleven.de/en/products-services/openstack-cloud/) | Public OpenStack Cloud (2 SCS regions) | SysEleven GmbH |
 {#- #} [{{ results | pick(iaas, 'group-syseleven') | summary }}]({{ detail_url('group-syseleven', iaas) }}) {# -#}
 | (soon) |
+
+### SCS-compatible KaaS
+
+This is a list of KaaS clouds that we test on a nightly basis against the certificate scope [SCS-compatible KaaS](https://docs.scs.community/standards/scs-compatible-kaas/).
+
+| Name  | Description  | Operator  | SCS-compatible KaaS  |
+|-------|--------------|-----------|----------------------|
+| [t8s](https://teuto.net/produkte/t8s/) | Public KaaS cloud based on Cluster API | teuto.net Netzdienste GmbH | {# #}
+{#- #} [{{ results | pick(kaas, 'group-teuto') | summary }}]({{ detail_url('group-teuto', kaas) }}) {# -#}
+|
