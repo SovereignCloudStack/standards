@@ -44,6 +44,13 @@ accounts:
       - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIG1hEnjGi+wfdgGu7oRWnttdu+BRNGT+9lughGLk4M71"
         public_key_type: "ssh-ed25519"
         public_key_name: "primary"
+  - subject: nsc-iaas
+    api_keys:
+      - "$argon2id$v=19$m=65536,t=3,p=4$19obo/Reaw1BiPHee28thQ$kpBhK8FQE0ymIP0OWdHGlW3TFLHByXGeTMFw4InQPVo"
+    keys:
+      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAIK0BPr0w9xOKCHLOF8Sg2LwXgmnw8ZhNhuHH0+bXBkS+"
+        public_key_type: "ssh-ed25519"
+        public_key_name: "primary"
   - subject: pco-prod1
     group: pco-prod
     delegates:
@@ -78,13 +85,6 @@ accounts:
     group: syseleven
     delegates:
       - zuul_ci
-  - subject: wavestack
-    delegates:
-      - zuul_ci
-    keys:
-      - public_key: "AAAAC3NzaC1lZDI1NTE5AAAAILufk4C7e0eQQIkmUDK8GB2IoiDjYtv6mx2eE8wZ3VWT"
-        public_key_type: "ssh-ed25519"
-        public_key_name: "primary"
   - subject: aov-cloud
     api_keys:
       - "$argon2id$v=19$m=65536,t=3,p=4$MKaU8l5LCQGg1Pqfc26t1Q$fj9LIxzLiwAkXaPTMw5lE3QuSNnp7DAVhyquaPRQSyU"
