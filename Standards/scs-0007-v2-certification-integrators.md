@@ -22,7 +22,7 @@ As an implementation partner, I want to become certified as SCS Integrator in or
 ## Regulations
 
 The certificates are awarded for a period of one year based on the predefined scoring system below.
-The certification is done either by the Forum SCS-Standards or an attestation body nominated by the forum.
+The certification is done either by the Forum SCS-Standards or an attestation body nominated by the forum. Certification may be subject to fees.
 
 ### Certificate tiers
 
