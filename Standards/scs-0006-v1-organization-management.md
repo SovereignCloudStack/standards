@@ -1,7 +1,8 @@
 ---
 title: SCS GitHub Organization - Management of Inactive Users and Repositories
 type: Procedural
-status: Draft
+status: Stable
+stabilized_at: 2026-02-16
 track: Global
 description: |
   SCS-0006 defines how the SCS GitHub organization identifies and handles inactive users and stale repositories.
