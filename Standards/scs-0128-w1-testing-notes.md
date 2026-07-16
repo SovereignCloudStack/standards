@@ -21,6 +21,12 @@ SCS conformance tests are expected to be executable without admin privileges (se
 [Regulations for achieving SCS-compatible certification](https://docs.scs.community/standards/scs-0004-v1-achieving-certification#regulations)).
 The list of test cases stated in the standard has been curated accordingly.
 
+### Errata for specific test cases
+
+- `tempest.api.identity.v3.test_users.IdentityV3UsersTest.test_user_account_lockout` was removed upon consensus in the
+[SIG Standardization](https://github.com/SovereignCloudStack/minutes/blob/main/sig-standardization/20260723.md)
+that it is irrelevant, especially when an external identity provider is used
+
 ## How to run Tempest against your cluster
 
 _TODO_ provide step-by-step walkthrough here
