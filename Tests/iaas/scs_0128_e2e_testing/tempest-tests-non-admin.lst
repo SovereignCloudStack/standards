@@ -57,7 +57,6 @@ tempest.api.compute.servers.test_server_tags.ServerTagsTestJSON.test_check_tag_e
 tempest.api.compute.servers.test_server_tags.ServerTagsTestJSON.test_create_delete_tag[id-8d95abe2-c658-4c42-9a44-c0258500306b]
 tempest.api.compute.servers.test_server_tags.ServerTagsTestJSON.test_delete_all_tags[id-a63b2a74-e918-4b7c-bcab-10c855f3a57e]
 tempest.api.compute.servers.test_server_tags.ServerTagsTestJSON.test_update_all_tags[id-a2c1af8c-127d-417d-974b-8115f7e3d831]
-tempest.api.compute.servers.test_servers.ServersTestJSON.test_create_server_with_admin_password[id-b92d5ec7-b1dd-44a2-87e4-45e888c46ef0]
 tempest.api.compute.servers.test_servers.ServersTestJSON.test_create_specify_keypair[id-f9e15296-d7f9-4e62-b53f-a04e89160833]
 tempest.api.compute.servers.test_servers.ServersTestJSON.test_create_with_existing_server_name[id-8fea6be7-065e-47cf-89b8-496e6f96c699]
 tempest.api.compute.servers.test_servers.ServersTestJSON.test_update_access_server_address[id-89b90870-bc13-4b73-96af-f9d4f2b70077]
