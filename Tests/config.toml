@@ -30,7 +30,6 @@ subjects = [
     "scaleup-occ2",
     "syseleven-dus2",
     "syseleven-ham1",
-    "wavestack",
 ]
 workers = 16
 
