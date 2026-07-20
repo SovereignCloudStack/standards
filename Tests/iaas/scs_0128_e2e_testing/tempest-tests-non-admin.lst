@@ -101,7 +101,6 @@ tempest.api.identity.v3.test_tokens.TokensV3Test.test_create_token[id-6f8e4436-f
 tempest.api.identity.v3.test_tokens.TokensV3Test.test_token_auth_creation_existence_deletion[id-0f9f5a5f-d5cd-4a86-8a5b-c5ded151f212]
 tempest.api.identity.v3.test_tokens.TokensV3Test.test_validate_token[id-a9512ac3-3909-48a4-b395-11f438e16260]
 tempest.api.identity.v3.test_users.IdentityV3UsersTest.test_password_history_check_self_service_api[id-941784ee-5342-4571-959b-b80dd2cea516]
-tempest.api.identity.v3.test_users.IdentityV3UsersTest.test_user_account_lockout[id-a7ad8bbf-2cff-4520-8c1d-96332e151658]
 tempest.api.identity.v3.test_users.IdentityV3UsersTest.test_user_update_own_password[id-ad71bd23-12ad-426b-bb8b-195d2b635f27]
 tempest.api.image.v2.test_images.BasicOperationsImagesTest.test_delete_image[id-f848bb94-1c6e-45a4-8726-39e3a5b23535,smoke]
 tempest.api.image.v2.test_images.BasicOperationsImagesTest.test_register_upload_get_image_file[id-139b765e-7f3d-4b3d-8b37-3ca3876ee318,smoke]
