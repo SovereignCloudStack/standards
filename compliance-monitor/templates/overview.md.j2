@@ -2,6 +2,7 @@
 we could of course iterate over results etc., but hardcode the table (except the actual results, of course)
 for the time being to have the highest degree of control
 -#}
+{% set iaas = 'scs-compatible-iaas' %}{% set kaas = 'scs-compatible-kaas' -%}
 
 The following tables show environments that are regularly checked for SCS compliance. A distinction is made between certified and non-certified environments. [Certified environments](#certified-environments) are officially approved by the SCS certification assessment body and must maintain compliance throughout the validity period of the certification. [Non-certified environments](#non-certified-environments) are listed on a voluntary basis to demonstrate their compliance for potential future certification or internal purposes.
 
@@ -15,7 +16,6 @@ These environments are officially approved by the SCS certification assessment b
 
 This is a list of officially approved IaaS environments that are tested regularly against the certificate scope [SCS-compatible IaaS](https://docs.scs.community/standards/scs-compatible-iaas/).
 
-{% set iaas = 'scs-compatible-iaas' -%}
 | Name  | Description  | Operator  | SCS-compatible IaaS  | HealthMon  |
 |-------|--------------|-----------|----------------------|:----------:|
 | [Cloud&amp;Heat IaaS](https://sovereigncloudstack.org/en/certified-solution/cloud-heat/) | Public cloud for customers (1 SCS region) | Cloud&amp;Heat Technologies GmbH |
@@ -38,7 +38,6 @@ This is a list of officially approved IaaS environments that are tested regularl
 
 This is a list of officially approved KaaS environments that are tested regularly against the certificate scope [SCS-compatible KaaS](https://docs.scs.community/standards/scs-compatible-kaas/).
 
-{% set kaas = 'scs-compatible-kaas' -%}
 | Name  | Description  | Operator  | SCS-compatible KaaS  |
 |-------|--------------|-----------|----------------------|
 | [noris Sovereign Cloud (nSC)](https://sovereigncloudstack.org/en/certified-solution/noris-network-ag/) | Public KaaS cloud based on Gardener (1 SCS configuration) | noris network AG |
@@ -57,7 +56,6 @@ This is a list of officially approved KaaS environments that are tested regularl
 
 This is a list of IaaS environments that are tested regularly against the scope [SCS-compatible IaaS](https://docs.scs.community/standards/scs-compatible-iaas/). Although these environments are not officially certified, operators voluntarily list them to demonstrate their compliance.
 
-{% set iaas = 'scs-compatible-iaas' -%}
 | Name  | Description  | Operator  | SCS-compatible IaaS  | HealthMon  |
 |-------|--------------|-----------|----------------------|:----------:|
 | [aov.cloud](https://www.aov.de/) | Community cloud for customers (1 SCS region) | aov IT.Services GmbH |
