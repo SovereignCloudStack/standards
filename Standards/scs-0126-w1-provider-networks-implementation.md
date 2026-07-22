@@ -16,4 +16,4 @@ The Provider Network Standard states that CSPs SHOULD restrict this functionalit
 "create_rbac_policy": "rule:admin_only"
 ```
 
-[^rbac]: [RBAC](https://docs.openstack.org/neutron/2024.1/admin/config-rbac.html#preventing-regular-users-from-sharing-objects-with-each-other)
+[^rbac]: See [RBAC](https://docs.openstack.org/neutron/2024.1/admin/config-rbac.html#preventing-regular-users-from-sharing-objects-with-each-other) in the OpenStack Neutron documentation.
