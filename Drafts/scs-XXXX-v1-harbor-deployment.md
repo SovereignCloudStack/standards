@@ -8,7 +8,7 @@ track: KaaS
 ## Introduction
 
 Various container registry open-source solutions have been evaluated in the architectural
-decision record [Requirements for container registry](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0212-v1-requirements-for-container-registry.md).
+decision record [Requirements for container registry](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0212-v1-requirements-for-container-registries.md).
 It specified requirements for the container registry implementation that need to be
 fulfilled in the context of SCS and also made an architectural decision on what
 implementation should be used by the SCS for e.g. reference installation. As a result,

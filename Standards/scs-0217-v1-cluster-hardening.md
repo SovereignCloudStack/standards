@@ -469,7 +469,7 @@ Conformance Tests will be written within another issue.
 [ro-port-removal]: https://github.com/kubernetes/kubernetes/issues/12968
 [ro-port-disabled]: https://github.com/kubernetes/kubernetes/pull/59666
 [ro-port-disabled-kubeadm]: https://github.com/kubernetes/kubeadm/issues/732
-[ro-port-s1]: https://www.stigviewer.com/stig/kubernetes/2021-04-14/finding/V-242387
+[ro-port-s1]: https://www.stigviewer.com/stigs/kubernetes/2021-04-14/finding/V-242387
 [ro-port-s2]: https://docs.datadoghq.com/security/default_rules/cis-kubernetes-1.5.1-4.2.4/
 [nsa-cisa]: https://kubernetes.io/blog/2021/10/05/nsa-cisa-kubernetes-hardening-guidance/
 [etcd-auth]: https://etcd.io/docs/v3.3/op-guide/authentication/
