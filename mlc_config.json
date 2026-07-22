@@ -1,4 +1,10 @@
 {
+  "ignorePatterns": [
+    {
+      "comment": "Medium serves HTTP 403 to automated link checkers even though the article is reachable in a browser.",
+      "pattern": "^https://medium\\.com/"
+    }
+  ],
   "httpHeaders": [
     {
       "urls": ["*"],
