@@ -39,7 +39,7 @@ The following special terms are used throughout this standard document:
 | CSP | Cloud Service Provider, provider managing the OpenStack infrastructure |
 | cloud admin | OpenStack user belonging to the CSP that possesses the `admin` role |
 
-[^1]: [OpenStack Documentation: Role-Based Access Control Overview](https://static.opendev.org/docs/patrole/latest/rbac-overview.html)
+[^1]: See [OpenStack Documentation: Identity API protection with role-based access control (RBAC)](https://docs.openstack.org/keystone/latest/admin/service-api-protection.html)
 
 ## Motivation
 
