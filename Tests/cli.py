@@ -85,7 +85,8 @@ def _update_scorecard(scorecard, report, testcase_lookup):
         raise RuntimeError('subjects do not match')
     if scopeuuid != scorecard.setdefault('scope', scopeuuid):
         raise RuntimeError('scopes do not match')
-    scores = scorecard.setdefault('tests', {})
+    scores = scorecard.setdefault('results', {})
+    uuid = report['uuid']
     checked_at = report['checked_at']
     checked_at_str = str(checked_at)[:19]
     for tc_id, result in report.get('tests', {}).items():
@@ -94,16 +95,27 @@ def _update_scorecard(scorecard, report, testcase_lookup):
             testcase = testcase_lookup.get(tc_id)
             lifetime = testcase.get('lifetime')  # leave None if not present; to be handled by add_period
             expires_at = add_period(checked_at, lifetime)
-            scores[tc_id] = {'checked_at': checked_at_str, 'expires_at': str(expires_at), **result}
+            scores[tc_id] = {
+                'report': uuid,
+                'checked_at': checked_at_str,
+                'expires_at': str(expires_at),
+                **result
+            }
 
 
-def _prune_scorecard(scorecard):
-    scores = scorecard.setdefault('tests', {})
+def _prune_scorecard(scorecard, testcase_lookup, grace_period_days=7):
+    scores = scorecard.setdefault('results', {})
     now_str = str(datetime.datetime.now())[:19]
+    grace_str = str(datetime.datetime.now() - datetime.timedelta(days=grace_period_days))[:19]
     for tc_id in list(scores):
         score = scores[tc_id]
-        if score['expires_at'] >= now_str:
-            del scores[tc_id]
+        # keep results for known testcases if they haven't expired
+        if tc_id in testcase_lookup and score['expires_at'] < now_str:
+            continue
+        # keep results for unknown testcases for a week to leave time for migration
+        if score['checked_at'] > grace_str:
+            continue
+        del scores[tc_id]
 
 
 def _atomic_write(path, text):
@@ -156,9 +168,11 @@ def score(specpath, subject, score_yaml, report_yaml):
         report_yaml = f'report-{ts}-{subject}.yaml'
     _atomic_write(report_yaml, _dump(report))
     if score_yaml:
-        _prune_scorecard(scorecard)
+        _prune_scorecard(scorecard, spec['testcases'])
         _update_scorecard(scorecard, report, spec['testcases'])
         _atomic_write(score_yaml, _dump(scorecard))
+        # collect report uuids
+        # prune reports
 
 
 @cli.command()
@@ -170,7 +184,7 @@ def init(specpath, subject, score_yaml):
     scorecard = {
         'subject': subject,
         'scope': spec['uuid'],
-        'tests': {},
+        'results': {},
     }
     _atomic_write(score_yaml, _dump(scorecard))
 
