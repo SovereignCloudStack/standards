@@ -8,4 +8,4 @@ supplements:
 
 ## Testing notes
 
-(refer to documentation of official test suite)
+See [documentation of official test suite](https://github.com/SovereignCloudStack/standards/blob/main/Tests/README.md).
