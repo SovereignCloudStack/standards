@@ -23,7 +23,7 @@ Standards that were already included in v3.1:
 - [scs-0100-v3: Flavor naming (v3.1)](https://docs.scs.community/standards/scs-0100-v3-flavor-naming)
 - [scs-0102-v1: Image metadata](https://docs.scs.community/standards/scs-0102-v1-image-metadata)
 
-Standards new to v4:
+Standards new with v4:
 
 - [scs-0101-v1: Entropy](https://docs.scs.community/standards/scs-0102-v1-image-metadata)
 - [scs-0103-v1: Standard flavors](https://docs.scs.community/standards/scs-0103-v1-standard-flavors)
@@ -37,6 +37,6 @@ In general, automated tests (where applicable) shall be performed at least weekl
 
 - Tests for OpenStack-powered Compute may be performed less frequently, but no fewer than once a year.
 
-## Version history
+## Previous Versions
 
 - v4 extends v3 by including new standards as listed above.

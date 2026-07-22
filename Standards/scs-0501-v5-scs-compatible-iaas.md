@@ -14,6 +14,10 @@ description: |
 
 This is v5.1 of the certificate scope _SCS-compatible IaaS_.
 
+Change log:
+
+- v5.1 adds [scs-0123-v1: Mandatory and Supported IaaS Services](https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services), which was intended to be included (as witnessed by the meeting minutes), but was inadvertently omitted.
+
 ## Subject Matter
 
 Standards that were already included in v4:
@@ -28,7 +32,7 @@ Standards changed with v5:
 
 - [scs-0104-v1: Standard images](https://docs.scs.community/standards/scs-0104-v1-standard-images) with [new spec file](https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images-v5.yaml) instead of [former spec file](https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images.yaml)
 
-Standards new to v5:
+Standards new with v5:
 
 - [scs-0114-v1: Volume Types](https://docs.scs.community/standards/scs-0114-v1-volume-type-standard)
 - [scs-0115-v1: Default rules for security groups](https://docs.scs.community/standards/scs-0115-v1-default-rules-for-security-groups)
@@ -46,10 +50,7 @@ In general, automated tests (where applicable) shall be performed at least weekl
 
 - Tests for scs-0128-v1 may be performed less frequently, but no fewer than once a year.
 
-## Version history
+## Previous Versions
 
-- v5.1 amends v5 by including the standard scs-0123-v1,
-  which was intended to be included (as witnessed by the meeting minutes),
-  but inadvertently omitted.
 - v5 extends v4 by including new standards as listed above,
   and it changes the spec for scs-0104-v1, updating standard images.
