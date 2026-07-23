@@ -8,12 +8,7 @@ import yaml
 from kubernetes.client import ApiException, V1Secret
 
 from plugin_t8s import (
-    HR_CHART_REF,
     HR_GROUP,
-    HR_NAME,
-    HR_NAMESPACE,
-    HR_KUBECONFIG_SECRET,
-    HR_VALUES_FIXED,
     HR_VERSION,
     PluginT8s,
 )
@@ -62,13 +57,13 @@ def test_helmrelease_kind(plugin):
 
 def test_helmrelease_name_namespace(plugin):
     hr = plugin._build_helmrelease()
-    assert hr["metadata"]["name"] == HR_NAME
-    assert hr["metadata"]["namespace"] == HR_NAMESPACE
+    assert hr["metadata"]["name"] == plugin.hr_name
+    assert hr["metadata"]["namespace"] == plugin.hr_namespace
 
 
 def test_helmrelease_chartref(plugin):
     hr = plugin._build_helmrelease()
-    assert hr["spec"]["chartRef"] == HR_CHART_REF
+    assert hr["spec"]["chartRef"] == plugin.hr_chart_ref
     assert hr["spec"]["chartRef"]["kind"] == "HelmChart"
     assert hr["spec"]["chartRef"]["name"] == "scs-kaas-certification"
     assert hr["spec"]["chartRef"]["namespace"] == "flux-system"
@@ -178,7 +173,7 @@ def test_get_kubeconfig_from_secret(plugin):
     core_api = MagicMock()
     core_api.read_namespaced_secret.return_value = secret
     assert plugin._get_kubeconfig_from_secret(core_api) == raw
-    core_api.read_namespaced_secret.assert_called_once_with(HR_KUBECONFIG_SECRET, HR_NAMESPACE)
+    core_api.read_namespaced_secret.assert_called_once_with(plugin.hr_kubeconfig_secret, plugin.hr_namespace)
 
 
 def test_get_kubeconfig_from_secret_null_data(plugin):

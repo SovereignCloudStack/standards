@@ -22,30 +22,6 @@ HR_GROUP = "helm.toolkit.fluxcd.io"
 HR_VERSION = "v2"
 HR_PLURAL = "helmreleases"
 
-# All of these are mandated by the ValidatingAdmissionPolicy on the management cluster
-# and cannot be changed without updating both the VAP and the RBAC.
-HR_NAME = "scs-kaas-certification"
-HR_NAMESPACE = "scs-kaas-certification"
-HR_KUBECONFIG_SECRET = "scs-kaas-certification-kubeconfig"
-HR_CHART_REF = {
-    "kind": "HelmChart",
-    "name": "scs-kaas-certification",
-    "namespace": "flux-system",
-}
-HR_VALUES_FIXED = {
-    "cloud": "bfe2-prod",
-    "controlPlane": {"hosted": True},
-    "metadata": {
-        "customerID": 1111,
-        "customerName": "teuto.net Netzdienste GmbH",
-        "friendlyName": "scs-kaas-certification",
-        "serviceLevelAgreement": "None",
-    },
-    "nodePools": {
-        "pool-0": {"flavor": "standard.2.1905", "replicas": 2},
-    },
-}
-
 
 class PluginT8s(KubernetesClusterPlugin):
     """
@@ -69,6 +45,32 @@ class PluginT8s(KubernetesClusterPlugin):
         self.cwd = cwd
         self.env = Environment()
 
+        # All of these are mandated by the ValidatingAdmissionPolicy on the management cluster
+        # and cannot be changed without updating both the VAP and the RBAC. They are instance
+        # (rather than module-level) attributes because, in principle, different certification
+        # targets could be configured with different values here.
+        self.hr_name = "scs-kaas-certification"
+        self.hr_namespace = "scs-kaas-certification"
+        self.hr_kubeconfig_secret = "scs-kaas-certification-kubeconfig"
+        self.hr_chart_ref: dict[str, str] = {
+            "kind": "HelmChart",
+            "name": "scs-kaas-certification",
+            "namespace": "flux-system",
+        }
+        self.hr_values_fixed: dict[str, Any] = {
+            "cloud": "bfe2-prod",
+            "controlPlane": {"hosted": True},
+            "metadata": {
+                "customerID": 1111,
+                "customerName": "teuto.net Netzdienste GmbH",
+                "friendlyName": "scs-kaas-certification",
+                "serviceLevelAgreement": "None",
+            },
+            "nodePools": {
+                "pool-0": {"flavor": "standard.2.1905", "replicas": 2},
+            },
+        }
+
         fn: str = config["templates"]["kubeconfig"]
         with open(os.path.join(basepath, fn), "r") as f:
             self.kubeconfig_template: Template = self.env.from_string(f.read())
@@ -91,12 +93,12 @@ class PluginT8s(KubernetesClusterPlugin):
         return {
             "apiVersion": f"{HR_GROUP}/{HR_VERSION}",
             "kind": "HelmRelease",
-            "metadata": {"name": HR_NAME, "namespace": HR_NAMESPACE},
+            "metadata": {"name": self.hr_name, "namespace": self.hr_namespace},
             "spec": {
-                "chartRef": HR_CHART_REF,
+                "chartRef": self.hr_chart_ref,
                 "driftDetection": {"mode": "enabled"},
                 "interval": "1m",
-                "values": {**HR_VALUES_FIXED, "version": self.k8s_version},
+                "values": {**self.hr_values_fixed, "version": self.k8s_version},
             },
         }
 
@@ -105,17 +107,17 @@ class PluginT8s(KubernetesClusterPlugin):
             co_api.delete_namespaced_custom_object(
                 HR_GROUP,
                 HR_VERSION,
-                HR_NAMESPACE,
+                self.hr_namespace,
                 HR_PLURAL,
-                HR_NAME,
+                self.hr_name,
             )
         except ApiException as e:
             if e.status == 404:
-                logger.debug(f"HelmRelease {HR_NAME} not present, nothing to delete")
+                logger.debug(f"HelmRelease {self.hr_name} not present, nothing to delete")
                 return
             raise
         # Give Flux time to begin deletion before we try to recreate
-        logger.debug(f"HelmRelease {HR_NAME} deletion requested; waiting 30s")
+        logger.debug(f"HelmRelease {self.hr_name} deletion requested; waiting 30s")
         time.sleep(30)
 
     def _apply_helmrelease(self, api_client: ApiClient) -> None:
@@ -132,9 +134,9 @@ class PluginT8s(KubernetesClusterPlugin):
             path_params={
                 'group': HR_GROUP,
                 'version': HR_VERSION,
-                'namespace': HR_NAMESPACE,
+                'namespace': self.hr_namespace,
                 'plural': HR_PLURAL,
-                'name': HR_NAME,
+                'name': self.hr_name,
             },
             query_params=[('fieldManager', 'plugin_t8s'), ('force', 'true')],
             header_params={
@@ -148,15 +150,15 @@ class PluginT8s(KubernetesClusterPlugin):
             auth_settings=['BearerToken'],
             _return_http_data_only=True,
         )
-        logger.debug(f"HelmRelease {HR_NAME} applied")
+        logger.debug(f"HelmRelease {self.hr_name} applied")
 
     def _get_kubeconfig_from_secret(self, core_api: CoreV1Api) -> bytes:
-        secret = cast(V1Secret, core_api.read_namespaced_secret(HR_KUBECONFIG_SECRET, HR_NAMESPACE))
+        secret = cast(V1Secret, core_api.read_namespaced_secret(self.hr_kubeconfig_secret, self.hr_namespace))
         data: dict[str, str] = secret.data or {}
         if "value" in data:
             return base64.standard_b64decode(data["value"].encode())
         raise RuntimeError(
-            f"kubeconfig secret {HR_KUBECONFIG_SECRET} is missing key 'value'; has keys: {list(data)}"
+            f"kubeconfig secret {self.hr_kubeconfig_secret} is missing key 'value'; has keys: {list(data)}"
         )
 
     def _wait_for_kubeconfig_secret(self, core_api: CoreV1Api) -> bytes:
@@ -170,10 +172,10 @@ class PluginT8s(KubernetesClusterPlugin):
             timeout = next(timeouts)
             if not timeout:
                 raise RuntimeError(
-                    f"Timeout waiting for kubeconfig secret {HR_KUBECONFIG_SECRET}"
+                    f"Timeout waiting for kubeconfig secret {self.hr_kubeconfig_secret}"
                 )
             logger.debug(
-                f"waiting {timeout}s for kubeconfig secret {HR_KUBECONFIG_SECRET}"
+                f"waiting {timeout}s for kubeconfig secret {self.hr_kubeconfig_secret}"
             )
             time.sleep(timeout)
 
