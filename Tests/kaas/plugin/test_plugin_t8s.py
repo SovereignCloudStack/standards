@@ -8,12 +8,7 @@ import yaml
 from kubernetes.client import ApiException, V1Secret
 
 from plugin_t8s import (
-    HR_CHART_REF,
     HR_GROUP,
-    HR_NAME,
-    HR_NAMESPACE,
-    HR_KUBECONFIG_SECRET,
-    HR_VALUES_FIXED,
     HR_VERSION,
     PluginT8s,
 )
@@ -62,13 +57,13 @@ def test_helmrelease_kind(plugin):
 
 def test_helmrelease_name_namespace(plugin):
     hr = plugin._build_helmrelease()
-    assert hr["metadata"]["name"] == HR_NAME
-    assert hr["metadata"]["namespace"] == HR_NAMESPACE
+    assert hr["metadata"]["name"] == plugin.hr_name
+    assert hr["metadata"]["namespace"] == plugin.hr_namespace
 
 
 def test_helmrelease_chartref(plugin):
     hr = plugin._build_helmrelease()
-    assert hr["spec"]["chartRef"] == HR_CHART_REF
+    assert hr["spec"]["chartRef"] == plugin.hr_chart_ref
     assert hr["spec"]["chartRef"]["kind"] == "HelmChart"
     assert hr["spec"]["chartRef"]["name"] == "scs-kaas-certification"
     assert hr["spec"]["chartRef"]["namespace"] == "flux-system"
@@ -135,6 +130,59 @@ def test_helmrelease_single_nodepool(plugin):
     assert "pool-0" in nodepools
 
 
+def _make_plugin(tmp_path, **config_overrides):
+    tpl = tmp_path / "t8s-kubeconfig.yaml"
+    tpl.write_text(KUBECONFIG_TEMPLATE)
+    config = {
+        "kubernetesVersion": "1.35",
+        "version_patch": 2,
+        "templates": {"kubeconfig": tpl.name},
+        "secrets": {},
+        **config_overrides,
+    }
+    with patch("k8s_helper.setup_client_config"):
+        return PluginT8s(config, basepath=str(tmp_path), cwd=str(tmp_path))
+
+
+def test_helmrelease_values_from_config(tmp_path):
+    plugin = _make_plugin(
+        tmp_path,
+        cloud="other-cloud",
+        controlPlaneHosted=False,
+        nodePools={"pool-1": {"flavor": "custom.flavor", "replicas": 5}},
+        metadata={
+            "customerID": 2222,
+            "customerName": "Other Customer GmbH",
+            "friendlyName": "other-friendly-name",
+            "serviceLevelAgreement": "Gold",
+        },
+    )
+    values = plugin._build_helmrelease()["spec"]["values"]
+    assert values["cloud"] == "other-cloud"
+    assert values["controlPlane"]["hosted"] is False
+    assert values["nodePools"] == {"pool-1": {"flavor": "custom.flavor", "replicas": 5}}
+    assert values["metadata"] == {
+        "customerID": 2222,
+        "customerName": "Other Customer GmbH",
+        "friendlyName": "other-friendly-name",
+        "serviceLevelAgreement": "Gold",
+    }
+
+
+def test_hr_name_defaults(plugin):
+    assert plugin.hr_name == "scs-kaas-certification"
+    assert plugin.hr_kubeconfig_secret == "scs-kaas-certification-kubeconfig"
+
+
+def test_hr_name_from_config(tmp_path):
+    plugin = _make_plugin(tmp_path, name="other-target")
+    assert plugin.hr_name == "other-target"
+    assert plugin.hr_kubeconfig_secret == "other-target-kubeconfig"
+
+    hr = plugin._build_helmrelease()
+    assert hr["metadata"]["name"] == "other-target"
+
+
 # --- version parsing ---
 
 @pytest.mark.parametrize("version,version_patch,expected", [
@@ -178,7 +226,7 @@ def test_get_kubeconfig_from_secret(plugin):
     core_api = MagicMock()
     core_api.read_namespaced_secret.return_value = secret
     assert plugin._get_kubeconfig_from_secret(core_api) == raw
-    core_api.read_namespaced_secret.assert_called_once_with(HR_KUBECONFIG_SECRET, HR_NAMESPACE)
+    core_api.read_namespaced_secret.assert_called_once_with(plugin.hr_kubeconfig_secret, plugin.hr_namespace)
 
 
 def test_get_kubeconfig_from_secret_null_data(plugin):
