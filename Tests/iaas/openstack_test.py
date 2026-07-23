@@ -12,6 +12,7 @@ import getopt
 import logging
 import os
 import sys
+import uuid
 
 import openstack
 import yaml
@@ -256,13 +257,14 @@ def main(argv):
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
     openstack.enable_logging(debug=False)
     cloud = None
+    subject = None
 
     try:
         cloud = os.environ["OS_CLOUD"]
     except KeyError:
         pass
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:C:", ("os-cloud=", ))
+        opts, args = getopt.gnu_getopt(argv, "c:s:", ("os-cloud=", "subject="))
     except getopt.GetoptError as exc:
         print(f"CRITICAL: {exc!r}", file=sys.stderr)
         usage(1)
@@ -271,6 +273,8 @@ def main(argv):
             usage(0)
         elif opt[0] == "-c" or opt[0] == "--os-cloud":
             cloud = opt[1]
+        elif opt[0] == "-s" or opt[0] == "--subject":
+            subject = opt[1]
         else:
             usage(2)
 
@@ -285,6 +289,8 @@ def main(argv):
     if not cloud:
         print("CRITICAL: You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
         sys.exit(1)
+    if not subject:
+        subject = cloud
 
     c = make_container(cloud)
     try:
@@ -301,8 +307,11 @@ def main(argv):
     for testcase in testcases:
         harness(testcase, results, lambda: getattr(c, testcase.replace('-', '_')))
     report = {
+        'uuid': str(uuid.uuid4()),
         'creator': 'openstack_test.py v0.1.0',
         'checked_at': datetime.now(),
+        'subject': subject,
+        'scope': '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f',
         'tests': {
             key: {'result': value}
             for key, value in results.items()
