@@ -209,6 +209,24 @@ clusters:
         num_worker_nodes: 3
       secrets:
         token: "{{ clouds_conf.syself_token }}"
+  teuto-1.35:
+    kind: t8s
+    config:
+      kubernetesVersion: '1.35'
+      version_patch: 2
+      templates:
+        kubeconfig: t8s-kubeconfig.yaml
+      secrets:
+        token: "{{ clouds_conf.teuto_mgmt_token }}"
+  teuto-1.36:
+    kind: t8s
+    config:
+      kubernetesVersion: '1.36'
+      version_patch: 0
+      templates:
+        kubeconfig: t8s-kubeconfig.yaml
+      secrets:
+        token: "{{ clouds_conf.teuto_mgmt_token }}"
   # dev clusters using kind
   # latest versions to be found under https://hub.docker.com/r/kindest/node/tags
   kind-1.32:
