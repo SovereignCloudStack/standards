@@ -63,7 +63,7 @@
 
     - name: Create secrets dir
       ansible.builtin.file:
-        path: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/Tests/.secret"
+        path: "{{ ansible_user_dir }}/.config/scs/.secret"
         state: directory
         recurse: true
         mode: "0700"
@@ -72,14 +72,14 @@
       ansible.builtin.copy:
         # the secrets are usually stripped of whitespace, but the final newline is essential here
         content: "{{ clouds_conf.zuul_ci_signing_key + '\n' }}"
-        dest: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/Tests/.secret/keyfile"
+        dest: "{{ ansible_user_dir }}/.config/scs/.secret/keyfile"
         mode: "0600"
       no_log: true
 
     - name: Create basic_auth token file
       ansible.builtin.copy:
         content: "{{ clouds_conf.zuul_ci_basic_auth }}"
-        dest: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/Tests/.secret/tokenfile"
+        dest: "{{ ansible_user_dir }}/.config/scs/.secret/tokenfile"
         mode: "0600"
       no_log: true
 
