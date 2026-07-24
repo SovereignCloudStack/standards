@@ -26,12 +26,6 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
 
    For public clouds, the SCS certification assessment body can take on this task provided that suitable access to test subject is supplied.
 
-   The test suite is partitioned according to resource usage; the required test intervals depend on this classification:
-
-    - _light_: at least daily,
-    - _medium_: at least weekly,
-    - _heavy_: at least monthly.
-
 3. If the desired certificate requires manual checks, then the operator MUST offer suitable documentation to the SCS certification assessment body. The operator MUST ensure that these checks are repeated once every quarter. In addition, the SCS certification assessment body reserves the right to occasionally verify documentation on premises.
 
 4. Details on the standards achieved, as well as the current state and the history of all test and check results of the past 18 months will be displayed on a public webpage (henceforth, _certificate status page_) owned by SCS.
