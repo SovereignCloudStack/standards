@@ -8,7 +8,7 @@ track: Global
 
 ## Introduction
 
-The Sovereign Cloud Stack (SCS) issues certificates with various scopes, among them [_SCS-compatible IaaS_](https://docs.scs.community/standards/scs-compatible-iaas) (Infrastructure as a Service) and [_SCS-compatible KaaS_](https://docs.scs.community/standards/scs-compatible-kaas) (Kubernetes as a Service).
+The Sovereign Cloud Stack (SCS) issues certificates with various [scopes](https://docs.scs.community/standards/scopes/), among them _SCS-compatible IaaS_ (Infrastructure as a Service) and _SCS-compatible KaaS_ (Kubernetes as a Service).
 
 This document details how a cloud service provider (henceforth also called operator) can attain such a certificate for one of their clouds.
 
