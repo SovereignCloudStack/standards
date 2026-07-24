@@ -9,18 +9,25 @@
 from collections import defaultdict
 from datetime import datetime, date, timedelta
 import logging
+import uuid
 
 
 logger = logging.getLogger(__name__)
+__VERSION__ = "20260623"
 
+SCOPE_ALIASES = {
+    'sci': '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f',
+    'scs-compatible-iaas': '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f',
+    'sck': '1fffebe6-fd4b-44d3-a36c-fc58b4bb0180',
+    'scs-compatible-kaas': '1fffebe6-fd4b-44d3-a36c-fc58b4bb0180',
+}
 # valid keywords for various parts of the spec, to be checked using `check_keywords`
 KEYWORDS = {
-    'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables', 'scripts', 'modules', 'timeline'),
+    'spec': ('uuid', 'name', 'url', 'versions', 'prerequisite', 'variables', 'scripts', 'groups', 'timeline'),
     'scripts': ('executable', 'env', 'args', 'testcases'),
-    'versions': ('version', 'include', 'targets', 'stabilized_at'),
-    'modules': ('id', 'targets', 'url', 'name', 'parameters'),
+    'versions': ('version', 'test', 'attn'),
+    'groups': ('id', 'url', 'name', 'include'),
     'testcases': ('lifetime', 'section', 'id', 'description', 'url'),
-    'include': ('ref', 'parameters'),
 }
 # The canonical result values are -1, 0, and 1, for FAIL, ABORT, and PASS, respectively;
 # -- in addition, None is used to encode a missing value, but must not be included in a formal report! --
@@ -49,6 +56,21 @@ def _check_keywords(ctx, d, keywords=KEYWORDS):
     return len(invalid) + sum(_check_keywords(k, v, keywords=keywords) for k, v in d.items())
 
 
+def _collect_testcases(test, result_list):
+    if 'attn' in test:
+        result_list.append(test)
+    for child in test.get('include', ()):
+        _collect_testcases(child, result_list)
+    return result_list
+
+
+def collect_testcases(*tests):
+    result_list = []
+    for test in tests:
+        _collect_testcases(test, result_list)
+    return result_list
+
+
 def _resolve_spec(spec: dict):
     """rewire `spec` so as to make most lookups via name unnecessary, and to find name errors early"""
     if isinstance(spec['versions'], dict):
@@ -68,42 +90,37 @@ def _resolve_spec(spec: dict):
             testcase['attn'] = 0  # count: how many stable versions list this in target 'main'?
             testcase_lookup[id_] = testcase
             tc_script_lookup[id_] = script
-    module_lookup = {module['id']: module for module in spec['modules']}
+    group_lookup = {group['id']: group for group in spec['groups']}
+    test_lookup = dict(**group_lookup, **testcase_lookup)
     version_lookup = {version['version']: version for version in spec['versions']}
     # step 2. check for duplicates:
-    if len(module_lookup) != len(spec['modules']):
+    if len(group_lookup) != len(spec['groups']):
         raise RuntimeError("spec contains duplicate module ids")
     if len(version_lookup) != len(spec['versions']):
         raise RuntimeError("spec contains duplicate version ids")
-    # step 3. replace fields 'modules' and 'versions' by respective lookups
-    spec['modules'] = module_lookup
+    # step 3. replace fields 'groups' and 'versions' by respective lookups
+    spec['groups'] = group_lookup
     spec['versions'] = version_lookup
     # step 3a. add testcase lookup
     spec['testcases'] = testcase_lookup
     spec['tc_scripts'] = tc_script_lookup
     # step 4. resolve references
-    # step 4a. resolve references to modules in includes
-    # in this step, we also normalize the include form
+    # step 4a. resolve 'include' in groups
+    for group in spec['groups'].values():
+        # empty group need not specify include.
+        # next to resolving references, also ensure here that attribute exists
+        include = group.get('include', ())
+        group['include'] = [test_lookup[inc] for inc in include]
+    # step 4b. resolve 'test' in versions
     for idx, version in enumerate(spec['versions'].values()):
         version['_idx'] = idx
-        version['include'] = [
-            {'module': module_lookup[inc], 'parameters': {}} if isinstance(inc, str) else
-            {'module': module_lookup[inc['ref']], 'parameters': inc.get('parameters', {})}
-            for inc in version['include']
-        ]
-        targets = defaultdict(set)
-        for inc in version['include']:
-            for target, tc_ids in inc['module'].get('targets', {}).items():
-                targets[target].update(tc_ids)
-        tc_target = {}
-        for target, tc_ids in targets.items():
-            for tc_id in tc_ids:
-                tc_target[tc_id] = target
-        if version.get('stabilized_at'):
-            for tc_id in targets.get('main', ()):
-                testcase_lookup[tc_id]['attn'] += 1
-        version['targets'] = {target: sorted(tc_ids) for target, tc_ids in targets.items()}
-        version['tc_target'] = tc_target
+        test = test_lookup[version['test']]
+        testcases = collect_testcases(test)
+        attn = version.get('attn', 0)
+        for testcase in testcases:
+            testcase['attn'] += attn
+        version['test'] = test
+        version['testcase_ids'] = [testcase['id'] for testcase in testcases]
     # step 4b. resolve references to versions in timeline
     # on second thought, let's not go there: it's a canonical extension map, and it should remain that way.
     # however, we still have to look for name errors
@@ -211,3 +228,26 @@ def evaluate(results, testcase_ids) -> int:
         if buckets[value]:
             return value
     return 1
+
+
+def make_report(scopeuuid, subject, results, log, creator=None, checked_at=None):
+    if creator is None:
+        creator = f"SCS test suite; version={__VERSION__}"
+    return {
+        "uuid": str(uuid.uuid4()),
+        "creator": creator,
+        "scope": scopeuuid,
+        "checked_at": checked_at or datetime.now(),
+        "subject": subject,
+        "tests": {
+            testcase_id: {
+                "result": value,
+            }
+            for testcase_id, value in results.items()
+        },
+        "log": log,
+    }
+
+
+def normalize_scope(ident):
+    return SCOPE_ALIASES.get(ident, ident)
