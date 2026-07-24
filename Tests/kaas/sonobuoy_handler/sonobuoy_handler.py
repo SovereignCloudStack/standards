@@ -7,6 +7,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+from tempfile import gettempdir
 
 import yaml
 
@@ -43,7 +44,7 @@ class SonobuoyHandler:
         scs_sonobuoy_config_yaml,
         check_name="sonobuoy_handler",
         kubeconfig=None,
-        result_dir_name="sonobuoy_results",
+        result_dir_name=None,
         args=(),
     ):
         self.check_name = check_name
@@ -52,6 +53,8 @@ class SonobuoyHandler:
             raise RuntimeError("No kubeconfig provided")
         self.kubeconfig_path = kubeconfig
         self.working_directory = os.getcwd()
+        if result_dir_name is None:
+            result_dir_name = os.path.join(gettempdir(), check_name)
         self.result_dir_name = result_dir_name
         self.sonobuoy = _find_sonobuoy()
         logger.debug(f"working from {self.working_directory}")
@@ -118,12 +121,8 @@ class SonobuoyHandler:
             self._sonobuoy_run()
             counter = self._sonobuoy_retrieve_result()
             return_code = self._eval_result(counter)
-            print(self.check_name + ": " + ("PASS", "FAIL")[min(1, return_code)])
+            logger.debug(self.check_name + ": " + ("PASS", "FAIL")[min(1, return_code)])
             return return_code
-        except BaseException:
-            print(self.check_name + ": ABORT")
-            logger.critical("something went wrong", exc_info=True)
-            return 112
         finally:
             self._sonobuoy_delete()
 
