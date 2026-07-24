@@ -17,12 +17,13 @@ PLUGIN_LOOKUP = {
     "kind": PluginKind,
     "static": PluginStatic,
 }
-BASEPATH = os.path.join(os.path.expanduser('~'), '.config', 'scs')
+CONFIG_PATH = os.path.join(os.path.expanduser('~'), '.config', 'scs')
+STATE_PATH = os.path.join(os.path.expanduser('~'), '.local', 'share', 'scs')
 
 
 def load_config(path='clusters.yaml'):
     if not os.path.isabs(path):
-        return load_config(os.path.normpath(os.path.join(BASEPATH, path)))
+        return load_config(os.path.normpath(os.path.join(CONFIG_PATH, path)))
     if not os.path.exists(path):
         raise FileNotFoundError()
     with open(path, "rb") as fileobj:
@@ -34,12 +35,14 @@ def load_config(path='clusters.yaml'):
     return cfg
 
 
-def init_plugin(plugin_kind, config, cwd='.'):
+def init_plugin(plugin_kind, config, cluster_id):
     plugin_maker = PLUGIN_LOOKUP.get(plugin_kind)
     if plugin_maker is None:
         raise ValueError(f"unknown plugin '{plugin_kind}'")
+    config.setdefault('name', cluster_id)
+    cwd = os.path.join(STATE_PATH, 'clusters', cluster_id)
     os.makedirs(cwd, exist_ok=True)
-    return plugin_maker(config, basepath=BASEPATH, cwd=cwd)
+    return plugin_maker(config, basepath=CONFIG_PATH, cwd=cwd)
 
 
 @click.group()
@@ -53,10 +56,7 @@ def cli(debug=False):
 @click.pass_obj
 def create(cfg, cluster_id):
     spec = cfg['clusters'][cluster_id]
-    config = spec['config']
-    config.setdefault('name', cluster_id)
-    cwd = os.path.abspath(cluster_id)
-    init_plugin(spec['kind'], config, cwd).create_cluster()
+    init_plugin(spec['kind'], spec['config'], cluster_id).create_cluster()
 
 
 @cli.command()
@@ -64,10 +64,7 @@ def create(cfg, cluster_id):
 @click.pass_obj
 def delete(cfg, cluster_id):
     spec = cfg['clusters'][cluster_id]
-    config = spec['config']
-    config.setdefault('name', cluster_id)
-    cwd = os.path.abspath(cluster_id)
-    init_plugin(spec['kind'], config, cwd).delete_cluster()
+    init_plugin(spec['kind'], spec['config'], cluster_id).delete_cluster()
 
 
 if __name__ == '__main__':

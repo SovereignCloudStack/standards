@@ -22,7 +22,7 @@ else %}{% set uuid = report.uuid %}{% set scopeuuid = report.scope %}{% endif -%
 - {% if line.split(':', 1)[0].lower() in ('warning', 'error', 'critical') %}**_`{{line}}`_**{%
   elif line.startswith('INFO: *** ') %}{% if 'PASS' in line %} `{{line}}` {% else %} **`{{line}}`** {% endif %} 
   {: #{{line.split()[2]}} }{%
-  else %}`{{line}}`{% endif %}
+  else %}{% for line0 in line.splitlines() %}`{{line0}}`{%if not loop.last%}<br>{%endif%}{% endfor %}{% endif %}
 {%- endfor %}
 
 {% endif %}

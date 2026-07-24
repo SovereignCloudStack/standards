@@ -23,6 +23,7 @@ from sonobuoy_handler.sonobuoy_handler import SonobuoyHandler
 
 HERE = os.path.dirname(__file__)
 SCS_SONOBUOY_CONFIG_PATH = os.path.join(HERE, 'scs-sonobuoy-config-v1.yaml')
+KUBECONFIG_ROOT = os.path.join(os.path.expanduser('~'), '.local', 'share', 'scs', 'clusters')
 
 logger = logging.getLogger(__name__)
 
@@ -31,11 +32,11 @@ def usage(rcode=1, file=sys.stderr):
     """help output"""
     print("Usage: k8s_test.py [options] testcase-id1 ... testcase-idN", file=file)
     print("Options:", file=file)
-    print("  [-k/--kubeconfig KUBECONFIG_PATH] (required)", file=file)
+    print("  [-c/--cluster-id CLUSTER_ID] (required)", file=file)
     print("  [-s/--subject SUBJECT]", file=file)
     print("  [--execution-mode MODE] Sonobuoy mode: serial, parallel, or dry", file=file)
-    print("Runs specified testcases against the default context in kubeconfig provided", file=file)
-    print("via -k. Reports inconsistencies, errors etc.; returns 0 on success.", file=file)
+    print("Runs specified testcases against the kubeconfig specified via cluster_id.", file=file)
+    print("Reports inconsistencies, errors etc.; returns 0 on success.", file=file)
     print("Instead of listing testcase-ids, you can supply a single dash (-)", file=file)
     print("to have them read from stdin, one testcase-id per line.", file=file)
     sys.exit(rcode)
@@ -43,7 +44,7 @@ def usage(rcode=1, file=sys.stderr):
 
 class Config:
     def __init__(self):
-        self.kubeconfig_path = os.environ.get("KUBECONFIG")
+        self.cluster_id = None
         self.subject = None
         self.mode = 'serial'
         self.testcases = []
@@ -51,15 +52,15 @@ class Config:
     def apply_argv(self, argv):
         """Parse cli arguments from the script call"""
         try:
-            opts, args = getopt.gnu_getopt(argv, "k:s:", ("kubeconfig=", "subject=", "execution-mode="))
+            opts, args = getopt.gnu_getopt(argv, "c:s:", ("cluster-id=", "subject=", "execution-mode="))
         except getopt.GetoptError as exc:
             print(f"CRITICAL: {exc!r}", file=sys.stderr)
             usage(1)
         for opt in opts:
             if opt[0] == "-h" or opt[0] == "--help":
                 usage(0)
-            elif opt[0] == "-k" or opt[0] == "--kubeconfig":
-                self.kubeconfig_path = opt[1]
+            elif opt[0] == "-c" or opt[0] == "--cluster-id":
+                self.cluster_id = opt[1]
             elif opt[0] == "-s" or opt[0] == "--subject":
                 self.subject = opt[1]
             elif opt[0] == "--execution-mode":
@@ -72,11 +73,15 @@ class Config:
         if len(self.testcases) != len(args):
             unknown = [a for a in args if a not in self.testcases]
             logger.warning(f"ignoring unknown testcases: {','.join(unknown)}")
-        if not self.kubeconfig_path:
+        if not self.cluster_id:
             print("CRITICAL: You need to have KUBECONFIG set or pass --kubeconfig=KUBECONFIG.", file=sys.stderr)
             sys.exit(1)
         if not self.subject:
-            self.subject = self.kubeconfig_path
+            self.subject = self.cluster_id
+
+    @property
+    def kubeconfig_path(self):
+        return os.path.join(KUBECONFIG_ROOT, self.cluster_id, 'kubeconfig.yaml')
 
     def compute_sono_args(self, *args):
         if self.mode == 'parallel':
