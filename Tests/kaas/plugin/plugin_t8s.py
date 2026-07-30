@@ -29,7 +29,11 @@ class PluginT8s(KubernetesClusterPlugin):
     via a Flux HelmRelease.
 
     Creates a HelmRelease on mgmt-bfe2-prod and waits for the resulting cluster's
-    kubeconfig to appear in the secret '<name>-kubeconfig'.
+    kubeconfig to appear in the secret '<hrName>-kubeconfig'.
+
+    Note: `config['name']` is set by run_plugin.py to the cluster_id (e.g. 'teuto-1.36')
+    for all plugins; that is unrelated to the HelmRelease name below, which is why this
+    plugin uses the distinct key `hrName` instead of reusing `name`.
 
     Expected config keys:
       kubernetesVersion: '1.35'        (major.minor)
@@ -38,8 +42,8 @@ class PluginT8s(KubernetesClusterPlugin):
         kubeconfig: t8s-kubeconfig.yaml  (management cluster kubeconfig template)
       secrets:
         token: '{{ clouds_conf.teuto_mgmt_token }}'
-      name: 'scs-kaas-certification'   (optional, defaults to 'scs-kaas-certification';
-                                        the kubeconfig secret name is derived as '<name>-kubeconfig')
+      hrName: 'scs-kaas-certification' (the kubeconfig secret name is derived as
+                                        '<hrName>-kubeconfig')
       cloud:             'bfe2-prod'    (optional, defaults to 'bfe2-prod')
       controlPlaneHosted: true          (optional, defaults to true)
       nodePools:                        (optional, defaults to a single 'pool-0')
@@ -62,7 +66,7 @@ class PluginT8s(KubernetesClusterPlugin):
         # and cannot be changed without updating both the VAP and the RBAC. They are instance
         # (rather than module-level) attributes because, in principle, different certification
         # targets could be configured with different values here.
-        self.hr_name = config.get("name", "scs-kaas-certification")
+        self.hr_name = config["hrName"]
         self.hr_namespace = "scs-kaas-certification"
         self.hr_kubeconfig_secret = f"{self.hr_name}-kubeconfig"
         self.hr_chart_ref: dict[str, str] = {

@@ -36,6 +36,7 @@ def plugin(tmp_path):
     config = {
         "kubernetesVersion": "1.35",
         "version_patch": 2,
+        "hrName": "scs-kaas-certification",
         "templates": {"kubeconfig": tpl.name},
         "secrets": {},
     }
@@ -136,6 +137,7 @@ def _make_plugin(tmp_path, **config_overrides):
     config = {
         "kubernetesVersion": "1.35",
         "version_patch": 2,
+        "hrName": "scs-kaas-certification",
         "templates": {"kubeconfig": tpl.name},
         "secrets": {},
         **config_overrides,
@@ -175,12 +177,20 @@ def test_hr_name_defaults(plugin):
 
 
 def test_hr_name_from_config(tmp_path):
-    plugin = _make_plugin(tmp_path, name="other-target")
+    plugin = _make_plugin(tmp_path, hrName="other-target")
     assert plugin.hr_name == "other-target"
     assert plugin.hr_kubeconfig_secret == "other-target-kubeconfig"
 
     hr = plugin._build_helmrelease()
     assert hr["metadata"]["name"] == "other-target"
+
+
+def test_hr_name_ignores_run_plugin_name(tmp_path):
+    # run_plugin.py does config.setdefault('name', cluster_id) for every plugin kind;
+    # that generic identifier must not leak into the (differently-keyed) HR name.
+    plugin = _make_plugin(tmp_path, name="teuto-1.36")
+    assert plugin.hr_name == "scs-kaas-certification"
+    assert plugin.hr_kubeconfig_secret == "scs-kaas-certification-kubeconfig"
 
 
 # --- version parsing ---
@@ -196,6 +206,7 @@ def test_version_parsing(tmp_path, version, version_patch, expected):
     config = {
         "kubernetesVersion": version,
         "version_patch": version_patch,
+        "hrName": "scs-kaas-certification",
         "templates": {"kubeconfig": tpl.name},
         "secrets": {},
     }
@@ -209,6 +220,7 @@ def test_version_patch_defaults_to_zero(tmp_path):
     tpl.write_text(KUBECONFIG_TEMPLATE)
     config = {
         "kubernetesVersion": "1.35",
+        "hrName": "scs-kaas-certification",
         "templates": {"kubeconfig": tpl.name},
         "secrets": {},
     }
