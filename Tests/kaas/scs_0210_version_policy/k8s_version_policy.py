@@ -435,7 +435,25 @@ def compute_version_policy_check(supported_branches, cve_affected_ranges, releas
     return False
 
 
-async def main(argv):
+async def version_policy_check_async(kubeconfig):
+    supported_branches = determine_supported_branches()
+    connector = aiohttp.TCPConnector(limit=5)
+    logger.info("Checking cluster specified in %s.", kubeconfig)
+    async with aiohttp.ClientSession(connector=connector) as session:
+        cve_affected_ranges, releases_data, cluster = await asyncio.gather(
+            collect_cve_versions(session),
+            fetch_k8s_releases_data(session),
+            get_k8s_cluster_info(kubeconfig),
+        )
+    return compute_version_policy_check(
+        supported_branches, cve_affected_ranges, releases_data, cluster)
+
+
+def version_policy_check(kubeconfig):
+    return asyncio.run(version_policy_check_async(kubeconfig))
+
+
+def main(argv):
     config = Config()
     try:
         config.apply_argv(argv)
@@ -448,17 +466,7 @@ async def main(argv):
         return 1
 
     try:
-        supported_branches = determine_supported_branches()
-        connector = aiohttp.TCPConnector(limit=5)
-        logger.info("Checking cluster specified in %s.", config.kubeconfig)
-        async with aiohttp.ClientSession(connector=connector) as session:
-            cve_affected_ranges, releases_data, cluster = await asyncio.gather(
-                collect_cve_versions(session),
-                fetch_k8s_releases_data(session),
-                get_k8s_cluster_info(config.kubeconfig),
-            )
-        result = compute_version_policy_check(
-            supported_branches, cve_affected_ranges, releases_data, cluster)
+        result = version_policy_check(config.kubeconfig)
         print("version-policy-check: " + ('FAIL', 'PASS')[bool(result)])
     except BaseException:
         print("version-policy-check: ABORT")
@@ -469,5 +477,5 @@ async def main(argv):
 
 
 if __name__ == "__main__":
-    return_code = asyncio.run(main(sys.argv[1:]))
+    return_code = main(sys.argv[1:])
     sys.exit(return_code)

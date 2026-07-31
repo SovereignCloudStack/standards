@@ -7,12 +7,15 @@
 SPDX-License-Identifier: CC-BY-SA 4.0
 """
 
+from datetime import datetime
 import getopt
 import logging
 import os
 import sys
+import uuid
 
 import openstack
+import yaml
 
 from scs_0100_flavor_naming.flavor_names import compute_flavor_spec
 from scs_0100_flavor_naming.flavor_names_check import \
@@ -55,6 +58,8 @@ def usage(rcode=1, file=sys.stderr):
     print("Options: [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)", file=file)
     print("Runs specified testcases against the OpenStack cloud OS_CLOUD", file=file)
     print("and reports inconsistencies, errors etc. It returns 0 on success.", file=file)
+    print("Instead of listing testcase-ids, you can supply a single dash (-)", file=file)
+    print("to have them read from stdin, one testcase-id per line.", file=file)
     sys.exit(rcode)
 
 
@@ -179,7 +184,8 @@ class Container:
     def __getattr__(self, key):
         val = self._values.get(key)
         if val is None:
-            logger.debug(f'... {key}')
+            # uncomment for super serious debugging
+            # logger.log(f'... {key}')
             try:
                 ret = self._functions[key](self)
             except BaseException as e:
@@ -203,28 +209,24 @@ class Container:
         self._values[name] = value
 
 
-def harness(name, *check_fns):
+def harness(name, results, *check_fns):
     """Harness for evaluating testcase `name`.
 
-    Logs beginning of computation.
+    Logs beginning and end of computation.
     Calls each fn in `check_fns`.
-    Prints (to stdout) 'name: RESULT', where RESULT is one of
-
-    - 'ABORT' if an exception occurs during the function calls
-    - 'FAIL' if one of the functions has a falsy result
-    - 'PASS' otherwise
+    Records result to `results`.
     """
-    logger.debug(f'** {name}')
+    logger.info(f'*** {name}')
     try:
         result = all(check_fn() for check_fn in check_fns)
     except BaseException:
         logger.debug('exception during check', exc_info=True)
-        result = 'ABORT'
+        value = 0
     else:
-        result = ['FAIL', 'PASS'][min(1, result)]
-    # this is quite redundant
-    # logger.debug(f'** computation end for {name}')
-    print(f"{name}: {result}")
+        value = 1 if result else -1
+    result = ['FAIL', 'ABORT', 'PASS'][value + 1]
+    logger.info(f'+++ {name}: {result}')
+    results[name] = value
 
 
 def run_preflight_checks(container):
@@ -241,18 +243,28 @@ def run_preflight_checks(container):
         raise RuntimeError("OpenStack user is missing member role.")
 
 
+class _LogHandler(logging.Handler):
+    def __init__(self, level=logging.NOTSET, log=None):
+        super().__init__(level=level)
+        self.log = [] if log is None else log
+
+    def handle(self, record):
+        self.log.append(f'{record.levelname}: {record.getMessage()}')
+
+
 def main(argv):
     # configure logging, disable verbose library logging
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
     openstack.enable_logging(debug=False)
     cloud = None
+    subject = None
 
     try:
         cloud = os.environ["OS_CLOUD"]
     except KeyError:
         pass
     try:
-        opts, args = getopt.gnu_getopt(argv, "c:C:", ("os-cloud=", ))
+        opts, args = getopt.gnu_getopt(argv, "c:s:", ("os-cloud=", "subject="))
     except getopt.GetoptError as exc:
         print(f"CRITICAL: {exc!r}", file=sys.stderr)
         usage(1)
@@ -261,8 +273,13 @@ def main(argv):
             usage(0)
         elif opt[0] == "-c" or opt[0] == "--os-cloud":
             cloud = opt[1]
+        elif opt[0] == "-s" or opt[0] == "--subject":
+            subject = opt[1]
         else:
             usage(2)
+
+    if len(args) == 1 and args[0] == '-':
+        args = sys.stdin.read().splitlines()
 
     testcases = [t for t in args if t.startswith('scs-')]
     if len(testcases) != len(args):
@@ -272,6 +289,8 @@ def main(argv):
     if not cloud:
         print("CRITICAL: You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
         sys.exit(1)
+    if not subject:
+        subject = cloud
 
     c = make_container(cloud)
     try:
@@ -281,8 +300,27 @@ def main(argv):
         for testcase in testcases:
             print(f"{testcase}: ABORT")
         raise
+
+    results = {}
+    log = []
+    logging.root.addHandler(_LogHandler(level=logging.DEBUG, log=log))
     for testcase in testcases:
-        harness(testcase, lambda: getattr(c, testcase.replace('-', '_')))
+        harness(testcase, results, lambda: getattr(c, testcase.replace('-', '_')))
+    report = {
+        'uuid': str(uuid.uuid4()),
+        'creator': 'openstack_test.py v0.1.0',
+        'checked_at': datetime.now(),
+        'subject': subject,
+        'scope': '50393e6f-2ae1-4c5c-a62c-3b75f2abef3f',
+        'tests': {
+            key: {'result': value}
+            for key, value in results.items()
+        },
+        'log': log,
+    }
+    # don't do explicit_start here because that can easily be done by the caller using "echo ---",
+    # and then the caller can even add fields such as uuid, subject, and scope
+    yaml.safe_dump(report, sys.stdout, default_flow_style=False, sort_keys=False, explicit_start=False)
     return 0
 
 

@@ -39,9 +39,7 @@ No recent test results available.
 {% set sym = sym0 -%}
 {% endif -%}
 | {{sym}} {{cat}}{% if res.report %} ([{{ res.checked_at | short_isodate }}]({{ report_url(res.report, version, testcase_id) }})) { title="{{ res.report }} {{ res.checked_at }}" }{% endif %} {# -#}
-{% for version in scope_result.relevant %}| {%
-set tgt = scope_result.versions[version].tc_target[testcase_id]
-%}{% if tgt == 'main' %}X { title="main" }{% endif %} {% endfor -%}
+{% for version in scope_result.relevant %}| {% if testcase.id in scope_result.versions[version].testcases %}X{% endif %} {% endfor -%}
 | {{ testcase.description | trim }} |
 {% endfor %}{# testcase -#}
 {% endfor %}{# categories #}

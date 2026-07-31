@@ -19,6 +19,7 @@ import json
 import logging
 import os
 import os.path
+import shlex
 from shutil import which
 import signal
 from subprocess import run
@@ -50,14 +51,14 @@ logger = logging.getLogger(__name__)
 
 
 try:
-    from scs_cert_lib import load_spec, annotate_validity, add_period, eval_buckets, evaluate
+    from scs_cert_lib import load_spec, annotate_validity, add_period, eval_buckets, evaluate, normalize_scope
 except ImportError:
     # the following course of action is not unproblematic because the Tests directory will be
     # mounted to the Docker instance, hence it's hard to tell what version we are gonna get;
     # however, unlike the reloading of the config, the import only happens once, and at that point
     # in time, both monitor.py and scs_cert_lib.py should come from the same git checkout
     import sys; sys.path.insert(0, os.path.abspath('../Tests'))  # noqa: E702
-    from scs_cert_lib import load_spec, annotate_validity, add_period, eval_buckets, evaluate
+    from scs_cert_lib import load_spec, annotate_validity, add_period, eval_buckets, evaluate, normalize_scope
 
 
 class Settings:
@@ -121,12 +122,7 @@ VIEW_TABLE = {
     ViewType.fragment: 'overview.md',
     ViewType.page: 'overview.html',
 }
-VIEW_SCOPE = {
-    ViewType.markdown: 'scope.md',
-    ViewType.fragment: 'scope.md',
-    ViewType.page: 'overview.html',
-}
-REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_REPORT, VIEW_DETAIL, VIEW_TABLE, VIEW_SCOPE) for fn in view.values()))
+REQUIRED_TEMPLATES = tuple(set(fn for view in (VIEW_REPORT, VIEW_DETAIL, VIEW_TABLE) for fn in view.values()))
 
 
 # do I hate these globals, but I don't see another way with these frameworks
@@ -249,18 +245,10 @@ def import_bootstrap(bootstrap_path, conn):
 
 def _evaluate_version(version, scope_results):
     """evaluate the results for `version` and return the canonical JSON output"""
-    target_results = {
-        tname: {
-            'testcases': tc_ids,
-            'result': evaluate(scope_results, tc_ids),
-        }
-        for tname, tc_ids in version['targets'].items()
-    }
     return {
         '_idx': version['_idx'],
-        'result': target_results['main']['result'],
-        'targets': target_results,
-        'tc_target': version['tc_target'],
+        'result': evaluate(scope_results, version['testcase_ids']),
+        'testcases': version['testcase_ids'],
         'validity': version['validity'],
     }
 
@@ -293,8 +281,7 @@ def _evaluate_scope(spec, scope_results, include_drafts=False):
     # only list testcases that occur in any relevant version
     relevant_testcases = set()
     for vname in relevant:
-        for tc_ids in versions[vname]['targets'].values():
-            relevant_testcases.update(tc_ids)
+        relevant_testcases.update(versions[vname]['testcase_ids'])
     return {
         'name': spec['name'],
         'testcases': testcases,
@@ -426,6 +413,45 @@ async def get_report(
     return Response(content=json.dumps(spec, indent=2), media_type="application/json")
 
 
+def _patch_report(report):
+    """convert old report format into new format"""
+    if 'creator' in report:
+        return  # new format already
+    report['creator'] = 'SCS test suite; version=n/a'
+    tests = report.setdefault('tests', {})
+    run = report.pop('run')
+    report['uuid'] = run['uuid']
+    spec = report.pop('spec')
+    report['scope'] = spec['uuid']
+    log = report.setdefault('log', [])
+    log.append('arguments: ' + shlex.join(run['argv']))
+    for invdata in run['invocations'].values():
+        log.append('$ ' + invdata['cmd'])
+        for line in invdata['stderr']:
+            if line.startswith('DEBUG: ** '):
+                testcase_id = line.split()[2]
+                line = f'INFO: *** {testcase_id}'
+            log.append(line)
+        for tc_id, value in invdata['results'].items():
+            tests[tc_id] = {'result': value}
+
+
+def _augment_report(report):
+    tests = report.get('tests', {})
+    log = []
+    for line in report.get('log', ()):
+        if line.startswith('INFO: *** '):
+            testcase_id = line.split()[2]
+            result = tests.get(testcase_id)
+            if result is not None:
+                result['_inlog'] = True
+                val = result.get('result', None)
+                verdict = {1: 'PASS', 0: 'DNF', -1: 'FAIL'}.get(val, 'N/A')
+                line = f'INFO: *** {testcase_id} ({verdict})'
+        log.append(line)
+    report['log'] = log
+
+
 @app.post("/reports")
 async def post_report(
     request: Request,
@@ -481,28 +507,18 @@ async def post_report(
 
     with conn.cursor() as cur:
         for document, json_text in zip(documents, json_texts):
-            rundata = document['run']
-            uuid, subject, checked_at = rundata['uuid'], document['subject'], document['checked_at']
-            scopeuuid = document['spec']['uuid']
+            _patch_report(document)  # modification is okay, because only `json_text` will be stored
+            subject, checked_at = document['subject'], document['checked_at']
+            uuid, scopeuuid = document['uuid'], document['scope']
             try:
                 reportid = db_insert_report(cur, uuid, checked_at, subject, json_text)
             except UniqueViolation:
                 raise HTTPException(status_code=409, detail="Conflict: report already present")
-            if 'versions' not in document:
-                # If this key is missing, this means we have a newer-style report that doesn't redundantly list
-                # results per version. One reason for this change is that the meaning of a testcase identifier
-                # no longer depends on the scope version, and we can quite simply read off the results from the
-                # invocations. -- Use the dummy version '*' as long as the db schema still expects a version.
-                document['versions'] = {'*': {
-                    tc_id: {'result': result, 'invocation': inv_id}
-                    for inv_id, invocation in document['run']['invocations'].items()
-                    for tc_id, result in invocation['results'].items()
-                }}
-            for version, vdata in document['versions'].items():
-                for check, rdata in vdata.items():
-                    result = rdata['result']
-                    approval = 1 == result  # pre-approve good result
-                    db_insert_result2(cur, checked_at, subject, scopeuuid, version, check, result, approval, reportid)
+            version = '*'  # unused column  TODO remove this
+            for testcase_id, result_data in document['tests'].items():
+                value = result_data['result']
+                approval = 1 == value  # pre-approve good result  TODO remove this
+                db_insert_result2(cur, checked_at, subject, scopeuuid, version, testcase_id, value, approval, reportid)
     conn.commit()
 
 
@@ -581,10 +597,9 @@ def render_view(view, view_type, detail_page='detail', base_url='/', title=None,
     stage1 = stage2 = view[view_type]
     if view_type is ViewType.page:
         stage1 = view[ViewType.fragment]
-    def scope_url(uuid): return f"{base_url}page/scope/{uuid}"  # noqa: E306,E704
     def detail_url(subject, scope): return f"{base_url}page/{detail_page}/{subject}/{scope}"  # noqa: E306,E704
     def report_url(report, *args, **kwargs): return _build_report_url(base_url, report, *args, **kwargs)  # noqa: E306,E704
-    fragment = templates_map[stage1].render(base_url=base_url, detail_url=detail_url, report_url=report_url, scope_url=scope_url, **kwargs)
+    fragment = templates_map[stage1].render(base_url=base_url, detail_url=detail_url, report_url=report_url, scope_url=_scope_url, **kwargs)
     if view_type != ViewType.markdown and stage1.endswith('.md'):
         fragment = markdown(fragment, extensions=['extra'])
     if stage1 != stage2:
@@ -594,21 +609,33 @@ def render_view(view, view_type, detail_page='detail', base_url='/', title=None,
 
 def _redact_report(report):
     """remove all lines from script output in `report` that are not directly linked to any testcase"""
-    if 'run' not in report or 'invocations' not in report['run']:
-        return
-    for invdata in report['run']['invocations'].values():
-        stdout = invdata.get('stdout', [])
-        redacted = [line for line in stdout if line.rsplit(': ', 1)[-1] in ('PASS', 'ABORT', 'FAIL')]
-        if len(redacted) != len(stdout):
-            redacted.insert(0, '(the following has been redacted)')
-            invdata['stdout'] = redacted
-            invdata['redacted'] = True
-        stderr = invdata.get('stderr', [])
-        redacted = [line for line in stderr if line[:6] in ('WARNIN', 'ERROR:')]
-        if len(redacted) != len(stderr):
-            redacted.insert(0, '(the following has been redacted)')
-            invdata['stderr'] = redacted
-            invdata['redacted'] = True
+    log = report['log']
+    # don't do list comprehension here because it would restrict the logic
+    # (e.g. hard to replace a batch of lines by a different batch of lines)
+    redacted = []
+    for line in log:
+        parts = line.split(': ', 1)
+        if len(parts) != 2:
+            continue
+        # don't redact 'official' error messages
+        # this can still leak information and should be changed
+        if parts[0] in ('WARNING', 'ERROR', 'CRITICAL'):
+            redacted.append(line)
+        # don't redact the line that states what testcase is now being tested
+        elif parts[0] in ('INFO', ) and parts[1].startswith('***'):
+            redacted.append(line)
+    report['log'] = redacted
+    return len(log) != len(redacted)
+
+
+def _scope_name(uuid):
+    scope = get_scopes().get(uuid)
+    return scope['name'] if scope else '(n/a)'
+
+
+def _scope_url(uuid):
+    scope = get_scopes().get(normalize_scope(uuid))
+    return scope['url'] if scope else '(n/a)'
 
 
 @app.get("/{view_type}/report/{report_uuid}")
@@ -619,14 +646,17 @@ async def get_report_view(
     report_uuid: str,
 ):
     with conn.cursor() as cur:
-        specs = db_get_report(cur, report_uuid)
-    if not specs:
+        reports = db_get_report(cur, report_uuid)
+    if not reports:
         raise HTTPException(status_code=404)
-    spec = specs[0]
-    _redact_report(spec)
+    report = reports[0]
+    _patch_report(report)
+    _augment_report(report)
+    redacted = _redact_report(report)
     return render_view(
-        VIEW_REPORT, view_type, report=spec, base_url=settings.base_url,
-        title=f'Report {report_uuid} (redacted)',
+        VIEW_REPORT, view_type, report=report, base_url=settings.base_url,
+        title=f'Report {report_uuid} (redacted)', scope_name=_scope_name,
+        redacted=redacted,
     )
 
 
@@ -639,14 +669,16 @@ async def get_report_view_full(
     report_uuid: str,
 ):
     with conn.cursor() as cur:
-        specs = db_get_report(cur, report_uuid)
-    if not specs:
+        reports = db_get_report(cur, report_uuid)
+    if not reports:
         raise HTTPException(status_code=404)
-    spec = specs[0]
-    check_role(account, spec['subject'], ROLES['read_any'])
+    report = reports[0]
+    _patch_report(report)
+    _augment_report(report)
+    check_role(account, report['subject'], ROLES['read_any'])
     return render_view(
-        VIEW_REPORT, view_type, report=spec, base_url=settings.base_url,
-        title=f'Report {report_uuid} (full)',
+        VIEW_REPORT, view_type, report=report, base_url=settings.base_url,
+        title=f'Report {report_uuid} (full)', scope_name=_scope_name,
     )
 
 
@@ -664,10 +696,6 @@ def _resolve_group_locally(groups, subject, prefix=GROUP_PREFIX):
     return None, [subject]
 
 
-def _resolve_scope(scopeuuid):
-    return SCOPE_ALIASES.get(scopeuuid, scopeuuid)
-
-
 @app.get("/{view_type}/detail/{subject}/{scopeuuid}")
 async def get_detail(
     request: Request,
@@ -680,7 +708,7 @@ async def get_detail(
 
 
 def _make_detail_view(conn, view_type, subject, scopeuuid, include_drafts=False):
-    scopeuuid = _resolve_scope(scopeuuid)
+    scopeuuid = normalize_scope(scopeuuid)
     with conn.cursor() as cur:
         group, subjects = _resolve_group(cur, subject)
         rows2 = []
@@ -741,34 +769,6 @@ async def get_table_full(
     return _make_table_view(conn, view_type, detail_page='detail_full', include_drafts=True)
 
 
-@app.get("/{view_type}/scope/{scopeuuid}")
-async def get_scope(
-    request: Request,
-    conn: Annotated[connection, Depends(get_conn)],
-    view_type: ViewType,
-    scopeuuid: str,
-):
-    scopeuuid = _resolve_scope(scopeuuid)
-    spec = get_scopes()[scopeuuid]
-    versions = spec['versions']
-    # use same order as in details view
-    relevant = [
-        name
-        for name, version in versions.items()
-        if version['_explicit_validity']
-    ]
-    modules_chart = {}
-    for name in relevant:
-        for include in versions[name]['include']:
-            module_id = include['module']['id']
-            row = modules_chart.get(module_id)
-            if row is None:
-                row = modules_chart[module_id] = {'module': include['module'], 'columns': {}}
-            row['columns'][name] = include
-    rows = sorted(list(modules_chart.values()), key=lambda row: row['module']['id'])
-    return render_view(VIEW_SCOPE, view_type, spec=spec, relevant=relevant, rows=rows, base_url=settings.base_url, title=spec['name'])
-
-
 @app.get("/results")
 async def get_results(
     request: Request,
@@ -821,7 +821,7 @@ async def get_healthz(request: Request):
 @pass_context
 def pick_filter(ctx, results, scopeuuid, *subjects):
     """Jinja filter to pick scope results from `results` for given `subject` and `scope`"""
-    scopeuuid = _resolve_scope(scopeuuid)
+    scopeuuid = normalize_scope(scopeuuid)
     # simple case (backwards compatible): precisely one subject
     if len(subjects) == 1:
         group, subjects = _resolve_group_locally(ctx['groups'], subjects[0])
