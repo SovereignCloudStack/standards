@@ -28,3 +28,5 @@ The end-to-end testing is performed using [Tempest](https://docs.openstack.org/t
 
 The required tests are listed in
 [Tests/iaas/scs_0128_e2e_testing/tempest-tests-non-admin.lst](https://raw.githubusercontent.com/SovereignCloudStack/standards/refs/heads/main/Tests/iaas/scs_0128_e2e_testing/tempest-tests-non-admin.lst).
+
+Tempest MUST NOT report any _failed_ test cases.
