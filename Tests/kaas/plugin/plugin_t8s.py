@@ -197,6 +197,32 @@ class PluginT8s(KubernetesClusterPlugin):
             )
             time.sleep(timeout)
 
+    def _get_helmrelease_ready(self, co_api: CustomObjectsApi) -> bool:
+        hr = cast(dict[str, Any], co_api.get_namespaced_custom_object(
+            HR_GROUP, HR_VERSION, self.hr_namespace, HR_PLURAL, self.hr_name
+        ))
+        status = hr.get("status", {})
+        return bool([
+            cond
+            for cond in status.get("conditions", ())
+            if cond.get("type") == "Ready"
+            if cond.get("status") == "True"
+        ])
+
+    def _wait_for_helmrelease_ready(self, co_api: CustomObjectsApi) -> None:
+        timeouts = iter(TIMEOUTS)
+        while True:
+            if self._get_helmrelease_ready(co_api):
+                logger.debug(f"HelmRelease {self.hr_name} is ready")
+                return
+            timeout = next(timeouts)
+            if not timeout:
+                raise RuntimeError(
+                    f"Timeout waiting for HelmRelease {self.hr_name} to become ready"
+                )
+            logger.debug(f"waiting {timeout}s for HelmRelease {self.hr_name} to become ready")
+            time.sleep(timeout)
+
     def _write_kubeconfig(self, data: bytes) -> None:
         path = os.path.join(self.cwd, "kubeconfig.yaml")
         logger.debug(f"writing {path}")
@@ -206,8 +232,10 @@ class PluginT8s(KubernetesClusterPlugin):
     def create_cluster(self) -> None:
         with ApiClient(self.client_config) as api_client:
             core_api = CoreV1Api(api_client)
+            co_api = CustomObjectsApi(api_client)
             self._apply_helmrelease(api_client)
             kubeconfig = self._wait_for_kubeconfig_secret(core_api)
+            self._wait_for_helmrelease_ready(co_api)
             self._write_kubeconfig(kubeconfig)
 
     def delete_cluster(self) -> None:

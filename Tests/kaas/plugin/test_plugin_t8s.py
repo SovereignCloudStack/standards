@@ -1,6 +1,4 @@
 import base64
-import os
-import tempfile
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -9,6 +7,7 @@ from kubernetes.client import ApiException, V1Secret
 
 from plugin_t8s import (
     HR_GROUP,
+    HR_PLURAL,
     HR_VERSION,
     PluginT8s,
 )
@@ -196,8 +195,8 @@ def test_hr_name_ignores_run_plugin_name(tmp_path):
 # --- version parsing ---
 
 @pytest.mark.parametrize("version,version_patch,expected", [
-    ("1.35", 2,  {"major": 1, "minor": 35, "patch": 2}),
-    ("1.36", 0,  {"major": 1, "minor": 36, "patch": 0}),
+    ("1.35", 2, {"major": 1, "minor": 35, "patch": 2}),
+    ("1.36", 0, {"major": 1, "minor": 36, "patch": 0}),
     ("1.34", 10, {"major": 1, "minor": 34, "patch": 10}),
 ])
 def test_version_parsing(tmp_path, version, version_patch, expected):
@@ -271,10 +270,6 @@ def test_wait_retries_on_404(plugin):
 
     with patch("plugin_t8s.TIMEOUTS", [0.01, 0.01, 0]):
         with patch("time.sleep"):
-            # _get_kubeconfig_from_secret is called, but read_namespaced_secret side_effect
-            # drives it — patch TIMEOUTS so we don't wait 30s
-            # Need to make the third call return the secret not raise
-            core_api.read_namespaced_secret.side_effect = [not_found, not_found, secret]
             result = plugin._wait_for_kubeconfig_secret(core_api)
     assert result == raw
 
@@ -284,3 +279,84 @@ def test_wait_raises_on_non_404(plugin):
     core_api.read_namespaced_secret.side_effect = ApiException(status=403)
     with pytest.raises(ApiException):
         plugin._wait_for_kubeconfig_secret(core_api)
+
+
+# --- create_cluster ---
+
+def test_create_cluster_order(plugin):
+    calls = []
+    with patch.object(plugin, "_apply_helmrelease", side_effect=lambda api_client: calls.append("apply")):
+        with patch.object(
+            plugin, "_wait_for_kubeconfig_secret",
+            side_effect=lambda core_api: calls.append("wait_secret") or b"kubeconfig-data",
+        ):
+            with patch.object(plugin, "_wait_for_helmrelease_ready", side_effect=lambda co_api: calls.append("wait_ready")):
+                with patch.object(plugin, "_write_kubeconfig", side_effect=lambda data: calls.append(("write", data))):
+                    plugin.create_cluster()
+    assert calls == ["apply", "wait_secret", "wait_ready", ("write", b"kubeconfig-data")]
+
+
+# --- _get_helmrelease_ready ---
+
+def _make_helmrelease_status(ready):
+    return {"status": {"conditions": [{"type": "Ready", "status": "True" if ready else "False"}]}}
+
+
+def test_get_helmrelease_ready_true(plugin):
+    co_api = MagicMock()
+    co_api.get_namespaced_custom_object.return_value = _make_helmrelease_status(True)
+    assert plugin._get_helmrelease_ready(co_api) is True
+    co_api.get_namespaced_custom_object.assert_called_once_with(
+        HR_GROUP, HR_VERSION, plugin.hr_namespace, HR_PLURAL, plugin.hr_name
+    )
+
+
+def test_get_helmrelease_ready_false(plugin):
+    co_api = MagicMock()
+    co_api.get_namespaced_custom_object.return_value = _make_helmrelease_status(False)
+    assert plugin._get_helmrelease_ready(co_api) is False
+
+
+def test_get_helmrelease_ready_no_status(plugin):
+    co_api = MagicMock()
+    co_api.get_namespaced_custom_object.return_value = {}
+    assert plugin._get_helmrelease_ready(co_api) is False
+
+
+def test_get_helmrelease_ready_no_conditions(plugin):
+    co_api = MagicMock()
+    co_api.get_namespaced_custom_object.return_value = {"status": {}}
+    assert plugin._get_helmrelease_ready(co_api) is False
+
+
+def test_get_helmrelease_ready_other_condition_types(plugin):
+    co_api = MagicMock()
+    co_api.get_namespaced_custom_object.return_value = {
+        "status": {"conditions": [{"type": "Reconciling", "status": "True"}]}
+    }
+    assert plugin._get_helmrelease_ready(co_api) is False
+
+
+# --- _wait_for_helmrelease_ready ---
+
+def test_wait_for_helmrelease_ready_returns_once_ready(plugin):
+    with patch.object(plugin, "_get_helmrelease_ready", return_value=True):
+        plugin._wait_for_helmrelease_ready(MagicMock())
+
+
+def test_wait_for_helmrelease_ready_retries_until_ready(plugin):
+    with patch("plugin_t8s.TIMEOUTS", [0.01, 0.01, 0]):
+        with patch("time.sleep"):
+            with patch.object(
+                plugin, "_get_helmrelease_ready", side_effect=[False, False, True]
+            ) as get_helmrelease_ready:
+                plugin._wait_for_helmrelease_ready(MagicMock())
+    assert get_helmrelease_ready.call_count == 3
+
+
+def test_wait_for_helmrelease_ready_times_out(plugin):
+    with patch("plugin_t8s.TIMEOUTS", [0.01, 0]):
+        with patch("time.sleep"):
+            with patch.object(plugin, "_get_helmrelease_ready", return_value=False):
+                with pytest.raises(RuntimeError, match="Timeout waiting for HelmRelease"):
+                    plugin._wait_for_helmrelease_ready(MagicMock())
