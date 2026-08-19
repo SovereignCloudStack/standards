@@ -8,7 +8,7 @@ track: Global
 
 ## Introduction
 
-The Sovereign Cloud Stack (SCS) issues certificates with various scopes, among them [_SCS-compatible IaaS_](https://docs.scs.community/standards/scs-compatible-iaas) (Infrastructure as a Service) and [_SCS-compatible KaaS_](https://docs.scs.community/standards/scs-compatible-kaas) (Kubernetes as a Service).
+The Sovereign Cloud Stack (SCS) issues certificates with various [scopes](https://docs.scs.community/standards/scopes/), among them _SCS-compatible IaaS_ (Infrastructure as a Service) and _SCS-compatible KaaS_ (Kubernetes as a Service).
 
 This document details how a cloud service provider (henceforth also called operator) can attain such a certificate for one of their clouds.
 
@@ -25,12 +25,6 @@ As operator, I want to obtain a certificate with the scope SCS-compatible IaaS o
 2. The operator MUST ensure that the official [SCS compliance test suite](https://github.com/SovereignCloudStack/standards/tree/main/Tests) (which does not require admin privileges) is run at regular intervals and that all tests pass. The operator MUST submit the resulting reports to the [SCS compliance monitor](https://github.com/SovereignCloudStack/standards/tree/main/compliance-monitor).
 
    For public clouds, the SCS certification assessment body can take on this task provided that suitable access to test subject is supplied.
-
-   The test suite is partitioned according to resource usage; the required test intervals depend on this classification:
-
-    - _light_: at least daily,
-    - _medium_: at least weekly,
-    - _heavy_: at least monthly.
 
 3. If the desired certificate requires manual checks, then the operator MUST offer suitable documentation to the SCS certification assessment body. The operator MUST ensure that these checks are repeated once every quarter. In addition, the SCS certification assessment body reserves the right to occasionally verify documentation on premises.
 

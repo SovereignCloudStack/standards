@@ -260,7 +260,7 @@ not be performed.
 ## Conformance Tests
 
 The list of mandatory flavors that needs to be present should be added to the
-[SCS-Spec.MandatoryFlavors.yaml](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/SCS-Spec.MandatoryFlavors.yaml)
+[SCS-Spec.MandatoryFlavors.verbose.yaml](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/SCS-Spec.MandatoryFlavors.verbose.yaml)
 spec as soon as this ADR becomes part of the certification requirements.
 
 Checks for conforming with IOPS and purging requirements will require

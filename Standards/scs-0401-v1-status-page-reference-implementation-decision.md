@@ -24,4 +24,4 @@ The status page application consists of an api server as well as a frontend. For
 ### Database
 
 As database, [PostgreSQL](https://www.postgresql.org/) was chosen, since it is a mature, well-known database. PostgreSQL can be run in various environments from small setups to scaled setups.
-Furthermore, PostgreSQL is a very healthy project with an active community and a solid license. It easily passed the [SCS OSS health check](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/OSS-Health.md).
+Furthermore, PostgreSQL is a very healthy project with an active community and a solid license. It easily passed the [SCS OSS health check](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0008-v1-oss-health.md).

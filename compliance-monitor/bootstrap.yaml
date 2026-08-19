@@ -128,3 +128,11 @@ accounts:
     group: syself
     delegates:
       - zuul_ci
+  - subject: teuto-1.35
+    group: teuto
+    delegates:
+      - zuul_ci
+  - subject: teuto-1.36
+    group: teuto
+    delegates:
+      - zuul_ci
