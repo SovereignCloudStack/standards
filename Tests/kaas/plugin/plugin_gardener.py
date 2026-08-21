@@ -4,11 +4,12 @@ import os.path
 import time
 
 from jinja2 import Environment, StrictUndefined
-from kubernetes.client import ApiClient, ApiException
+from kubernetes.client import ApiClient, ApiException, Configuration
 import yaml
 
 from interface import KubernetesClusterPlugin
 import gardener_helper as _gh
+import k8s_helper
 
 logger = logging.getLogger(__name__)
 logging.getLogger("kubernetes").setLevel(logging.INFO)
@@ -157,8 +158,8 @@ class PluginGardener(KubernetesClusterPlugin):
         self.vars['name'] = self.config['name']
         self.secrets = self.config['secrets']
         self.kubeconfig = yaml.load(self._render_template('kubeconfig'), Loader=yaml.SafeLoader)
-        self.client_config = _gh.Configuration()
-        _gh.setup_client_config(self.client_config, self.kubeconfig, cwd=self.cwd)
+        self.client_config = Configuration()
+        k8s_helper.setup_client_config(self.client_config, self.kubeconfig, cwd=self.cwd)
         self.namespace = self.kubeconfig['contexts'][0]['context']['namespace']
 
     def _render_template(self, key):
