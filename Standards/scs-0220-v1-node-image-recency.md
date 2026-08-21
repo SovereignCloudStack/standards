@@ -61,13 +61,13 @@ and avoiding including packages that are unmaintained. In general, it
 is a good idea to avoid the inclusion of unnecessary software and provide
 minimal and hardened node images.
 
-If node images are registered as public or community images on an 
+If node images are registered as public or community images on an
 SCS-compatible IaaS, the `build_date` property indicates that (at least)
 all (security) fixes up to that date are included, see
 [scs-0102](scs-0102-v2-image-metadata).
 
 Note that the qualifier "relevant" was used when requiring all released
-security fixes to be included -- this leaves the door open to prove that
+security fixes to be included - this leaves the door open to prove that
 a specific software vulnerability can not affect the security of the node
 image and thus may be excluded without violating this standard. We would
 require that the reasoning is done publicly to provide transparency towards
@@ -82,4 +82,3 @@ no later than when the k8s patch version is applied.
 
 - SCS Kubernetes version policy standard [scs-0210](scs-0210-v2-k8s-version-policy).
   This standard has a few references to the k8s lifecycle.
-
