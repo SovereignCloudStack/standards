@@ -3,7 +3,7 @@ module kaas/kaas-sonobuoy-tests
 go 1.23.0
 
 require (
-	github.com/sirupsen/logrus v1.7.0
+	github.com/sirupsen/logrus v1.8.3
 	github.com/vmware-tanzu/sonobuoy-plugins/plugin-helper v0.0.0-20211029183731-1d6848b67eec
 	k8s.io/api v0.21.3
 	k8s.io/apimachinery v0.21.3
