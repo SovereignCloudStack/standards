@@ -3,9 +3,3 @@
 /compliance-monitor/   @mbuechse @depressiveRobot
 
 /Tests/                @mbuechse @depressiveRobot
-
-# Members of the Project Board are the owners of the Community
-# Governance - see: 
-# https://docs.scs.community/community/governance/project-board
-/Community-Governance/ @SovereignCloudStack/project-board
-

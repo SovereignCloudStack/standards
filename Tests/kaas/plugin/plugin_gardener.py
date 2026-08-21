@@ -4,11 +4,12 @@ import os.path
 import time
 
 from jinja2 import Environment, StrictUndefined
-from kubernetes.client import ApiClient, ApiException
+from kubernetes.client import ApiClient, ApiException, Configuration
 import yaml
 
 from interface import KubernetesClusterPlugin
 import gardener_helper as _gh
+import k8s_helper
 
 logger = logging.getLogger(__name__)
 logging.getLogger("kubernetes").setLevel(logging.INFO)
@@ -116,7 +117,7 @@ class _ShootOps:
             if state == 'Succeeded':
                 logger.debug(f'shoot {self.name} appears to be ready')
                 return
-            if state not in ('Unknown', 'Processing'):
+            if state not in ('Unknown', 'Processing', 'Pending'):
                 raise RuntimeError(f"Shoot {self.name} object in unexpected state {last_op.get('state')}")
 
             timeout = next(timeouts)
@@ -157,15 +158,17 @@ class PluginGardener(KubernetesClusterPlugin):
         self.vars['name'] = self.config['name']
         self.secrets = self.config['secrets']
         self.kubeconfig = yaml.load(self._render_template('kubeconfig'), Loader=yaml.SafeLoader)
-        self.client_config = _gh.Configuration()
-        _gh.setup_client_config(self.client_config, self.kubeconfig, cwd=self.cwd)
+        self.client_config = Configuration()
+        k8s_helper.setup_client_config(self.client_config, self.kubeconfig, cwd=self.cwd)
         self.namespace = self.kubeconfig['contexts'][0]['context']['namespace']
 
     def _render_template(self, key):
         return self.template_map[key].render(**self.vars, **self.secrets)
 
-    def _auto_vars_noris(self, api_instance: _gh.CustomObjectsApi):
-        logging.debug('using autoVars/noris')
+    def _auto_vars_noris(self, api_instance: _gh.CustomObjectsApi, alias: str):
+        # this was introduced for use with noris Sovereign Cloud, but it works for others as well,
+        # and to reduce potential for confusion, allow aliases (such as autoVars/scaleup)
+        logging.debug(f'using autoVars/{alias}')
         cloud_profile = _gh.get_cloudprofile(api_instance, self.namespace, self.vars['cloud_profile_name'])
         version_items = cloud_profile['spec']['kubernetes']['versions']
         # filter by kubernetesVersion and classification==supported
@@ -178,7 +181,7 @@ class PluginGardener(KubernetesClusterPlugin):
         ]
         logging.debug(f'matching k8s versions: {versions}')
         if not versions:
-            raise RuntimeError(f'autoVars/noris failed: no versions found for v{version_prefix}x')
+            raise RuntimeError(f'autoVars/{alias} failed: no versions found for v{version_prefix}x')
         # select latest patch version (assume patch part is numeric)
         selected_version = max(versions, key=lambda ver: int(ver.rsplit('.', 1)[-1]))
         return {'kubernetes_version': selected_version}
@@ -189,8 +192,8 @@ class PluginGardener(KubernetesClusterPlugin):
         # now on to specifics
         if not auto_vars_kind:
             return
-        if auto_vars_kind == 'noris':
-            auto_vars = self._auto_vars_noris(co_api)
+        if auto_vars_kind in ('noris', 'scaleup'):
+            auto_vars = self._auto_vars_noris(co_api, alias=auto_vars_kind)
         else:
             raise RuntimeError(f'unknown kind of autoVars: {auto_vars_kind}')
         logger.debug(f'applying autoVars/{auto_vars_kind}: {auto_vars}')

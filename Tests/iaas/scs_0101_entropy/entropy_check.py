@@ -17,18 +17,6 @@ SERVER_NAME = "_scs-0101-server"
 SECURITY_GROUP_NAME = "_scs-0101-group"
 KEYPAIR_NAME = "_scs-0101-keypair"
 
-IMAGE_ATTRIBUTES = {
-    # https://docs.openstack.org/glance/2023.1/admin/useful-image-properties.html#image-property-keys-and-values
-    # type: str
-    "hw_rng_model": "virtio",
-}
-FLAVOR_ATTRIBUTES = {
-    # https://docs.openstack.org/nova/2023.1/configuration/extra-specs.html#hw-rng
-    # type: bool
-    "hw_rng:allowed": "True",  # testing showed that it is indeed a string?
-}
-FLAVOR_OPTIONAL = ("hw_rng:rate_bytes", "hw_rng:rate_period")
-
 
 TIMEOUT = 5 * 60  # timeout in seconds after which we no longer wait for the VM to complete the run
 MARKER = '_scs-test-'
@@ -70,38 +58,6 @@ SERVER_USERDATA = {
 }
 
 
-def compute_scs_0101_image_property(images, attributes=IMAGE_ATTRIBUTES):
-    """This test ensures that each image has the relevant properties."""
-    candidates = [
-        (image.name, [f"{key}={value}" for key, value in attributes.items() if image.get(key) != value])
-        for image in images
-    ]
-    # drop those candidates that are fine
-    offenders = [candidate for candidate in candidates if candidate[1]]
-    for name, wrong in offenders:
-        logger.error(f"Image '{name}' missing attributes: {', '.join(wrong)}")
-    return not offenders
-
-
-def compute_scs_0101_flavor_property(flavors, attributes=FLAVOR_ATTRIBUTES, optional=FLAVOR_OPTIONAL):
-    """This test ensures that each flavor has the relevant extra_spec."""
-    offenses = 0
-    for flavor in flavors:
-        extra_specs = flavor['extra_specs']
-        wrong = [f"{key}={value}" for key, value in attributes.items() if extra_specs.get(key) != value]
-        miss_opt = [key for key in optional if extra_specs.get(key) is None]
-        if wrong:
-            offenses += 1
-            message = f"Flavor '{flavor.name}' missing attributes: {', '.join(wrong)}"
-            # only report missing optional attributes if main ones are missing as well
-            # reasoning here is that these optional attributes are merely a hint for implementers
-            # and if the main ones are present, we assume that implementers have done their job already
-            if miss_opt:
-                message += f"; additionally, missing optional attributes: {', '.join(miss_opt)}"
-            logger.error(message)
-    return not offenses
-
-
 def compute_scs_0101_entropy_avail(collected_vm_output, image_name):
     """This test ensures that the `entropy_avail` value is correct for a test VM."""
     lines = collected_vm_output['entropy-avail']
@@ -115,40 +71,31 @@ def compute_scs_0101_entropy_avail(collected_vm_output, image_name):
     return True
 
 
-def compute_scs_0101_rngd(collected_vm_output, image_name):
-    """This test ensures that the `rngd` service is running on a test VM."""
-    lines = collected_vm_output['rngd']
-    if "could not be found" in '\n'.join(lines):
-        logger.error(f"VM '{image_name}' doesn't provide service rngd")
-        return False
-    return True
-
-
 def compute_scs_0101_fips_test(collected_vm_output, image_name):
     """This test ensures that the 'fips test' via `rngtest` is passed on a test VM."""
     lines = collected_vm_output['fips-test']
-    try:
-        fips_data = '\n'.join(lines)
-        failure_re = re.search(r'failures:\s\d+', fips_data, flags=re.MULTILINE)
-        if failure_re:
-            fips_failures = failure_re.string[failure_re.regs[0][0]:failure_re.regs[0][1]].split(" ")[1]
-            if int(fips_failures) <= 3:
-                return True  # strict test passed
-            logger.info(
-                f"VM '{image_name}' didn't pass the strict FIPS 140-2 testing. "
-                f"Expected a maximum of 3 failures, got {fips_failures}."
-            )
-            if int(fips_failures) <= 5:
-                return True  # lenient test passed
-            logger.error(
-                f"VM '{image_name}' didn't pass the FIPS 140-2 testing. "
-                f"Expected a maximum of 5 failures, got {fips_failures}."
-            )
-        else:
-            logger.error(f"VM '{image_name}': failed to determine fips failures")
-            logger.debug(f"stderr following:\n{fips_data}")
-    except BaseException:
-        logger.critical(f"Couldn't check VM '{image_name}' requirements", exc_info=True)
+    fips_data = '\n'.join(lines)
+    failure_re = re.search(r'failures:\s\d+', fips_data, flags=re.MULTILINE)
+    if not failure_re:
+        # It seems possible that 'failures: 0' is just omitted, and we could check for
+        # 'successes: 1000' to verify that, but I have observed this only once in many
+        # many runs over multiple years. I'm inclined to label this 'inconclusive'
+        # instead of making the code more complex and risking false certainty.
+        logger.debug(f"failed to determine fips failures; stderr following:\n{fips_data}")
+        raise RuntimeError(f"VM '{image_name}': failed to determine fips failures")
+    fips_failures = failure_re.string[failure_re.regs[0][0]:failure_re.regs[0][1]].split(" ")[1]
+    if int(fips_failures) <= 3:
+        return True  # strict test passed
+    logger.info(
+        f"VM '{image_name}' didn't pass the strict FIPS 140-2 testing. "
+        f"Expected a maximum of 3 failures, got {fips_failures}."
+    )
+    if int(fips_failures) <= 5:
+        return True  # lenient test passed
+    logger.error(
+        f"VM '{image_name}' didn't pass the FIPS 140-2 testing. "
+        f"Expected a maximum of 5 failures, got {fips_failures}."
+    )
     return False  # any unsuccessful path should end up here
 
 

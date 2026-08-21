@@ -227,6 +227,9 @@ scripts:
   - id: scs-0104-image-debian-12
     description: Debian 12 image is present (by name).
     url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
+  - id: scs-0114-syntax-check
+    description: Aspect list in volume type description, if present, is formatted according to the standard.
+    url: https://docs.scs.community/standards/scs-0114-w1-volume-type-implementation#automated-tests
   - id: scs-0114-encrypted-type
     description: An encrypted volume type can be discovered.
     url: https://docs.scs.community/standards/scs-0114-w1-volume-type-implementation#automated-tests
@@ -301,16 +304,13 @@ modules:
       - scs-0100-syntax-check
       - scs-0100-semantics-check
   - id: scs-0101-v1
-    name: Entropy v1
+    # leap from v1 to v1.1 in place because it's a very minor relaxation; all essential testcases are kept
+    name: Entropy v1.1
     url: https://docs.scs.community/standards/scs-0101-v1-entropy
     targets:
       main:
-      - scs-0101-rngd
       - scs-0101-entropy-avail
       - scs-0101-fips-test
-      recommended:
-      - scs-0101-flavor-property
-      - scs-0101-image-property
   - id: scs-0102-v1
     name: Image metadata v1
     url: https://docs.scs.community/standards/scs-0102-v1-image-metadata
@@ -330,6 +330,10 @@ modules:
       - scs-0102-prop-provided_until
       - scs-0102-prop-uuid_validity
       - scs-0102-image-recency
+  - id: scs-0102-v1-rec
+    name: Image metadata v1
+    url: https://docs.scs.community/standards/scs-0102-v1-image-metadata
+    targets:
       recommended:
       - scs-0102-prop-hash_algo
       - scs-0102-prop-os_purpose
@@ -358,6 +362,10 @@ modules:
       - scs-0102-prop-uuid_validity
       - scs-0102-image-recency
       - scs-0102-os_purpose-uniqueness
+  - id: scs-0102-v2-rec
+    name: Image metadata v2
+    url: https://docs.scs.community/standards/scs-0102-v2-image-metadata
+    targets:
       recommended:
       - scs-0102-prop-hash_algo
       - scs-0102-prop-hypervisor_type
@@ -383,6 +391,10 @@ modules:
       - scs-0103-flavor-1l-1
       - scs-0103-flavor-2v-4-20s
       - scs-0103-flavor-4v-16-100s
+  - id: scs-0103-v1-rec
+    name: Standard flavors
+    url: https://docs.scs.community/standards/scs-0103-v1-standard-flavors
+    targets:
       recommended:
       - scs-0103-flavor-1v-4-10
       - scs-0103-flavor-2v-8-20
@@ -413,6 +425,12 @@ modules:
       - scs-0104-source-debian-12
       - scs-0104-source-debian-11
       - scs-0104-image-ubuntu-2204
+  - id: scs-0104-v1-1-rec
+    name: Standard images
+    url: https://docs.scs.community/standards/scs-0104-v1-standard-images
+    parameters:
+      image_spec: address (URL) of an image-spec (YAML) file
+    targets:
       recommended:
       - scs-0104-image-capi-1
   - id: scs-0104-v1-2
@@ -431,10 +449,22 @@ modules:
       - scs-0104-source-debian-12
       - scs-0104-source-debian-11
       - scs-0104-image-ubuntu-2404
+  - id: scs-0104-v1-2-rec
+    name: Standard images
+    url: https://docs.scs.community/standards/scs-0104-v1-standard-images
+    parameters:
+      image_spec: address (URL) of an image-spec (YAML) file
+    targets:
       recommended:
       - scs-0104-image-capi-2
       - scs-0104-image-debian-12
   - id: scs-0114-v1
+    name: Volume Types
+    url: https://docs.scs.community/standards/scs-0114-v1-volume-type-standard
+    targets:
+      main:
+      - scs-0114-syntax-check
+  - id: scs-0114-v1-rec
     name: Volume Types
     url: https://docs.scs.community/standards/scs-0114-v1-volume-type-standard
     targets:
@@ -453,8 +483,16 @@ modules:
     targets:
       main:
       - scs-0116-permissions
+  - id: scs-0116-v1-rec
+    name: Key manager
+    url: https://docs.scs.community/standards/scs-0116-v1-key-manager-standard
+    targets:
       recommended:
       - scs-0116-presence
+  - id: scs-0116-v1-manual
+    name: Key manager
+    url: https://docs.scs.community/standards/scs-0116-v1-key-manager-standard
+    targets:
       preview:
       - key-manager-docs-check
   - id: scs-0117-v1
@@ -464,6 +502,10 @@ modules:
       main:
       - scs-0117-test-backup
   - id: scs-0121-v1
+    name: Availability Zones
+    url: https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard
+    targets: {}
+  - id: scs-0121-v1-manual
     name: Availability Zones
     url: https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard
     targets:
@@ -497,10 +539,18 @@ modules:
   - id: scs-0302-v1
     name: Domain Manager Role
     url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role
+    targets: {}
+  - id: scs-0302-v1-manual
+    name: Domain Manager Role
+    url: https://docs.scs.community/standards/scs-0302-v1-domain-manager-role
     targets:
       preview:
       - domain-manager-check
 timeline:
+  - date: 2026-06-11
+    versions:
+      next: draft
+      v5.1: effective
   - date: 2025-09-09
     versions:
       next: draft

@@ -3,6 +3,7 @@ title: Mandatory and Supported IaaS Services
 type: Standard
 status: Draft
 track: IaaS
+replaces: scs-0123-v1-mandatory-and-supported-IaaS-services.md
 ---
 
 ## Introduction

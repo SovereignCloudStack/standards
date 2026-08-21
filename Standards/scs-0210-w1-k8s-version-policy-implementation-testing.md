@@ -22,7 +22,7 @@ their versions the same way. The best advice to give is to monitor the
 
 ### Implementation
 
-The script [`k8s_version_policy.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/kaas/k8s-version-policy/k8s_version_policy.py)
+The script [`k8s_version_policy.py`](https://github.com/SovereignCloudStack/standards/blob/main/Tests/kaas/scs_0210_version_policy/k8s_version_policy.py)
 connects to an existing K8s cluster and checks the version against a list of versions, that
 are calculated to be inside a recency window.
 

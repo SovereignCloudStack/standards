@@ -124,7 +124,7 @@ A survey was conducted to gather the needs and requirements of a CSP when provid
     - CPU, RAM, HDD and Network usage, Health and Function of Cluster Nodes, control plane and if desired Customer Workload
 
 3. Do you have an observability infrastructure, if yes, how it is built
-    - Grafana/Thanos/Prometheus/Loki/Promtail/Alertmanger Stack, i.e. [Example Infrastructure](https://raw.githubusercontent.com/dNationCloud/kubernetes-monitoring-stack/main/thanos-deployment-architecture.svg)
+    - Grafana/Thanos/Prometheus/Loki/Promtail/Alertmanger Stack, i.e. [Example Infrastructure](https://raw.githubusercontent.com/dNationCloud/kubernetes-monitoring-stack/main/docs/images/thanos-deployment-architecture.svg)
 
 4. Data Must haves
     - CPU, RAM, Disk, Network

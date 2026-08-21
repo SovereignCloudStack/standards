@@ -233,17 +233,17 @@ class GPU:
     brand = TblAttr("Brand", {"N": "Nvidia", "A": "AMD", "I": "Intel"})
     gen = DepTblAttr("Gen", brand, {
         "N": {'': '(unspecified)', "f": "Fermi", "k": "Kepler", "m": "Maxwell", "p": "Pascal", "v": "Volta",
-              "t": "Turing", "a": "Ampere", "l": "AdaLovelace", "g": "GraceHopper", "b": "Blackwell"},
+              "t": "Turing", "a": "Ampere", "l": "AdaLovelace", "g": "GraceHopper", "b": "Blackwell", "u": "Blackwell Ultra"},
         "A": {'': '(unspecified)', "0.4": "GCN4.0/Polaris", "0.5": "GCN5.0/Vega", "1": "CDNA1", "1.1": "RDNA1/Navi1x",
               "2": "CDNA2", "2.1": "RDNA2/Navi2x", "3": "CDNA3", "3.1": "RDNA3/Navi3x", "3.5": "RDNA3.5", "4": "CDNA4",
-              "4.1": "RDNA-4/Navi4x", "5.1": "RDNA-5/Navi5x"},
+              "4.1": "RDNA4/Navi4x", "5.1": "RDNA5/Navi5x"},
         "I": {'': '(unspecified)', "0.9": "Gen9/Skylake", "0.95": "Gen9.5/KabyLake", "1": "Xe1/Gen12.1/DG1", "2": "Xe2/Gen12.2",
               "3": "Arc/Gen12.7/DG2", "4": "BattleImage/Gen20.0"},
     })
     cu = OptIntAttr("#.N:SMs/A:CUs/I:EUs")
     perf = TblAttr("Frequency", {"": "Std Freq", "h": "High Freq", "hh": "Very High Freq"})
     vram = OptIntAttr("#.V:GiB VRAM")
-    vramperf = TblAttr("Bandwidth", {"": "Std BW {<~1GiB/s)", "h": "High BW", "hh": "Very High BW"})
+    vramperf = TblAttr("Bandwidth", {"": "Std BW (GDDR)", "h": "High BW (HBM)", "hh": "Very High BW"})
 
     def __init__(self, gputype="g", brand="N", gen='', cu=None, perf='', vram=None, vramperf=''):
         self.gputype = gputype

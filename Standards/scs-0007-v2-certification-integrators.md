@@ -22,7 +22,7 @@ As an implementation partner, I want to become certified as SCS Integrator in or
 ## Regulations
 
 The certificates are awarded for a period of one year based on the predefined scoring system below.
-The certification is done either by the Forum SCS-Standards or an attestation body nominated by the forum.
+The certification is done either by the Forum SCS-Standards or an attestation body nominated by the forum. Certification may be subject to fees.
 
 ### Certificate tiers
 
@@ -56,7 +56,7 @@ The applicant MUST achieve a total of at least FOUR points to become SCS Silver 
 - two points for each SCS-compliant IaaS public-cloud environment with at least two regions or at least three availability zones being operated by the applicant for the last 12 months, one point for 6 months.
 - two points for each SCS-compliant KaaS public-cloud environment being operated by the applicant for the last 12 months, one point for 6 months.
 
-Here, an SCS-compliant environment is one that qualifies for [_SCS-compatible IaaS_](https://docs.scs.community/standards/scs-compatible-iaas) or [_SCS-compatible KaaS_](https://docs.scs.community/standards/scs-compatible-kaas), depending on the desired certification.
+Here, an SCS-compliant environment is one that qualifies for [_SCS-compatible IaaS_](https://docs.scs.community/standards/scopes/scs-0501) or [_SCS-compatible KaaS_](https://docs.scs.community/standards/scopes/scs-0502), depending on the desired certification.
 
 ### Attestation
 

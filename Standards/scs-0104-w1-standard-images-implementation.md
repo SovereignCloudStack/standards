@@ -57,7 +57,7 @@ Run the test script on your environment and check the error messages :)
 
 The [openstack-image-manager](https://github.com/osism/openstack-image-manager) is able to
 create all standard, mandatory SCS images for you given image definitions from a YAML file.
-Please see [its documentation](https://docs.scs.community/docs/iaas/components/image-manager/) for details.
+Please see [its documentation](https://osism.tech/docs/guides/operations-guide/openstack/tools/image-manager) for details.
 
 ## Automated tests
 

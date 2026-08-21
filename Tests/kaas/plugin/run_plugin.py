@@ -9,6 +9,7 @@ from plugin_clusterstacks import PluginClusterStacks
 from plugin_gardener import PluginGardener
 from plugin_kind import PluginKind
 from plugin_static import PluginStatic
+from plugin_t8s import PluginT8s
 
 
 PLUGIN_LOOKUP = {
@@ -16,6 +17,7 @@ PLUGIN_LOOKUP = {
     "gardener": PluginGardener,
     "kind": PluginKind,
     "static": PluginStatic,
+    "t8s": PluginT8s,
 }
 BASEPATH = os.path.join(os.path.expanduser('~'), '.config', 'scs')
 

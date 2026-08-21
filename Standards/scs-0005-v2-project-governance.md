@@ -119,7 +119,7 @@ three weeks in advance of happening and run for a week.
 
 Every person who is part of the Sovereign Cloud Stack GitHub organization can be
 nominated for the board. Likewise, one can nominate oneself.
-The nomination is done by adding the person with the required data to the file corresponding to the term in the "Community-Governance" folder in the [Standards](https://github.com/sovereignCloudStack/standards/) repository. Obviously, the person, that is to be nominated, should be asked before being added to the file.
+The nomination is done by adding the person with the required data to the file corresponding to the term in the [docs](https://github.com/SovereignCloudStack/docs/tree/main/community/governance) repository. Obviously, the person in question should be asked before being added to the file.
 
 ### Eligible for voting
 

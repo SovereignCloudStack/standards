@@ -66,10 +66,10 @@ the provided Kubernetes versions should be kept up-to-date with new upstream rel
 - New versions MUST be tested before being rolled out on productive infrastructure;
   at least the [CNCF E2E tests][cncf-conformance] should be passed beforehand.
 
-At the same time, providers must support Kubernetes versions at least as long as the
+At the same time, providers must support and offer Kubernetes versions at least as long as the
 official sources as described in [Kubernetes Support Period][k8s-support-period]:
 
-- Kubernetes versions MUST be supported as long as the official sources support them
+- Kubernetes versions MUST be supported and offered as long as the official sources support them
   according to the [Kubernetes Support Period][k8s-support-period] and their end-of-life
   date according to the [Kubernetes Releases page][k8s-releases].
 - It is RECOMMENDED to not support versions after this period in order to not encourage
@@ -79,17 +79,6 @@ official sources as described in [Kubernetes Support Period][k8s-support-period]
 
 All documents regarding versioning, releases, etc. for the official Kubernetes projects can
 be found on the [Kubernetes Releases page][k8s-releases].
-
-## Conformance Tests
-
-The script `k8s_version_policy.py` requires a kubeconfig file with connection details for
-a set of existing Kubernetes clusters that should be checked, with each of these clusters
-representing one of the currently supported upstream Kubernetes releases.
-It will check the encountered cluster versions according to the rules of this standard.
-Rule violations will be reported on various logging channels: ERROR for mandatory rules
-and INFO for recommended rules.
-The script will exit with a non-zero status if a mandatory rule has been violated or if
-the test could not be performed.
 
 [k8s-releases]: https://kubernetes.io/releases/
 [k8s-release-cycle]: https://kubernetes.io/releases/release/#the-release-cycle

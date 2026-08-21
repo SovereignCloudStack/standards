@@ -334,7 +334,7 @@ def main(argv):
     # collect scripts to be run
     testcase_lookup = spec['testcases']
     tc_script_lookup = spec['tc_scripts']
-    script_info = {}
+    script_tc_ids = [[] for _ in spec['scripts']]
     for tc_id in all_testcase_ids:
         script = tc_script_lookup[tc_id]
         if 'executable' not in script:
@@ -343,16 +343,13 @@ def main(argv):
             continue
         if config.tests and not config.tests.match(tc_id):
             continue
-        item = script_info.get(id(script))
-        if item is None:
-            _, testcase_ids = script_info[id(script)] = (script, [])
-        else:
-            _, testcase_ids = item
-        testcase_ids.append(tc_id)
+        idx = script['_idx']
+        script_tc_ids[idx].append(tc_id)
     # run scripts
     invocations = [
-        runner.run(script, testcases=sorted(testcases))
-        for script, testcases in script_info.values()
+        runner.run(script, testcases=sorted(tc_ids))
+        for script, tc_ids in zip(spec['scripts'], script_tc_ids)
+        if tc_ids
     ]
     results = {}
     for invocation in invocations:
