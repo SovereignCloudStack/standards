@@ -14,7 +14,7 @@ description: |
 
 ## Introduction
 
-Note that this is v1.2 of this standard. See the closing section for more details.
+Note that this is v1.3 of this standard. See the closing section for more details.
 
 ## Terminology
 
@@ -50,6 +50,22 @@ The following extra\_specs are recognized, together with the respective semantic
   The `disk`N`-type=ssd` setting corresponds to the `s` disk modifier, other options
   are `nvme` (`p`), `hdd` (`h`) and `network` (`n`). Only flavors without disk and
   those with `diskN-type=network` can be expected to support live-migration.
+- `scs:required=REQSTATUS` with `REQSTATUS` being `mandatoryv1|recommendedv1|optional`.
+  If this setting does not exist, it is treated as if it was set to `optional`.
+  This setting allows users and tools to assess whether the usage of flavors in their
+  deployments is fully portable by only requiring mandatory flavors or has some (`recommended`)
+  or a high risk (`optional`) of not working as is on other SCS-compatible IaaS environments.
+  The version number (mandatory*v1*) allows the evolution of the requirement status and the
+  version number corresponds to the version of this standard (scs-0103). Should a flavor that
+  was recommended in scs-0103-v1 become mandatory in scs-0103-v2, the correct `extra_spec`
+  setting would change from `scs:required=recommendedv1` to `scs:required=mandatoryv2`.
+  (The flavors that remain mandatory should also be upgraded from `mandatoryv1` to `mandatoryv2`.
+   We don't intend to drop actively used flavors from the mandatory list, so one could argue
+   that mandatoryvN would imply mandatoryvM for M>=N, but let's not assume there never can
+   be an exception. Flavors that fall off the list might keep their old `recommendedv1` or
+   `mandatoryv1` setting rather than being switched to `optional`, a tool evalutaing portability
+   between clouds that comply to v2 of this standard would still flag them as if it was set
+   to `optional` ...)
 
 Whenever ANY of these are present on ANY flavor, the corresponding semantics must be satisfied.
 
@@ -96,6 +112,8 @@ Note that this statement does not preclude the existence of additional flavors.
 | SCS-4V-32        |      4 | shared-core   |         32 |                 |            |
 | SCS-1L-1         |      1 | crowded-core  |          1 |                 |            |
 
+All of these should carry `scs:required=mandatoryv1`.
+
 ### Recommended, part 1
 
 | Recommended name | vCPUs  | vCPU type     | RAM [GiB]  | Root disk [GB]  | Disk type  |
@@ -114,6 +132,8 @@ Note that this statement does not preclude the existence of additional flavors.
 | SCS-4V-32-100    |      4 | shared-core   |         32 |             100 | (any)      |
 | SCS-1L-1-5       |      1 | crowded-core  |          1 |               5 | (any)      |
 
+All of these should have `scs:required=recommendedv1`.
+
 ### Recommended, part 2
 
 The following flavors were added with v1.2 of this standard. If a CSP wants to offer
@@ -125,14 +145,16 @@ flavors with more RAM than the ones above, they should try to use these.
 | SCS-8V-64        |      8 | shared-core   |         64 |                 |            |
 | SCS-16V-128      |     16 | shared-core   |        128 |                 |            |
 
+These should also carry `scs:required=recommendedv1`.
+
 Note that no flavors with disks have been added here; providers are of course welcome to
 also add variants with unspecified (e.g. `-200`) or ssd+ (e.g. `-200s`) disk types.
 Sticking to the 5, 10, 20, 50, 100, 200, 500, 1000 schedule for disk sizes is recommended
-in that case to avoid unnecessary fragmentation.
+in that case to avoid unnecessary fragmentation. These would have `scs:required=optional`.
 
 Likewise, flavors with more vCPUs (e.g. `-32V`, `-64V`) may be added and we recommend
 sticking to powers of two and to keep the vCPU to GiB RAM ratios 1:2, 1:4 and 1:8,
-unless customers have very specific demands.
+unless customers have very specific demands. These would have `scs:required=optional`.
 
 ### Guarantees and properties
 
@@ -141,11 +163,14 @@ precisely the corresponding figures in the flavor.
 
 In addition, the following properties must be set (in the `extra_specs`):
 
-- `scs:name-v1` to the recommended name, but with each dash AFTER the first one replaced by a colon,
+- `scs:name-v1` to the recommended name, but with each dash AFTER the first one replaced by a colon
+  (following the scs-0100-v1 naming convention)
 - `scs:name-v2` to the recommended name,
 - `scs:cpu-type` to `shared-core` or `crowded-core`, reflecting the vCPU type,
 - `scs:disk0-type` not set if no disk is provided, otherwise set to `ssd` or some other
   value, reflecting the disk type.
+- `scs:required` set to `mandatoryv1`, `recommendedv1` or `optional` depending on whehter
+  the flavor is on the mandatory or recommeded list on v1 of this standard.
 
 ### Remarks
 
@@ -174,6 +199,10 @@ to create a bootable 12G cinder volume from image `IMGUUID` that gets tied to th
 instance life cycle.)
 
 ## Previous standard versions
+
+This is v1.3 of the standard, which adds the required `scs:required` setting.
+(As this is a new hard requirement, this may require a new major versioni v2, but let's
+have the discussion first.)
 
 This is v1.2 of the standard, which adds recommended flavors with more RAM.
 

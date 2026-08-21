@@ -522,6 +522,7 @@ an image is considered broken by the SCS team.
 Previous versions up to version 3.0 contained the list of
 mandatory/recommended flavors, which has been moved to
 [a standard of its own](scs-0103-v1-standard-flavors.md).
+Please also note the required `extra_specs` for the mandatory flavors.
 
 [Version 1 of the standard](scs-0100-v1-flavor-naming.md)
 used a slightly different naming syntax while the logic was exactly the same.
