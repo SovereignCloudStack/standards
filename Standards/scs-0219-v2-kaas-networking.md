@@ -35,7 +35,7 @@ Users may expect certain optional functionality, so we should define a baseline 
 ## Design Considerations
 
 The Kubernetes API can be extended arbitrarily.
-Many CNI plugins will define custom resources to enable functionality that is not covered in the official [API specification](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/).
+Many CNI plugins will define custom resources to enable functionality that is not covered in the official [API specification](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/).
 Sometimes they will even reuse names from different API groups, such as `NetworkPolicy`, which exists in the basic `networking.k8s.io/v1` API, but also in `projectcalico.org/v3`.
 
 To avoid any ambiguity, we should therefore be explicit about the API groups and versions of resources.
@@ -57,7 +57,7 @@ The wide, but varying support among CNI plugins makes them a good target for SCS
 Basic network policies are namespaced resources, and can only filter traffic to and from pods in their own namespace.
 In a newly created namespace without policies the default behavior will apply, which is to not restrict traffic at all.
 
-It can be desirable to automatically create default network policies in new namespaces, using a policy operator such as Kyverno.
+It can be desirable to automatically create default network policies in new namespaces, using a policy operator such as [Kyverno](https://kyverno.io/) or [Open Policy Agent](https://www.openpolicyagent.org/).
 A CSP could provide such an operator and offer a number of default policies, like blocking connections to other namespaces by default, or blocking access to the OpenStack metadata service.
 
 Any user with permissions to manage their own network policies in a namespace will of course be able to remove or modify any default network policies in that namespace.
@@ -68,11 +68,11 @@ CSP-provided network policies should thus only be viewed as a safety default, an
 An alternative to automatically created default network policies are API extensions that allow cluster-wide networking rules.
 Some CNI plugins have implemented such extensions, e.g. Calico's `GlobalNetworkPolicy` and Cilium's `CiliumClusterwideNetworkPolicy`.
 
-The Kubernetes Network Special Interest Group is currently working on an [official API extension](https://network-policy-api.sigs.k8s.io/api-overview/) to cover this functionality.
+The Kubernetes Network Special Interest Group is currently (as of June 2026) working on an [official API extension](https://network-policy-api.sigs.k8s.io/api-overview/) to cover this functionality.
 This API extension introduces the new `AdminNetworkPolicy` and `BaselineAdminNetworkPolicy` resources, which represent cluster-wide network policies with respectively higher or lower precedence than namespaced network policies.
 
 This API is also a good candidate for standardization because it consolidates a number of vendor-specific workarounds to limitations of the NetworkPolicy API.
-It has not been stabilized yet, so currently we can at most recommend CNI plugins where there is ongoing work to support these features.
+It has not been stabilized yet (v1alpha2 status as of June 2026), so currently we can at most recommend CNI plugins where there is ongoing work to support these features.
 
 #### Ingress API
 
@@ -99,7 +99,7 @@ Unlike Ingress, which is a single resource with limited extensibility, the Gatew
 This separation allows for safer multi-tenancy and clearer ownership boundaries, which are particularly relevant in managed Kubernetes environments.
 
 The Gateway API is designed to be implementation-agnostic but requires a controller to reconcile its resources, similar to Ingress.
-Support for the Gateway API is growing across multiple projects, including implementations based on Envoy, HAProxy, and CNI-integrated solutions such as Cilium.
+Support for the Gateway API is growing across multiple projects, including implementations based on Envoy, HAProxy, and CNI-integrated solutions such as Cilium. Some Ingress providers like Traefik have also implemented the needed interfaces to fully support Gateway API to enable users to migrate from one to the other.
 
 While the Gateway API is more powerful and flexible than Ingress, it is still evolving and not yet universally supported across all environments and tooling.
 
@@ -116,5 +116,5 @@ CSPs MAY add default networking restrictions, using either `networking.k8s.io/v1
 
 ### Version history
 
-This is version 2.0. It adds the recommendation of the Gateway API and drops any mention of Ingress API.
-These APIs address overlapping use cases, they will continue to coexist, and we opted to recommend Gateway only.
+This is version 2.0. It adds the recommendation of the Gateway API in addition to the Ingress API.
+These APIs address overlapping use cases. Although they will continue to coexist, we recommend the usage of Gateway API.
