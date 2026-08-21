@@ -36,7 +36,7 @@ Criteria for certification, proof of experience in setting up, operating and sup
 
 The organization to be certified needs to satisfy one of the following requirements
 
-a) have successfully brought at least two SCS-compliant environments of a third party (customer) into production in the last 12 months. The two environments must fulfill at least the [_Certified SCS-compatible IaaS_](https://docs.scs.community/standards/scs-compatible-iaas) or [_Certified SCS-compatible KaaS_](https://docs.scs.community/standards/scs-compatible-kaas) scope.
+a) have successfully brought at least two SCS-compliant environments of a third party (customer) into production in the last 12 months. The two environments must fulfill at least the [_SCS-compatible IaaS_](https://docs.scs.community/standards/scopes/scs-0501) or [_SCS-compatible KaaS_](https://docs.scs.community/standards/scopes/scs-0502) scope.
 
 or
 

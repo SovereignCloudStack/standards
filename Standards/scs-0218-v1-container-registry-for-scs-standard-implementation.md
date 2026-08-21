@@ -28,7 +28,7 @@ Cloud Native Computing Foundation (abbr. CNCF)
 
 In order to provide a usable, complete experience for the SCS reference implementation, it must be decided
 on a registry in accordance with requirements set by the ["Requirements for container registries"] standard
-as well as other dependencies set by the SCS project, including the [OSS requirements](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/OSS-Health.md).
+as well as other dependencies set by the SCS project, including the [OSS requirements](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0008-v1-oss-health.md).
 
 This document should finally lead to a decision about the container registry used as a reference implementation of the SCS container registry.
 
@@ -37,7 +37,7 @@ This document should finally lead to a decision about the container registry use
 A few open source projects were evaluated for this document in order to find suitable candidates
 for the SCS reference implementation. These projects can be found in the following list of
 evaluated projects with their classified categories and comments. An initial assessment was
-done with the checks for [OSS healthiness](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/OSS-Health.md)
+done with the checks for [OSS healthiness](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0008-v1-oss-health.md)
 and a general overview of the features described in ["Requirements for container registries"], which enables
 classifying the projects into one of three categories as follows:
 

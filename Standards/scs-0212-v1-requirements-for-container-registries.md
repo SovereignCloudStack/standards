@@ -45,7 +45,7 @@ desired features defined by the SCS. The following two subsections show these re
 
 It is important to evaluate the health of a project before even evaluating the project for its feature set.
 A project should therefore fulfill all OSS health checks be defined by the
-[OSS-Health](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/OSS-Health.md) document.
+[OSS-Health](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0008-v1-oss-health.md) document.
 This document evaluates the health of the open-source projects that were selected from
 the currently available solutions. The container registry software must fulfill all OSS
 health checks defined below:
@@ -125,4 +125,4 @@ the required features. But this is again dependent on the specific use case and 
 
 ## Related Documents
 
-[OSS-Health](https://github.com/SovereignCloudStack/standards/blob/main/Drafts/OSS-Health.md)
+[OSS-Health](https://github.com/SovereignCloudStack/standards/blob/main/Standards/scs-0008-v1-oss-health.md)

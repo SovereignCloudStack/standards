@@ -119,11 +119,3 @@ clouds:
       application_credential_id: s11auth
       application_credential_id: "{{ clouds_conf.syseleven_ham1_ac_id }}"
       application_credential_secret: "{{ clouds_conf.syseleven_ham1_ac_secret }}"
-  wavestack:
-    interface: "public"
-    identity_api_version: 3
-    auth:
-      auth_url: https://api.wavestack.de:5000
-      application_credential_id: "{{ clouds_conf.wavestack_ac_id }}"
-      application_credential_secret: "{{ clouds_conf.wavestack_ac_secret }}"
-    auth_type: "v3applicationcredential"
