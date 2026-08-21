@@ -1,7 +1,7 @@
 ---
 title: KaaS Networking Standard
 type: Standard
-status: draft
+status: Draft
 track: KaaS
 replaces: scs-0219-v1-kaas-networking.md
 ---
