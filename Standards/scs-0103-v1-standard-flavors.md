@@ -55,7 +55,7 @@ The following extra\_specs are recognized, together with the respective semantic
   This setting allows users and tools to assess whether the usage of flavors in their
   deployments is fully portable by only requiring mandatory flavors or has some (`recommended`)
   or a high risk (`optional`) of not working as is on other SCS-compatible IaaS environments.
-  The version number (mandatory*v1*) allows the evolution of the requirement status and the
+  The version number (mandatory_v1_) allows the evolution of the requirement status and the
   version number corresponds to the version of this standard (scs-0103). Should a flavor that
   was recommended in scs-0103-v1 become mandatory in scs-0103-v2, the correct `extra_spec`
   setting would change from `scs:required=recommendedv1` to `scs:required=mandatoryv2`.
