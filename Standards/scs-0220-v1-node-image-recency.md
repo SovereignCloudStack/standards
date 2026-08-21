@@ -8,7 +8,7 @@ enhances: scs-0210-v2-k8s-version-policy.md
 
 ## Introduction
 
-In [scs-0210](scs-0210-v2-k8s-version-policy),
+In [scs-0210](https://docs.scs.community/standards/scs-0210-v2-k8s-version-policy),
 we require that latest patch versions for Kubernetes (k8s) to be
 delivered soon after they are released. The motivation behind this is that the
 latest k8s patches regularly address security-relevant issues, so the
@@ -64,7 +64,7 @@ minimal and hardened node images.
 If node images are registered as public or community images on an
 SCS-compatible IaaS, the `build_date` property indicates that (at least)
 all (security) fixes up to that date are included, see
-[scs-0102](scs-0102-v2-image-metadata).
+[scs-0102](https://docs.scs.community/standards/scs-0102-v2-image-metadata).
 
 Note that the qualifier "relevant" was used when requiring all released
 security fixes to be included - this leaves the door open to prove that
@@ -80,5 +80,5 @@ no later than when the k8s patch version is applied.
 
 ## Related Documents
 
-- SCS Kubernetes version policy standard [scs-0210](scs-0210-v2-k8s-version-policy).
+- SCS Kubernetes version policy standard [scs-0210](https://docs.scs.community/standards/scs-0210-v2-k8s-version-policy).
   This standard has a few references to the k8s lifecycle.
