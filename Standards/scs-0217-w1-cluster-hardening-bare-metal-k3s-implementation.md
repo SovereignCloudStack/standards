@@ -5,13 +5,21 @@ status: Draft
 track: KaaS
 ---
 
+> **Note:** **[graphwiz.AI generated content]**
+>
+> This document was generated with AI assistance. It is
+> currently in **draft** status: while it reflects a verified reference
+> deployment, it has not yet been fully tested/reviewed by the SCS
+> project. Please validate all commands against your own environment
+> before using them in production.
+
 ## Overview
 
 This document provides implementation notes for deploying SCS-compliant Kubernetes clusters using **bare-metal K3s**. These notes supplement the [SCS-0217-v1 Cluster Hardening](scs-0217-v1-cluster-hardening.md) standard with K3s-specific considerations.
 
 **Target Audience:** Operators deploying SCS-compliant KaaS on bare-metal infrastructure using K3s.
 
-**Reference Implementation:** 3-node bare-metal K3s cluster (k3s-master-01/07/08) with Ceph storage, HAProxy ingress, and Flannel CNI.
+**Reference Implementation:** 3-node bare-metal K3s cluster (k3s-master-01, k3s-worker-01, k3s-worker-02) with Ceph storage, HAProxy ingress, and Flannel CNI.
 
 ---
 
