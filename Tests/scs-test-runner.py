@@ -159,18 +159,18 @@ def _run_commands(commands, num_workers=5):
 def _concat_files(source_paths, target_path):
     with open(target_path, 'wb') as tfileobj:
         for path in source_paths:
-            with open(path, 'rb') as sfileobj:
-                shutil.copyfileobj(sfileobj, tfileobj)
+            try:
+                with open(path, 'rb') as sfileobj:
+                    shutil.copyfileobj(sfileobj, tfileobj)
+            except FileNotFoundError:
+                logger.warning(f"Skipping non-extant {path}")
 
 
-def _move_file(source_path, target_path):
-    # for Windows people, remove target first, but don't try too hard (Windows is notoriously bad at this)
-    # this two-stage delete-rename approach does have a tiny (irrelevant) race condition (thx Windows)
+def _remove_file(path):
     try:
-        os.remove(target_path)
+        os.remove(path)
     except FileNotFoundError:
         pass
-    os.rename(source_path, target_path)
 
 
 @cli.command()
@@ -213,18 +213,17 @@ def run(cfg, scopes, subjects, sections, preset, num_workers, monitor_url, repor
     logger.debug(f'running tests for scope(s) {", ".join(scopes)} and subject(s) {", ".join(subjects)}')
     logger.debug(f'monitor url: {monitor_url}, num_workers: {num_workers}, output: {report_yaml}')
     with tempfile.TemporaryDirectory(dir=cfg.cwd) as tdirname:
-        report_yaml_tmp = os.path.join(tdirname, 'report.yaml')
         jobs = [(scope, subject) for scope in scopes for subject in subjects]
         outputs = [os.path.join(tdirname, f'report-{idx}.yaml') for idx in range(len(jobs))]
         commands = [cfg.build_check_command(job[0], job[1], sections, output) for job, output in zip(jobs, outputs)]
         _run_commands(commands, num_workers=num_workers)
-        _concat_files(outputs, report_yaml_tmp)
         if report_yaml is None:
-            report_yaml = report_yaml_tmp
-        else:
-            _move_file(report_yaml_tmp, report_yaml)
+            report_yaml = os.path.join(tdirname, 'report.yaml')
+        _concat_files(outputs, report_yaml)
+        _remove_file(report_yaml + '.sig')
         subprocess.run(**cfg.build_sign_command(report_yaml))
         subprocess.run(**cfg.build_upload_command(report_yaml, monitor_url))
+        sys.stdout.write('\n')  # curl output does not end in newline
     return 0
 
 

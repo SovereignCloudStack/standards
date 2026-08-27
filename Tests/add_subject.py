@@ -22,19 +22,20 @@ except ImportError:
     print('Missing passlib and/or argon2. Please do:\npip install passlib argon2_cffi', file=sys.stderr)
     sys.exit(1)
 
+CONFIG_PATH = os.path.join(os.path.expanduser('~'), '.config', 'scs')
+KEYFILE_PATH = os.path.join(CONFIG_PATH, '.secret', 'keyfile')
+TOKENFILE_PATH = os.path.join(CONFIG_PATH, '.secret', 'tokenfile')
 # see ../compliance-monitor/monitor.py
 CRYPTCTX = CryptContext(schemes=('argon2', 'bcrypt'), deprecated='auto')
 SSH_KEYGEN = shutil.which('ssh-keygen')
 SUBJECT_RE = re.compile(r"[a-zA-Z0-9_\-]+")
 
 
-def main(argv, cwd):
+def main(argv, keyfile_path=KEYFILE_PATH, tokenfile_path=TOKENFILE_PATH):
     if len(argv) != 1:
         raise RuntimeError("Need to supply precisely one argument: name of subject")
     subject = argv[0]
     print(f"Attempt to add subject {subject!r}")
-    keyfile_path = os.path.join(cwd, '.secret', 'keyfile')
-    tokenfile_path = os.path.join(cwd, '.secret', 'tokenfile')
     if os.path.exists(keyfile_path):
         raise RuntimeError(f"Keyfile {keyfile_path} already present. Please proceed manually")
     if os.path.exists(tokenfile_path):
@@ -81,7 +82,7 @@ Make sure to submit a pull request with the changed file. Otherwise, the reports
 
 if __name__ == "__main__":
     try:
-        sys.exit(main(sys.argv[1:], cwd=os.path.dirname(sys.argv[0]) or os.getcwd()) or 0)
+        sys.exit(main(sys.argv[1:]) or 0)
     except RuntimeError as e:
         print(str(e), file=sys.stderr)
         sys.exit(1)

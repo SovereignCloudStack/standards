@@ -1,48 +1,32 @@
 ## General info
 
-- uuid: [{{ report.run.uuid }}]({{ report_url(report.run.uuid, download=True) }})
+{% if report.run %}{% set uuid = report.run.uuid %}{% set scopeuuid = report.spec.uuid %}{%
+else %}{% set uuid = report.uuid %}{% set scopeuuid = report.scope %}{% endif -%}
+- uuid: [{{ uuid }}]({{ report_url(uuid, download=True) }})
+- creator: {{ report.creator }}
 - subject: {{ report.subject }}
-- scope: [{{ report.spec.name }}]({{ scope_url(report.spec.uuid) }})
+- scope: [{{ scope_name(scopeuuid) }}]({{ scope_url(scopeuuid) }})
 - checked at: {{ report.checked_at }}
-- variable assignment: {% set comma = joiner(", ") %}{% for key, value in report.run.assignment.items() -%}{{comma()}}`{{ key }}`=`{{ value }}`{% endfor %}
 
-{% for invid, invdata in report.run.invocations.items() %}
-## Invocation {{invid}} {: #{{ invid }} }
+{% if report.tests -%}
+## Tests
+{% for resultid, resultdata in report.tests.items() | sort %}
+- {{ resultid }}: {{ resultdata.result | verdict_check }}{% if not resultdata._inlog %}
+  {: #{{ resultid }} } {% endif %}
+{%- endfor -%}
+{% endif %}
+{% if report.log %}
+## Log{%if redacted %} (redacted){%endif%} {: #log }
 
-- cmd: `{{ invdata.cmd }}`
-- rc: {{ invdata.rc }}
-- channel summary
-{%- for channel in ('critical', 'error', 'warning') %}
-{%- if invdata[channel] %}
-    - **{{ channel }}: {{ invdata[channel] }}**
-{%- else %}
-    - {{ channel }}: –
-{%- endif %}
-{%- endfor %}
-- results
-{%- for resultid, result in invdata.results.items() %}
-    - {{ resultid }}: {{ result | verdict_check }}
-      {: #{{ resultid }} }
+{% for line in report.log %}
+- {% if line.split(':', 1)[0].lower() in ('warning', 'error', 'critical') %}**_`{{line}}`_**{%
+  elif line.startswith('INFO: *** ') %}{% if 'PASS' in line %} `{{line}}` {% else %} **`{{line}}`** {% endif %} 
+  {: #{{line.split()[2]}} }{%
+  else %}{% for line0 in line.splitlines() %}`{{line0}}`{%if not loop.last%}<br>{%endif%}{% endfor %}{% endif %}
 {%- endfor %}
 
-{% if invdata.stdout -%}
-<details><summary>Captured stdout</summary>
-```text
-{{ '\n'.join(invdata.stdout) }}
-```
-</details>
-{%- endif %}
+{% endif %}
 
-{% if invdata.stderr -%}
-<details {% if invdata.warning or invdata.error or invdata.critical %}open{% endif %}><summary>Captured stderr</summary>
-{%- for line in invdata.stderr %}
-<pre class="line">{% if line.split(':', 1)[0].lower() in ('warning', 'error', 'critical') %}{{ '<strong>' + line + '</strong>' }}{% else %}{{ line }}{% endif %}</pre>
-{%- endfor %}
-</details>
-{%- endif %}
-
-{% if invdata.redacted -%}
-» [show unredacted (requires login) 🔒]({{report_url(report.run.uuid, full=True)}}#{{ invid }})
-{%- endif %}
-
-{% endfor %}
+{% if redacted %}
+» [show unredacted (requires login) 🔒]({{report_url(uuid, full=True)}}#{{ invid }})
+{% endif %}
