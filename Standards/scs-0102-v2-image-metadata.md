@@ -75,7 +75,7 @@ require an additional field:
   to create automation that works across clouds without requiring image names to be standardized.
 
   _Uniqueness requirement_: For every assignment of values for `os_distro`, `os_version`,
-  and `architecture`, there MUST be at most one public (`visibility=public`),
+  and `architecture`, there MUST be at most one public (`visibility=public` or `visibility=community`),
   non-hidden (`os_hidden=False`) image with this assignment and `os_purpose=generic`.
   In other words, users who search visible public images for a generic OS
   of a certain distro, version, and architecture will not get more than one result.
