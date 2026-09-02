@@ -26,13 +26,13 @@ Standards that were already included in v5:
 - [scs-0116-v1: Key manager](https://docs.scs.community/standards/scs-0116-v1-key-manager-standard)
 - [scs-0117-v1: Volume backup](https://docs.scs.community/standards/scs-0117-v1-volume-backup-service)
 - [scs-0121-v1: Availability Zones](https://docs.scs.community/standards/scs-0121-v1-Availability-Zones-Standard)
-- [scs-0123-v1: Mandatory and Supported IaaS Services](https://docs.scs.community/standards/scs-0123-v1-mandatory-and-supported-IaaS-services)
 - [scs-0302-v1: Domain Manager Role](https://docs.scs.community/standards/scs-0302-v1-domain-manager-role)
 
 Standards changed with v6:
 
 - [scs-0102-v2: Image metadata](https://docs.scs.community/standards/scs-0102-v1-image-metadata) instead of scs-0102-v1
 - [scs-0104-v2: Standard images](https://docs.scs.community/standards/scs-0104-v2-standard-images) instead of scs-0104-v1
+- [scs-0123-v2: Mandatory and Supported IaaS Services](https://docs.scs.community/standards/scs-0123-v2-services) instead of scs-0123-v1
 
 ## Testing Regime
 
@@ -44,4 +44,4 @@ In general, automated tests (where applicable) shall be performed at least weekl
 
 ## Previous Versions
 
-- v6 updates v5 by bumping the versions of scs-0102 and scs-0104.
+- v6 updates v5 by bumping the versions of scs-0102, scs-0104, and scs-0123.
