@@ -83,11 +83,11 @@ clusters:
         garden_api_server: "{{ clouds_conf.noris_api_server }}"
         garden_ca_data: "{{ clouds_conf.noris_ca_data }}"
         garden_token: "{{ clouds_conf.noris_token }}"
-  scaleup-1.33:
+  scaleup-1.36:
     kind: gardener
     config:
-      name: 'scaleup-1-33'  # explicit name because dot in name not permissible
-      kubernetesVersion: '1.33'
+      name: 'scaleup-1-36'  # explicit name because dot in name not permissible
+      kubernetesVersion: '1.36'
       autoVars: scaleup  # determine vars.kubernetes_version automatically using kubernetesVersion
       templates:
         shoot: shoot.yaml
