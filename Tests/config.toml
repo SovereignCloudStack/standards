@@ -57,8 +57,9 @@ scopes = [
     "scs-compatible-kaas",
 ]
 subjects = [
-    "teuto-1.36",
     "scaleup-1.36",
+    "syself-1.36",
+    "teuto-1.36",
 ]
 workers = 4
 
