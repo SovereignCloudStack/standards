@@ -25,8 +25,8 @@ TESTCASES = {
 }
 
 
-HERE = os.path.dirname(__file__)
-SCS_SONOBUOY_CONFIG_PATH = os.path.join(HERE, 'scs-sonobuoy-config-v1.yaml')
+BASEDIR = os.path.dirname(__file__)
+SCS_SONOBUOY_CONFIG_PATH = os.path.join(BASEDIR, 'scs-sonobuoy-config-v1.yaml')
 
 logger = logging.getLogger(__name__)
 
