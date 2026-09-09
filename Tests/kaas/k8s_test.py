@@ -18,6 +18,13 @@ from scs_0210_version_policy.k8s_version_policy import version_policy_check
 from sonobuoy_handler.sonobuoy_handler import SonobuoyHandler
 
 
+TESTCASES = {
+    'cncf-k8s-conformance': lambda config, name: run_sono(config, name, '--mode=certified-conformance'),
+    'kaas-networking-check': lambda config, name: run_sono(config, name, '--e2e-focus "NetworkPolicy"'),
+    'version-policy-check': lambda config, _: version_policy_check(config.kubeconfig_path),
+}
+
+
 HERE = os.path.dirname(__file__)
 SCS_SONOBUOY_CONFIG_PATH = os.path.join(HERE, 'scs-sonobuoy-config-v1.yaml')
 
@@ -91,13 +98,6 @@ def run_sono(config, testcase, *args):
         SCS_SONOBUOY_CONFIG_PATH, testcase, config.kubeconfig_path,
         args=config.compute_sono_args(*args),
     ).run()
-
-
-TESTCASES = {
-    'cncf-k8s-conformance': lambda config, name: run_sono(config, name, '--mode=certified-conformance'),
-    'kaas-networking-check': lambda config, name: run_sono(config, name, '--e2e-focus "NetworkPolicy"'),
-    'version-policy-check': lambda config, _: version_policy_check(config.kubeconfig_path),
-}
 
 
 def harness(name, results, *check_fns):
