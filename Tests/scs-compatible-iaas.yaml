@@ -185,11 +185,17 @@ scripts:
   - id: scs-0103-flavor-16v-128
     description: Check presence of flavor `SCS-16V-128`.
     url: https://docs.scs.community/standards/scs-0103-w1-standard-flavors-implementation#automated-tests
+  - id: scs-0104-source-capi
+    description: CAPI images adhere to canonical image source, os_purpose and image_description.
+    url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
   - id: scs-0104-source-capi-1
     description: CAPI images adhere to canonical image source.
     url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
   - id: scs-0104-source-capi-2
     description: CAPI images adhere to canonical image source.
+    url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
+  - id: scs-0104-source-ubuntu
+    description: Ubuntu images adhere to canonical image source.
     url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
   - id: scs-0104-source-ubuntu-2404
     description: Ubuntu 24.04 images adhere to canonical image source.
@@ -199,6 +205,9 @@ scripts:
     url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
   - id: scs-0104-source-ubuntu-2004
     description: Ubuntu 20.04 images adhere to canonical image source.
+    url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
+  - id: scs-0104-source-debian
+    description: Debian images adhere to canonical image source.
     url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
   - id: scs-0104-source-debian-13
     description: Debian 13 images adhere to canonical image source.
@@ -214,6 +223,9 @@ scripts:
     url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
   - id: scs-0104-image-capi-1
     description: CAPI image is present (naming scheme v1).
+    url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
+  - id: scs-0104-image-ubuntu-latest
+    description: Current Ubuntu LTS image is present.
     url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
   - id: scs-0104-image-ubuntu-2404
     description: Ubuntu 24.04 image is present (by name).
@@ -458,6 +470,15 @@ modules:
       recommended:
       - scs-0104-image-capi-2
       - scs-0104-image-debian-12
+  - id: scs-0104-v2
+    name: Standard images
+    url: https://docs.scs.community/standards/scs-0104-v2-standard-images
+    targets:
+      main:
+      - scs-0104-source-capi
+      - scs-0104-source-ubuntu
+      - scs-0104-source-debian
+      - scs-0104-image-ubuntu-latest
   - id: scs-0114-v1
     name: Volume Types
     url: https://docs.scs.community/standards/scs-0114-v1-volume-type-standard
@@ -580,9 +601,7 @@ versions:
       - scs-0101-v1
       - scs-0102-v2  # instead of scs-0102-v1
       - scs-0103-v1
-      - ref: scs-0104-v1-2
-        parameters:
-          image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images-v5.yaml
+      - scs-0104-v2  # instead of scs-0104-v1
       - scs-0114-v1
       - scs-0115-v1
       - scs-0116-v1
