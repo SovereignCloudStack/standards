@@ -96,6 +96,7 @@ class Config:
 def run_sono(config, testcase, *args):
     return SonobuoyHandler(
         SCS_SONOBUOY_CONFIG_PATH, testcase, config.kubeconfig_path,
+        result_dir_name=os.path.join(os.path.dirname(config.kubeconfig_path), testcase),
         args=config.compute_sono_args(*args),
     ).run()
 
