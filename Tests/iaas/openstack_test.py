@@ -33,7 +33,9 @@ from scs_0102_image_metadata.image_metadata import \
 from scs_0103_standard_flavors.standard_flavors import \
     SCS_0103_CANONICAL_NAMES, compute_flavor_lookup, compute_scs_0103_flavor
 from scs_0104_standard_images.standard_images import \
-    SCS_0104_IMAGE_SPECS, compute_scs_0104_source, compute_scs_0104_image
+    SCS_0104_IMAGE_SPECS, compute_scs_0104_source, compute_scs_0104_image, \
+    compute_image_lookup_ex, compute_scs_0104_source_ex, compute_scs_0104_source_capi, \
+    compute_scs_0104_image_ubuntu_latest
 from scs_0114_volume_types.volume_types import \
     compute_volume_type_lookup, compute_scs_0114_syntax_check, compute_scs_0114_aspect_type
 from scs_0115_security_groups.security_groups import \
@@ -106,17 +108,22 @@ def make_container(cloud):
             lambda c, cn=canonical_name: compute_scs_0103_flavor(c.flavor_lookup, compute_flavor_spec(cn))
         )
     # scs_0104_standard_images
+    c.add_function('image_lookup_ex', lambda c: compute_image_lookup_ex(c.images))
+    c.add_function('scs_0104_source_capi', lambda c: compute_scs_0104_source_capi(c.image_lookup))
     c.add_function('scs_0104_source_capi_1', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-1']))
     c.add_function('scs_0104_source_capi_2', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-2']))
+    c.add_function('scs_0104_source_ubuntu', lambda c: compute_scs_0104_source_ex(c.image_lookup_ex, 'ubuntu'))
     c.add_function('scs_0104_source_ubuntu_2404', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 24.04']))
     c.add_function('scs_0104_source_ubuntu_2204', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 22.04']))
     c.add_function('scs_0104_source_ubuntu_2004', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 20.04']))
+    c.add_function('scs_0104_source_debian', lambda c: compute_scs_0104_source_ex(c.image_lookup_ex, 'debian'))
     c.add_function('scs_0104_source_debian_13', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 13']))
     c.add_function('scs_0104_source_debian_12', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 12']))
     c.add_function('scs_0104_source_debian_11', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 11']))
     c.add_function('scs_0104_source_debian_10', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 10']))
     c.add_function('scs_0104_image_capi_1', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-1']))
     c.add_function('scs_0104_image_capi_2', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-2']))
+    c.add_function('scs_0104_image_ubuntu_latest', lambda c: compute_scs_0104_image_ubuntu_latest(c.image_lookup_ex))
     c.add_function('scs_0104_image_ubuntu_2404', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 24.04']))
     c.add_function('scs_0104_image_ubuntu_2204', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 22.04']))
     c.add_function('scs_0104_image_ubuntu_2004', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 20.04']))
