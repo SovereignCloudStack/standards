@@ -59,7 +59,7 @@ IMAGE_SOURCES = {
     'debian': ['https://cloud.debian.org/images/cloud/', 'https://cdimage.debian.org/cdimage/cloud/'],
     'ubuntu': ['https://cloud-images.ubuntu.com/'],
 }
-CAPI_RE = re.compile(r"ubuntu-capi-image( |-)v[0-9]\\.[0-9]+(\\.[0-9]+)?")
+CAPI_RE = re.compile(r"ubuntu-capi-image( |-)v[0-9]\.[0-9]+(\.[0-9]+)?")
 CAPI_SOURCES = [
     'https://nbg1.your-objectstorage.com/osism/openstack-k8s-capi-images/',
     'https://swift.services.a.regiocloud.tech/swift/v1/AUTH_b182637428444b9aa302bb8d5a5a418c/openstack-k8s-capi-images/',
