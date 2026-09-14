@@ -75,6 +75,11 @@ accounts:
         public_key_type: "ssh-ed25519"
         public_key_name: "primary"
   - subject: scaleup-occ2
+    group: scaleup
+    delegates:
+      - zuul_ci
+  - subject: scaleup-occ3
+    group: scaleup
     delegates:
       - zuul_ci
   - subject: syseleven-dus2
