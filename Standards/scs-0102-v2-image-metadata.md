@@ -86,6 +86,7 @@ The following property is recommended:
 
 The values for `architecture` and `os_distro` and `hypervisor_type` (the latter only if specified) values
 must follow the [OpenStack specifications](https://docs.openstack.org/glance/2025.1/admin/useful-image-properties.html).
+For exceptions, see the [implementation notes](https://docs.scs.community/standards/scs-0102-w1-image-metadata-implementation-testing).
 The `os_version` string should be numeric if the distribution uses numbers, the pair `os_distro` `os_version` should
 for example be `ubuntu` `24.04` for Ubuntu Noble Numbat 24.04[.x] LTS.
 
