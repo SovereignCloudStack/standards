@@ -24,7 +24,7 @@ Standards that were already included in v4:
 
 - [scs-0128-v1: SCS end-to-end testing (formerly OpenStack-powered Compute)](https://docs.scs.community/standards/scs-0128-v1-e2e-testing)
 - [scs-0100-v3: Flavor naming (v3.1)](https://docs.scs.community/standards/scs-0100-v3-flavor-naming)
-- [scs-0101-v1: Entropy](https://docs.scs.community/standards/scs-0102-v1-image-metadata)
+- [scs-0101-v1: Entropy](https://docs.scs.community/standards/scs-0101-v1-entropy)
 - [scs-0102-v1: Image metadata](https://docs.scs.community/standards/scs-0102-v1-image-metadata)
 - [scs-0103-v1: Standard flavors](https://docs.scs.community/standards/scs-0103-v1-standard-flavors)
 
