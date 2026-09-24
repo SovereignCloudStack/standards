@@ -23,6 +23,7 @@ COPY kaas/requirements.txt kaas-requirements.txt
 RUN --mount=type=cache,target=/root/.cache \
     pip3 install -r requirements.txt -r iaas-requirements.txt -r kaas-requirements.txt
 
+RUN tempest init /tempest
 COPY . .
 
 ENTRYPOINT ["./scs-compliance-check.py"]
