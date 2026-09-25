@@ -1,7 +1,8 @@
 ---
 title: SCS end-to-end testing
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2026-09-30
 track: IaaS
 description: |
   SCS-0128 describes standardized end-to-end testing. It was created to succeed
