@@ -1,8 +1,9 @@
 ---
 title: SCS Standard Images
 type: Procedural
-status: Stable
+status: Deprecated
 stabilized_at: 2024-02-21
+deprecated_at: 2026-10-31
 track: IaaS
 description: |
   The SCS-0104 standard establishes guidelines for virtual machine images in Sovereign Cloud Stack (SCS) environments,
