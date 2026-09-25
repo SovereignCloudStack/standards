@@ -1,8 +1,9 @@
 ---
 title: Mandatory and Supported IaaS Services
 type: Standard
-status: Stable
+status: Deprecated
 stabilized_at: 2024-11-20
+deprecated_at: 2026-10-31
 track: IaaS
 ---
 
