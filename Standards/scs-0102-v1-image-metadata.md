@@ -2,7 +2,8 @@
 title: SCS Image Metadata
 type: Standard
 stabilized_at: 2022-10-31
-status: Stable
+deprecated_at: 2026-10-31
+status: Deprecated
 track: IaaS
 replaces: Image-Metadata-Spec.md
 description: |

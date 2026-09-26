@@ -1,7 +1,8 @@
 ---
 title: SCS Image Metadata
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2026-09-30
 track: IaaS
 description: |
   This is version 2 of the SCS-0102 Image Metadata Standard.
