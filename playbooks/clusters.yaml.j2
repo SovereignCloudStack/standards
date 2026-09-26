@@ -1,16 +1,15 @@
 ---
 clusters:
-  noris-1.33:
+  noris-1.36:
     kind: gardener
     config:
-      name: 'noris-1-33'  # explicit name because dot in name not permissible
-      kubernetesVersion: '1.33'
+      name: 'noris-1-36'  # explicit name because dot in name not permissible
+      kubernetesVersion: '1.36'
       autoVars: noris  # determine vars.kubernetes_version automatically using kubernetesVersion
       templates:
         shoot: shoot.yaml
         kubeconfig: garden-kubeconfig.yaml
       vars:
-        kubernetes_version: "1.33.10"
         num_worker_nodes: 3
         worker_cidr: "10.250.0.0/16"
         machine_type: "SCS-2V-4"

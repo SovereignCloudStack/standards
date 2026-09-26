@@ -96,7 +96,7 @@ accounts:
     group: noris-eol
     delegates:
       - zuul_ci
-  - subject: noris-1.34
+  - subject: noris-1.36
     group: noris
     delegates:
       - zuul_ci
@@ -104,11 +104,11 @@ accounts:
     group: noris
     delegates:
       - zuul_ci
-  - subject: scaleup-1.36
-    group: scaleup
+  - subject: noris-1.34
+    group: noris
     delegates:
       - zuul_ci
-  - subject: scaleup-1.34
+  - subject: scaleup-1.36
     group: scaleup
     delegates:
       - zuul_ci
@@ -116,11 +116,11 @@ accounts:
     group: scaleup
     delegates:
       - zuul_ci
-  - subject: syself-1.36
-    group: syself
+  - subject: scaleup-1.34
+    group: scaleup
     delegates:
       - zuul_ci
-  - subject: syself-1.34
+  - subject: syself-1.36
     group: syself
     delegates:
       - zuul_ci
@@ -128,11 +128,15 @@ accounts:
     group: syself
     delegates:
       - zuul_ci
-  - subject: teuto-1.35
-    group: teuto
+  - subject: syself-1.34
+    group: syself
     delegates:
       - zuul_ci
   - subject: teuto-1.36
+    group: teuto
+    delegates:
+      - zuul_ci
+  - subject: teuto-1.35
     group: teuto
     delegates:
       - zuul_ci
