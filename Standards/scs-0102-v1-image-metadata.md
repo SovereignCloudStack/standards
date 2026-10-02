@@ -6,6 +6,7 @@ deprecated_at: 2026-10-31
 status: Deprecated
 track: IaaS
 replaces: Image-Metadata-Spec.md
+replaced_by: scs-0102-v2-image-metadata.md
 description: |
   This is version 1.1 of the SCS-0102 Image Metadata Standard.
   It outlines how to categorize and manage metadata for cloud-based operating
