@@ -4,6 +4,7 @@ type: Standard
 status: Deprecated
 stabilized_at: 2024-11-20
 deprecated_at: 2026-10-31
+replaced_by: scs-0123-v2-services.md
 track: IaaS
 ---
 
