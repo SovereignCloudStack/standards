@@ -2,7 +2,8 @@
 title: SCS-compatible IaaS
 type: Standard
 track: Scopes
-status: Draft
+status: Stable
+stabilized_at: 2026-10-05
 replaces:
 - scs-0501-v5-scs-compatible-iaas.md
 description: |
