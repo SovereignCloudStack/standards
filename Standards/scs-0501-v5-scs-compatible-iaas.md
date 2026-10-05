@@ -2,8 +2,10 @@
 title: SCS-compatible IaaS
 type: Standard
 track: Scopes
-status: Stable
+status: Deprecated
 stabilized_at: 2024-12-19
+deprecated_at: 2026-10-31
+replaced_by: scs-0501-v6-scs-compatible-iaas.md
 replaces:
 - scs-0501-v4-scs-compatible-iaas.md
 description: |
