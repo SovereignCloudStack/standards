@@ -15,65 +15,72 @@ description: |
 This standard defines concepts central to testing SCS standards and regulates how results may
 be obtained and aggregated.
 
+## Motivation
+
+We want to attest certain propositions. In its most basic form, an attestation takes the form
+subject-predicate-object, for instance,
+
+> `regio-a` (subject) `passes` (predicate) `scs-0501-v5` (object)
+
+where
+
+- `regio-a` is an IaaS environment and
+- `scs-0501-v5` refers to [scs-0501-v5](https://docs.scs.community/standards/scs-0501-v5-scs-compatible-iaas).
+
+The objects of our attestations may be whole standards, but usually we will decompose the
+standards into smaller units called _testcases_, so that we can test and retest certain parts
+more often than others.
+
 ## Concept definitions
 
 A standard can be viewed as a collection of propositions that "must" (or "should") be satisfied
 by a test subject (cloud or cluster). The standard is satisfied if all "must" propositions are
 satisfied.
 
-A _testcase_ is a collection of propositions that coincide with respect to the following properties:
+Note that the same proposition can occur as a requirement (must) in one standard and as a
+recommendation (should) in another (version or standard). Likewise, one standard may mandate
+that the proposition be tested daily, whereas another (version or standard) might mandate
+a different schedule.
 
-- whether they can be tested automatically with normal user permissions;
-- how often they need to be tested (daily, weekly, monthly, annually);
-- whether they are required ("must").
+A _testcase_ is a collection of propositions. We unambiguously refer to a testcase using a
+globally unique identifier, for example `scs-0100-syntax-check` or `scs-0101-fips-test`.
 
-We unambiguously refer to a testcase using a composite identifier consisting of two parts:
+Note that multiple testcases can be joined into a single _composite_ testcase that comprises
+all propositions of all these testcases. For instance, we might join `scs-0100-syntax-check`
+and `scs-0100-semantics-check` and call the resulting composite testcase `scs-0100-v3`.
 
-- the _scope_: in the context of this standard, just an identifier of a namespace;
-  for example: `scs-compatible-iaas` (or a UUID)
-- the _testcase id_, for example `scs-0100-syntax-check` or `scs-0101-fips-test`.
+The _result_ of a testcase is one of the following values:
 
-The scope part is usually clear from the context and therefore omitted.
-
-A _test_ is a testcase or a collection of tests. We refer to a test using the same kind of
-composite identifier as for a testcase.
-
-For instance, if we have testcases `scs-0100-syntax-check` and `scs-0100-semantics-check`,
-we could define the test `scs-0100-v3` as the collection consisting of these two testcases.
-Given further tests `scs-0101-v1`, `scs-0102-v1` etc., we could define the test `scs-0501-v4`
-as the collection consisting of `scs-0100-v3`, `scs-0101-v1`, `scs-0102-v1` etc.
-
-A test can be viewed as a collection of propositions; namely, all propositions of all testcases
-that are part of the test.
-
-The _result_ of a test is one of the following values:
-
-- `FAIL`: it could be verified that at least one of its propositions is not satisfied;
-- `MISS` (missing): for at least one of its propositions, it was not (recently) attempted to verify it;
-- `DNF` (did not finish): for at least one of its propositions, it could not be verified whether it is satisfied;
+- `FAIL`: it could be verified that at least one of its propositions is violated;
+- `DNF` (did not finish): no violations could be proven, but for at least one of its propositions,
+  it could not be determined with certainty whether it is satisfied or violated;
 - `PASS`: it could be verified that all its propositions are satisfied.
 
-If multiple items apply, we always opt for the topmost one.
+A _partial attestation_ is a data structure that contains the following information:
+
+- UUID,
+- timestamp,
+- subject: the name of the test subject,
+- predicate: a result,
+- object: a testcase identifier.
 
 A _test report_ is a data structure that contains the following information:
 
 - UUID,
-- Subject: the name of the test subject,
-- Scope: the scope of all the testcases referred to in this score card,
 - Creator: who created the report (name of person or version of the software),
-- Check date: when the test was performed,
-- Test results: a mapping that maps testcase ids to results.
-- Log: free-form text that details the test run.
+- a list of partial attestations,
+- Evidence: free-form text that details the test run.
 
 A _check script_ is a computer program that tests one or more testcases and produces a test report.
 
-A _score card_ is a data structure that contains the following information:
+An _attestation_ is a data structure that contains the following information:
 
-- Subject: the name of the test subject,
-- Scope: the scope of all the testcases referred to in this score card,
-- Results: a mapping that maps testcase ids to results, where each result is additionally
-  equipped with validity timespan (beginning at the time of the check and expiring according to
-  the lifetime of the result).
+- partial attestation,
+- evidence: uuid of a test report.
+
+A _score card_ for a given subject is a list of attestations for that subject;
+for each object, only the most recent attestion is contained; otherwise,
+the list is comprehensive (no known attestations are omitted).
 
 ## Regulation
 
