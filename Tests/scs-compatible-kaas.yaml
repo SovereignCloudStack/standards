@@ -5,14 +5,10 @@ name: SCS-compatible KaaS
 uuid: 1fffebe6-fd4b-44d3-a36c-fc58b4bb0180
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-kaas.yaml
 variables:
-  - subject_root
-    # working directory for the subject under test
-    # (note that we consider each kubernetes branch a test subject of its own)
-  - kubeconfig
   - execution_mode: parallel  # alternatively: serial, dry
 scripts:
 - executable: ./kaas/k8s_test.py
-  args: -k {kubeconfig} --execution-mode {execution_mode} {testcases}
+  args: -s {subject} --execution-mode {execution_mode} {testcases}
   testcases:
   - id: cncf-k8s-conformance
     lifetime: year

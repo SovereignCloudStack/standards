@@ -20,6 +20,17 @@ At the moment, there are two cloud layers that can be checked: IaaS and KaaS.
 For both types of checks, the exit code indicates success (0) or failure (!= 0).
 You can also request a YAML report using the option `-o OUTPUT.yaml`
 
+Some tests can be adjusted to the environment by using variables. These variables
+can be specified in `$HOME/.config/scs/env.yaml`. Use the subject as a key for a
+dictionary for the variables. For instance, with a subject `openstack` and two
+variables `dns_nameservers` and `external_gateway_net_id`, you could declare:
+
+```yaml
+openstack:
+    dns_nameservers: ['1.2.3.4']
+    external_gateway_net_id: abcdef12-3456-7890-abcd-ef1234567890
+```
+
 ### IaaS checks
 
 Install IaaS-specific requirements:
@@ -35,7 +46,7 @@ With a cloud environment configured in your `~/.config/openstack/clouds.yaml`
 and `secure.yaml`, then run
 
 ```shell
-./scs-compliance-check.py -s CLOUDNAME -a os_cloud=CLOUDNAME scs-compatible-iaas.yaml
+./scs-compliance-check.py -s CLOUDNAME scs-compatible-iaas.yaml
 ```
 
 Replace `CLOUDNAME` with the name of your cloud environment as
@@ -54,7 +65,7 @@ Additionally, Sonobuoy must be installed and in your PATH environment variable.
 Given a kubeconfig file `path/to/kubeconfig.yaml`, run
 
 ```shell
-./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml -a subject_root=. -s SUBJECT -o report.yaml scs-compatible-kaas.yaml
+./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml -s SUBJECT -o report.yaml scs-compatible-kaas.yaml
 ```
 
 Replace `SUBJECT` with an arbitrary, but meaningful subject name. Also, please note that the check
