@@ -67,23 +67,23 @@ and reports inconsistencies, errors etc. It returns 0 on success.
     sys.exit(rcode)
 
 
-def _load_env_yaml(path, subject):
+def _load_env_yaml_section(path, subject):
     if not os.path.isfile(path):
         return {}
     with open(path, "rb") as fileobj:
         env_yaml = yaml.load(fileobj, Loader=yaml.SafeLoader)
     if not isinstance(env_yaml, dict):
-        return {}
-    if env_yaml[subject] is None:
+        raise RuntimeError("env.yaml config file available, but not of type dict!")
+    result = env_yaml.get(subject, {})
+    if not result:
         logger.debug("env.yaml config file available, but no values declared.")
-        return {}
-    return env_yaml
+    return result
 
 
 def make_container(subject, cloud):
     c = Container()
     # env.yaml support
-    c.add_function('env', lambda _: _load_env_yaml(path=ENVPATH, subject=subject).get(subject, {}))
+    c.add_function('env', lambda _: _load_env_yaml_section(path=ENVPATH, subject=subject))
     c.add_function('cloud', lambda c: c.env.get('cloud', subject) if cloud is None else cloud)
     # Configure an optional list of DNS servers for scs-0101-entropy
     c.add_function('dns_nameservers', lambda c: c.env.get('dns_nameservers'))

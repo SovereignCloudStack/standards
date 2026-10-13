@@ -20,9 +20,10 @@ At the moment, there are two cloud layers that can be checked: IaaS and KaaS.
 For both types of checks, the exit code indicates success (0) or failure (!= 0).
 You can also request a YAML report using the option `-o OUTPUT.yaml`
 
-Some tests can be modified by using variables. These variables can be specified
-in `$HOME/.config/scs/env.yaml`. Use the subject as a key for a dictionary for
-the variables, i.e.:
+Some tests can be adjusted to the environment by using variables. These variables
+can be specified in `$HOME/.config/scs/env.yaml`. Use the subject as a key for a
+dictionary for the variables. For instance, with a subject `openstack` and two
+variables `dns_nameservers` and `external_gateway_net_id`, you could declare:
 
 ```yaml
 openstack:

@@ -130,14 +130,14 @@ class TestEnvironment:
         try:
             # create network, subnet, router, connect everything
             self.network = self.conn.create_network(NETWORK_NAME)
-            # Note: The IP range/cidr here needs to match the one in the pre_cloud.yaml
-            # playbook calling cleanup.py
             if self.dns_nameservers is None:
                 self.dns_nameservers = ['9.9.9.9']
-            elif not isinstance(self.dns_nameservers, list) and isinstance(self.dns_nameservers, str):
+            elif isinstance(self.dns_nameservers, str):
                 self.dns_nameservers = [self.dns_nameservers]
                 logger.debug("Corrected DNS string to list.")
             logger.debug(f"Using dns nameservers {self.dns_nameservers}.")
+            # Note: The IP range/cidr here needs to match the one in the pre_cloud.yaml
+            # playbook calling cleanup.py
             self.subnet = self.conn.create_subnet(
                 self.network.id,
                 cidr="10.1.0.0/24",
