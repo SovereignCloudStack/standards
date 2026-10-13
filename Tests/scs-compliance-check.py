@@ -302,7 +302,7 @@ def main(argv):
         raise RuntimeError("You need pass --subject=SUBJECT.")
     with open(config.arg0, "r", encoding="UTF-8") as specfile:
         spec = load_spec(yaml.load(specfile, Loader=yaml.SafeLoader))
-    assignment = {**spec['var_defaults'], **config.assignment}
+    assignment = {'subject': config.subject, **spec['var_defaults'], **config.assignment}
     missing_vars = [v for v in spec.get("variables", ()) if v not in assignment]
     if missing_vars:
         raise RuntimeError(f"Missing variable assignments (via -a) for: {', '.join(missing_vars)}")

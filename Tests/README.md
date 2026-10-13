@@ -35,7 +35,7 @@ With a cloud environment configured in your `~/.config/openstack/clouds.yaml`
 and `secure.yaml`, then run
 
 ```shell
-./scs-compliance-check.py -s CLOUDNAME -a os_cloud=CLOUDNAME scs-compatible-iaas.yaml
+./scs-compliance-check.py -s CLOUDNAME scs-compatible-iaas.yaml
 ```
 
 Replace `CLOUDNAME` with the name of your cloud environment as
@@ -54,7 +54,7 @@ Additionally, Sonobuoy must be installed and in your PATH environment variable.
 Given a kubeconfig file `path/to/kubeconfig.yaml`, run
 
 ```shell
-./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml -a subject_root=. -s SUBJECT -o report.yaml scs-compatible-kaas.yaml
+./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml -s SUBJECT -o report.yaml scs-compatible-kaas.yaml
 ```
 
 Replace `SUBJECT` with an arbitrary, but meaningful subject name. Also, please note that the check

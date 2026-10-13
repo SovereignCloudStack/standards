@@ -33,21 +33,24 @@ logger = logging.getLogger(__name__)
 
 def usage(rcode=1, file=sys.stderr):
     """help output"""
-    print("Usage: k8s_test.py [options] testcase-id1 ... testcase-idN", file=file)
-    print("Options:", file=file)
-    print("  [-k/--kubeconfig KUBECONFIG_PATH] (required)", file=file)
-    print("  [-s/--subject SUBJECT]", file=file)
-    print("  [--execution-mode MODE] Sonobuoy mode: serial, parallel, or dry", file=file)
-    print("Runs specified testcases against the default context in kubeconfig provided", file=file)
-    print("via -k. Reports inconsistencies, errors etc.; returns 0 on success.", file=file)
-    print("Instead of listing testcase-ids, you can supply a single dash (-)", file=file)
-    print("to have them read from stdin, one testcase-id per line.", file=file)
+    print("""
+Usage: k8s_test.py [options] testcase-id1 ... testcase-idN
+Options:
+  [-k/--kubeconfig KUBECONFIG_PATH] (optional)
+  [-s/--subject SUBJECT] (required)
+  [--execution-mode MODE] Sonobuoy mode: serial, parallel, or dry
+Runs specified testcases against the default context in kubeconfig provided
+via -k (falling back to SUBJECT/kubeconfig.yaml if not explicitly provided).
+Reports inconsistencies, errors etc.; returns 0 on success.
+Instead of listing testcase-ids, you can supply a single dash (-)
+to have them read from stdin, one testcase-id per line.
+""".strip(), file=file)
     sys.exit(rcode)
 
 
 class Config:
     def __init__(self):
-        self.kubeconfig_path = os.environ.get("KUBECONFIG")
+        self.kubeconfig_path = None
         self.subject = None
         self.mode = 'serial'
         self.testcases = []
@@ -76,11 +79,11 @@ class Config:
         if len(self.testcases) != len(args):
             unknown = [a for a in args if a not in self.testcases]
             logger.warning(f"ignoring unknown testcases: {','.join(unknown)}")
-        if not self.kubeconfig_path:
-            print("CRITICAL: You need to have KUBECONFIG set or pass --kubeconfig=KUBECONFIG.", file=sys.stderr)
-            sys.exit(1)
         if not self.subject:
-            self.subject = self.kubeconfig_path
+            print("CRITICAL: You need to pass -s=SUBJECT.", file=sys.stderr)
+            sys.exit(1)
+        if not self.kubeconfig_path:
+            self.kubeconfig_path = os.path.join('.', self.subject, 'kubeconfig.yaml')
 
     def compute_sono_args(self, *args):
         if self.mode == 'parallel':

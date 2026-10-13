@@ -9,7 +9,6 @@ SPDX-License-Identifier: CC-BY-SA 4.0
 
 import getopt
 import logging
-import os
 import sys
 
 import openstack
@@ -53,10 +52,15 @@ logger = logging.getLogger(__name__)
 
 def usage(rcode=1, file=sys.stderr):
     """help output"""
-    print("Usage: openstack_test.py [options] testcase-id1 ... testcase-idN", file=file)
-    print("Options: [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)", file=file)
-    print("Runs specified testcases against the OpenStack cloud OS_CLOUD", file=file)
-    print("and reports inconsistencies, errors etc. It returns 0 on success.", file=file)
+    print("""
+Usage: openstack_test.py [options] testcase-id1 ... testcase-idN
+Options:
+  [-c/--os-cloud OS_CLOUD] (optional)
+  [-s/--subject SUBJECT] (required)
+Runs specified testcases against the OpenStack cloud OS_CLOUD
+(falling back to SUBJECT if not explicitly provided)
+and reports inconsistencies, errors etc. It returns 0 on success.
+""".strip(), file=file)
     sys.exit(rcode)
 
 
@@ -253,13 +257,10 @@ def main(argv):
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
     openstack.enable_logging(debug=False)
     cloud = None
+    subject = None
 
     try:
-        cloud = os.environ["OS_CLOUD"]
-    except KeyError:
-        pass
-    try:
-        opts, args = getopt.gnu_getopt(argv, "c:C:", ("os-cloud=", ))
+        opts, args = getopt.gnu_getopt(argv, "c:C:s:S:", ("os-cloud=", "subject="))
     except getopt.GetoptError as exc:
         print(f"CRITICAL: {exc!r}", file=sys.stderr)
         usage(1)
@@ -268,6 +269,8 @@ def main(argv):
             usage(0)
         elif opt[0] == "-c" or opt[0] == "--os-cloud":
             cloud = opt[1]
+        elif opt[0] == "-s" or opt[0] == "--subject":
+            subject = opt[1]
         else:
             usage(2)
 
@@ -276,9 +279,12 @@ def main(argv):
         unknown = [a for a in args if a not in testcases]
         logger.warning(f"ignoring unknown testcases: {','.join(unknown)}")
 
-    if not cloud:
-        print("CRITICAL: You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
+    if not subject:
+        print("CRITICAL: You need to pass -s=SUBJECT.", file=sys.stderr)
         sys.exit(1)
+
+    if not cloud:
+        cloud = subject
 
     c = make_container(cloud)
     try:

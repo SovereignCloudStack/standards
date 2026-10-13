@@ -5,11 +5,9 @@
 name: SCS-compatible IaaS
 uuid: 50393e6f-2ae1-4c5c-a62c-3b75f2abef3f
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml
-variables:
-  - os_cloud
 scripts:
 - executable: ./iaas/openstack_test.py
-  args: -c {os_cloud} {testcases}
+  args: -s {subject} {testcases}
   testcases:
   - id: scs-0100-syntax-check
     description: Flavor names starting `SCS-` comply with syntax.
