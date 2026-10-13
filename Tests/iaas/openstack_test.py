@@ -9,9 +9,11 @@ SPDX-License-Identifier: CC-BY-SA 4.0
 
 import getopt
 import logging
+import os.path
 import sys
 
 import openstack
+import yaml
 
 from scs_0100_flavor_naming.flavor_names import compute_flavor_spec
 from scs_0100_flavor_naming.flavor_names_check import \
@@ -48,6 +50,7 @@ from scs_0123_mandatory_services.mandatory_services import \
 
 
 logger = logging.getLogger(__name__)
+ENVPATH = os.path.join(os.path.expanduser('~'), '.config', 'scs', 'env.yaml')
 
 
 def usage(rcode=1, file=sys.stderr):
@@ -64,10 +67,24 @@ and reports inconsistencies, errors etc. It returns 0 on success.
     sys.exit(rcode)
 
 
-def make_container(cloud):
+def _load_env_yaml(path):
+    if not os.path.isfile(path):
+        return {}
+    with open(path, "rb") as fileobj:
+        env_yaml = yaml.load(fileobj, Loader=yaml.SafeLoader)
+    if not isinstance(env_yaml, dict):
+        return {}
+    return env_yaml
+
+
+def make_container(subject, cloud):
     c = Container()
+    # env.yaml support
+    c.add_function('env', lambda _: _load_env_yaml(path=ENVPATH).get(subject, {}))
+    c.add_function('cloud', lambda c: c.env.get('cloud', subject) if cloud is None else cloud)
+    c.add_function('external_gateway_net_id', lambda c: c.env.get('external_gateway_net_id'))
     # basic support attributes shared by multiple testcases
-    c.add_function('conn', lambda _: openstack.connect(cloud=cloud, timeout=32))
+    c.add_function('conn', lambda c: openstack.connect(cloud=c.cloud, timeout=32))
     c.add_function('flavors', lambda c: list(c.conn.list_flavors(get_extra=True)))
     c.add_function('images', lambda c: [img for img in c.conn.list_images(show_all=True) if img.visibility in ('public', 'community')])
     c.add_function('image_lookup', lambda c: {img.name: img for img in c.images})
@@ -77,7 +94,9 @@ def make_container(cloud):
     c.add_function('scs_0100_semantics_check', lambda c: compute_scs_0100_semantics_check(c.scs_flavors))
     # scs_0101_entropy
     c.add_function('canonical_image', lambda c: compute_canonical_image(c.images))
-    c.add_function('collected_vm_output', lambda c: compute_collected_vm_output(c.conn, c.flavors, c.canonical_image))
+    c.add_function('collected_vm_output', lambda c: compute_collected_vm_output(
+        c.conn, c.flavors, c.canonical_image, c.external_gateway_net_id,
+    ))
     c.add_function('scs_0101_entropy_avail', lambda c: compute_scs_0101_entropy_avail(c.collected_vm_output, c.canonical_image.name))
     c.add_function('scs_0101_fips_test', lambda c: compute_scs_0101_fips_test(c.collected_vm_output, c.canonical_image.name))
     # scs_0102_image_metadata
@@ -283,10 +302,7 @@ def main(argv):
         print("CRITICAL: You need to pass -s=SUBJECT.", file=sys.stderr)
         sys.exit(1)
 
-    if not cloud:
-        cloud = subject
-
-    c = make_container(cloud)
+    c = make_container(subject, cloud)
     try:
         run_preflight_checks(c)
     except Exception:

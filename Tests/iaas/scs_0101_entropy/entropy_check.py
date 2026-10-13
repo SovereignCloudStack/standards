@@ -115,8 +115,9 @@ def compute_scs_0101_virtio_rng(collected_vm_output, image_name):
 
 
 class TestEnvironment:
-    def __init__(self, conn):
+    def __init__(self, conn, external_gateway_net_id=None):
         self.conn = conn
+        self.external_gateway_net_id = external_gateway_net_id
         self.keypair = None
         self.keyfile = None
         self.network = None
@@ -142,18 +143,19 @@ class TestEnvironment:
                 dns_nameservers=["9.9.9.9"],
                 name=SUBNET_NAME,
             )
-            external_networks = list(self.conn.network.networks(is_router_external=True))
-            if not external_networks:
-                raise RuntimeError("No external network found!")
-            if len(external_networks) > 1:
-                logger.debug(
-                    "More than one external network found: "
-                    + ', '.join([n.id for n in external_networks])  # noqa: W503
-                )
-            external_gateway_net_id = external_networks[0].id
-            logger.debug(f"Using external network {external_gateway_net_id}.")
+            if self.external_gateway_net_id is None:
+                external_networks = list(self.conn.network.networks(is_router_external=True))
+                if not external_networks:
+                    raise RuntimeError("No external network found!")
+                if len(external_networks) > 1:
+                    logger.debug(
+                        "More than one external network found: "
+                        + ', '.join([n.id for n in external_networks])  # noqa: W503
+                    )
+                self.external_gateway_net_id = external_networks[0].id
+            logger.debug(f"Using external network {self.external_gateway_net_id}.")
             self.router = self.conn.create_router(
-                ROUTER_NAME, ext_gateway_net_id=external_gateway_net_id,
+                ROUTER_NAME, ext_gateway_net_id=self.external_gateway_net_id,
             )
             self.conn.add_router_interface(self.router, subnet_id=self.subnet.id)
         except BaseException:
@@ -308,12 +310,12 @@ def _convert_to_collected(lines, marker=MARKER):
     return collected
 
 
-def compute_collected_vm_output(conn, all_flavors, image):
+def compute_collected_vm_output(conn, all_flavors, image, external_gateway_net_id=None):
     """Creates a test VM, collects and returns its output for later evaluation."""
     logger.debug(f"Selected image: {image.name} ({image.id})")
     flavor = select_flavor_for_image(all_flavors, image)
     userdata = SERVER_USERDATA.get(image.os_distro, SERVER_USERDATA_GENERIC)
-    with TestEnvironment(conn) as env:
+    with TestEnvironment(conn, external_gateway_net_id) as env:
         try:
             # ugly: create the server inside the try-block because the call
             # can be interrupted via Ctrl-C, and then the instance will be
