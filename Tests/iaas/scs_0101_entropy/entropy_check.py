@@ -78,7 +78,7 @@ def compute_scs_0101_fips_test(collected_vm_output, image_name):
     failure_re = re.search(r'failures:\s\d+', fips_data, flags=re.MULTILINE)
     if not failure_re:
         # It seems possible that 'failures: 0' is just omitted, and we could check for
-        # 'successes: 1000' to verify that, but I have observed this only once in many
+        # 'successes: 1000' to verify that, but I have observed this only once in
         # many runs over multiple years. I'm inclined to label this 'inconclusive'
         # instead of making the code more complex and risking false certainty.
         logger.debug(f"failed to determine fips failures; stderr following:\n{fips_data}")
@@ -115,8 +115,9 @@ def compute_scs_0101_virtio_rng(collected_vm_output, image_name):
 
 
 class TestEnvironment:
-    def __init__(self, conn, external_gateway_net_id=None):
+    def __init__(self, conn, dns_nameservers=None, external_gateway_net_id=None):
         self.conn = conn
+        self.dns_nameservers = dns_nameservers
         self.external_gateway_net_id = external_gateway_net_id
         self.keypair = None
         self.keyfile = None
@@ -131,6 +132,12 @@ class TestEnvironment:
             self.network = self.conn.create_network(NETWORK_NAME)
             # Note: The IP range/cidr here needs to match the one in the pre_cloud.yaml
             # playbook calling cleanup.py
+            if self.dns_nameservers is None:
+                self.dns_nameservers = ['9.9.9.9']
+            elif not isinstance(self.dns_nameservers, list) and isinstance(self.dns_nameservers, str):
+                self.dns_nameservers = [self.dns_nameservers]
+                logger.debug("Corrected DNS string to list.")
+            logger.debug(f"Using dns nameservers {self.dns_nameservers}.")
             self.subnet = self.conn.create_subnet(
                 self.network.id,
                 cidr="10.1.0.0/24",
@@ -140,7 +147,7 @@ class TestEnvironment:
                     "start": "10.1.0.100",
                     "end": "10.1.0.199",
                 }],
-                dns_nameservers=["9.9.9.9"],
+                dns_nameservers=self.dns_nameservers,
                 name=SUBNET_NAME,
             )
             if self.external_gateway_net_id is None:
@@ -310,12 +317,12 @@ def _convert_to_collected(lines, marker=MARKER):
     return collected
 
 
-def compute_collected_vm_output(conn, all_flavors, image, external_gateway_net_id=None):
+def compute_collected_vm_output(conn, all_flavors, image, dns_nameservers=None, external_gateway_net_id=None):
     """Creates a test VM, collects and returns its output for later evaluation."""
     logger.debug(f"Selected image: {image.name} ({image.id})")
     flavor = select_flavor_for_image(all_flavors, image)
     userdata = SERVER_USERDATA.get(image.os_distro, SERVER_USERDATA_GENERIC)
-    with TestEnvironment(conn, external_gateway_net_id) as env:
+    with TestEnvironment(conn, dns_nameservers=dns_nameservers, external_gateway_net_id=external_gateway_net_id) as env:
         try:
             # ugly: create the server inside the try-block because the call
             # can be interrupted via Ctrl-C, and then the instance will be

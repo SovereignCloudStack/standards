@@ -20,6 +20,16 @@ At the moment, there are two cloud layers that can be checked: IaaS and KaaS.
 For both types of checks, the exit code indicates success (0) or failure (!= 0).
 You can also request a YAML report using the option `-o OUTPUT.yaml`
 
+Some tests can be modified by using variables. These variables can be specified
+in `$HOME/.config/scs/env.yaml`. Use the subject as a key for a dictionary for
+the variables, i.e.:
+
+```yaml
+openstack:
+    dns_nameservers: ['1.2.3.4']
+    external_gateway_net_id: abcdef12-3456-7890-abcd-ef1234567890
+```
+
 ### IaaS checks
 
 Install IaaS-specific requirements:

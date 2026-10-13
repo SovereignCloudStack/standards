@@ -67,12 +67,15 @@ and reports inconsistencies, errors etc. It returns 0 on success.
     sys.exit(rcode)
 
 
-def _load_env_yaml(path):
+def _load_env_yaml(path, subject):
     if not os.path.isfile(path):
         return {}
     with open(path, "rb") as fileobj:
         env_yaml = yaml.load(fileobj, Loader=yaml.SafeLoader)
     if not isinstance(env_yaml, dict):
+        return {}
+    if env_yaml[subject] is None:
+        logger.debug("env.yaml config file available, but no values declared.")
         return {}
     return env_yaml
 
@@ -80,8 +83,11 @@ def _load_env_yaml(path):
 def make_container(subject, cloud):
     c = Container()
     # env.yaml support
-    c.add_function('env', lambda _: _load_env_yaml(path=ENVPATH).get(subject, {}))
+    c.add_function('env', lambda _: _load_env_yaml(path=ENVPATH, subject=subject).get(subject, {}))
     c.add_function('cloud', lambda c: c.env.get('cloud', subject) if cloud is None else cloud)
+    # Configure an optional list of DNS servers for scs-0101-entropy
+    c.add_function('dns_nameservers', lambda c: c.env.get('dns_nameservers'))
+    # Configure an optional external network ID for scs-0101-entropy
     c.add_function('external_gateway_net_id', lambda c: c.env.get('external_gateway_net_id'))
     # basic support attributes shared by multiple testcases
     c.add_function('conn', lambda c: openstack.connect(cloud=c.cloud, timeout=32))
@@ -95,7 +101,7 @@ def make_container(subject, cloud):
     # scs_0101_entropy
     c.add_function('canonical_image', lambda c: compute_canonical_image(c.images))
     c.add_function('collected_vm_output', lambda c: compute_collected_vm_output(
-        c.conn, c.flavors, c.canonical_image, c.external_gateway_net_id,
+        c.conn, c.flavors, c.canonical_image, c.dns_nameservers, c.external_gateway_net_id,
     ))
     c.add_function('scs_0101_entropy_avail', lambda c: compute_scs_0101_entropy_avail(c.collected_vm_output, c.canonical_image.name))
     c.add_function('scs_0101_fips_test', lambda c: compute_scs_0101_fips_test(c.collected_vm_output, c.canonical_image.name))
