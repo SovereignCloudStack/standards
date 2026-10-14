@@ -13,6 +13,7 @@ import os
 import os.path
 import sys
 
+import yaml
 
 from scs_0210_version_policy.k8s_version_policy import version_policy_check
 from sonobuoy_handler.sonobuoy_handler import SonobuoyHandler
@@ -29,6 +30,20 @@ BASEDIR = os.path.dirname(__file__)
 SCS_SONOBUOY_CONFIG_PATH = os.path.join(BASEDIR, 'scs-sonobuoy-config-v1.yaml')
 
 logger = logging.getLogger(__name__)
+ENVPATH = os.path.join(os.path.expanduser('~'), '.config', 'scs', 'env.yaml')
+
+
+def _load_env_yaml_section(path, subject):
+    if not os.path.isfile(path):
+        return {}
+    with open(path, "rb") as fileobj:
+        env_yaml = yaml.load(fileobj, Loader=yaml.SafeLoader)
+    if not isinstance(env_yaml, dict):
+        raise RuntimeError("env.yaml config file available, but not of type dict!")
+    result = env_yaml.get(subject, {})
+    if not result:
+        logger.debug("env.yaml config file available, but no values declared.")
+    return result
 
 
 def usage(rcode=1, file=sys.stderr):
@@ -97,10 +112,12 @@ class Config:
 
 
 def run_sono(config, testcase, *args):
+    sonobuoy_fix = _load_env_yaml_section(path=ENVPATH, subject=config.subject).get('sonobuoy_fix', 'none')
     return_code = SonobuoyHandler(
         SCS_SONOBUOY_CONFIG_PATH, testcase, config.kubeconfig_path,
         result_dir_name=os.path.join(os.path.dirname(config.kubeconfig_path), testcase),
         args=config.compute_sono_args(*args),
+        sonobuoy_fix=sonobuoy_fix,
     ).run()
     return return_code == 0
 
