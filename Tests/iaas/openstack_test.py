@@ -15,6 +15,7 @@ import sys
 import openstack
 import yaml
 
+from cleanup import Janitor
 from scs_0100_flavor_naming.flavor_names import compute_flavor_spec
 from scs_0100_flavor_naming.flavor_names_check import \
     compute_scs_flavors, compute_scs_0100_syntax_check, compute_scs_0100_semantics_check
@@ -51,6 +52,8 @@ from scs_0123_mandatory_services.mandatory_services import \
 
 logger = logging.getLogger(__name__)
 ENVPATH = os.path.join(os.path.expanduser('~'), '.config', 'scs', 'env.yaml')
+PREFIX = "_scs-"  # used for cleanup: only remove objects whose name starts in PREFIX
+IPADDR = "10.1.0."  # used for cleanup: only remove network objects within IPADDR
 
 
 def usage(rcode=1, file=sys.stderr):
@@ -184,7 +187,8 @@ def make_container(subject, cloud):
     c.add_function('scs_0123_storage_apis', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'volume', 'volumev3', 'block-storage'))
     c.add_function('scs_0123_service_s3', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'object-store-s3'))
     c.add_function('scs_0123_swift_s3', lambda c: compute_scs_0123_swift_s3(c.services_lookup, c.conn))
-
+    # pseudo-testcase: cleanup
+    c.add_function('cleanup', lambda c: Janitor(c.conn, PREFIX, IPADDR).cleanup() or True)
     return c
 
 
@@ -299,7 +303,7 @@ def main(argv):
         else:
             usage(2)
 
-    testcases = [t for t in args if t.startswith('scs-')]
+    testcases = [t for t in args if t.startswith('scs-') or t == 'cleanup']
     if len(testcases) != len(args):
         unknown = [a for a in args if a not in testcases]
         logger.warning(f"ignoring unknown testcases: {','.join(unknown)}")
