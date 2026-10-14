@@ -33,7 +33,7 @@ class Config:
     def __init__(self):
         self.cwd = os.path.abspath(os.path.dirname(sys.argv[0]) or os.getcwd())
         self.scs_compliance_check = os.path.join(self.cwd, 'scs-compliance-check.py')
-        self.cleanup_py = os.path.join(self.cwd, 'iaas', 'cleanup.py')
+        self.cleanup_py = os.path.join(self.cwd, 'iaas', 'openstack_test.py')
         self.run_plugin_py = os.path.join(self.cwd, 'kaas', 'plugin', 'run_plugin.py')
         self.ssh_keygen = shutil.which('ssh-keygen')
         self.curl = shutil.which('curl')
@@ -60,12 +60,6 @@ class Config:
             self._auth_token = fileobj.read().strip()
         return self._auth_token
 
-    def get_subject_mapping(self, subject):
-        default_mapping = self.subjects.get('_', {}).get('mapping', {})
-        mapping = {key: value.format(subject=subject) for key, value in default_mapping.items()}
-        mapping.update(self.subjects.get(subject, {}).get('mapping', {}))
-        return mapping
-
     def abspath(self, path):
         return os.path.join(self.cwd, path)
 
@@ -77,8 +71,6 @@ class Config:
         ]
         if sections:
             args.extend(['--sections', sections])
-        for key, value in self.get_subject_mapping(subject).items():
-            args.extend(['-a', f'{key}={value}'])
         return {'args': args}
 
     def build_provision_command(self, subject):
@@ -100,13 +92,8 @@ class Config:
         }
 
     def build_cleanup_command(self, subject):
-        # TODO figure out when to supply --debug here (but keep separated from our --debug)
         return {'args': [
-            sys.executable, self.cleanup_py,
-            '-c', self.get_subject_mapping(subject)['os_cloud'],
-            '--prefix', '_scs-',
-            '--ipaddr', '10.1.0.',
-            '--debug',
+            sys.executable, self.cleanup_py, '-s', subject, 'cleanup',
         ]}
 
     def build_sign_command(self, target_path):
