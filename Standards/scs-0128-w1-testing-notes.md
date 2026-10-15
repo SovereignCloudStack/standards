@@ -29,7 +29,8 @@ exceptions have been agreed upon:
 
 - `tempest.api.compute.servers.test_servers.ServersTestJSON.test_create_server_with_admin_password`
   this test only runs when Nova allows instances to be created with an initial admin password,
-  which may or may not be necessary for certain use cases; however, it poses a security risk,
+  which is not used for typical Un\*x VMs with injected ssh keys.
+  It may or may not be necessary for certain non-Un\*x use cases; however, it poses a security risk,
   so we think this feature should not be mandatory.
 
   Note: Windows users could circumvent this feature by switching to cloud-ready images such as
