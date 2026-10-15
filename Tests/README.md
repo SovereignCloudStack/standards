@@ -43,7 +43,6 @@ syself-1.36:
     sonobuoy_fix: inject-kubeconfig
 ```
 
-
 ### IaaS checks
 
 Install IaaS-specific requirements:
