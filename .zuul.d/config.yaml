@@ -15,21 +15,12 @@
     post:
       jobs:
         - scs-check-scs2
-    check:
-      jobs:
-        - scs-check-adr-syntax
 - semaphore:
     name: semaphore-iaas
     max: 1  # run at most one iaas job at the same time
 - semaphore:
     name: semaphore-kaas
     max: 1  # run at most one kaas job at the same time
-- job:
-    name: scs-check-adr-syntax
-    parent: base
-    nodeset: pod-fedora-40
-    pre-run: playbooks/pre.yaml
-    run: playbooks/adr_syntax.yaml
 - job:
     name: scs-check-base
     parent: base
