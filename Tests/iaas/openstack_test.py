@@ -7,10 +7,12 @@
 SPDX-License-Identifier: CC-BY-SA 4.0
 """
 
+from datetime import datetime
 import getopt
 import logging
 import os.path
 import sys
+import uuid
 
 import openstack
 import yaml
@@ -51,6 +53,7 @@ from scs_0123_mandatory_services.mandatory_services import \
 
 
 logger = logging.getLogger(__name__)
+PREFLIGHT_PSEUDO = "scs-0501-preflight"  # pseudo testcase to record preflight check abort
 ENVPATH = os.path.join(os.path.expanduser('~'), '.config', 'scs', 'env.yaml')
 PREFIX = "_scs-"  # used for cleanup: only remove objects whose name starts in PREFIX
 IPADDR = "10.1.0."  # used for cleanup: only remove network objects within IPADDR
@@ -83,8 +86,9 @@ def _load_env_yaml_section(path, subject):
     return result
 
 
-def make_container(subject, cloud):
+def make_container(subject, cloud=None):
     c = Container()
+    c.add_value('subject', subject)
     # env.yaml support
     c.add_function('env', lambda _: _load_env_yaml_section(path=ENVPATH, subject=subject))
     c.add_function('cloud', lambda c: c.env.get('cloud', subject) if cloud is None else cloud)
@@ -99,94 +103,90 @@ def make_container(subject, cloud):
     c.add_function('image_lookup', lambda c: {img.name: img for img in c.images})
     # scs_0100_flavor_naming
     c.add_function('scs_flavors', lambda c: compute_scs_flavors(c.flavors))
-    c.add_function('scs_0100_syntax_check', lambda c: compute_scs_0100_syntax_check(c.scs_flavors))
-    c.add_function('scs_0100_semantics_check', lambda c: compute_scs_0100_semantics_check(c.scs_flavors))
+    c.add_function('scs-0100-syntax-check', lambda c: compute_scs_0100_syntax_check(c.scs_flavors))
+    c.add_function('scs-0100-semantics-check', lambda c: compute_scs_0100_semantics_check(c.scs_flavors))
     # scs_0101_entropy
     c.add_function('canonical_image', lambda c: compute_canonical_image(c.images))
     c.add_function('collected_vm_output', lambda c: compute_collected_vm_output(
         c.conn, c.flavors, c.canonical_image, c.dns_nameservers, c.external_gateway_net_id,
     ))
-    c.add_function('scs_0101_entropy_avail', lambda c: compute_scs_0101_entropy_avail(c.collected_vm_output, c.canonical_image.name))
-    c.add_function('scs_0101_fips_test', lambda c: compute_scs_0101_fips_test(c.collected_vm_output, c.canonical_image.name))
+    c.add_function('scs-0101-entropy-avail', lambda c: compute_scs_0101_entropy_avail(c.collected_vm_output, c.canonical_image.name))
+    c.add_function('scs-0101-fips-test', lambda c: compute_scs_0101_fips_test(c.collected_vm_output, c.canonical_image.name))
     # scs_0102_image_metadata
-    c.add_function('scs_0102_prop_architecture', lambda c: compute_scs_0102_prop_architecture(c.images))
-    c.add_function('scs_0102_prop_hash_algo', lambda c: compute_scs_0102_prop_hash_algo(c.images))
-    c.add_function('scs_0102_prop_min_disk', lambda c: compute_scs_0102_prop_min_disk(c.images))
-    c.add_function('scs_0102_prop_min_ram', lambda c: compute_scs_0102_prop_min_ram(c.images))
-    c.add_function('scs_0102_prop_os_version', lambda c: compute_scs_0102_prop_os_version(c.images))
-    c.add_function('scs_0102_prop_os_distro', lambda c: compute_scs_0102_prop_os_distro(c.images))
-    c.add_function('scs_0102_prop_os_purpose', lambda c: compute_scs_0102_prop_os_purpose(c.images))
-    c.add_function('scs_0102_prop_hw_disk_bus', lambda c: compute_scs_0102_prop_hw_disk_bus(c.images))
-    c.add_function('scs_0102_prop_hypervisor_type', lambda c: compute_scs_0102_prop_hypervisor_type(c.images))
-    c.add_function('scs_0102_prop_hw_rng_model', lambda c: compute_scs_0102_prop_hw_rng_model(c.images))
-    c.add_function('scs_0102_prop_image_build_date', lambda c: compute_scs_0102_prop_image_build_date(c.images))
-    c.add_function('scs_0102_prop_image_original_user', lambda c: compute_scs_0102_prop_image_original_user(c.images))
-    c.add_function('scs_0102_prop_image_source', lambda c: compute_scs_0102_prop_image_source(c.images))
-    c.add_function('scs_0102_prop_image_description', lambda c: compute_scs_0102_prop_image_description(c.images))
-    c.add_function('scs_0102_prop_replace_frequency', lambda c: compute_scs_0102_prop_replace_frequency(c.images))
-    c.add_function('scs_0102_prop_provided_until', lambda c: compute_scs_0102_prop_provided_until(c.images))
-    c.add_function('scs_0102_prop_uuid_validity', lambda c: compute_scs_0102_prop_uuid_validity(c.images))
-    c.add_function('scs_0102_prop_hotfix_hours', lambda c: compute_scs_0102_prop_hotfix_hours(c.images))
-    c.add_function('scs_0102_image_recency', lambda c: compute_scs_0102_image_recency(c.images))
-    c.add_function('scs_0102_os_purpose_uniqueness', lambda c: compute_scs_0102_os_purpose_uniqueness(c.images))
+    c.add_function('scs-0102-prop-architecture', lambda c: compute_scs_0102_prop_architecture(c.images))
+    c.add_function('scs-0102-prop-hash_algo', lambda c: compute_scs_0102_prop_hash_algo(c.images))
+    c.add_function('scs-0102-prop-min_disk', lambda c: compute_scs_0102_prop_min_disk(c.images))
+    c.add_function('scs-0102-prop-min_ram', lambda c: compute_scs_0102_prop_min_ram(c.images))
+    c.add_function('scs-0102-prop-os_version', lambda c: compute_scs_0102_prop_os_version(c.images))
+    c.add_function('scs-0102-prop-os_distro', lambda c: compute_scs_0102_prop_os_distro(c.images))
+    c.add_function('scs-0102-prop-os_purpose', lambda c: compute_scs_0102_prop_os_purpose(c.images))
+    c.add_function('scs-0102-prop-hw_disk_bus', lambda c: compute_scs_0102_prop_hw_disk_bus(c.images))
+    c.add_function('scs-0102-prop-hypervisor_type', lambda c: compute_scs_0102_prop_hypervisor_type(c.images))
+    c.add_function('scs-0102-prop-hw_rng_model', lambda c: compute_scs_0102_prop_hw_rng_model(c.images))
+    c.add_function('scs-0102-prop-image_build_date', lambda c: compute_scs_0102_prop_image_build_date(c.images))
+    c.add_function('scs-0102-prop-image_original_user', lambda c: compute_scs_0102_prop_image_original_user(c.images))
+    c.add_function('scs-0102-prop-image_source', lambda c: compute_scs_0102_prop_image_source(c.images))
+    c.add_function('scs-0102-prop-image_description', lambda c: compute_scs_0102_prop_image_description(c.images))
+    c.add_function('scs-0102-prop-replace_frequency', lambda c: compute_scs_0102_prop_replace_frequency(c.images))
+    c.add_function('scs-0102-prop-provided_until', lambda c: compute_scs_0102_prop_provided_until(c.images))
+    c.add_function('scs-0102-prop-uuid_validity', lambda c: compute_scs_0102_prop_uuid_validity(c.images))
+    c.add_function('scs-0102-prop-hotfix_hours', lambda c: compute_scs_0102_prop_hotfix_hours(c.images))
+    c.add_function('scs-0102-image-recency', lambda c: compute_scs_0102_image_recency(c.images))
+    c.add_function('scs-0102-os_purpose-uniqueness', lambda c: compute_scs_0102_os_purpose_uniqueness(c.images))
     # scs_0103_standard_flavors
     c.add_function('flavor_lookup', lambda c: compute_flavor_lookup(c.flavors))
     for canonical_name in SCS_0103_CANONICAL_NAMES:
-        nm = canonical_name.removeprefix('SCS-').lower().replace('-', '_')
+        nm = canonical_name.removeprefix('SCS-').lower()
         # NOTE we need cn=canonical_name below because anon function only catches a variable's CELL, not its value
         # i.e., if we use canonical_name inside it, we will only get its final value after the loop is done
         c.add_function(
-            f'scs_0103_flavor_{nm}',
+            f'scs-0103-flavor-{nm}',
             lambda c, cn=canonical_name: compute_scs_0103_flavor(c.flavor_lookup, compute_flavor_spec(cn))
         )
     # scs_0104_standard_images
     c.add_function('image_lookup_ex', lambda c: compute_image_lookup_ex(c.images))
-    c.add_function('scs_0104_source_capi', lambda c: compute_scs_0104_source_capi(c.image_lookup))
-    c.add_function('scs_0104_source_capi_1', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-1']))
-    c.add_function('scs_0104_source_capi_2', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-2']))
-    c.add_function('scs_0104_source_ubuntu', lambda c: compute_scs_0104_source_ex(c.image_lookup_ex, 'ubuntu'))
-    c.add_function('scs_0104_source_ubuntu_2404', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 24.04']))
-    c.add_function('scs_0104_source_ubuntu_2204', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 22.04']))
-    c.add_function('scs_0104_source_ubuntu_2004', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 20.04']))
-    c.add_function('scs_0104_source_debian', lambda c: compute_scs_0104_source_ex(c.image_lookup_ex, 'debian'))
-    c.add_function('scs_0104_source_debian_13', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 13']))
-    c.add_function('scs_0104_source_debian_12', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 12']))
-    c.add_function('scs_0104_source_debian_11', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 11']))
-    c.add_function('scs_0104_source_debian_10', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 10']))
-    c.add_function('scs_0104_image_capi_1', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-1']))
-    c.add_function('scs_0104_image_capi_2', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-2']))
-    c.add_function('scs_0104_image_ubuntu_latest', lambda c: compute_scs_0104_image_ubuntu_latest(c.image_lookup_ex))
-    c.add_function('scs_0104_image_ubuntu_2404', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 24.04']))
-    c.add_function('scs_0104_image_ubuntu_2204', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 22.04']))
-    c.add_function('scs_0104_image_ubuntu_2004', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 20.04']))
-    c.add_function('scs_0104_image_debian_13', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 13']))
-    c.add_function('scs_0104_image_debian_12', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 12']))
-    c.add_function('scs_0104_image_debian_11', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 11']))
-    c.add_function('scs_0104_image_debian_10', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 10']))
+    c.add_function('scs-0104-source-capi', lambda c: compute_scs_0104_source_capi(c.image_lookup))
+    c.add_function('scs-0104-source-capi-1', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-1']))
+    c.add_function('scs-0104-source-capi-2', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-2']))
+    c.add_function('scs-0104-source-ubuntu', lambda c: compute_scs_0104_source_ex(c.image_lookup_ex, 'ubuntu'))
+    c.add_function('scs-0104-source-ubuntu-2404', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 24.04']))
+    c.add_function('scs-0104-source-ubuntu-2204', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 22.04']))
+    c.add_function('scs-0104-source-ubuntu-2004', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 20.04']))
+    c.add_function('scs-0104-source-debian', lambda c: compute_scs_0104_source_ex(c.image_lookup_ex, 'debian'))
+    c.add_function('scs-0104-source-debian_13', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 13']))
+    c.add_function('scs-0104-source-debian-12', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 12']))
+    c.add_function('scs-0104-source-debian-11', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 11']))
+    c.add_function('scs-0104-source-debian-10', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 10']))
+    c.add_function('scs-0104-image-capi-1', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-1']))
+    c.add_function('scs-0104-image-capi-2', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-2']))
+    c.add_function('scs-0104-image-ubuntu-latest', lambda c: compute_scs_0104_image_ubuntu_latest(c.image_lookup_ex))
+    c.add_function('scs-0104-image-ubuntu-2404', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 24.04']))
+    c.add_function('scs-0104-image-ubuntu-2204', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 22.04']))
+    c.add_function('scs-0104-image-ubuntu-2004', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 20.04']))
+    c.add_function('scs-0104-image-debian-13', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 13']))
+    c.add_function('scs-0104-image-debian-12', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 12']))
+    c.add_function('scs-0104-image-debian-11', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 11']))
+    c.add_function('scs-0104-image-debian-10', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 10']))
     # scs_0114_volume_types
     c.add_function('volume_types', lambda c: c.conn.list_volume_types())
     c.add_function('volume_type_lookup', lambda c: compute_volume_type_lookup(c.volume_types))
-    c.add_function('scs_0114_syntax_check', lambda c: compute_scs_0114_syntax_check(c.volume_type_lookup))
-    c.add_function('scs_0114_encrypted_type', lambda c: compute_scs_0114_aspect_type(c.volume_type_lookup, 'encrypted'))
-    c.add_function('scs_0114_replicated_type', lambda c: compute_scs_0114_aspect_type(c.volume_type_lookup, 'replicated'))
+    c.add_function('scs-0114-syntax-check', lambda c: compute_scs_0114_syntax_check(c.volume_type_lookup))
+    c.add_function('scs-0114-encrypted-type', lambda c: compute_scs_0114_aspect_type(c.volume_type_lookup, 'encrypted'))
+    c.add_function('scs-0114-replicated-type', lambda c: compute_scs_0114_aspect_type(c.volume_type_lookup, 'replicated'))
     # scs_0115_security_groups
-    c.add_function('scs_0115_default_rules', lambda c: compute_scs_0115_default_rules(c.conn))
+    c.add_function('scs-0115-default-rules', lambda c: compute_scs_0115_default_rules(c.conn))
     # scs_0116_key_manager
     c.add_function('services_lookup', lambda c: compute_services_lookup(c.conn))
-    c.add_function('scs_0116_presence', lambda c: compute_scs_0116_presence(c.services_lookup))
-    c.add_function('scs_0116_permissions', lambda c: compute_scs_0116_permissions(c.conn, c.services_lookup))
+    c.add_function('scs-0116-presence', lambda c: compute_scs_0116_presence(c.services_lookup))
+    c.add_function('scs-0116-permissions', lambda c: compute_scs_0116_permissions(c.conn, c.services_lookup))
     # scs_0117_volume_backup
-    c.add_function('scs_0117_test_backup', lambda c: compute_scs_0117_test_backup(c.conn))
+    c.add_function('scs-0117-test-backup', lambda c: compute_scs_0117_test_backup(c.conn))
     # scs_0123_mandatory_services
-    c.add_function('scs_0123_service_compute', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'compute'))
-    c.add_function('scs_0123_service_identity', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'identity'))
-    c.add_function('scs_0123_service_image', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'image'))
-    c.add_function('scs_0123_service_network', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'network'))
-    c.add_function('scs_0123_service_load_balancer', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'load-balancer'))
-    c.add_function('scs_0123_service_placement', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'placement'))
-    c.add_function('scs_0123_storage_apis', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'volume', 'volumev3', 'block-storage'))
-    c.add_function('scs_0123_service_s3', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'object-store-s3'))
-    c.add_function('scs_0123_swift_s3', lambda c: compute_scs_0123_swift_s3(c.services_lookup, c.conn))
+    for svc in ('compute', 'identity', 'image', 'network', 'load-balancer', 'placement'):
+        c.add_function(f'scs-0123-service-{svc}', lambda c: compute_scs_0123_service_presence(c.services_lookup, svc))
+    c.add_function('scs-0123-storage-apis', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'volume', 'volumev3', 'block-storage'))
+    c.add_function('scs-0123-service-s3', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'object-store-s3'))
+    c.add_function('scs-0123-swift-s3', lambda c: compute_scs_0123_swift_s3(c.services_lookup, c.conn))
     # pseudo-testcase: cleanup
     c.add_function('cleanup', lambda c: Janitor(c.conn, PREFIX, IPADDR).cleanup() or True)
     return c
@@ -216,10 +216,14 @@ class Container:
         self._values = {}
         self._functions = {}
 
+    def __contains__(self, key):
+        return key in self._values or key in self._functions
+
     def __getattr__(self, key):
         val = self._values.get(key)
         if val is None:
-            logger.debug(f'... {key}')
+            # uncomment for super serious debugging
+            # logger.debug(f'... {key}')
             try:
                 ret = self._functions[key](self)
             except BaseException as e:
@@ -243,42 +247,72 @@ class Container:
         self._values[name] = value
 
 
-def harness(name, *check_fns):
+def attest(subject, name, *check_fns):
     """Harness for evaluating testcase `name`.
 
-    Logs beginning of computation.
+    Logs beginning and end of computation.
     Calls each fn in `check_fns`.
-    Prints (to stdout) 'name: RESULT', where RESULT is one of
-
-    - 'ABORT' if an exception occurs during the function calls
-    - 'FAIL' if one of the functions has a falsy result
-    - 'PASS' otherwise
+    Returns attestation dict.
     """
-    logger.debug(f'** {name}')
+    guid = str(uuid.uuid4())
+    timestamp = datetime.now()
+    logger.info(f'*** {subject}/{name} ({guid})')
     try:
         result = all(check_fn() for check_fn in check_fns)
     except BaseException:
         logger.debug('exception during check', exc_info=True)
-        result = 'ABORT'
+        value = 0
     else:
-        result = ['FAIL', 'PASS'][min(1, result)]
-    # this is quite redundant
-    # logger.debug(f'** computation end for {name}')
-    print(f"{name}: {result}")
+        value = 1 if result else -1
+    result = ['fail', 'dnf', 'pass'][value + 1]
+    logger.info(f'+++ {subject}/{name}: {result.upper()}')
+    return {
+        'guid': guid,
+        'timestamp': timestamp,
+        'subject': subject,
+        'predicate': result,
+        'object': name,
+    }
 
 
-def run_preflight_checks(container):
+def run_preflight_checks(container, testcases):
     # make sure that we can connect to the cloud and that the user doesn't have elevated privileges
     # the former would lead to each testcase aborting with a marginally useful message;
     # the latter would lead to scs_0116_permissions aborting, which we don't want to single out
     try:
-        conn = container.conn
-    except openstack.exceptions.ConfigException:
-        logger.critical("Please make sure that ~/.config/openstack/clouds.yaml exists and is correct!")
-        raise
-    if "member" not in ensure_unprivileged(conn, quiet=True):
-        logger.critical("Please make sure that your OpenStack user has role member.")
-        raise RuntimeError("OpenStack user is missing member role.")
+        try:
+            conn = container.conn
+        except openstack.exceptions.ConfigException:
+            logger.critical("Please make sure that ~/.config/openstack/clouds.yaml exists and is correct!")
+            raise
+        if "member" not in ensure_unprivileged(conn, quiet=True):
+            logger.critical("Please make sure that your OpenStack user has role member.")
+            raise RuntimeError("OpenStack user is missing member role.")
+    except Exception:
+        del testcases[:]  # it's no use running any testcases now
+        return False
+    invalid = []
+    for testcase in testcases:
+        if not testcase.startswith('scs-') and testcase != 'cleanup':
+            invalid.append(testcase)
+            continue
+        if testcase not in container:
+            invalid.append(testcase)
+            continue
+    if invalid:
+        logger.critical(f"Invalid/unkown testcases detected: {invalid}")
+        testcases[:] = [tc for tc in testcases if tc not in invalid]
+        return False
+    return True
+
+
+class _LogHandler(logging.Handler):
+    def __init__(self, level=logging.NOTSET, log=None):
+        super().__init__(level=level)
+        self.log = [] if log is None else log
+
+    def handle(self, record):
+        self.log.append(f'{record.levelname}: {record.getMessage()}')
 
 
 def main(argv):
@@ -303,26 +337,38 @@ def main(argv):
         else:
             usage(2)
 
-    testcases = [t for t in args if t.startswith('scs-') or t == 'cleanup']
-    if len(testcases) != len(args):
-        unknown = [a for a in args if a not in testcases]
-        logger.warning(f"ignoring unknown testcases: {','.join(unknown)}")
+    if len(args) == 1 and args[0] == '-':
+        args = sys.stdin.read().splitlines()
 
     if not subject:
         print("CRITICAL: You need to pass -s=SUBJECT.", file=sys.stderr)
         sys.exit(1)
-
-    c = make_container(subject, cloud)
-    try:
-        run_preflight_checks(c)
-    except Exception:
-        logger.critical("Pre-flight checks failed. Reporting all testcases as ABORT.")
-        for testcase in testcases:
-            print(f"{testcase}: ABORT")
-        raise
-    for testcase in testcases:
-        harness(testcase, lambda: getattr(c, testcase.replace('-', '_')))
+    report = run_testcases(subject, args, cloud=cloud)
+    # don't do explicit_start here because that can easily be done by the caller using "echo ---",
+    # and then the caller can even add fields such as uuid, subject, and scope
+    yaml.safe_dump(report, sys.stdout, default_flow_style=False, sort_keys=False, explicit_start=False)
     return 0
+
+
+def run_testcases(subject, testcases, *, cloud=None):
+    c = make_container(subject, cloud=cloud)
+    log = []
+    logging.root.addHandler(_LogHandler(level=logging.DEBUG, log=log))
+
+    attestations = [
+        attest(subject, PREFLIGHT_PSEUDO, lambda: run_preflight_checks(c, testcases)),
+    ] + [
+        attest(subject, testcase, lambda: getattr(c, testcase))
+        for testcase in testcases
+    ]
+
+    return {
+        'uuid': str(uuid.uuid4()),
+        'creator': 'openstack_test.py v0.1.0',
+        'attestations': attestations,
+        'log': log,
+        'attachments': {},
+    }
 
 
 if __name__ == "__main__":
