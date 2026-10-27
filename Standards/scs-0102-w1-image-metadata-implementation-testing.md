@@ -14,6 +14,30 @@ The [OpenStack Image Manager from OSISM](https://github.com/osism/openstack-imag
 will create a set of images from a "spec file" provided by the user, which can also set the required properties
 for these images.
 
+Note that the [OpenStack docs on `os_distro`](https://docs.openstack.org/glance/2025.1/admin/useful-image-properties.html) are not exhaustive by far.
+We allow additional values taken from [libosinfo-db](https://gitlab.com/libosinfo/osinfo-db),
+however dropping any potential `linux` suffix, to be in line with present OpenStack conventions.
+For instance, the following values could be of interest:
+
+- `alma`
+- `alpine`
+- `arch`
+- `centos`
+- `debian`
+- `fedora`
+- `freebsd`
+- `gentoo`
+- `mandrake`
+- `manjaro`
+- `netbsd`
+- `nixos`
+- `openbsd`
+- `opensuse`
+- `rhel`
+- `rocky`
+- `ubuntu`
+- `void`
+
 ## Automated tests
 
 We [implemented](https://github.com/SovereignCloudStack/standards/blob/main/Tests/iaas/openstack_test.py)

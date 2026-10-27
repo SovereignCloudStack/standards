@@ -1,7 +1,8 @@
 ---
 title: SCS Image Metadata
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2026-09-30
 track: IaaS
 description: |
   This is version 2 of the SCS-0102 Image Metadata Standard.
@@ -75,7 +76,7 @@ require an additional field:
   to create automation that works across clouds without requiring image names to be standardized.
 
   _Uniqueness requirement_: For every assignment of values for `os_distro`, `os_version`,
-  and `architecture`, there MUST be at most one public (`visibility=public`),
+  and `architecture`, there MUST be at most one public (`visibility=public` or `visibility=community`),
   non-hidden (`os_hidden=False`) image with this assignment and `os_purpose=generic`.
   In other words, users who search visible public images for a generic OS
   of a certain distro, version, and architecture will not get more than one result.
@@ -86,6 +87,7 @@ The following property is recommended:
 
 The values for `architecture` and `os_distro` and `hypervisor_type` (the latter only if specified) values
 must follow the [OpenStack specifications](https://docs.openstack.org/glance/2025.1/admin/useful-image-properties.html).
+For exceptions, see the [implementation notes](https://docs.scs.community/standards/scs-0102-w1-image-metadata-implementation-testing).
 The `os_version` string should be numeric if the distribution uses numbers, the pair `os_distro` `os_version` should
 for example be `ubuntu` `24.04` for Ubuntu Noble Numbat 24.04[.x] LTS.
 

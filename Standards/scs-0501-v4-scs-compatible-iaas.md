@@ -25,7 +25,7 @@ Standards that were already included in v3.1:
 
 Standards new with v4:
 
-- [scs-0101-v1: Entropy](https://docs.scs.community/standards/scs-0102-v1-image-metadata)
+- [scs-0101-v1: Entropy](https://docs.scs.community/standards/scs-0101-v1-entropy)
 - [scs-0103-v1: Standard flavors](https://docs.scs.community/standards/scs-0103-v1-standard-flavors)
 - [scs-0104-v1: Standard images](https://docs.scs.community/standards/scs-0104-v1-standard-images) with [spec file](https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images.yaml)
 

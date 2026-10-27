@@ -5,11 +5,9 @@
 name: SCS-compatible IaaS
 uuid: 50393e6f-2ae1-4c5c-a62c-3b75f2abef3f
 url: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/scs-compatible-iaas.yaml
-variables:
-  - os_cloud
 scripts:
 - executable: ./iaas/openstack_test.py
-  args: -c {os_cloud} {testcases}
+  args: -s {subject} {testcases}
   testcases:
   - id: scs-0100-syntax-check
     description: Flavor names starting `SCS-` comply with syntax.
@@ -185,11 +183,17 @@ scripts:
   - id: scs-0103-flavor-16v-128
     description: Check presence of flavor `SCS-16V-128`.
     url: https://docs.scs.community/standards/scs-0103-w1-standard-flavors-implementation#automated-tests
+  - id: scs-0104-source-capi
+    description: CAPI images adhere to canonical image source, os_purpose and image_description.
+    url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
   - id: scs-0104-source-capi-1
     description: CAPI images adhere to canonical image source.
     url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
   - id: scs-0104-source-capi-2
     description: CAPI images adhere to canonical image source.
+    url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
+  - id: scs-0104-source-ubuntu
+    description: Ubuntu images adhere to canonical image source.
     url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
   - id: scs-0104-source-ubuntu-2404
     description: Ubuntu 24.04 images adhere to canonical image source.
@@ -199,6 +203,9 @@ scripts:
     url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
   - id: scs-0104-source-ubuntu-2004
     description: Ubuntu 20.04 images adhere to canonical image source.
+    url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
+  - id: scs-0104-source-debian
+    description: Debian images adhere to canonical image source.
     url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
   - id: scs-0104-source-debian-13
     description: Debian 13 images adhere to canonical image source.
@@ -214,6 +221,9 @@ scripts:
     url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
   - id: scs-0104-image-capi-1
     description: CAPI image is present (naming scheme v1).
+    url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
+  - id: scs-0104-image-ubuntu-latest
+    description: Current Ubuntu LTS image is present.
     url: https://docs.scs.community/standards/scs-0104-w1-standard-images-implementation#automated-tests
   - id: scs-0104-image-ubuntu-2404
     description: Ubuntu 24.04 image is present (by name).
@@ -458,6 +468,15 @@ modules:
       recommended:
       - scs-0104-image-capi-2
       - scs-0104-image-debian-12
+  - id: scs-0104-v2
+    name: Standard images
+    url: https://docs.scs.community/standards/scs-0104-v2-standard-images
+    targets:
+      main:
+      - scs-0104-source-capi
+      - scs-0104-source-ubuntu
+      - scs-0104-source-debian
+      - scs-0104-image-ubuntu-latest
   - id: scs-0114-v1
     name: Volume Types
     url: https://docs.scs.community/standards/scs-0114-v1-volume-type-standard
@@ -547,6 +566,16 @@ modules:
       preview:
       - domain-manager-check
 timeline:
+  - date: 2026-11-01
+    versions:
+      next: draft
+      v6: effective
+      v5.1: warn
+  - date: 2026-10-05
+    versions:
+      next: draft
+      v6: effective
+      v5.1: effective
   - date: 2026-06-11
     versions:
       next: draft
@@ -578,11 +607,25 @@ versions:
       - opc-v2022.11
       - scs-0100-v3.1
       - scs-0101-v1
+      - scs-0102-v2
+      - scs-0103-v1
+      - scs-0104-v2
+      - scs-0114-v1
+      - scs-0115-v1
+      - scs-0116-v1
+      - scs-0117-v1
+      - scs-0121-v1
+      - scs-0123-v2
+      - scs-0302-v1
+  - version: v6
+    stabilized_at: 2026-10-05
+    include:
+      - opc-v2022.11
+      - scs-0100-v3.1
+      - scs-0101-v1
       - scs-0102-v2  # instead of scs-0102-v1
       - scs-0103-v1
-      - ref: scs-0104-v1-2
-        parameters:
-          image_spec: https://raw.githubusercontent.com/SovereignCloudStack/standards/main/Tests/iaas/scs-0104-v1-images-v5.yaml
+      - scs-0104-v2  # instead of scs-0104-v1
       - scs-0114-v1
       - scs-0115-v1
       - scs-0116-v1

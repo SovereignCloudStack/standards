@@ -115,6 +115,7 @@ class PluginT8s(KubernetesClusterPlugin):
             "spec": {
                 "chartRef": self.hr_chart_ref,
                 "driftDetection": {"mode": "enabled"},
+                "install": {"timeout": "15m"},  # 10m were sufficient in test, but keep some room
                 "interval": "1m",
                 "values": {**self.hr_values_fixed, "version": self.k8s_version},
             },
@@ -234,8 +235,8 @@ class PluginT8s(KubernetesClusterPlugin):
             core_api = CoreV1Api(api_client)
             co_api = CustomObjectsApi(api_client)
             self._apply_helmrelease(api_client)
-            kubeconfig = self._wait_for_kubeconfig_secret(core_api)
             self._wait_for_helmrelease_ready(co_api)
+            kubeconfig = self._wait_for_kubeconfig_secret(core_api)
             self._write_kubeconfig(kubeconfig)
 
     def delete_cluster(self) -> None:

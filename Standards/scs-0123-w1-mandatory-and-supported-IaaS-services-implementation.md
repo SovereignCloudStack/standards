@@ -15,7 +15,7 @@ the following testcases in accordance with the standard:
 - `scs-0123-service-<type>` ensures that a service with the given type can be found in the service catalog
 - `scs-0123-storage-apis` ensures that a service of one of the following types can be found: "volume", "volumev3", "block-storage"
 
-v1 only (soon to be deprecated):
+v1 only (deprecated):
 
 - `scs-0123-swift-s3` ensures that S3 is present on the same host as swift
 
