@@ -19,10 +19,12 @@ RUN set -eux; \
 
 COPY requirements.txt requirements.txt
 COPY iaas/requirements.txt iaas-requirements.txt
+COPY iaas/scs_0128_e2e_testing/requirements.txt scs0128-requirements.txt
 COPY kaas/requirements.txt kaas-requirements.txt
 RUN --mount=type=cache,target=/root/.cache \
-    pip3 install -r requirements.txt -r iaas-requirements.txt -r kaas-requirements.txt
+    pip3 install -r requirements.txt -r iaas-requirements.txt -r scs0128-requirements.txt -r kaas-requirements.txt
 
+RUN tempest init /tempest
 COPY . .
 
 ENTRYPOINT ["./scs-compliance-check.py"]
