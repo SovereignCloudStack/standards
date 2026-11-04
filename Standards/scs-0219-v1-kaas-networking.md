@@ -10,7 +10,7 @@ track: KaaS
 
 Kubernetes defines a networking model that needs to be implemented by a separate CNI plugin.
 Beyond basic connectivity within the cluster, however, there are many networking features that are specified but optional.
-Some of these optional features provide vital functionality, such as the NetworkPolicy API and the Ingress API.
+Some of these optional features provide vital functionality, such as the NetworkPolicy API, the Ingress API, and the Gateway API.
 
 This standard specifies a minimal set of networking features that users can expect in clusters created by an SCS-compliant KaaS provider.
 
@@ -78,7 +78,7 @@ It has not been stabilized yet, so currently we can at most recommend CNI plugin
 
 The Ingress API allows the external exposure of HTTP/HTTPS-based services running in the cluster.
 Unlike the L3/L4-based LoadBalancer Service type, Ingress provides L7 load balancing, HTTP routing, and TLS termination for services.
-This functionality can be provided within the cluster by a pod-based ingress controller such as `ingress-nginx`, that exposes Ingress resources as Services.
+While previously often provided by `ingress-nginx` (which has entered upstream retirement), ingress functionality can be provided within the cluster by pod-based CNCF ingress controllers such as Traefik or Envoy Gateway.
 
 However, there are also Ingress controllers that integrate with underlying infrastructure and may help to reduce overhead.
 Examples for this are the Cilium CNI plugin, which comes with built-in Ingress support, and the Octavia Ingress controller, which may be a good choice if OpenStack Octavia is already used to provide L3/L4 load balancing.
@@ -86,11 +86,20 @@ Examples for this are the Cilium CNI plugin, which comes with built-in Ingress s
 The CSPs that manage the underlying infrastructure can of course make the best choice for such an integrated Ingress controller, so they should be encouraged to do so.
 Even with a CSP-provided default Ingress controller present, users will be able to use alternative Ingress controllers by creating a new `IngressClass`, which can then be referenced in Ingress resources.
 
+#### Gateway API
+
+The [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) (`gateway.networking.k8s.io`) is the official upstream successor to the Ingress API.
+It provides an expressive, extensible, and role-oriented service networking model that decouples infrastructure provisioning (`GatewayClass`), cluster operations (`Gateway`), and application routing (`HTTPRoute`, `GRPCRoute`, `TLSRoute`).
+
+As upstream Kubernetes considers the Gateway API the standard evolution of cluster traffic routing and ingress capabilities, KaaS providers are encouraged to support the Gateway API natively or via CNCF-aligned controllers (such as Envoy Gateway, Cilium, or Traefik).
+
 ## Decision
 
 CSPs MUST provide a network plugin that fully supports `NetworkPolicy` resources in the API version `networking.k8s.io/v1`.
 CSPs SHOULD provide a network plugin that supports or is working on support for the `AdminNetworkPolicy` and `BaselineAdminNetworkPolicy` resources of the `policy.networking.k8s.io` API group, in their latest version, up to `v1`.
 
 CSPs SHOULD offer the option for a managed, `networking.k8s.io/v1`-compliant Ingress controller and a default `IngressClass` resource for this controller.
+
+CSPs SHOULD offer the option for a managed controller supporting the Kubernetes Gateway API (`gateway.networking.k8s.io`) in its standard channel and provide a default `GatewayClass` resource.
 
 CSPs MAY add default networking restrictions, using either `networking.k8s.io/v1`-compliant `NetworkPolicy` resources with a policy operator, or alternatively any cluster-wide network policy extensions provided by the CNI plugin.
