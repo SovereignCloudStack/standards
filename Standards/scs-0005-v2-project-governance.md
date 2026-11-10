@@ -80,8 +80,9 @@ within the last six weeks of the calendar year.
 
 ### Seats on the board
 
-The _SCS Project Board_ contains five seats. One of these seats is filled by
-the delegate of the _Forum SCS-Standards_. The other four seats are voted upon.
+The _SCS Project Board_ contains five seats. One of these seats is filled by the delegate of the _Forum SCS-Standards_. 
+The seat can be shared with a deputy delegate. 
+The other four seats are voted upon.
 
 #### Conflict of Interest and Organizational Diversity
 
