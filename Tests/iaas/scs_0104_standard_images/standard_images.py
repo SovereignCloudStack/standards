@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import date
+import io
 import logging
 import re
 
@@ -187,19 +188,19 @@ def compute_scs_0104_custom_image_upload(conn, prefix="_scs-"):
         logger.info(f"Creating image record {image_name}...")
         test_image = conn.image.create_image(
             name=image_name,
+            data=io.BytesIO(payload),
             disk_format="raw",
             container_format="bare",
             visibility="private",
+            wait=True,
         )
 
         if not test_image or not test_image.id:
-            logger.error("Failed to create custom image record")
+            logger.error("Failed to create and upload custom image")
             return False
 
         image_id = test_image.id
-        logger.info(f"Uploading image payload for ID: {image_id}...")
-        conn.image.set_image_data(image_id, payload)
-        test_image = conn.image.wait_for_status(test_image, status="active", wait=60)
+        logger.info(f"Custom image uploaded with ID: {image_id}")
 
         # 1. Validate image details retrieval
         retrieved = conn.image.get_image(image_id)
