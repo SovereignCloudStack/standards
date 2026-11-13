@@ -37,7 +37,7 @@ from scs_0103_standard_flavors.standard_flavors import \
 from scs_0104_standard_images.standard_images import \
     SCS_0104_IMAGE_SPECS, compute_scs_0104_source, compute_scs_0104_image, \
     compute_image_lookup_ex, compute_scs_0104_source_ex, compute_scs_0104_source_capi, \
-    compute_scs_0104_image_ubuntu_latest
+    compute_scs_0104_image_ubuntu_latest, compute_scs_0104_custom_image_upload
 from scs_0114_volume_types.volume_types import \
     compute_volume_type_lookup, compute_scs_0114_syntax_check, compute_scs_0114_aspect_type
 from scs_0115_security_groups.security_groups import \
@@ -163,6 +163,7 @@ def make_container(subject, cloud):
     c.add_function('scs_0104_image_debian_12', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 12']))
     c.add_function('scs_0104_image_debian_11', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 11']))
     c.add_function('scs_0104_image_debian_10', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 10']))
+    c.add_function('scs_0104_custom_image_upload', lambda c: compute_scs_0104_custom_image_upload(c.conn, PREFIX))
     # scs_0114_volume_types
     c.add_function('volume_types', lambda c: c.conn.list_volume_types())
     c.add_function('volume_type_lookup', lambda c: compute_volume_type_lookup(c.volume_types))
