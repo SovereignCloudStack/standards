@@ -22,7 +22,7 @@ charset-normalizer==3.4.7
     # via requests
 click==8.3.2
     # via -r requirements.in
-cryptography==46.0.7
+cryptography>=46.0.7
     # via sslyze
 frozenlist==1.8.0
     # via
@@ -56,7 +56,7 @@ requests==2.33.1
     # via -r requirements.in
 six==1.17.0
     # via python-dateutil
-sslyze==6.3.1
+sslyze>=6.3.1
     # via -r requirements.in
 tls-parser==2.0.2
     # via sslyze
