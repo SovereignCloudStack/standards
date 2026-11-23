@@ -1,0 +1,40 @@
+{%- for flavor in mandatory %}
+{%- set flavor = flavor.name %}
+{%- set vcpus = flavor.split("-")[1][:-1] | int %}
+{%- set cpu_type = flavor.split("-")[1][-1] %}
+{%- set ram = flavor.split("-")[2] | int %}
+{%- if flavor.split("-") | length > 3 %}
+  {%- set disk = flavor.split("-")[3] | int %}
+  {%- if disk == 0 %}
+    {%- set disk_type = flavor.split("-")[3][-1] %}
+    {%- set disk = flavor.split("-")[3][:-1] | int %}
+  {%- endif %}
+{%- else %}
+  {%- set disk = 0 %}
+{%- endif -%}
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: {{ flavor | lower }}
+spec:
+  managementPolicy: managed
+  resource:
+    name: {{ flavor }}
+    description: {{ vcpus }} vCPU(s) - {{ ram }} GiB RAM {% if disk %}- {{ disk }} GiB Disk{% endif %}
+    disk: {{ disk }}
+    isPublic: true
+    ram: {{ ram * 1024 }}
+    vcpus: {{ vcpus }}
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-{{ vcpus }}{{ cpu_type }}:{{ ram }}{% if disk %}:{{ disk }}{% if disk_type %}{{ disk_type }}{% endif %}{% endif %}
+      - name: scs:name-v2
+        value: {{ flavor }}
+      - name: scs:cpu-type
+        value: {% if cpu_type == "L" %}crowded-core{% else %}shared-core{% endif %}
+      {%- if disk_type %}
+      - name: scs:disk0-type
+        value: {% if disk_type == "s" %}ssd{% endif %}
+      {%- endif %}
+{% endfor -%}
