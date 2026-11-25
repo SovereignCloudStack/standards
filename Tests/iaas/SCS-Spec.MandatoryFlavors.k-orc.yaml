@@ -1,0 +1,320 @@
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: scs-1v-4
+spec:
+  managementPolicy: managed
+  resource:
+    name: SCS-1V-4
+    description: 1 vCPU(s) - 4 GiB RAM 
+    disk: 0
+    isPublic: true
+    ram: 4096
+    vcpus: 1
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-1V:4
+      - name: scs:name-v2
+        value: SCS-1V-4
+      - name: scs:cpu-type
+        value: shared-core
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: scs-2v-8
+spec:
+  managementPolicy: managed
+  resource:
+    name: SCS-2V-8
+    description: 2 vCPU(s) - 8 GiB RAM 
+    disk: 0
+    isPublic: true
+    ram: 8192
+    vcpus: 2
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-2V:8
+      - name: scs:name-v2
+        value: SCS-2V-8
+      - name: scs:cpu-type
+        value: shared-core
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: scs-4v-16
+spec:
+  managementPolicy: managed
+  resource:
+    name: SCS-4V-16
+    description: 4 vCPU(s) - 16 GiB RAM 
+    disk: 0
+    isPublic: true
+    ram: 16384
+    vcpus: 4
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-4V:16
+      - name: scs:name-v2
+        value: SCS-4V-16
+      - name: scs:cpu-type
+        value: shared-core
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: scs-8v-32
+spec:
+  managementPolicy: managed
+  resource:
+    name: SCS-8V-32
+    description: 8 vCPU(s) - 32 GiB RAM 
+    disk: 0
+    isPublic: true
+    ram: 32768
+    vcpus: 8
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-8V:32
+      - name: scs:name-v2
+        value: SCS-8V-32
+      - name: scs:cpu-type
+        value: shared-core
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: scs-1v-2
+spec:
+  managementPolicy: managed
+  resource:
+    name: SCS-1V-2
+    description: 1 vCPU(s) - 2 GiB RAM 
+    disk: 0
+    isPublic: true
+    ram: 2048
+    vcpus: 1
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-1V:2
+      - name: scs:name-v2
+        value: SCS-1V-2
+      - name: scs:cpu-type
+        value: shared-core
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: scs-2v-4
+spec:
+  managementPolicy: managed
+  resource:
+    name: SCS-2V-4
+    description: 2 vCPU(s) - 4 GiB RAM 
+    disk: 0
+    isPublic: true
+    ram: 4096
+    vcpus: 2
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-2V:4
+      - name: scs:name-v2
+        value: SCS-2V-4
+      - name: scs:cpu-type
+        value: shared-core
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: scs-4v-8
+spec:
+  managementPolicy: managed
+  resource:
+    name: SCS-4V-8
+    description: 4 vCPU(s) - 8 GiB RAM 
+    disk: 0
+    isPublic: true
+    ram: 8192
+    vcpus: 4
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-4V:8
+      - name: scs:name-v2
+        value: SCS-4V-8
+      - name: scs:cpu-type
+        value: shared-core
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: scs-8v-16
+spec:
+  managementPolicy: managed
+  resource:
+    name: SCS-8V-16
+    description: 8 vCPU(s) - 16 GiB RAM 
+    disk: 0
+    isPublic: true
+    ram: 16384
+    vcpus: 8
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-8V:16
+      - name: scs:name-v2
+        value: SCS-8V-16
+      - name: scs:cpu-type
+        value: shared-core
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: scs-16v-32
+spec:
+  managementPolicy: managed
+  resource:
+    name: SCS-16V-32
+    description: 16 vCPU(s) - 32 GiB RAM 
+    disk: 0
+    isPublic: true
+    ram: 32768
+    vcpus: 16
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-16V:32
+      - name: scs:name-v2
+        value: SCS-16V-32
+      - name: scs:cpu-type
+        value: shared-core
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: scs-1v-8
+spec:
+  managementPolicy: managed
+  resource:
+    name: SCS-1V-8
+    description: 1 vCPU(s) - 8 GiB RAM 
+    disk: 0
+    isPublic: true
+    ram: 8192
+    vcpus: 1
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-1V:8
+      - name: scs:name-v2
+        value: SCS-1V-8
+      - name: scs:cpu-type
+        value: shared-core
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: scs-2v-16
+spec:
+  managementPolicy: managed
+  resource:
+    name: SCS-2V-16
+    description: 2 vCPU(s) - 16 GiB RAM 
+    disk: 0
+    isPublic: true
+    ram: 16384
+    vcpus: 2
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-2V:16
+      - name: scs:name-v2
+        value: SCS-2V-16
+      - name: scs:cpu-type
+        value: shared-core
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: scs-4v-32
+spec:
+  managementPolicy: managed
+  resource:
+    name: SCS-4V-32
+    description: 4 vCPU(s) - 32 GiB RAM 
+    disk: 0
+    isPublic: true
+    ram: 32768
+    vcpus: 4
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-4V:32
+      - name: scs:name-v2
+        value: SCS-4V-32
+      - name: scs:cpu-type
+        value: shared-core
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: scs-1l-1
+spec:
+  managementPolicy: managed
+  resource:
+    name: SCS-1L-1
+    description: 1 vCPU(s) - 1 GiB RAM 
+    disk: 0
+    isPublic: true
+    ram: 1024
+    vcpus: 1
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-1L:1
+      - name: scs:name-v2
+        value: SCS-1L-1
+      - name: scs:cpu-type
+        value: crowded-core
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: scs-2v-4-20s
+spec:
+  managementPolicy: managed
+  resource:
+    name: SCS-2V-4-20s
+    description: 2 vCPU(s) - 4 GiB RAM - 20 GiB Disk
+    disk: 20
+    isPublic: true
+    ram: 4096
+    vcpus: 2
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-2V:4:20s
+      - name: scs:name-v2
+        value: SCS-2V-4-20s
+      - name: scs:cpu-type
+        value: shared-core
+      - name: scs:disk0-type
+        value: ssd
+---
+apiVersion: openstack.k-orc.cloud/v1alpha1
+kind: Flavor
+metadata:
+  name: scs-4v-16-100s
+spec:
+  managementPolicy: managed
+  resource:
+    name: SCS-4V-16-100s
+    description: 4 vCPU(s) - 16 GiB RAM - 100 GiB Disk
+    disk: 100
+    isPublic: true
+    ram: 16384
+    vcpus: 4
+    extraSpecs:
+      - name: scs:name-v1
+        value: SCS-4V:16:100s
+      - name: scs:name-v2
+        value: SCS-4V-16-100s
+      - name: scs:cpu-type
+        value: shared-core
+      - name: scs:disk0-type
+        value: ssd
+
