@@ -13,18 +13,18 @@ jobs:
   default:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
-        token: ${{ secrets.FLAVORS_SPEC_PAT }}
-    - name: Set up Python 3.10.5
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.10.5"
+        python-version: "3.15"
         cache: 'pip'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install PyYAML==6.0
+        pip install PyYAML==6.0.4
     - name: Run flavor-manager-input.py
       run: |
         python Tests/iaas/generate_flavors_yaml.py > Tests/iaas/SCS-Spec.MandatoryFlavors.verbose.yaml
