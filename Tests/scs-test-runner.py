@@ -35,6 +35,7 @@ class Config:
         self.scs_compliance_check = os.path.join(self.cwd, 'scs-compliance-check.py')
         self.cleanup_py = os.path.join(self.cwd, 'iaas', 'openstack_test.py')
         self.run_plugin_py = os.path.join(self.cwd, 'kaas', 'plugin', 'run_plugin.py')
+        self.k8s_version_py = os.path.join(self.cwd, 'kaas', 'k8s_version.py')
         self.ssh_keygen = shutil.which('ssh-keygen')
         self.curl = shutil.which('curl')
         self.secrets = {}
@@ -63,12 +64,35 @@ class Config:
     def abspath(self, path):
         return os.path.join(self.cwd, path)
 
+    def detect_k8s_version(self, subject):
+        """
+        Return the k8s version (major.minor.patch) reported by the cluster of `subject`, or None.
+
+        Only subjects that have a kubeconfig (i.e., KaaS clusters) are considered. Subjects whose
+        version can't be determined are still checked; the version just won't be part of their report.
+        """
+        if not os.path.isfile(self.abspath(os.path.join(subject, 'kubeconfig.yaml'))):
+            logger.debug(f'no kubeconfig for subject {subject}, not detecting k8s version')
+            return None
+        proc = subprocess.run(
+            [sys.executable, self.k8s_version_py, '-s', subject],
+            cwd=self.cwd, capture_output=True, text=True,
+        )
+        if proc.returncode != 0:
+            logger.warning(f'could not detect k8s version for subject {subject}: {proc.stderr.strip()}')
+            return None
+        return proc.stdout.strip() or None
+
     def build_check_command(self, scope, subject, sections, output):
         # TODO figure out when to supply --debug here (but keep separated from our --debug)
         args = [
             sys.executable, self.scs_compliance_check, self.abspath(self.scopes[scope]['spec']),
             '--debug', '-C', '-o', output, '-s', subject,
         ]
+        # ends up in the report as `k8s_version`, so the monitor sees the minors that are really deployed
+        k8s_version = self.detect_k8s_version(subject)
+        if k8s_version:
+            args.extend(['--k8s-version', k8s_version])
         if sections:
             args.extend(['--sections', sections])
         return {'args': args}

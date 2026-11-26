@@ -362,6 +362,17 @@ def db_get_reports(cur: cursor, subject, limit, skip):
     return [row[0] for row in cur.fetchall()]
 
 
+def db_get_latest_k8s_versions(cur: cursor, subjects):
+    """for each of the given subjects, get the k8s version from the most recent report that has one"""
+    cur.execute('''
+    SELECT DISTINCT ON (subject) subject, data->>'k8s_version'
+    FROM report
+    WHERE subject = ANY(%(subjects)s) AND data->>'k8s_version' IS NOT NULL
+    ORDER BY subject, checked_at DESC;
+    ''', {"subjects": list(subjects)})
+    return dict(cur.fetchall())
+
+
 def db_insert_report(cur: cursor, uuid, checked_at, subject, json_text):
     # this is an exception in that we don't use a record parameter (it's just not as practical here)
     cur.execute('''

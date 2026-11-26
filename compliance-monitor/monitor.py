@@ -42,7 +42,7 @@ from sql import (
     db_get_keys, db_insert_report, db_get_recent_results2, db_patch_approval2, db_get_report,
     db_ensure_schema, db_get_apikeys, db_update_apikey, db_filter_apikeys, db_clear_delegates,
     db_find_subjects, db_insert_result2, db_get_relevant_results2, db_add_delegate, db_get_group,
-    db_filter_accounts, db_get_groups,
+    db_filter_accounts, db_get_groups, db_get_latest_k8s_versions,
 )
 
 
@@ -679,6 +679,22 @@ async def get_detail(
     return _make_detail_view(conn, view_type, subject, scopeuuid)
 
 
+def _group_k8s_minors(versions: dict[str, str]) -> dict[tuple[int, int], list[str]]:
+    """
+    Dedupe the k8s versions of subjects by minor, so that deploying the same minor under several
+    subject names still counts as just one minor. Returns minor -> subjects, sorted by minor, newest first.
+    Versions that can't be parsed are ignored.
+    """
+    minors = defaultdict(list)
+    for subject, version in versions.items():
+        parts = version.split('.')
+        try:
+            minors[(int(parts[0]), int(parts[1]))].append(subject)
+        except (ValueError, IndexError):
+            logger.warning("ignoring unparsable k8s version %r of subject %s", version, subject)
+    return {minor: sorted(minors[minor]) for minor in sorted(minors, reverse=True)}
+
+
 def _make_detail_view(conn, view_type, subject, scopeuuid, include_drafts=False):
     scopeuuid = _resolve_scope(scopeuuid)
     with conn.cursor() as cur:
@@ -686,6 +702,7 @@ def _make_detail_view(conn, view_type, subject, scopeuuid, include_drafts=False)
         rows2 = []
         for subj in subjects:
             rows2.extend(db_get_relevant_results2(cur, subj, scopeuuid))
+        k8s_minors = _group_k8s_minors(db_get_latest_k8s_versions(cur, subjects))
     results2 = convert_result_rows_to_dict2(
         rows2, get_scopes(), include_report=True, include_drafts=include_drafts,
         subjects=subjects, scopes=(scopeuuid, ),
@@ -695,6 +712,7 @@ def _make_detail_view(conn, view_type, subject, scopeuuid, include_drafts=False)
         title += ' (incl. drafts)'
     return render_view(
         VIEW_DETAIL, view_type, results=results2, base_url=settings.base_url, title=title,
+        k8s_minors=k8s_minors,
     )
 
 

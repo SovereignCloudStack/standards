@@ -1,6 +1,13 @@
 Version numbers are suffixed by a symbol depending on state:
 \* for _draft_, † for _warn_ (soon to be deprecated), and †† for _deprecated_.
 
+{% if k8s_minors -%}
+Kubernetes minor versions deployed (deduplicated, according to the latest reports):
+
+{% for minor, subjects in k8s_minors.items() -%}
+- {{ minor[0] }}.{{ minor[1] }} ({{ subjects | join(', ') }})
+{% endfor %}
+{% endif -%}
 {% if results | length > 1 %}
 Jump to
 

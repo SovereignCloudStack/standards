@@ -55,6 +55,7 @@ Options:
   -o/--output REPORT_FILEPATH: Generate yaml report of compliance check in given filepath
   -C/--critical-only: Only return critical errors in return code
   -a/--assign KEY=VALUE: assign variable to be used for the run (as required by yaml file)
+     --k8s-version VERS: k8s version of the cluster under test (major.minor.patch), recorded in the report
 
 With -C, the return code will be nonzero precisely when the tests couldn't be run to completion.
 """, file=file)
@@ -91,6 +92,7 @@ class Config:
         self.quiet = False
         self.subject = ""
         self.assignment = {}
+        self.k8s_version = None
         self.checkdate = datetime.date.today()
         self.version = None
         self.output = None
@@ -103,7 +105,7 @@ class Config:
         try:
             opts, args = getopt.gnu_getopt(argv, "hvqd:V:s:o:S:Ca:t:", (
                 "help", "verbose", "quiet", "date=", "version=", "debug",
-                "subject=", "output=", "sections=", "critical-only", "assign=", "tests=",
+                "subject=", "output=", "sections=", "critical-only", "assign=", "tests=", "k8s-version=",
             ))
         except getopt.GetoptError:
             usage(file=sys.stderr)
@@ -138,6 +140,8 @@ class Config:
                 if key in self.assignment:
                     raise ValueError(f"Double assignment for {key!r}")
                 self.assignment[key] = value
+            elif opt[0] == "--k8s-version":
+                self.k8s_version = opt[1]
             elif opt[0] == "-t" or opt[0] == "--tests":
                 self.tests = re.compile(opt[1])
             else:
@@ -268,7 +272,7 @@ def print_report(testcase_lookup: dict, targets: dict, results: dict, partial=Fa
 
 
 def create_report(argv, config, spec, invocations):
-    return {
+    report = {
         # these fields are essential:
         # results are no longer specific to version!
         # omit the field `version` because it's just redundant; simply parse invocations (see below)
@@ -291,6 +295,10 @@ def create_report(argv, config, spec, invocations):
             "invocations": {invocation['id']: invocation for invocation in invocations},
         },
     }
+    if config.k8s_version:
+        # let the compliance monitor see which k8s version was really tested (only meaningful for KaaS subjects)
+        report["k8s_version"] = config.k8s_version
+    return report
 
 
 def main(argv):
