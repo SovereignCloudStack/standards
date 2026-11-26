@@ -1,39 +1,48 @@
-name: Generate Spec.MandatoryFlavors.verbose.yaml
+name: Generate specs for mandatory flavors
 
 on:
   push:
-    branches:
-    - main
+    branches-ignore:
+      - main
     paths:
+      - '.github/workflows/create-flavors-spec.yml'
       - 'Tests/iaas/scs_0103_standard_flavors/standard_flavors.py'
       - 'Tests/iaas/generate_flavors_yaml.py'
+      - 'Tests/iaas/SCS-Spec.MandatoryFlavors.k-orc.yaml.j2'
   workflow_dispatch:
 
 jobs:
   default:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
-        token: ${{ secrets.FLAVORS_SPEC_PAT }}
-    - name: Set up Python 3.10.5
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.10.5"
+        python-version: "3.15"
         cache: 'pip'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install PyYAML==6.0
-    - name: Run flavor-manager-input.py
+        pip install PyYAML==6.0.4
+    - name: Generate OSISM flavor manager spec
       run: |
         python Tests/iaas/generate_flavors_yaml.py > Tests/iaas/SCS-Spec.MandatoryFlavors.verbose.yaml
+    - name: Generate K-ORC Flavor manifests
+      uses: cuchi/jinja2-action@v1.3.0
+      with:
+        template: Tests/iaas/SCS-Spec.MandatoryFlavors.k-orc.yaml.j2
+        output_file: Tests/iaas/SCS-Spec.MandatoryFlavors.k-orc.yaml
+        data_file: Tests/iaas/SCS-Spec.MandatoryFlavors.verbose.yaml
     - name: Commit changes
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
-        commit_message: Auto-generate verbose flavors spec file
+        commit_message: Auto-generate mandatory flavors spec files
         commit_options: '--signoff'
         commit_user_name: github-actions[bot]
         commit_user_email: github-actions[bot]@users.noreply.github.com
         commit_author: github-actions[bot] <github-actions[bot]@users.noreply.github.com> # defaults to author of the commit that triggered the run
-        file_pattern: 'Tests/iaas/SCS-Spec.MandatoryFlavors.verbose.yaml'
+        file_pattern: 'Tests/iaas/SCS-Spec.MandatoryFlavors.*.yaml'
+
