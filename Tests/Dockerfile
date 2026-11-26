@@ -8,8 +8,8 @@ ARG SONOBUOY_VERSION=0.57.3
 ARG TARGETOS
 ARG TARGETARCH
 
-RUN --mount=type=cache,target=/var/cache/apt \
-    --mount=type=cache,target=/var/lib/apt \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=private \
+    --mount=type=cache,target=/var/lib/apt,sharing=private \
     apt-get update && apt-get install -y --no-install-recommends wget
 
 RUN set -eux; \
@@ -21,7 +21,7 @@ COPY requirements.txt requirements.txt
 COPY iaas/requirements.txt iaas-requirements.txt
 COPY iaas/scs_0128_e2e_testing/requirements.txt scs0128-requirements.txt
 COPY kaas/requirements.txt kaas-requirements.txt
-RUN --mount=type=cache,target=/root/.cache \
+RUN --mount=type=cache,target=/root/.cache,sharing=private \
     pip3 install -r requirements.txt -r iaas-requirements.txt -r scs0128-requirements.txt -r kaas-requirements.txt
 
 RUN tempest init /tempest
