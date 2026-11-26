@@ -43,6 +43,7 @@ subjects = [
     "noris-1.35",
     "scaleup-1.34",
     "scaleup-1.35",
+    "scaleup-1.36",
     "syself-1.34",
     "syself-1.35",
     "teuto-1.35",
@@ -56,6 +57,9 @@ scopes = [
     "scs-compatible-kaas",
 ]
 subjects = [
+    "noris-1.36",
+    "scaleup-1.36",
+    "syself-1.36",
     "teuto-1.36",
 ]
 workers = 4
@@ -66,9 +70,7 @@ scopes = [
     "scs-compatible-kaas",
 ]
 subjects = [
-    "noris-1.34",
-    "scaleup-1.34",
-    "syself-1.34",
+    # put 1.37 here
 ]
 workers = 4
 
@@ -104,13 +106,3 @@ spec = "./scs-compatible-iaas.yaml"
 
 [scopes.scs-compatible-kaas]
 spec = "./scs-compatible-kaas.yaml"
-
-
-# default subject (not a real subject, but used to declare a default mapping)
-# (this is the only mapping declaration that supports using Python string interpolation)
-[subjects._.mapping]
-os_cloud = "{subject}"
-# NOTE: this subject_root cannot be deviated from when using scs-test-runner.py
-subject_root = "{subject}"
-# NOTE: this kubeconfig cannot be deviated from when using scs-test-runner.py
-kubeconfig = "{subject}/kubeconfig.yaml"

@@ -20,6 +20,29 @@ At the moment, there are two cloud layers that can be checked: IaaS and KaaS.
 For both types of checks, the exit code indicates success (0) or failure (!= 0).
 You can also request a YAML report using the option `-o OUTPUT.yaml`
 
+### Environment configuration (`env.yaml`)
+
+Some tests can be adjusted to the environment by using variables. These variables
+can be specified in `$HOME/.config/scs/env.yaml`. Use the subject as a key for a
+dictionary for the variables. For instance, with a subject `openstack` and two
+variables `dns_nameservers` and `external_gateway_net_id`, you could declare:
+
+```yaml
+openstack:
+    dns_nameservers: ['1.2.3.4']
+    external_gateway_net_id: abcdef12-3456-7890-abcd-ef1234567890
+```
+
+Similarly, for KaaS environments requiring specific test execution permissions
+(such as mounting an administrative kubeconfig into the Sonobuoy e2e test pod
+for subjects requiring `system:masters` group membership in Kubernetes 1.36),
+you can declare `sonobuoy_fix`:
+
+```yaml
+syself-1.36:
+    sonobuoy_fix: inject-kubeconfig
+```
+
 ### IaaS checks
 
 Install IaaS-specific requirements:
@@ -35,7 +58,7 @@ With a cloud environment configured in your `~/.config/openstack/clouds.yaml`
 and `secure.yaml`, then run
 
 ```shell
-./scs-compliance-check.py -s CLOUDNAME -a os_cloud=CLOUDNAME scs-compatible-iaas.yaml
+./scs-compliance-check.py -s CLOUDNAME scs-compatible-iaas.yaml
 ```
 
 Replace `CLOUDNAME` with the name of your cloud environment as
@@ -54,7 +77,7 @@ Additionally, Sonobuoy must be installed and in your PATH environment variable.
 Given a kubeconfig file `path/to/kubeconfig.yaml`, run
 
 ```shell
-./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml -a subject_root=. -s SUBJECT -o report.yaml scs-compatible-kaas.yaml
+./scs-compliance-check.py -v -a kubeconfig=path/to/kubeconfig.yaml -s SUBJECT -o report.yaml scs-compatible-kaas.yaml
 ```
 
 Replace `SUBJECT` with an arbitrary, but meaningful subject name. Also, please note that the check
@@ -69,6 +92,12 @@ A report in YAML format will be created.
 Additionally, the directory `sono-results` will be generated. It contains a JUnit XML file:
 `plugins/e2e/results/global/junit_01.xml`. You can render it to HTML with a tool like junit2html.
 This might give you hints as to why a test failed.
+
+For environments requiring specific test execution workarounds (such as mounting
+the admin kubeconfig into the e2e test pod for subjects requiring `system:masters`
+group membership in Kubernetes 1.36), refer to the
+[Environment configuration (`env.yaml`)](#environment-configuration-envyaml)
+section above to configure `sonobuoy_fix` in `$HOME/.config/scs/env.yaml`.
 
 ## Usage information (help output)
 

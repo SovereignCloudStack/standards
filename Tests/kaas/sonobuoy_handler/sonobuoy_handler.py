@@ -1,3 +1,4 @@
+import base64
 from collections import Counter
 import logging
 import re
@@ -7,6 +8,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+from tempfile import gettempdir
 
 import yaml
 
@@ -29,6 +31,142 @@ def _fmt_result(counter):
     return ', '.join(f"{counter.get(key, 0)} {key}" for key in ('passed', 'failed', 'failed_ok', 'skipped'))
 
 
+def _get_plugins_cm(docs):
+    """Locate the sonobuoy-plugins-cm ConfigMap document in the generated sonobuoy manifest."""
+    for doc in docs:
+        if not doc:
+            continue
+        if doc.get("kind") != "ConfigMap":
+            continue
+        if doc.get("metadata", {}).get("name") != "sonobuoy-plugins-cm":
+            continue
+        return doc
+    raise RuntimeError("Failed to locate 'sonobuoy-plugins-cm' ConfigMap in sonobuoy manifest")
+
+
+def _patch_e2e_plugin_cm(plugins_cm):
+    """Patch the 'e2e' plugin definition in sonobuoy-plugins-cm to mount and use admin kubeconfig."""
+    data_map = plugins_cm.get("data", {})
+    for plugin_key, plugin_raw in data_map.items():
+        plugin_data = yaml.safe_load(plugin_raw)
+        if not isinstance(plugin_data, dict):
+            continue
+        if plugin_data.get("sonobuoy-config", {}).get("plugin-name") != "e2e":
+            continue
+
+        # Mount the admin-kubeconfig secret into the e2e test pod
+        pod_spec = plugin_data.setdefault("podSpec", {})
+        pod_spec["volumes"] = pod_spec.get("volumes", []) + [
+            {"name": "admin-kubeconfig-vol", "secret": {"secretName": "admin-kubeconfig"}}
+        ]
+        spec = plugin_data.setdefault("spec", {})
+        spec["volumeMounts"] = spec.get("volumeMounts", []) + [
+            {"name": "admin-kubeconfig-vol", "mountPath": "/etc/kubernetes/admin.conf", "subPath": "admin.conf"}
+        ]
+
+        # Configure e2e test to use the admin kubeconfig:
+        # 1. Pass --kubeconfig via E2E_EXTRA_ARGS (later flag wins in Go test runner)
+        # 2. Set KUBECONFIG env var for subprocesses and client-go fallback
+        envs = spec.setdefault("env", [])
+        extra_kubeconfig_arg = "--kubeconfig=/etc/kubernetes/admin.conf"
+        for env in envs:
+            if env.get("name") == "E2E_EXTRA_ARGS":
+                env["value"] = f"{env.get('value', '').strip()} {extra_kubeconfig_arg}".strip()
+                break
+        else:
+            envs.append({"name": "E2E_EXTRA_ARGS", "value": extra_kubeconfig_arg})
+
+        for env in envs:
+            if env.get("name") == "KUBECONFIG":
+                env["value"] = "/etc/kubernetes/admin.conf"
+                break
+        else:
+            envs.append({"name": "KUBECONFIG", "value": "/etc/kubernetes/admin.conf"})
+
+        data_map[plugin_key] = yaml.dump(plugin_data)
+        return
+
+    raise RuntimeError("Failed to locate and patch 'e2e' plugin inside sonobuoy-plugins-cm ConfigMap")
+
+
+class SonoFixBase:
+    """Base strategy for executing Sonobuoy test runs."""
+
+    def __init__(self, handler):
+        self.handler = handler
+
+    def run(self):
+        raise NotImplementedError
+
+
+class SonoFixNone(SonoFixBase):
+    """Default strategy: run Sonobuoy directly without manifest modifications."""
+
+    def run(self):
+        self.handler._invoke_sonobuoy("run", "--wait", *self.handler.args)
+
+
+class SonoFixInjectKubeconfig(SonoFixBase):
+    """Strategy to inject admin kubeconfig into Sonobuoy e2e test pod."""
+
+    def run(self):
+        logger.info("Generating Sonobuoy manifest with mounted admin kubeconfig")
+        try:
+            gen_proc = self.handler._invoke_sonobuoy(
+                "gen", *self.handler.args, stdout=subprocess.PIPE, text=True
+            )
+        except subprocess.CalledProcessError as exc:
+            logger.error(f"sonobuoy gen failed: {exc}")
+            raise
+
+        docs = [d for d in yaml.safe_load_all(gen_proc.stdout) if d is not None]
+
+        # Extract namespace from manifest and set it on handler so subsequent
+        # run, wait, retrieve, and delete calls target this namespace
+        namespace_idx = next(
+            (idx for idx, d in enumerate(docs) if d.get("kind") == "Namespace"), None
+        )
+        if namespace_idx is None:
+            raise RuntimeError("generated sonobuoy manifest contains no Namespace")
+        self.handler.namespace = docs[namespace_idx]["metadata"]["name"]
+        logger.debug(f"sonobuoy namespace: {self.handler.namespace}")
+
+        # Insert Secret containing admin kubeconfig into manifest so sonobuoy lifecycle owns it
+        with open(self.handler.kubeconfig_path, "rb") as kf:
+            kdata = base64.b64encode(kf.read()).decode("ascii")
+
+        secret_doc = {
+            "apiVersion": "v1",
+            "kind": "Secret",
+            "metadata": {
+                "name": "admin-kubeconfig",
+                "namespace": self.handler.namespace,
+                "labels": {
+                    "component": "sonobuoy",
+                },
+            },
+            "data": {
+                "admin.conf": kdata,
+            },
+        }
+        docs.insert(namespace_idx + 1, secret_doc)
+
+        # Patch e2e plugin in sonobuoy-plugins-cm ConfigMap
+        plugins_cm = _get_plugins_cm(docs)
+        _patch_e2e_plugin_cm(plugins_cm)
+
+        modified_manifest = yaml.dump_all(docs)
+
+        # Launch Sonobuoy via stdin (-f -)
+        self.handler._invoke_sonobuoy("run", "-f", "-", input=modified_manifest, text=True)
+
+        # Waiting is unconditional, but it has to be a separate step: `run -f - --wait`
+        # makes sonobuoy re-read the manifest from stdin to determine the namespace,
+        # which is already consumed by then. Bare `--wait` means 1440 minutes; without
+        # it the flag defaults to 0, which means "do not wait" and exits non-zero.
+        self.handler._invoke_sonobuoy("wait", "--wait")
+
+
 class SonobuoyHandler:
     """
     A class that handles both the execution of sonobuoy and
@@ -43,8 +181,9 @@ class SonobuoyHandler:
         scs_sonobuoy_config_yaml,
         check_name="sonobuoy_handler",
         kubeconfig=None,
-        result_dir_name="sonobuoy_results",
+        result_dir_name=None,
         args=(),
+        sonobuoy_fix="none",
     ):
         self.check_name = check_name
         logger.debug(f"kubeconfig: {kubeconfig} ")
@@ -52,6 +191,8 @@ class SonobuoyHandler:
             raise RuntimeError("No kubeconfig provided")
         self.kubeconfig_path = kubeconfig
         self.working_directory = os.getcwd()
+        if result_dir_name is None:
+            result_dir_name = os.path.join(gettempdir(), check_name)
         self.result_dir_name = result_dir_name
         self.sonobuoy = _find_sonobuoy()
         logger.debug(f"working from {self.working_directory}")
@@ -60,16 +201,33 @@ class SonobuoyHandler:
         if not os.path.exists(scs_sonobuoy_config_yaml):
             raise RuntimeError(f"scs_sonobuoy_config_yaml {scs_sonobuoy_config_yaml} does not exist.")
         self.scs_sonobuoy_config_yaml = scs_sonobuoy_config_yaml
-        self.args = (arg0 for arg in args for arg0 in shlex.split(str(arg)))
+        self.args = tuple(arg0 for arg in args for arg0 in shlex.split(str(arg)))
+        # Dynamically populated by fix strategies (e.g., SonoFixInjectKubeconfig)
+        # to ensure subsequent wait/retrieve/delete calls target the exact namespace.
+        self.namespace = None
 
-    def _invoke_sonobuoy(self, *args, **kwargs):
-        inv_args = (self.sonobuoy, "--kubeconfig", self.kubeconfig_path) + args
+        if sonobuoy_fix == "inject-kubeconfig":
+            self.sonobuoy_fix = SonoFixInjectKubeconfig(self)
+        elif sonobuoy_fix in (None, "none", ""):
+            self.sonobuoy_fix = SonoFixNone(self)
+        else:
+            raise ValueError(f"Unknown sonobuoy fix: {sonobuoy_fix}")
+
+    @property
+    def sono_args(self):
+        cmd = (self.sonobuoy, "--kubeconfig", self.kubeconfig_path)
+        if self.namespace:
+            cmd += ("-n", self.namespace)
+        return cmd
+
+    def _invoke_sonobuoy(self, *args, stdout=sys.stderr, **kwargs):
+        inv_args = self.sono_args + args
         logger.debug(f'invoking {" ".join(inv_args)}')
         # we had capture_output=True, but I don't see why -- let the caller decide
-        return subprocess.run(args=inv_args, check=True, stdout=sys.stderr, **kwargs)
+        return subprocess.run(args=inv_args, check=True, stdout=stdout, **kwargs)
 
     def _sonobuoy_run(self):
-        self._invoke_sonobuoy("run", "--wait", *self.args)
+        self.sonobuoy_fix.run()
 
     def _sonobuoy_delete(self):
         self._invoke_sonobuoy("delete", "--wait")
@@ -118,12 +276,8 @@ class SonobuoyHandler:
             self._sonobuoy_run()
             counter = self._sonobuoy_retrieve_result()
             return_code = self._eval_result(counter)
-            print(self.check_name + ": " + ("PASS", "FAIL")[min(1, return_code)])
+            logger.debug(self.check_name + ": " + ("PASS", "FAIL")[min(1, return_code)])
             return return_code
-        except BaseException:
-            print(self.check_name + ": ABORT")
-            logger.critical("something went wrong", exc_info=True)
-            return 112
         finally:
             self._sonobuoy_delete()
 

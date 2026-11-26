@@ -1,7 +1,8 @@
 ---
 title: SCS Standard Images
 type: Standard
-status: Draft
+status: Stable
+stabilized_at: 2026-09-30
 track: IaaS
 description: |
   The SCS-0104 standard establishes guidelines for virtual machine images in Sovereign Cloud Stack (SCS)
@@ -22,6 +23,8 @@ To this end, SCS unifies the naming and sourcing of virtual machine images, and 
 Image upload via Glance MUST be allowed based on a fair-use policy.
 
 ## Mandatory image sources
+
+This section applies to images that have `os_hidden=False` and either `visibility=public` or `visibility=community`.
 
 ### Generic OS images
 
@@ -54,9 +57,11 @@ CSPs are free to register CAPI images with a different naming scheme from differ
 
 ## Mandatory and recommended images
 
-The tables in this section show what images are required or recomended.
+The tables in this section show what images are required or recommended
+to be present, which is understood to mean they have `os_hidden=False`
+and either `visibility=public` or `visibility=community`.
 
-Note that this standard does not prohibit any images, and neither
+Note that this standard does not prohibit any images, nor
 does it preclude the operator from providing any and all optional images,
 so long as they do not violate above regulations on image sources.
 

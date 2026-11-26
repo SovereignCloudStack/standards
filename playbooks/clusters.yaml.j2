@@ -1,16 +1,15 @@
 ---
 clusters:
-  noris-1.33:
+  noris-1.36:
     kind: gardener
     config:
-      name: 'noris-1-33'  # explicit name because dot in name not permissible
-      kubernetesVersion: '1.33'
+      name: 'noris-1-36'  # explicit name because dot in name not permissible
+      kubernetesVersion: '1.36'
       autoVars: noris  # determine vars.kubernetes_version automatically using kubernetesVersion
       templates:
         shoot: shoot.yaml
         kubeconfig: garden-kubeconfig.yaml
       vars:
-        kubernetes_version: "1.33.10"
         num_worker_nodes: 3
         worker_cidr: "10.250.0.0/16"
         machine_type: "SCS-2V-4"
@@ -83,11 +82,11 @@ clusters:
         garden_api_server: "{{ clouds_conf.noris_api_server }}"
         garden_ca_data: "{{ clouds_conf.noris_ca_data }}"
         garden_token: "{{ clouds_conf.noris_token }}"
-  scaleup-1.33:
+  scaleup-1.36:
     kind: gardener
     config:
-      name: 'scaleup-1-33'  # explicit name because dot in name not permissible
-      kubernetesVersion: '1.33'
+      name: 'scaleup-1-36'  # explicit name because dot in name not permissible
+      kubernetesVersion: '1.36'
       autoVars: scaleup  # determine vars.kubernetes_version automatically using kubernetesVersion
       templates:
         shoot: shoot.yaml
@@ -177,18 +176,18 @@ clusters:
         num_worker_nodes: 3
       secrets:
         token: "{{ clouds_conf.syself_token }}"
-  syself-1.33:
+  syself-1.36:
     kind: clusterstacks
     config:
-      kubernetesVersion: '1.33'
-      name: 'syself-1-33'  # explicit name because dot in name not permissible
+      kubernetesVersion: '1.36'
+      name: 'syself-1-36'  # explicit name because dot in name not permissible
       autoVars: syself  # determine cs_class_name and cs_version automatically using kubernetesVersion
       templates:
         cluster: syself-cluster.yaml
         clusterstack: syself-clusterstack.yaml
         kubeconfig: syself-kubeconfig.yaml
       vars:
-        cs_name: hetzner-apalla-1-33
+        cs_name: hetzner-apalla-1-36
         num_control_nodes: 3
         num_worker_nodes: 3
       secrets:

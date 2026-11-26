@@ -9,11 +9,13 @@ SPDX-License-Identifier: CC-BY-SA 4.0
 
 import getopt
 import logging
-import os
+import os.path
 import sys
 
 import openstack
+import yaml
 
+from cleanup import Janitor
 from scs_0100_flavor_naming.flavor_names import compute_flavor_spec
 from scs_0100_flavor_naming.flavor_names_check import \
     compute_scs_flavors, compute_scs_0100_syntax_check, compute_scs_0100_semantics_check
@@ -33,7 +35,9 @@ from scs_0102_image_metadata.image_metadata import \
 from scs_0103_standard_flavors.standard_flavors import \
     SCS_0103_CANONICAL_NAMES, compute_flavor_lookup, compute_scs_0103_flavor
 from scs_0104_standard_images.standard_images import \
-    SCS_0104_IMAGE_SPECS, compute_scs_0104_source, compute_scs_0104_image
+    SCS_0104_IMAGE_SPECS, compute_scs_0104_source, compute_scs_0104_image, \
+    compute_image_lookup_ex, compute_scs_0104_source_ex, compute_scs_0104_source_capi, \
+    compute_scs_0104_image_ubuntu_latest
 from scs_0114_volume_types.volume_types import \
     compute_volume_type_lookup, compute_scs_0114_syntax_check, compute_scs_0114_aspect_type
 from scs_0115_security_groups.security_groups import \
@@ -47,21 +51,49 @@ from scs_0123_mandatory_services.mandatory_services import \
 
 
 logger = logging.getLogger(__name__)
+ENVPATH = os.path.join(os.path.expanduser('~'), '.config', 'scs', 'env.yaml')
+PREFIX = "_scs-"  # used for cleanup: only remove objects whose name starts in PREFIX
+IPADDR = "10.1.0."  # used for cleanup: only remove network objects within IPADDR
 
 
 def usage(rcode=1, file=sys.stderr):
     """help output"""
-    print("Usage: openstack_test.py [options] testcase-id1 ... testcase-idN", file=file)
-    print("Options: [-c/--os-cloud OS_CLOUD] sets cloud environment (default from OS_CLOUD env)", file=file)
-    print("Runs specified testcases against the OpenStack cloud OS_CLOUD", file=file)
-    print("and reports inconsistencies, errors etc. It returns 0 on success.", file=file)
+    print("""
+Usage: openstack_test.py [options] testcase-id1 ... testcase-idN
+Options:
+  [-c/--os-cloud OS_CLOUD] (optional)
+  [-s/--subject SUBJECT] (required)
+Runs specified testcases against the OpenStack cloud OS_CLOUD
+(falling back to SUBJECT if not explicitly provided)
+and reports inconsistencies, errors etc. It returns 0 on success.
+""".strip(), file=file)
     sys.exit(rcode)
 
 
-def make_container(cloud):
+def _load_env_yaml_section(path, subject):
+    if not os.path.isfile(path):
+        return {}
+    with open(path, "rb") as fileobj:
+        env_yaml = yaml.load(fileobj, Loader=yaml.SafeLoader)
+    if not isinstance(env_yaml, dict):
+        raise RuntimeError("env.yaml config file available, but not of type dict!")
+    result = env_yaml.get(subject, {})
+    if not result:
+        logger.debug("env.yaml config file available, but no values declared.")
+    return result
+
+
+def make_container(subject, cloud):
     c = Container()
+    # env.yaml support
+    c.add_function('env', lambda _: _load_env_yaml_section(path=ENVPATH, subject=subject))
+    c.add_function('cloud', lambda c: c.env.get('cloud', subject) if cloud is None else cloud)
+    # Configure an optional list of DNS servers for scs-0101-entropy
+    c.add_function('dns_nameservers', lambda c: c.env.get('dns_nameservers'))
+    # Configure an optional external network ID for scs-0101-entropy
+    c.add_function('external_gateway_net_id', lambda c: c.env.get('external_gateway_net_id'))
     # basic support attributes shared by multiple testcases
-    c.add_function('conn', lambda _: openstack.connect(cloud=cloud, timeout=32))
+    c.add_function('conn', lambda c: openstack.connect(cloud=c.cloud, timeout=32))
     c.add_function('flavors', lambda c: list(c.conn.list_flavors(get_extra=True)))
     c.add_function('images', lambda c: [img for img in c.conn.list_images(show_all=True) if img.visibility in ('public', 'community')])
     c.add_function('image_lookup', lambda c: {img.name: img for img in c.images})
@@ -71,7 +103,9 @@ def make_container(cloud):
     c.add_function('scs_0100_semantics_check', lambda c: compute_scs_0100_semantics_check(c.scs_flavors))
     # scs_0101_entropy
     c.add_function('canonical_image', lambda c: compute_canonical_image(c.images))
-    c.add_function('collected_vm_output', lambda c: compute_collected_vm_output(c.conn, c.flavors, c.canonical_image))
+    c.add_function('collected_vm_output', lambda c: compute_collected_vm_output(
+        c.conn, c.flavors, c.canonical_image, c.dns_nameservers, c.external_gateway_net_id,
+    ))
     c.add_function('scs_0101_entropy_avail', lambda c: compute_scs_0101_entropy_avail(c.collected_vm_output, c.canonical_image.name))
     c.add_function('scs_0101_fips_test', lambda c: compute_scs_0101_fips_test(c.collected_vm_output, c.canonical_image.name))
     # scs_0102_image_metadata
@@ -106,17 +140,22 @@ def make_container(cloud):
             lambda c, cn=canonical_name: compute_scs_0103_flavor(c.flavor_lookup, compute_flavor_spec(cn))
         )
     # scs_0104_standard_images
+    c.add_function('image_lookup_ex', lambda c: compute_image_lookup_ex(c.images))
+    c.add_function('scs_0104_source_capi', lambda c: compute_scs_0104_source_capi(c.image_lookup))
     c.add_function('scs_0104_source_capi_1', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-1']))
     c.add_function('scs_0104_source_capi_2', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-2']))
+    c.add_function('scs_0104_source_ubuntu', lambda c: compute_scs_0104_source_ex(c.image_lookup_ex, 'ubuntu'))
     c.add_function('scs_0104_source_ubuntu_2404', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 24.04']))
     c.add_function('scs_0104_source_ubuntu_2204', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 22.04']))
     c.add_function('scs_0104_source_ubuntu_2004', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 20.04']))
+    c.add_function('scs_0104_source_debian', lambda c: compute_scs_0104_source_ex(c.image_lookup_ex, 'debian'))
     c.add_function('scs_0104_source_debian_13', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 13']))
     c.add_function('scs_0104_source_debian_12', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 12']))
     c.add_function('scs_0104_source_debian_11', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 11']))
     c.add_function('scs_0104_source_debian_10', lambda c: compute_scs_0104_source(c.image_lookup, SCS_0104_IMAGE_SPECS['Debian 10']))
     c.add_function('scs_0104_image_capi_1', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-1']))
     c.add_function('scs_0104_image_capi_2', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['ubuntu-capi-image-2']))
+    c.add_function('scs_0104_image_ubuntu_latest', lambda c: compute_scs_0104_image_ubuntu_latest(c.image_lookup_ex))
     c.add_function('scs_0104_image_ubuntu_2404', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 24.04']))
     c.add_function('scs_0104_image_ubuntu_2204', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 22.04']))
     c.add_function('scs_0104_image_ubuntu_2004', lambda c: compute_scs_0104_image(c.image_lookup, SCS_0104_IMAGE_SPECS['Ubuntu 20.04']))
@@ -148,7 +187,8 @@ def make_container(cloud):
     c.add_function('scs_0123_storage_apis', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'volume', 'volumev3', 'block-storage'))
     c.add_function('scs_0123_service_s3', lambda c: compute_scs_0123_service_presence(c.services_lookup, 'object-store-s3'))
     c.add_function('scs_0123_swift_s3', lambda c: compute_scs_0123_swift_s3(c.services_lookup, c.conn))
-
+    # pseudo-testcase: cleanup
+    c.add_function('cleanup', lambda c: Janitor(c.conn, PREFIX, IPADDR).cleanup() or True)
     return c
 
 
@@ -246,13 +286,10 @@ def main(argv):
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.DEBUG)
     openstack.enable_logging(debug=False)
     cloud = None
+    subject = None
 
     try:
-        cloud = os.environ["OS_CLOUD"]
-    except KeyError:
-        pass
-    try:
-        opts, args = getopt.gnu_getopt(argv, "c:C:", ("os-cloud=", ))
+        opts, args = getopt.gnu_getopt(argv, "c:C:s:S:", ("os-cloud=", "subject="))
     except getopt.GetoptError as exc:
         print(f"CRITICAL: {exc!r}", file=sys.stderr)
         usage(1)
@@ -261,19 +298,21 @@ def main(argv):
             usage(0)
         elif opt[0] == "-c" or opt[0] == "--os-cloud":
             cloud = opt[1]
+        elif opt[0] == "-s" or opt[0] == "--subject":
+            subject = opt[1]
         else:
             usage(2)
 
-    testcases = [t for t in args if t.startswith('scs-')]
+    testcases = [t for t in args if t.startswith('scs-') or t == 'cleanup']
     if len(testcases) != len(args):
         unknown = [a for a in args if a not in testcases]
         logger.warning(f"ignoring unknown testcases: {','.join(unknown)}")
 
-    if not cloud:
-        print("CRITICAL: You need to have OS_CLOUD set or pass --os-cloud=CLOUD.", file=sys.stderr)
+    if not subject:
+        print("CRITICAL: You need to pass -s=SUBJECT.", file=sys.stderr)
         sys.exit(1)
 
-    c = make_container(cloud)
+    c = make_container(subject, cloud)
     try:
         run_preflight_checks(c)
     except Exception:

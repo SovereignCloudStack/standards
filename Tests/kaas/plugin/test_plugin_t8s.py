@@ -293,7 +293,7 @@ def test_create_cluster_order(plugin):
             with patch.object(plugin, "_wait_for_helmrelease_ready", side_effect=lambda co_api: calls.append("wait_ready")):
                 with patch.object(plugin, "_write_kubeconfig", side_effect=lambda data: calls.append(("write", data))):
                     plugin.create_cluster()
-    assert calls == ["apply", "wait_secret", "wait_ready", ("write", b"kubeconfig-data")]
+    assert calls == ["apply", "wait_ready", "wait_secret", ("write", b"kubeconfig-data")]
 
 
 # --- _get_helmrelease_ready ---
