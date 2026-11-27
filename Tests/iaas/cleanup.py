@@ -50,6 +50,20 @@ class Janitor:
             for port in ports:
                 self.conn.network.remove_interface_from_router(router.id, port_id=port["id"])
 
+    def cleanup_images(self):
+        logger.debug("clean up images")
+        images = list(self.conn.image.images())
+        for image in images:
+            if not self.prefix or not image.name or not image.name.startswith(self.prefix):
+                continue
+            if image.visibility != "private":
+                continue
+            logger.info(image.name)
+            try:
+                self.conn.image.delete_image(image)
+            except Exception as e:
+                logger.warning(f"Failed to delete image {image.name}: {e}")
+
     def cleanup_routers(self):
         logger.debug("clean up routers")
         routers = list(self.conn.network.routers())
@@ -194,6 +208,7 @@ class Janitor:
         self.cleanup_security_groups()
         self.cleanup_floating_ips()
         self.cleanup_routers()
+        self.cleanup_images()
 
 
 def main(argv):

@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import date
+import io
 import logging
 import re
 
@@ -171,3 +172,100 @@ def compute_scs_0104_image_ubuntu_latest(image_lookup_ex, os_distro='ubuntu'):
         logger.error(f"Missing generic {os_distro} image with os_version in {acceptable!r}")
         return False
     return True
+
+
+def compute_scs_0104_custom_image_upload(conn, prefix="_scs-"):
+    """
+    Test custom image upload via Glance per SCS-0104 and validate image listing,
+    filtering, schemas, and details retrieval per SCS-0128 baseline requirements.
+    """
+    image_name = f"{prefix}scs0104-upload-test"
+    payload = b"\x00" * 1024  # 1 KB valid raw zero-block passing format inspection
+    test_image = None
+    errors = 0
+
+    try:
+        logger.info(f"Creating image record {image_name}...")
+        test_image = conn.image.create_image(
+            name=image_name,
+            data=io.BytesIO(payload),
+            disk_format="raw",
+            container_format="bare",
+            visibility="private",
+            wait=True,
+        )
+
+        if not test_image or not test_image.id:
+            logger.error("Failed to create and upload custom image")
+            return False
+
+        image_id = test_image.id
+        logger.info(f"Custom image uploaded with ID: {image_id}")
+
+        # 1. Validate image details retrieval
+        retrieved = conn.image.get_image(image_id)
+        if not retrieved or retrieved.name != image_name or retrieved.status != "active":
+            logger.error(f"Image detail retrieval failed: expected active {image_name}, got {retrieved}")
+            errors += 1
+
+        # 2. Validate schemas (covering tempest get_images_schema & get_image_schema)
+        try:
+            images_schema = conn.image.get_images_schema()
+            if not images_schema or "name" not in str(images_schema):
+                logger.error("Invalid images schema response")
+                errors += 1
+        except Exception as e:
+            logger.error(f"Failed to fetch images schema: {e}")
+            errors += 1
+
+        try:
+            image_schema = conn.image.get_image_schema()
+            if not image_schema or "name" not in str(image_schema):
+                logger.error("Invalid image schema response")
+                errors += 1
+        except Exception as e:
+            logger.error(f"Failed to fetch image schema: {e}")
+            errors += 1
+
+        # 3. Validate listing with parameter filtering (covering tempest list_images_param_*)
+        # Filter by visibility
+        priv_images = list(conn.image.images(visibility="private"))
+        if not any(img.id == image_id for img in priv_images):
+            logger.error(f"Image {image_id} not found when listing with visibility=private")
+            errors += 1
+
+        # Filter by status
+        active_images = list(conn.image.images(status="active"))
+        if not any(img.id == image_id for img in active_images):
+            logger.error(f"Image {image_id} not found when listing with status=active")
+            errors += 1
+
+        # Filter by disk_format and container_format
+        format_images = list(conn.image.images(disk_format="raw", container_format="bare"))
+        if not any(img.id == image_id for img in format_images):
+            logger.error(f"Image {image_id} not found with disk_format=raw and container_format=bare")
+            errors += 1
+
+        # Verify limit parameter on Glance REST endpoint
+        try:
+            resp = conn.image.get("/images", params={"limit": 1}).json()
+            page_images = resp.get("images", [])
+            if len(page_images) > 1:
+                logger.error(f"Glance limit=1 returned {len(page_images)} images on first page")
+                errors += 1
+        except Exception as e:
+            logger.error(f"Failed to test limit parameter query: {e}")
+            errors += 1
+
+    except Exception as e:
+        logger.error(f"Error during SCS-0104 custom image upload test: {e}", exc_info=True)
+        return False
+    finally:
+        if test_image and test_image.id:
+            logger.info(f"Cleaning up custom test image {test_image.id}...")
+            try:
+                conn.image.delete_image(test_image.id, ignore_missing=True)
+            except Exception as e:
+                logger.warning(f"Failed to delete test image {test_image.id}: {e}")
+
+    return errors == 0
