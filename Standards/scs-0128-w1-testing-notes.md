@@ -40,4 +40,23 @@ Further exceptions may be made in the future.
 
 ## How to run Tempest against your cluster
 
-_TODO_ provide step-by-step walkthrough here
+To support you in running Tempest, the SCS community has included it in the
+[compliance check image](https://github.com/SovereignCloudStack/standards/pkgs/container/scs-compliance-check).
+The image contains an initialized Tempest workspace at `/tempest`,
+so you can mount your configuration files and run the tempest command there like so:
+`tempest run --load-list /scs-compliance/iaas/scs_0128_e2e_testing/tempest-tests-non-admin.lst`
+
+### Via the scs-verify Helm chart
+
+[The scs-verify chart](https://gitlab.com/alasca.cloud/focis/experiments/scs-verify)
+allows to quickly set up one-shot or recurring Tempest runs against any cloud you have access to,
+not just K8s-based ones.
+
+It provides an [opinionated configuration preset](https://gitlab.com/alasca.cloud/focis/experiments/scs-verify/-/blob/devel/values.yaml)
+that aims to work on any SCS-compatible IaaS compliant cloud with minimal user input and setup.
+
+You can also use its
+[tempest.conf](https://gitlab.com/alasca.cloud/focis/experiments/scs-verify/-/blob/devel/templates/scs-0128-tempest-configmap.yaml?ref_type=heads)
+and
+[accounts.yaml](https://gitlab.com/alasca.cloud/focis/experiments/scs-verify/-/tree/devel?ref_type=heads#scs-0128-tempest-tests)
+templates for your own non-Helm setup.
